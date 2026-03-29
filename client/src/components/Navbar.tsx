@@ -23,6 +23,7 @@ import { Link, useLocation } from "wouter";
 
 const navLinks = [
   { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "#home", type: "anchor", icon: House },
+  { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
   { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "#about", type: "anchor", icon: UserRound },
   { label: "বই", subtitle: "প্রকাশিত বই ও সংগ্রহের তথ্য", href: "#book", type: "anchor", icon: BookOpen },
   { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", type: "page", icon: Mic2 },
@@ -31,7 +32,6 @@ const navLinks = [
   { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "#gallery", type: "anchor", icon: Images },
   { label: "সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "#news", type: "anchor", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "#contact", type: "anchor", icon: Mail },
-  { label: "লেখা ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
 ];
 
 const infoTabs = [
