@@ -189,6 +189,11 @@ export default function Editor() {
   const [showAuthor, setShowAuthor] = useState(true);
   const [sticker, setSticker]       = useState("");
 
+  // Per-element fonts
+  const [titleFontKey, setTitleFontKey]   = useState("ChandraSheela");
+  const [bodyFontKey, setBodyFontKey]     = useState("ChandraSheela");
+  const [authorFontKey, setAuthorFontKey] = useState("ChandraSheela");
+
   // Design
   const [themeIdx, setThemeIdx]           = useState(2);
   const [fontKey, setFontKey]             = useState("ChandraSheela");
@@ -234,24 +239,19 @@ export default function Editor() {
     setAiGenerating(true);
     setAiError("");
     try {
+      // Translate Bengali to English via server, then build Pollinations URL
       const result = await generateBgMutation.mutateAsync({ prompt: aiPrompt.trim() });
-      // Pre-load image then set as background
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        setBgImage(result.imageUrl);
-        setBgOpacity(0.35);
-        setAiGenerating(false);
-      };
-      img.onerror = () => {
-        // Fallback: set URL directly even if preload fails
-        setBgImage(result.imageUrl);
-        setBgOpacity(0.35);
-        setAiGenerating(false);
-      };
-      img.src = result.imageUrl;
+      // Set the URL directly — browser will load it as a background-image
+      setBgImage(result.imageUrl);
+      setBgOpacity(0.35);
+      setAiGenerating(false);
     } catch {
-      setAiError("ছবি তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      // Fallback: build Pollinations URL directly on client without translation
+      const encoded = encodeURIComponent(aiPrompt.trim() + " beautiful artistic background, painterly, no text, high quality");
+      const seed = Math.floor(Math.random() * 999999);
+      const fallbackUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1080&height=1080&seed=${seed}&nologo=true`;
+      setBgImage(fallbackUrl);
+      setBgOpacity(0.35);
       setAiGenerating(false);
     }
   }, [aiPrompt, aiGenerating, generateBgMutation]);
@@ -287,7 +287,7 @@ export default function Editor() {
 
   // ── Canvas export ─────────────────────────────────────────────────────────
   const buildCanvas = useCallback(async (): Promise<HTMLCanvasElement> => {
-    await ensureFontLoaded(fontKey);
+    await Promise.all([ensureFontLoaded(titleFontKey), ensureFontLoaded(bodyFontKey), ensureFontLoaded(authorFontKey), ensureFontLoaded(fontKey)]);
     await document.fonts.ready;
 
     const DPR = 2;
@@ -425,7 +425,9 @@ export default function Editor() {
     }
 
     // Text
-    const ff = `${fontKey}, 'Tiro Bangla', serif`;
+    const titleFF  = `${titleFontKey}, 'Tiro Bangla', serif`;
+    const bodyFF   = `${bodyFontKey}, 'Tiro Bangla', serif`;
+    const authorFF = `${authorFontKey}, 'Tiro Bangla', serif`;
     ctx.fillStyle = theme.text;
     const maxW = cardW - padding * 2;
     const tx = align === "center" ? cardW / 2 : align === "right" ? cardW - padding : padding;
@@ -437,10 +439,10 @@ export default function Editor() {
     let totalH = 0;
     if (sticker) totalH += 80;
     if (showTitle && title) {
-      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${ff}`;
+      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${titleFF}`;
       totalH += wrapText(ctx, title, maxW).length * titleSize * 1.3 + 20;
     }
-    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${ff}`;
+    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${bodyFF}`;
     const bLines = wrapText(ctx, body, maxW);
     bLines.forEach(l => { totalH += l === "" ? bodySize * 0.6 : bodySize * lineH; });
     if (showAuthor && author) totalH += authorSize + 28;
@@ -458,7 +460,7 @@ export default function Editor() {
 
     // Title (NO divider line)
     if (showTitle && title) {
-      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${ff}`;
+      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${titleFF}`;
       const tLines = wrapText(ctx, title, maxW);
       for (const line of tLines) {
         ctx.fillText(line, tx, cy + titleSize);
@@ -468,7 +470,7 @@ export default function Editor() {
     }
 
     // Body
-    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${ff}`;
+    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${bodyFF}`;
     for (const line of bLines) {
       if (line === "") { cy += bodySize * 0.6; continue; }
       ctx.fillText(line, tx, cy + bodySize);
@@ -480,13 +482,13 @@ export default function Editor() {
       cy += 16;
       ctx.save();
       ctx.globalAlpha = authorOpacity / 100;
-      ctx.font = `italic ${authorSize}px ${ff}`;
+      ctx.font = `italic ${authorSize}px ${authorFF}`;
       ctx.fillText(author, tx, cy + authorSize);
       ctx.restore();
     }
 
     return canvas;
-  }, [theme, fontKey, cardW, cardH, title, body, author, showTitle, showAuthor,
+  }, [theme, fontKey, titleFontKey, bodyFontKey, authorFontKey, cardW, cardH, title, body, author, showTitle, showAuthor,
       titleSize, bodySize, authorSize, lineH, align, padding, letterSp, frame, pattern,
       bgImage, bgOpacity, bgBlur, textShadow, textGlow, boldBody, italicTitle,
       authorOpacity, sticker, showWatermark, watermarkOpacity]);
@@ -613,7 +615,7 @@ export default function Editor() {
 
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={showAuthor} onChange={e => setShowAuthor(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
-                    <span className="text-gray-300 text-sm font-medium">লেখকের নাম দেখাও</span>
+                    <span className="text-gray-300 text-sm font-medium">লেখক নাম</span>
                   </label>
                   {showAuthor && (
                     <input value={author} onChange={e => setAuthor(e.target.value)} placeholder="লেখকের নাম..."
@@ -665,21 +667,80 @@ export default function Editor() {
                     )}
                   </div>
 
-                  {/* Font */}
-                  <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">ফন্ট</label>
-                    <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
-                      {FONTS.map(f => (
-                        <button key={f.value} onClick={() => setFontKey(f.value)}
-                          className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
-                            fontKey === f.value
-                              ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                              : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                          }`}
-                          style={{ fontFamily: FONT_CSS[f.value] }}>
-                          {f.name}
-                        </button>
-                      ))}
+                  {/* Per-element Fonts */}
+                  <div className="space-y-4">
+                    <label className="text-gray-400 text-xs font-semibold block">ফন্ট (আলাদা আলাদা)</label>
+
+                    {/* Quick apply all */}
+                    <div>
+                      <p className="text-gray-600 text-xs mb-1.5">সবকিছুতে এক ফন্ট</p>
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                        {FONTS.map(f => (
+                          <button key={f.value} onClick={() => { setFontKey(f.value); setTitleFontKey(f.value); setBodyFontKey(f.value); setAuthorFontKey(f.value); }}
+                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
+                              fontKey === f.value
+                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                            }`}
+                            style={{ fontFamily: FONT_CSS[f.value] }}>
+                            {f.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Title font */}
+                    <div>
+                      <p className="text-[#D4A843] text-xs font-semibold mb-1.5">শিরোনামের ফন্ট</p>
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                        {FONTS.map(f => (
+                          <button key={f.value} onClick={() => setTitleFontKey(f.value)}
+                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
+                              titleFontKey === f.value
+                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                            }`}
+                            style={{ fontFamily: FONT_CSS[f.value] }}>
+                            {f.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Body font */}
+                    <div>
+                      <p className="text-[#D4A843] text-xs font-semibold mb-1.5">মূল লেখার ফন্ট</p>
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                        {FONTS.map(f => (
+                          <button key={f.value} onClick={() => setBodyFontKey(f.value)}
+                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
+                              bodyFontKey === f.value
+                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                            }`}
+                            style={{ fontFamily: FONT_CSS[f.value] }}>
+                            {f.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Author font */}
+                    <div>
+                      <p className="text-[#D4A843] text-xs font-semibold mb-1.5">লেখক নামের ফন্ট</p>
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                        {FONTS.map(f => (
+                          <button key={f.value} onClick={() => setAuthorFontKey(f.value)}
+                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
+                              authorFontKey === f.value
+                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                            }`}
+                            style={{ fontFamily: FONT_CSS[f.value] }}>
+                            {f.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -801,7 +862,7 @@ export default function Editor() {
                   {/* ── AI Background Generator ── */}
                   <div className="bg-gradient-to-br from-[#0a1525] to-[#0f1c2e] rounded-2xl p-4 border border-[#D4A843]/20 space-y-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">🤖</span>
+                      <img src={AUTHOR_PHOTO} alt="" className="w-7 h-7 rounded-full object-cover border border-[#D4A843]/40" />
                       <span className="text-[#D4A843] text-sm font-bold">AI ব্যাকগ্রাউন্ড তৈরি করুন</span>
                     </div>
                     <p className="text-gray-500 text-xs">বাংলায় লিখুন — AI আপনার জন্য সুন্দর ব্যাকগ্রাউন্ড তৈরি করবে</p>
@@ -1036,10 +1097,11 @@ export default function Editor() {
                   <div style={{ position: "relative", zIndex: 2, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                     {sticker && <div style={{ fontSize: 60, marginBottom: 16, textAlign: "center" }}>{sticker}</div>}
 
-                    {/* Title — NO border-bottom line */}
+                    {/* Title */}
                     {showTitle && title && (
                       <div style={{
                         fontSize: titleSize, fontWeight: "bold",
+                        fontFamily: FONT_CSS[titleFontKey] || fontCss,
                         fontStyle: italicTitle ? "italic" : "normal",
                         marginBottom: 20, lineHeight: 1.3,
                         letterSpacing: `${letterSp}px`,
@@ -1052,16 +1114,18 @@ export default function Editor() {
                     {/* Body */}
                     <div style={{
                       fontSize: bodySize, lineHeight: lineH, whiteSpace: "pre-wrap",
+                      fontFamily: FONT_CSS[bodyFontKey] || fontCss,
                       letterSpacing: `${letterSp}px`, fontWeight: boldBody ? "bold" : "normal",
                       ...textShadowStyle,
                     }}>
                       {body}
                     </div>
 
-                    {/* Author — NO border-top line */}
+                    {/* Author */}
                     {showAuthor && author && (
                       <div style={{
                         fontSize: authorSize, marginTop: 28,
+                        fontFamily: FONT_CSS[authorFontKey] || fontCss,
                         opacity: authorOpacity / 100, fontStyle: "italic",
                         letterSpacing: `${letterSp}px`,
                         ...textShadowStyle,
