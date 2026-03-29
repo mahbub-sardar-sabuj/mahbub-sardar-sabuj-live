@@ -117,6 +117,7 @@ export default function EBookReader() {
   const [totalPages, setTotalPages] = useState(0);
   const [scale, setScale] = useState(1.2);
   const [isLoading, setIsLoading] = useState(true);
+  const [pdfReady, setPdfReady] = useState(false);
   const [error, setError] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -158,7 +159,8 @@ export default function EBookReader() {
         pdfRef.current = pdf;
         setTotalPages(pdf.numPages);
         setIsLoading(false);
-        renderPage(1, pdf);
+        // setPdfReady triggers a useEffect that renders after canvas is in DOM
+        setPdfReady(true);
       })
       .catch((err: any) => {
         console.error("PDF load error:", err);
@@ -204,8 +206,19 @@ export default function EBookReader() {
     }
   }, [scale, isDarkMode]);
 
+  // Render when PDF is ready (after canvas mounts)
   useEffect(() => {
-    if (pdfRef.current) {
+    if (pdfReady && pdfRef.current) {
+      // Small timeout to ensure canvas is in DOM after isLoading=false
+      const timer = setTimeout(() => {
+        renderPage(currentPage);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [pdfReady]);
+
+  useEffect(() => {
+    if (pdfRef.current && !isLoading) {
       renderPage(currentPage);
     }
   }, [currentPage, scale, isDarkMode, renderPage]);
