@@ -1,20 +1,23 @@
 /*
- * Design: Literary Avant-Garde
- * Colors: Navy #0D1B2A, Gold #D4A843, Cream #FDF6EC
- * Fonts: Tiro Bangla (display), Noto Sans Bengali (body), DM Serif Display (EN heading), Space Grotesk (EN body)
- * Layout: Editorial magazine-style, asymmetric, news+gallery feel
+ * Design: "Ink & Gold" — World-Class Literary Premium
+ * Palette: Deep Navy #0A1628, Rich Gold #C9A84C, Warm Ivory #FAF6EF, Charcoal #1E2D3D
+ * Accents: Blush #E8C4A0, Sage #8BA888, Muted Rose #C4848A
+ * Fonts: Tiro Bangla (display), Noto Sans Bengali (body), Playfair Display (EN headings)
+ * Concept: Award-winning literary magazine meets luxury author portfolio
  */
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   Facebook, Instagram, Youtube, Mail, ExternalLink,
-  BookOpen, Users, PenLine, Send, ChevronDown, X, Phone
+  BookOpen, Users, PenLine, Send, ChevronDown, X, Phone,
+  Star, Quote, ArrowRight, Eye
 } from "lucide-react";
+import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 
-// ── CDN URLs ──────────────────────────────────────────────────────────────────
+// ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile2_57482935.jpg";
 const BOOK_COVER = "/images/book-cover-20260328.jpg";
@@ -26,49 +29,32 @@ const WRITING2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 const BOOK_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/book-photo_1173642f.jpg";
 const NEWS_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/news-section-bg-B7c2bXDVcAEUipbBK8mz4Z.webp";
 
-// ── Fade-in animation hook ────────────────────────────────────────────────────
-function FadeIn({ children, delay = 0, direction = "up" }: { children: React.ReactNode; delay?: number; direction?: "up" | "left" | "right" | "none" }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const variants = {
-    hidden: {
-      opacity: 0,
-      y: direction === "up" ? 40 : 0,
-      x: direction === "left" ? -40 : direction === "right" ? 40 : 0,
-    },
-    visible: { opacity: 1, y: 0, x: 0 },
-  };
-  return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={inView ? "visible" : "hidden"}
-      variants={variants}
-      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
+// ── Ebook covers ──────────────────────────────────────────────────────────────
+const EBOOK_COVERS = [
+  { src: "/images/ebooks/dukkhovilash-cover.png", title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস", slug: "dukkhovilash" },
+  { src: "/images/ebooks/smritir-boshonte-cover.png", title: "স্মৃতির বসন্তে তুমি", slug: "smritir-boshonte" },
+  { src: "/images/ebooks/chand-phool-cover.png", title: "চাঁদফুল", slug: "chand-phool" },
+  { src: "/images/ebooks/shomoyer-gohvore-cover.png", title: "সময়ের গহ্বরে", slug: "shomoyer-gohvore" },
+];
 
-// ── Gallery lightbox ──────────────────────────────────────────────────────────
+// ── Gallery images ────────────────────────────────────────────────────────────
 const galleryImages = [
   { src: PROFILE_1, caption: "মাহবুব সরদার সবুজ" },
   { src: PROFILE_2, caption: "লেখার মুহূর্তে" },
-  { src: BOOK_COVER, caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস — বইয়ের কভার" },
+  { src: BOOK_COVER, caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস" },
   { src: BOOKS_COLLECTION, caption: "ই-বুক সংগ্রহ" },
   { src: WRITING_SHOWCASE, caption: "কবিতার পাতা" },
   { src: WRITING2, caption: "কবিতার পৃষ্ঠা" },
   { src: BOOK_PHOTO, caption: "দুঃখবিলাস — বইয়ের সাথে" },
 ];
 
-// ── News / Updates ────────────────────────────────────────────────────────────
+// ── News ──────────────────────────────────────────────────────────────────────
 const newsItems = [
   {
     date: "মার্চ ২০২৬",
     tag: "বই",
     title: "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" এখন রকমারিতে",
-    desc: "মাহবুব সরদার সবুজের প্রথম ফিজিক্যাল বইটি এখন বাংলাদেশের সকল অনলাইন বুকস্টোরে এবং রকমারিতে পাওয়া যাচ্ছে।",
+    desc: "মাহবুব সরদার সবুজের প্রথম ফিজিক্যাল বইটি এখন বাংলাদেশের সকল অনলাইন বুকস্টোরে পাওয়া যাচ্ছে।",
     link: "https://rkmri.co/TTMEoA3l3pM0/",
   },
   {
@@ -82,50 +68,113 @@ const newsItems = [
     date: "২০২৪",
     tag: "ই-বুক",
     title: "৮টি ই-বুক প্রকাশ",
-    desc: "লেখক মাহবুব সরদার সবুজ এ পর্যন্ত ৮টি ই-বুক প্রকাশ করেছেন। পাঠকদের ভালোবাসায় তিনি লিখে চলেছেন।",
-    link: "https://facebook.com/MahbubSardarSabuj",
+    desc: "লেখক মাহবুব সরদার সবুজ এ পর্যন্ত ৮টি ই-বুক প্রকাশ করেছেন।",
+    link: "/ebooks",
   },
   {
     date: "২০২৩",
     tag: "সোশ্যাল মিডিয়া",
     title: "ইচ্ছে কাব্য পেইজ চালু",
-    desc: "পাঠকদের জন্য নতুন ফেসবুক পেইজ \"ইচ্ছে কাব্য\" চালু হয়েছে। এখানে নিয়মিত কবিতা ও গল্প প্রকাশিত হয়।",
+    desc: "পাঠকদের জন্য নতুন ফেসবুক পেইজ \"ইচ্ছে কাব্য\" চালু হয়েছে।",
     link: "https://facebook.com/IchchheKabya",
   },
 ];
 
 // ── Social platforms ──────────────────────────────────────────────────────────
 const socialPlatforms = [
-  { name: "Facebook Profile", handle: "Lekhok.MahbubSardarSabuj", href: "https://facebook.com/Lekhok.MahbubSardarSabuj", color: "#1877F2", icon: <Facebook size={22} /> },
-  { name: "Facebook Page", handle: "MahbubSardarSabuj", href: "https://facebook.com/MahbubSardarSabuj", color: "#1877F2", icon: <Facebook size={22} /> },
-  { name: "Facebook Page", handle: "IchchheKabya", href: "https://facebook.com/IchchheKabya", color: "#1877F2", icon: <Facebook size={22} /> },
-  { name: "Instagram", handle: "@mahbub_sardar_sabuj", href: "https://www.instagram.com/mahbub_sardar_sabuj", color: "#E1306C", icon: <Instagram size={22} /> },
-  { name: "YouTube", handle: "@mahbubsardarsabuj", href: "https://youtube.com/@mahbubsardarsabuj", color: "#FF0000", icon: <Youtube size={22} /> },
-  { name: "TikTok", handle: "@mahbub_sardar_sabuj", href: "https://www.tiktok.com/@mahbub_sardar_sabuj", color: "#010101", icon: <PenLine size={22} /> },
-  { name: "Threads", handle: "@mahbub_sardar_sabuj", href: "https://www.threads.com/@mahbub_sardar_sabuj", color: "#000000", icon: <PenLine size={22} /> },
-  { name: "Pinterest", handle: "Pinterest", href: "https://pin.it/1ZzP7UEcO", color: "#E60023", icon: <BookOpen size={22} /> },
-  { name: "Telegram", handle: "MahbubSardarSabuj", href: "https://t.me/MahbubSardarSabuj", color: "#0088CC", icon: <Send size={22} /> },
+  { name: "Facebook Profile", handle: "Lekhok.MahbubSardarSabuj", href: "https://facebook.com/Lekhok.MahbubSardarSabuj", color: "#1877F2", icon: <Facebook size={20} /> },
+  { name: "Facebook Page", handle: "MahbubSardarSabuj", href: "https://facebook.com/MahbubSardarSabuj", color: "#1877F2", icon: <Facebook size={20} /> },
+  { name: "ইচ্ছে কাব্য", handle: "IchchheKabya", href: "https://facebook.com/IchchheKabya", color: "#1877F2", icon: <Facebook size={20} /> },
+  { name: "Instagram", handle: "@mahbub_sardar_sabuj", href: "https://www.instagram.com/mahbub_sardar_sabuj", color: "#E1306C", icon: <Instagram size={20} /> },
+  { name: "YouTube", handle: "@mahbubsardarsabuj", href: "https://youtube.com/@mahbubsardarsabuj", color: "#FF0000", icon: <Youtube size={20} /> },
+  { name: "TikTok", handle: "@mahbub_sardar_sabuj", href: "https://www.tiktok.com/@mahbub_sardar_sabuj", color: "#010101", icon: <PenLine size={20} /> },
+  { name: "Threads", handle: "@mahbub_sardar_sabuj", href: "https://www.threads.com/@mahbub_sardar_sabuj", color: "#000000", icon: <PenLine size={20} /> },
+  { name: "Telegram", handle: "MahbubSardarSabuj", href: "https://t.me/MahbubSardarSabuj", color: "#0088CC", icon: <Send size={20} /> },
 ];
 
-// ── Facebook Groups ───────────────────────────────────────────────────────────
 const fbGroups = [
   { name: "ফেসবুক গ্রুপ ১", href: "https://www.facebook.com/share/g/18MrSrc7JK/?mibextid=wwXIfr" },
   { name: "ফেসবুক গ্রুপ ২", href: "https://www.facebook.com/share/g/186pdvToeC/?mibextid=wwXIfr" },
 ];
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
 const stats = [
-  { value: "৭,০০০+", label: "প্রকাশিত লেখা", icon: <PenLine size={28} /> },
-  { value: "৮টি", label: "ই-বুক", icon: <BookOpen size={28} /> },
-  { value: "১টি", label: "ফিজিক্যাল বই", icon: <BookOpen size={28} /> },
-  { value: "লক্ষাধিক", label: "পাঠক", icon: <Users size={28} /> },
+  { value: "৭,০০০+", label: "প্রকাশিত লেখা" },
+  { value: "৮টি", label: "ই-বুক" },
+  { value: "১টি", label: "ফিজিক্যাল বই" },
+  { value: "লক্ষাধিক", label: "পাঠক" },
 ];
+
+// ── Reusable FadeIn ───────────────────────────────────────────────────────────
+function FadeIn({ children, delay = 0, direction = "up", className = "" }: {
+  children: React.ReactNode; delay?: number; direction?: "up" | "left" | "right" | "none"; className?: string;
+}) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y: direction === "up" ? 50 : 0, x: direction === "left" ? -50 : direction === "right" ? 50 : 0 }}
+      animate={inView ? { opacity: 1, y: 0, x: 0 } : {}}
+      transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ── Animated counter ──────────────────────────────────────────────────────────
+function StatCard({ value, label, index }: { value: string; label: string; index: number }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={inView ? { opacity: 1, scale: 1 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        textAlign: "center",
+        padding: "2rem 1.5rem",
+        background: "rgba(201,168,76,0.08)",
+        border: "1px solid rgba(201,168,76,0.2)",
+        borderRadius: 16,
+        backdropFilter: "blur(10px)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 2,
+        background: "linear-gradient(90deg, transparent, #C9A84C, transparent)",
+      }} />
+      <div style={{
+        fontFamily: "'Tiro Bangla', serif",
+        fontSize: "clamp(1.8rem, 3vw, 2.5rem)",
+        color: "#C9A84C",
+        fontWeight: 700,
+        lineHeight: 1,
+        marginBottom: "0.5rem",
+      }}>{value}</div>
+      <div style={{
+        fontFamily: "'Noto Sans Bengali', sans-serif",
+        color: "rgba(250,246,239,0.6)",
+        fontSize: "0.85rem",
+        letterSpacing: "0.05em",
+      }}>{label}</div>
+    </motion.div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Home() {
   const [lightboxImg, setLightboxImg] = useState<{ src: string; caption: string } | null>(null);
+  const [activeGalleryIdx, setActiveGalleryIdx] = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  // Close lightbox on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxImg(null); };
     window.addEventListener("keydown", handler);
@@ -142,348 +191,495 @@ export default function Home() {
         "url": "https://mahbub-sardar-sabuj-live.vercel.app/",
         "image": PROFILE_1,
         "jobTitle": "লেখক",
-        "description": "বাংলা সাহিত্যের লেখক, কবি এবং আবৃত্তিশিল্পী মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
+        "description": "বাংলা সাহিত্যের লেখক, কবি এবং আবৃত্তিশিল্পী মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
         "sameAs": [
           "https://facebook.com/MahbubSardarSabuj",
           "https://www.instagram.com/mahbub_sardar_sabuj",
           "https://youtube.com/@mahbubsardarsabuj"
         ],
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Cumilla",
-          "addressCountry": "BD"
-        }
       },
-      {
-        "@type": "WebSite",
-        "name": "মাহবুব সরদার সবুজ - Mahbub Sardar Sabuj",
-        "url": "https://mahbub-sardar-sabuj-live.vercel.app/",
-        "inLanguage": "bn-BD",
-        "publisher": {
-          "@type": "Person",
-          "name": "Mahbub Sardar Sabuj"
-        }
-      }
     ]
   };
 
   return (
-    <div style={{ background: "#FDF6EC", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: "#FAF6EF", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
         title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj | লেখক, কবি ও আবৃত্তি"
-        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। এখানে তার বই, লেখালেখি, কবিতা, আবৃত্তি, গ্যালারি, সংবাদ এবং যোগাযোগের তথ্য পাওয়া যাবে।"
+        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। এখানে তার বই, লেখালেখি, কবিতা, আবৃত্তি, গ্যালারি, সংবাদ এবং যোগাযোগের তথ্য পাওয়া যাবে।"
         path="/"
         keywords="মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, আবৃত্তি, বই, লেখালেখি"
         jsonLd={homeJsonLd}
       />
       <Navbar />
 
-      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section id="home" style={{
-        position: "relative",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        overflow: "hidden",
-        background: "#0D1B2A",
-      }}>
-        {/* Hero BG */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          HERO — Cinematic Full-Screen with Parallax
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section
+        id="home"
+        ref={heroRef}
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          overflow: "hidden",
+          background: "#0A1628",
+        }}
+      >
+        {/* Parallax BG */}
+        <motion.div
+          style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${HERO_BG})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+            y: heroY,
+            opacity: 0.3,
+          }}
+        />
+
+        {/* Multi-layer gradient */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: `url(${HERO_BG})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.35,
-        }} />
-        {/* Gradient overlay */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(135deg, rgba(13,27,42,0.95) 0%, rgba(13,27,42,0.6) 60%, rgba(13,27,42,0.85) 100%)",
+          background: `
+            radial-gradient(ellipse 80% 60% at 20% 50%, rgba(10,22,40,0.7) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 80% at 80% 50%, rgba(10,22,40,0.9) 0%, transparent 60%),
+            linear-gradient(180deg, rgba(10,22,40,0.4) 0%, rgba(10,22,40,0.2) 50%, rgba(10,22,40,0.95) 100%)
+          `,
         }} />
 
-        <div style={{ position: "relative", zIndex: 2, maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem", width: "100%", paddingTop: 80 }}>
+        {/* Decorative gold lines */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 3,
+          background: "linear-gradient(90deg, transparent 0%, #C9A84C 30%, #E8C4A0 50%, #C9A84C 70%, transparent 100%)",
+        }} />
+
+        {/* Floating particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            style={{
+              position: "absolute",
+              width: i % 2 === 0 ? 4 : 2,
+              height: i % 2 === 0 ? 4 : 2,
+              borderRadius: "50%",
+              background: "#C9A84C",
+              left: `${15 + i * 14}%`,
+              top: `${20 + (i % 3) * 20}%`,
+              opacity: 0.4,
+            }}
+            animate={{
+              y: [-10, 10, -10],
+              opacity: [0.2, 0.6, 0.2],
+            }}
+            transition={{ duration: 3 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+          />
+        ))}
+
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 1280, margin: "0 auto", padding: "0 2rem", width: "100%", paddingTop: 90 }}>
           <div style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "4rem",
+            gridTemplateColumns: "1.1fr 0.9fr",
+            gap: "5rem",
             alignItems: "center",
           }} className="hero-grid">
-            {/* Left: Text */}
+
+            {/* ── Left: Text ── */}
             <div>
+              {/* Eyebrow */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.5rem" }}
               >
+                <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
                 <span style={{
-                  display: "inline-block",
-                  background: "rgba(212,168,67,0.15)",
-                  border: "1px solid rgba(212,168,67,0.4)",
-                  color: "#D4A843",
-                  padding: "6px 18px",
-                  borderRadius: 100,
-                  fontSize: "0.8rem",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
-                  letterSpacing: "0.1em",
-                  marginBottom: "1.5rem",
-                }}>
-                  বাংলা সাহিত্যের লেখক
-                </span>
+                  color: "#C9A84C",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}>বাংলা সাহিত্যের লেখক</span>
               </motion.div>
 
+              {/* Main heading */}
               <motion.h1
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.4 }}
+                transition={{ duration: 1, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 style={{
                   fontFamily: "'Tiro Bangla', serif",
-                  color: "#FDF6EC",
-                  fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+                  color: "#FAF6EF",
+                  fontSize: "clamp(3rem, 6vw, 5rem)",
+                  fontWeight: 400,
                   lineHeight: 1.15,
                   marginBottom: "0.5rem",
-                  fontWeight: 400,
+                  letterSpacing: "-0.01em",
                 }}
               >
-                মাহবুব সরদার সবুজ
+                মাহবুব সরদার
+              </motion.h1>
+              <motion.h1
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  color: "#C9A84C",
+                  fontSize: "clamp(3rem, 6vw, 5rem)",
+                  fontWeight: 400,
+                  lineHeight: 1.15,
+                  marginBottom: "2rem",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                সবুজ
               </motion.h1>
 
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.55 }}
-                style={{
-                  fontFamily: "'DM Serif Display', serif",
-                  color: "#D4A843",
-                  fontSize: "clamp(1rem, 2vw, 1.4rem)",
-                  marginBottom: "1.5rem",
-                  fontStyle: "italic",
-                }}
-              >
-                Mahbub Sardar Sabuj
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.7 }}
-                style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "rgba(253,246,236,0.75)",
-                  fontSize: "1rem",
-                  lineHeight: 1.9,
-                  maxWidth: 480,
-                  marginBottom: "2rem",
-                }}
-              >
-                আমি লিখি পাঠকের হৃদয়ের কথা। বিচ্ছেদ, ভালোবাসা, আর জীবনের গল্প — সব কিছুই আমার কলমের বিষয়।
-                কুমিল্লার আরিফপুর থেকে সৌদি আরব — লেখা আমার সঙ্গী সবখানে।
-              </motion.p>
-
+              {/* Quote */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.85 }}
+                transition={{ duration: 0.9, delay: 0.5 }}
+                style={{
+                  borderLeft: "3px solid #C9A84C",
+                  paddingLeft: "1.5rem",
+                  marginBottom: "2.5rem",
+                }}
+              >
+                <p style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  color: "rgba(250,246,239,0.75)",
+                  fontSize: "clamp(1rem, 1.8vw, 1.2rem)",
+                  lineHeight: 1.8,
+                  fontStyle: "italic",
+                  margin: 0,
+                }}>
+                  "লেখালেখি আমার পেশা নয়, এটা আমার ভালোবাসার কেন্দ্রবিন্দু।"
+                </p>
+              </motion.div>
+
+              {/* CTA Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.65 }}
                 style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
               >
+                <Link href="/writings">
+                  <motion.a
+                    whileHover={{ scale: 1.04, boxShadow: "0 20px 50px rgba(201,168,76,0.4)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      background: "linear-gradient(135deg, #C9A84C 0%, #E8C4A0 100%)",
+                      color: "#0A1628",
+                      padding: "14px 32px",
+                      borderRadius: 50,
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                      textDecoration: "none",
+                      cursor: "pointer",
+                      boxShadow: "0 10px 30px rgba(201,168,76,0.3)",
+                    }}
+                  >
+                    <PenLine size={18} /> লেখা পড়ুন
+                  </motion.a>
+                </Link>
                 <a
                   href="https://rkmri.co/TTMEoA3l3pM0/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "#D4A843",
-                    color: "#0D1B2A",
-                    padding: "12px 28px",
-                    borderRadius: 6,
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    textDecoration: "none",
-                    transition: "all 0.3s",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#e8b94a"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#D4A843"; e.currentTarget.style.transform = "none"; }}
                 >
-                  <BookOpen size={18} /> বই সংগ্রহ করুন
+                  <motion.div
+                    whileHover={{ scale: 1.04, background: "rgba(201,168,76,0.15)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      background: "rgba(250,246,239,0.07)",
+                      color: "#FAF6EF",
+                      padding: "14px 32px",
+                      borderRadius: 50,
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      border: "1px solid rgba(201,168,76,0.4)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <BookOpen size={18} /> বই কিনুন
+                  </motion.div>
                 </a>
-                <a
-                  href="#about"
-                  onClick={e => { e.preventDefault(); document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" }); }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "transparent",
-                    color: "#FDF6EC",
-                    padding: "12px 28px",
-                    borderRadius: 6,
-                    border: "1px solid rgba(253,246,236,0.3)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.95rem",
-                    textDecoration: "none",
-                    transition: "all 0.3s",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#D4A843"; e.currentTarget.style.color = "#D4A843"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(253,246,236,0.3)"; e.currentTarget.style.color = "#FDF6EC"; }}
-                >
-                  পরিচিতি জানুন
-                </a>
+              </motion.div>
+
+              {/* Stats row */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.9 }}
+                style={{
+                  display: "flex",
+                  gap: "2rem",
+                  marginTop: "3rem",
+                  paddingTop: "2rem",
+                  borderTop: "1px solid rgba(201,168,76,0.15)",
+                  flexWrap: "wrap",
+                }}
+              >
+                {[
+                  { n: "৭,০০০+", l: "লেখা" },
+                  { n: "৮টি", l: "ই-বুক" },
+                  { n: "লক্ষাধিক", l: "পাঠক" },
+                ].map((s, i) => (
+                  <div key={i}>
+                    <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#C9A84C", fontSize: "1.4rem", fontWeight: 700 }}>{s.n}</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.5)", fontSize: "0.8rem" }}>{s.l}</div>
+                  </div>
+                ))}
               </motion.div>
             </div>
 
-            {/* Right: Profile Photo */}
+            {/* ── Right: Profile Image ── */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-              style={{ display: "flex", justifyContent: "center" }}
-              className="hero-photo"
+              initial={{ opacity: 0, scale: 0.85, x: 60 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              style={{ display: "flex", justifyContent: "center", position: "relative" }}
             >
-              <div style={{ position: "relative" }}>
-                {/* Gold border frame */}
+              {/* Decorative ring */}
+              <div style={{
+                position: "absolute",
+                width: 420,
+                height: 420,
+                borderRadius: "50%",
+                border: "1px solid rgba(201,168,76,0.15)",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }} />
+              <div style={{
+                position: "absolute",
+                width: 360,
+                height: 360,
+                borderRadius: "50%",
+                border: "1px solid rgba(201,168,76,0.1)",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }} />
+
+              {/* Profile image */}
+              <motion.div
+                animate={{ y: [-8, 8, -8] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                style={{ position: "relative", zIndex: 2 }}
+              >
                 <div style={{
-                  position: "absolute",
-                  top: -16, left: -16,
-                  right: 16, bottom: 16,
-                  border: "2px solid rgba(212,168,67,0.4)",
-                  borderRadius: 12,
-                  zIndex: 0,
-                }} />
-                <img
-                  src={PROFILE_1}
-                  alt="মাহবুব সরদার সবুজ"
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                    width: "100%",
-                    maxWidth: 380,
-                    height: 460,
-                    objectFit: "cover",
-                    borderRadius: 10,
-                    boxShadow: "0 30px 80px rgba(0,0,0,0.5)",
-                  }}
-                />
+                  width: 320,
+                  height: 400,
+                  borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
+                  overflow: "hidden",
+                  border: "3px solid rgba(201,168,76,0.4)",
+                  boxShadow: "0 40px 100px rgba(0,0,0,0.5), 0 0 60px rgba(201,168,76,0.1)",
+                  position: "relative",
+                }}>
+                  <img
+                    src={PROFILE_1}
+                    alt="মাহবুব সরদার সবুজ"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+                  />
+                  {/* Inner glow */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(180deg, transparent 50%, rgba(10,22,40,0.6) 100%)",
+                  }} />
+                </div>
+
                 {/* Floating badge */}
                 <motion.div
-                  animate={{ y: [0, -8, 0] }}
+                  animate={{ rotate: [0, 5, 0, -5, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    position: "absolute",
+                    bottom: 30,
+                    right: -20,
+                    background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
+                    borderRadius: 12,
+                    padding: "10px 16px",
+                    boxShadow: "0 10px 30px rgba(201,168,76,0.4)",
+                  }}
+                >
+                  <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#0A1628", fontSize: "0.75rem", fontWeight: 700 }}>লেখক</div>
+                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#0A1628", fontSize: "0.65rem", opacity: 0.7 }}>মাহবুব সরদার সবুজ</div>
+                </motion.div>
+              </motion.div>
+
+              {/* Glow */}
+              <div style={{
+                position: "absolute",
+                bottom: -40,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 250,
+                height: 60,
+                background: "rgba(201,168,76,0.15)",
+                filter: "blur(30px)",
+                borderRadius: "50%",
+              }} />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", zIndex: 2, opacity: heroOpacity }}
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+            <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", letterSpacing: "0.15em" }}>স্ক্রল করুন</span>
+            <ChevronDown size={20} color="rgba(201,168,76,0.6)" />
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MARQUEE — Scrolling text band
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div style={{
+        background: "#C9A84C",
+        padding: "14px 0",
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        <motion.div
+          animate={{ x: [0, -1200] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          style={{ display: "flex", gap: "4rem", whiteSpace: "nowrap", width: "max-content" }}
+        >
+          {[...Array(4)].map((_, i) => (
+            <div key={i} style={{ display: "flex", gap: "4rem", alignItems: "center" }}>
+              {["লেখক", "কবি", "আবৃত্তিশিল্পী", "মাহবুব সরদার সবুজ", "বাংলা সাহিত্য", "৭,০০০+ লেখা", "লক্ষাধিক পাঠক"].map((text, j) => (
+                <span key={j} style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "#0A1628",
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                }}>
+                  {text}
+                  <span style={{ color: "rgba(10,22,40,0.4)", fontSize: "1.2rem" }}>✦</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          ABOUT — Split editorial layout
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="about" style={{
+        padding: "8rem 0",
+        background: "#FAF6EF",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Decorative background text */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          right: "-5%",
+          transform: "translateY(-50%)",
+          fontFamily: "'Tiro Bangla', serif",
+          fontSize: "20vw",
+          color: "rgba(10,22,40,0.03)",
+          fontWeight: 700,
+          userSelect: "none",
+          pointerEvents: "none",
+          lineHeight: 1,
+        }}>সবুজ</div>
+
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.2fr",
+            gap: "6rem",
+            alignItems: "center",
+          }} className="about-grid">
+
+            {/* Left: Image collage */}
+            <FadeIn direction="left">
+              <div style={{ position: "relative", height: 520 }}>
+                {/* Main image */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "75%",
+                  height: "80%",
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  boxShadow: "0 30px 80px rgba(10,22,40,0.2)",
+                }}>
+                  <img src={PROFILE_2} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+
+                {/* Secondary image */}
+                <div style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  width: "55%",
+                  height: "55%",
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  boxShadow: "0 20px 50px rgba(10,22,40,0.25)",
+                  border: "4px solid #FAF6EF",
+                }}>
+                  <img src={BOOK_PHOTO} alt="বই" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+
+                {/* Gold accent card */}
+                <motion.div
+                  animate={{ y: [-5, 5, -5] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   style={{
                     position: "absolute",
-                    bottom: -20,
-                    right: -20,
-                    zIndex: 2,
-                    background: "#D4A843",
-                    color: "#0D1B2A",
-                    padding: "12px 20px",
-                    borderRadius: 10,
-                    boxShadow: "0 10px 30px rgba(212,168,67,0.4)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontWeight: 700,
-                    fontSize: "0.85rem",
-                    textAlign: "center",
-                    lineHeight: 1.4,
+                    top: "40%",
+                    right: "5%",
+                    background: "#0A1628",
+                    borderRadius: 14,
+                    padding: "16px 20px",
+                    boxShadow: "0 20px 50px rgba(10,22,40,0.3)",
+                    border: "1px solid rgba(201,168,76,0.3)",
+                    zIndex: 3,
                   }}
                 >
-                  <div style={{ fontSize: "1.3rem" }}>📚</div>
-                  <div>৭,০০০+ লেখা</div>
+                  <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#C9A84C", fontSize: "1.8rem", fontWeight: 700, lineHeight: 1 }}>৭,০০০+</div>
+                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.6)", fontSize: "0.75rem", marginTop: 4 }}>প্রকাশিত লেখা</div>
                 </motion.div>
-              </div>
-            </motion.div>
-          </div>
 
-          {/* Scroll indicator */}
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            style={{
-              position: "absolute",
-              bottom: 40,
-              left: "50%",
-              transform: "translateX(-50%)",
-              color: "rgba(253,246,236,0.4)",
-              cursor: "pointer",
-            }}
-            onClick={() => document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" })}
-          >
-            <ChevronDown size={32} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── STATS BAR ────────────────────────────────────────────────────────── */}
-      <section style={{
-        background: "#0D1B2A",
-        borderTop: "1px solid rgba(212,168,67,0.2)",
-        borderBottom: "1px solid rgba(212,168,67,0.2)",
-        padding: "2rem 0",
-      }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "1rem",
-          }} className="stats-grid">
-            {stats.map((s, i) => (
-              <FadeIn key={i} delay={i * 0.1} direction="up">
-                <div style={{
-                  textAlign: "center",
-                  padding: "1.5rem 1rem",
-                  borderRight: i < stats.length - 1 ? "1px solid rgba(212,168,67,0.15)" : "none",
-                }}>
-                  <div style={{ color: "#D4A843", marginBottom: 8 }}>{s.icon}</div>
-                  <div style={{
-                    fontFamily: "'Tiro Bangla', serif",
-                    color: "#D4A843",
-                    fontSize: "1.8rem",
-                    fontWeight: 700,
-                    lineHeight: 1,
-                    marginBottom: 6,
-                  }}>{s.value}</div>
-                  <div style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    color: "rgba(253,246,236,0.6)",
-                    fontSize: "0.85rem",
-                  }}>{s.label}</div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── ABOUT ────────────────────────────────────────────────────────────── */}
-      <section id="about" style={{ padding: "6rem 0", background: "#FDF6EC" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "5rem",
-            alignItems: "center",
-          }} className="about-grid">
-            {/* Left: Image */}
-            <FadeIn direction="left">
-              <div style={{ position: "relative" }}>
-                <img
-                  src={PROFILE_2}
-                  alt="মাহবুব সরদার সবুজ — লেখার মুহূর্তে"
-                  style={{
-                    width: "100%",
-                    height: 500,
-                    objectFit: "cover",
-                    objectPosition: "top",
-                    borderRadius: 12,
-                    boxShadow: "0 20px 60px rgba(13,27,42,0.15)",
-                  }}
-                />
-                {/* Decorative gold line */}
+                {/* Decorative dots */}
                 <div style={{
                   position: "absolute",
-                  top: 24, left: -24,
-                  width: 4, height: "60%",
-                  background: "linear-gradient(to bottom, #D4A843, transparent)",
-                  borderRadius: 2,
+                  bottom: "15%",
+                  left: "5%",
+                  width: 80,
+                  height: 80,
+                  backgroundImage: "radial-gradient(circle, #C9A84C 1.5px, transparent 1.5px)",
+                  backgroundSize: "12px 12px",
+                  opacity: 0.3,
                 }} />
               </div>
             </FadeIn>
@@ -491,205 +687,296 @@ export default function Home() {
             {/* Right: Text */}
             <FadeIn direction="right">
               <div>
-                <span style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  color: "#D4A843",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  display: "block",
-                  marginBottom: "1rem",
-                }}>ABOUT ME</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.5rem" }}>
+                  <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#C9A84C",
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                  }}>পরিচিতি</span>
+                </div>
 
                 <h2 style={{
                   fontFamily: "'Tiro Bangla', serif",
-                  color: "#0D1B2A",
-                  fontSize: "clamp(2rem, 4vw, 2.8rem)",
-                  lineHeight: 1.3,
-                  marginBottom: "1.5rem",
+                  color: "#0A1628",
+                  fontSize: "clamp(2rem, 3.5vw, 3rem)",
                   fontWeight: 400,
+                  lineHeight: 1.25,
+                  marginBottom: "2rem",
                 }}>
-                  পরিচিতি
+                  পাঠকের মনের কথা<br />
+                  <span style={{ color: "#C9A84C" }}>তুলে ধরার মানুষ</span>
                 </h2>
 
                 <div style={{
-                  width: 60, height: 3,
-                  background: "#D4A843",
-                  marginBottom: "1.5rem",
-                  borderRadius: 2,
-                }} />
-
-                <div style={{
                   fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "#2A3A4A",
+                  color: "#3A4A5A",
                   fontSize: "1rem",
-                  lineHeight: 2,
+                  lineHeight: 2.1,
                   display: "flex",
                   flexDirection: "column",
-                  gap: "1rem",
+                  gap: "1.2rem",
                 }}>
                   <p>
-                    আমার জন্ম <strong>কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে</strong>।
+                    আমার জন্ম <strong style={{ color: "#0A1628" }}>কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে</strong>।
                     পিতা: ফানাউল্লাহ সরদার এবং মাতা: আহামালী বিনতে মাসুরা।
                   </p>
                   <p>
-                    লেখালেখি আমার পেশা নয়; এটা আমার <strong>ভালোবাসার কেন্দ্রবিন্দু</strong>।
-                    বর্তমানে সৌদি আরবে কর্মরত আছি এবং আমার লেখালেখি সেখানকার চাকরির বাইরে একটি শখ হিসেবে চলমান।
+                    লেখালেখি আমার পেশা নয়; এটা আমার <strong style={{ color: "#0A1628" }}>ভালোবাসার কেন্দ্রবিন্দু</strong>।
+                    বর্তমানে সৌদি আরবে কর্মরত আছি এবং আমার লেখালেখি চাকরির বাইরে একটি শখ হিসেবে চলমান।
                   </p>
                   <p>
-                    লেখালেখির জগতে আমার প্রবেশ ছিল মূলত টাইমপাস করার জন্য। তবে সময়ের সঙ্গে সঙ্গে <strong>পাঠকদের ভালোবাসা</strong> আমাকে
-                    পরিচয় করিয়ে দিয়েছে তাদের মনের কথাগুলো তুলে ধরার একজন বিশেষ মানুষ হিসেবে।
-                  </p>
-                  <p>
-                    এখন আর আমি শুধুমাত্র টাইমপাসের জন্য লিখি না, বরং <strong>পাঠকের জন্য লিখি</strong>।
+                    সময়ের সঙ্গে সঙ্গে <strong style={{ color: "#0A1628" }}>পাঠকদের ভালোবাসা</strong> আমাকে পরিচয় করিয়ে দিয়েছে
+                    তাদের মনের কথাগুলো তুলে ধরার একজন বিশেষ মানুষ হিসেবে।
                   </p>
                 </div>
 
-                <div style={{ display: "flex", gap: "1.5rem", marginTop: "2rem", flexWrap: "wrap" }}>
+                {/* Info tags */}
+                <div style={{ display: "flex", gap: "1rem", marginTop: "2.5rem", flexWrap: "wrap" }}>
                   {[
-                    { label: "জন্মস্থান", value: "আরিফপুর, কুমিল্লা" },
-                    { label: "বর্তমান", value: "সৌদি আরব" },
+                    { icon: "📍", label: "জন্মস্থান", value: "আরিফপুর, কুমিল্লা" },
+                    { icon: "🌍", label: "বর্তমান", value: "সৌদি আরব" },
                   ].map(item => (
                     <div key={item.label} style={{
                       padding: "12px 20px",
-                      background: "#0D1B2A",
-                      borderRadius: 8,
-                      borderLeft: "3px solid #D4A843",
+                      background: "#0A1628",
+                      borderRadius: 12,
+                      borderBottom: "3px solid #C9A84C",
                     }}>
-                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#D4A843", fontSize: "0.75rem", marginBottom: 4 }}>{item.label}</div>
-                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "0.9rem", fontWeight: 600 }}>{item.value}</div>
+                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.5)", fontSize: "0.7rem", marginBottom: 3 }}>{item.icon} {item.label}</div>
+                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FAF6EF", fontSize: "0.9rem", fontWeight: 600 }}>{item.value}</div>
                     </div>
                   ))}
                 </div>
+
+                <Link href="/about">
+                  <motion.a
+                    whileHover={{ gap: "1rem" }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.6rem",
+                      marginTop: "2.5rem",
+                      color: "#C9A84C",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      borderBottom: "1px solid rgba(201,168,76,0.3)",
+                      paddingBottom: 4,
+                      cursor: "pointer",
+                    }}
+                  >
+                    বিস্তারিত পড়ুন <ArrowRight size={16} />
+                  </motion.a>
+                </Link>
               </div>
             </FadeIn>
           </div>
         </div>
       </section>
 
-      {/* ── BOOK SECTION ─────────────────────────────────────────────────────── */}
-      <section id="book" style={{
-        padding: "6rem 0",
-        background: "#0D1B2A",
+      {/* ══════════════════════════════════════════════════════════════════════
+          STATS — Dark band
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "5rem 0",
+        background: "#0A1628",
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* BG texture */}
         <div style={{
           position: "absolute", inset: 0,
           backgroundImage: `url(${NEWS_BG})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          opacity: 0.08,
+          opacity: 0.05,
+        }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "1.5rem",
+          }} className="stats-grid">
+            {stats.map((s, i) => <StatCard key={i} value={s.value} label={s.label} index={i} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          BOOK — Featured publication
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="book" style={{
+        padding: "8rem 0",
+        background: "linear-gradient(135deg, #1E2D3D 0%, #0A1628 60%, #1A2535 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Decorative circles */}
+        <div style={{
+          position: "absolute", top: -100, right: -100,
+          width: 500, height: 500, borderRadius: "50%",
+          border: "1px solid rgba(201,168,76,0.08)",
+        }} />
+        <div style={{
+          position: "absolute", bottom: -150, left: -150,
+          width: 600, height: 600, borderRadius: "50%",
+          border: "1px solid rgba(201,168,76,0.05)",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
           <FadeIn direction="up">
-            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                color: "#D4A843",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: "1rem",
-              }}>MY BOOKS</span>
+            <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "#C9A84C",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}>প্রকাশিত বই</span>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+              </div>
               <h2 style={{
                 fontFamily: "'Tiro Bangla', serif",
-                color: "#FDF6EC",
-                fontSize: "clamp(2rem, 4vw, 2.8rem)",
+                color: "#FAF6EF",
+                fontSize: "clamp(2rem, 4vw, 3rem)",
                 fontWeight: 400,
-                marginBottom: "1rem",
-              }}>প্রকাশিত বই</h2>
-              <div style={{ width: 60, height: 3, background: "#D4A843", margin: "0 auto", borderRadius: 2 }} />
+              }}>আমার বই</h2>
             </div>
           </FadeIn>
 
           <div style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1.4fr",
-            gap: "5rem",
+            gridTemplateColumns: "1fr 1.5fr",
+            gap: "6rem",
             alignItems: "center",
           }} className="book-grid">
-            {/* Book Cover */}
+
+            {/* Book cover with 3D effect */}
             <FadeIn direction="left">
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <div style={{ position: "relative" }}>
+                  {/* Shadow layers for 3D book effect */}
+                  <div style={{
+                    position: "absolute",
+                    top: 10, left: 10,
+                    width: 280, height: 380,
+                    background: "rgba(201,168,76,0.1)",
+                    borderRadius: 8,
+                    filter: "blur(20px)",
+                  }} />
                   <motion.div
-                    animate={{ rotateY: [0, 3, 0, -3, 0] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                    style={{ transformStyle: "preserve-3d" }}
+                    animate={{ rotateY: [0, 4, 0, -4, 0], rotateX: [0, 2, 0, -2, 0] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ transformStyle: "preserve-3d", perspective: 1000 }}
                   >
-                    <img
-                      src={BOOK_COVER}
-                      alt="আমি বিচ্ছেদকে বলি দুঃখবিলাস"
-                      style={{
-                        width: 280,
-                        height: 380,
-                        objectFit: "cover",
-                        borderRadius: 8,
-                        boxShadow: "0 30px 80px rgba(0,0,0,0.6), 10px 10px 30px rgba(212,168,67,0.2)",
-                      }}
-                    />
+                    <div style={{ position: "relative" }}>
+                      <img
+                        src={BOOK_COVER}
+                        alt="আমি বিচ্ছেদকে বলি দুঃখবিলাস"
+                        style={{
+                          width: 280,
+                          height: 380,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          boxShadow: "0 40px 100px rgba(0,0,0,0.6), 15px 15px 40px rgba(201,168,76,0.15)",
+                          display: "block",
+                        }}
+                      />
+                      {/* Spine highlight */}
+                      <div style={{
+                        position: "absolute",
+                        top: 0, left: 0,
+                        width: 20, height: "100%",
+                        background: "linear-gradient(90deg, rgba(255,255,255,0.15), transparent)",
+                        borderRadius: "8px 0 0 8px",
+                      }} />
+                      {/* Shine */}
+                      <div style={{
+                        position: "absolute",
+                        top: 0, left: 0, right: 0,
+                        height: "40%",
+                        background: "linear-gradient(180deg, rgba(255,255,255,0.08), transparent)",
+                        borderRadius: "8px 8px 0 0",
+                      }} />
+                    </div>
                   </motion.div>
-                  {/* Glow effect */}
+
+                  {/* Glow */}
                   <div style={{
                     position: "absolute",
                     bottom: -30,
                     left: "50%",
                     transform: "translateX(-50%)",
-                    width: 200,
-                    height: 40,
-                    background: "rgba(212,168,67,0.2)",
-                    filter: "blur(20px)",
+                    width: 220,
+                    height: 50,
+                    background: "rgba(201,168,76,0.25)",
+                    filter: "blur(25px)",
                     borderRadius: "50%",
                   }} />
                 </div>
               </div>
             </FadeIn>
 
-            {/* Book Info */}
+            {/* Book info */}
             <FadeIn direction="right">
               <div>
                 <div style={{
-                  display: "inline-block",
-                  background: "rgba(212,168,67,0.15)",
-                  border: "1px solid rgba(212,168,67,0.3)",
-                  color: "#D4A843",
-                  padding: "5px 14px",
-                  borderRadius: 100,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "rgba(201,168,76,0.12)",
+                  border: "1px solid rgba(201,168,76,0.3)",
+                  color: "#C9A84C",
+                  padding: "6px 16px",
+                  borderRadius: 50,
                   fontSize: "0.8rem",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
-                  marginBottom: "1.2rem",
-                }}>ফিজিক্যাল বই</div>
+                  marginBottom: "1.5rem",
+                }}>
+                  <Star size={12} fill="#C9A84C" /> ফিজিক্যাল বই
+                </div>
 
                 <h3 style={{
                   fontFamily: "'Tiro Bangla', serif",
-                  color: "#FDF6EC",
-                  fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
+                  color: "#FAF6EF",
+                  fontSize: "clamp(1.8rem, 3vw, 2.5rem)",
                   fontWeight: 400,
-                  lineHeight: 1.4,
+                  lineHeight: 1.3,
                   marginBottom: "1.5rem",
                 }}>
-                  আমি বিচ্ছেদকে বলি দুঃখবিলাস
+                  আমি বিচ্ছেদকে বলি<br />
+                  <span style={{ color: "#C9A84C" }}>দুঃখবিলাস</span>
                 </h3>
 
-                <p style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "rgba(253,246,236,0.7)",
-                  fontSize: "0.95rem",
-                  lineHeight: 1.9,
+                {/* Quote from book */}
+                <div style={{
+                  padding: "1.5rem",
+                  background: "rgba(201,168,76,0.06)",
+                  border: "1px solid rgba(201,168,76,0.15)",
+                  borderLeft: "4px solid #C9A84C",
+                  borderRadius: "0 12px 12px 0",
                   marginBottom: "2rem",
                 }}>
-                  মাহবুব সরদার সবুজের প্রথম ও একমাত্র ফিজিক্যাল বই। বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর
-                  জীবনের অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে। বাংলাদেশের যেকোনো অনলাইন
-                  বুকস্টোরে এবং রকমারিতে পাওয়া যাচ্ছে।
-                </p>
+                  <Quote size={20} color="rgba(201,168,76,0.4)" style={{ marginBottom: 8 }} />
+                  <p style={{
+                    fontFamily: "'Tiro Bangla', serif",
+                    color: "rgba(250,246,239,0.8)",
+                    fontSize: "1rem",
+                    lineHeight: 1.9,
+                    fontStyle: "italic",
+                    margin: 0,
+                  }}>
+                    বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে।
+                  </p>
+                </div>
 
-                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+                {/* Meta */}
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
                   {[
                     { label: "লেখক", value: "মাহবুব সরদার সবুজ" },
                     { label: "ধরন", value: "আবেগী সাহিত্য" },
@@ -697,86 +984,62 @@ export default function Home() {
                   ].map(item => (
                     <div key={item.label} style={{
                       padding: "10px 16px",
-                      background: "rgba(253,246,236,0.05)",
-                      border: "1px solid rgba(212,168,67,0.2)",
-                      borderRadius: 8,
+                      background: "rgba(250,246,239,0.04)",
+                      border: "1px solid rgba(201,168,76,0.15)",
+                      borderRadius: 10,
                     }}>
-                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#D4A843", fontSize: "0.7rem", marginBottom: 3 }}>{item.label}</div>
-                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "0.85rem" }}>{item.value}</div>
+                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#C9A84C", fontSize: "0.7rem", marginBottom: 3 }}>{item.label}</div>
+                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FAF6EF", fontSize: "0.85rem" }}>{item.value}</div>
                     </div>
                   ))}
                 </div>
 
-                <a
-                  href="https://rkmri.co/TTMEoA3l3pM0/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    background: "#D4A843",
-                    color: "#0D1B2A",
-                    padding: "14px 32px",
-                    borderRadius: 8,
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    textDecoration: "none",
-                    transition: "all 0.3s",
-                    boxShadow: "0 8px 25px rgba(212,168,67,0.3)",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#e8b94a"; e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 35px rgba(212,168,67,0.4)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#D4A843"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 25px rgba(212,168,67,0.3)"; }}
-                >
-                  <BookOpen size={20} /> রকমারি থেকে অর্ডার করুন
-                </a>
-
-                {/* E-books link */}
-                <div style={{
-                  marginTop: "2rem",
-                  padding: "16px 20px",
-                  background: "rgba(212,168,67,0.08)",
-                  border: "1px solid rgba(212,168,67,0.2)",
-                  borderRadius: 8,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  gap: 12,
-                }}>
-                  <p style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    color: "rgba(253,246,236,0.65)",
-                    fontSize: "0.875rem",
-                    lineHeight: 1.7,
-                    margin: 0,
-                  }}>
-                    📖 এছাড়াও <strong style={{ color: "#D4A843" }}>৪টি ই-বুক</strong> প্রকাশিত হয়েছে।
-                  </p>
-                  <a
-                    href="/ebooks"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: "rgba(212,168,67,0.2)",
-                      color: "#D4A843",
-                      padding: "8px 16px",
-                      borderRadius: 6,
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontWeight: 700,
-                      fontSize: "0.85rem",
-                      textDecoration: "none",
-                      border: "1px solid rgba(212,168,67,0.35)",
-                      transition: "all 0.3s",
-                      flexShrink: 0,
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#D4A843"; e.currentTarget.style.color = "#0D1B2A"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(212,168,67,0.2)"; e.currentTarget.style.color = "#D4A843"; }}
-                  >
-                    ই-বুক দেখুন →
+                {/* CTA */}
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                  <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
+                    <motion.div
+                      whileHover={{ scale: 1.04, boxShadow: "0 20px 50px rgba(201,168,76,0.4)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
+                        color: "#0A1628",
+                        padding: "14px 28px",
+                        borderRadius: 50,
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                        cursor: "pointer",
+                        boxShadow: "0 10px 30px rgba(201,168,76,0.3)",
+                      }}
+                    >
+                      <BookOpen size={18} /> রকমারি থেকে কিনুন
+                    </motion.div>
                   </a>
+                  <Link href="/ebooks">
+                    <motion.a
+                      whileHover={{ scale: 1.04, background: "rgba(201,168,76,0.12)" }}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "rgba(250,246,239,0.06)",
+                        color: "#FAF6EF",
+                        padding: "14px 28px",
+                        borderRadius: 50,
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontWeight: 600,
+                        fontSize: "0.95rem",
+                        border: "1px solid rgba(201,168,76,0.3)",
+                        cursor: "pointer",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <Eye size={18} /> ই-বুক পড়ুন
+                    </motion.a>
+                  </Link>
                 </div>
               </div>
             </FadeIn>
@@ -784,416 +1047,136 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── GALLERY ──────────────────────────────────────────────────────────── */}
-      <section id="gallery" style={{ padding: "6rem 0", background: "#FDF6EC" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
-          <FadeIn direction="up">
-            <div style={{ marginBottom: "3rem" }}>
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                color: "#D4A843",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: "0.75rem",
-              }}>GALLERY</span>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#0D1B2A",
-                fontSize: "clamp(2rem, 4vw, 2.8rem)",
-                fontWeight: 400,
-                marginBottom: "0.5rem",
-              }}>গ্যালারি</h2>
-              <div style={{ width: 60, height: 3, background: "#D4A843", borderRadius: 2 }} />
-            </div>
-          </FadeIn>
-
-          {/* Masonry-style grid */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1rem",
-          }} className="gallery-grid">
-            {galleryImages.map((img, i) => (
-              <FadeIn key={i} delay={i * 0.08} direction="up">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                  onClick={() => setLightboxImg(img)}
-                  style={{
-                    position: "relative",
-                    overflow: "hidden",
-                    borderRadius: 10,
-                    cursor: "pointer",
-                    aspectRatio: i === 0 || i === 3 ? "4/5" : "4/3",
-                    boxShadow: "0 4px 20px rgba(13,27,42,0.1)",
-                  }}
-                >
-                  <img
-                    src={img.src}
-                    alt={img.caption}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      transition: "transform 0.5s ease",
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.08)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                  />
-                  {/* Hover overlay */}
-                  <div style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "linear-gradient(to top, rgba(13,27,42,0.8) 0%, transparent 60%)",
-                    opacity: 0,
-                    transition: "opacity 0.3s",
-                    display: "flex",
-                    alignItems: "flex-end",
-                    padding: "1rem",
-                  }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
-                  >
-                    <span style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: "#FDF6EC",
-                      fontSize: "0.85rem",
-                    }}>{img.caption}</span>
-                  </div>
-                </motion.div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── NEWS / UPDATES ───────────────────────────────────────────────────── */}
-      <section id="news" style={{
-        padding: "6rem 0",
-        background: "#0D1B2A",
+      {/* ══════════════════════════════════════════════════════════════════════
+          EBOOKS — Horizontal scroll showcase
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "8rem 0",
+        background: "#FAF6EF",
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url(${NEWS_BG})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.12,
-        }} />
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
           <FadeIn direction="up">
-            <div style={{ marginBottom: "3rem" }}>
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                color: "#D4A843",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: "0.75rem",
-              }}>NEWS & UPDATES</span>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#FDF6EC",
-                fontSize: "clamp(2rem, 4vw, 2.8rem)",
-                fontWeight: 400,
-                marginBottom: "0.5rem",
-              }}>সংবাদ ও আপডেট</h2>
-              <div style={{ width: 60, height: 3, background: "#D4A843", borderRadius: 2 }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "4rem", flexWrap: "wrap", gap: "1rem" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1rem" }}>
+                  <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#C9A84C",
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                  }}>ই-বুক সংগ্রহ</span>
+                </div>
+                <h2 style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  color: "#0A1628",
+                  fontSize: "clamp(2rem, 3.5vw, 3rem)",
+                  fontWeight: 400,
+                  margin: 0,
+                }}>বিনামূল্যে পড়ুন</h2>
+              </div>
+              <Link href="/ebooks">
+                <motion.a
+                  whileHover={{ gap: "1rem" }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    color: "#C9A84C",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    borderBottom: "1px solid rgba(201,168,76,0.3)",
+                    paddingBottom: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  সব ই-বুক দেখুন <ArrowRight size={16} />
+                </motion.a>
+              </Link>
             </div>
           </FadeIn>
 
-          {/* Featured news + sidebar */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "1.5fr 1fr",
+            gridTemplateColumns: "repeat(4, 1fr)",
             gap: "2rem",
-          }} className="news-grid">
-            {/* Featured */}
-            <FadeIn direction="left">
-              <a
-                href={newsItems[0].link}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: "none", display: "block" }}
-              >
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  style={{
-                    background: "rgba(253,246,236,0.04)",
-                    border: "1px solid rgba(212,168,67,0.2)",
-                    borderRadius: 12,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    transition: "border-color 0.3s",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(212,168,67,0.5)")}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(212,168,67,0.2)")}
-                >
-                  <img
-                    src={BOOKS_COLLECTION}
-                    alt="বই সংগ্রহ"
-                    style={{ width: "100%", height: 260, objectFit: "cover" }}
-                  />
-                  <div style={{ padding: "1.5rem" }}>
-                    <div style={{ display: "flex", gap: 10, marginBottom: "1rem", alignItems: "center" }}>
-                      <span style={{
-                        background: "#D4A843",
-                        color: "#0D1B2A",
-                        padding: "3px 12px",
-                        borderRadius: 100,
-                        fontSize: "0.75rem",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontWeight: 700,
-                      }}>{newsItems[0].tag}</span>
-                      <span style={{
-                        color: "rgba(253,246,236,0.4)",
-                        fontSize: "0.8rem",
-                        fontFamily: "'Space Grotesk', sans-serif",
-                      }}>{newsItems[0].date}</span>
+          }} className="ebooks-grid">
+            {EBOOK_COVERS.map((book, i) => (
+              <FadeIn key={i} delay={i * 0.1} direction="up">
+                <Link href={`/ebooks/read/${book.slug}`}>
+                  <motion.a
+                    whileHover={{ y: -10 }}
+                    style={{ display: "block", textDecoration: "none", cursor: "pointer" }}
+                  >
+                    <div style={{
+                      borderRadius: 16,
+                      overflow: "hidden",
+                      boxShadow: "0 20px 50px rgba(10,22,40,0.12)",
+                      marginBottom: "1rem",
+                      position: "relative",
+                      aspectRatio: "3/4",
+                    }}>
+                      <img
+                        src={book.src}
+                        alt={book.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      {/* Hover overlay */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        whileHover={{ opacity: 1 }}
+                        style={{
+                          position: "absolute", inset: 0,
+                          background: "rgba(10,22,40,0.75)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexDirection: "column",
+                          gap: 8,
+                        }}
+                      >
+                        <Eye size={28} color="#C9A84C" />
+                        <span style={{
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          color: "#FAF6EF",
+                          fontSize: "0.9rem",
+                          fontWeight: 600,
+                        }}>এখনই পড়ুন</span>
+                      </motion.div>
                     </div>
-                    <h3 style={{
+                    <h4 style={{
                       fontFamily: "'Tiro Bangla', serif",
-                      color: "#FDF6EC",
-                      fontSize: "1.3rem",
+                      color: "#0A1628",
+                      fontSize: "0.95rem",
                       fontWeight: 400,
                       lineHeight: 1.5,
-                      marginBottom: "0.75rem",
-                    }}>{newsItems[0].title}</h3>
+                      margin: 0,
+                    }}>{book.title}</h4>
                     <p style={{
                       fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: "rgba(253,246,236,0.6)",
-                      fontSize: "0.9rem",
-                      lineHeight: 1.8,
-                    }}>{newsItems[0].desc}</p>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      color: "#D4A843",
-                      fontSize: "0.85rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      marginTop: "1rem",
-                    }}>
-                      বিস্তারিত পড়ুন <ExternalLink size={14} />
-                    </div>
-                  </div>
-                </motion.div>
-              </a>
-            </FadeIn>
-
-            {/* Sidebar news */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {newsItems.slice(1).map((item, i) => (
-                <FadeIn key={i} delay={i * 0.1} direction="right">
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: "none" }}
-                  >
-                    <motion.div
-                      whileHover={{ x: 4 }}
-                      style={{
-                        background: "rgba(253,246,236,0.04)",
-                        border: "1px solid rgba(212,168,67,0.15)",
-                        borderLeft: "3px solid #D4A843",
-                        borderRadius: "0 8px 8px 0",
-                        padding: "1.2rem",
-                        cursor: "pointer",
-                        transition: "background 0.3s",
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(253,246,236,0.07)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "rgba(253,246,236,0.04)")}
-                    >
-                      <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
-                        <span style={{
-                          background: "rgba(212,168,67,0.15)",
-                          color: "#D4A843",
-                          padding: "2px 10px",
-                          borderRadius: 100,
-                          fontSize: "0.7rem",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                        }}>{item.tag}</span>
-                        <span style={{
-                          color: "rgba(253,246,236,0.35)",
-                          fontSize: "0.75rem",
-                          fontFamily: "'Space Grotesk', sans-serif",
-                        }}>{item.date}</span>
-                      </div>
-                      <h4 style={{
-                        fontFamily: "'Tiro Bangla', serif",
-                        color: "#FDF6EC",
-                        fontSize: "1rem",
-                        fontWeight: 400,
-                        lineHeight: 1.5,
-                        marginBottom: "0.5rem",
-                      }}>{item.title}</h4>
-                      <p style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: "rgba(253,246,236,0.5)",
-                        fontSize: "0.82rem",
-                        lineHeight: 1.7,
-                        margin: 0,
-                      }}>{item.desc}</p>
-                    </motion.div>
-                  </a>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ── SOCIAL MEDIA ─────────────────────────────────────────────────────── */}
-      <section style={{ padding: "6rem 0", background: "#F5EFE3" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
-          <FadeIn direction="up">
-            <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                color: "#D4A843",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                display: "block",
-                marginBottom: "0.75rem",
-              }}>FOLLOW ME</span>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#0D1B2A",
-                fontSize: "clamp(2rem, 4vw, 2.8rem)",
-                fontWeight: 400,
-                marginBottom: "0.75rem",
-              }}>সোশ্যাল মিডিয়া</h2>
-              <div style={{ width: 60, height: 3, background: "#D4A843", margin: "0 auto 1rem", borderRadius: 2 }} />
-              <p style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                color: "#4A5568",
-                fontSize: "0.95rem",
-                maxWidth: 600,
-                margin: "0 auto",
-                lineHeight: 1.8,
-              }}>
-                আমার সকল অফিসিয়াল প্ল্যাটফর্মে যুক্ত হোন। এর বাইরে অন্য কোনো পেইজে আমার মালিকানা নেই।
-              </p>
-            </div>
-          </FadeIn>
-
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: "1rem",
-          }}>
-            {socialPlatforms.map((s, i) => (
-              <FadeIn key={i} delay={i * 0.06} direction="up">
-                <motion.a
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ y: -4, boxShadow: "0 12px 30px rgba(13,27,42,0.15)" }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1rem",
-                    padding: "1.2rem 1.5rem",
-                    background: "#fff",
-                    borderRadius: 10,
-                    border: "1px solid rgba(13,27,42,0.08)",
-                    textDecoration: "none",
-                    transition: "all 0.3s",
-                    boxShadow: "0 2px 10px rgba(13,27,42,0.06)",
-                  }}
-                >
-                  <div style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "50%",
-                    background: s.color + "18",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: s.color,
-                    flexShrink: 0,
-                  }}>
-                    {s.icon}
-                  </div>
-                  <div>
-                    <div style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      color: "#0D1B2A",
+                      color: "#C9A84C",
                       fontSize: "0.8rem",
-                      fontWeight: 600,
-                      marginBottom: 2,
-                    }}>{s.name}</div>
-                    <div style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      color: "#6B7280",
-                      fontSize: "0.8rem",
-                    }}>{s.handle}</div>
-                  </div>
-                  <ExternalLink size={14} style={{ marginLeft: "auto", color: "#9CA3AF" }} />
-                </motion.a>
+                      marginTop: 4,
+                    }}>মাহবুব সরদার সবুজ</p>
+                  </motion.a>
+                </Link>
               </FadeIn>
             ))}
           </div>
-
-          {/* Facebook Groups */}
-          <FadeIn delay={0.3} direction="up">
-            <div style={{ marginTop: "2.5rem" }}>
-              <h3 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#0D1B2A",
-                fontSize: "1.4rem",
-                fontWeight: 400,
-                marginBottom: "1rem",
-                textAlign: "center",
-              }}>ফেসবুক গ্রুপ</h3>
-              <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-                {fbGroups.map((g, i) => (
-                  <a
-                    key={i}
-                    href={g.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "12px 24px",
-                      background: "#0D1B2A",
-                      color: "#FDF6EC",
-                      borderRadius: 8,
-                      textDecoration: "none",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem",
-                      transition: "all 0.3s",
-                      border: "1px solid rgba(212,168,67,0.2)",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#D4A843"; e.currentTarget.style.color = "#0D1B2A"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#0D1B2A"; e.currentTarget.style.color = "#FDF6EC"; }}
-                  >
-                    <Users size={16} /> {g.name}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
         </div>
       </section>
 
-      {/* ── CONTACT ──────────────────────────────────────────────────────────── */}
-      <section id="contact" style={{
-        padding: "6rem 0",
-        background: "#0D1B2A",
+      {/* ══════════════════════════════════════════════════════════════════════
+          WRITINGS — Featured section
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "8rem 0",
+        background: "#0A1628",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -1202,190 +1185,727 @@ export default function Home() {
           backgroundImage: `url(${ABOUT_BG})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          opacity: 0.07,
+          opacity: 0.06,
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
           <div style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: "5rem",
+            gap: "6rem",
             alignItems: "center",
-          }} className="contact-grid">
-            {/* Left */}
+          }} className="writings-grid">
+
             <FadeIn direction="left">
               <div>
-                <span style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  color: "#D4A843",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  display: "block",
-                  marginBottom: "1rem",
-                }}>CONTACT</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.5rem" }}>
+                  <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#C9A84C",
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                  }}>লেখালেখি</span>
+                </div>
+
                 <h2 style={{
                   fontFamily: "'Tiro Bangla', serif",
-                  color: "#FDF6EC",
-                  fontSize: "clamp(2rem, 4vw, 2.8rem)",
+                  color: "#FAF6EF",
+                  fontSize: "clamp(2rem, 3.5vw, 3rem)",
                   fontWeight: 400,
-                  marginBottom: "1rem",
-                }}>যোগাযোগ করুন</h2>
-                <div style={{ width: 60, height: 3, background: "#D4A843", marginBottom: "1.5rem", borderRadius: 2 }} />
+                  lineHeight: 1.3,
+                  marginBottom: "1.5rem",
+                }}>
+                  ৭,০০০+ কবিতা ও<br />
+                  <span style={{ color: "#C9A84C" }}>গল্পের ভান্ডার</span>
+                </h2>
 
                 <p style={{
                   fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "rgba(253,246,236,0.7)",
+                  color: "rgba(250,246,239,0.65)",
                   fontSize: "1rem",
-                  lineHeight: 1.9,
-                  marginBottom: "2rem",
+                  lineHeight: 2,
+                  marginBottom: "2.5rem",
                 }}>
-                  আমার সাথে যোগাযোগ করতে চাইলে ইমেইল করুন বা সোশ্যাল মিডিয়ায় মেসেজ পাঠান।
-                  পাঠকদের সাথে কথা বলতে আমি সবসময় আগ্রহী।
+                  প্রেম, বিচ্ছেদ, প্রকৃতি, জীবনদর্শন — প্রতিটি অনুভূতি শব্দে বাঁধা। পাঠকের হৃদয় স্পর্শ করার
+                  জন্য লেখা প্রতিটি কবিতা ও গল্প এখানে সংরক্ষিত।
+                </p>
+
+                <Link href="/writings">
+                  <motion.a
+                    whileHover={{ scale: 1.04, boxShadow: "0 20px 50px rgba(201,168,76,0.4)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
+                      color: "#0A1628",
+                      padding: "14px 32px",
+                      borderRadius: 50,
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontWeight: 700,
+                      fontSize: "0.95rem",
+                      cursor: "pointer",
+                      boxShadow: "0 10px 30px rgba(201,168,76,0.3)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <PenLine size={18} /> সব লেখা পড়ুন
+                  </motion.a>
+                </Link>
+              </div>
+            </FadeIn>
+
+            <FadeIn direction="right">
+              <div style={{ position: "relative" }}>
+                <div style={{
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  boxShadow: "0 40px 100px rgba(0,0,0,0.4)",
+                }}>
+                  <img
+                    src={WRITING_SHOWCASE}
+                    alt="লেখালেখি"
+                    style={{ width: "100%", height: 400, objectFit: "cover", display: "block" }}
+                  />
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(180deg, transparent 40%, rgba(10,22,40,0.8) 100%)",
+                  }} />
+                </div>
+
+                {/* Floating writing count */}
+                <motion.div
+                  animate={{ y: [-5, 5, -5] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    position: "absolute",
+                    top: -20,
+                    right: -20,
+                    background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
+                    borderRadius: 16,
+                    padding: "20px 24px",
+                    boxShadow: "0 20px 50px rgba(201,168,76,0.4)",
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#0A1628", fontSize: "2rem", fontWeight: 700, lineHeight: 1 }}>৯৩+</div>
+                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(10,22,40,0.7)", fontSize: "0.75rem", marginTop: 4 }}>ওয়েবসাইটে লেখা</div>
+                </motion.div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          GALLERY — Masonry-style grid
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="gallery" style={{
+        padding: "8rem 0",
+        background: "#FAF6EF",
+      }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <FadeIn direction="up">
+            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "#C9A84C",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}>ফটো গ্যালারি</span>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+              </div>
+              <h2 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#0A1628",
+                fontSize: "clamp(2rem, 4vw, 3rem)",
+                fontWeight: 400,
+              }}>গ্যালারি</h2>
+            </div>
+          </FadeIn>
+
+          {/* Gallery grid */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateRows: "auto",
+            gap: "1rem",
+          }} className="gallery-grid">
+            {galleryImages.map((img, i) => (
+              <FadeIn key={i} delay={i * 0.07} direction="up">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setLightboxImg(img)}
+                  style={{
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    position: "relative",
+                    aspectRatio: i === 0 || i === 3 ? "4/5" : "4/3",
+                    boxShadow: "0 10px 30px rgba(10,22,40,0.1)",
+                  }}
+                >
+                  <img
+                    src={img.src}
+                    alt={img.caption}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    style={{
+                      position: "absolute", inset: 0,
+                      background: "rgba(10,22,40,0.7)",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      padding: "1.5rem",
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "#FAF6EF",
+                      fontSize: "0.9rem",
+                    }}>{img.caption}</span>
+                  </motion.div>
+                </motion.div>
+              </FadeIn>
+            ))}
+          </div>
+
+          <FadeIn delay={0.3} direction="up">
+            <div style={{ textAlign: "center", marginTop: "3rem" }}>
+              <Link href="/gallery">
+                <motion.a
+                  whileHover={{ scale: 1.04 }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "#0A1628",
+                    color: "#FAF6EF",
+                    padding: "14px 32px",
+                    borderRadius: 50,
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    border: "1px solid rgba(201,168,76,0.2)",
+                  }}
+                >
+                  সব ছবি দেখুন <ArrowRight size={16} />
+                </motion.a>
+              </Link>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          NEWS — Timeline style
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="news" style={{
+        padding: "8rem 0",
+        background: "#0A1628",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: `url(${NEWS_BG})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.07,
+        }} />
+
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <FadeIn direction="up">
+            <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "#C9A84C",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}>সাম্প্রতিক</span>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+              </div>
+              <h2 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#FAF6EF",
+                fontSize: "clamp(2rem, 4vw, 3rem)",
+                fontWeight: 400,
+              }}>সংবাদ ও আপডেট</h2>
+            </div>
+          </FadeIn>
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "1.5rem",
+          }} className="news-grid">
+            {newsItems.map((item, i) => (
+              <FadeIn key={i} delay={i * 0.1} direction="up">
+                <a href={item.link} target={item.link.startsWith("http") ? "_blank" : "_self"} rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                  <motion.div
+                    whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(0,0,0,0.3)" }}
+                    style={{
+                      background: "rgba(250,246,239,0.04)",
+                      border: "1px solid rgba(201,168,76,0.12)",
+                      borderRadius: 20,
+                      padding: "2rem",
+                      cursor: "pointer",
+                      transition: "all 0.3s",
+                      height: "100%",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* Top accent line */}
+                    <div style={{
+                      position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                      background: "linear-gradient(90deg, #C9A84C, transparent)",
+                    }} />
+
+                    <div style={{ display: "flex", gap: 10, marginBottom: "1.2rem", alignItems: "center" }}>
+                      <span style={{
+                        background: "rgba(201,168,76,0.15)",
+                        color: "#C9A84C",
+                        padding: "4px 12px",
+                        borderRadius: 50,
+                        fontSize: "0.75rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontWeight: 600,
+                      }}>{item.tag}</span>
+                      <span style={{
+                        color: "rgba(250,246,239,0.3)",
+                        fontSize: "0.8rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                      }}>{item.date}</span>
+                    </div>
+
+                    <h4 style={{
+                      fontFamily: "'Tiro Bangla', serif",
+                      color: "#FAF6EF",
+                      fontSize: "1.1rem",
+                      fontWeight: 400,
+                      lineHeight: 1.6,
+                      marginBottom: "0.8rem",
+                    }}>{item.title}</h4>
+
+                    <p style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "rgba(250,246,239,0.5)",
+                      fontSize: "0.85rem",
+                      lineHeight: 1.8,
+                      margin: 0,
+                    }}>{item.desc}</p>
+
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginTop: "1.5rem",
+                      color: "#C9A84C",
+                      fontSize: "0.8rem",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                    }}>
+                      বিস্তারিত পড়ুন <ArrowRight size={14} />
+                    </div>
+                  </motion.div>
+                </a>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          SOCIAL MEDIA — Premium card grid
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "8rem 0",
+        background: "#FAF6EF",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Decorative BG text */}
+        <div style={{
+          position: "absolute",
+          bottom: "10%",
+          left: "-5%",
+          fontFamily: "'Tiro Bangla', serif",
+          fontSize: "18vw",
+          color: "rgba(10,22,40,0.025)",
+          fontWeight: 700,
+          userSelect: "none",
+          pointerEvents: "none",
+          lineHeight: 1,
+        }}>সোশ্যাল</div>
+
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <FadeIn direction="up">
+            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "#C9A84C",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}>অনুসরণ করুন</span>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+              </div>
+              <h2 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#0A1628",
+                fontSize: "clamp(2rem, 4vw, 3rem)",
+                fontWeight: 400,
+                marginBottom: "1rem",
+              }}>সোশ্যাল মিডিয়া</h2>
+              <p style={{
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                color: "#5A6A7A",
+                fontSize: "0.95rem",
+                maxWidth: 550,
+                margin: "0 auto",
+                lineHeight: 1.9,
+              }}>
+                আমার সকল অফিসিয়াল প্ল্যাটফর্মে যুক্ত হোন। এর বাইরে অন্য কোনো পেইজে আমার মালিকানা নেই।
+              </p>
+            </div>
+          </FadeIn>
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+            gap: "1rem",
+          }}>
+            {socialPlatforms.map((s, i) => (
+              <FadeIn key={i} delay={i * 0.06} direction="up">
+                <motion.a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -6, boxShadow: "0 20px 50px rgba(10,22,40,0.12)" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    padding: "1.2rem 1.5rem",
+                    background: "#fff",
+                    borderRadius: 16,
+                    border: "1px solid rgba(10,22,40,0.06)",
+                    textDecoration: "none",
+                    transition: "all 0.3s",
+                    boxShadow: "0 4px 15px rgba(10,22,40,0.06)",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div style={{
+                    position: "absolute", top: 0, left: 0, width: 3, height: "100%",
+                    background: s.color,
+                    borderRadius: "3px 0 0 3px",
+                  }} />
+                  <div style={{
+                    width: 46,
+                    height: 46,
+                    borderRadius: 12,
+                    background: s.color + "15",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: s.color,
+                    flexShrink: 0,
+                  }}>
+                    {s.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "#0A1628",
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                      marginBottom: 2,
+                    }}>{s.name}</div>
+                    <div style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "#8A9AAA",
+                      fontSize: "0.78rem",
+                    }}>{s.handle}</div>
+                  </div>
+                  <ExternalLink size={14} color="#C9A84C" />
+                </motion.a>
+              </FadeIn>
+            ))}
+          </div>
+
+          {/* Facebook Groups */}
+          <FadeIn delay={0.4} direction="up">
+            <div style={{ marginTop: "3rem", textAlign: "center" }}>
+              <h3 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#0A1628",
+                fontSize: "1.5rem",
+                fontWeight: 400,
+                marginBottom: "1.5rem",
+              }}>ফেসবুক গ্রুপ</h3>
+              <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                {fbGroups.map((g, i) => (
+                  <a key={i} href={g.href} target="_blank" rel="noopener noreferrer">
+                    <motion.div
+                      whileHover={{ scale: 1.04, background: "#C9A84C", color: "#0A1628" }}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "12px 28px",
+                        background: "#0A1628",
+                        color: "#FAF6EF",
+                        borderRadius: 50,
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.9rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border: "1px solid rgba(201,168,76,0.2)",
+                        transition: "all 0.3s",
+                      }}
+                    >
+                      <Users size={16} /> {g.name}
+                    </motion.div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          CONTACT — Split dark section
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="contact" style={{
+        padding: "8rem 0",
+        background: "linear-gradient(135deg, #0A1628 0%, #1E2D3D 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Decorative element */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          right: "10%",
+          transform: "translateY(-50%)",
+          width: 400,
+          height: 400,
+          borderRadius: "50%",
+          border: "1px solid rgba(201,168,76,0.08)",
+        }} />
+
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "6rem",
+            alignItems: "center",
+          }} className="contact-grid">
+
+            <FadeIn direction="left">
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "1.5rem" }}>
+                  <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#C9A84C",
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                  }}>যোগাযোগ</span>
+                </div>
+
+                <h2 style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  color: "#FAF6EF",
+                  fontSize: "clamp(2rem, 3.5vw, 3rem)",
+                  fontWeight: 400,
+                  lineHeight: 1.3,
+                  marginBottom: "1.5rem",
+                }}>
+                  কথা বলুন<br />
+                  <span style={{ color: "#C9A84C" }}>আমার সাথে</span>
+                </h2>
+
+                <p style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "rgba(250,246,239,0.65)",
+                  fontSize: "1rem",
+                  lineHeight: 2,
+                  marginBottom: "2.5rem",
+                }}>
+                  পাঠকদের সাথে কথা বলতে আমি সবসময় আগ্রহী। ইমেইল করুন বা সোশ্যাল মিডিয়ায় মেসেজ পাঠান।
                 </p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <a
-                    href="mailto:lekhokmahbubsardarsabuj@gmail.com"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1rem",
-                      padding: "1rem 1.5rem",
-                      background: "rgba(253,246,236,0.05)",
-                      border: "1px solid rgba(212,168,67,0.2)",
-                      borderRadius: 10,
-                      textDecoration: "none",
-                      transition: "all 0.3s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,168,67,0.1)"; e.currentTarget.style.borderColor = "rgba(212,168,67,0.4)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(253,246,236,0.05)"; e.currentTarget.style.borderColor = "rgba(212,168,67,0.2)"; }}
-                  >
-                    <div style={{
-                      width: 44, height: 44,
-                      borderRadius: "50%",
-                      background: "rgba(212,168,67,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#D4A843",
-                    }}>
-                      <Mail size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#D4A843", fontSize: "0.75rem", marginBottom: 3 }}>ইমেইল</div>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#FDF6EC", fontSize: "0.9rem" }}>lekhokmahbubsardarsabuj@gmail.com</div>
-                    </div>
-                  </a>
-
-                  <a
-                    href="https://facebook.com/Lekhok.MahbubSardarSabuj"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1rem",
-                      padding: "1rem 1.5rem",
-                      background: "rgba(253,246,236,0.05)",
-                      border: "1px solid rgba(212,168,67,0.2)",
-                      borderRadius: 10,
-                      textDecoration: "none",
-                      transition: "all 0.3s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,168,67,0.1)"; e.currentTarget.style.borderColor = "rgba(212,168,67,0.4)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(253,246,236,0.05)"; e.currentTarget.style.borderColor = "rgba(212,168,67,0.2)"; }}
-                  >
-                    <div style={{
-                      width: 44, height: 44,
-                      borderRadius: "50%",
-                      background: "rgba(24,119,242,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#1877F2",
-                    }}>
-                      <Facebook size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#D4A843", fontSize: "0.75rem", marginBottom: 3 }}>Facebook</div>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#FDF6EC", fontSize: "0.9rem" }}>Lekhok.MahbubSardarSabuj</div>
-                    </div>
-                  </a>
-
-                  <a
-                    href="https://t.me/MahbubSardarSabuj"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "1rem",
-                      padding: "1rem 1.5rem",
-                      background: "rgba(253,246,236,0.05)",
-                      border: "1px solid rgba(212,168,67,0.2)",
-                      borderRadius: 10,
-                      textDecoration: "none",
-                      transition: "all 0.3s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(212,168,67,0.1)"; e.currentTarget.style.borderColor = "rgba(212,168,67,0.4)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(253,246,236,0.05)"; e.currentTarget.style.borderColor = "rgba(212,168,67,0.2)"; }}
-                  >
-                    <div style={{
-                      width: 44, height: 44,
-                      borderRadius: "50%",
-                      background: "rgba(0,136,204,0.15)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#0088CC",
-                    }}>
-                      <Send size={20} />
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#D4A843", fontSize: "0.75rem", marginBottom: 3 }}>Telegram</div>
-                      <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#FDF6EC", fontSize: "0.9rem" }}>@MahbubSardarSabuj</div>
-                    </div>
-                  </a>
+                  {[
+                    { icon: <Mail size={20} />, label: "ইমেইল", value: "lekhokmahbubsardarsabuj@gmail.com", href: "mailto:lekhokmahbubsardarsabuj@gmail.com" },
+                    { icon: <Phone size={20} />, label: "WhatsApp", value: "+966 55 968 5254", href: "https://wa.me/966559685254" },
+                    { icon: <Facebook size={20} />, label: "Facebook", value: "Lekhok.MahbubSardarSabuj", href: "https://facebook.com/Lekhok.MahbubSardarSabuj" },
+                  ].map((contact, i) => (
+                    <motion.a
+                      key={i}
+                      href={contact.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ x: 6, background: "rgba(201,168,76,0.1)" }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                        padding: "1.2rem 1.5rem",
+                        background: "rgba(250,246,239,0.04)",
+                        border: "1px solid rgba(201,168,76,0.12)",
+                        borderRadius: 14,
+                        textDecoration: "none",
+                        transition: "all 0.3s",
+                      }}
+                    >
+                      <div style={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: 12,
+                        background: "rgba(201,168,76,0.12)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#C9A84C",
+                        flexShrink: 0,
+                      }}>
+                        {contact.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.5)", fontSize: "0.75rem", marginBottom: 3 }}>{contact.label}</div>
+                        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FAF6EF", fontSize: "0.9rem" }}>{contact.value}</div>
+                      </div>
+                      <ArrowRight size={16} color="rgba(201,168,76,0.5)" style={{ marginLeft: "auto" }} />
+                    </motion.a>
+                  ))}
                 </div>
               </div>
             </FadeIn>
 
-            {/* Right: Quote / Writing showcase */}
+            {/* Right: Contact form */}
             <FadeIn direction="right">
-              <div style={{ position: "relative" }}>
-                <img
-                  src={WRITING_SHOWCASE}
-                  alt="লেখার জগৎ"
-                  style={{
-                    width: "100%",
-                    height: 420,
-                    objectFit: "cover",
-                    borderRadius: 12,
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-                  }}
-                />
-                {/* Quote overlay */}
+              <div style={{
+                background: "rgba(250,246,239,0.04)",
+                border: "1px solid rgba(201,168,76,0.15)",
+                borderRadius: 24,
+                padding: "3rem",
+                position: "relative",
+                overflow: "hidden",
+              }}>
                 <div style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: "linear-gradient(to top, rgba(13,27,42,0.95) 0%, transparent 100%)",
-                  padding: "3rem 2rem 2rem",
-                  borderRadius: "0 0 12px 12px",
-                }}>
-                  <p style={{
-                    fontFamily: "'Tiro Bangla', serif",
-                    color: "#FDF6EC",
-                    fontSize: "1.1rem",
-                    lineHeight: 1.7,
-                    fontStyle: "italic",
-                    margin: 0,
-                  }}>
-                    "এখন আর আমি শুধুমাত্র টাইমপাসের জন্য লিখি না, বরং পাঠকের জন্য লিখি।"
-                  </p>
-                  <p style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    color: "#D4A843",
-                    fontSize: "0.85rem",
-                    marginTop: 8,
-                  }}>— মাহবুব সরদার সবুজ</p>
+                  position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                  background: "linear-gradient(90deg, #C9A84C, #E8C4A0, #C9A84C)",
+                }} />
+
+                <h3 style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  color: "#FAF6EF",
+                  fontSize: "1.5rem",
+                  fontWeight: 400,
+                  marginBottom: "2rem",
+                }}>বার্তা পাঠান</h3>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
+                  {[
+                    { label: "আপনার নাম", type: "text", placeholder: "আপনার পুরো নাম" },
+                    { label: "ইমেইল", type: "email", placeholder: "আপনার ইমেইল ঠিকানা" },
+                  ].map((field, i) => (
+                    <div key={i}>
+                      <label style={{
+                        display: "block",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        color: "rgba(250,246,239,0.6)",
+                        fontSize: "0.8rem",
+                        marginBottom: 8,
+                      }}>{field.label}</label>
+                      <input
+                        type={field.type}
+                        placeholder={field.placeholder}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          background: "rgba(250,246,239,0.06)",
+                          border: "1px solid rgba(201,168,76,0.15)",
+                          borderRadius: 10,
+                          color: "#FAF6EF",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.9rem",
+                          outline: "none",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label style={{
+                      display: "block",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "rgba(250,246,239,0.6)",
+                      fontSize: "0.8rem",
+                      marginBottom: 8,
+                    }}>বার্তা</label>
+                    <textarea
+                      placeholder="আপনার বার্তা লিখুন..."
+                      rows={4}
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        background: "rgba(250,246,239,0.06)",
+                        border: "1px solid rgba(201,168,76,0.15)",
+                        borderRadius: 10,
+                        color: "#FAF6EF",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.9rem",
+                        outline: "none",
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  <a href="mailto:lekhokmahbubsardarsabuj@gmail.com">
+                    <motion.div
+                      whileHover={{ scale: 1.02, boxShadow: "0 15px 40px rgba(201,168,76,0.4)" }}
+                      whileTap={{ scale: 0.98 }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                        background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
+                        color: "#0A1628",
+                        padding: "14px",
+                        borderRadius: 12,
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                        cursor: "pointer",
+                        boxShadow: "0 8px 25px rgba(201,168,76,0.25)",
+                      }}
+                    >
+                      <Send size={18} /> ইমেইলে পাঠান
+                    </motion.div>
+                  </a>
                 </div>
               </div>
             </FadeIn>
@@ -1393,9 +1913,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
-
-      {/* ── LIGHTBOX ─────────────────────────────────────────────────────────── */}
+      {/* ── Lightbox ──────────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {lightboxImg && (
           <motion.div
@@ -1404,38 +1922,32 @@ export default function Home() {
             exit={{ opacity: 0 }}
             onClick={() => setLightboxImg(null)}
             style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 1000,
-              background: "rgba(0,0,0,0.92)",
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(10,22,40,0.95)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               padding: "2rem",
+              backdropFilter: "blur(10px)",
             }}
           >
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               onClick={e => e.stopPropagation()}
               style={{ position: "relative", maxWidth: 800, width: "100%" }}
             >
               <img
                 src={lightboxImg.src}
                 alt={lightboxImg.caption}
-                style={{
-                  width: "100%",
-                  maxHeight: "80vh",
-                  objectFit: "contain",
-                  borderRadius: 10,
-                  boxShadow: "0 30px 80px rgba(0,0,0,0.8)",
-                }}
+                style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 16 }}
               />
               <p style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                color: "rgba(253,246,236,0.7)",
                 textAlign: "center",
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                color: "rgba(250,246,239,0.7)",
                 marginTop: "1rem",
                 fontSize: "0.9rem",
               }}>{lightboxImg.caption}</p>
@@ -1443,14 +1955,18 @@ export default function Home() {
                 onClick={() => setLightboxImg(null)}
                 style={{
                   position: "absolute",
-                  top: -16, right: -16,
-                  background: "#D4A843",
+                  top: -16,
+                  right: -16,
+                  background: "#C9A84C",
                   border: "none",
                   borderRadius: "50%",
-                  width: 36, height: 36,
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 40,
+                  height: 40,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: "pointer",
-                  color: "#0D1B2A",
+                  color: "#0A1628",
                 }}
               >
                 <X size={18} />
@@ -1460,20 +1976,51 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* ── Responsive CSS ───────────────────────────────────────────────────── */}
+      <Footer />
+
+      {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
       <style>{`
-        @media (max-width: 768px) {
-          .hero-grid { grid-template-columns: 1fr !important; gap: 2rem !important; text-align: center; }
-          .hero-photo { display: none !important; }
-          .about-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .book-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .news-grid { grid-template-columns: 1fr !important; }
-          .contact-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap');
+
+        * { box-sizing: border-box; }
+
+        .hero-grid { grid-template-columns: 1.1fr 0.9fr !important; }
+        .about-grid { grid-template-columns: 1fr 1.2fr !important; }
+        .book-grid { grid-template-columns: 1fr 1.5fr !important; }
+        .writings-grid { grid-template-columns: 1fr 1fr !important; }
+        .news-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        .contact-grid { grid-template-columns: 1fr 1fr !important; }
+        .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+        .ebooks-grid { grid-template-columns: repeat(4, 1fr) !important; }
+        .gallery-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+        input::placeholder, textarea::placeholder {
+          color: rgba(250,246,239,0.3);
+        }
+        input:focus, textarea:focus {
+          border-color: rgba(201,168,76,0.4) !important;
+          background: rgba(250,246,239,0.08) !important;
+        }
+
+        @media (max-width: 1024px) {
+          .ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
+
+        @media (max-width: 768px) {
+          .hero-grid, .about-grid, .book-grid, .writings-grid, .contact-grid {
+            grid-template-columns: 1fr !important;
+            gap: 3rem !important;
+          }
+          .news-grid { grid-template-columns: 1fr !important; }
+          .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
         @media (max-width: 480px) {
           .gallery-grid { grid-template-columns: 1fr !important; }
+          .ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
