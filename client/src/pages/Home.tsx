@@ -31,10 +31,10 @@ const NEWS_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjM
 
 // ── Ebook covers ──────────────────────────────────────────────────────────────
 const EBOOK_COVERS = [
-  { src: "/images/ebooks/dukkhovilash-cover.png", title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস", slug: "dukkhovilash" },
-  { src: "/images/ebooks/smritir-boshonte-cover.png", title: "স্মৃতির বসন্তে তুমি", slug: "smritir-boshonte" },
-  { src: "/images/ebooks/chand-phool-cover.png", title: "চাঁদফুল", slug: "chand-phool" },
-  { src: "/images/ebooks/shomoyer-gohvore-cover.png", title: "সময়ের গহ্বরে", slug: "shomoyer-gohvore" },
+  { src: "/images/ebooks/dukkhovilash.png", title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস", slug: "dukkhovilash" },
+  { src: "/images/ebooks/smritir-boshonte.png", title: "স্মৃতির বসন্তে তুমি", slug: "smritir-boshonte" },
+  { src: "/images/ebooks/chand-phool.png", title: "চাঁদফুল", slug: "chand-phool" },
+  { src: "/images/ebooks/shomoyer-gohvore.png", title: "সময়ের গহ্বরে", slug: "shomoyer-gohvore" },
 ];
 
 // ── Gallery images ────────────────────────────────────────────────────────────

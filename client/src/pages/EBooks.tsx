@@ -16,7 +16,7 @@ const ebooks = [
     slug: "dukkhovilash",
     title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
     subtitle: "প্রথম ফিজিক্যাল বই",
-    cover: "/images/dukkhovilash-cover.jpg",
+    cover: "/images/ebooks/dukkhovilash.png",
     description:
       "বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে। প্রতিটি পাতায় লুকিয়ে আছে এক অন্যরকম ভালোবাসার গল্প।",
     genre: "আবেগী সাহিত্য",
@@ -31,7 +31,7 @@ const ebooks = [
   },
   {
     id: 2,
-    slug: "smritir-boshonte-tumi",
+    slug: "smritir-boshonte",
     title: "স্মৃতির বসন্তে তুমি",
     subtitle: "ই-বুক",
     cover: "/images/ebooks/smritir-boshonte.png",
