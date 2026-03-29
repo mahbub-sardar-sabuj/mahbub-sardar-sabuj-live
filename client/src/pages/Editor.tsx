@@ -227,52 +227,7 @@ export default function Editor() {
   const [bgBlur, setBgBlur]       = useState(false);
   const [showWatermark, setShowWatermark] = useState(false);
   const [watermarkOpacity, setWatermarkOpacity] = useState(8);
-  // AI-generated CSS gradient background
-  const [aiBgGradient, setAiBgGradient] = useState<string | null>(null);
-  const [aiBgDesc, setAiBgDesc]         = useState<string>("");
 
-  // AI Background generation
-  const [aiPrompt, setAiPrompt]       = useState("");
-  const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiError, setAiError]         = useState("");
-  const [bgLoading, setBgLoading]     = useState(false);
-  const [aiImageUrl, setAiImageUrl]   = useState<string | null>(null);
-
-  // tRPC mutation for actual image generation
-  const generateAiBgMutation = trpc.chat.generateAiBackground.useMutation({
-    onSuccess: (data) => {
-      if (data.imageUrl) {
-        setAiImageUrl(data.imageUrl);
-        setBgImage(data.imageUrl);
-        setBgOpacity(1.0);
-        setAiBgGradient(null);
-        setAiBgDesc(data.description || aiPrompt);
-      } else {
-        setAiError("ছবি তৈরি হয়নি, আবার চেষ্টা করুন।");
-      }
-      setAiGenerating(false);
-      setBgLoading(false);
-    },
-    onError: (err) => {
-      console.error("AI image generation error:", err);
-      setAiError("ছবি তৈরিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-      setAiGenerating(false);
-      setBgLoading(false);
-    },
-  });
-
-  const handleAiGenerate = useCallback(async () => {
-    if (!aiPrompt.trim() || aiGenerating) return;
-    setAiGenerating(true);
-    setBgLoading(true);
-    setAiError("");
-    setAiBgGradient(null);
-    setBgImage(null);
-    setAiImageUrl(null);
-
-    // Use server-side image generation via tRPC
-    generateAiBgMutation.mutate({ prompt: aiPrompt.trim() });
-  }, [aiPrompt, aiGenerating, generateAiBgMutation]);
 
 
 
@@ -909,65 +864,8 @@ export default function Editor() {
                 <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
                   <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">পটভূমি ও ওয়াটারমার্ক</h3>
 
-                  {/* ── AI Background Generator ── */}
-                  <div className="bg-gradient-to-br from-[#0a1525] to-[#0f1c2e] rounded-2xl p-4 border border-[#D4A843]/20 space-y-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <img src={AUTHOR_PHOTO} alt="" className="w-7 h-7 rounded-full object-cover border border-[#D4A843]/40" />
-                      <span className="text-[#D4A843] text-sm font-bold">AI ব্যাকগ্রাউন্ড তৈরি করুন</span>
-                    </div>
-                    <p className="text-gray-500 text-xs">বাংলায় লিখুন — AI আপনার জন্য আসল ছবি তৈরি করবে এবং ব্যাকগ্রাউন্ড হিসেবে সেট করবে</p>
-                    <textarea
-                      value={aiPrompt}
-                      onChange={e => setAiPrompt(e.target.value)}
-                      placeholder="যেমন: রাতের আকাশে তারা, বাংলাদেশের সবুজ মাঠ, গোলাপ ফুলের বাগান..."
-                      rows={3}
-                      className="w-full bg-[#060c18] text-white border border-[#1e3050] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-600 transition-colors"
-                    />
-                    {aiError && <p className="text-red-400 text-xs">{aiError}</p>}
-                    <button
-                      onClick={handleAiGenerate}
-                      disabled={!aiPrompt.trim() || aiGenerating || bgLoading}
-                      className="w-full py-3 bg-gradient-to-r from-[#D4A843] to-[#c49030] hover:from-[#c49030] hover:to-[#b07820] text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {(aiGenerating || bgLoading) ? (
-                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ছবি তৈরি হচ্ছে... (১-২ মিনিট)</>
-                      ) : (
-                        <>✨ AI দিয়ে ব্যাকগ্রাউন্ড তৈরি করুন</>
-                      )}
-                    </button>
-
-                    {/* Success: show actual AI generated image preview */}
-                    {aiImageUrl && !aiGenerating && !bgLoading && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
-                          <span>✓</span> AI ছবি তৈরি হয়েছে! প্রিভিউতে দেখুন ↓
-                        </div>
-                        <img
-                          src={aiImageUrl}
-                          alt={aiBgDesc}
-                          className="w-full h-24 object-cover rounded-xl border border-white/10"
-                        />
-                        {aiBgDesc && <p className="text-gray-400 text-xs">বিষয়: {aiBgDesc}</p>}
-                        <div className="flex gap-2">
-                          <button onClick={() => { setBgOpacity(1.0); }}
-                            className="flex-1 py-1.5 bg-[#D4A843]/10 hover:bg-[#D4A843]/20 text-[#D4A843] rounded-xl text-xs transition-all border border-[#D4A843]/30">
-                            পূর্ণ দৃশ্যমান
-                          </button>
-                          <button onClick={() => { setBgOpacity(0.5); }}
-                            className="flex-1 py-1.5 bg-[#0f1c2e] hover:bg-[#1e3050] text-gray-300 rounded-xl text-xs transition-all border border-[#1e3050]">
-                            হাল্কা
-                          </button>
-                        </div>
-                        <button onClick={() => { setAiImageUrl(null); setBgImage(null); setAiBgDesc(""); }}
-                          className="w-full py-1.5 bg-red-900/20 hover:bg-red-900/40 text-red-400 rounded-xl text-xs transition-all border border-red-900/40">
-                          AI ছবি সরিয়ে দিন
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Manual upload */}
-                  <div className="border-t border-[#1e3050] pt-3">
+                  <div>
                     <p className="text-gray-500 text-xs mb-2">অথবা নিজে ছবি আপলোড করুন</p>
                     <button onClick={() => fileRef.current?.click()}
                       className="w-full py-3 bg-[#0a1525] hover:bg-[#0f1c2e] text-gray-300 rounded-2xl border-2 border-dashed border-[#1e3050] hover:border-[#D4A843] transition-all text-sm">
@@ -1117,39 +1015,7 @@ export default function Editor() {
                     }} />
                   )}
 
-                  {/* Shimmer loading overlay — shown while AI bg is loading */}
-                  {bgLoading && (
-                    <div style={{
-                      position: "absolute", inset: 0, zIndex: 10, pointerEvents: "none",
-                      background: "linear-gradient(110deg, rgba(15,28,46,0.0) 30%, rgba(212,168,67,0.18) 50%, rgba(15,28,46,0.0) 70%)",
-                      backgroundSize: "200% 100%",
-                      animation: "shimmer 1.5s infinite linear",
-                    }}>
-                      <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
-                    </div>
-                  )}
-                  {bgLoading && (
-                    <div style={{
-                      position: "absolute", inset: 0, zIndex: 11, pointerEvents: "none",
-                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                      gap: 12,
-                    }}>
-                      <div style={{
-                        width: 48, height: 48,
-                        border: "4px solid rgba(212,168,67,0.2)",
-                        borderTopColor: "#D4A843",
-                        borderRadius: "50%",
-                        animation: "spin 1s linear infinite",
-                      }}>
-                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                      </div>
-                      <div style={{ color: "#D4A843", fontSize: 13, fontWeight: 600, textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.8)" }}>
-                        AI ছবি তৈরি হচ্ছে...
-                        <br />
-                        <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.8 }}>১-২ মিনিট সময় লাগতে পারে</span>
-                      </div>
-                    </div>
-                  )}
+
 
                   {/* Watermark — full background cover */}
                   {showWatermark && (
