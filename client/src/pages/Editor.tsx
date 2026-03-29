@@ -232,29 +232,63 @@ export default function Editor() {
   const [aiPrompt, setAiPrompt]       = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError]         = useState("");
+  const [bgLoading, setBgLoading]     = useState(false);
   const generateBgMutation = trpc.chat.generateBackground.useMutation();
+
+  // Helper: preload an image URL and return a data URL (avoids CORS issues in preview)
+  const preloadImage = useCallback((url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        // Convert to data URL via canvas to avoid CORS in preview
+        try {
+          const c = document.createElement("canvas");
+          c.width = img.naturalWidth; c.height = img.naturalHeight;
+          const ctx2 = c.getContext("2d")!;
+          ctx2.drawImage(img, 0, 0);
+          resolve(c.toDataURL("image/jpeg", 0.92));
+        } catch {
+          resolve(url); // fallback: use URL directly
+        }
+      };
+      img.onerror = () => reject(new Error("load failed"));
+      img.src = url;
+    });
+  }, []);
 
   const handleAiGenerate = useCallback(async () => {
     if (!aiPrompt.trim() || aiGenerating) return;
     setAiGenerating(true);
+    setBgLoading(true);
     setAiError("");
+    setBgImage(null);
+
+    let imageUrl = "";
     try {
-      // Translate Bengali to English via server, then build Pollinations URL
       const result = await generateBgMutation.mutateAsync({ prompt: aiPrompt.trim() });
-      // Set the URL directly — browser will load it as a background-image
-      setBgImage(result.imageUrl);
-      setBgOpacity(0.35);
-      setAiGenerating(false);
+      imageUrl = result.imageUrl;
     } catch {
-      // Fallback: build Pollinations URL directly on client without translation
+      // Fallback: build Pollinations URL directly on client
       const encoded = encodeURIComponent(aiPrompt.trim() + " beautiful artistic background, painterly, no text, high quality");
       const seed = Math.floor(Math.random() * 999999);
-      const fallbackUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1080&height=1080&seed=${seed}&nologo=true`;
-      setBgImage(fallbackUrl);
-      setBgOpacity(0.35);
-      setAiGenerating(false);
+      imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1080&height=1080&seed=${seed}&nologo=true`;
     }
-  }, [aiPrompt, aiGenerating, generateBgMutation]);
+
+    setAiGenerating(false);
+
+    // Now preload the image so preview shows it immediately when ready
+    try {
+      const dataUrl = await preloadImage(imageUrl);
+      setBgImage(dataUrl);
+      setBgOpacity(0.35);
+    } catch {
+      // If preload fails, set URL directly and let browser handle it
+      setBgImage(imageUrl);
+      setBgOpacity(0.35);
+    }
+    setBgLoading(false);
+  }, [aiPrompt, aiGenerating, generateBgMutation, preloadImage]);
 
   // UI
   const [tab, setTab]           = useState<"content"|"design"|"typo"|"bg"|"extras">("content");
@@ -876,18 +910,25 @@ export default function Editor() {
                     {aiError && <p className="text-red-400 text-xs">{aiError}</p>}
                     <button
                       onClick={handleAiGenerate}
-                      disabled={!aiPrompt.trim() || aiGenerating}
+                      disabled={!aiPrompt.trim() || aiGenerating || bgLoading}
                       className="w-full py-3 bg-gradient-to-r from-[#D4A843] to-[#c49030] hover:from-[#c49030] hover:to-[#b07820] text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {aiGenerating ? (
                         <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ছবি তৈরি হচ্ছে...</>
+                      ) : bgLoading ? (
+                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> প্রিভিউতে লোড হচ্ছে...</>
                       ) : (
                         <>✨ AI দিয়ে ব্যাকগ্রাউন্ড তৈরি করুন</>
                       )}
                     </button>
-                    {bgImage && bgImage.includes("pollinations") && (
+                    {bgImage && !bgLoading && (
                       <div className="flex items-center gap-2 text-green-400 text-xs">
-                        <span>✓</span> AI ব্যাকগ্রাউন্ড সেট হয়েছে
+                        <span>✓</span> AI ব্যাকগ্রাউন্ড প্রিভিউতে দেখা যাচ্ছে ↓
+                      </div>
+                    )}
+                    {bgLoading && (
+                      <div className="flex items-center gap-2 text-yellow-400 text-xs">
+                        <div className="w-3 h-3 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" /> প্রিভিউতে যোগ হচ্ছে, দয়া করে অপেক্ষা করুন...
                       </div>
                     )}
                   </div>
