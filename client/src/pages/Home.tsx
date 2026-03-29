@@ -566,7 +566,7 @@ export default function Home() {
         >
           {[...Array(4)].map((_, i) => (
             <div key={i} style={{ display: "flex", gap: "4rem", alignItems: "center" }}>
-              {["কলমের স্পর্শে আমি বিদ্রোহী,", "ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি;", "কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"].map((text, j) => (
+              {["কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"].map((text, j) => (
                 <span key={j} style={{
                   fontFamily: "'Noto Sans Bengali', sans-serif",
                   color: "#0A1628",
