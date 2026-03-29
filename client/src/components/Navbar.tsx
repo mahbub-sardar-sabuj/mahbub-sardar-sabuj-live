@@ -1,0 +1,459 @@
+/*
+ * Design: Literary Avant-Garde
+ * Navbar: Sticky top nav with navy background, gold accents
+ */
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Menu,
+  X,
+  ChevronRight,
+  House,
+  UserRound,
+  BookOpen,
+  Mic2,
+  PenLine,
+  Images,
+  Newspaper,
+  Mail,
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
+
+const navLinks = [
+  { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "#home", type: "anchor", icon: House },
+  { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "#about", type: "anchor", icon: UserRound },
+  { label: "বই", subtitle: "প্রকাশিত বই ও সংগ্রহের তথ্য", href: "#book", type: "anchor", icon: BookOpen },
+  { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", type: "page", icon: Mic2 },
+  { label: "লেখালেখি", subtitle: "প্রবন্ধ, গদ্য ও সাহিত্যকর্ম", href: "/writings", type: "page", icon: PenLine },
+  { label: "ই-বুক", subtitle: "প্রকাশিত বই ও ই-বুকের সংগ্রহ", href: "/ebooks", type: "page", icon: BookOpen },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "#gallery", type: "anchor", icon: Images },
+  { label: "সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "#news", type: "anchor", icon: Newspaper },
+  { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "#contact", type: "anchor", icon: Mail },
+];
+
+
+const infoTabs = [
+  {
+    titleBn: "পরিচিতি পেজ",
+    description: "লেখক পরিচিতি ও সংক্ষিপ্ত প্রেক্ষিত",
+    href: "/about",
+  },
+  {
+    titleBn: "যোগাযোগ",
+    description: "ইমেইল, সামাজিক মাধ্যম ও ওয়েবসাইট",
+    href: "/contact",
+  },
+  {
+    titleBn: "প্রাইভেসি পলিসি",
+    description: "তথ্য সংগ্রহ, cookies ও privacy ব্যাখ্যা",
+    href: "/privacy-policy",
+  },
+  {
+    titleBn: "শর্তাবলি",
+    description: "ব্যবহারের নিয়ম, অধিকার ও সীমাবদ্ধতা",
+    href: "/terms",
+  },
+];
+
+const isInfoTabActive = (href: string, location: string) => location === href;
+
+const isPrimaryNavActive = (
+  href: string,
+  type: string,
+  location: string,
+) => {
+  if (type === "page") return location === href;
+  if (href === "#home") return location === "/";
+  return false;
+};
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [location] = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  const handleNavClick = (href: string, type: string) => {
+    setMobileOpen(false);
+    if (type === "page") return;
+    if (location !== "/") {
+      window.location.href = "/" + href;
+      return;
+    }
+    const el = document.querySelector(href);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  return (
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        transition: "all 0.5s",
+        background: scrolled ? "rgba(13,27,42,0.97)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.3)" : "none",
+      }}
+    >
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
+          <a
+            href="#home"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavClick("#home", "anchor");
+            }}
+            style={{ textDecoration: "none" }}
+          >
+            <span
+              style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#D4A843",
+                fontSize: "1.2rem",
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+              }}
+            >
+              মাহবুব সরদার সবুজ
+            </span>
+          </a>
+
+          <div className="hidden md:flex" style={{ gap: 6 }}>
+            {navLinks.map((link) =>
+              link.type === "page" ? (
+                <Link key={link.href} href={link.href}>
+                  <span
+                    onClick={() => setMobileOpen(false)}
+                    style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)",
+                      padding: "9px 16px",
+                      textDecoration: "none",
+                      fontSize: "0.92rem",
+                      transition: "all 0.3s ease",
+                      borderRadius: 999,
+                      cursor: "pointer",
+                      display: "inline-block",
+                      background: location === link.href ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)" : "rgba(253,246,236,0.04)",
+                      border: location === link.href ? "1px solid rgba(212,168,67,0.65)" : "1px solid rgba(212,168,67,0.12)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#0D1B2A";
+                      e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)";
+                      e.currentTarget.style.background = location === link.href
+                        ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
+                        : "rgba(253,246,236,0.04)";
+                    }}
+                  >
+                    {link.label}
+                  </span>
+                </Link>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(link.href, link.type);
+                  }}
+                  style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "rgba(253,246,236,0.9)",
+                    padding: "9px 16px",
+                    textDecoration: "none",
+                    fontSize: "0.92rem",
+                    transition: "all 0.3s ease",
+                    borderRadius: 999,
+                    background: "rgba(253,246,236,0.04)",
+                    border: "1px solid rgba(212,168,67,0.12)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#0D1B2A";
+                    e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "rgba(253,246,236,0.9)";
+                    e.currentTarget.style.background = "rgba(253,246,236,0.04)";
+                  }}
+                >
+                  {link.label}
+                </a>
+              ),
+            )}
+          </div>
+
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden"
+            style={{ color: "rgba(253,246,236,0.8)", background: "none", border: "none", padding: 8 }}
+          >
+            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            style={{
+              background: "rgba(7,16,29,0.94)",
+              borderTop: "1px solid rgba(212,168,67,0.15)",
+              position: "fixed",
+              top: 70,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: "calc(100dvh - 70px)",
+              minHeight: "calc(100vh - 70px)",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+              touchAction: "pan-y",
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                minHeight: "100%",
+                padding: "1rem 1.1rem calc(2rem + env(safe-area-inset-bottom))",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                scrollbarWidth: "thin",
+                scrollbarColor: "rgba(212,168,67,0.35) rgba(255,255,255,0.04)",
+              }}
+            >
+              <div
+                style={{
+                  margin: "0 4px",
+                  padding: "14px",
+                  borderRadius: 22,
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.015) 100%)",
+                  border: "1px solid rgba(212,168,67,0.12)",
+                  boxShadow: "0 14px 36px rgba(0,0,0,0.2)",
+                }}
+              >
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: {},
+                    visible: {
+                      transition: { staggerChildren: 0.06, delayChildren: 0.03 },
+                    },
+                  }}
+                  style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                >
+                  {navLinks.map((link) => {
+                    const active = isPrimaryNavActive(link.href, link.type, location);
+                    const Icon = link.icon;
+                    const linkContent = (
+                      <motion.span
+                        variants={{
+                          hidden: { opacity: 0, y: 18, scale: 0.98 },
+                          visible: { opacity: 1, y: 0, scale: 1 },
+                        }}
+                        transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                        whileTap={{ scale: 0.985 }}
+                        style={{
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          color: active ? "#0D1B2A" : "#FDF6EC",
+                          background: active
+                            ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
+                            : "linear-gradient(180deg, rgba(253,246,236,0.045) 0%, rgba(253,246,236,0.025) 100%)",
+                          border: active ? "1px solid #D4A843" : "1px solid rgba(212,168,67,0.16)",
+                          padding: "13px 14px",
+                          textDecoration: "none",
+                          borderRadius: 18,
+                          transition: "all 0.28s ease",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          boxShadow: active ? "0 12px 28px rgba(212,168,67,0.24)" : "0 8px 18px rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 40,
+                              height: 40,
+                              borderRadius: 14,
+                              background: active ? "rgba(13,27,42,0.12)" : "rgba(212,168,67,0.08)",
+                              border: active ? "1px solid rgba(13,27,42,0.12)" : "1px solid rgba(212,168,67,0.18)",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Icon size={18} color={active ? "#0D1B2A" : "#D4A843"} />
+                          </span>
+                          <span style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+                            <span style={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.35 }}>
+                              {link.label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "0.76rem",
+                                lineHeight: 1.5,
+                                color: active ? "rgba(13,27,42,0.84)" : "rgba(253,246,236,0.6)",
+                              }}
+                            >
+                              {link.subtitle}
+                            </span>
+                          </span>
+                        </span>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 36,
+                            height: 36,
+                            borderRadius: 999,
+                            background: active ? "rgba(13,27,42,0.12)" : "rgba(212,168,67,0.08)",
+                            border: active ? "1px solid rgba(13,27,42,0.12)" : "1px solid rgba(212,168,67,0.18)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <ChevronRight size={16} color={active ? "#0D1B2A" : "#D4A843"} />
+                        </span>
+                      </motion.span>
+                    );
+
+                    return link.type === "page" ? (
+                      <Link key={link.href} href={link.href}>
+                        <span onClick={() => setMobileOpen(false)} style={{ display: "block" }}>
+                          {linkContent}
+                        </span>
+                      </Link>
+                    ) : (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleNavClick(link.href, link.type);
+                        }}
+                        style={{ textDecoration: "none", display: "block" }}
+                      >
+                        {linkContent}
+                      </a>
+                    );
+                  })}
+                </motion.div>
+              </div>
+
+              <div style={{ margin: "0 4px", paddingTop: 2 }}>
+                <div
+                  style={{
+                    padding: "14px",
+                    borderRadius: 18,
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(212,168,67,0.06) 100%)",
+                    border: "1px solid rgba(212,168,67,0.16)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.14)",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      color: "rgba(212,168,67,0.95)",
+                      fontSize: "0.76rem",
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      margin: "0 0 6px 4px",
+                    }}
+                  >
+                    তথ্য ও নীতিমালা
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {infoTabs.map((tab) => {
+                      const active = isInfoTabActive(tab.href, location);
+                      return (
+                        <Link key={tab.href} href={tab.href}>
+                          <motion.span
+                            onClick={() => setMobileOpen(false)}
+                            whileTap={{ scale: 0.985 }}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                            style={{
+                              fontFamily: "'Noto Sans Bengali', sans-serif",
+                              color: active ? "#0D1B2A" : "#FDF6EC",
+                              background: active
+                                ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
+                                : "rgba(253,246,236,0.04)",
+                              border: active ? "1px solid #D4A843" : "1px solid rgba(212,168,67,0.18)",
+                              padding: "12px 12px",
+                              textDecoration: "none",
+                              borderRadius: 14,
+                              transition: "all 0.3s",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 4,
+                              minHeight: 88,
+                              justifyContent: "center",
+                              boxShadow: active ? "0 10px 24px rgba(212,168,67,0.22)" : "none",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "0.95rem",
+                                fontWeight: 700,
+                                lineHeight: 1.35,
+                              }}
+                            >
+                              {tab.titleBn}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "0.74rem",
+                                lineHeight: 1.45,
+                                color: active ? "rgba(13,27,42,0.84)" : "rgba(253,246,236,0.62)",
+                              }}
+                            >
+                              {tab.description}
+                            </span>
+                          </motion.span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
+  );
+}
