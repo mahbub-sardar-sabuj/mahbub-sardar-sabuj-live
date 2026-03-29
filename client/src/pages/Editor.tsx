@@ -227,6 +227,9 @@ export default function Editor() {
   const [bgBlur, setBgBlur]       = useState(false);
   const [showWatermark, setShowWatermark] = useState(false);
   const [watermarkOpacity, setWatermarkOpacity] = useState(8);
+  // AI-generated CSS gradient background
+  const [aiBgGradient, setAiBgGradient] = useState<string | null>(null);
+  const [aiBgDesc, setAiBgDesc]         = useState<string>("");
 
   // AI Background generation
   const [aiPrompt, setAiPrompt]       = useState("");
@@ -235,67 +238,26 @@ export default function Editor() {
   const [bgLoading, setBgLoading]     = useState(false);
   const generateBgMutation = trpc.chat.generateBackground.useMutation();
 
-  // Helper: preload an image URL and return a data URL (avoids CORS issues in preview)
-  const preloadImage = useCallback((url: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        // Convert to data URL via canvas to avoid CORS in preview
-        try {
-          const c = document.createElement("canvas");
-          c.width = img.naturalWidth; c.height = img.naturalHeight;
-          const ctx2 = c.getContext("2d")!;
-          ctx2.drawImage(img, 0, 0);
-          resolve(c.toDataURL("image/jpeg", 0.92));
-        } catch {
-          resolve(url); // fallback: use URL directly
-        }
-      };
-      img.onerror = () => reject(new Error("load failed"));
-      img.src = url;
-    });
-  }, []);
-
   const handleAiGenerate = useCallback(async () => {
     if (!aiPrompt.trim() || aiGenerating) return;
     setAiGenerating(true);
     setBgLoading(true);
     setAiError("");
+    setAiBgGradient(null);
     setBgImage(null);
 
-    let imageUrl = "";
     try {
       const result = await generateBgMutation.mutateAsync({ prompt: aiPrompt.trim() });
-      imageUrl = result.imageUrl;
-    } catch {
-      // Fallback: build Pollinations URL directly on client
-      const encoded = encodeURIComponent(aiPrompt.trim() + " beautiful artistic background, painterly, no text, high quality");
-      const seed = Math.floor(Math.random() * 999999);
-      imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1080&height=1080&seed=${seed}&nologo=true`;
+      // Server returns CSS gradient
+      setAiBgGradient(result.css);
+      setAiBgDesc(result.description);
+    } catch (err) {
+      setAiError("দুঃখিত, AI ব্যাকগ্রাউন্ড তৈরি হয়নি। আবার চেষ্টা করুন।");
+      console.error(err);
     }
-
     setAiGenerating(false);
-
-    // imageUrl is now a base64 data URL from server (no CORS issues)
-    // If it's still a regular URL (fallback), try to preload it
-    if (imageUrl.startsWith("data:")) {
-      setBgImage(imageUrl);
-      setBgOpacity(0.35);
-      setBgLoading(false);
-    } else {
-      // Fallback: try client-side preload
-      try {
-        const dataUrl = await preloadImage(imageUrl);
-        setBgImage(dataUrl);
-        setBgOpacity(0.35);
-      } catch {
-        setBgImage(imageUrl);
-        setBgOpacity(0.35);
-      }
-      setBgLoading(false);
-    }
-  }, [aiPrompt, aiGenerating, generateBgMutation, preloadImage]);
+    setBgLoading(false);
+  }, [aiPrompt, aiGenerating, generateBgMutation]);
 
   // UI
   const [tab, setTab]           = useState<"content"|"design"|"typo"|"bg"|"extras">("content");
@@ -357,6 +319,36 @@ export default function Editor() {
       } else { ctx.fillStyle = theme.bg; }
     } else { ctx.fillStyle = theme.bg; }
     ctx.fillRect(0, 0, cardW, cardH);
+
+    // AI CSS Gradient background (drawn on top of theme bg)
+    if (aiBgGradient) {
+      // Parse and draw the AI gradient
+      const aiParts = aiBgGradient.match(/linear-gradient\(([^,]+),(.*)\)/s);
+      if (aiParts) {
+        const deg = parseFloat(aiParts[1].trim()) || 135;
+        const rad = (deg - 90) * Math.PI / 180;
+        const cx = cardW / 2, cy = cardH / 2;
+        const len = Math.sqrt(cardW ** 2 + cardH ** 2) / 2;
+        const aiGrad = ctx.createLinearGradient(
+          cx - Math.cos(rad) * len, cy - Math.sin(rad) * len,
+          cx + Math.cos(rad) * len, cy + Math.sin(rad) * len
+        );
+        const aiStops = aiParts[2].match(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)/g) || [];
+        aiStops.forEach((c, i) => aiGrad.addColorStop(i / Math.max(aiStops.length - 1, 1), c));
+        ctx.fillStyle = aiGrad;
+        ctx.fillRect(0, 0, cardW, cardH);
+      } else if (aiBgGradient.includes("radial-gradient")) {
+        // For radial gradients, create a radial gradient
+        const aiRadParts = aiBgGradient.match(/radial-gradient\([^,]+,(.*)\)/s);
+        if (aiRadParts) {
+          const aiGrad = ctx.createRadialGradient(cardW/2, cardH/3, 0, cardW/2, cardH/2, Math.max(cardW, cardH)/1.5);
+          const aiStops = aiRadParts[1].match(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)/g) || [];
+          aiStops.forEach((c, i) => aiGrad.addColorStop(i / Math.max(aiStops.length - 1, 1), c));
+          ctx.fillStyle = aiGrad;
+          ctx.fillRect(0, 0, cardW, cardH);
+        }
+      }
+    }
 
     // Pattern
     if (pattern !== "none") drawPattern(ctx, pattern, cardW, cardH, theme.text);
@@ -920,22 +912,25 @@ export default function Editor() {
                       disabled={!aiPrompt.trim() || aiGenerating || bgLoading}
                       className="w-full py-3 bg-gradient-to-r from-[#D4A843] to-[#c49030] hover:from-[#c49030] hover:to-[#b07820] text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {aiGenerating ? (
-                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ছবি তৈরি হচ্ছে...</>
-                      ) : bgLoading ? (
-                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> প্রিভিউতে লোড হচ্ছে...</>
+                      {(aiGenerating || bgLoading) ? (
+                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ব্যাকগ্রাউন্ড তৈরি হচ্ছে...</>
                       ) : (
                         <>✨ AI দিয়ে ব্যাকগ্রাউন্ড তৈরি করুন</>
                       )}
                     </button>
-                    {bgImage && !bgLoading && (
-                      <div className="flex items-center gap-2 text-green-400 text-xs">
-                        <span>✓</span> AI ব্যাকগ্রাউন্ড প্রিভিউতে দেখা যাচ্ছে ↓
-                      </div>
-                    )}
-                    {bgLoading && (
-                      <div className="flex items-center gap-2 text-yellow-400 text-xs">
-                        <div className="w-3 h-3 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" /> প্রিভিউতে যোগ হচ্ছে, দয়া করে অপেক্ষা করুন...
+
+                    {/* Success: show gradient preview swatch */}
+                    {aiBgGradient && !aiGenerating && !bgLoading && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
+                          <span>✓</span> AI ব্যাকগ্রাউন্ড প্রিভিউতে সেট হয়েছে ↓
+                        </div>
+                        <div style={{ background: aiBgGradient }} className="w-full h-10 rounded-xl border border-white/10" />
+                        {aiBgDesc && <p className="text-gray-400 text-xs">বিষয়: {aiBgDesc}</p>}
+                        <button onClick={() => { setAiBgGradient(null); setAiBgDesc(""); }}
+                          className="w-full py-1.5 bg-red-900/20 hover:bg-red-900/40 text-red-400 rounded-xl text-xs transition-all border border-red-900/40">
+                          AI ব্যাকগ্রাউন্ড সরিয়ে দিন
+                        </button>
                       </div>
                     )}
                   </div>
@@ -1050,7 +1045,7 @@ export default function Editor() {
                 {/* Card at full size, scaled down */}
                 <div style={{
                   width: cardW, height: cardH,
-                  background: theme.gradient || theme.bg,
+                  background: aiBgGradient || theme.gradient || theme.bg,
                   color: theme.text, fontFamily: fontCss, padding,
                   position: "absolute", top: 0, left: 0,
                   transform: `scale(${scale})`, transformOrigin: "top left",
@@ -1073,13 +1068,21 @@ export default function Editor() {
                     }} />
                   )}
 
+                  {/* AI CSS Gradient overlay */}
+                  {aiBgGradient && (
+                    <div style={{
+                      position: "absolute", inset: 0, zIndex: 0,
+                      background: aiBgGradient, opacity: 1,
+                    }} />
+                  )}
+
                   {/* Background image */}
                   {bgImage && (
                     <div style={{
                       position: "absolute", inset: 0,
                       backgroundImage: `url(${bgImage})`,
                       backgroundSize: "cover", backgroundPosition: "center",
-                      opacity: bgOpacity, filter: bgBlur ? "blur(8px)" : "none", zIndex: 0,
+                      opacity: bgOpacity, filter: bgBlur ? "blur(8px)" : "none", zIndex: 1,
                     }} />
                   )}
 
