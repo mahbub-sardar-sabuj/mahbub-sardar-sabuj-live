@@ -31,7 +31,7 @@ const navLinks = [
   { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "#gallery", type: "anchor", icon: Images },
   { label: "সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "#news", type: "anchor", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "#contact", type: "anchor", icon: Mail },
-  { label: "লেখার এডিটর", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
+  { label: "লেখা ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
 ];
 
 const infoTabs = [

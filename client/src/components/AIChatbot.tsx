@@ -357,18 +357,39 @@ export default function AIChatbot() {
               </button>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-              {messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))}
-              {isLoading && <TypingIndicator />}
-              {error && (
-                <div className="text-center text-red-400 text-xs py-2 bg-red-900/20 rounded-lg px-3">
-                  {error}
-                </div>
-              )}
-              <div ref={messagesEndRef} />
+            {/* Messages with watermark background */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 relative" style={{ isolation: "isolate" }}>
+              {/* Watermark — fixed inside the chat panel */}
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "180px",
+                  height: "180px",
+                  borderRadius: "50%",
+                  backgroundImage: `url(${AUTHOR_PHOTO})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  opacity: 0.08,
+                  pointerEvents: "none",
+                  zIndex: 0,
+                }}
+              />
+              <div style={{ position: "relative", zIndex: 1 }}>
+                {messages.map((msg) => (
+                  <MessageBubble key={msg.id} message={msg} />
+                ))}
+                {isLoading && <TypingIndicator />}
+                {error && (
+                  <div className="text-center text-red-400 text-xs py-2 bg-red-900/20 rounded-lg px-3">
+                    {error}
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
 
             {/* Suggestions */}
