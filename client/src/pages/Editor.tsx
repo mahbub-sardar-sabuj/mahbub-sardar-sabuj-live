@@ -15,10 +15,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
-
-// Client-side OpenAI config (same as AIChatbot)
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
-const OPENAI_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL || "https://openrouter.ai/api/v1";
+import { trpc } from "@/lib/trpc";
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 const FONTS = [
@@ -239,6 +236,30 @@ export default function Editor() {
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError]         = useState("");
   const [bgLoading, setBgLoading]     = useState(false);
+  const [aiImageUrl, setAiImageUrl]   = useState<string | null>(null);
+
+  // tRPC mutation for actual image generation
+  const generateAiBgMutation = trpc.chat.generateAiBackground.useMutation({
+    onSuccess: (data) => {
+      if (data.imageUrl) {
+        setAiImageUrl(data.imageUrl);
+        setBgImage(data.imageUrl);
+        setBgOpacity(1.0);
+        setAiBgGradient(null);
+        setAiBgDesc(data.description || aiPrompt);
+      } else {
+        setAiError("ছবি তৈরি হয়নি, আবার চেষ্টা করুন।");
+      }
+      setAiGenerating(false);
+      setBgLoading(false);
+    },
+    onError: (err) => {
+      console.error("AI image generation error:", err);
+      setAiError("ছবি তৈরিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      setAiGenerating(false);
+      setBgLoading(false);
+    },
+  });
 
   const handleAiGenerate = useCallback(async () => {
     if (!aiPrompt.trim() || aiGenerating) return;
@@ -247,66 +268,13 @@ export default function Editor() {
     setAiError("");
     setAiBgGradient(null);
     setBgImage(null);
+    setAiImageUrl(null);
 
-    try {
-      // Direct client-side OpenAI call — no server needed
-      const res = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1-mini",
-          messages: [
-            {
-              role: "system",
-              content: `You are a CSS gradient designer for Bengali poetry cards. Given a Bengali or English description, return ONLY a valid JSON object (no markdown, no explanation):
-{"css": "the CSS background value", "description": "short Bengali description"}
+    // Use server-side image generation via tRPC
+    generateAiBgMutation.mutate({ prompt: aiPrompt.trim() });
+  }, [aiPrompt, aiGenerating, generateAiBgMutation]);
 
-Rules:
-- Use beautiful linear-gradient or radial-gradient
-- Colors should match the theme/mood described
-- Make it suitable for text overlay (not too bright)
-- Examples:
-  Night sky: {"css": "linear-gradient(180deg, #0a0a2e 0%, #1a1a4e 50%, #0d2137 100%)", "description": "রাতের আকাশ"}
-  Garden: {"css": "linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%)", "description": "সবুজ বাগান"}
-  Sunset: {"css": "linear-gradient(180deg, #ff6b35 0%, #f7931e 40%, #ffcd3c 100%)", "description": "সূর্যাস্ত"}
-  Love: {"css": "radial-gradient(ellipse at top, #c9184a 0%, #590d22 60%, #1a0010 100%)", "description": "ভালোবাসা"}`,
-            },
-            { role: "user", content: aiPrompt.trim() },
-          ],
-          max_tokens: 200,
-          temperature: 0.8,
-        }),
-      });
 
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const data = await res.json();
-      const raw = data.choices?.[0]?.message?.content?.trim() || "";
-      
-      // Parse JSON response
-      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      const parsed = JSON.parse(cleaned);
-      setAiBgGradient(parsed.css);
-      setAiBgDesc(parsed.description || aiPrompt.trim());
-    } catch (err) {
-      console.error("AI bg error:", err);
-      // Fallback: keyword-based gradient
-      const p = aiPrompt.toLowerCase();
-      let css = "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)";
-      if (p.includes("রাত") || p.includes("night") || p.includes("আকাশ")) css = "linear-gradient(180deg, #0a0a2e 0%, #1a1a4e 50%, #0d2137 100%)";
-      else if (p.includes("সূর্য") || p.includes("sunset") || p.includes("সন্ধ্যা")) css = "linear-gradient(180deg, #ff6b35 0%, #f7931e 40%, #ffcd3c 100%)";
-      else if (p.includes("বাগান") || p.includes("garden") || p.includes("ফুল")) css = "linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%)";
-      else if (p.includes("সমুদ্র") || p.includes("ocean") || p.includes("নদী")) css = "linear-gradient(180deg, #03045e 0%, #0077b6 50%, #00b4d8 100%)";
-      else if (p.includes("ভালোবাসা") || p.includes("love") || p.includes("প্রেম")) css = "radial-gradient(ellipse at top, #c9184a 0%, #590d22 60%, #1a0010 100%)";
-      else if (p.includes("সোনা") || p.includes("gold") || p.includes("আলো")) css = "linear-gradient(135deg, #1a0a00 0%, #3d1f00 40%, #7a4000 70%, #d4a843 100%)";
-      setAiBgGradient(css);
-      setAiBgDesc(aiPrompt.trim());
-    }
-    setAiGenerating(false);
-    setBgLoading(false);
-  }, [aiPrompt, aiGenerating]);
 
   // UI
   const [tab, setTab]           = useState<"content"|"design"|"typo"|"bg"|"extras">("content");
@@ -947,7 +915,7 @@ Rules:
                       <img src={AUTHOR_PHOTO} alt="" className="w-7 h-7 rounded-full object-cover border border-[#D4A843]/40" />
                       <span className="text-[#D4A843] text-sm font-bold">AI ব্যাকগ্রাউন্ড তৈরি করুন</span>
                     </div>
-                    <p className="text-gray-500 text-xs">বাংলায় লিখুন — AI আপনার জন্য সুন্দর ব্যাকগ্রাউন্ড তৈরি করবে</p>
+                    <p className="text-gray-500 text-xs">বাংলায় লিখুন — AI আপনার জন্য আসল ছবি তৈরি করবে এবং ব্যাকগ্রাউন্ড হিসেবে সেট করবে</p>
                     <textarea
                       value={aiPrompt}
                       onChange={e => setAiPrompt(e.target.value)}
@@ -962,23 +930,37 @@ Rules:
                       className="w-full py-3 bg-gradient-to-r from-[#D4A843] to-[#c49030] hover:from-[#c49030] hover:to-[#b07820] text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(aiGenerating || bgLoading) ? (
-                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ব্যাকগ্রাউন্ড তৈরি হচ্ছে...</>
+                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ছবি তৈরি হচ্ছে... (১-২ মিনিট)</>
                       ) : (
                         <>✨ AI দিয়ে ব্যাকগ্রাউন্ড তৈরি করুন</>
                       )}
                     </button>
 
-                    {/* Success: show gradient preview swatch */}
-                    {aiBgGradient && !aiGenerating && !bgLoading && (
+                    {/* Success: show actual AI generated image preview */}
+                    {aiImageUrl && !aiGenerating && !bgLoading && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
-                          <span>✓</span> AI ব্যাকগ্রাউন্ড প্রিভিউতে সেট হয়েছে ↓
+                          <span>✓</span> AI ছবি তৈরি হয়েছে! প্রিভিউতে দেখুন ↓
                         </div>
-                        <div style={{ background: aiBgGradient }} className="w-full h-10 rounded-xl border border-white/10" />
+                        <img
+                          src={aiImageUrl}
+                          alt={aiBgDesc}
+                          className="w-full h-24 object-cover rounded-xl border border-white/10"
+                        />
                         {aiBgDesc && <p className="text-gray-400 text-xs">বিষয়: {aiBgDesc}</p>}
-                        <button onClick={() => { setAiBgGradient(null); setAiBgDesc(""); }}
+                        <div className="flex gap-2">
+                          <button onClick={() => { setBgOpacity(1.0); }}
+                            className="flex-1 py-1.5 bg-[#D4A843]/10 hover:bg-[#D4A843]/20 text-[#D4A843] rounded-xl text-xs transition-all border border-[#D4A843]/30">
+                            পূর্ণ দৃশ্যমান
+                          </button>
+                          <button onClick={() => { setBgOpacity(0.5); }}
+                            className="flex-1 py-1.5 bg-[#0f1c2e] hover:bg-[#1e3050] text-gray-300 rounded-xl text-xs transition-all border border-[#1e3050]">
+                            হাল্কা
+                          </button>
+                        </div>
+                        <button onClick={() => { setAiImageUrl(null); setBgImage(null); setAiBgDesc(""); }}
                           className="w-full py-1.5 bg-red-900/20 hover:bg-red-900/40 text-red-400 rounded-xl text-xs transition-all border border-red-900/40">
-                          AI ব্যাকগ্রাউন্ড সরিয়ে দিন
+                          AI ছবি সরিয়ে দিন
                         </button>
                       </div>
                     )}
@@ -1162,7 +1144,9 @@ Rules:
                         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                       </div>
                       <div style={{ color: "#D4A843", fontSize: 13, fontWeight: 600, textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.8)" }}>
-                        AI ছবি লোড হচ্ছে...
+                        AI ছবি তৈরি হচ্ছে...
+                        <br />
+                        <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.8 }}>১-২ মিনিট সময় লাগতে পারে</span>
                       </div>
                     </div>
                   )}

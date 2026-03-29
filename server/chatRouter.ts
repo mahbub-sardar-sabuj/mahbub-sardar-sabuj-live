@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
 import OpenAI from "openai";
+import { generateImage } from "./_core/imageGeneration";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -56,7 +57,55 @@ export const chatRouter = router({
       };
     }),
 
-  // ── AI Background Generation — CSS Gradient via GPT ──────────────────────────
+  // ── AI Background Image Generation — actual image via Forge ──────────────────
+  generateAiBackground: publicProcedure
+    .input(
+      z.object({
+        prompt: z.string().min(2).max(500),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // First, translate Bengali prompt to English using GPT for better image generation
+      const translateResponse = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a prompt translator for AI image generation. 
+Convert the user's Bengali or English description into a detailed, vivid English image generation prompt.
+Make it suitable for a beautiful background image for a Bengali poetry card.
+Return ONLY the English prompt, nothing else. No explanation, no quotes.
+Make it descriptive and artistic. Include lighting, mood, atmosphere.
+Examples:
+- "আকাশের ছবি" → "Beautiful blue sky with soft white clouds, golden sunlight, serene atmosphere, photorealistic, high quality"
+- "রাতের আকাশ" → "Stunning night sky filled with stars and milky way, deep blue and purple tones, moonlight, dreamy atmosphere"
+- "সমুদ্রের ছবি" → "Breathtaking ocean view with turquoise waves, golden beach, sunset light reflecting on water, peaceful and majestic"
+- "বাগানের ছবি" → "Lush green garden with colorful flowers in bloom, morning dew, soft sunlight filtering through leaves, vibrant and serene"
+- "ভালোবাসার ছবি" → "Romantic rose petals scattered on soft fabric, warm pink and red tones, bokeh background, dreamy and tender atmosphere"`,
+          },
+          {
+            role: "user",
+            content: input.prompt,
+          },
+        ],
+        max_tokens: 150,
+        temperature: 0.7,
+      });
+
+      const englishPrompt = translateResponse.choices[0]?.message?.content?.trim() || input.prompt;
+      
+      // Generate the actual image
+      const { url } = await generateImage({
+        prompt: `${englishPrompt}, suitable as background for text overlay, artistic, high quality, 4k`,
+      });
+
+      return {
+        imageUrl: url || null,
+        description: input.prompt,
+      };
+    }),
+
+  // ── AI Background Generation — CSS Gradient via GPT (fallback) ───────────────
   generateBackground: publicProcedure
     .input(
       z.object({
@@ -69,7 +118,7 @@ export const chatRouter = router({
         messages: [
           {
             role: "system",
-            content: `You are an expert CSS background designer for poetry cards. 
+            content: `You are an expert CSS background designer for Bengali poetry cards. 
 Given a Bengali or English description, create a beautiful CSS background.
 
 Return a JSON object with EXACTLY this structure (no markdown, no explanation):
