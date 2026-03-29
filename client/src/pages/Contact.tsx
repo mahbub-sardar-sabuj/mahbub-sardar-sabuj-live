@@ -29,8 +29,9 @@ export default function Contact() {
     <div style={{ background: "linear-gradient(180deg, #0D1B2A 0%, #132238 100%)", minHeight: "100vh" }}>
       <Seo
         title="যোগাযোগ | মাহবুব সরদার সবুজ"
-        description="লেখক মাহবুব সরদার সবুজ-এর সঙ্গে যোগাযোগের জন্য ইমেইল, সামাজিক মাধ্যম, এবং অফিসিয়াল ওয়েবসাইট তথ্য।"
+        description="লেখক মাহবুব সরদার সবুজ-এর সঙ্গে যোগাযোগের জন্য ইমেইল, সামাজিক মাধ্যম, এবং অফিসিয়াল ওয়েবসাইট তথ্য।"
         path="/contact"
+        keywords="মাহবুব সরদার সবুজ যোগাযোগ, Mahbub Sardar Sabuj contact, মাহবুব সরদার সবুজ ইমেইল, বাংলা লেখক যোগাযোগ"
       />
       <Navbar />
 
