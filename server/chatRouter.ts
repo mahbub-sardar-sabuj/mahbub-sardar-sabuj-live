@@ -57,7 +57,7 @@ export const chatRouter = router({
       };
     }),
 
-  // ── AI Background Image Generation ──────────────────────────────────────────
+  // ── AI Background Image Generation ───────────────────────────────────────────────
   generateBackground: publicProcedure
     .input(
       z.object({
@@ -71,14 +71,28 @@ export const chatRouter = router({
       // Build artistic prompt for background card design
       const finalPrompt = `Beautiful artistic background for a poetry card: ${englishPrompt}. Aesthetic, painterly, soft colors, no text, no people, high quality digital art, suitable for text overlay.`;
 
-      // Use Pollinations.ai — free, no API key needed, returns image URL
+      // Use Pollinations.ai — free, no API key needed
       const encodedPrompt = encodeURIComponent(finalPrompt);
       const seed = Math.floor(Math.random() * 999999);
       const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1080&height=1080&seed=${seed}&nologo=true&enhance=true`;
 
-      return {
-        imageUrl,
-        englishPrompt,
-      };
+      // Fetch the image server-side to avoid CORS issues on the client
+      // Pollinations generates the image on first request (may take 10-30s)
+      try {
+        const response = await fetch(imageUrl, {
+          headers: { "User-Agent": "Mozilla/5.0" },
+          signal: AbortSignal.timeout(60000), // 60s timeout
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const buffer = await response.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString("base64");
+        const mimeType = response.headers.get("content-type") || "image/jpeg";
+        const dataUrl = `data:${mimeType};base64,${base64}`;
+        return { imageUrl: dataUrl, englishPrompt };
+      } catch (fetchErr) {
+        // If server-side fetch fails, return the URL so client can try directly
+        console.error("Server-side image fetch failed:", fetchErr);
+        return { imageUrl, englishPrompt };
+      }
     }),
 });

@@ -277,17 +277,24 @@ export default function Editor() {
 
     setAiGenerating(false);
 
-    // Now preload the image so preview shows it immediately when ready
-    try {
-      const dataUrl = await preloadImage(imageUrl);
-      setBgImage(dataUrl);
-      setBgOpacity(0.35);
-    } catch {
-      // If preload fails, set URL directly and let browser handle it
+    // imageUrl is now a base64 data URL from server (no CORS issues)
+    // If it's still a regular URL (fallback), try to preload it
+    if (imageUrl.startsWith("data:")) {
       setBgImage(imageUrl);
       setBgOpacity(0.35);
+      setBgLoading(false);
+    } else {
+      // Fallback: try client-side preload
+      try {
+        const dataUrl = await preloadImage(imageUrl);
+        setBgImage(dataUrl);
+        setBgOpacity(0.35);
+      } catch {
+        setBgImage(imageUrl);
+        setBgOpacity(0.35);
+      }
+      setBgLoading(false);
     }
-    setBgLoading(false);
   }, [aiPrompt, aiGenerating, generateBgMutation, preloadImage]);
 
   // UI
@@ -1074,6 +1081,38 @@ export default function Editor() {
                       backgroundSize: "cover", backgroundPosition: "center",
                       opacity: bgOpacity, filter: bgBlur ? "blur(8px)" : "none", zIndex: 0,
                     }} />
+                  )}
+
+                  {/* Shimmer loading overlay — shown while AI bg is loading */}
+                  {bgLoading && (
+                    <div style={{
+                      position: "absolute", inset: 0, zIndex: 10, pointerEvents: "none",
+                      background: "linear-gradient(110deg, rgba(15,28,46,0.0) 30%, rgba(212,168,67,0.18) 50%, rgba(15,28,46,0.0) 70%)",
+                      backgroundSize: "200% 100%",
+                      animation: "shimmer 1.5s infinite linear",
+                    }}>
+                      <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
+                    </div>
+                  )}
+                  {bgLoading && (
+                    <div style={{
+                      position: "absolute", inset: 0, zIndex: 11, pointerEvents: "none",
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      gap: 12,
+                    }}>
+                      <div style={{
+                        width: 48, height: 48,
+                        border: "4px solid rgba(212,168,67,0.2)",
+                        borderTopColor: "#D4A843",
+                        borderRadius: "50%",
+                        animation: "spin 1s linear infinite",
+                      }}>
+                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                      </div>
+                      <div style={{ color: "#D4A843", fontSize: 13, fontWeight: 600, textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.8)" }}>
+                        AI ছবি লোড হচ্ছে...
+                      </div>
+                    </div>
                   )}
 
                   {/* Watermark — full background cover */}
