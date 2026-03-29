@@ -15,7 +15,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
-import { trpc } from "@/lib/trpc";
+
+// Client-side OpenAI config (same as AIChatbot)
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
+const OPENAI_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL || "https://openrouter.ai/api/v1";
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 const FONTS = [
@@ -236,7 +239,6 @@ export default function Editor() {
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError]         = useState("");
   const [bgLoading, setBgLoading]     = useState(false);
-  const generateBgMutation = trpc.chat.generateBackground.useMutation();
 
   const handleAiGenerate = useCallback(async () => {
     if (!aiPrompt.trim() || aiGenerating) return;
@@ -247,17 +249,64 @@ export default function Editor() {
     setBgImage(null);
 
     try {
-      const result = await generateBgMutation.mutateAsync({ prompt: aiPrompt.trim() });
-      // Server returns CSS gradient
-      setAiBgGradient(result.css);
-      setAiBgDesc(result.description);
+      // Direct client-side OpenAI call — no server needed
+      const res = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4.1-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are a CSS gradient designer for Bengali poetry cards. Given a Bengali or English description, return ONLY a valid JSON object (no markdown, no explanation):
+{"css": "the CSS background value", "description": "short Bengali description"}
+
+Rules:
+- Use beautiful linear-gradient or radial-gradient
+- Colors should match the theme/mood described
+- Make it suitable for text overlay (not too bright)
+- Examples:
+  Night sky: {"css": "linear-gradient(180deg, #0a0a2e 0%, #1a1a4e 50%, #0d2137 100%)", "description": "রাতের আকাশ"}
+  Garden: {"css": "linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%)", "description": "সবুজ বাগান"}
+  Sunset: {"css": "linear-gradient(180deg, #ff6b35 0%, #f7931e 40%, #ffcd3c 100%)", "description": "সূর্যাস্ত"}
+  Love: {"css": "radial-gradient(ellipse at top, #c9184a 0%, #590d22 60%, #1a0010 100%)", "description": "ভালোবাসা"}`,
+            },
+            { role: "user", content: aiPrompt.trim() },
+          ],
+          max_tokens: 200,
+          temperature: 0.8,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const data = await res.json();
+      const raw = data.choices?.[0]?.message?.content?.trim() || "";
+      
+      // Parse JSON response
+      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const parsed = JSON.parse(cleaned);
+      setAiBgGradient(parsed.css);
+      setAiBgDesc(parsed.description || aiPrompt.trim());
     } catch (err) {
-      setAiError("দুঃখিত, AI ব্যাকগ্রাউন্ড তৈরি হয়নি। আবার চেষ্টা করুন।");
-      console.error(err);
+      console.error("AI bg error:", err);
+      // Fallback: keyword-based gradient
+      const p = aiPrompt.toLowerCase();
+      let css = "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)";
+      if (p.includes("রাত") || p.includes("night") || p.includes("আকাশ")) css = "linear-gradient(180deg, #0a0a2e 0%, #1a1a4e 50%, #0d2137 100%)";
+      else if (p.includes("সূর্য") || p.includes("sunset") || p.includes("সন্ধ্যা")) css = "linear-gradient(180deg, #ff6b35 0%, #f7931e 40%, #ffcd3c 100%)";
+      else if (p.includes("বাগান") || p.includes("garden") || p.includes("ফুল")) css = "linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #52b788 100%)";
+      else if (p.includes("সমুদ্র") || p.includes("ocean") || p.includes("নদী")) css = "linear-gradient(180deg, #03045e 0%, #0077b6 50%, #00b4d8 100%)";
+      else if (p.includes("ভালোবাসা") || p.includes("love") || p.includes("প্রেম")) css = "radial-gradient(ellipse at top, #c9184a 0%, #590d22 60%, #1a0010 100%)";
+      else if (p.includes("সোনা") || p.includes("gold") || p.includes("আলো")) css = "linear-gradient(135deg, #1a0a00 0%, #3d1f00 40%, #7a4000 70%, #d4a843 100%)";
+      setAiBgGradient(css);
+      setAiBgDesc(aiPrompt.trim());
     }
     setAiGenerating(false);
     setBgLoading(false);
-  }, [aiPrompt, aiGenerating, generateBgMutation]);
+  }, [aiPrompt, aiGenerating]);
 
   // UI
   const [tab, setTab]           = useState<"content"|"design"|"typo"|"bg"|"extras">("content");
