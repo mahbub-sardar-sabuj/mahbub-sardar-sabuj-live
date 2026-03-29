@@ -7,9 +7,9 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  imageUrl?: string; // for photo responses
 }
 
-// A detected action button extracted from AI text
 interface ActionButton {
   label: string;
   path: string;
@@ -20,22 +20,31 @@ const OPENAI_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL || "https://openrou
 
 const AUTHOR_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 
-// ── Page map: path → Bengali label ──────────────────────────────────────────
+// ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
-  { path: "/about",    label: "পরিচিতি পেজ দেখুন",         keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
-  { path: "/ebooks",   label: "ই-বুক সংগ্রহ দেখুন",        keywords: ["ebooks", "ebook", "ই-বুক", "বই"] },
-  { path: "/writings", label: "লেখালেখি পেজ দেখুন",        keywords: ["writings", "writing", "লেখালেখি", "লেখা", "কবিতা"] },
-  { path: "/contact",  label: "যোগাযোগ পেজ দেখুন",         keywords: ["contact", "যোগাযোগ", "ইমেইল"] },
-  { path: "/editor",   label: "ডিজাইন ফরম্যাট খুলুন",      keywords: ["editor", "ডিজাইন", "ফরম্যাট"] },
-  { path: "/",         label: "হোম পেজ দেখুন",             keywords: ["home", "হোম"] },
+  { path: "/about",    label: "পরিচিতি পেজ দেখুন",    keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
+  { path: "/ebooks",   label: "ই-বুক সংগ্রহ দেখুন",   keywords: ["ebooks", "ebook", "ই-বুক", "বই"] },
+  { path: "/writings", label: "লেখালেখি পেজ দেখুন",   keywords: ["writings", "writing", "লেখালেখি", "লেখা", "কবিতা"] },
+  { path: "/contact",  label: "যোগাযোগ পেজ দেখুন",    keywords: ["contact", "যোগাযোগ", "ইমেইল"] },
+  { path: "/editor",   label: "ডিজাইন ফরম্যাট খুলুন", keywords: ["editor", "ডিজাইন", "ফরম্যাট"] },
+  { path: "/",         label: "হোম পেজ দেখুন",        keywords: ["home", "হোম"] },
   { path: "/ebooks/read/smritir-boshonte", label: "স্মৃতির বসন্তে তুমি পড়ুন",  keywords: ["smritir", "স্মৃতির বসন্তে"] },
   { path: "/ebooks/read/chand-phool",      label: "চাঁদফুল পড়ুন",              keywords: ["chand-phool", "চাঁদফুল"] },
   { path: "/ebooks/read/shomoyer-gohvore", label: "সময়ের গহ্বরে পড়ুন",        keywords: ["shomoyer", "সময়ের গহ্বরে"] },
 ];
 
-const BASE_URL = "https://mahbub-sardar-sabuj-live.vercel.app";
+// ── Photo request detection ───────────────────────────────────────────────────
+const PHOTO_KEYWORDS = [
+  "ছবি", "photo", "picture", "image", "ফটো", "দেখতে", "চেহারা",
+  "মুখ", "face", "look", "দেখাও", "দেখান", "কেমন দেখতে",
+];
 
-// ── System prompt — instruct AI to use [BUTTON:path] tags instead of URLs ───
+function isPhotoRequest(text: string): boolean {
+  const lower = text.toLowerCase();
+  return PHOTO_KEYWORDS.some(kw => lower.includes(kw));
+}
+
+// ── System prompt ─────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী।
 
 ## তোমার পরিচয়
@@ -84,6 +93,7 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - **কখনো URL লিংক দেবে না** (https://... ধরনের কোনো লিংক টেক্সটে লিখবে না)
 - যখন কোনো পেজের কথা বলবে, শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে
 - [BUTTON:/path] ট্যাগ স্বয়ংক্রিয়ভাবে সুন্দর বাটনে পরিণত হবে
+- যদি কেউ মাহবুব সরদার সবুজের ছবি চায়, তাহলে [PHOTO] ট্যাগ ব্যবহার করো
 - সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)
 - উত্তর সংক্ষিপ্ত ও স্পষ্ট রাখো`;
 
@@ -119,13 +129,17 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ── Parse AI response: extract [BUTTON:/path] tags and raw URLs ──────────────
-function parseContent(raw: string): { text: string; buttons: ActionButton[] } {
+// ── Parse AI response ─────────────────────────────────────────────────────────
+function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean } {
   const buttons: ActionButton[] = [];
   const seen = new Set<string>();
+  let showPhoto = false;
 
-  // 1. Extract [BUTTON:/path] tags
-  let text = raw.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
+  // Detect [PHOTO] tag
+  let text = raw.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
+
+  // Extract [BUTTON:/path] tags
+  text = text.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
     if (!seen.has(path)) {
       seen.add(path);
       const page = PAGE_MAP.find(p => p.path === path);
@@ -134,7 +148,7 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[] } {
     return "";
   });
 
-  // 2. Strip any raw URLs that start with the base URL (replace with button)
+  // Strip raw URLs
   text = text.replace(
     new RegExp(`https?://mahbub-sardar-sabuj-live\\.vercel\\.app(/[^\\s)>"]*)`, "g"),
     (_, path) => {
@@ -148,16 +162,11 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[] } {
     }
   );
 
-  // 3. Clean up leftover artifacts like trailing colons, double spaces, etc.
-  text = text
-    .replace(/:\s*\n\n/g, ":\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-
-  return { text, buttons };
+  text = text.replace(/:\s*\n\n/g, ":\n").replace(/\n{3,}/g, "\n\n").trim();
+  return { text, buttons, showPhoto };
 }
 
-// ── Message bubble with button rendering ─────────────────────────────────────
+// ── Message Bubble ────────────────────────────────────────────────────────────
 function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: (path: string) => void }) {
   const isUser = message.role === "user";
 
@@ -182,7 +191,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
     );
   }
 
-  const { text, buttons } = parseContent(message.content);
+  const { text, buttons, showPhoto } = parseContent(message.content);
 
   return (
     <motion.div
@@ -203,8 +212,28 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
           }}
         />
       </div>
-      <div className="max-w-[80%] flex flex-col items-start">
-        <div className="px-4 py-3 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-[#1e2d3d] text-gray-100 border border-[#2a3a4a]">
+      <div className="max-w-[85%] flex flex-col items-start">
+        <div className="px-4 py-3 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-[#1e2d3d]/90 text-gray-100 border border-[#2a3a4a] backdrop-blur-sm">
+
+          {/* Author photo card */}
+          {(showPhoto || message.imageUrl) && (
+            <div className="mb-3">
+              <div className="relative rounded-xl overflow-hidden border-2 border-[#D4A843]/50 shadow-lg"
+                style={{ maxWidth: 220 }}>
+                <img
+                  src={AUTHOR_PHOTO}
+                  alt="মাহবুব সরদার সবুজ"
+                  className="w-full object-cover"
+                  style={{ maxHeight: 260 }}
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2">
+                  <p className="text-white text-xs font-semibold">মাহবুব সরদার সবুজ</p>
+                  <p className="text-[#D4A843] text-[10px]">লেখক ও কবি</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="whitespace-pre-wrap">{text}</p>
 
           {/* Action buttons */}
@@ -217,11 +246,9 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
                   className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#D4A843]/20 to-[#D4A843]/10 hover:from-[#D4A843]/30 hover:to-[#D4A843]/20 border border-[#D4A843]/40 hover:border-[#D4A843] text-[#D4A843] rounded-xl text-xs font-semibold transition-all group"
                 >
                   <span className="flex-1 text-left">{btn.label}</span>
-                  <svg
-                    className="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform"
+                  <svg className="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                    strokeLinecap="round" strokeLinejoin="round"
-                  >
+                    strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -239,18 +266,14 @@ function TypingIndicator() {
   return (
     <div className="flex justify-start mb-4">
       <div className="w-8 h-8 rounded-full overflow-hidden mr-2 flex-shrink-0 border-2 border-[#D4A843]">
-        <img
-          src={AUTHOR_PHOTO}
-          alt="AI"
-          className="w-full h-full object-cover"
+        <img src={AUTHOR_PHOTO} alt="AI" className="w-full h-full object-cover"
           onError={(e) => {
             const t = e.currentTarget;
             t.style.display = "none";
             t.parentElement!.innerHTML = '<span class="text-black font-bold text-xs flex items-center justify-center w-full h-full bg-[#D4A843]">AI</span>';
-          }}
-        />
+          }} />
       </div>
-      <div className="bg-[#1e2d3d] border border-[#2a3a4a] px-4 py-3 rounded-2xl rounded-bl-sm">
+      <div className="bg-[#1e2d3d]/90 border border-[#2a3a4a] px-4 py-3 rounded-2xl rounded-bl-sm backdrop-blur-sm">
         <div className="flex gap-1 items-center">
           <div className="w-2 h-2 bg-[#D4A843] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
           <div className="w-2 h-2 bg-[#D4A843] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -271,14 +294,14 @@ const WELCOME_MESSAGE: Message = {
 };
 
 export default function AIChatbot() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
-  const [input, setInput] = useState("");
+  const [isOpen, setIsOpen]       = useState(false);
+  const [messages, setMessages]   = useState<Message[]>([WELCOME_MESSAGE]);
+  const [input, setInput]         = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]         = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [, navigate] = useLocation();
+  const inputRef       = useRef<HTMLTextAreaElement>(null);
+  const [, navigate]   = useLocation();
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -299,28 +322,43 @@ export default function AIChatbot() {
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
+    const userText = input.trim();
+
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: userText,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
     setError(null);
+
     try {
-      const history = [...messages, userMsg]
-        .filter((m) => m.id !== "welcome")
-        .map((m) => ({ role: m.role, content: m.content }));
-      const reply = await callAI(history);
-      const assistantMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: reply,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      // If user is asking for a photo, respond immediately with photo
+      if (isPhotoRequest(userText)) {
+        const photoMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "এই হলেন মাহবুব সরদার সবুজ — বাংলাদেশের প্রিয় লেখক ও কবি। [PHOTO]",
+          timestamp: new Date(),
+          imageUrl: AUTHOR_PHOTO,
+        };
+        setMessages((prev) => [...prev, photoMsg]);
+      } else {
+        const history = [...messages, userMsg]
+          .filter((m) => m.id !== "welcome")
+          .map((m) => ({ role: m.role, content: m.content }));
+        const reply = await callAI(history);
+        const assistantMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: reply,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+      }
     } catch {
       setError("সংযোগ সমস্যা। আবার চেষ্টা করুন।");
     }
@@ -335,14 +373,12 @@ export default function AIChatbot() {
   };
 
   const clearChat = () => {
-    setMessages([
-      {
-        id: "welcome-new",
-        role: "assistant",
-        content: "নতুন কথোপকথন শুরু হয়েছে। আপনাকে কীভাবে সাহায্য করতে পারি?",
-        timestamp: new Date(),
-      },
-    ]);
+    setMessages([{
+      id: "welcome-new",
+      role: "assistant",
+      content: "নতুন কথোপকথন শুরু হয়েছে। আপনাকে কীভাবে সাহায্য করতে পারি?",
+      timestamp: new Date(),
+    }]);
     setError(null);
   };
 
@@ -359,33 +395,19 @@ export default function AIChatbot() {
       >
         <AnimatePresence mode="wait">
           {isOpen ? (
-            <motion.span
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              className="text-xl font-bold text-white"
-            >
-              ✕
-            </motion.span>
+            <motion.span key="close"
+              initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
+              className="text-xl font-bold text-white">✕</motion.span>
           ) : (
-            <motion.div
-              key="open"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
-              className="w-full h-full"
-            >
-              <img
-                src={AUTHOR_PHOTO}
-                alt="মাহবুব সরদার সবুজ AI"
-                className="w-full h-full object-cover"
+            <motion.div key="open"
+              initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
+              className="w-full h-full">
+              <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ AI" className="w-full h-full object-cover"
                 onError={(e) => {
                   const t = e.currentTarget;
                   t.style.display = "none";
                   t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:24px;">🤖</span>';
-                }}
-              />
+                }} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -399,62 +421,67 @@ export default function AIChatbot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] bg-[#0d1b2a] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            style={{ background: "#0d1b2a" }}
           >
-            {/* Header */}
-            <div className="bg-[#111827] px-4 py-3 flex items-center justify-between border-b border-[#2a3a4a]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#D4A843] flex-shrink-0">
-                  <img
-                    src={AUTHOR_PHOTO}
-                    alt="মাহবুব সরদার সবুজ"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const t = e.currentTarget;
-                      t.style.display = "none";
-                      t.parentElement!.innerHTML = '<span class="text-black font-bold text-sm flex items-center justify-center w-full h-full bg-[#D4A843]">AI</span>';
-                    }}
-                  />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">মাহবুব সরদার সবুজ AI Agent</div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-green-400 text-xs">সক্রিয়</span>
+            {/* ── Full-background watermark ── */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `url(${AUTHOR_PHOTO})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center top",
+                opacity: 0.07,
+                pointerEvents: "none",
+                zIndex: 0,
+                borderRadius: "inherit",
+              }}
+            />
+            {/* Gradient overlay so text stays readable */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(180deg, rgba(13,27,42,0.82) 0%, rgba(13,27,42,0.70) 50%, rgba(13,27,42,0.88) 100%)",
+                pointerEvents: "none",
+                zIndex: 0,
+                borderRadius: "inherit",
+              }}
+            />
+
+            {/* All content above watermark */}
+            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
+
+              {/* Header */}
+              <div className="bg-[#111827]/90 px-4 py-3 flex items-center justify-between border-b border-[#2a3a4a] backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#D4A843] flex-shrink-0">
+                    <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        t.style.display = "none";
+                        t.parentElement!.innerHTML = '<span class="text-black font-bold text-sm flex items-center justify-center w-full h-full bg-[#D4A843]">AI</span>';
+                      }} />
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold text-sm">মাহবুব সরদার সবুজ AI Agent</div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                      <span className="text-green-400 text-xs">সক্রিয়</span>
+                    </div>
                   </div>
                 </div>
+                <button onClick={clearChat} title="নতুন কথোপকথন"
+                  className="text-gray-400 hover:text-[#D4A843] text-xs transition-colors px-2 py-1 rounded border border-[#2a3a4a] hover:border-[#D4A843]">
+                  নতুন
+                </button>
               </div>
-              <button
-                onClick={clearChat}
-                title="নতুন কথোপকথন"
-                className="text-gray-400 hover:text-[#D4A843] text-xs transition-colors px-2 py-1 rounded border border-[#2a3a4a] hover:border-[#D4A843]"
-              >
-                নতুন
-              </button>
-            </div>
 
-            {/* Messages with watermark background */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 relative" style={{ isolation: "isolate" }}>
-              {/* Watermark */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: "180px",
-                  height: "180px",
-                  borderRadius: "50%",
-                  backgroundImage: `url(${AUTHOR_PHOTO})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  opacity: 0.08,
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }}
-              />
-              <div style={{ position: "relative", zIndex: 1 }}>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
                 {messages.map((msg) => (
                   <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
                 ))}
@@ -466,57 +493,52 @@ export default function AIChatbot() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-            </div>
 
-            {/* Suggestions */}
-            {messages.length === 1 && (
-              <div className="px-4 pb-2 flex flex-wrap gap-2">
-                {SUGGESTIONS.map((s) => (
+              {/* Suggestions */}
+              {messages.length === 1 && (
+                <div className="px-4 pb-2 flex flex-wrap gap-2">
+                  {SUGGESTIONS.map((s) => (
+                    <button key={s}
+                      onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                      className="text-xs bg-[#1e2d3d]/80 text-[#D4A843] border border-[#2a3a4a] rounded-full px-3 py-1 hover:border-[#D4A843] transition-all backdrop-blur-sm">
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="px-4 py-3 border-t border-[#2a3a4a] bg-[#111827]/90 backdrop-blur-sm">
+                <div className="flex gap-2 items-end">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="আপনার প্রশ্ন লিখুন... (Enter চাপুন)"
+                    rows={1}
+                    className="flex-1 bg-[#1e2d3d] text-white border border-[#2a3a4a] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-500 max-h-24 overflow-y-auto"
+                    style={{ minHeight: "40px" }}
+                    disabled={isLoading}
+                  />
                   <button
-                    key={s}
-                    onClick={() => {
-                      setInput(s);
-                      inputRef.current?.focus();
-                    }}
-                    className="text-xs bg-[#1e2d3d] text-[#D4A843] border border-[#2a3a4a] rounded-full px-3 py-1 hover:border-[#D4A843] transition-all"
+                    onClick={handleSend}
+                    disabled={!input.trim() || isLoading}
+                    className="w-10 h-10 rounded-xl bg-[#D4A843] text-black flex items-center justify-center hover:bg-[#c49030] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    {s}
+                    {isLoading ? (
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    )}
                   </button>
-                ))}
+                </div>
+                <p className="text-gray-600 text-xs mt-1 text-center">Shift+Enter = নতুন লাইন</p>
               </div>
-            )}
-
-            {/* Input */}
-            <div className="px-4 py-3 border-t border-[#2a3a4a] bg-[#111827]">
-              <div className="flex gap-2 items-end">
-                <textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="আপনার প্রশ্ন লিখুন... (Enter চাপুন)"
-                  rows={1}
-                  className="flex-1 bg-[#1e2d3d] text-white border border-[#2a3a4a] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-500 max-h-24 overflow-y-auto"
-                  style={{ minHeight: "40px" }}
-                  disabled={isLoading}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className="w-10 h-10 rounded-xl bg-[#D4A843] text-black flex items-center justify-center hover:bg-[#c49030] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-                >
-                  {isLoading ? (
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              <p className="text-gray-600 text-xs mt-1 text-center">Shift+Enter = নতুন লাইন</p>
             </div>
           </motion.div>
         )}

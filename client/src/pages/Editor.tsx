@@ -15,6 +15,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
+import { trpc } from "@/lib/trpc";
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 const FONTS = [
@@ -222,6 +223,39 @@ export default function Editor() {
   const [showWatermark, setShowWatermark] = useState(false);
   const [watermarkOpacity, setWatermarkOpacity] = useState(8);
 
+  // AI Background generation
+  const [aiPrompt, setAiPrompt]       = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError]         = useState("");
+  const generateBgMutation = trpc.chat.generateBackground.useMutation();
+
+  const handleAiGenerate = useCallback(async () => {
+    if (!aiPrompt.trim() || aiGenerating) return;
+    setAiGenerating(true);
+    setAiError("");
+    try {
+      const result = await generateBgMutation.mutateAsync({ prompt: aiPrompt.trim() });
+      // Pre-load image then set as background
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        setBgImage(result.imageUrl);
+        setBgOpacity(0.35);
+        setAiGenerating(false);
+      };
+      img.onerror = () => {
+        // Fallback: set URL directly even if preload fails
+        setBgImage(result.imageUrl);
+        setBgOpacity(0.35);
+        setAiGenerating(false);
+      };
+      img.src = result.imageUrl;
+    } catch {
+      setAiError("ছবি তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      setAiGenerating(false);
+    }
+  }, [aiPrompt, aiGenerating, generateBgMutation]);
+
   // UI
   const [tab, setTab]           = useState<"content"|"design"|"typo"|"bg"|"extras">("content");
   const [downloading, setDownloading] = useState(false);
@@ -304,7 +338,7 @@ export default function Editor() {
       });
     }
 
-    // Watermark
+    // Watermark — full background cover
     if (showWatermark) {
       await new Promise<void>(res => {
         const img = new Image();
@@ -312,11 +346,18 @@ export default function Editor() {
         img.onload = () => {
           ctx.save();
           ctx.globalAlpha = watermarkOpacity / 100;
-          const wSize = Math.min(cardW, cardH) * 0.45;
-          ctx.beginPath();
-          ctx.arc(cardW / 2, cardH / 2, wSize / 2, 0, Math.PI * 2);
-          ctx.clip();
-          ctx.drawImage(img, (cardW - wSize) / 2, (cardH - wSize) / 2, wSize, wSize);
+          // Cover the entire card
+          const imgAspect = img.naturalWidth / img.naturalHeight;
+          const cardAspect = cardW / cardH;
+          let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+          if (imgAspect > cardAspect) {
+            sw = img.naturalHeight * cardAspect;
+            sx = (img.naturalWidth - sw) / 2;
+          } else {
+            sh = img.naturalWidth / cardAspect;
+            sy = (img.naturalHeight - sh) / 2;
+          }
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cardW, cardH);
           ctx.restore();
           res();
         };
@@ -757,11 +798,49 @@ export default function Editor() {
                 <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
                   <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">পটভূমি ও ওয়াটারমার্ক</h3>
 
-                  <button onClick={() => fileRef.current?.click()}
-                    className="w-full py-4 bg-[#0a1525] hover:bg-[#0f1c2e] text-gray-300 rounded-2xl border-2 border-dashed border-[#1e3050] hover:border-[#D4A843] transition-all text-sm">
-                    {bgImage ? "✓ ছবি নির্বাচিত — পরিবর্তন করুন" : "📁 পটভূমির ছবি আপলোড করুন"}
-                  </button>
-                  <input ref={fileRef} type="file" accept="image/*" onChange={handleBgUpload} className="hidden" />
+                  {/* ── AI Background Generator ── */}
+                  <div className="bg-gradient-to-br from-[#0a1525] to-[#0f1c2e] rounded-2xl p-4 border border-[#D4A843]/20 space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">🤖</span>
+                      <span className="text-[#D4A843] text-sm font-bold">AI ব্যাকগ্রাউন্ড তৈরি করুন</span>
+                    </div>
+                    <p className="text-gray-500 text-xs">বাংলায় লিখুন — AI আপনার জন্য সুন্দর ব্যাকগ্রাউন্ড তৈরি করবে</p>
+                    <textarea
+                      value={aiPrompt}
+                      onChange={e => setAiPrompt(e.target.value)}
+                      placeholder="যেমন: রাতের আকাশে তারা, বাংলাদেশের সবুজ মাঠ, গোলাপ ফুলের বাগান..."
+                      rows={3}
+                      className="w-full bg-[#060c18] text-white border border-[#1e3050] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-600 transition-colors"
+                    />
+                    {aiError && <p className="text-red-400 text-xs">{aiError}</p>}
+                    <button
+                      onClick={handleAiGenerate}
+                      disabled={!aiPrompt.trim() || aiGenerating}
+                      className="w-full py-3 bg-gradient-to-r from-[#D4A843] to-[#c49030] hover:from-[#c49030] hover:to-[#b07820] text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {aiGenerating ? (
+                        <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> AI ছবি তৈরি হচ্ছে...</>
+                      ) : (
+                        <>✨ AI দিয়ে ব্যাকগ্রাউন্ড তৈরি করুন</>
+                      )}
+                    </button>
+                    {bgImage && bgImage.includes("pollinations") && (
+                      <div className="flex items-center gap-2 text-green-400 text-xs">
+                        <span>✓</span> AI ব্যাকগ্রাউন্ড সেট হয়েছে
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Manual upload */}
+                  <div className="border-t border-[#1e3050] pt-3">
+                    <p className="text-gray-500 text-xs mb-2">অথবা নিজে ছবি আপলোড করুন</p>
+                    <button onClick={() => fileRef.current?.click()}
+                      className="w-full py-3 bg-[#0a1525] hover:bg-[#0f1c2e] text-gray-300 rounded-2xl border-2 border-dashed border-[#1e3050] hover:border-[#D4A843] transition-all text-sm">
+                      {bgImage && !bgImage.includes("pollinations") ? "✓ ছবি নির্বাচিত — পরিবর্তন করুন" : "📁 পটভূমির ছবি আপলোড করুন"}
+                    </button>
+                    <input ref={fileRef} type="file" accept="image/*" onChange={handleBgUpload} className="hidden" />
+                  </div>
+
                   {bgImage && (
                     <>
                       <Slider label="ছবির স্বচ্ছতা" val={Math.round(bgOpacity * 100)} set={v => setBgOpacity(v / 100)} min={2} max={100} step={2} unit="%" />
@@ -776,12 +855,13 @@ export default function Editor() {
                     </>
                   )}
 
-                  {/* Watermark */}
+                  {/* Watermark — full background cover */}
                   <div className="border-t border-[#1e3050] pt-4">
-                    <label className="flex items-center gap-2 cursor-pointer mb-3">
+                    <label className="flex items-center gap-2 cursor-pointer mb-1">
                       <input type="checkbox" checked={showWatermark} onChange={e => setShowWatermark(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
-                      <span className="text-gray-300 text-sm font-medium">লেখকের ছবি ওয়াটারমার্ক</span>
+                      <span className="text-gray-300 text-sm font-medium">লেখকের ছবি ওয়াটারমার্ক (পুরো পটভূমি)</span>
                     </label>
+                    <p className="text-gray-600 text-xs mb-2">লেখকের ছবি পুরো কার্ডের ব্যাকগ্রাউন্ডে watermark হিসেবে দেখাবে</p>
                     {showWatermark && (
                       <Slider label="ওয়াটারমার্ক স্বচ্ছতা" val={watermarkOpacity} set={setWatermarkOpacity} min={3} max={40} unit="%" />
                     )}
@@ -894,15 +974,12 @@ export default function Editor() {
                     }} />
                   )}
 
-                  {/* Watermark */}
+                  {/* Watermark — full background cover */}
                   {showWatermark && (
                     <div style={{
-                      position: "absolute", top: "50%", left: "50%",
-                      transform: "translate(-50%,-50%)",
-                      width: "45%", height: "45%",
-                      borderRadius: "50%",
+                      position: "absolute", inset: 0,
                       backgroundImage: `url(${AUTHOR_PHOTO})`,
-                      backgroundSize: "cover", backgroundPosition: "center",
+                      backgroundSize: "cover", backgroundPosition: "center top",
                       opacity: watermarkOpacity / 100, zIndex: 0, pointerEvents: "none",
                     }} />
                   )}
