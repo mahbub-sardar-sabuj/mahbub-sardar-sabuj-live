@@ -292,35 +292,7 @@ export default function Editor() {
     } else { ctx.fillStyle = theme.bg; }
     ctx.fillRect(0, 0, cardW, cardH);
 
-    // AI CSS Gradient background (drawn on top of theme bg)
-    if (aiBgGradient) {
-      // Parse and draw the AI gradient
-      const aiParts = aiBgGradient.match(/linear-gradient\(([^,]+),(.*)\)/s);
-      if (aiParts) {
-        const deg = parseFloat(aiParts[1].trim()) || 135;
-        const rad = (deg - 90) * Math.PI / 180;
-        const cx = cardW / 2, cy = cardH / 2;
-        const len = Math.sqrt(cardW ** 2 + cardH ** 2) / 2;
-        const aiGrad = ctx.createLinearGradient(
-          cx - Math.cos(rad) * len, cy - Math.sin(rad) * len,
-          cx + Math.cos(rad) * len, cy + Math.sin(rad) * len
-        );
-        const aiStops = aiParts[2].match(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)/g) || [];
-        aiStops.forEach((c, i) => aiGrad.addColorStop(i / Math.max(aiStops.length - 1, 1), c));
-        ctx.fillStyle = aiGrad;
-        ctx.fillRect(0, 0, cardW, cardH);
-      } else if (aiBgGradient.includes("radial-gradient")) {
-        // For radial gradients, create a radial gradient
-        const aiRadParts = aiBgGradient.match(/radial-gradient\([^,]+,(.*)\)/s);
-        if (aiRadParts) {
-          const aiGrad = ctx.createRadialGradient(cardW/2, cardH/3, 0, cardW/2, cardH/2, Math.max(cardW, cardH)/1.5);
-          const aiStops = aiRadParts[1].match(/#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)/g) || [];
-          aiStops.forEach((c, i) => aiGrad.addColorStop(i / Math.max(aiStops.length - 1, 1), c));
-          ctx.fillStyle = aiGrad;
-          ctx.fillRect(0, 0, cardW, cardH);
-        }
-      }
-    }
+    // AI CSS Gradient background removed
 
     // Pattern
     if (pattern !== "none") drawPattern(ctx, pattern, cardW, cardH, theme.text);
@@ -974,7 +946,7 @@ export default function Editor() {
                 {/* Card at full size, scaled down */}
                 <div style={{
                   width: cardW, height: cardH,
-                  background: aiBgGradient || theme.gradient || theme.bg,
+                  background: theme.gradient || theme.bg,
                   color: theme.text, fontFamily: fontCss, padding,
                   position: "absolute", top: 0, left: 0,
                   transform: `scale(${scale})`, transformOrigin: "top left",
@@ -997,13 +969,7 @@ export default function Editor() {
                     }} />
                   )}
 
-                  {/* AI CSS Gradient overlay */}
-                  {aiBgGradient && (
-                    <div style={{
-                      position: "absolute", inset: 0, zIndex: 0,
-                      background: aiBgGradient, opacity: 1,
-                    }} />
-                  )}
+
 
                   {/* Background image */}
                   {bgImage && (
