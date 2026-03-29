@@ -191,7 +191,7 @@ export default function Home() {
         "url": "https://mahbub-sardar-sabuj-live.vercel.app/",
         "image": PROFILE_1,
         "jobTitle": "লেখক",
-        "description": "বাংলা সাহিত্যের লেখক, কবি এবং আবৃত্তিশিল্পী মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
+        "description": "বাংলা সাহিত্যের লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
         "sameAs": [
           "https://facebook.com/MahbubSardarSabuj",
           "https://www.instagram.com/mahbub_sardar_sabuj",
@@ -204,10 +204,10 @@ export default function Home() {
   return (
     <div style={{ background: "#FAF6EF", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
-        title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj | লেখক, কবি ও আবৃত্তি"
-        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। এখানে তার বই, লেখালেখি, কবিতা, আবৃত্তি, গ্যালারি, সংবাদ এবং যোগাযোগের তথ্য পাওয়া যাবে।"
+        title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj | লেখক ও কবি"
+        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। এখানে তার বই, লেখালেখি, কবিতা, গ্যালারি, সংবাদ এবং যোগাযোগের তথ্য পাওয়া যাবে।"
         path="/"
-        keywords="মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, আবৃত্তি, বই, লেখালেখি"
+        keywords="মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, বই, লেখালেখি"
         jsonLd={homeJsonLd}
       />
       <Navbar />
@@ -566,7 +566,7 @@ export default function Home() {
         >
           {[...Array(4)].map((_, i) => (
             <div key={i} style={{ display: "flex", gap: "4rem", alignItems: "center" }}>
-              {["লেখক", "কবি", "আবৃত্তিশিল্পী", "মাহবুব সরদার সবুজ", "বাংলা সাহিত্য", "৭,০০০+ লেখা", "লক্ষাধিক পাঠক"].map((text, j) => (
+              {["লেখক", "কবি", "মাহবুব সরদার সবুজ", "বাংলা সাহিত্য", "৭,০০০+ লেখা", "লক্ষাধিক পাঠক"].map((text, j) => (
                 <span key={j} style={{
                   fontFamily: "'Noto Sans Bengali', sans-serif",
                   color: "#0A1628",
@@ -1758,7 +1758,6 @@ export default function Home() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                   {[
                     { icon: <Mail size={20} />, label: "ইমেইল", value: "lekhokmahbubsardarsabuj@gmail.com", href: "mailto:lekhokmahbubsardarsabuj@gmail.com" },
-                    { icon: <Phone size={20} />, label: "WhatsApp", value: "+966 55 968 5254", href: "https://wa.me/966559685254" },
                     { icon: <Facebook size={20} />, label: "Facebook", value: "Lekhok.MahbubSardarSabuj", href: "https://facebook.com/Lekhok.MahbubSardarSabuj" },
                   ].map((contact, i) => (
                     <motion.a
