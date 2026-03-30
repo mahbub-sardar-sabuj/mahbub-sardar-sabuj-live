@@ -417,106 +417,186 @@ function SliderRow({ label, val, set, min, max, step = 1, unit = "" }:
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UpscalePanel — FIXED: image upload + preview + real processing
+// Advanced image processing helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Apply convolution kernel to ImageData
+function applyConvolution(data: Uint8ClampedArray, w: number, h: number, kernel: number[], kSize: number): Uint8ClampedArray {
+  const output = new Uint8ClampedArray(data.length);
+  const half = Math.floor(kSize / 2);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let r = 0, g = 0, b = 0;
+      for (let ky = 0; ky < kSize; ky++) {
+        for (let kx = 0; kx < kSize; kx++) {
+          const px = Math.min(w - 1, Math.max(0, x + kx - half));
+          const py = Math.min(h - 1, Math.max(0, y + ky - half));
+          const idx = (py * w + px) * 4;
+          const k = kernel[ky * kSize + kx];
+          r += data[idx]     * k;
+          g += data[idx + 1] * k;
+          b += data[idx + 2] * k;
+        }
+      }
+      const i = (y * w + x) * 4;
+      output[i]     = Math.min(255, Math.max(0, r));
+      output[i + 1] = Math.min(255, Math.max(0, g));
+      output[i + 2] = Math.min(255, Math.max(0, b));
+      output[i + 3] = data[i + 3];
+    }
+  }
+  return output;
+}
+
+// Multi-pass advanced sharpening: Laplacian + Unsharp Mask + contrast boost
+function advancedSharpen(
+  ctx: CanvasRenderingContext2D,
+  w: number, h: number,
+  sharpAmount: number,  // 0-100
+  denoiseAmount: number // 0-100
+): void {
+  // Step 1: Optional denoise (mild box blur before sharpening)
+  if (denoiseAmount > 20) {
+    const blurPx = (denoiseAmount / 100) * 1.5;
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = w; tempCanvas.height = h;
+    const tCtx = tempCanvas.getContext("2d")!;
+    tCtx.filter = `blur(${blurPx.toFixed(1)}px)`;
+    tCtx.drawImage(ctx.canvas, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(tempCanvas, 0, 0);
+  }
+
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const src = new Uint8ClampedArray(imageData.data);
+
+  // Step 2: Laplacian edge enhancement kernel (sharpening)
+  // Kernel: [0,-1,0, -1,5,-1, 0,-1,0] — standard sharpening
+  const amount = sharpAmount / 100;
+  if (amount > 0) {
+    // Laplacian kernel scaled by amount
+    const center = 1 + 4 * amount;
+    const edge = -amount;
+    const kernel3 = [0, edge, 0, edge, center, edge, 0, edge, 0];
+    const sharpened = applyConvolution(src, w, h, kernel3, 3);
+
+    // Step 3: Unsharp mask on top (blend original + sharpened)
+    // Create blurred version for unsharp mask
+    const blurCanvas = document.createElement("canvas");
+    blurCanvas.width = w; blurCanvas.height = h;
+    const bCtx = blurCanvas.getContext("2d")!;
+    bCtx.filter = `blur(${Math.max(1, Math.round(amount * 3))}px)`;
+    bCtx.putImageData(imageData, 0, 0);
+    const blurData = bCtx.getImageData(0, 0, w, h).data;
+
+    const unsharpStrength = amount * 1.2;
+    for (let i = 0; i < sharpened.length; i += 4) {
+      // Combine Laplacian sharpened + unsharp mask
+      const ur = Math.min(255, Math.max(0, src[i]     + unsharpStrength * (src[i]     - blurData[i])));
+      const ug = Math.min(255, Math.max(0, src[i + 1] + unsharpStrength * (src[i + 1] - blurData[i + 1])));
+      const ub = Math.min(255, Math.max(0, src[i + 2] + unsharpStrength * (src[i + 2] - blurData[i + 2])));
+      // Blend Laplacian (60%) + Unsharp (40%)
+      imageData.data[i]     = Math.min(255, Math.max(0, sharpened[i]     * 0.6 + ur * 0.4));
+      imageData.data[i + 1] = Math.min(255, Math.max(0, sharpened[i + 1] * 0.6 + ug * 0.4));
+      imageData.data[i + 2] = Math.min(255, Math.max(0, sharpened[i + 2] * 0.6 + ub * 0.4));
+    }
+  }
+
+  // Step 4: Local contrast boost (micro-contrast)
+  if (amount > 0.3) {
+    const contrastBoost = 1 + amount * 0.15;
+    const mid = 128;
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      imageData.data[i]     = Math.min(255, Math.max(0, (imageData.data[i]     - mid) * contrastBoost + mid));
+      imageData.data[i + 1] = Math.min(255, Math.max(0, (imageData.data[i + 1] - mid) * contrastBoost + mid));
+      imageData.data[i + 2] = Math.min(255, Math.max(0, (imageData.data[i + 2] - mid) * contrastBoost + mid));
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UpscalePanel — Advanced: real sharpening + full preview + before/after
 // ─────────────────────────────────────────────────────────────────────────────
 
 function UpscalePanel({ onClose }: { onClose: () => void }) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [imgName, setImgName] = useState("");
-  const [imgSize, setImgSize] = useState({ w: 0, h: 0 });
+  const [imgSrc, setImgSrc]           = useState<string | null>(null);
+  const [resultSrc, setResultSrc]     = useState<string | null>(null);
+  const [imgName, setImgName]         = useState("");
+  const [imgSize, setImgSize]         = useState({ w: 0, h: 0 });
   const [upscaleScale, setUpscaleScale] = useState<2 | 4>(2);
-  const [processing, setProcessing] = useState(false);
-  const [done, setDone] = useState(false);
-  const [sharpness, setSharpness] = useState(70);
-  const [denoise, setDenoise] = useState(30);
+  const [processing, setProcessing]   = useState(false);
+  const [progress, setProgress]       = useState(0);
+  const [sharpness, setSharpness]     = useState(75);
+  const [denoise, setDenoise]         = useState(25);
+  const [showAfter, setShowAfter]     = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setImgName(f.name);
-    setDone(false);
+    setResultSrc(null);
+    setProgress(0);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const src = ev.target?.result as string;
       setImgSrc(src);
-      // get natural dimensions
       const img = new Image();
       img.onload = () => setImgSize({ w: img.naturalWidth, h: img.naturalHeight });
       img.src = src;
     };
     reader.readAsDataURL(f);
-    // reset input so same file can be re-selected
     e.target.value = "";
   };
 
   const processUpscale = async () => {
     if (!imgSrc) return;
-    setProcessing(true); setDone(false);
-    // yield to browser to update UI
-    await new Promise(r => setTimeout(r, 100));
+    setProcessing(true); setResultSrc(null); setProgress(5);
+    await new Promise(r => setTimeout(r, 80));
     try {
       const img = new Image();
       await new Promise<void>((res, rej) => {
         img.onload = () => res();
-        img.onerror = () => rej(new Error("Image load failed"));
+        img.onerror = () => rej(new Error("load failed"));
         img.src = imgSrc;
       });
+      setProgress(15);
 
-      const W = img.naturalWidth * upscaleScale;
-      const H = img.naturalHeight * upscaleScale;
-
-      // Multi-step upscale for better quality
-      let currentCanvas = document.createElement("canvas");
-      let currentCtx = currentCanvas.getContext("2d")!;
-      currentCanvas.width = img.naturalWidth;
-      currentCanvas.height = img.naturalHeight;
-      currentCtx.drawImage(img, 0, 0);
-
-      // Step up by 2x at a time for better quality
+      // Multi-step 2× upscale for better interpolation quality
       const steps = upscaleScale === 4 ? 2 : 1;
+      let cur = document.createElement("canvas");
+      cur.width = img.naturalWidth; cur.height = img.naturalHeight;
+      const curCtx = cur.getContext("2d")!;
+      curCtx.drawImage(img, 0, 0);
+
       for (let s = 0; s < steps; s++) {
-        const nextW = currentCanvas.width * 2;
-        const nextH = currentCanvas.height * 2;
-        const nextCanvas = document.createElement("canvas");
-        nextCanvas.width = nextW; nextCanvas.height = nextH;
-        const nextCtx = nextCanvas.getContext("2d")!;
-        nextCtx.imageSmoothingEnabled = true;
-        nextCtx.imageSmoothingQuality = "high";
-        nextCtx.drawImage(currentCanvas, 0, 0, nextW, nextH);
-        currentCanvas = nextCanvas;
-        currentCtx = nextCtx;
+        setProgress(20 + s * 20);
+        await new Promise(r => setTimeout(r, 30));
+        const nw = cur.width * 2, nh = cur.height * 2;
+        const next = document.createElement("canvas");
+        next.width = nw; next.height = nh;
+        const nCtx = next.getContext("2d")!;
+        nCtx.imageSmoothingEnabled = true;
+        nCtx.imageSmoothingQuality = "high";
+        nCtx.drawImage(cur, 0, 0, nw, nh);
+        cur = next;
       }
+      setProgress(60);
 
-      // Sharpness via unsharp mask
-      if (sharpness > 0) {
-        const amount = sharpness / 150;
-        const imageData = currentCtx.getImageData(0, 0, W, H);
-        const src = imageData.data;
-        const blurCanvas = document.createElement("canvas");
-        blurCanvas.width = W; blurCanvas.height = H;
-        const bCtx = blurCanvas.getContext("2d")!;
-        bCtx.filter = `blur(${Math.max(1, upscaleScale)}px)`;
-        bCtx.drawImage(currentCanvas, 0, 0);
-        const blurData = bCtx.getImageData(0, 0, W, H).data;
-        for (let i = 0; i < src.length; i += 4) {
-          src[i]   = Math.min(255, Math.max(0, src[i]   + amount * (src[i]   - blurData[i])));
-          src[i+1] = Math.min(255, Math.max(0, src[i+1] + amount * (src[i+1] - blurData[i+1])));
-          src[i+2] = Math.min(255, Math.max(0, src[i+2] + amount * (src[i+2] - blurData[i+2])));
-        }
-        currentCtx.putImageData(imageData, 0, 0);
-      }
+      // Apply advanced sharpening (real deblur)
+      await new Promise(r => setTimeout(r, 30));
+      const finalCtx = cur.getContext("2d")!;
+      advancedSharpen(finalCtx, cur.width, cur.height, sharpness, denoise);
+      setProgress(90);
 
-      // Download
-      const ext = imgName.toLowerCase().endsWith(".jpg") || imgName.toLowerCase().endsWith(".jpeg") ? "jpeg" : "png";
-      const url = currentCanvas.toDataURL(`image/${ext}`, 0.95);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `upscaled_${upscaleScale}x_${W}x${H}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setDone(true);
+      await new Promise(r => setTimeout(r, 30));
+      const ext = imgName.toLowerCase().match(/\.jpe?g$/) ? "jpeg" : "png";
+      const dataUrl = cur.toDataURL(`image/${ext}`, 0.95);
+      setResultSrc(dataUrl);
+      setShowAfter(true);
+      setProgress(100);
     } catch (err) {
       console.error("Upscale error:", err);
     } finally {
@@ -524,115 +604,181 @@ function UpscalePanel({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const downloadResult = () => {
+    if (!resultSrc) return;
+    const ext = imgName.toLowerCase().match(/\.jpe?g$/) ? "jpg" : "png";
+    const W = imgSize.w * upscaleScale, H = imgSize.h * upscaleScale;
+    const a = document.createElement("a");
+    a.href = resultSrc;
+    a.download = `upscaled_${upscaleScale}x_sharp_${W}x${H}.${ext}`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  };
+
   return (
     <>
       <PanelHeader title="🔍 4K ফটো আপস্কেল" onClose={onClose} />
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
-
-        {/* Info */}
-        <div style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.2)",
-          borderRadius: 10, padding: "10px 14px" }}>
-          <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, margin: 0 }}>ঝাপসা ছবিকে ক্লিয়ার করুন</p>
-          <p style={{ color: "#9ca3af", fontSize: 11, margin: "3px 0 0" }}>
-            ছবি আপলোড → স্কেল নির্বাচন → আপস্কেল করুন
-          </p>
-        </div>
+      <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" }}>
 
         {/* Upload area */}
-        <div
-          onClick={() => inputRef.current?.click()}
-          style={{
-            width: "100%", minHeight: imgSrc ? "auto" : 100,
-            border: `2px dashed ${imgSrc ? "#D4A843" : "#1e3050"}`,
-            borderRadius: 12, cursor: "pointer", overflow: "hidden",
-            background: imgSrc ? "transparent" : "rgba(30,48,80,0.3)",
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          {imgSrc ? (
-            <div style={{ width: "100%", position: "relative" }}>
+        {!imgSrc ? (
+          <div
+            onClick={() => inputRef.current?.click()}
+            style={{
+              width: "100%", height: 110,
+              border: "2px dashed #1e3050", borderRadius: 14, cursor: "pointer",
+              background: "rgba(30,48,80,0.3)",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+            }}
+          >
+            <div style={{ fontSize: 36 }}>📁</div>
+            <p style={{ color: "#D4A843", fontSize: 13, fontWeight: 700, margin: 0 }}>ছবি আপলোড করুন</p>
+            <p style={{ color: "#6b7280", fontSize: 11, margin: 0 }}>JPG · PNG · WEBP</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {/* Before / After toggle */}
+            {resultSrc && (
+              <div style={{ display: "flex", gap: 6, marginBottom: 2 }}>
+                <button onClick={() => setShowAfter(false)}
+                  style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    border: `2px solid ${!showAfter ? "#D4A843" : "#1e3050"}`,
+                    background: !showAfter ? "rgba(212,168,67,0.15)" : "transparent",
+                    color: !showAfter ? "#D4A843" : "#6b7280", cursor: "pointer" }}>আগে</button>
+                <button onClick={() => setShowAfter(true)}
+                  style={{ flex: 1, padding: "7px 0", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    border: `2px solid ${showAfter ? "#4ade80" : "#1e3050"}`,
+                    background: showAfter ? "rgba(74,222,128,0.12)" : "transparent",
+                    color: showAfter ? "#4ade80" : "#6b7280", cursor: "pointer" }}>পরে (ক্লিয়ার)</button>
+              </div>
+            )}
+            {/* Full image preview */}
+            <div style={{ position: "relative", borderRadius: 12, overflow: "hidden",
+              border: `2px solid ${resultSrc ? (showAfter ? "#4ade80" : "#D4A843") : "#D4A843"}` }}>
               <img
-                src={imgSrc}
+                src={showAfter && resultSrc ? resultSrc : imgSrc}
                 alt="preview"
-                style={{ width: "100%", maxHeight: 160, objectFit: "contain", display: "block", borderRadius: 10 }}
+                style={{ width: "100%", display: "block", maxHeight: 200, objectFit: "contain",
+                  background: "#060c18" }}
               />
-              <div style={{
-                position: "absolute", bottom: 6, left: 6, right: 6,
-                background: "rgba(0,0,0,0.7)", borderRadius: 6, padding: "4px 8px",
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-              }}>
-                <span style={{ color: "#D4A843", fontSize: 11, fontWeight: 600 }}>
-                  {imgSize.w}×{imgSize.h}px
-                </span>
-                <span style={{ color: "#9ca3af", fontSize: 10 }}>
-                  → {imgSize.w * upscaleScale}×{imgSize.h * upscaleScale}px
+              {/* Size badge */}
+              <div style={{ position: "absolute", bottom: 6, left: 6,
+                background: "rgba(0,0,0,0.75)", borderRadius: 6, padding: "3px 8px" }}>
+                <span style={{ color: showAfter && resultSrc ? "#4ade80" : "#D4A843", fontSize: 11, fontWeight: 700 }}>
+                  {showAfter && resultSrc
+                    ? `✨ ${imgSize.w * upscaleScale}×${imgSize.h * upscaleScale}px (ক্লিয়ার)`
+                    : `${imgSize.w}×${imgSize.h}px (মূল)`}
                 </span>
               </div>
+              {/* Label badge */}
+              {resultSrc && (
+                <div style={{ position: "absolute", top: 6, right: 6,
+                  background: showAfter ? "rgba(74,222,128,0.9)" : "rgba(212,168,67,0.9)",
+                  borderRadius: 6, padding: "2px 8px" }}>
+                  <span style={{ color: "#000", fontSize: 10, fontWeight: 800 }}>
+                    {showAfter ? "AFTER" : "BEFORE"}
+                  </span>
+                </div>
+              )}
             </div>
-          ) : (
-            <div style={{ textAlign: "center", padding: 20 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📁</div>
-              <p style={{ color: "#9ca3af", fontSize: 13, margin: 0 }}>ছবি আপলোড করতে ক্লিক করুন</p>
-              <p style={{ color: "#6b7280", fontSize: 11, margin: "4px 0 0" }}>JPG, PNG, WEBP সাপোর্টেড</p>
-            </div>
-          )}
-        </div>
+            <button onClick={() => inputRef.current?.click()}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #1e3050",
+                background: "transparent", color: "#9ca3af", fontSize: 11, cursor: "pointer" }}>
+              🔄 অন্য ছবি বেছে নিন
+            </button>
+          </div>
+        )}
         <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
 
-        {imgSrc && (
-          <button
-            onClick={() => inputRef.current?.click()}
-            style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #1e3050",
-              background: "transparent", color: "#9ca3af", fontSize: 11, cursor: "pointer" }}
-          >
-            🔄 অন্য ছবি বেছে নিন
-          </button>
-        )}
-
-        {/* Scale */}
+        {/* Scale selector */}
         <div>
           <p style={{ color: "#9ca3af", fontSize: 12, marginBottom: 8, fontWeight: 600 }}>আপস্কেল গুণক</p>
           <div style={{ display: "flex", gap: 8 }}>
             {([2, 4] as const).map(s => (
-              <button key={s} onClick={() => setUpscaleScale(s)}
-                style={{ flex: 1, padding: "12px 0", borderRadius: 10, fontSize: 13, fontWeight: 700,
+              <button key={s} onClick={() => { setUpscaleScale(s); setResultSrc(null); }}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 10, fontSize: 13, fontWeight: 700,
                   border: `2px solid ${upscaleScale === s ? "#D4A843" : "#1e3050"}`,
                   background: upscaleScale === s ? "rgba(212,168,67,0.15)" : "transparent",
                   color: upscaleScale === s ? "#D4A843" : "#6b7280", cursor: "pointer" }}>
-                <div>{s}× আপস্কেল</div>
+                <div>{s}×</div>
                 <div style={{ fontSize: 10, opacity: 0.7, marginTop: 2 }}>
-                  {imgSrc ? `${imgSize.w * s}×${imgSize.h * s}` : (s === 2 ? "দ্রুত" : "সর্বোচ্চ")}
+                  {imgSrc ? `${imgSize.w * s}×${imgSize.h * s}` : (s === 2 ? "2K" : "4K")}
                 </div>
               </button>
             ))}
           </div>
         </div>
 
-        <SliderRow label="শার্পনেস" val={sharpness} set={setSharpness} min={0} max={100} unit="%" />
-        <SliderRow label="ডিনয়েজ"  val={denoise}   set={setDenoise}   min={0} max={100} unit="%" />
+        {/* Sharpening controls */}
+        <div style={{ background: "#060c18", borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, margin: 0 }}>🔬 শার্পনিং সেটিংস</p>
+          <SliderRow label="ঝাপসা দূর করুন (শার্পনেস)" val={sharpness} set={v => { setSharpness(v); setResultSrc(null); }} min={0} max={100} unit="%" />
+          <SliderRow label="নয়েজ কমান (ডিনয়েজ)"       val={denoise}   set={v => { setDenoise(v);   setResultSrc(null); }} min={0} max={80}  unit="%" />
+          <div style={{ display: "flex", gap: 6 }}>
+            {[{l:"হালকা",s:40,d:15},{l:"মাঝারি",s:70,d:25},{l:"শক্তিশালী",s:90,d:35}].map(p => (
+              <button key={p.l} onClick={() => { setSharpness(p.s); setDenoise(p.d); setResultSrc(null); }}
+                style={{ flex: 1, padding: "6px 4px", borderRadius: 8, fontSize: 10, fontWeight: 700,
+                  border: `1px solid ${sharpness === p.s ? "#D4A843" : "#1e3050"}`,
+                  background: sharpness === p.s ? "rgba(212,168,67,0.15)" : "transparent",
+                  color: sharpness === p.s ? "#D4A843" : "#6b7280", cursor: "pointer" }}>{p.l}</button>
+            ))}
+          </div>
+        </div>
 
-        <button
-          onClick={processUpscale}
-          disabled={!imgSrc || processing}
-          style={{
-            width: "100%", padding: "14px 0", borderRadius: 12, border: "none",
-            background: !imgSrc ? "#1e3050" : processing ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
-            color: !imgSrc ? "#6b7280" : "#000", fontWeight: 700, fontSize: 14,
-            cursor: !imgSrc || processing ? "not-allowed" : "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          }}
-        >
-          {processing ? (
-            <><span style={{ width: 18, height: 18, border: "2px solid #000", borderTopColor: "transparent",
-              borderRadius: "50%", display: "inline-block", animation: "spin 0.8s linear infinite" }} /> প্রক্রিয়া হচ্ছে...</>
-          ) : done ? "✅ আবার ডাউনলোড করুন" : "🔍 আপস্কেল করুন ও ডাউনলোড করুন"}
-        </button>
+        {/* Progress bar */}
+        {processing && (
+          <div style={{ background: "#060c18", borderRadius: 10, padding: "10px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ color: "#D4A843", fontSize: 12, fontWeight: 700 }}>প্রক্রিয়া হচ্ছে...</span>
+              <span style={{ color: "#D4A843", fontSize: 12 }}>{progress}%</span>
+            </div>
+            <div style={{ height: 6, background: "#1e3050", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${progress}%`,
+                background: "linear-gradient(90deg,#D4A843,#4ade80)",
+                borderRadius: 3, transition: "width 0.3s" }} />
+            </div>
+            <p style={{ color: "#9ca3af", fontSize: 10, margin: "6px 0 0" }}>
+              {progress < 30 ? "ছবি লোড হচ্ছে..." : progress < 60 ? "আপস্কেল হচ্ছে..." : progress < 90 ? "ঝাপসা দূর করা হচ্ছে..." : "সম্পন্ন!"}
+            </p>
+          </div>
+        )}
 
-        {done && (
-          <div style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)",
-            borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
-            <p style={{ color: "#4ade80", fontSize: 13, fontWeight: 700, margin: 0 }}>
-              ✅ আপস্কেল সম্পন্ন! ছবি ডাউনলোড হয়েছে।
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={processUpscale}
+            disabled={!imgSrc || processing}
+            style={{
+              flex: 1, padding: "13px 0", borderRadius: 12, border: "none",
+              background: !imgSrc ? "#1e3050" : processing ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
+              color: !imgSrc ? "#6b7280" : "#000", fontWeight: 700, fontSize: 13,
+              cursor: !imgSrc || processing ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}
+          >
+            {processing
+              ? <><span style={{ width: 16, height: 16, border: "2px solid #000", borderTopColor: "transparent",
+                  borderRadius: "50%", display: "inline-block", animation: "spin 0.8s linear infinite" }} />হচ্ছে...</>
+              : resultSrc ? "🔄 আবার প্রক্রিয়া করুন" : "✨ ক্লিয়ার করুন"}
+          </button>
+          {resultSrc && (
+            <button
+              onClick={downloadResult}
+              style={{
+                flex: 1, padding: "13px 0", borderRadius: 12, border: "none",
+                background: "linear-gradient(135deg,#4ade80,#16a34a)",
+                color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              }}
+            >⬇ ডাউনলোড</button>
+          )}
+        </div>
+
+        {resultSrc && (
+          <div style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)",
+            borderRadius: 10, padding: "10px 14px" }}>
+            <p style={{ color: "#4ade80", fontSize: 12, fontWeight: 700, margin: 0 }}>✅ ঝাপসা দূর হয়েছে!</p>
+            <p style={{ color: "#9ca3af", fontSize: 11, margin: "3px 0 0" }}>
+              উপরে "আগে" / "পরে" বাটন দিয়ে পার্থক্য দেখুন
             </p>
           </div>
         )}
