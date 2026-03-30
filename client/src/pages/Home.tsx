@@ -66,6 +66,14 @@ const galleryImages = [
   { src: "/photos/IMG_9832_01.jpeg", caption: "প্রিয় স্মৃতি", cat: "ব্যক্তিগত" },
   { src: "/photos/photo-output.png", caption: "কবিতার ডিজাইন", cat: "ডিজাইন" },
   { src: "/photos/Addalittlebitofbodytext.png.JPG", caption: "কবিতার ডিজাইন ২", cat: "ডিজাইন" },
+  // নতুন ছবি — ২০২৬
+  { src: "/photos/IMG_6969.JPG", caption: "মাহবুব সরদার সবুজ — অফিসে", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6967.JPG", caption: "লেখকের পোর্ট্রেট", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6965.JPG", caption: "Front Tech অফিসে", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6964.jpeg", caption: "মরুভূমিতে লেখক", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6963.JPG", caption: "প্রকৃতির কোলে", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6962.JPG", caption: "বিশেষ মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6961.JPG", caption: "লেখকের ছবি", cat: "ব্যক্তিগত" },
   // পুরনো গ্যালারি
   { src: PROFILE_1, caption: "মাহবুব সরদার সবুজ", cat: "ব্যক্তিগত" },
   { src: PROFILE_2, caption: "লেখার মুহূর্তে", cat: "ব্যক্তিগত" },
