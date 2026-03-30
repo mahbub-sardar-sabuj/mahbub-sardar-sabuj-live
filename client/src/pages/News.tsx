@@ -4,9 +4,18 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Clock, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X } from "lucide-react";
+import { ArrowRight, Clock, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check, Send, ThumbsUp, User } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+
+interface Comment {
+  id: number;
+  name: string;
+  text: string;
+  time: string;
+  likes: number;
+  liked: boolean;
+}
 
 interface NewsItem {
   id: number;
@@ -222,6 +231,52 @@ export default function News() {
   const [selectedCategory, setSelectedCategory] = useState("সব");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+  const [comments, setComments] = useState<Record<number, Comment[]>>({});
+  const [commentName, setCommentName] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+
+  const pageUrl = typeof window !== "undefined" ? window.location.href : "https://mahbubsardarsabuj.com/news";
+
+  const handleShare = (platform: string, title: string) => {
+    const url = pageUrl;
+    const text = encodeURIComponent(title + " — মাহবুব সরদার সবুজ");
+    const encodedUrl = encodeURIComponent(url);
+    if (platform === "facebook") window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, "_blank");
+    else if (platform === "twitter") window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodedUrl}`, "_blank");
+    else if (platform === "whatsapp") window.open(`https://api.whatsapp.com/send?text=${text}%20${encodedUrl}`, "_blank");
+    else if (platform === "copy") {
+      navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+    }
+    setShowShareMenu(false);
+  };
+
+  const handleAddComment = (newsId: number) => {
+    if (!commentName.trim() || !commentText.trim()) return;
+    const now = new Date();
+    const timeStr = now.toLocaleDateString("bn-BD", { day: "numeric", month: "long" }) + ", " + now.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+    const newComment: Comment = {
+      id: Date.now(),
+      name: commentName.trim(),
+      text: commentText.trim(),
+      time: timeStr,
+      likes: 0,
+      liked: false,
+    };
+    setComments(prev => ({ ...prev, [newsId]: [newComment, ...(prev[newsId] || [])] }));
+    setCommentName("");
+    setCommentText("");
+  };
+
+  const handleLikeComment = (newsId: number, commentId: number) => {
+    setComments(prev => ({
+      ...prev,
+      [newsId]: (prev[newsId] || []).map(c =>
+        c.id === commentId ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
+      ),
+    }));
+  };
 
   const filtered = newsData.filter(item => {
     const matchCat = selectedCategory === "সব" || item.category === selectedCategory;
@@ -596,10 +651,19 @@ export default function News() {
               <div style={{ height: 4, background: `linear-gradient(90deg, ${selectedNews.categoryColor}, rgba(201,168,76,0.5), transparent)` }} />
 
               <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
-                {/* Close button */}
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+                {/* Top row: category + close */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
+                  <span style={{
+                    background: selectedNews.categoryColor + "22",
+                    color: selectedNews.categoryColor,
+                    padding: "5px 14px",
+                    borderRadius: 50,
+                    fontSize: "0.78rem",
+                    fontWeight: 600,
+                    border: `1px solid ${selectedNews.categoryColor}40`,
+                  }}>{selectedNews.category}</span>
                   <button
-                    onClick={() => setSelectedNews(null)}
+                    onClick={() => { setSelectedNews(null); setShowShareMenu(false); }}
                     style={{
                       width: 36, height: 36, borderRadius: "50%",
                       background: "rgba(201,168,76,0.12)",
@@ -613,26 +677,13 @@ export default function News() {
                   </button>
                 </div>
 
-                <div style={{ display: "flex", gap: 10, marginBottom: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
-                  <span style={{
-                    background: selectedNews.categoryColor + "22",
-                    color: selectedNews.categoryColor,
-                    padding: "5px 14px",
-                    borderRadius: 50,
-                    fontSize: "0.78rem",
-                    fontWeight: 600,
-                    border: `1px solid ${selectedNews.categoryColor}40`,
-                  }}>{selectedNews.category}</span>
-
-                </div>
-
                 <h2 style={{
                   fontFamily: "'Tiro Bangla', serif",
                   color: "#FAF6EF",
-                  fontSize: "1.5rem",
+                  fontSize: "1.4rem",
                   fontWeight: 400,
                   lineHeight: 1.7,
-                  marginBottom: "1.5rem",
+                  marginBottom: "1.2rem",
                 }}>{selectedNews.title}</h2>
 
                 {/* Divider */}
@@ -664,12 +715,208 @@ export default function News() {
                       fontSize: "0.9rem",
                       textDecoration: "none",
                       boxShadow: "0 8px 24px rgba(201,168,76,0.35)",
+                      marginBottom: "2rem",
                     }}
                   >
                     {selectedNews.link.startsWith("http") ? <ExternalLink size={16} /> : <ArrowRight size={16} />}
                     {selectedNews.link.startsWith("http") ? "বাইরের লিংক দেখুন" : "পেজে যান"}
                   </a>
                 )}
+
+                {/* ── SHARE SECTION ── */}
+                <div style={{ marginBottom: "2rem" }}>
+                  <div style={{ height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.2), transparent)", marginBottom: "1.2rem" }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ color: "rgba(201,168,76,0.8)", fontSize: "0.82rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                      <Share2 size={15} /> শেয়ার করুন
+                    </span>
+                    {/* Facebook */}
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleShare("facebook", selectedNews.title)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        background: "#1877F2",
+                        color: "#fff",
+                        border: "none", cursor: "pointer",
+                        padding: "7px 14px", borderRadius: 50,
+                        fontSize: "0.78rem", fontWeight: 600,
+                      }}
+                    >
+                      <Facebook size={13} /> Facebook
+                    </motion.button>
+                    {/* Twitter/X */}
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleShare("twitter", selectedNews.title)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        background: "#000",
+                        color: "#fff",
+                        border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer",
+                        padding: "7px 14px", borderRadius: 50,
+                        fontSize: "0.78rem", fontWeight: 600,
+                      }}
+                    >
+                      <Twitter size={13} /> X
+                    </motion.button>
+                    {/* WhatsApp */}
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleShare("whatsapp", selectedNews.title)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        background: "#25D366",
+                        color: "#fff",
+                        border: "none", cursor: "pointer",
+                        padding: "7px 14px", borderRadius: 50,
+                        fontSize: "0.78rem", fontWeight: 600,
+                      }}
+                    >
+                      <MessageCircle size={13} /> WhatsApp
+                    </motion.button>
+                    {/* Copy Link */}
+                    <motion.button
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleShare("copy", selectedNews.title)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        background: copied ? "rgba(39,174,96,0.2)" : "rgba(201,168,76,0.12)",
+                        color: copied ? "#27AE60" : "rgba(201,168,76,0.9)",
+                        border: `1px solid ${copied ? "rgba(39,174,96,0.4)" : "rgba(201,168,76,0.25)"}`,
+                        cursor: "pointer",
+                        padding: "7px 14px", borderRadius: 50,
+                        fontSize: "0.78rem", fontWeight: 600,
+                        transition: "all 0.3s",
+                      }}
+                    >
+                      {copied ? <Check size={13} /> : <Link2 size={13} />}
+                      {copied ? "কপি হয়েছে!" : "লিংক কপি"}
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* ── COMMENT SECTION ── */}
+                <div>
+                  <div style={{ height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.2), transparent)", marginBottom: "1.5rem" }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1.2rem" }}>
+                    <MessageCircle size={16} color="#C9A84C" />
+                    <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FAF6EF", fontSize: "1rem", fontWeight: 400, margin: 0 }}>
+                      মন্তব্য ({(comments[selectedNews.id] || []).length})
+                    </h3>
+                  </div>
+
+                  {/* Comment form */}
+                  <div style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(201,168,76,0.15)",
+                    borderRadius: 14,
+                    padding: "1.2rem",
+                    marginBottom: "1.5rem",
+                  }}>
+                    <input
+                      type="text"
+                      value={commentName}
+                      onChange={e => setCommentName(e.target.value)}
+                      placeholder="আপনার নাম..."
+                      style={{
+                        width: "100%", background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(201,168,76,0.2)",
+                        borderRadius: 8, padding: "8px 12px",
+                        color: "#FAF6EF", fontSize: "0.85rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        outline: "none", marginBottom: "0.7rem",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    <textarea
+                      value={commentText}
+                      onChange={e => setCommentText(e.target.value)}
+                      placeholder="আপনার মন্তব্য লিখুন..."
+                      rows={3}
+                      style={{
+                        width: "100%", background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(201,168,76,0.2)",
+                        borderRadius: 8, padding: "8px 12px",
+                        color: "#FAF6EF", fontSize: "0.85rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        outline: "none", resize: "vertical",
+                        marginBottom: "0.8rem",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleAddComment(selectedNews.id)}
+                      disabled={!commentName.trim() || !commentText.trim()}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        background: commentName.trim() && commentText.trim()
+                          ? "linear-gradient(135deg, #C9A84C, #E8C4A0)"
+                          : "rgba(201,168,76,0.15)",
+                        color: commentName.trim() && commentText.trim() ? "#0A1628" : "rgba(201,168,76,0.4)",
+                        border: "none", cursor: commentName.trim() && commentText.trim() ? "pointer" : "default",
+                        padding: "9px 20px", borderRadius: 50,
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontWeight: 700, fontSize: "0.82rem",
+                        transition: "all 0.3s",
+                      }}
+                    >
+                      <Send size={13} /> মন্তব্য পাঠান
+                    </motion.button>
+                  </div>
+
+                  {/* Comment list */}
+                  {(comments[selectedNews.id] || []).length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "1.5rem 0", color: "rgba(250,246,239,0.3)", fontSize: "0.85rem" }}>
+                      এখনো কোনো মন্তব্য নেই। প্রথম মন্তব্য করুন!
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+                      {(comments[selectedNews.id] || []).map(c => (
+                        <div key={c.id} style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(201,168,76,0.1)",
+                          borderRadius: 12, padding: "1rem",
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{
+                                width: 30, height: 30, borderRadius: "50%",
+                                background: "linear-gradient(135deg, #C9A84C, #0d2040)",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                              }}>
+                                <User size={14} color="#FAF6EF" />
+                              </div>
+                              <span style={{ color: "#FAF6EF", fontSize: "0.82rem", fontWeight: 600 }}>{c.name}</span>
+                            </div>
+                            <span style={{ color: "rgba(250,246,239,0.3)", fontSize: "0.72rem" }}>{c.time}</span>
+                          </div>
+                          <p style={{ color: "rgba(250,246,239,0.7)", fontSize: "0.85rem", lineHeight: 1.7, margin: "0 0 0.6rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>{c.text}</p>
+                          <button
+                            onClick={() => handleLikeComment(selectedNews.id, c.id)}
+                            style={{
+                              display: "inline-flex", alignItems: "center", gap: 5,
+                              background: c.liked ? "rgba(201,168,76,0.15)" : "transparent",
+                              color: c.liked ? "#C9A84C" : "rgba(250,246,239,0.35)",
+                              border: `1px solid ${c.liked ? "rgba(201,168,76,0.3)" : "rgba(255,255,255,0.08)"}`,
+                              borderRadius: 50, padding: "3px 10px",
+                              cursor: "pointer", fontSize: "0.75rem",
+                              transition: "all 0.2s",
+                            }}
+                          >
+                            <ThumbsUp size={11} /> {c.likes > 0 ? c.likes : ""} পছন্দ
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>
