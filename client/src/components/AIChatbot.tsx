@@ -27,7 +27,7 @@ async function callAI(messages: { role: "user" | "assistant" | "system"; content
   return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
 }
 
-const AUTHOR_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
+const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
 // ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
