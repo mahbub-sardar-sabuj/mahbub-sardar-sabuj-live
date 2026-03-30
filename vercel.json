@@ -5,7 +5,11 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     {
-      "source": "/((?!api/|ads\.txt|robots\.txt|sitemap\.xml).*)",
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml).*)",
       "destination": "/index.html"
     }
   ]
