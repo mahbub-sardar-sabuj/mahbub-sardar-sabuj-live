@@ -521,52 +521,51 @@ export default function Editor() {
 
       <div className="pt-20 pb-28 px-3 max-w-2xl mx-auto">
 
-        {/* ── Brand header — সরদার ডিজাইন স্টুডিও */}
-        <div className="text-center mb-8">
-          {/* Brand mark */}
-          <div className="relative inline-flex flex-col items-center">
-            {/* Ambient glow */}
-            <div className="absolute -inset-6 blur-3xl opacity-15 bg-gradient-radial from-[#D4A843] to-transparent rounded-full" />
+        {/* ── Brand header — animated */}
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: -18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+        >
+          <div className="relative inline-block">
+            {/* Pulsing ambient glow */}
+            <motion.div
+              className="absolute -inset-8 rounded-full"
+              style={{ background: "radial-gradient(ellipse, rgba(212,168,67,0.18) 0%, transparent 70%)" }}
+              animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            />
 
-            {/* Top micro-label */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-px w-8 bg-gradient-to-r from-transparent to-[#D4A843]/50" />
-              <span className="text-[#D4A843]/60 text-[9px] tracking-[0.35em] uppercase font-semibold">Est. 2024</span>
-              <div className="h-px w-8 bg-gradient-to-l from-transparent to-[#D4A843]/50" />
-            </div>
+            {/* Shimmer underline bar */}
+            <motion.div
+              className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full"
+              style={{ background: "linear-gradient(90deg, transparent, #D4A843, #f5e27a, #D4A843, transparent)" }}
+              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
 
-            {/* Main brand name */}
-            <div className="relative">
-              {/* Subtle shadow layer */}
-              <h1 className="absolute inset-0 text-4xl font-extrabold text-[#D4A843]/10 blur-sm select-none" aria-hidden>
-                সরদার ডিজাইন স্টুডিও
-              </h1>
-              <h1 className="relative text-4xl font-extrabold tracking-tight leading-tight"
-                style={{
-                  background: "linear-gradient(135deg, #f5e27a 0%, #D4A843 35%, #b8892a 65%, #f0c96a 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}>
-                সরদার ডিজাইন স্টুডিও
-              </h1>
-            </div>
-
-            {/* Brand tagline */}
-            <p className="mt-1.5 text-[10px] tracking-[0.25em] text-[#D4A843]/50 uppercase font-medium">
-              শিল্পের সাথে লেখার প্রকাশ
-            </p>
-
-            {/* Bottom ornament */}
-            <div className="flex items-center gap-2 mt-3">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#D4A843]/40" />
-              <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
-                <path d="M1 5 Q4.5 1 9 5 Q13.5 9 17 5" stroke="#D4A843" strokeWidth="1.2" strokeOpacity="0.7" fill="none"/>
-              </svg>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#D4A843]/40" />
-            </div>
+            {/* Main brand title */}
+            <motion.h1
+              className="relative font-extrabold leading-tight"
+              style={{
+                fontFamily: "'AkhandBengali', 'Noto Sans Bengali', sans-serif",
+                fontSize: "clamp(1.9rem, 7vw, 2.8rem)",
+                background: "linear-gradient(135deg, #f5e27a 0%, #D4A843 30%, #b8892a 60%, #f0c96a 85%, #fff8dc 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                backgroundSize: "200% 200%",
+                filter: "drop-shadow(0 2px 16px rgba(212,168,67,0.35))",
+                letterSpacing: "-0.01em",
+              }}
+              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              সরদার ডিজাইন স্টুডিও
+            </motion.h1>
           </div>
-        </div>
+        </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
             LIVE PREVIEW — top, full width
