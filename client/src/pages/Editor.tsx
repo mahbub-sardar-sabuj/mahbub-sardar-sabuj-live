@@ -192,7 +192,7 @@ interface StickerLayer {
   rotation: number;
 }
 
-type ActiveTool = "canvas" | "text" | "sticker" | "filter" | "adjust" | "background" | null;
+type ActiveTool = "canvas" | "text" | "sticker" | "filter" | "adjust" | "background" | "upscale" | "crop" | "draw" | null;
 type ExportQuality = "1x" | "2x" | "4k";
 type ExportFormat = "png" | "jpg";
 
@@ -292,6 +292,254 @@ function SliderRow({ label, val, set, min, max, step = 1, unit = "" }:
         onChange={e => set(+e.target.value)}
         style={{ width: "100%", height: 4, borderRadius: 2, accentColor: "#D4A843", cursor: "pointer" }} />
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UpscalePanel — 4K Photo Upscale using canvas super-sampling
+// ─────────────────────────────────────────────────────────────────────────────
+
+function UpscalePanel({ onClose }: { onClose: () => void }) {
+  const [upscaleImg, setUpscaleImg] = useState<string | null>(null);
+  const [upscaleScale, setUpscaleScale] = useState<2 | 4>(4);
+  const [processing, setProcessing] = useState(false);
+  const [done, setDone] = useState(false);
+  const [sharpness, setSharpness] = useState(80);
+  const [denoise, setDenoise] = useState(40);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => { setUpscaleImg(ev.target?.result as string); setDone(false); };
+    r.readAsDataURL(f);
+  };
+
+  const processUpscale = async () => {
+    if (!upscaleImg) return;
+    setProcessing(true); setDone(false);
+    await new Promise(r => setTimeout(r, 80));
+    try {
+      const img = new Image();
+      await new Promise<void>((res, rej) => {
+        img.onload = () => res(); img.onerror = () => rej();
+        img.src = upscaleImg;
+      });
+      const W = img.naturalWidth * upscaleScale;
+      const H = img.naturalHeight * upscaleScale;
+      const canvas = document.createElement("canvas");
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d")!;
+
+      // Step 1: draw at 2x with smoothing
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, W, H);
+
+      // Step 2: Sharpness via unsharp mask (convolution)
+      if (sharpness > 0) {
+        const amount = sharpness / 200;
+        const imageData = ctx.getImageData(0, 0, W, H);
+        const src = imageData.data;
+        const blurCanvas = document.createElement("canvas");
+        blurCanvas.width = W; blurCanvas.height = H;
+        const bCtx = blurCanvas.getContext("2d")!;
+        bCtx.filter = `blur(${Math.max(1, Math.round(upscaleScale * 0.6))}px)`;
+        bCtx.drawImage(canvas, 0, 0);
+        const blurData = bCtx.getImageData(0, 0, W, H).data;
+        for (let i = 0; i < src.length; i += 4) {
+          src[i]   = Math.min(255, Math.max(0, src[i]   + amount * (src[i]   - blurData[i])));
+          src[i+1] = Math.min(255, Math.max(0, src[i+1] + amount * (src[i+1] - blurData[i+1])));
+          src[i+2] = Math.min(255, Math.max(0, src[i+2] + amount * (src[i+2] - blurData[i+2])));
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+
+      // Step 3: Denoise via slight bilateral-like smoothing
+      if (denoise > 0) {
+        const blurAmount = (denoise / 100) * 0.8;
+        const offCanvas = document.createElement("canvas");
+        offCanvas.width = W; offCanvas.height = H;
+        const offCtx = offCanvas.getContext("2d")!;
+        offCtx.filter = `blur(${blurAmount}px)`;
+        offCtx.drawImage(canvas, 0, 0);
+        ctx.globalAlpha = denoise / 300;
+        ctx.drawImage(offCanvas, 0, 0);
+        ctx.globalAlpha = 1;
+      }
+
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `upscaled-${upscaleScale}x-${W}x${H}.png`;
+      a.click();
+      setDone(true);
+    } finally { setProcessing(false); }
+  };
+
+  return (
+    <>
+      <PanelHeader title="4K ফটো আপস্কেল" onClose={onClose} />
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+        {/* Info banner */}
+        <div style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.2)",
+          borderRadius: 10, padding: "10px 14px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <span style={{ fontSize: 20 }}>🔍</span>
+          <div>
+            <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, margin: 0 }}>ঝাপসা ছবিকে ক্লিয়ার করুন</p>
+            <p style={{ color: "#9ca3af", fontSize: 11, margin: "3px 0 0" }}>ছবি আপলোড করুন → স্কেল ও শার্পনেস সেট করুন → ডাউনলোড করুন</p>
+          </div>
+        </div>
+
+        {/* Upload */}
+        <button onClick={() => inputRef.current?.click()}
+          style={{ width: "100%", padding: 14, border: `2px dashed ${upscaleImg ? "#D4A843" : "#1e3050"}`,
+            borderRadius: 12, color: upscaleImg ? "#D4A843" : "#9ca3af", fontSize: 13,
+            background: upscaleImg ? "rgba(212,168,67,0.06)" : "transparent", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          {upscaleImg ? "✅ ছবি নির্বাচিত — পরিবর্তন করুন" : "📁 ছবি আপলোড করুন"}
+        </button>
+        <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onFileChange} />
+
+        {/* Scale selector */}
+        <div>
+          <p style={{ color: "#9ca3af", fontSize: 12, marginBottom: 8, fontWeight: 600 }}>আপস্কেল গুণক</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            {([2, 4] as const).map(s => (
+              <button key={s} onClick={() => setUpscaleScale(s)}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 10, fontSize: 13, fontWeight: 700,
+                  border: `1px solid ${upscaleScale === s ? "#D4A843" : "#1e3050"}`,
+                  background: upscaleScale === s ? "rgba(212,168,67,0.15)" : "transparent",
+                  color: upscaleScale === s ? "#D4A843" : "#6b7280", cursor: "pointer",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                <span>{s}× আপস্কেল</span>
+                <span style={{ fontSize: 10, opacity: 0.7 }}>{s === 2 ? "দ্রুত" : "সর্বোচ্চ মান"}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <SliderRow label="শার্পনেস" val={sharpness} set={setSharpness} min={0} max={100} unit="%" />
+        <SliderRow label="ডিনয়েজ"  val={denoise}   set={setDenoise}   min={0} max={100} unit="%" />
+
+        {/* Process button */}
+        <button onClick={processUpscale} disabled={!upscaleImg || processing}
+          style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none",
+            background: !upscaleImg ? "#1e3050" : processing ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
+            color: !upscaleImg ? "#6b7280" : "#000", fontWeight: 700, fontSize: 14,
+            cursor: !upscaleImg || processing ? "not-allowed" : "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          {processing
+            ? <><span style={{ width: 18, height: 18, border: "2px solid #000", borderTopColor: "transparent",
+                borderRadius: "50%", display: "inline-block", animation: "spin 0.8s linear infinite" }} /> প্রক্রিয়া হচ্ছে...</>
+            : done ? "✅ ডাউনলোড সম্পন্ন!"
+            : "🔍 আপস্কেল করুন ও ডাউনলোড করুন"}
+        </button>
+
+        {done && (
+          <p style={{ color: "#4ade80", fontSize: 12, textAlign: "center" }}>
+            ✅ আপস্কেল করা ছবি ডাউনলোড হয়েছে!
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CropPanel — Aspect ratio & frame quick picker
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CropPanel({ sizeIdx, setSizeIdx, frame, setFrame, onClose }:
+  { sizeIdx: number; setSizeIdx: (i: number) => void; frame: string; setFrame: (f: string) => void; onClose: () => void }) {
+  const CROP_PRESETS = [
+    { label: "1:1",   icon: "⬛", idx: 0 },
+    { label: "4:5",   icon: "📱", idx: 1 },
+    { label: "9:16",  icon: "📲", idx: 2 },
+    { label: "16:9",  icon: "🖥️", idx: 3 },
+    { label: "A4",    icon: "📄", idx: 4 },
+  ];
+  return (
+    <>
+      <PanelHeader title="ক্রপ ও অনুপাত" onClose={onClose} />
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div>
+          <p style={{ color: "#9ca3af", fontSize: 12, marginBottom: 10, fontWeight: 600 }}>ক্যানভাস অনুপাত</p>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+            {CROP_PRESETS.map(p => (
+              <button key={p.idx} onClick={() => setSizeIdx(p.idx)}
+                style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                  padding: "12px 16px", borderRadius: 12,
+                  border: `2px solid ${sizeIdx === p.idx ? "#D4A843" : "#1e3050"}`,
+                  background: sizeIdx === p.idx ? "rgba(212,168,67,0.12)" : "transparent",
+                  cursor: "pointer" }}>
+                <span style={{ fontSize: 28 }}>{p.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: sizeIdx === p.idx ? "#D4A843" : "#9ca3af" }}>{p.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p style={{ color: "#9ca3af", fontSize: 12, marginBottom: 10, fontWeight: 600 }}>ফ্রেম স্টাইল</p>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {FRAMES.map(f => (
+              <button key={f.value} onClick={() => setFrame(f.value)}
+                style={{ padding: "7px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  border: `1px solid ${frame === f.value ? "#D4A843" : "#1e3050"}`,
+                  background: frame === f.value ? "#D4A843" : "transparent",
+                  color: frame === f.value ? "#000" : "#9ca3af", cursor: "pointer" }}>
+                {f.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DrawPanel — Drawing tools info panel
+// ─────────────────────────────────────────────────────────────────────────────
+
+function DrawPanel({ onClose }: { onClose: () => void }) {
+  const DRAW_TOOLS = [
+    { icon: "✏️", name: "পেন্সিল",   desc: "মসৃণ ফ্রিহ্যান্ড লাইন" },
+    { icon: "🖌️", name: "ব্রাশ",     desc: "নরম টেক্সচার ব্রাশ" },
+    { icon: "✒️", name: "ক্যালিগ্রাফি", desc: "ক্যালিগ্রাফি স্ট্রোক" },
+    { icon: "🔶", name: "আকৃতি",     desc: "বৃত্ত, চতুর্ভুজ, তারা" },
+    { icon: "↗️", name: "তীর",       desc: "দিকনির্দেশক তীর" },
+    { icon: "📏", name: "লাইন",      desc: "সরল রেখা" },
+  ];
+  return (
+    <>
+      <PanelHeader title="ড্রইং টুলস" onClose={onClose} />
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)",
+          borderRadius: 10, padding: "10px 14px" }}>
+          <p style={{ color: "#a78bfa", fontSize: 12, fontWeight: 700, margin: 0 }}>🎨 ড্রইং মোড</p>
+          <p style={{ color: "#9ca3af", fontSize: 11, margin: "4px 0 0" }}>ক্যানভাসে সরাসরি আঁকুন। টুল নির্বাচন করুন।</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {DRAW_TOOLS.map(t => (
+            <button key={t.name}
+              style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                borderRadius: 10, border: "1px solid #1e3050", background: "transparent",
+                cursor: "pointer", textAlign: "left" }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = "#D4A843")}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = "#1e3050")}>
+              <span style={{ fontSize: 22 }}>{t.icon}</span>
+              <div>
+                <div style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>{t.name}</div>
+                <div style={{ color: "#6b7280", fontSize: 10 }}>{t.desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <p style={{ color: "#6b7280", fontSize: 11, textAlign: "center" }}>শীঘ্রই সম্পূর্ণ ড্রইং ফিচার আসছে</p>
+      </div>
+    </>
   );
 }
 
@@ -661,9 +909,7 @@ export default function Editor() {
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             backgroundClip: "text", margin: 0, lineHeight: 1.2,
           }}>সরদার ডিজাইন স্টুডিও</h1>
-          <p style={{ color: "#6b7280", fontSize: 11, margin: "2px 0 0" }}>
-            {SIZES[sizeIdx].w}×{SIZES[sizeIdx].h} · {theme.name}
-          </p>
+
         </div>
         {/* Download button in top-right */}
         <button
@@ -1367,6 +1613,24 @@ export default function Editor() {
               )}
 
               {/* ── BACKGROUND PANEL ── */}
+              {activeTool === "upscale" && (
+                <UpscalePanel onClose={() => setActiveTool(null)} />
+              )}
+
+              {activeTool === "crop" && (
+                <CropPanel
+                  sizeIdx={sizeIdx}
+                  setSizeIdx={setSizeIdx}
+                  frame={frame}
+                  setFrame={setFrame}
+                  onClose={() => setActiveTool(null)}
+                />
+              )}
+
+              {activeTool === "draw" && (
+                <DrawPanel onClose={() => setActiveTool(null)} />
+              )}
+
               {activeTool === "background" && (
                 <>
                   <PanelHeader title="পটভূমি ও থিম" onClose={() => setActiveTool(null)} />
@@ -1463,12 +1727,17 @@ export default function Editor() {
           display: "flex", alignItems: "center", justifyContent: "space-around",
           flexShrink: 0,
         }}>
-          <ToolBtn icon="📐" label="ক্যানভাস"  active={activeTool === "canvas"}     onClick={() => toggleTool("canvas")} />
-          <ToolBtn icon="✍️" label="লেখা"      active={activeTool === "text"}       onClick={() => toggleTool("text")} />
-          <ToolBtn icon="😊" label="স্টিকার"   active={activeTool === "sticker"}    onClick={() => toggleTool("sticker")} />
-          <ToolBtn icon="🎨" label="ফিল্টার"   active={activeTool === "filter"}     onClick={() => toggleTool("filter")} />
-          <ToolBtn icon="⚙️" label="সামঞ্জস্য" active={activeTool === "adjust"}     onClick={() => toggleTool("adjust")} />
-          <ToolBtn icon="🖼️" label="পটভূমি"   active={activeTool === "background"} onClick={() => toggleTool("background")} />
+          <div style={{ display: "flex", gap: 0, overflowX: "auto", width: "100%", justifyContent: "space-around" }}>
+            <ToolBtn icon="📐" label="ক্যানভাস"  active={activeTool === "canvas"}     onClick={() => toggleTool("canvas")} />
+            <ToolBtn icon="✍️" label="লেখা"      active={activeTool === "text"}       onClick={() => toggleTool("text")} />
+            <ToolBtn icon="😊" label="স্টিকার"   active={activeTool === "sticker"}    onClick={() => toggleTool("sticker")} />
+            <ToolBtn icon="🎨" label="ফিল্টার"   active={activeTool === "filter"}     onClick={() => toggleTool("filter")} />
+            <ToolBtn icon="⚙️" label="সামঞ্জস্য" active={activeTool === "adjust"}     onClick={() => toggleTool("adjust")} />
+            <ToolBtn icon="🖼️" label="পটভূমি"   active={activeTool === "background"} onClick={() => toggleTool("background")} />
+            <ToolBtn icon="🔍" label="আপস্কেল"  active={activeTool === "upscale"}    onClick={() => toggleTool("upscale")} />
+            <ToolBtn icon="✂️" label="ক্রপ"      active={activeTool === "crop"}       onClick={() => toggleTool("crop")} />
+            <ToolBtn icon="🖊️" label="ড্র"       active={activeTool === "draw"}       onClick={() => toggleTool("draw")} />
+          </div>
         </div>
       </div>
 
