@@ -1,7 +1,14 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
-import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
+import OpenAI from "openai";
+
+// Server-side OpenAI client — uses OPENAI_API_KEY env var (set in Vercel)
+const getClient = () =>
+  new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+  });
 
 const CHAT_SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী।
 
@@ -29,9 +36,9 @@ const CHAT_SYSTEM_PROMPT = `তুমি "মাহবুব সরদার স
 
 ### প্রকাশিত বই ও ই-বুক
 1. আমি বিচ্ছেদকে বলি দুঃখবিলাস — প্রথম ফিজিক্যাল বই
-2. স্মৃতির বসন্তে তুমি — ই-বুক [BUTTON:/ebooks/read/smritir-boshonte]
-3. চাঁদফুল — ই-বুক [BUTTON:/ebooks/read/chand-phool]
-4. সময়ের গহ্বরে — ই-বুক [BUTTON:/ebooks/read/shomoyer-gohvore]
+2. স্মৃতির বসন্তে তুমি — ই-বুক
+3. চাঁদফুল — ই-বুক
+4. সময়ের গহ্বরে — ই-বুক
 
 ### বিখ্যাত কবিতা ও লেখা
 - "আচরণই আসল পরিচয়", "অনুভূতির অসমতা", "ভালোবাসার সিংহাসন", "দিশাহীনতা"
@@ -68,23 +75,20 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const result = await invokeLLM({
+      const client = getClient();
+      const response = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
         messages: [
           { role: "system", content: CHAT_SYSTEM_PROMPT },
           ...input.messages,
         ],
-        maxTokens: 2000,
+        max_tokens: 2000,
+        temperature: 0.7,
       });
 
-      const reply = (() => {
-        const msg = result.choices[0]?.message?.content;
-        if (!msg) return "দুঃখিত, উত্তর দিতে পারছি না।";
-        if (typeof msg === "string") return msg;
-        const textPart = (msg as Array<{ type: string; text?: string }>).find(p => p.type === "text");
-        return textPart?.text || "দুঃখিত, উত্তর দিতে পারছি না।";
-      })();
-
-      return { reply };
+      return {
+        reply: response.choices[0]?.message?.content || "দুঃখিত, উত্তর দিতে পারছি না।",
+      };
     }),
 
   // ── AI Background Image Generation — actual image via Forge ──────────────────
@@ -95,7 +99,9 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const translateResult = await invokeLLM({
+      const client = getClient();
+      const translateResponse = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
@@ -107,11 +113,11 @@ Make it descriptive and artistic. Include lighting, mood, atmosphere.`,
           },
           { role: "user", content: input.prompt },
         ],
-        maxTokens: 150,
+        max_tokens: 150,
+        temperature: 0.7,
       });
 
-      const rawTranslate = translateResult.choices[0]?.message?.content;
-      const englishPrompt = (typeof rawTranslate === "string" ? rawTranslate : input.prompt).trim() || input.prompt;
+      const englishPrompt = translateResponse.choices[0]?.message?.content?.trim() || input.prompt;
 
       const { url } = await generateImage({
         prompt: `${englishPrompt}, suitable as background for text overlay, artistic, high quality, 4k`,
@@ -123,7 +129,7 @@ Make it descriptive and artistic. Include lighting, mood, atmosphere.`,
       };
     }),
 
-  // ── AI Background Generation — CSS Gradient via LLM (fallback) ───────────────
+  // ── AI Background Generation — CSS Gradient via GPT (fallback) ───────────────
   generateBackground: publicProcedure
     .input(
       z.object({
@@ -131,7 +137,9 @@ Make it descriptive and artistic. Include lighting, mood, atmosphere.`,
       })
     )
     .mutation(async ({ input }) => {
-      const result = await invokeLLM({
+      const client = getClient();
+      const response = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
@@ -153,16 +161,16 @@ Rules for the CSS value:
           },
           { role: "user", content: input.prompt },
         ],
-        maxTokens: 300,
+        max_tokens: 300,
+        temperature: 0.8,
       });
 
-      const rawContent = result.choices[0]?.message?.content;
-      const raw = (typeof rawContent === "string" ? rawContent : "{}").trim();
+      const raw = response.choices[0]?.message?.content?.trim() || "{}";
 
-      let parsed: { type: string; css: string; description: string };
+      let result: { type: string; css: string; description: string };
       try {
         const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        parsed = JSON.parse(cleaned);
+        result = JSON.parse(cleaned);
       } catch {
         const p = input.prompt.toLowerCase();
         let css = "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)";
@@ -179,12 +187,12 @@ Rules for the CSS value:
         } else if (p.includes("সোনা") || p.includes("gold") || p.includes("আলো")) {
           css = "linear-gradient(135deg, #1a0a00 0%, #3d1f00 40%, #7a4000 70%, #d4a843 100%)";
         }
-        parsed = { type: "gradient", css, description: input.prompt };
+        result = { type: "gradient", css, description: input.prompt };
       }
 
       return {
-        css: parsed.css || "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-        description: parsed.description || input.prompt,
+        css: result.css || "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+        description: result.description || input.prompt,
         type: "gradient",
       };
     }),
