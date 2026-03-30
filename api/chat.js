@@ -1,42 +1,52 @@
 // Vercel Serverless Function — /api/chat
-// Uses OpenRouter with multi-model fallback — 100% free, no credits needed
+// Uses Pollinations.ai — সম্পূর্ণ বিনামূল্যে, কোনো API key লাগে না, কোনো rate limit নেই
+// https://text.pollinations.ai/
 
-const FREE_MODELS = [
-  "google/gemma-3-27b-it:free",
-  "google/gemma-3-12b-it:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "google/gemma-3-4b-it:free",
-  "nousresearch/hermes-3-llama-3.1-405b:free",
-];
+const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবুজের অফিসিয়াল AI Agent। তুমি সবসময় বাংলায় কথা বলো।
 
-async function tryModel(model, messages, apiKey) {
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://mahbub-sardar-sabuj-live.vercel.app",
-      "X-Title": "Mahbub Sardar Sabuj AI Agent",
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: 2000,
-      temperature: 0.7,
-    }),
-  });
+মাহবুব সরদার সবুজ সম্পর্কে তথ্য:
+- পেশা: লেখক ও কবি
+- জন্ম: কুমিল্লা, বাংলাদেশ
+- প্রকাশিত ই-বুক: "সমেয়র গহ্বরে" (কবিতা), "আমি বিচ্ছেদকে বলি দুঃখবিলাস" (আবেগী সাহিত্য), "স্মৃতির বসন্তে তুমি" (কবিতা ও গদ্য)
+- ওয়েবসাইট: mahbub-sardar-sabuj-live.vercel.app
+- যোগাযোগ: mahbubsardarsabuj@gmail.com
+- Facebook: facebook.com/mahbubsardarsabuj
 
-  const data = await response.json();
+তুমি সংক্ষিপ্ত, আন্তরিক এবং সহায়ক উত্তর দেবে। সবসময় বাংলায় উত্তর দেবে।`;
 
-  if (!response.ok || data.error) {
-    const errMsg = data?.error?.message || "Unknown error";
-    throw new Error(`${model}: ${errMsg}`);
+async function callPollinations(messages, model = "openai") {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+  try {
+    const response = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages,
+        model,
+        seed: Math.floor(Math.random() * 99999),
+        private: true,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const text = await response.text();
+    if (!text || text.trim() === "") {
+      throw new Error("Empty response");
+    }
+
+    return text.trim();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
   }
-
-  const reply = data.choices?.[0]?.message?.content;
-  if (!reply) throw new Error(`${model}: Empty response`);
-
-  return reply;
 }
 
 export default async function handler(req, res) {
@@ -54,27 +64,35 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid messages" });
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: "API key not configured" });
+    const allMessages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...messages,
+    ];
+
+    // Primary: openai model
+    try {
+      const reply = await callPollinations(allMessages, "openai");
+      return res.status(200).json({ reply });
+    } catch (err) {
+      console.warn("Primary model failed:", err.message);
     }
 
-    let lastError = null;
-
-    // Try each model in order until one works
-    for (const model of FREE_MODELS) {
-      try {
-        const reply = await tryModel(model, messages, apiKey);
-        return res.status(200).json({ reply });
-      } catch (err) {
-        console.warn(`Model failed, trying next: ${err.message}`);
-        lastError = err;
-      }
+    // Fallback: mistral model
+    try {
+      const reply = await callPollinations(allMessages, "mistral");
+      return res.status(200).json({ reply });
+    } catch (err) {
+      console.warn("Fallback model failed:", err.message);
     }
 
-    // All models failed
-    console.error("All models failed:", lastError?.message);
-    return res.status(500).json({ error: "AI service temporarily unavailable. Please try again." });
+    // Last resort: openai-large model
+    try {
+      const reply = await callPollinations(allMessages, "openai-large");
+      return res.status(200).json({ reply });
+    } catch (err) {
+      console.error("All models failed:", err.message);
+      return res.status(500).json({ error: "AI service temporarily unavailable. Please try again." });
+    }
 
   } catch (err) {
     console.error("Chat handler error:", err);
