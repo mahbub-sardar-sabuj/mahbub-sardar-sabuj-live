@@ -67,8 +67,8 @@ const newsItems = [
   {
     date: "২০২৪",
     tag: "ই-বুক",
-    title: "৮টি ই-বুক প্রকাশ",
-    desc: "লেখক মাহবুব সরদার সবুজ এ পর্যন্ত ৮টি ই-বুক প্রকাশ করেছেন।",
+    title: "৪টি ই-বুক প্রকাশ",
+    desc: "লেখক মাহবুব সরদার সবুজ এ পর্যন্ত ৪টি ই-বুক প্রকাশ করেছেন।",
     link: "/ebooks",
   },
   {
@@ -99,7 +99,7 @@ const fbGroups = [
 
 const stats = [
   { value: "৭,০০০+", label: "প্রকাশিত লেখা" },
-  { value: "৮টি", label: "ই-বুক" },
+  { value: "৪টি", label: "ই-বুক" },
   { value: "১টি", label: "ফিজিক্যাল বই" },
   { value: "লক্ষাধিক", label: "পাঠক" },
 ];
@@ -435,7 +435,7 @@ export default function Home() {
               >
                 {[
                   { n: "৭,০০০+", l: "লেখা" },
-                  { n: "৮টি", l: "ই-বুক" },
+                  { n: "৪টি", l: "ই-বুক" },
                   { n: "লক্ষাধিক", l: "পাঠক" },
                 ].map((s, i) => (
                   <div key={i}>
@@ -1380,14 +1380,14 @@ export default function Home() {
 
           <FadeIn delay={0.3} direction="up">
             <div style={{ textAlign: "center", marginTop: "3rem" }}>
-              <Link href="/gallery">
-                <motion.a
+              <motion.button
+                  onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
                   whileHover={{ scale: 1.04 }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 10,
-                    background: "#0A1628",
+                    background: "linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.06))",
                     color: "#FAF6EF",
                     padding: "14px 32px",
                     borderRadius: 50,
@@ -1395,13 +1395,11 @@ export default function Home() {
                     fontWeight: 600,
                     fontSize: "0.95rem",
                     cursor: "pointer",
-                    textDecoration: "none",
-                    border: "1px solid rgba(201,168,76,0.2)",
+                    border: "1px solid rgba(201,168,76,0.3)",
                   }}
                 >
                   সব ছবি দেখুন <ArrowRight size={16} />
-                </motion.a>
-              </Link>
+                </motion.button>
             </div>
           </FadeIn>
         </div>

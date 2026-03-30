@@ -37,10 +37,10 @@ const FONT_CSS: Record<string, string> = {
 };
 
 const FONT_URLS: Record<string, string> = {
-  ChandraSheela:              "/fonts/চন্দ্রশীলা.ttf",
-  ChandraSheelaPremium:       "/fonts/চন্দ্রশীলাপ্রিমিয়াম.ttf",
-  MahbubSardarSabujFont:      "/fonts/মাহবুবসরদারসবুজফন্ট.ttf",
-  MasudNandanik:              "/fonts/মাসুদনান্দনিক.ttf",
+  ChandraSheela:              "/fonts/ChandraSheela.ttf",
+  ChandraSheelaPremium:       "/fonts/ChandraSheelaPremium.ttf",
+  MahbubSardarSabujFont:      "/fonts/MahbubSardarSabujFont.ttf",
+  MasudNandanik:              "/fonts/MasudNandanik.ttf",
   AdorshoLipi:                "/fonts/AdorshoLipi.ttf",
   BHSabitAdorshoLightUnicode: "/fonts/BHSabitAdorshoLightUnicode.ttf",
   BLABNorhaGramUnicode:       "/fonts/BLABNorhaGramUnicode.ttf",
@@ -376,7 +376,7 @@ export default function Editor() {
     ctx.scale(DPR, DPR);
 
     if (theme.gradient) {
-      const parts = theme.gradient.match(/linear-gradient\(([^,]+),(.*)\)/s);
+      const parts = theme.gradient.match(/linear-gradient\(([^,]+),([\s\S]*)\)/);
       if (parts) {
         const deg = parseFloat(parts[1]) || 135;
         const rad = (deg - 90) * Math.PI / 180;
@@ -521,10 +521,10 @@ export default function Editor() {
 
       <div className="pt-20 pb-28 px-3 max-w-7xl mx-auto">
         {/* Desktop two-column layout */}
-        <div className="lg:grid lg:grid-cols-[1fr_480px] lg:gap-8 lg:items-start">
+        <div className="lg:grid lg:grid-cols-[1fr_460px] lg:gap-10 lg:items-start">
 
         {/* ── LEFT COLUMN: Brand header + Preview ── */}
-        <div className="lg:sticky lg:top-20">
+        <div className="lg:sticky lg:top-24 lg:self-start">
 
         {/* ── Brand header — animated */}
         <motion.div
@@ -823,13 +823,12 @@ export default function Editor() {
           </div>
         </div>
 
-         </div>{/* end left column */}
+        </div>{/* end left column */}
 
         {/* ── RIGHT COLUMN: Download + Tools ── */}
-        <div>
-
+        <div className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
         {/* ════════════════════════════════════════════════════════════
-            DOWNLOAD BUTTONN
+            DOWNLOAD BUTTON
         ══════════════════════════════════════════════════════════════ */}
         <button onClick={handleDownload} disabled={downloading}
           className="w-full py-4 bg-gradient-to-r from-[#D4A843] to-[#b8892a] hover:from-[#c49030] hover:to-[#a07020] text-black font-bold rounded-2xl flex items-center justify-center gap-2 transition-all disabled:opacity-60 shadow-lg shadow-[#D4A843]/20 text-base mb-6">

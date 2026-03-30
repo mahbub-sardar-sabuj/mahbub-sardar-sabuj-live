@@ -309,7 +309,7 @@ export default function EBookReader() {
       <Seo
         title={`${book.title} পড়ুন | মাহবুব সরদার সবুজ`}
         description={book.description}
-        canonical={`https://mahbubsardarsabuj.com/ebooks/read/${slug}`}
+        path={`/ebooks/read/${slug}`}
       />
 
       <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? "bg-gray-950 text-gray-100" : "bg-[#FDF6EC] text-[#0D1B2A]"}`}>
