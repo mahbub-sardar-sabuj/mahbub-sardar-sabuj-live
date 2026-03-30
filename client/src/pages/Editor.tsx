@@ -1712,7 +1712,7 @@ export default function Editor() {
   // Render
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1a", color: "#fff", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0f1a", color: "#fff", display: "flex", flexDirection: "column", paddingTop: 70 }}>
       <Seo title="ডিজাইন ফরম্যাট | মাহবুব সরদার সবুজ"
         description="প্রিমিয়াম বাংলা লেখার কার্ড ডিজাইন করুন" />
       <Navbar />
@@ -1722,7 +1722,7 @@ export default function Editor() {
         background: "linear-gradient(180deg, #0a1020 0%, #0d1420 100%)",
         borderBottom: "1px solid rgba(212,168,67,0.15)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "80px 16px 14px",
+        padding: "18px 16px 14px",
         position: "relative",
       }}>
         {/* Decorative left line */}
