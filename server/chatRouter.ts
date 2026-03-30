@@ -1,12 +1,59 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
-import OpenAI from "openai";
+import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL || "https://openrouter.ai/api/v1",
-});
+const CHAT_SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী।
+
+## তোমার পরিচয়
+তুমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI Agent। তুমি বাংলায় এবং ইংরেজিতে যেকোনো প্রশ্নের উত্তর দাও।
+
+## মাহবুব সরদার সবুজ সম্পর্কে সম্পূর্ণ তথ্য
+
+### ব্যক্তিগত পরিচয়
+- পুরো নাম: মাহবুব সরদার সবুজ (Mahbub Sardar Sabuj)
+- পেশা: লেখক ও কবি (বাংলা সাহিত্য)
+- জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি
+- পিতা: ফানাউল্লাহ সরদার
+- মাতা: আহামালী বীনতে মাসুরা
+- বর্তমান অবস্থান: সৌদি আরব
+- কর্মক্ষেত্র: সৌদি আরবে একটি ফার্নিচার কোম্পানিতে ম্যানেজার এবং একটি স্টুডিওতে প্রোগ্রামার
+- Facebook: https://www.facebook.com/MahbubSardarSabuj
+- Email: lekhokmahbubsardarsabuj@gmail.com
+
+### সাহিত্যকর্ম ও পরিসংখ্যান
+- মোট লেখা: ৭,০০০+ (কবিতা, গদ্য, প্রবন্ধ)
+- ই-বুক: ৮টি প্রকাশিত
+- পাঠক: লক্ষাধিক
+- বিশেষত্ব: ভালোবাসা, জীবনের বাস্তবতা, আত্মসম্মান, মানবিক সম্পর্ক বিষয়ক লেখা
+
+### প্রকাশিত বই ও ই-বুক
+1. আমি বিচ্ছেদকে বলি দুঃখবিলাস — প্রথম ফিজিক্যাল বই
+2. স্মৃতির বসন্তে তুমি — ই-বুক [BUTTON:/ebooks/read/smritir-boshonte]
+3. চাঁদফুল — ই-বুক [BUTTON:/ebooks/read/chand-phool]
+4. সময়ের গহ্বরে — ই-বুক [BUTTON:/ebooks/read/shomoyer-gohvore]
+
+### বিখ্যাত কবিতা ও লেখা
+- "আচরণই আসল পরিচয়", "অনুভূতির অসমতা", "ভালোবাসার সিংহাসন", "দিশাহীনতা"
+- "ভালোবাসা প্রমাণ", "মনের মানুষের কথা", "ভালোবাসার মর্যাদা"
+- "ভালো মানুষেরা সবসময় ঠকে", "নারীর মূল্য", "সত্য চুপ থাকে"
+
+বিখ্যাত উক্তি: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"
+
+### ওয়েবসাইটের পেজসমূহ
+- পরিচিতি [BUTTON:/about]
+- বই ও ই-বুক [BUTTON:/ebooks]
+- লেখালেখি [BUTTON:/writings]
+- যোগাযোগ [BUTTON:/contact]
+- ডিজাইন ফরম্যাট [BUTTON:/editor]
+
+## গুরুত্বপূর্ণ নির্দেশনা
+- কখনো URL লিংক দেবে না (https://... ধরনের কোনো লিংক টেক্সটে লিখবে না)
+- যখন কোনো পেজের কথা বলবে, শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে
+- [BUTTON:/path] ট্যাগ স্বয়ংক্রিয়ভাবে সুন্দর বাটনে পরিণত হবে
+- যদি কেউ মাহবুব সরদার সবুজের ছবি চায়, তাহলে [PHOTO] ট্যাগ ব্যবহার করো
+- সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)
+- উত্তর সংক্ষিপ্ত ও স্পষ্ট রাখো`;
 
 export const chatRouter = router({
   send: publicProcedure
@@ -21,40 +68,23 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const response = await client.chat.completions.create({
-        model: "gpt-4.1-mini",
+      const result = await invokeLLM({
         messages: [
-          {
-            role: "system",
-            content: `তুমি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী। তুমি বাংলায় কথা বলো।
-
-মাহবুব সরদার সবুজ সম্পর্কে তথ্য:
-- তিনি একজন বাংলাদেশী লেখক ও কবি
-- তার প্রকাশিত বই: "আমি বিচ্ছেদকে বিল দুঃখবিলাস" (প্রথম ফিজিক্যাল বই)
-- ই-বুক: "স্মৃতির বসন্তে তুমি", "চাঁদফুল", "সমেয়র গহুরে"
-- তিনি ভালোবাসা, জীবনের বাস্তবতা, আত্মসম্মান ও মানবিক সম্পর্কের বিষয়ে লেখেন
-- ওয়েবসাইট: mahbub-sardar-sabuj-live.vercel.app
-
-গুরুত্বপূর্ণ নিয়ম:
-- কখনো URL বা লিংক দেবে না
-- পরিবর্তে [BUTTON:/path|বাটন টেক্সট] ফরম্যাট ব্যবহার করো
-- উদাহরণ: [BUTTON:/about|পরিচিতি পেজ দেখুন]
-- উদাহরণ: [BUTTON:/ebooks|ই-বুক সংগ্রহ দেখুন]
-- উদাহরণ: [BUTTON:/writings|লেখালেখি দেখুন]
-- উদাহরণ: [BUTTON:/gallery|গ্যালারি দেখুন]
-- উদাহরণ: [BUTTON:/contact|যোগাযোগ করুন]
-
-যদি কেউ লেখকের ছবি চায়: [PHOTO] ট্যাগ ব্যবহার করো।`,
-          },
+          { role: "system", content: CHAT_SYSTEM_PROMPT },
           ...input.messages,
         ],
-        max_tokens: 2000,
-        temperature: 0.7,
+        maxTokens: 2000,
       });
 
-      return {
-        reply: response.choices[0]?.message?.content || "দুঃখিত, উত্তর দিতে পারছি না।",
-      };
+      const reply = (() => {
+        const msg = result.choices[0]?.message?.content;
+        if (!msg) return "দুঃখিত, উত্তর দিতে পারছি না।";
+        if (typeof msg === "string") return msg;
+        const textPart = (msg as Array<{ type: string; text?: string }>).find(p => p.type === "text");
+        return textPart?.text || "দুঃখিত, উত্তর দিতে পারছি না।";
+      })();
+
+      return { reply };
     }),
 
   // ── AI Background Image Generation — actual image via Forge ──────────────────
@@ -65,9 +95,7 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      // First, translate Bengali prompt to English using GPT for better image generation
-      const translateResponse = await client.chat.completions.create({
-        model: "gpt-4.1-mini",
+      const translateResult = await invokeLLM({
         messages: [
           {
             role: "system",
@@ -75,26 +103,16 @@ export const chatRouter = router({
 Convert the user's Bengali or English description into a detailed, vivid English image generation prompt.
 Make it suitable for a beautiful background image for a Bengali poetry card.
 Return ONLY the English prompt, nothing else. No explanation, no quotes.
-Make it descriptive and artistic. Include lighting, mood, atmosphere.
-Examples:
-- "আকাশের ছবি" → "Beautiful blue sky with soft white clouds, golden sunlight, serene atmosphere, photorealistic, high quality"
-- "রাতের আকাশ" → "Stunning night sky filled with stars and milky way, deep blue and purple tones, moonlight, dreamy atmosphere"
-- "সমুদ্রের ছবি" → "Breathtaking ocean view with turquoise waves, golden beach, sunset light reflecting on water, peaceful and majestic"
-- "বাগানের ছবি" → "Lush green garden with colorful flowers in bloom, morning dew, soft sunlight filtering through leaves, vibrant and serene"
-- "ভালোবাসার ছবি" → "Romantic rose petals scattered on soft fabric, warm pink and red tones, bokeh background, dreamy and tender atmosphere"`,
+Make it descriptive and artistic. Include lighting, mood, atmosphere.`,
           },
-          {
-            role: "user",
-            content: input.prompt,
-          },
+          { role: "user", content: input.prompt },
         ],
-        max_tokens: 150,
-        temperature: 0.7,
+        maxTokens: 150,
       });
 
-      const englishPrompt = translateResponse.choices[0]?.message?.content?.trim() || input.prompt;
-      
-      // Generate the actual image
+      const rawTranslate = translateResult.choices[0]?.message?.content;
+      const englishPrompt = (typeof rawTranslate === "string" ? rawTranslate : input.prompt).trim() || input.prompt;
+
       const { url } = await generateImage({
         prompt: `${englishPrompt}, suitable as background for text overlay, artistic, high quality, 4k`,
       });
@@ -105,7 +123,7 @@ Examples:
       };
     }),
 
-  // ── AI Background Generation — CSS Gradient via GPT (fallback) ───────────────
+  // ── AI Background Generation — CSS Gradient via LLM (fallback) ───────────────
   generateBackground: publicProcedure
     .input(
       z.object({
@@ -113,8 +131,7 @@ Examples:
       })
     )
     .mutation(async ({ input }) => {
-      const response = await client.chat.completions.create({
-        model: "gpt-4.1-mini",
+      const result = await invokeLLM({
         messages: [
           {
             role: "system",
@@ -132,56 +149,42 @@ Rules for the CSS value:
 - Use linear-gradient, radial-gradient, or multi-stop gradients
 - Use beautiful, artistic color combinations that match the theme
 - Make it suitable for text overlay (not too bright, not too dark)
-- Can combine multiple gradients with comma separation
-- Examples of good gradients:
-  - Night sky: "linear-gradient(135deg, #0a0a2e 0%, #1a1a4e 40%, #0d2137 100%)"
-  - Sunset: "linear-gradient(180deg, #ff6b35 0%, #f7931e 30%, #ffcd3c 60%, #c9184a 100%)"
-  - Garden: "linear-gradient(135deg, #1a472a 0%, #2d6a4f 40%, #52b788 70%, #95d5b2 100%)"
-  - Ocean: "linear-gradient(180deg, #03045e 0%, #0077b6 40%, #00b4d8 70%, #90e0ef 100%)"
-  - Rose: "radial-gradient(ellipse at top, #ff006e 0%, #8338ec 50%, #3a0ca3 100%)"`,
+- Can combine multiple gradients with comma separation`,
           },
-          {
-            role: "user",
-            content: input.prompt,
-          },
+          { role: "user", content: input.prompt },
         ],
-        max_tokens: 300,
-        temperature: 0.8,
+        maxTokens: 300,
       });
 
-      const raw = response.choices[0]?.message?.content?.trim() || "{}";
-      
-      // Parse the JSON response
-      let result: { type: string; css: string; description: string };
+      const rawContent = result.choices[0]?.message?.content;
+      const raw = (typeof rawContent === "string" ? rawContent : "{}").trim();
+
+      let parsed: { type: string; css: string; description: string };
       try {
-        // Remove markdown code blocks if present
         const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        result = JSON.parse(cleaned);
+        parsed = JSON.parse(cleaned);
       } catch {
-        // Fallback: generate a default gradient based on keywords
-        const prompt = input.prompt.toLowerCase();
+        const p = input.prompt.toLowerCase();
         let css = "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)";
-        
-        if (prompt.includes("রাত") || prompt.includes("night") || prompt.includes("আকাশ")) {
+        if (p.includes("রাত") || p.includes("night") || p.includes("আকাশ")) {
           css = "linear-gradient(180deg, #0a0a2e 0%, #1a1a4e 40%, #0d2137 70%, #1a0533 100%)";
-        } else if (prompt.includes("সূর্য") || prompt.includes("sunset") || prompt.includes("সন্ধ্যা")) {
+        } else if (p.includes("সূর্য") || p.includes("sunset") || p.includes("সন্ধ্যা")) {
           css = "linear-gradient(180deg, #ff6b35 0%, #f7931e 35%, #ffcd3c 65%, #c9184a 100%)";
-        } else if (prompt.includes("বাগান") || prompt.includes("garden") || prompt.includes("ফুল")) {
+        } else if (p.includes("বাগান") || p.includes("garden") || p.includes("ফুল")) {
           css = "linear-gradient(135deg, #1a472a 0%, #2d6a4f 40%, #52b788 75%, #95d5b2 100%)";
-        } else if (prompt.includes("সমুদ্র") || prompt.includes("ocean") || prompt.includes("নদী")) {
+        } else if (p.includes("সমুদ্র") || p.includes("ocean") || p.includes("নদী")) {
           css = "linear-gradient(180deg, #03045e 0%, #0077b6 40%, #00b4d8 70%, #90e0ef 100%)";
-        } else if (prompt.includes("ভালোবাসা") || prompt.includes("love") || prompt.includes("প্রেম")) {
+        } else if (p.includes("ভালোবাসা") || p.includes("love") || p.includes("প্রেম")) {
           css = "radial-gradient(ellipse at top, #ff006e 0%, #8338ec 50%, #3a0ca3 100%)";
-        } else if (prompt.includes("সোনা") || prompt.includes("gold") || prompt.includes("আলো")) {
+        } else if (p.includes("সোনা") || p.includes("gold") || p.includes("আলো")) {
           css = "linear-gradient(135deg, #1a0a00 0%, #3d1f00 40%, #7a4000 70%, #d4a843 100%)";
         }
-        
-        result = { type: "gradient", css, description: input.prompt };
+        parsed = { type: "gradient", css, description: input.prompt };
       }
 
       return {
-        css: result.css || "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-        description: result.description || input.prompt,
+        css: parsed.css || "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+        description: parsed.description || input.prompt,
         type: "gradient",
       };
     }),

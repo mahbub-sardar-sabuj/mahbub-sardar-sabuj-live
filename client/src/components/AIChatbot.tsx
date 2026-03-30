@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 interface Message {
   id: string;
@@ -15,8 +16,7 @@ interface ActionButton {
   path: string;
 }
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || "";
-const OPENAI_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL || "https://openrouter.ai/api/v1";
+// AI calls are handled server-side via tRPC — no client-side API key needed
 
 const AUTHOR_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 
@@ -106,24 +106,7 @@ const SUGGESTIONS = [
   "যোগাযোগ করব কীভাবে?",
 ];
 
-async function callAI(messages: { role: string; content: string }[]): Promise<string> {
-  const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
-      max_tokens: 2000,
-      temperature: 0.7,
-    }),
-  });
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "দুঃখিত, উত্তর দিতে পারছি না।";
-}
+// callAI is now handled via tRPC mutation in the component
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
@@ -303,6 +286,8 @@ export default function AIChatbot() {
   const inputRef       = useRef<HTMLTextAreaElement>(null);
   const [, navigate]   = useLocation();
 
+  const sendMutation = trpc.chat.send.useMutation();
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -346,24 +331,36 @@ export default function AIChatbot() {
           imageUrl: AUTHOR_PHOTO,
         };
         setMessages((prev) => [...prev, photoMsg]);
+        setIsLoading(false);
       } else {
         const history = [...messages, userMsg]
           .filter((m) => m.id !== "welcome")
-          .map((m) => ({ role: m.role, content: m.content }));
-        const reply = await callAI(history);
-        const assistantMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: reply,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
+          .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+        sendMutation.mutate(
+          { messages: history },
+          {
+            onSuccess: (data) => {
+              const assistantMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: data.reply,
+                timestamp: new Date(),
+              };
+              setMessages((prev) => [...prev, assistantMsg]);
+              setIsLoading(false);
+            },
+            onError: () => {
+              setError("সংযোগ সমস্যা। আবার চেষ্টা করুন।");
+              setIsLoading(false);
+            },
+          }
+        );
       }
     } catch {
       setError("সংযোগ সমস্যা। আবার চেষ্টা করুন।");
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [input, isLoading, messages]);
+  }, [input, isLoading, messages, sendMutation]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
