@@ -424,9 +424,10 @@ export default function AIChatbot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [btnPos, setBtnPos] = useState({ x: 0, y: 0 });
-  // Periodic tooltip: shows for 3s every 8s
-  const [showLabel, setShowLabel] = useState(true);
+  // Use absolute position from top-left for free drag anywhere
+  const [btnPos, setBtnPos] = useState({ x: -1, y: -1 }); // -1 = use default bottom-right
+  // Pill expanded state: true = show text label
+  const [pillExpanded, setPillExpanded] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -436,22 +437,20 @@ export default function AIChatbot() {
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
   const [, navigate] = useLocation();
 
-  // Periodic tooltip: show 3s, hide 8s, repeat (only when chat is closed)
+  // Periodic pill expand: expand for 3s every 10s (only when chat closed)
   useEffect(() => {
-    if (isOpen) { setShowLabel(false); return; }
-    // Show immediately on mount, then cycle
-    setShowLabel(true);
-    const cycle = () => {
-      // hide after 3s
-      const hideTimer = setTimeout(() => setShowLabel(false), 3000);
-      // show again after 3+8=11s
-      const showTimer = setTimeout(() => setShowLabel(true), 11000);
-      return () => { clearTimeout(hideTimer); clearTimeout(showTimer); };
-    };
-    const cleanup = cycle();
-    // repeat every 11s
-    const interval = setInterval(() => { setShowLabel(true); setTimeout(() => setShowLabel(false), 3000); }, 11000);
-    return () => { cleanup(); clearInterval(interval); };
+    if (isOpen) { setPillExpanded(false); return; }
+    // Show text after 1.5s on mount
+    const firstShow = setTimeout(() => {
+      setPillExpanded(true);
+      setTimeout(() => setPillExpanded(false), 3000);
+    }, 1500);
+    // Then repeat every 10s
+    const interval = setInterval(() => {
+      setPillExpanded(true);
+      setTimeout(() => setPillExpanded(false), 3000);
+    }, 10000);
+    return () => { clearTimeout(firstShow); clearInterval(interval); };
   }, [isOpen]);
 
   useEffect(() => {
@@ -469,28 +468,34 @@ export default function AIChatbot() {
     navigate(path);
   }, [navigate]);
 
-  // ── Drag handlers ─────────────────────────────────────────────────────────
-  // Clamp button so it never goes off-screen
+  // ── Drag handlers (absolute position from top-left) ─────────────────────
   const clampPos = useCallback((x: number, y: number) => {
-    const BTN = 72; // button diameter + margin
-    const maxX = window.innerWidth - BTN;
-    const maxY = window.innerHeight - BTN;
+    const BTN = 56;
     return {
-      x: Math.max(-(window.innerWidth - BTN), Math.min(maxX - BTN, x)),
-      y: Math.max(-(window.innerHeight - BTN), Math.min(maxY - BTN, y)),
+      x: Math.max(0, Math.min(window.innerWidth - BTN, x)),
+      y: Math.max(0, Math.min(window.innerHeight - BTN, y)),
     };
   }, []);
+
+  // Get current pixel position (default = bottom-right)
+  const getAbsPos = useCallback(() => {
+    if (btnPos.x === -1) {
+      return { x: window.innerWidth - 72, y: window.innerHeight - 88 };
+    }
+    return btnPos;
+  }, [btnPos]);
 
   const handleBtnMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
     didDrag.current = false;
-    dragStart.current = { x: e.clientX, y: e.clientY, bx: btnPos.x, by: btnPos.y };
+    const abs = getAbsPos();
+    dragStart.current = { x: e.clientX, y: e.clientY, bx: abs.x, by: abs.y };
 
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - dragStart.current.x;
       const dy = ev.clientY - dragStart.current.y;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      setBtnPos(clampPos(dragStart.current.bx - dx, dragStart.current.by - dy));
+      setBtnPos(clampPos(dragStart.current.bx + dx, dragStart.current.by + dy));
     };
     const onUp = () => {
       isDragging.current = false;
@@ -499,29 +504,32 @@ export default function AIChatbot() {
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [btnPos, clampPos]);
+    e.preventDefault();
+  }, [getAbsPos, clampPos]);
 
   const handleBtnTouchStart = useCallback((e: React.TouchEvent) => {
     isDragging.current = true;
     didDrag.current = false;
     const t = e.touches[0];
-    dragStart.current = { x: t.clientX, y: t.clientY, bx: btnPos.x, by: btnPos.y };
+    const abs = getAbsPos();
+    dragStart.current = { x: t.clientX, y: t.clientY, bx: abs.x, by: abs.y };
 
     const onMove = (ev: TouchEvent) => {
+      ev.preventDefault();
       const touch = ev.touches[0];
       const dx = touch.clientX - dragStart.current.x;
       const dy = touch.clientY - dragStart.current.y;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      setBtnPos(clampPos(dragStart.current.bx - dx, dragStart.current.by - dy));
+      setBtnPos(clampPos(dragStart.current.bx + dx, dragStart.current.by + dy));
     };
     const onEnd = () => {
       isDragging.current = false;
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("touchend", onEnd);
     };
-    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("touchend", onEnd);
-  }, [btnPos, clampPos]);
+  }, [getAbsPos, clampPos]);
 
   // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
@@ -615,120 +623,107 @@ export default function AIChatbot() {
 
   return (
     <>
-      {/* Floating Button — Draggable */}
-      <div
-        className="fixed z-[60]"
-        style={{
-          bottom: `calc(1.5rem - ${Math.max(-window.innerHeight + 80, Math.min(window.innerHeight - 80, btnPos.y))}px)`,
-          right: `calc(1.5rem - ${Math.max(-window.innerWidth + 80, Math.min(window.innerWidth - 80, btnPos.x))}px)`,
-          filter: "drop-shadow(0 8px 32px rgba(212,168,67,0.45))",
-          cursor: isDragging.current ? "grabbing" : "grab",
-          userSelect: "none",
-          touchAction: "none",
-        }}
-        onMouseDown={handleBtnMouseDown}
-        onTouchStart={handleBtnTouchStart}
-      >
-        {/* Pulse ring animation */}
-        {!isOpen && (
-          <>
-            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(212,168,67,0.25)", animationDuration: "2.2s" }} />
-          </>
-        )}
-
-        {/* Reset position hint — shown when chat is closed and button may be off-screen */}
-        {!isOpen && (btnPos.x !== 0 || btnPos.y !== 0) && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setBtnPos({ x: 0, y: 0 }); }}
-            title="ডিফল্ট অবস্থানে ফিরুন"
+      {/* Floating Button — Pill shape, always visible, draggable anywhere */}
+      {(() => {
+        const abs = getAbsPos();
+        return (
+          <motion.div
+            className="fixed z-[60]"
             style={{
-              position: "absolute",
-              top: -10,
-              left: -10,
-              width: 20,
-              height: 20,
-              borderRadius: "50%",
-              background: "#D4A843",
-              color: "#0A1628",
-              fontSize: "10px",
-              fontWeight: 700,
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 10,
-              lineHeight: 1,
+              left: abs.x,
+              top: abs.y,
+              cursor: isDragging.current ? "grabbing" : "grab",
+              userSelect: "none",
+              touchAction: "none",
+              filter: "drop-shadow(0 6px 20px rgba(212,168,67,0.4))",
             }}
-          >↺</button>
-        )}
-
-        {/* One-time tooltip label — shows once then fades out */}
-        <AnimatePresence>
-          {!isOpen && showLabel && (
+            onMouseDown={handleBtnMouseDown}
+            onTouchStart={handleBtnTouchStart}
+          >
+            {/* Pill button — expands to show text */}
             <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10, transition: { duration: 0.6 } }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-              className="absolute right-[58px] top-1/2 -translate-y-1/2 whitespace-nowrap pointer-events-none"
+              onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
+              animate={{
+                width: isOpen ? 48 : pillExpanded ? "auto" : 48,
+                borderRadius: isOpen ? 24 : pillExpanded ? 28 : 24,
+              }}
+              transition={{ type: "spring", stiffness: 260, damping: 22 }}
               style={{
+                height: 48,
+                display: "flex",
+                alignItems: "center",
+                overflow: "hidden",
                 background: "linear-gradient(135deg, #0d1b2a 0%, #1a2e4a 100%)",
-                border: "1px solid rgba(212,168,67,0.5)",
-                borderRadius: 10,
-                padding: "5px 12px",
-                color: "#D4A843",
-                fontSize: "0.72rem",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                fontWeight: 600,
-                letterSpacing: "0.02em",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
+                border: "2px solid #D4A843",
+                boxShadow: "0 0 0 3px rgba(212,168,67,0.18), 0 6px 20px rgba(0,0,0,0.5)",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                minWidth: 48,
               }}
             >
-              আমাকে জিজ্ঞেস করুন
-              <span style={{
-                position: "absolute", right: -6, top: "50%", transform: "translateY(-50%)",
-                width: 0, height: 0,
-                borderTop: "5px solid transparent",
-                borderBottom: "5px solid transparent",
-                borderLeft: "6px solid rgba(212,168,67,0.5)",
-              }} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {/* Avatar circle */}
+              <div style={{
+                width: 44, height: 44, borderRadius: "50%", overflow: "hidden",
+                flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <AnimatePresence mode="wait">
+                  {isOpen ? (
+                    <motion.span key="x"
+                      initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
+                      style={{ color: "#D4A843", fontSize: "1.15rem", fontWeight: 700, width: "100%", textAlign: "center" }}>✕</motion.span>
+                  ) : (
+                    <motion.div key="av" initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
+                      style={{ width: "100%", height: "100%" }}>
+                      <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          t.style.display = "none";
+                          t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1.2rem;font-weight:700;">AI</span>';
+                        }} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-        <motion.button
-          onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
-          className="relative w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.92 }}
-          style={{
-            background: "linear-gradient(135deg, #0d1b2a 0%, #1a2e4a 100%)",
-            border: "2px solid #D4A843",
-            boxShadow: "0 0 0 3px rgba(212,168,67,0.2), 0 6px 20px rgba(0,0,0,0.5)",
-          }}
-          title="মাহবুব সরদার সবুজ AI Agent"
-        >
-          <AnimatePresence mode="wait">
-            {isOpen ? (
-              <motion.span key="close"
-                initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
-                style={{ color: "#D4A843", fontSize: "1.1rem", fontWeight: 700 }}>✕</motion.span>
-            ) : (
-              <motion.div key="open"
-                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
-                className="w-full h-full">
-                <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ AI" className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const t = e.currentTarget;
-                    t.style.display = "none";
-                    t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:24px;">AI</span>';
-                  }} />
-              </motion.div>
+              {/* Expandable text label */}
+              <AnimatePresence>
+                {!isOpen && pillExpanded && (
+                  <motion.span
+                    key="label"
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.35 }}
+                    style={{
+                      color: "#D4A843",
+                      fontSize: "0.72rem",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontWeight: 700,
+                      paddingRight: 14,
+                      paddingLeft: 6,
+                      overflow: "hidden",
+                      display: "inline-block",
+                      letterSpacing: "0.01em",
+                    }}
+                  >
+                    আমাকে জিজ্ঞেস করুন
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Pulse ring — only when closed */}
+            {!isOpen && (
+              <span style={{
+                position: "absolute", inset: 0, borderRadius: 24,
+                background: "rgba(212,168,67,0.18)",
+                animation: "ping 2.2s cubic-bezier(0,0,0.2,1) infinite",
+                pointerEvents: "none",
+              }} />
             )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
+          </motion.div>
+        );
+      })()}
 
       {/* Chat Window */}
       <AnimatePresence>
