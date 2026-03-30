@@ -50,11 +50,17 @@ const isPrimaryNavActive = (href: string, type: string, location: string) => {
   return false;
 };
 
+// Small event emitter to open chatbot from outside
+export const openChatbot = () => {
+  window.dispatchEvent(new CustomEvent("open-chatbot"));
+};
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
+  const [showBanner, setShowBanner] = useState(true);
 
   useEffect(() => {
     const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
@@ -88,13 +94,100 @@ export default function Navbar() {
   };
 
   return (
+    <>
+      {/* ── TOP BANNER: আমাকে জিজ্ঞেস করুন ── */}
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            style={{
+              position: "fixed",
+              top: 0, left: 0, right: 0,
+              zIndex: 55,
+              background: "linear-gradient(90deg, #0d1b2a 0%, #1a2e4a 50%, #0d1b2a 100%)",
+              borderBottom: "1px solid rgba(212,168,67,0.25)",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "5px 16px",
+              position: "relative",
+            }}>
+              {/* Clickable text */}
+              <button
+                onClick={() => { openChatbot(); }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: 0,
+                }}
+              >
+                <span style={{
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: "#4ade80",
+                  boxShadow: "0 0 6px #4ade80",
+                  display: "inline-block",
+                  flexShrink: 0,
+                  animation: "ping 1.5s ease-in-out infinite",
+                }} />
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.72rem",
+                  color: "#D4A843",
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                  whiteSpace: "nowrap",
+                }}>
+                  আমাকে জিজ্ঞেস করুন
+                </span>
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.65rem",
+                  color: "rgba(212,168,67,0.55)",
+                  whiteSpace: "nowrap",
+                }}>
+                  — AI সহকারী সক্রিয়
+                </span>
+              </button>
+              {/* Close banner */}
+              <button
+                onClick={() => setShowBanner(false)}
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "rgba(212,168,67,0.45)",
+                  fontSize: "0.75rem",
+                  lineHeight: 1,
+                  padding: "2px 4px",
+                }}
+                title="বন্ধ করুন"
+              >✕</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       style={{
         position: "fixed",
-        top: 0, left: 0, right: 0,
+        top: showBanner ? 28 : 0, left: 0, right: 0,
         zIndex: 50,
         transition: "all 0.5s",
         background: scrolled ? "rgba(10,18,34,0.97)" : "transparent",
@@ -511,5 +604,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
     </motion.nav>
+    </>
   );
 }

@@ -437,6 +437,13 @@ export default function AIChatbot() {
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
   const [, navigate] = useLocation();
 
+  // Listen for open-chatbot event from the top banner
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener("open-chatbot", handler);
+    return () => window.removeEventListener("open-chatbot", handler);
+  }, []);
+
   // Periodic pill expand: expand for 3s every 10s (only when chat closed)
   useEffect(() => {
     if (isOpen) { setPillExpanded(false); return; }
