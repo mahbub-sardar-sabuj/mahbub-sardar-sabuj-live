@@ -39,13 +39,41 @@ const EBOOK_COVERS = [
 
 // ── Gallery images ────────────────────────────────────────────────────────────
 const galleryImages = [
-  { src: PROFILE_1, caption: "মাহবুব সরদার সবুজ" },
-  { src: PROFILE_2, caption: "লেখার মুহূর্তে" },
-  { src: BOOK_COVER, caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস" },
-  { src: BOOKS_COLLECTION, caption: "ই-বুক সংগ্রহ" },
-  { src: WRITING_SHOWCASE, caption: "কবিতার পাতা" },
-  { src: WRITING2, caption: "কবিতার পৃষ্ঠা" },
-  { src: BOOK_PHOTO, caption: "দুঃখবিলাস — বইয়ের সাথে" },
+  // ফটো গ্যালারি — আপলোড করা ছবি
+  { src: "/photos/Photoroom_20260224_033915.jpg", caption: "মাহবুব সরদার সবুজ", cat: "ব্যক্তিগত" },
+  { src: "/photos/edited_image_blazer.png", caption: "ব্লেজারে লেখক", cat: "ব্যক্তিগত" },
+  { src: "/photos/bengali_olive_shirt_man_art.png", caption: "আর্ট পোর্ট্রেট", cat: "শিল্পকর্ম" },
+  { src: "/photos/bengali_sofa_man_art.png", caption: "আর্ট পোর্ট্রেট ২", cat: "শিল্পকর্ম" },
+  { src: "/photos/Photoroom_20260105_192556.jpg", caption: "লেখকের মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_63832.PNG", caption: "বিশেষ মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6494.jpeg", caption: "স্মরণীয় মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6021.JPG", caption: "লেখকের ছবি", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6015.JPG", caption: "বিশেষ দিন", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_6032.JPG", caption: "আনন্দের মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/FullSizeRender.jpg", caption: "লেখকের পোর্ট্রেট", cat: "ব্যক্তিগত" },
+  { src: "/photos/FullSizeRender_01.jpg", caption: "প্রিয় মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/FullSizeRender_02.jpg", caption: "স্মৃতির পাতা", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_1743.jpg", caption: "লেখকের ছবি", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_5349.jpeg", caption: "বিশেষ মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_4706.JPG", caption: "স্মরণীয় দিন", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_3070.JPG", caption: "লেখকের ছবি", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_3862.jpeg", caption: "প্রিয় মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_1014.jpeg", caption: "স্মৃতির ছবি", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_2472.jpeg", caption: "বিশেষ দিন", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_9833.JPG", caption: "লেখকের মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_9832.jpeg", caption: "আনন্দের ছবি", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_9830.JPG", caption: "স্মরণীয় মুহূর্ত", cat: "ব্যক্তিগত" },
+  { src: "/photos/IMG_9832_01.jpeg", caption: "প্রিয় স্মৃতি", cat: "ব্যক্তিগত" },
+  { src: "/photos/photo-output.png", caption: "কবিতার ডিজাইন", cat: "ডিজাইন" },
+  { src: "/photos/Addalittlebitofbodytext.png.JPG", caption: "কবিতার ডিজাইন ২", cat: "ডিজাইন" },
+  // পুরনো গ্যালারি
+  { src: PROFILE_1, caption: "মাহবুব সরদার সবুজ", cat: "ব্যক্তিগত" },
+  { src: PROFILE_2, caption: "লেখার মুহূর্তে", cat: "ব্যক্তিগত" },
+  { src: BOOK_COVER, caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস", cat: "বই" },
+  { src: BOOKS_COLLECTION, caption: "ই-বুক সংগ্রহ", cat: "বই" },
+  { src: WRITING_SHOWCASE, caption: "কবিতার পাতা", cat: "ডিজাইন" },
+  { src: WRITING2, caption: "কবিতার পৃষ্ঠা", cat: "ডিজাইন" },
+  { src: BOOK_PHOTO, caption: "দুঃখবিলাস — বইয়ের সাথে", cat: "বই" },
 ];
 
 // ── News ──────────────────────────────────────────────────────────────────────
@@ -168,8 +196,9 @@ function StatCard({ value, label, index }: { value: string; label: string; index
 
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function Home() {
-  const [lightboxImg, setLightboxImg] = useState<{ src: string; caption: string } | null>(null);
+  const [lightboxImg, setLightboxImg] = useState<{ src: string; caption: string; cat?: string } | null>(null);
   const [activeGalleryIdx, setActiveGalleryIdx] = useState(0);
+  const [galleryFilter, setGalleryFilter] = useState("সব");
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
@@ -1569,15 +1598,15 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          GALLERY — Masonry-style grid
+          GALLERY — Premium Photo Gallery with Filters
       ══════════════════════════════════════════════════════════════════════ */}
       <section id="gallery" style={{
         padding: "8rem 0",
-        background: "#FAF6EF",
+        background: "linear-gradient(180deg, #FAF6EF 0%, #f0ebe0 100%)",
       }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 2rem" }}>
           <FadeIn direction="up">
-            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+            <div style={{ textAlign: "center", marginBottom: "3rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
                 <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
                 <span style={{
@@ -1594,84 +1623,129 @@ export default function Home() {
                 color: "#0A1628",
                 fontSize: "clamp(2rem, 4vw, 3rem)",
                 fontWeight: 400,
+                marginBottom: "0.5rem",
               }}>গ্যালারি</h2>
+              <p style={{ color: "#5a6a7a", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.95rem" }}>
+                মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম ও স্মৃতির সংগ্রহ
+              </p>
             </div>
           </FadeIn>
 
-          {/* Gallery grid */}
+          {/* Filter tabs */}
+          <FadeIn direction="up" delay={0.1}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: "3rem", flexWrap: "wrap" }}>
+              {["সব", "ব্যক্তিগত", "শিল্পকর্ম", "ডিজাইন", "বই"].map(cat => (
+                <motion.button
+                  key={cat}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setGalleryFilter(cat)}
+                  style={{
+                    padding: "8px 22px",
+                    borderRadius: 50,
+                    border: galleryFilter === cat ? "none" : "1px solid rgba(201,168,76,0.35)",
+                    background: galleryFilter === cat ? "linear-gradient(135deg, #C9A84C, #E8C4A0)" : "rgba(255,255,255,0.7)",
+                    color: galleryFilter === cat ? "#0A1628" : "#5a6a7a",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontWeight: galleryFilter === cat ? 700 : 500,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    boxShadow: galleryFilter === cat ? "0 6px 20px rgba(201,168,76,0.3)" : "none",
+                    transition: "all 0.25s",
+                  }}
+                >{cat}</motion.button>
+              ))}
+            </div>
+          </FadeIn>
+
+          {/* Gallery masonry grid */}
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1rem",
-          }} className="gallery-grid">
-            {galleryImages.map((img, i) => (
+            columns: "4 260px",
+            columnGap: "1rem",
+            lineHeight: 0,
+          }}>
+            <AnimatePresence>
+            {galleryImages
+              .filter(img => galleryFilter === "সব" || img.cat === galleryFilter)
+              .map((img, i) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.7, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ scale: 1.02 }}
+                key={img.src + i}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.4, delay: i * 0.03 }}
+                whileHover={{ scale: 1.02, zIndex: 2 }}
                 onClick={() => setLightboxImg(img)}
                 style={{
-                  borderRadius: 16,
+                  display: "inline-block",
+                  width: "100%",
+                  marginBottom: "1rem",
+                  borderRadius: 14,
                   overflow: "hidden",
                   cursor: "pointer",
                   position: "relative",
-                  aspectRatio: "4/3",
-                  boxShadow: "0 10px 30px rgba(10,22,40,0.1)",
-                  ...(i === galleryImages.length - 1 && galleryImages.length % 3 === 1 ? { gridColumn: "1 / -1", maxWidth: "60%", margin: "0 auto" } : {}),
+                  boxShadow: "0 8px 28px rgba(10,22,40,0.12)",
+                  border: "2px solid rgba(201,168,76,0.08)",
+                  transition: "box-shadow 0.3s",
+                  lineHeight: 0,
+                  breakInside: "avoid",
                 }}
               >
                 <img
                   src={img.src}
                   alt={img.caption}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
+                  loading="lazy"
+                  style={{ width: "100%", display: "block", objectFit: "cover", transition: "transform 0.5s" }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
                 <motion.div
                   initial={{ opacity: 0 }}
                   whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.25 }}
                   style={{
                     position: "absolute", inset: 0,
-                    background: "rgba(10,22,40,0.7)",
+                    background: "linear-gradient(to top, rgba(10,22,40,0.88) 0%, rgba(10,22,40,0.15) 60%, transparent 100%)",
                     display: "flex",
-                    alignItems: "flex-end",
-                    padding: "1.5rem",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    padding: "1.2rem",
                   }}
                 >
+                  {img.cat && (
+                    <span style={{
+                      display: "inline-block",
+                      background: "rgba(201,168,76,0.25)",
+                      border: "1px solid rgba(201,168,76,0.4)",
+                      color: "#E8C4A0",
+                      fontSize: "0.68rem",
+                      padding: "2px 10px",
+                      borderRadius: 50,
+                      marginBottom: 6,
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      width: "fit-content",
+                    }}>{img.cat}</span>
+                  )}
                   <span style={{
                     fontFamily: "'Noto Sans Bengali', sans-serif",
                     color: "#FAF6EF",
-                    fontSize: "0.9rem",
+                    fontSize: "0.88rem",
+                    lineHeight: 1.5,
                   }}>{img.caption}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+                    <Eye size={12} color="rgba(201,168,76,0.8)" />
+                    <span style={{ color: "rgba(201,168,76,0.8)", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>বড় করে দেখুন</span>
+                  </div>
                 </motion.div>
               </motion.div>
             ))}
+            </AnimatePresence>
           </div>
 
           <FadeIn delay={0.3} direction="up">
             <div style={{ textAlign: "center", marginTop: "3rem" }}>
-              <motion.button
-                  onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
-                  whileHover={{ scale: 1.04, boxShadow: "0 16px 40px rgba(201,168,76,0.35)" }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    background: "linear-gradient(135deg, #C9A84C 0%, #E8C4A0 100%)",
-                    color: "#0A1628",
-                    padding: "14px 32px",
-                    borderRadius: 50,
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontWeight: 700,
-                    fontSize: "0.95rem",
-                    cursor: "pointer",
-                    border: "none",
-                    boxShadow: "0 8px 24px rgba(201,168,76,0.25)",
-                  }}
-                >
-                  সব ছবি দেখুন <ArrowRight size={16} />
-                </motion.button>
+              <p style={{ color: "#8a9aaa", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem" }}>
+                মোট {galleryImages.filter(img => galleryFilter === "সব" || img.cat === galleryFilter).length}টি ছবি প্রদর্শিত হচ্ছে
+              </p>
             </div>
           </FadeIn>
         </div>
