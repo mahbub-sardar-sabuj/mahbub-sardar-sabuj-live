@@ -15,26 +15,16 @@ interface ActionButton {
   path: string;
 }
 
-// AI calls via direct OpenAI-compatible API (VITE env vars)
+// AI calls via Vercel serverless /api/chat function (server-side, no key exposed)
 async function callAI(messages: { role: "user" | "assistant" | "system"; content: string }[]): Promise<string> {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const baseURL = import.meta.env.VITE_OPENAI_BASE_URL || "https://api.openai.com/v1";
-  const res = await fetch(`${baseURL}/chat/completions`, {
+  const res = await fetch("/api/chat", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      messages,
-      max_tokens: 2000,
-      temperature: 0.7,
-    }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const data = await res.json();
-  return data.choices?.[0]?.message?.content || "দুঃখিত, উত্তর দিতে পারছি না।";
+  return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
 }
 
 const AUTHOR_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
