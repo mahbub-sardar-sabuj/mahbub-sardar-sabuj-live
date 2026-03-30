@@ -344,12 +344,7 @@ export default function News() {
                           fontWeight: 600,
                           border: `1px solid ${item.categoryColor}40`,
                         }}>{item.category}</span>
-                        <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: 4 }}>
-                          <Calendar size={12} /> {item.date}
-                        </span>
-                        <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: 4 }}>
-                          <Clock size={12} /> {item.readTime}
-                        </span>
+
                       </div>
 
                       <h3 style={{
@@ -422,9 +417,7 @@ export default function News() {
                           fontWeight: 600,
                           border: `1px solid ${item.categoryColor}35`,
                         }}>{item.category}</span>
-                        <span style={{ color: "rgba(201,168,76,0.5)", fontSize: "0.73rem", display: "flex", alignItems: "center", gap: 3 }}>
-                          <Calendar size={11} /> {item.date}
-                        </span>
+
                       </div>
                       <h3 style={{
                         fontFamily: "'Tiro Bangla', serif",
@@ -527,12 +520,7 @@ export default function News() {
                     fontWeight: 600,
                     border: `1px solid ${selectedNews.categoryColor}40`,
                   }}>{selectedNews.category}</span>
-                  <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: 4 }}>
-                    <Calendar size={13} /> {selectedNews.date}
-                  </span>
-                  <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: 4 }}>
-                    <Clock size={13} /> {selectedNews.readTime}
-                  </span>
+
                 </div>
 
                 <h2 style={{
