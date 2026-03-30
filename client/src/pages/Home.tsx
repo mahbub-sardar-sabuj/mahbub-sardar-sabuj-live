@@ -1307,114 +1307,6 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          GALLERY — Masonry-style grid
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section id="gallery" style={{
-        padding: "8rem 0",
-        background: "#FAF6EF",
-      }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
-          <FadeIn direction="up">
-            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
-                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
-                <span style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "#C9A84C",
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                }}>ফটো গ্যালারি</span>
-                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
-              </div>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#0A1628",
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                fontWeight: 400,
-              }}>গ্যালারি</h2>
-            </div>
-          </FadeIn>
-
-          {/* Gallery grid */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1rem",
-          }} className="gallery-grid">
-            {galleryImages.map((img, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.7, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setLightboxImg(img)}
-                style={{
-                  borderRadius: 16,
-                  overflow: "hidden",
-                  cursor: "pointer",
-                  position: "relative",
-                  aspectRatio: "4/3",
-                  boxShadow: "0 10px 30px rgba(10,22,40,0.1)",
-                  ...(i === galleryImages.length - 1 && galleryImages.length % 3 === 1 ? { gridColumn: "1 / -1", maxWidth: "60%", margin: "0 auto" } : {}),
-                }}
-              >
-                <img
-                  src={img.src}
-                  alt={img.caption}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
-                />
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  style={{
-                    position: "absolute", inset: 0,
-                    background: "rgba(10,22,40,0.7)",
-                    display: "flex",
-                    alignItems: "flex-end",
-                    padding: "1.5rem",
-                  }}
-                >
-                  <span style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    color: "#FAF6EF",
-                    fontSize: "0.9rem",
-                  }}>{img.caption}</span>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-
-          <FadeIn delay={0.3} direction="up">
-            <div style={{ textAlign: "center", marginTop: "3rem" }}>
-              <motion.button
-                  onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
-                  whileHover={{ scale: 1.04 }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    background: "linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.06))",
-                    color: "#FAF6EF",
-                    padding: "14px 32px",
-                    borderRadius: 50,
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontWeight: 600,
-                    fontSize: "0.95rem",
-                    cursor: "pointer",
-                    border: "1px solid rgba(201,168,76,0.3)",
-                  }}
-                >
-                  সব ছবি দেখুন <ArrowRight size={16} />
-                </motion.button>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
           DESIGN STUDIO — Feature showcase section
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
@@ -1673,6 +1565,115 @@ export default function Home() {
               </div>
             </FadeIn>
           </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          GALLERY — Masonry-style grid
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section id="gallery" style={{
+        padding: "8rem 0",
+        background: "#FAF6EF",
+      }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+          <FadeIn direction="up">
+            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "#C9A84C",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}>ফটো গ্যালারি</span>
+                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+              </div>
+              <h2 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#0A1628",
+                fontSize: "clamp(2rem, 4vw, 3rem)",
+                fontWeight: 400,
+              }}>গ্যালারি</h2>
+            </div>
+          </FadeIn>
+
+          {/* Gallery grid */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "1rem",
+          }} className="gallery-grid">
+            {galleryImages.map((img, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.7, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setLightboxImg(img)}
+                style={{
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  position: "relative",
+                  aspectRatio: "4/3",
+                  boxShadow: "0 10px 30px rgba(10,22,40,0.1)",
+                  ...(i === galleryImages.length - 1 && galleryImages.length % 3 === 1 ? { gridColumn: "1 / -1", maxWidth: "60%", margin: "0 auto" } : {}),
+                }}
+              >
+                <img
+                  src={img.src}
+                  alt={img.caption}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
+                />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  style={{
+                    position: "absolute", inset: 0,
+                    background: "rgba(10,22,40,0.7)",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    padding: "1.5rem",
+                  }}
+                >
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#FAF6EF",
+                    fontSize: "0.9rem",
+                  }}>{img.caption}</span>
+                </motion.div>
+              </motion.div>
+            ))}
+          </div>
+
+          <FadeIn delay={0.3} direction="up">
+            <div style={{ textAlign: "center", marginTop: "3rem" }}>
+              <motion.button
+                  onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
+                  whileHover={{ scale: 1.04, boxShadow: "0 16px 40px rgba(201,168,76,0.35)" }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "linear-gradient(135deg, #C9A84C 0%, #E8C4A0 100%)",
+                    color: "#0A1628",
+                    padding: "14px 32px",
+                    borderRadius: 50,
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    cursor: "pointer",
+                    border: "none",
+                    boxShadow: "0 8px 24px rgba(201,168,76,0.25)",
+                  }}
+                >
+                  সব ছবি দেখুন <ArrowRight size={16} />
+                </motion.button>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
