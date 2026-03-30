@@ -1,7 +1,5 @@
 /**
- * ডিজাইন ফরম্যাট v5 — Premium Bengali Writing Card Designer
- * Layout: Live Preview (top, full-width) → Editing Tools (below)
- * Mobile-first, clean, smooth UX
+ * ডিজাইন ফরম্যাট v6
  */
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -186,15 +184,15 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
 
 function makeDefaultLayers(themeText: string): TextBlock[] {
   return [
-    { id: "title",  kind: "title",  text: "শিরোনাম",
+    { id: "title",  kind: "title",  text: "",
       x: 0.5, y: 0.22, fontSize: 52, fontKey: "ChandraSheela",
       color: themeText, bold: true,  italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.3 },
-    { id: "body",   kind: "body",   text: "এখানে আপনার লেখা লিখুন...\n\nকবিতা, উক্তি বা মনের কথা।",
+    { id: "body",   kind: "body",   text: "",
       x: 0.5, y: 0.52, fontSize: 36, fontKey: "ChandraSheela",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.9 },
-    { id: "author", kind: "author", text: "মাহবুব সরদার সবুজ",
+    { id: "author", kind: "author", text: "",
       x: 0.5, y: 0.84, fontSize: 28, fontKey: "ChandraSheela",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.4 },
@@ -206,13 +204,11 @@ function makeDefaultLayers(themeText: string): TextBlock[] {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Editor() {
-  // Design
   const [themeIdx, setThemeIdx]       = useState(2);
   const [sizeIdx, setSizeIdx]         = useState(0);
   const [frame, setFrame]             = useState("corner");
   const [padding]                     = useState(60);
 
-  // Photo
   const [photoImage, setPhotoImage]   = useState<string | null>(null);
   const [filterPreset, setFilterPreset] = useState("normal");
   const [photoOpacity, setPhotoOpacity] = useState(85);
@@ -221,7 +217,6 @@ export default function Editor() {
   const [showWatermark, setShowWatermark] = useState(false);
   const [watermarkOpacity, setWatermarkOpacity] = useState(8);
 
-  // Layers
   const [textLayers, setTextLayers]   = useState<TextBlock[]>(() => makeDefaultLayers(THEMES[2].text));
   const [stickers, setStickers]       = useState<StickerLayer[]>([]);
   const [selectedId, setSelectedId]   = useState<string | null>(null);
@@ -230,7 +225,6 @@ export default function Editor() {
     startX: number; startY: number; origX: number; origY: number;
   } | null>(null);
 
-  // UI
   const [activeTool, setActiveTool]   = useState<ActiveTool>("text");
   const [downloading, setDownloading] = useState(false);
   const [scale, setScale]             = useState(0.36);
@@ -245,12 +239,10 @@ export default function Editor() {
   const preset = FILTER_PRESETS.find(f => f.name === filterPreset);
   const effectiveFilter = filterPreset === "normal" ? "none" : (preset?.filter ?? "none");
 
-  // Sync text color when theme changes
   useEffect(() => {
     setTextLayers(prev => prev.map(l => ({ ...l, color: theme.text })));
   }, [themeIdx]);
 
-  // Responsive scale
   useEffect(() => {
     const update = () => {
       if (!previewRef.current) return;
@@ -311,7 +303,7 @@ export default function Editor() {
   const addCustomText = () => {
     const id = uid();
     setTextLayers(prev => [...prev, {
-      id, kind: "custom", text: "নতুন লেখা",
+      id, kind: "custom", text: "",
       x: 0.5, y: 0.5, fontSize: 40, fontKey: "ChandraSheela",
       color: theme.text, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.6,
@@ -327,15 +319,18 @@ export default function Editor() {
   };
 
   const removeLayer = (id: string) => {
-    setTextLayers(prev => prev.map(l => l.id === id && l.kind !== "custom" ? { ...l, visible: false } : l).filter(l => !(l.id === id && l.kind === "custom")));
+    setTextLayers(prev =>
+      prev.map(l => l.id === id && l.kind !== "custom"
+        ? { ...l, visible: false, text: "" }
+        : l
+      ).filter(l => !(l.id === id && l.kind === "custom"))
+    );
     setStickers(prev => prev.filter(l => l.id !== id));
     if (selectedId === id) setSelectedId(null);
   };
 
   const selectedText    = textLayers.find(l => l.id === selectedId) ?? null;
   const selectedSticker = stickers.find(l => l.id === selectedId) ?? null;
-  const authorLayer     = textLayers.find(l => l.kind === "author");
-  const authorDisplay   = authorLayer?.visible ? `___❐ ${authorLayer.text}` : "";
 
   // ── Canvas export ─────────────────────────────────────────────────────────
 
@@ -348,7 +343,6 @@ export default function Editor() {
     const ctx = canvas.getContext("2d")!;
     ctx.scale(DPR, DPR);
 
-    // Background
     if (theme.gradient) {
       const parts = theme.gradient.match(/linear-gradient\(([^,]+),(.*)\)/s);
       if (parts) {
@@ -367,12 +361,11 @@ export default function Editor() {
     } else ctx.fillStyle = theme.bg;
     ctx.fillRect(0, 0, cardW, cardH);
 
-    const loadImg = (src: string, opacity: number, filter?: string, blur?: boolean) =>
+    const loadImg = (src: string, opacity: number, filter?: string) =>
       new Promise<void>(res => {
         const img = new Image(); img.crossOrigin = "anonymous";
         img.onload = () => {
           ctx.save();
-          if (blur) ctx.filter = "blur(8px)";
           if (filter && filter !== "none") ctx.filter = filter;
           ctx.globalAlpha = opacity;
           const ia = img.naturalWidth / img.naturalHeight, ca = cardW / cardH;
@@ -385,11 +378,10 @@ export default function Editor() {
         img.onerror = () => res(); img.src = src;
       });
 
-    if (bgImage)    await loadImg(bgImage, bgOpacity, undefined, false);
+    if (bgImage)    await loadImg(bgImage, bgOpacity);
     if (photoImage) await loadImg(photoImage, photoOpacity / 100, effectiveFilter);
     if (showWatermark) await loadImg(AUTHOR_PHOTO, watermarkOpacity / 100);
 
-    // Frames
     ctx.strokeStyle = theme.border; ctx.lineWidth = 1.5;
     if (frame === "inner-border") { ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeRect(16, 16, cardW - 32, cardH - 32); ctx.restore(); }
     if (frame === "corner") {
@@ -411,9 +403,8 @@ export default function Editor() {
       ctx.globalAlpha = 0.25; ctx.strokeRect(20, 20, cardW - 40, cardH - 40); ctx.restore();
     }
 
-    // Text layers
     for (const layer of textLayers) {
-      if (!layer.visible) continue;
+      if (!layer.visible || !layer.text.trim()) continue;
       await ensureFontLoaded(layer.fontKey);
       ctx.font = `${layer.italic ? "italic " : ""}${layer.bold ? "bold " : ""}${layer.fontSize}px ${FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif"}`;
       ctx.fillStyle = layer.color;
@@ -428,7 +419,6 @@ export default function Editor() {
       ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
     }
 
-    // Stickers
     for (const s of stickers) {
       ctx.font = `${s.size}px serif`;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -499,27 +489,23 @@ export default function Editor() {
 
       <div className="pt-20 pb-28 px-3 max-w-2xl mx-auto">
 
-        {/* ── Page title */}
-        <div className="text-center mb-5">
-          <span className="text-[#D4A843] text-xs font-bold tracking-widest uppercase">✦ ডিজাইন ফরম্যাট ✦</span>
-          <h1 className="text-2xl font-bold text-white mt-1">আপনার লেখা সাজান</h1>
+        {/* ── Page header — elegant, no extra text */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#D4A843]" />
+            <span className="text-[#D4A843] text-[10px] font-bold tracking-[0.3em] uppercase">Design Studio</span>
+            <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#D4A843]" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#D4A843] via-[#f0c96a] to-[#D4A843] bg-clip-text text-transparent leading-tight">
+            লেখার শিল্পকলা
+          </h1>
+          <p className="text-[#D4A843]/40 text-xs mt-1 tracking-widest">✦ মাহবুব সরদার সবুজ ✦</p>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════
-            LIVE PREVIEW — always at top
+            LIVE PREVIEW — top, full width
         ══════════════════════════════════════════════════════════════ */}
-        <div ref={previewRef} className="w-full mb-2">
-
-          {/* Author badge */}
-          {authorDisplay && (
-            <div className="flex justify-center mb-2">
-              <div className="inline-flex items-center gap-2 bg-[#D4A843]/10 border border-[#D4A843]/25 rounded-full px-4 py-1.5">
-                <span className="text-[#D4A843] text-sm font-semibold tracking-wide">{authorDisplay}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Canvas wrapper */}
+        <div ref={previewRef} className="w-full mb-3">
           <div className="flex justify-center">
             <div
               style={{
@@ -534,32 +520,30 @@ export default function Editor() {
               }}
               onClick={() => setSelectedId(null)}
             >
-              {/* Card scaled */}
+              {/* Card */}
               <div style={{
                 width: cardW, height: cardH,
                 background: theme.gradient || theme.bg,
                 position: "absolute", top: 0, left: 0,
                 transform: `scale(${scale})`, transformOrigin: "top left",
-                overflow: "hidden", boxSizing: "border-box",
+                overflow: "hidden",
               }}>
-                {/* BG image */}
                 {bgImage && (
                   <div style={{ position: "absolute", inset: 0, zIndex: 1,
                     backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center",
                     opacity: bgOpacity }} />
                 )}
-                {/* Photo */}
                 {photoImage && (
                   <div style={{ position: "absolute", inset: 0, zIndex: 2,
                     backgroundImage: `url(${photoImage})`, backgroundSize: "cover", backgroundPosition: "center",
                     opacity: photoOpacity / 100, filter: effectiveFilter }} />
                 )}
-                {/* Watermark */}
                 {showWatermark && (
                   <div style={{ position: "absolute", inset: 0, zIndex: 3,
                     backgroundImage: `url(${AUTHOR_PHOTO})`, backgroundSize: "cover", backgroundPosition: "center top",
                     opacity: watermarkOpacity / 100, pointerEvents: "none" }} />
                 )}
+
                 {/* Frames */}
                 {frame === "inner-border" && <div style={{ position: "absolute", inset: 16, border: `1.5px solid ${theme.border}`, opacity: 0.5, zIndex: 4, pointerEvents: "none" }} />}
                 {frame === "corner" && (
@@ -588,8 +572,9 @@ export default function Editor() {
 
                 {/* Draggable text layers */}
                 {textLayers.map(layer => {
-                  if (!layer.visible) return null;
+                  if (!layer.visible || !layer.text.trim()) return null;
                   const displayText = layer.kind === "author" ? `___❐ ${layer.text}` : layer.text;
+                  const isSelected = selectedId === layer.id;
                   return (
                     <div key={layer.id}
                       onMouseDown={e => startDrag(e, layer.id, false, layer.x, layer.y)}
@@ -603,10 +588,31 @@ export default function Editor() {
                         userSelect: "none",
                         maxWidth: cardW - padding * 2,
                         textAlign: layer.align,
-                        outline: selectedId === layer.id ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
-                        outlineOffset: `${Math.ceil(5 / scale)}px`,
-                        borderRadius: 4,
                       }}>
+                      {/* Delete button — shown when selected */}
+                      {isSelected && (
+                        <button
+                          onMouseDown={e => e.stopPropagation()}
+                          onClick={e => { e.stopPropagation(); removeLayer(layer.id); }}
+                          style={{
+                            position: "absolute",
+                            top: -Math.ceil(28 / scale),
+                            right: -Math.ceil(8 / scale),
+                            zIndex: 20,
+                            background: "#ef4444",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: Math.ceil(6 / scale),
+                            padding: `${Math.ceil(2 / scale)}px ${Math.ceil(8 / scale)}px`,
+                            fontSize: Math.ceil(20 / scale),
+                            cursor: "pointer",
+                            lineHeight: 1.2,
+                            fontWeight: "bold",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                          }}>
+                          ✕
+                        </button>
+                      )}
                       <div style={{
                         fontSize: layer.fontSize,
                         fontFamily: FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif",
@@ -616,6 +622,10 @@ export default function Editor() {
                         lineHeight: layer.lineHeight,
                         whiteSpace: "pre-wrap",
                         textShadow: layer.shadow ? "2px 2px 8px rgba(0,0,0,0.5)" : "none",
+                        outline: isSelected ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
+                        outlineOffset: `${Math.ceil(6 / scale)}px`,
+                        borderRadius: Math.ceil(4 / scale),
+                        padding: `${Math.ceil(4 / scale)}px`,
                       }}>
                         {displayText}
                       </div>
@@ -624,32 +634,62 @@ export default function Editor() {
                 })}
 
                 {/* Draggable stickers */}
-                {stickers.map(s => (
-                  <div key={s.id}
-                    onMouseDown={e => startDrag(e, s.id, true, s.x, s.y)}
-                    onTouchStart={e => startDrag(e, s.id, true, s.x, s.y)}
-                    style={{
-                      position: "absolute",
-                      left: s.x * cardW, top: s.y * cardH,
-                      transform: "translate(-50%, -50%)",
-                      zIndex: 11,
-                      cursor: dragging?.id === s.id ? "grabbing" : "grab",
-                      userSelect: "none",
-                      fontSize: s.size, lineHeight: 1,
-                      outline: selectedId === s.id ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
-                      outlineOffset: `${Math.ceil(5 / scale)}px`,
-                      borderRadius: 4,
-                    }}>
-                    {s.emoji}
-                  </div>
-                ))}
+                {stickers.map(s => {
+                  const isSelected = selectedId === s.id;
+                  return (
+                    <div key={s.id}
+                      onMouseDown={e => startDrag(e, s.id, true, s.x, s.y)}
+                      onTouchStart={e => startDrag(e, s.id, true, s.x, s.y)}
+                      style={{
+                        position: "absolute",
+                        left: s.x * cardW, top: s.y * cardH,
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 11,
+                        cursor: dragging?.id === s.id ? "grabbing" : "grab",
+                        userSelect: "none",
+                        fontSize: s.size, lineHeight: 1,
+                      }}>
+                      {isSelected && (
+                        <button
+                          onMouseDown={e => e.stopPropagation()}
+                          onClick={e => { e.stopPropagation(); removeLayer(s.id); }}
+                          style={{
+                            position: "absolute",
+                            top: -Math.ceil(28 / scale),
+                            right: -Math.ceil(8 / scale),
+                            zIndex: 20,
+                            background: "#ef4444",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: Math.ceil(6 / scale),
+                            padding: `${Math.ceil(2 / scale)}px ${Math.ceil(8 / scale)}px`,
+                            fontSize: Math.ceil(20 / scale),
+                            cursor: "pointer",
+                            lineHeight: 1.2,
+                            fontWeight: "bold",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                          }}>
+                          ✕
+                        </button>
+                      )}
+                      <div style={{
+                        outline: isSelected ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
+                        outlineOffset: `${Math.ceil(5 / scale)}px`,
+                        borderRadius: Math.ceil(4 / scale),
+                        padding: `${Math.ceil(4 / scale)}px`,
+                      }}>
+                        {s.emoji}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
-          {/* Scale info + theme dots */}
+          {/* Theme dots row */}
           <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-gray-600 text-[10px]">{Math.round(scale * 100)}% · {cardW}×{cardH}px</span>
+            <span className="text-gray-700 text-[10px]">{cardW}×{cardH}px</span>
             <div className="flex gap-1.5 flex-wrap justify-end">
               {THEMES.map((t, i) => (
                 <button key={t.name} onClick={() => setThemeIdx(i)} title={t.name}
@@ -660,10 +700,6 @@ export default function Editor() {
               ))}
             </div>
           </div>
-
-          <p className="text-gray-600 text-[10px] text-center mt-1">
-            💡 প্রিভিউতে যেকোনো লেখা বা স্টিকার ড্র্যাগ করে সরানো যাবে
-          </p>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════
@@ -707,10 +743,9 @@ export default function Editor() {
             {activeTool === "text" && (
               <div className="p-4 space-y-4">
 
-                {/* Title */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[#D4A843] text-xs font-bold">লেখার নাম লিখুন</label>
+                    <label className="text-[#D4A843] text-xs font-bold">লেখার নাম</label>
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input type="checkbox" checked={textLayers.find(l => l.kind === "title")?.visible ?? true}
                         onChange={e => updateText("title", { visible: e.target.checked })}
@@ -720,14 +755,12 @@ export default function Editor() {
                   </div>
                   <input value={textLayers.find(l => l.kind === "title")?.text ?? ""}
                     onChange={e => updateText("title", { text: e.target.value })}
-                    placeholder="শিরোনাম লিখুন..."
                     className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2.5 text-sm outline-none transition-colors" />
                 </div>
 
-                {/* Body */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[#D4A843] text-xs font-bold">মূল লেখা লিখুন</label>
+                    <label className="text-[#D4A843] text-xs font-bold">মূল লেখা</label>
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input type="checkbox" checked={textLayers.find(l => l.kind === "body")?.visible ?? true}
                         onChange={e => updateText("body", { visible: e.target.checked })}
@@ -737,14 +770,13 @@ export default function Editor() {
                   </div>
                   <textarea value={textLayers.find(l => l.kind === "body")?.text ?? ""}
                     onChange={e => updateText("body", { text: e.target.value })}
-                    rows={5} placeholder="কবিতা, উক্তি বা মনের কথা..."
+                    rows={5}
                     className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2.5 text-sm outline-none resize-y transition-colors leading-relaxed" />
                 </div>
 
-                {/* Author */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[#D4A843] text-xs font-bold">লেখক নাম লিখুন</label>
+                    <label className="text-[#D4A843] text-xs font-bold">লেখক নাম</label>
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input type="checkbox" checked={textLayers.find(l => l.kind === "author")?.visible ?? true}
                         onChange={e => updateText("author", { visible: e.target.checked })}
@@ -754,12 +786,9 @@ export default function Editor() {
                   </div>
                   <input value={textLayers.find(l => l.kind === "author")?.text ?? ""}
                     onChange={e => updateText("author", { text: e.target.value })}
-                    placeholder="লেখকের নাম..."
                     className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2.5 text-sm outline-none transition-colors" />
-                  <p className="text-gray-600 text-xs mt-1">প্রিভিউতে: <span className="text-[#D4A843]">{authorDisplay}</span></p>
                 </div>
 
-                {/* Templates */}
                 <div>
                   <p className="text-gray-500 text-xs font-semibold mb-2">দ্রুত টেমপ্লেট</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -773,7 +802,6 @@ export default function Editor() {
                   </div>
                 </div>
 
-                {/* Add custom */}
                 <button onClick={addCustomText}
                   className="w-full py-2.5 border border-dashed border-[#D4A843]/30 hover:border-[#D4A843]/70 text-[#D4A843]/70 hover:text-[#D4A843] rounded-xl text-sm font-semibold transition-all">
                   + নতুন কাস্টম লেখা যোগ করুন
@@ -784,8 +812,6 @@ export default function Editor() {
             {/* ── STYLE PANEL ── */}
             {activeTool === "style" && (
               <div className="p-4 space-y-5">
-
-                {/* Layer selector */}
                 <div>
                   <p className="text-gray-500 text-xs font-semibold mb-2">কোন লেখা সম্পাদনা করবেন?</p>
                   <div className="flex gap-2 flex-wrap">
@@ -796,7 +822,7 @@ export default function Editor() {
                             ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
                             : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
                         }`}>
-                        {l.kind === "title" ? "শিরোনাম" : l.kind === "body" ? "মূল লেখা" : l.kind === "author" ? "লেখক নাম" : l.text.slice(0, 8)}
+                        {l.kind === "title" ? "শিরোনাম" : l.kind === "body" ? "মূল লেখা" : l.kind === "author" ? "লেখক নাম" : l.text.slice(0, 8) || "কাস্টম"}
                       </button>
                     ))}
                     {stickers.map(s => (
@@ -812,10 +838,8 @@ export default function Editor() {
                   </div>
                 </div>
 
-                {/* Text layer editor */}
                 {selectedText && (
                   <div className="space-y-4">
-                    {/* Color + Size */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-gray-500 text-xs block mb-1.5">রঙ</label>
@@ -834,13 +858,12 @@ export default function Editor() {
                       </div>
                     </div>
 
-                    {/* Style toggles */}
                     <div>
                       <label className="text-gray-500 text-xs block mb-2">স্টাইল</label>
                       <div className="flex gap-2">
-                        {([["B", "bold", selectedText.bold], ["I", "বাঁকা", selectedText.italic], ["S", "শ্যাডো", selectedText.shadow]] as [string, string, boolean][]).map(([key, lbl, val]) => (
+                        {([["bold", "বোল্ড", selectedText.bold], ["italic", "বাঁকা", selectedText.italic], ["shadow", "শ্যাডো", selectedText.shadow]] as [string, string, boolean][]).map(([key, lbl, val]) => (
                           <button key={key}
-                            onClick={() => updateText(selectedText.id, { [key === "B" ? "bold" : key === "I" ? "italic" : "shadow"]: !val })}
+                            onClick={() => updateText(selectedText.id, { [key]: !val })}
                             className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
                               val ? "border-[#D4A843] bg-[#D4A843]/15 text-[#D4A843]" : "border-[#1e3050] text-gray-500"
                             }`}>
@@ -850,7 +873,6 @@ export default function Editor() {
                       </div>
                     </div>
 
-                    {/* Alignment */}
                     <div>
                       <label className="text-gray-500 text-xs block mb-2">সারিবদ্ধতা</label>
                       <div className="flex gap-2">
@@ -865,7 +887,6 @@ export default function Editor() {
                       </div>
                     </div>
 
-                    {/* Font */}
                     <div>
                       <label className="text-gray-500 text-xs block mb-2">ফন্ট</label>
                       <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
@@ -882,7 +903,6 @@ export default function Editor() {
                       </div>
                     </div>
 
-                    {/* Line height */}
                     <Row label="লাইন উচ্চতা">
                       <div className="flex items-center gap-3">
                         <Slider val={selectedText.lineHeight} set={v => updateText(selectedText.id, { lineHeight: v })} min={1} max={3.5} step={0.05} />
@@ -890,7 +910,6 @@ export default function Editor() {
                       </div>
                     </Row>
 
-                    {/* Delete custom */}
                     {selectedText.kind === "custom" && (
                       <button onClick={() => removeLayer(selectedText.id)}
                         className="w-full py-2 text-red-400 border border-red-400/20 rounded-xl text-xs hover:bg-red-400/10 transition-all">
@@ -900,7 +919,6 @@ export default function Editor() {
                   </div>
                 )}
 
-                {/* Sticker editor */}
                 {selectedSticker && (
                   <div className="space-y-4">
                     <div className="text-center text-5xl">{selectedSticker.emoji}</div>
@@ -918,9 +936,7 @@ export default function Editor() {
                 )}
 
                 {!selectedText && !selectedSticker && (
-                  <p className="text-gray-600 text-sm text-center py-4">
-                    উপরে একটি লেখা বা স্টিকার নির্বাচন করুন
-                  </p>
+                  <p className="text-gray-600 text-sm text-center py-4">উপরে একটি লেখা বা স্টিকার নির্বাচন করুন</p>
                 )}
               </div>
             )}
@@ -931,7 +947,6 @@ export default function Editor() {
                 <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={onPhotoUpload} />
                 <input ref={bgFileRef} type="file" accept="image/*" className="hidden" onChange={onBgUpload} />
 
-                {/* Main photo */}
                 <div>
                   <p className="text-[#D4A843] text-xs font-bold mb-2">মূল ছবি</p>
                   <button onClick={() => photoRef.current?.click()}
@@ -951,7 +966,6 @@ export default function Editor() {
 
                   {photoImage && (
                     <>
-                      {/* Filter presets */}
                       <div className="mt-3">
                         <p className="text-gray-500 text-xs font-semibold mb-2">ফিল্টার</p>
                         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -987,7 +1001,6 @@ export default function Editor() {
                   )}
                 </div>
 
-                {/* Background image */}
                 <div className="pt-4 border-t border-[#1e3050]">
                   <p className="text-[#D4A843] text-xs font-bold mb-2">পটভূমি ছবি</p>
                   <button onClick={() => bgFileRef.current?.click()}
@@ -1012,7 +1025,6 @@ export default function Editor() {
                   )}
                 </div>
 
-                {/* Watermark */}
                 <div className="pt-4 border-t border-[#1e3050]">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={showWatermark} onChange={e => setShowWatermark(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
@@ -1035,8 +1047,6 @@ export default function Editor() {
             {/* ── DESIGN PANEL ── */}
             {activeTool === "design" && (
               <div className="p-4 space-y-5">
-
-                {/* Themes */}
                 <div>
                   <p className="text-[#D4A843] text-xs font-bold mb-2">থিম</p>
                   <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
@@ -1055,7 +1065,6 @@ export default function Editor() {
                   </div>
                 </div>
 
-                {/* Size */}
                 <div>
                   <p className="text-[#D4A843] text-xs font-bold mb-2">আকার</p>
                   <div className="grid grid-cols-3 gap-1.5">
@@ -1072,7 +1081,6 @@ export default function Editor() {
                   </div>
                 </div>
 
-                {/* Frame */}
                 <div>
                   <p className="text-[#D4A843] text-xs font-bold mb-2">ফ্রেম</p>
                   <div className="grid grid-cols-4 gap-1.5">
