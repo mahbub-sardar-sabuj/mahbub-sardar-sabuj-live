@@ -18,6 +18,14 @@ import {
   Calendar,
   X,
   Search,
+  Share2,
+  Copy,
+  ChevronLeft,
+  ChevronRight,
+  Facebook,
+  Check,
+  AArrowUp,
+  AArrowDown,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -1671,7 +1679,16 @@ const writings: Writing[] = [
   },
 ];
 
-// ── Writing Card ──────────────────────────────────────────────────────────────
+// ── Category color helper ─────────────────────────────────────────────────────────────────────────────
+function getCategoryColor(cat: string) {
+  if (cat === "ভালোবাসা") return { stripe: "#e74c3c", badge: "rgba(231,76,60,0.12)", text: "#c0392b" };
+  if (cat === "বিচ্ছেদ") return { stripe: "#8e44ad", badge: "rgba(142,68,173,0.12)", text: "#7d3c98" };
+  if (cat === "কবিতা") return { stripe: "#2980b9", badge: "rgba(41,128,185,0.12)", text: "#1a6fa0" };
+  if (cat === "ছোট লেখা") return { stripe: "#27ae60", badge: "rgba(39,174,96,0.12)", text: "#1e8449" };
+  return { stripe: "#D4A843", badge: "rgba(212,168,67,0.12)", text: "#b8860b" };
+}
+
+// ── Writing Card ─────────────────────────────────────────────────────────────────────────────
 function WritingCard({
   writing,
   index,
@@ -1682,7 +1699,8 @@ function WritingCard({
   onClick: () => void;
 }) {
   const isShort = writing.content.length < 200;
-  const preview = writing.content.slice(0, isShort ? writing.content.length : 160);
+  const preview = writing.content.slice(0, isShort ? writing.content.length : 140);
+  const colors = getCategoryColor(writing.category);
 
   return (
     <motion.div
@@ -1692,54 +1710,58 @@ function WritingCard({
       onClick={onClick}
       style={{
         background: "#fff",
-        borderRadius: 12,
+        borderRadius: 14,
         overflow: "hidden",
         cursor: "pointer",
-        border: "1px solid rgba(13,27,42,0.08)",
-        transition: "all 0.3s",
+        border: "1px solid rgba(13,27,42,0.07)",
         display: "flex",
         flexDirection: "column",
+        boxShadow: "0 2px 12px rgba(13,27,42,0.06)",
       }}
       whileHover={{
-        y: -4,
-        boxShadow: "0 12px 40px rgba(13,27,42,0.12)",
-        borderColor: "rgba(212,168,67,0.4)",
+        y: -5,
+        boxShadow: "0 16px 48px rgba(13,27,42,0.14)",
+        borderColor: colors.stripe + "66",
       }}
     >
       {/* Category stripe */}
-      <div style={{
-        height: 3,
-        background: writing.category === "ভালোবাসা" ? "#c0392b"
-          : writing.category === "বিচ্ছেদ" ? "#8e44ad"
-          : writing.category === "কবিতা" ? "#2980b9"
-          : writing.category === "ছোট লেখা" ? "#27ae60"
-          : "#D4A843",
-      }} />
+      <div style={{ height: 4, background: colors.stripe, borderRadius: "14px 14px 0 0" }} />
 
       <div style={{ padding: "20px 22px 22px", flex: 1, display: "flex", flexDirection: "column" }}>
         {/* Category badge */}
         <div style={{ marginBottom: 10 }}>
           <span style={{
             display: "inline-block",
-            padding: "3px 10px",
+            padding: "3px 12px",
             borderRadius: 50,
-            fontSize: "0.7rem",
+            fontSize: "0.68rem",
             fontFamily: "'Noto Sans Bengali', sans-serif",
-            background: "rgba(13,27,42,0.05)",
-            color: "#555",
+            background: colors.badge,
+            color: colors.text,
+            fontWeight: 600,
             letterSpacing: "0.04em",
           }}>
             {writing.category}
           </span>
+          {writing.featured && (
+            <span style={{
+              display: "inline-block", marginLeft: 6,
+              padding: "3px 10px", borderRadius: 50,
+              fontSize: "0.65rem",
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              background: "rgba(212,168,67,0.15)",
+              color: "#b8860b", fontWeight: 700,
+            }}>★ বিশেষ</span>
+          )}
         </div>
 
         {/* Title */}
         <h3 style={{
           fontFamily: "'Tiro Bangla', serif",
-          fontSize: "1.05rem",
+          fontSize: "1.08rem",
           color: "#0D1B2A",
           fontWeight: 700,
-          lineHeight: 1.5,
+          lineHeight: 1.55,
           marginBottom: 10,
         }}>
           {writing.title}
@@ -1748,13 +1770,13 @@ function WritingCard({
         {/* Preview */}
         <p style={{
           fontFamily: "'Tiro Bangla', serif",
-          fontSize: "0.92rem",
-          color: "#555",
+          fontSize: "0.9rem",
+          color: "#666",
           lineHeight: 2,
           flex: 1,
           whiteSpace: "pre-line",
         }}>
-          {preview}{!isShort && writing.content.length > 160 ? "..." : ""}
+          {preview}{!isShort && writing.content.length > 140 ? "..." : ""}
         </p>
 
         {/* Footer */}
@@ -1768,8 +1790,8 @@ function WritingCard({
         }}>
           <span style={{
             fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.72rem",
-            color: "#aaa",
+            fontSize: "0.7rem",
+            color: "#bbb",
             display: "flex",
             alignItems: "center",
             gap: 4,
@@ -1778,11 +1800,12 @@ function WritingCard({
           </span>
           <span style={{
             fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.72rem",
-            color: "#D4A843",
-            fontWeight: 600,
+            fontSize: "0.75rem",
+            color: colors.stripe,
+            fontWeight: 700,
+            display: "flex", alignItems: "center", gap: 4,
           }}>
-            পড়ুন →
+            পড়ুন <ChevronRight size={13} />
           </span>
         </div>
       </div>
@@ -1790,14 +1813,55 @@ function WritingCard({
   );
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
+// ── Modal ─────────────────────────────────────────────────────────────────────────────
 function WritingModal({
   writing,
+  allWritings,
   onClose,
+  onNavigate,
 }: {
   writing: Writing;
+  allWritings: Writing[];
   onClose: () => void;
+  onNavigate: (w: Writing) => void;
 }) {
+  const [copied, setCopied] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [fontSize, setFontSize] = useState(1.1);
+
+  const currentIndex = allWritings.findIndex((w) => w.id === writing.id);
+  const prevWriting = currentIndex > 0 ? allWritings[currentIndex - 1] : null;
+  const nextWriting = currentIndex < allWritings.length - 1 ? allWritings[currentIndex + 1] : null;
+  const colors = getCategoryColor(writing.category);
+
+  const shareText = `"মাহবুব সরদার সবুজ" লিখেছেন: ${writing.title}`;
+  const shareUrl = `${window.location.origin}/writings`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0, 300)}...\n\nপুরো পড়ুন: ${shareUrl}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // fallback
+    }
+  };
+
+  const handleFacebookShare = () => {
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+    window.open(fbUrl, "_blank", "width=600,height=400");
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: writing.title, text: shareText, url: shareUrl });
+      } catch { /* user cancelled */ }
+    } else {
+      handleCopy();
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1806,104 +1870,299 @@ function WritingModal({
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(13,27,42,0.75)",
-        backdropFilter: "blur(6px)",
+        background: "rgba(13,27,42,0.8)",
+        backdropFilter: "blur(8px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "1rem",
       }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
+        key={writing.id}
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.94, y: 20 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        exit={{ opacity: 0, scale: 0.95, y: 16 }}
+        transition={{ type: "spring", stiffness: 320, damping: 32 }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#fff",
-          borderRadius: 16,
+          background: "#FEFCF8",
+          borderRadius: 20,
           width: "100%",
-          maxWidth: 600,
-          maxHeight: "85vh",
+          maxWidth: 640,
+          maxHeight: "90vh",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 32px 80px rgba(13,27,42,0.3)",
+          boxShadow: "0 40px 100px rgba(13,27,42,0.35), 0 0 0 1px rgba(212,168,67,0.15)",
         }}
       >
         {/* Modal header */}
         <div style={{
-          background: "linear-gradient(135deg, #0D1B2A, #1a2f45)",
-          padding: "24px 28px 20px",
+          background: `linear-gradient(135deg, #0D1B2A 0%, #1a2f45 100%)`,
+          padding: "22px 24px 18px",
           position: "relative",
+          borderBottom: `3px solid ${colors.stripe}`,
         }}>
-          <button
-            onClick={onClose}
-            style={{
-              position: "absolute", top: 16, right: 16,
-              background: "rgba(255,255,255,0.1)",
-              border: "none", borderRadius: "50%",
-              width: 32, height: 32,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", color: "#fff",
-            }}
-          >
-            <X size={16} />
-          </button>
-          <span style={{
-            display: "inline-block",
-            padding: "3px 10px",
-            borderRadius: 50,
-            fontSize: "0.7rem",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            background: "rgba(212,168,67,0.2)",
-            color: "#D4A843",
-            marginBottom: 10,
-          }}>
-            {writing.category}
-          </span>
+          {/* Top row: close + share */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "4px 12px",
+              borderRadius: 50,
+              fontSize: "0.68rem",
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              background: colors.badge,
+              color: colors.stripe,
+              fontWeight: 700,
+              border: `1px solid ${colors.stripe}44`,
+            }}>
+              {writing.category}
+            </span>
+            <div style={{ display: "flex", gap: 8 }}>
+              {/* Share button */}
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => setShowShare(s => !s)}
+                  style={{
+                    background: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 8,
+                    width: 34, height: 34,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", color: "#D4A843",
+                    transition: "all 0.2s",
+                  }}
+                  title="শেয়ার করুন"
+                >
+                  <Share2 size={15} />
+                </button>
+                {/* Share dropdown */}
+                <AnimatePresence>
+                  {showShare && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        position: "absolute", top: 40, right: 0,
+                        background: "#fff",
+                        borderRadius: 12,
+                        boxShadow: "0 8px 32px rgba(13,27,42,0.2)",
+                        border: "1px solid rgba(13,27,42,0.1)",
+                        minWidth: 180,
+                        zIndex: 10,
+                        overflow: "hidden",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => { handleFacebookShare(); setShowShare(false); }}
+                        style={{
+                          width: "100%", padding: "11px 16px",
+                          display: "flex", alignItems: "center", gap: 10,
+                          background: "transparent", border: "none",
+                          cursor: "pointer", color: "#1877F2",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.82rem", fontWeight: 600,
+                          borderBottom: "1px solid rgba(13,27,42,0.06)",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(24,119,242,0.06)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <Facebook size={15} /> Facebook-এ শেয়ার
+                      </button>
+                      <button
+                        onClick={() => { handleCopy(); setShowShare(false); }}
+                        style={{
+                          width: "100%", padding: "11px 16px",
+                          display: "flex", alignItems: "center", gap: 10,
+                          background: "transparent", border: "none",
+                          cursor: "pointer", color: copied ? "#27ae60" : "#333",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.82rem", fontWeight: 600,
+                          borderBottom: "1px solid rgba(13,27,42,0.06)",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,27,42,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {copied ? <Check size={15} /> : <Copy size={15} />}
+                        {copied ? "কপি হয়েছে!" : "লিংক কপি করুন"}
+                      </button>
+                      <button
+                        onClick={() => { handleNativeShare(); setShowShare(false); }}
+                        style={{
+                          width: "100%", padding: "11px 16px",
+                          display: "flex", alignItems: "center", gap: 10,
+                          background: "transparent", border: "none",
+                          cursor: "pointer", color: "#555",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.82rem", fontWeight: 600,
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,27,42,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <Share2 size={15} /> অন্যভাবে শেয়ার
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* Close */}
+              <button
+                onClick={onClose}
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 8,
+                  width: 34, height: 34,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+
+          {/* Title */}
           <h2 style={{
             fontFamily: "'Tiro Bangla', serif",
-            fontSize: "clamp(1.2rem, 3vw, 1.6rem)",
+            fontSize: "clamp(1.25rem, 3vw, 1.65rem)",
             color: "#FDF6EC",
-            lineHeight: 1.4,
-            marginBottom: 8,
+            lineHeight: 1.45,
+            marginBottom: 10,
           }}>
             {writing.title}
           </h2>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ color: "rgba(253,246,236,0.5)", fontSize: "0.78rem", fontFamily: "'Noto Sans Bengali', sans-serif", display: "flex", alignItems: "center", gap: 4 }}>
-              <Calendar size={12} /> {writing.date}
+            <span style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif", display: "flex", alignItems: "center", gap: 4 }}>
+              <Calendar size={11} /> {writing.date}
+            </span>
+            <span style={{ color: "rgba(253,246,236,0.3)", fontSize: "0.75rem" }}>•</span>
+            <span style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+              {currentIndex + 1} / {allWritings.length}
             </span>
           </div>
         </div>
 
+        {/* Font size controls */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "flex-end",
+          padding: "8px 20px",
+          background: "#F5F3EE",
+          borderBottom: "1px solid rgba(13,27,42,0.06)",
+          gap: 6,
+        }}>
+          <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: "#aaa", marginRight: 4 }}>ফন্ট সাইজ:</span>
+          <button
+            onClick={() => setFontSize(s => Math.max(0.85, s - 0.1))}
+            style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#555" }}
+          >
+            <AArrowDown size={13} />
+          </button>
+          <button
+            onClick={() => setFontSize(s => Math.min(1.5, s + 0.1))}
+            style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#555" }}
+          >
+            <AArrowUp size={13} />
+          </button>
+        </div>
+
         {/* Body */}
-        <div style={{ padding: "28px 28px 32px", overflowY: "auto" }}>
+        <div style={{ padding: "28px 28px 24px", overflowY: "auto", flex: 1 }}>
           <div style={{
             fontFamily: "'Tiro Bangla', serif",
-            fontSize: "1.1rem",
-            color: "#0D1B2A",
-            lineHeight: 2.2,
+            fontSize: `${fontSize}rem`,
+            color: "#1a1a2e",
+            lineHeight: 2.3,
             whiteSpace: "pre-line",
+            letterSpacing: "0.01em",
           }}>
             {writing.content}
           </div>
 
-          <div style={{ margin: "24px 0", borderTop: "1px solid rgba(212,168,67,0.3)" }} />
+          <div style={{ margin: "28px 0 20px", borderTop: "1px solid rgba(212,168,67,0.25)" }} />
 
+          {/* Author */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{
-              width: 40, height: 40, borderRadius: "50%",
+              width: 42, height: 42, borderRadius: "50%",
               background: "linear-gradient(135deg, #0D1B2A, #1a2f45)",
               display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 4px 12px rgba(13,27,42,0.2)",
             }}>
               <Feather size={18} color="#D4A843" />
             </div>
             <div>
               <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.95rem", color: "#0D1B2A", fontWeight: 700 }}>মাহবুব সরদার সবুজ</div>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "#888" }}>Mahbub Sardar Sabuj</div>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.72rem", color: "#aaa" }}>Mahbub Sardar Sabuj</div>
             </div>
           </div>
+        </div>
+
+        {/* Navigation footer */}
+        <div style={{
+          display: "flex",
+          alignItems: "stretch",
+          borderTop: "1px solid rgba(13,27,42,0.08)",
+          background: "#F5F3EE",
+        }}>
+          {/* Prev */}
+          <button
+            onClick={() => prevWriting && onNavigate(prevWriting)}
+            disabled={!prevWriting}
+            style={{
+              flex: 1,
+              padding: "14px 16px",
+              background: "transparent",
+              border: "none",
+              borderRight: "1px solid rgba(13,27,42,0.08)",
+              cursor: prevWriting ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", gap: 8,
+              opacity: prevWriting ? 1 : 0.35,
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={e => prevWriting && (e.currentTarget.style.background = "rgba(13,27,42,0.05)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+          >
+            <ChevronLeft size={16} color="#0D1B2A" />
+            <div style={{ textAlign: "left", overflow: "hidden" }}>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#aaa", marginBottom: 2 }}>আগের লেখা</div>
+              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.82rem", color: "#0D1B2A", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>
+                {prevWriting?.title}
+              </div>
+            </div>
+          </button>
+
+          {/* Next */}
+          <button
+            onClick={() => nextWriting && onNavigate(nextWriting)}
+            disabled={!nextWriting}
+            style={{
+              flex: 1,
+              padding: "14px 16px",
+              background: "transparent",
+              border: "none",
+              cursor: nextWriting ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8,
+              opacity: nextWriting ? 1 : 0.35,
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={e => nextWriting && (e.currentTarget.style.background = "rgba(13,27,42,0.05)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+          >
+            <div style={{ textAlign: "right", overflow: "hidden" }}>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#aaa", marginBottom: 2 }}>পরের লেখা</div>
+              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.82rem", color: "#0D1B2A", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>
+                {nextWriting?.title}
+              </div>
+            </div>
+            <ChevronRight size={16} color="#0D1B2A" />
+          </button>
         </div>
       </motion.div>
     </motion.div>
@@ -1915,6 +2174,16 @@ export default function Writings() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedWriting, setSelectedWriting] = useState<typeof writings[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const filtered = writings.filter((w) => {
+    const matchCat = activeCategory === "all" || w.category === activeCategory;
+    const matchSearch = searchQuery === "" ||
+      w.title.includes(searchQuery) ||
+      w.content.includes(searchQuery);
+    return matchCat && matchSearch;
+  });
+
+  const featured = writings.find((w) => w.featured);
 
   const writingsJsonLd = {
     "@context": "https://schema.org",
@@ -1934,16 +2203,6 @@ export default function Writings() {
       }
     ]
   };
-
-  const filtered = writings.filter((w) => {
-    const matchCat = activeCategory === "all" || w.category === activeCategory;
-    const matchSearch = searchQuery === "" ||
-      w.title.includes(searchQuery) ||
-      w.content.includes(searchQuery);
-    return matchCat && matchSearch;
-  });
-
-  const featured = writings.find((w) => w.featured);
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F7F4" }}>
@@ -2206,7 +2465,9 @@ export default function Writings() {
         {selectedWriting && (
           <WritingModal
             writing={selectedWriting}
+            allWritings={filtered}
             onClose={() => setSelectedWriting(null)}
+            onNavigate={(w) => setSelectedWriting(w)}
           />
         )}
       </AnimatePresence>
