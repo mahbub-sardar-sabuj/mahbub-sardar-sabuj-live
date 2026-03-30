@@ -312,7 +312,7 @@ interface StickerLayer {
   rotation: number;
 }
 
-type ActiveTool = "canvas" | "text" | "sticker" | "filter" | "adjust" | "bgwall" | "upscale" | "crop" | "draw" | null;
+type ActiveTool = "canvas" | "text" | "inlinetext" | "sticker" | "filter" | "adjust" | "bgwall" | "bgphoto" | "upscale" | "crop" | "draw" | null;
 type ExportQuality = "1x" | "2x" | "4k";
 type ExportFormat = "png" | "jpg";
 type DrawTool = "pencil" | "brush" | "eraser" | "line" | "rect" | "circle" | "arrow";
@@ -1068,6 +1068,11 @@ export default function Editor() {
   // Text editing sub-tab
   const [textSubTab, setTextSubTab]   = useState<"content" | "style" | "font">("content");
 
+  // Inline text tool state
+  const [inlineTextPos, setInlineTextPos] = useState<{ x: number; y: number } | null>(null);
+  const [inlineTextValue, setInlineTextValue] = useState("");
+  const inlineTextareaRef = useRef<HTMLTextAreaElement>(null);
+
   // Draw state
   const [drawTool, setDrawTool]       = useState<DrawTool>("pencil");
   const [drawColor, setDrawColor]     = useState("#D4A843");
@@ -1319,6 +1324,29 @@ export default function Editor() {
     setTextSubTab("style");
   };
 
+  // Commit inline text box to a real TextBlock layer
+  const commitInlineText = () => {
+    if (!inlineTextPos || !inlineTextValue.trim()) {
+      setInlineTextPos(null);
+      setInlineTextValue("");
+      return;
+    }
+    const id = uid();
+    const xFrac = inlineTextPos.x / cardW;
+    const yFrac = inlineTextPos.y / cardH;
+    setTextLayers(prev => [...prev, {
+      id, kind: "custom", text: inlineTextValue,
+      x: xFrac, y: yFrac, fontSize: 40, baseFontSize: 40, fontKey: "ChandraSheela",
+      color: theme.text, bold: false, italic: false, align: "left",
+      shadow: false, outline: false, outlineColor: "#000000",
+      visible: true, lineHeight: 1.6, opacity: 100,
+    }]);
+    setTextBoxSizes(prev => ({ ...prev, [id]: { w: 0.7, h: 0.15 } }));
+    setSelectedId(id);
+    setInlineTextPos(null);
+    setInlineTextValue("");
+  };
+
   const addSticker = (emoji: string) => {
     const id = uid();
     setStickers(prev => [...prev, { id, kind: "sticker", emoji, x: 0.5, y: 0.35, size: 80, rotation: 0 }]);
@@ -1527,6 +1555,13 @@ export default function Editor() {
   const toggleTool = (tool: ActiveTool) =>
     setActiveTool(prev => prev === tool ? null : tool);
 
+  // Auto-focus inline textarea when it appears
+  useEffect(() => {
+    if (inlineTextPos && inlineTextareaRef.current) {
+      setTimeout(() => inlineTextareaRef.current?.focus(), 50);
+    }
+  }, [inlineTextPos]);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────
@@ -1587,9 +1622,21 @@ export default function Editor() {
               borderRadius: 10,
               overflow: "hidden",
               boxShadow: "0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,168,67,0.15)",
-              cursor: activeTool === "draw" ? "crosshair" : dragging ? "grabbing" : "default",
+              cursor: activeTool === "draw" ? "crosshair" : activeTool === "inlinetext" ? "text" : dragging ? "grabbing" : "default",
             }}
-            onClick={() => { if (activeTool !== "draw") setSelectedId(null); }}
+            onClick={(e) => {
+              if (activeTool === "draw") return;
+              if (activeTool === "inlinetext") {
+                // Place inline text box at click position within the card
+                const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                const clickX = (e.clientX - rect.left) / scale;
+                const clickY = (e.clientY - rect.top) / scale;
+                setInlineTextPos({ x: clickX, y: clickY });
+                setInlineTextValue("");
+                return;
+              }
+              setSelectedId(null);
+            }}
           >
             {/* Card inner */}
             <div style={{
@@ -1786,6 +1833,71 @@ export default function Editor() {
                 );
               })}
 
+              {/* Inline text textarea overlay */}
+              {inlineTextPos && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: inlineTextPos.x,
+                    top: inlineTextPos.y,
+                    zIndex: 25,
+                    transform: "translate(0, -50%)",
+                  }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <textarea
+                    ref={inlineTextareaRef}
+                    value={inlineTextValue}
+                    onChange={e => setInlineTextValue(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        commitInlineText();
+                      }
+                      if (e.key === "Escape") {
+                        setInlineTextPos(null);
+                        setInlineTextValue("");
+                      }
+                    }}
+                    onBlur={commitInlineText}
+                    placeholder="লিখুন..."
+                    rows={3}
+                    style={{
+                      background: "rgba(13,20,32,0.85)",
+                      border: "2px solid #D4A843",
+                      borderRadius: 8,
+                      color: theme.text,
+                      fontSize: 40,
+                      fontFamily: "'ChandraSheela', serif",
+                      padding: "8px 12px",
+                      minWidth: 300,
+                      maxWidth: cardW * 0.8,
+                      outline: "none",
+                      resize: "both",
+                      lineHeight: 1.6,
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.6)",
+                      backdropFilter: "blur(4px)",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                    <button
+                      onMouseDown={e => { e.preventDefault(); commitInlineText(); }}
+                      style={{
+                        padding: "6px 16px", borderRadius: 8, border: "none",
+                        background: "#D4A843", color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      }}
+                    >✅ যোগ করুন</button>
+                    <button
+                      onMouseDown={e => { e.preventDefault(); setInlineTextPos(null); setInlineTextValue(""); }}
+                      style={{
+                        padding: "6px 16px", borderRadius: 8, border: "1px solid #ef4444",
+                        background: "rgba(239,68,68,0.15)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      }}
+                    >✕ বাতিল</button>
+                  </div>
+                </div>
+              )}
+
               {/* Drawing canvas overlay */}
               <canvas
                 ref={drawCanvasRef}
@@ -1818,7 +1930,7 @@ export default function Editor() {
               style={{
                 background: "#0d1420",
                 borderTop: "1px solid #1e3050",
-                maxHeight: "42vh",
+                maxHeight: "58vh",
                 display: "flex", flexDirection: "column",
                 flexShrink: 0, overflow: "hidden",
               }}
@@ -2255,8 +2367,51 @@ export default function Editor() {
                 </>
               )}
 
+              {/* ── INLINE TEXT TOOL PANEL ── */}
+              {activeTool === "inlinetext" && (
+                <>
+                  <PanelHeader title="🖊️ টেক্সট যোগ করুন" onClose={() => { setActiveTool(null); setInlineTextPos(null); }} />
+                  <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ background: "rgba(212,168,67,0.1)", border: "1px solid rgba(212,168,67,0.3)",
+                      borderRadius: 12, padding: "14px 16px", textAlign: "center" }}>
+                      <div style={{ fontSize: 36, marginBottom: 8 }}>👆</div>
+                      <p style={{ color: "#D4A843", fontSize: 14, fontWeight: 700, margin: 0 }}>উপরের ক্যানভাসে যেখানে লিখতে চান সেখানে ট্যাপ করুন</p>
+                      <p style={{ color: "#9ca3af", fontSize: 12, margin: "6px 0 0" }}>ট্যাপ করলে সেখানেই লেখার বাক্স আসবে • লিখুন • Enter বা ✅ বাটন দিন</p>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>👆</div>
+                        <p style={{ color: "#9ca3af", fontSize: 11, margin: 0, fontWeight: 600 }}>ক্যানভাসে ট্যাপ</p>
+                        <p style={{ color: "#6b7280", fontSize: 10, margin: "2px 0 0" }}>যেকোনো জায়গায়</p>
+                      </div>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>⌨️</div>
+                        <p style={{ color: "#9ca3af", fontSize: 11, margin: 0, fontWeight: 600 }}>লিখুন</p>
+                        <p style={{ color: "#6b7280", fontSize: 10, margin: "2px 0 0" }}>বাংলা বা ইংরেজি</p>
+                      </div>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>✅</div>
+                        <p style={{ color: "#9ca3af", fontSize: 11, margin: 0, fontWeight: 600 }}>যোগ করুন</p>
+                        <p style={{ color: "#6b7280", fontSize: 10, margin: "2px 0 0" }}>Enter বা বাটন</p>
+                      </div>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>✋</div>
+                        <p style={{ color: "#9ca3af", fontSize: 11, margin: 0, fontWeight: 600 }}>সরান</p>
+                        <p style={{ color: "#6b7280", fontSize: 10, margin: "2px 0 0" }}>ড্র্যাগ করুন</p>
+                      </div>
+                    </div>
+                    {inlineTextPos && (
+                      <div style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)",
+                        borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
+                        <p style={{ color: "#4ade80", fontSize: 13, fontWeight: 700, margin: 0 }}>✏️ লেখার বাক্স খোলা আছে — লিখুন!</p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
               {/* ── BACKGROUND (পটভূমি) PANEL ── */}
-              {activeTool === "bgphoto" as ActiveTool && (
+              {activeTool === "bgphoto" && (
                 <>
                   <PanelHeader title="🖼️ পটভূমি" onClose={() => setActiveTool(null)} />
                   <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
@@ -2312,10 +2467,11 @@ export default function Editor() {
         }}>
           <ToolBtn icon="📐" label="ক্যানভাস" active={activeTool === "canvas"}  onClick={() => toggleTool("canvas")} />
           <ToolBtn icon="✍️" label="লেখা"     active={activeTool === "text"}    onClick={() => toggleTool("text")} />
+          <ToolBtn icon="🖊️" label="টেক্সট"   active={activeTool === "inlinetext"} onClick={() => { toggleTool("inlinetext"); setInlineTextPos(null); }} />
           <ToolBtn icon="😊" label="স্টিকার"  active={activeTool === "sticker"} onClick={() => toggleTool("sticker")} />
           <ToolBtn icon="🎨" label="ফিল্টার"  active={activeTool === "filter"}  onClick={() => toggleTool("filter")} />
           <ToolBtn icon="⚙️" label="সামঞ্জস্য" active={activeTool === "adjust"} onClick={() => toggleTool("adjust")} />
-          <ToolBtn icon="🌄" label="পটভূমি"   active={activeTool === "bgphoto" as ActiveTool} onClick={() => toggleTool("bgphoto" as ActiveTool)} />
+          <ToolBtn icon="🌄" label="পটভূমি"   active={activeTool === "bgphoto"} onClick={() => toggleTool("bgphoto")} />
           <ToolBtn icon="🖼️" label="ব্যাকগ্রাউন্ড" active={activeTool === "bgwall"} onClick={() => toggleTool("bgwall")} />
           <ToolBtn icon="🔍" label="আপস্কেল"  active={activeTool === "upscale"} onClick={() => toggleTool("upscale")} />
           <ToolBtn icon="✂️" label="ক্রপ"     active={activeTool === "crop"}    onClick={() => toggleTool("crop")} />
