@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
 @import "tw-animate-css";
-
+@import "./styles/desktop-premium.css";
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

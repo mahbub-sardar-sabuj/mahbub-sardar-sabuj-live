@@ -1,0 +1,345 @@
+/*
+ * Desktop Premium Styles — World-Class Literary UX
+ * Activates when min-width: 1280px (desktop mode)
+ * Palette: Deep Navy #0A1628, Rich Gold #C9A84C, Warm Ivory #FAF6EF
+ */
+
+/* ── Global desktop enhancements ─────────────────────────────────────────── */
+@media (min-width: 1024px) {
+
+  /* Smooth scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0A1628; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #C9A84C, #8B6914); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #C9A84C; }
+
+  /* Hero grid — two columns */
+  .hero-grid {
+    grid-template-columns: 1.1fr 0.9fr !important;
+    gap: 6rem !important;
+  }
+
+  /* About section — side by side */
+  .about-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5rem !important;
+    align-items: center !important;
+  }
+
+  /* Book section — 3 columns */
+  .book-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 3rem !important;
+    align-items: start !important;
+  }
+
+  /* Writings grid — 3 columns */
+  .writings-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* News grid — 2 columns featured */
+  .news-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Gallery grid — 4 columns */
+  .gallery-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Stats row — 4 columns */
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Ebook grid — 4 columns */
+  .ebook-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Social grid — 4 columns */
+  .social-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Section max-width */
+  .section-inner {
+    max-width: 1280px !important;
+    margin: 0 auto !important;
+    padding: 0 3rem !important;
+  }
+
+  /* Larger section padding */
+  .section-pad {
+    padding: 8rem 0 !important;
+  }
+
+  /* Premium heading sizes */
+  .display-heading {
+    font-size: clamp(3.5rem, 5vw, 5.5rem) !important;
+  }
+
+  /* Two-column content layout */
+  .two-col-layout {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr !important;
+    gap: 4rem !important;
+    align-items: start !important;
+  }
+
+  /* Sidebar sticky */
+  .sidebar-sticky {
+    position: sticky !important;
+    top: 100px !important;
+  }
+
+  /* Card hover lift */
+  .card-hover:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 40px 80px rgba(10,22,40,0.2) !important;
+  }
+
+  /* Premium divider */
+  .gold-divider {
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, #C9A84C 30%, #E8C4A0 50%, #C9A84C 70%, transparent) !important;
+    margin: 4rem 0 !important;
+  }
+
+  /* Reading column max-width */
+  .reading-col {
+    max-width: 720px !important;
+    margin: 0 auto !important;
+  }
+
+  /* Navbar desktop padding */
+  nav .nav-inner {
+    padding: 0 3rem !important;
+  }
+
+  /* Hero text larger */
+  .hero-title {
+    font-size: clamp(4rem, 6vw, 6rem) !important;
+  }
+
+  /* Featured card larger */
+  .featured-card {
+    padding: 3rem !important;
+  }
+
+  /* Modal wider */
+  .modal-wide {
+    max-width: 900px !important;
+  }
+
+  /* Profile image larger */
+  .profile-img-wrap {
+    width: 480px !important;
+    height: 580px !important;
+  }
+
+  /* Footer 4-column */
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+  }
+}
+
+/* ── Premium desktop animations ──────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  @keyframes shimmer-gold {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      #C9A84C 0%,
+      #FAF6EF 25%,
+      #E8C4A0 50%,
+      #FAF6EF 75%,
+      #C9A84C 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-gold 4s linear infinite;
+  }
+
+  @keyframes float-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .float-anim {
+    animation: float-up 5s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.2); }
+    50% { box-shadow: 0 0 50px rgba(201,168,76,0.5), 0 0 100px rgba(201,168,76,0.2); }
+  }
+
+  .glow-card {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  /* Hover underline effect */
+  .hover-underline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hover-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #C9A84C, #E8C4A0);
+    transition: width 0.4s ease;
+  }
+
+  .hover-underline:hover::after {
+    width: 100%;
+  }
+}
+
+/* ── Desktop typography scale ─────────────────────────────────────────────── */
+@media (min-width: 1280px) {
+  .text-display {
+    font-size: 5rem !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .text-headline {
+    font-size: 3rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .text-subhead {
+    font-size: 1.5rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .text-body-lg {
+    font-size: 1.15rem !important;
+    line-height: 2.2 !important;
+  }
+
+  /* Section labels */
+  .section-label {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.25em !important;
+  }
+}
+
+/* ── Desktop layout: Writings page ───────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .writings-layout {
+    display: grid !important;
+    grid-template-columns: 280px 1fr !important;
+    gap: 3rem !important;
+    align-items: start !important;
+  }
+
+  .writings-sidebar {
+    position: sticky !important;
+    top: 90px !important;
+    background: linear-gradient(135deg, rgba(10,22,40,0.95), rgba(13,27,42,0.98)) !important;
+    border: 1px solid rgba(201,168,76,0.15) !important;
+    border-radius: 20px !important;
+    padding: 2rem !important;
+  }
+
+  .writings-main {
+    min-width: 0 !important;
+  }
+}
+
+/* ── Desktop layout: News page ────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .news-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 340px !important;
+    gap: 3rem !important;
+    align-items: start !important;
+  }
+
+  .news-sidebar {
+    position: sticky !important;
+    top: 90px !important;
+  }
+
+  .news-featured-grid {
+    grid-template-columns: 1.6fr 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* ── Premium glass card ───────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .glass-card {
+    background: rgba(255,255,255,0.03) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(201,168,76,0.15) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+  }
+
+  .glass-card-light {
+    background: rgba(255,255,255,0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(201,168,76,0.12) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 8px 40px rgba(10,22,40,0.1), inset 0 1px 0 rgba(255,255,255,0.8) !important;
+  }
+}
+
+/* ── Desktop: Editor / Design Studio ─────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .editor-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 420px !important;
+    gap: 2.5rem !important;
+    align-items: start !important;
+  }
+
+  .editor-preview-wrap {
+    position: sticky !important;
+    top: 90px !important;
+  }
+
+  .editor-tools-wrap {
+    order: 2 !important;
+  }
+}
+
+/* ── Responsive image aspect ratios ──────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .hero-image-desktop {
+    aspect-ratio: 3/4 !important;
+    max-height: 620px !important;
+  }
+
+  .book-cover-desktop {
+    aspect-ratio: 2/3 !important;
+    max-height: 480px !important;
+  }
+}
+
+/* ── Desktop footer ───────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .footer-inner {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+    gap: 4rem !important;
+    padding: 5rem 3rem 3rem !important;
+  }
+}

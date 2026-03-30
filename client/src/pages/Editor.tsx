@@ -519,7 +519,12 @@ export default function Editor() {
         description="প্রিমিয়াম বাংলা লেখার কার্ড ডিজাইন করুন" />
       <Navbar />
 
-      <div className="pt-20 pb-28 px-3 max-w-2xl mx-auto">
+      <div className="pt-20 pb-28 px-3 max-w-7xl mx-auto">
+        {/* Desktop two-column layout */}
+        <div className="lg:grid lg:grid-cols-[1fr_480px] lg:gap-8 lg:items-start">
+
+        {/* ── LEFT COLUMN: Brand header + Preview ── */}
+        <div className="lg:sticky lg:top-20">
 
         {/* ── Brand header — animated */}
         <motion.div
@@ -818,8 +823,13 @@ export default function Editor() {
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════
-            DOWNLOAD BUTTON
+         </div>{/* end left column */}
+
+        {/* ── RIGHT COLUMN: Download + Tools ── */}
+        <div>
+
+        {/* ════════════════════════════════════════════════════════════
+            DOWNLOAD BUTTONN
         ══════════════════════════════════════════════════════════════ */}
         <button onClick={handleDownload} disabled={downloading}
           className="w-full py-4 bg-gradient-to-r from-[#D4A843] to-[#b8892a] hover:from-[#c49030] hover:to-[#a07020] text-black font-bold rounded-2xl flex items-center justify-center gap-2 transition-all disabled:opacity-60 shadow-lg shadow-[#D4A843]/20 text-base mb-6">
@@ -1249,6 +1259,8 @@ export default function Editor() {
 
           </motion.div>
         </AnimatePresence>
+        </div>{/* end right column */}
+        </div>{/* end desktop grid */}
       </div>
     </div>
   );
