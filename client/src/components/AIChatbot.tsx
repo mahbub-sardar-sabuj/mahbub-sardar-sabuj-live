@@ -425,7 +425,7 @@ export default function AIChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [btnPos, setBtnPos] = useState({ x: 0, y: 0 });
-  // One-time label: show for 4s then hide
+  // Periodic tooltip: shows for 3s every 8s
   const [showLabel, setShowLabel] = useState(true);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -436,11 +436,23 @@ export default function AIChatbot() {
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
   const [, navigate] = useLocation();
 
-  // Hide label after 4 seconds (one-time)
+  // Periodic tooltip: show 3s, hide 8s, repeat (only when chat is closed)
   useEffect(() => {
-    const timer = setTimeout(() => setShowLabel(false), 4000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (isOpen) { setShowLabel(false); return; }
+    // Show immediately on mount, then cycle
+    setShowLabel(true);
+    const cycle = () => {
+      // hide after 3s
+      const hideTimer = setTimeout(() => setShowLabel(false), 3000);
+      // show again after 3+8=11s
+      const showTimer = setTimeout(() => setShowLabel(true), 11000);
+      return () => { clearTimeout(hideTimer); clearTimeout(showTimer); };
+    };
+    const cleanup = cycle();
+    // repeat every 11s
+    const interval = setInterval(() => { setShowLabel(true); setTimeout(() => setShowLabel(false), 3000); }, 11000);
+    return () => { cleanup(); clearInterval(interval); };
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -620,8 +632,7 @@ export default function AIChatbot() {
         {/* Pulse ring animation */}
         {!isOpen && (
           <>
-            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(212,168,67,0.3)", animationDuration: "1.8s" }} />
-            <span className="absolute inset-0 rounded-full" style={{ background: "rgba(212,168,67,0.15)", transform: "scale(1.18)", borderRadius: "9999px" }} />
+            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(212,168,67,0.25)", animationDuration: "2.2s" }} />
           </>
         )}
 
@@ -660,14 +671,14 @@ export default function AIChatbot() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10, transition: { duration: 0.6 } }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              className="absolute right-[72px] top-1/2 -translate-y-1/2 whitespace-nowrap pointer-events-none"
+              className="absolute right-[58px] top-1/2 -translate-y-1/2 whitespace-nowrap pointer-events-none"
               style={{
                 background: "linear-gradient(135deg, #0d1b2a 0%, #1a2e4a 100%)",
                 border: "1px solid rgba(212,168,67,0.5)",
                 borderRadius: 10,
-                padding: "6px 14px",
+                padding: "5px 12px",
                 color: "#D4A843",
-                fontSize: "0.75rem",
+                fontSize: "0.72rem",
                 fontFamily: "'Noto Sans Bengali', sans-serif",
                 fontWeight: 600,
                 letterSpacing: "0.02em",
@@ -688,13 +699,13 @@ export default function AIChatbot() {
 
         <motion.button
           onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
-          className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden"
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.93 }}
+          className="relative w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.92 }}
           style={{
             background: "linear-gradient(135deg, #0d1b2a 0%, #1a2e4a 100%)",
-            border: "2.5px solid #D4A843",
-            boxShadow: "0 0 0 3px rgba(212,168,67,0.2), 0 8px 24px rgba(0,0,0,0.5)",
+            border: "2px solid #D4A843",
+            boxShadow: "0 0 0 3px rgba(212,168,67,0.2), 0 6px 20px rgba(0,0,0,0.5)",
           }}
           title="মাহবুব সরদার সবুজ AI Agent"
         >
@@ -702,7 +713,7 @@ export default function AIChatbot() {
             {isOpen ? (
               <motion.span key="close"
                 initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
-                style={{ color: "#D4A843", fontSize: "1.3rem", fontWeight: 700 }}>✕</motion.span>
+                style={{ color: "#D4A843", fontSize: "1.1rem", fontWeight: 700 }}>✕</motion.span>
             ) : (
               <motion.div key="open"
                 initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
