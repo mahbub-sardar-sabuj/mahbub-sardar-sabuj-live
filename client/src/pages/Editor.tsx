@@ -521,24 +521,50 @@ export default function Editor() {
 
       <div className="pt-20 pb-28 px-3 max-w-2xl mx-auto">
 
-        {/* ── Page header — premium minimal */}
-        <div className="text-center mb-7">
-          <div className="relative inline-block">
-            {/* Glow behind title */}
-            <div className="absolute inset-0 blur-2xl opacity-20 bg-gradient-to-r from-[#D4A843] via-[#f0c96a] to-[#D4A843] rounded-full scale-150" />
-            <h1 className="relative text-4xl font-bold bg-gradient-to-br from-[#f0c96a] via-[#D4A843] to-[#a07020] bg-clip-text text-transparent leading-tight tracking-tight">
-              লেখার শিল্পকলা
-            </h1>
-          </div>
-          {/* Decorative line */}
-          <div className="flex items-center justify-center gap-3 mt-3">
-            <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-[#D4A843]/60" />
-            <div className="flex gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4A843]/40" />
-              <span className="w-2.5 h-1.5 rounded-full bg-[#D4A843]/70" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#D4A843]/40" />
+        {/* ── Brand header — সরদার ডিজাইন স্টুডিও */}
+        <div className="text-center mb-8">
+          {/* Brand mark */}
+          <div className="relative inline-flex flex-col items-center">
+            {/* Ambient glow */}
+            <div className="absolute -inset-6 blur-3xl opacity-15 bg-gradient-radial from-[#D4A843] to-transparent rounded-full" />
+
+            {/* Top micro-label */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-px w-8 bg-gradient-to-r from-transparent to-[#D4A843]/50" />
+              <span className="text-[#D4A843]/60 text-[9px] tracking-[0.35em] uppercase font-semibold">Est. 2024</span>
+              <div className="h-px w-8 bg-gradient-to-l from-transparent to-[#D4A843]/50" />
             </div>
-            <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-[#D4A843]/60" />
+
+            {/* Main brand name */}
+            <div className="relative">
+              {/* Subtle shadow layer */}
+              <h1 className="absolute inset-0 text-4xl font-extrabold text-[#D4A843]/10 blur-sm select-none" aria-hidden>
+                সরদার ডিজাইন স্টুডিও
+              </h1>
+              <h1 className="relative text-4xl font-extrabold tracking-tight leading-tight"
+                style={{
+                  background: "linear-gradient(135deg, #f5e27a 0%, #D4A843 35%, #b8892a 65%, #f0c96a 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}>
+                সরদার ডিজাইন স্টুডিও
+              </h1>
+            </div>
+
+            {/* Brand tagline */}
+            <p className="mt-1.5 text-[10px] tracking-[0.25em] text-[#D4A843]/50 uppercase font-medium">
+              শিল্পের সাথে লেখার প্রকাশ
+            </p>
+
+            {/* Bottom ornament */}
+            <div className="flex items-center gap-2 mt-3">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#D4A843]/40" />
+              <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+                <path d="M1 5 Q4.5 1 9 5 Q13.5 9 17 5" stroke="#D4A843" strokeWidth="1.2" strokeOpacity="0.7" fill="none"/>
+              </svg>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#D4A843]/40" />
+            </div>
           </div>
         </div>
 
