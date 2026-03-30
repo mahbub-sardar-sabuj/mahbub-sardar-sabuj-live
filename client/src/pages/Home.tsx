@@ -66,6 +66,8 @@ const galleryImages = [
   { src: "/photos/IMG_9832_01.jpeg", caption: "প্রিয় স্মৃতি", cat: "ব্যক্তিগত" },
   { src: "/photos/photo-output.png", caption: "কবিতার ডিজাইন", cat: "ডিজাইন" },
   { src: "/photos/Addalittlebitofbodytext.png.JPG", caption: "কবিতার ডিজাইন ২", cat: "ডিজাইন" },
+  // বাবার ছবি
+  { src: "/photos/IMG_6966.JPG", caption: "বাবা", cat: "পরিবার" },
   // নতুন ছবি — ২০২৬
   { src: "/photos/IMG_6969.JPG", caption: "মাহবুব সরদার সবুজ — অফিসে", cat: "ব্যক্তিগত" },
   { src: "/photos/IMG_6967.JPG", caption: "লেখকের পোর্ট্রেট", cat: "ব্যক্তিগত" },
@@ -1642,7 +1644,7 @@ export default function Home() {
           {/* Filter tabs */}
           <FadeIn direction="up" delay={0.1}>
             <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: "3rem", flexWrap: "wrap" }}>
-              {["সব", "ব্যক্তিগত", "শিল্পকর্ম", "ডিজাইন", "বই"].map(cat => (
+              {["সব", "ব্যক্তিগত", "পরিবার", "শিল্পকর্ম", "ডিজাইন", "বই"].map(cat => (
                 <motion.button
                   key={cat}
                   whileHover={{ scale: 1.05 }}
