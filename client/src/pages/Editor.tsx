@@ -1719,36 +1719,42 @@ export default function Editor() {
 
       {/* ── Top bar ── */}
       <div style={{
-        background: "#0d1420",
-        borderBottom: "1px solid #1e3050",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "68px 16px 12px",
+        background: "linear-gradient(180deg, #0a1020 0%, #0d1420 100%)",
+        borderBottom: "1px solid rgba(212,168,67,0.15)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "72px 16px 14px",
+        position: "relative",
       }}>
-        <div>
+        {/* Decorative left line */}
+        <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 3, height: 28, background: "linear-gradient(180deg,#D4A843,transparent)", borderRadius: 2 }} />
+        </div>
+        <div style={{ textAlign: "center" }}>
           <h1 style={{
             fontFamily: "'AkhandBengali','Noto Sans Bengali',sans-serif",
-            fontSize: "clamp(1.2rem,4vw,1.6rem)", fontWeight: 800,
-            background: "linear-gradient(135deg,#f5e27a,#D4A843,#b8892a)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            backgroundClip: "text", margin: 0, lineHeight: 1.2,
+            fontSize: "clamp(1.3rem,4.5vw,1.8rem)",
+            fontWeight: 800,
+            background: "linear-gradient(135deg,#f5e27a 0%,#D4A843 50%,#b8892a 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            margin: 0,
+            lineHeight: 1.2,
+            letterSpacing: "0.02em",
           }}>সরদার ডিজাইন স্টুডিও</h1>
+          <p style={{
+            fontFamily: "'Noto Sans Bengali',sans-serif",
+            fontSize: "0.7rem",
+            color: "rgba(212,168,67,0.5)",
+            margin: "3px 0 0",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}>মাহবুব সরদার সবুজ</p>
         </div>
-        <button
-          onClick={handleDownload}
-          disabled={downloading}
-          style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "10px 18px", borderRadius: 12, border: "none",
-            background: downloading ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
-            color: "#000", fontWeight: 700, fontSize: 13, cursor: downloading ? "not-allowed" : "pointer",
-            boxShadow: "0 4px 16px rgba(212,168,67,0.3)", transition: "all 0.2s",
-          }}
-        >
-          {downloading
-            ? <><span style={{ width: 16, height: 16, border: "2px solid #000", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 0.8s linear infinite" }} /> হচ্ছে...</>
-            : <>⬇ সেভ করুন</>
-          }
-        </button>
+        {/* Decorative right line */}
+        <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 3, height: 28, background: "linear-gradient(180deg,#D4A843,transparent)", borderRadius: 2 }} />
+        </div>
       </div>
 
       {/* ── Main area ── */}
@@ -2605,11 +2611,12 @@ export default function Editor() {
 
         {/* ── Bottom Toolbar ── */}
         <div style={{
-          background: "#0d1420",
-          borderTop: "1px solid #1e3050",
-          display: "flex", overflowX: "auto", padding: "6px 8px",
+          background: "linear-gradient(180deg, #0a1020 0%, #0d1420 100%)",
+          borderTop: "1px solid rgba(212,168,67,0.15)",
+          display: "flex", overflowX: "auto", padding: "6px 8px 10px",
           flexShrink: 0, gap: 2,
           scrollbarWidth: "none",
+          alignItems: "center",
         }}>
           <ToolBtn icon="📐" label="ক্যানভাস" active={activeTool === "canvas"}  onClick={() => toggleTool("canvas")} />
           <ToolBtn icon="✍️" label="লেখা"     active={activeTool === "text"}    onClick={() => toggleTool("text")} />
@@ -2622,6 +2629,29 @@ export default function Editor() {
           <ToolBtn icon="🔍" label="আপস্কেল"  active={activeTool === "upscale"} onClick={() => toggleTool("upscale")} />
           <ToolBtn icon="✂️" label="ক্রপ"     active={activeTool === "crop"}    onClick={() => toggleTool("crop")} />
           <ToolBtn icon="🖊️" label="ড্র"      active={activeTool === "draw"}    onClick={() => toggleTool("draw")} />
+          {/* Save button in toolbar */}
+          <div style={{ marginLeft: "auto", flexShrink: 0 }}>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "9px 16px", borderRadius: 12, border: "none",
+                background: downloading ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
+                color: "#000", fontWeight: 700, fontSize: 12,
+                cursor: downloading ? "not-allowed" : "pointer",
+                boxShadow: "0 4px 16px rgba(212,168,67,0.3)",
+                transition: "all 0.2s",
+                fontFamily: "'Noto Sans Bengali',sans-serif",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {downloading
+                ? <><span style={{ width: 14, height: 14, border: "2px solid #000", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "spin 0.8s linear infinite" }} /> হচ্ছে...</>
+                : <>⬇️ সেভ করুন</>
+              }
+            </button>
+          </div>
         </div>
 
         {/* Hidden file inputs */}
