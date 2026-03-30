@@ -224,6 +224,11 @@ export default function Editor() {
     id: string; isSticker: boolean;
     startX: number; startY: number; origX: number; origY: number;
   } | null>(null);
+  const [resizing, setResizing]       = useState<{
+    id: string; startX: number; startY: number; origW: number; origH: number;
+  } | null>(null);
+  // text box widths (fraction of cardW) and heights (fraction of cardH)
+  const [textBoxSizes, setTextBoxSizes] = useState<Record<string, { w: number; h: number }>>({});
 
   const [activeTool, setActiveTool]   = useState<ActiveTool>("text");
   const [downloading, setDownloading] = useState(false);
@@ -303,11 +308,12 @@ export default function Editor() {
   const addCustomText = () => {
     const id = uid();
     setTextLayers(prev => [...prev, {
-      id, kind: "custom", text: "",
+      id, kind: "custom", text: "নতুন লেখা",
       x: 0.5, y: 0.5, fontSize: 40, fontKey: "ChandraSheela",
       color: theme.text, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.6,
     }]);
+    setTextBoxSizes(prev => ({ ...prev, [id]: { w: 0.7, h: 0.15 } }));
     setSelectedId(id);
     setActiveTool("style");
   };
@@ -326,8 +332,34 @@ export default function Editor() {
       ).filter(l => !(l.id === id && l.kind === "custom"))
     );
     setStickers(prev => prev.filter(l => l.id !== id));
+    setTextBoxSizes(prev => { const n = { ...prev }; delete n[id]; return n; });
     if (selectedId === id) setSelectedId(null);
   };
+
+  // ── Resize text box ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!resizing) return;
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const dw = (cx - resizing.startX) / (cardW * scale);
+      const dh = (cy - resizing.startY) / (cardH * scale);
+      const nw = Math.max(0.1, Math.min(0.98, resizing.origW + dw * 2));
+      const nh = Math.max(0.05, Math.min(0.9, resizing.origH + dh * 2));
+      setTextBoxSizes(prev => ({ ...prev, [resizing.id]: { w: nw, h: nh } }));
+    };
+    const onUp = () => setResizing(null);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [resizing, cardW, cardH, scale]);
 
   const selectedText    = textLayers.find(l => l.id === selectedId) ?? null;
   const selectedSticker = stickers.find(l => l.id === selectedId) ?? null;
@@ -575,40 +607,53 @@ export default function Editor() {
                   if (!layer.visible || !layer.text.trim()) return null;
                   const displayText = layer.kind === "author" ? `___❐ ${layer.text}` : layer.text;
                   const isSelected = selectedId === layer.id;
+                  const boxSize = textBoxSizes[layer.id] ?? { w: 0.7, h: 0.15 };
+                  const boxW = boxSize.w * cardW;
+                  const boxH = boxSize.h * cardH;
+                  const handleSz = Math.ceil(28 / scale);
                   return (
                     <div key={layer.id}
-                      onMouseDown={e => startDrag(e, layer.id, false, layer.x, layer.y)}
-                      onTouchStart={e => startDrag(e, layer.id, false, layer.x, layer.y)}
+                      onClick={e => { e.stopPropagation(); setSelectedId(layer.id); }}
+                      onMouseDown={e => { if ((e.target as HTMLElement).dataset.resize) return; startDrag(e, layer.id, false, layer.x, layer.y); }}
+                      onTouchStart={e => { if ((e.target as HTMLElement).dataset.resize) return; startDrag(e, layer.id, false, layer.x, layer.y); }}
                       style={{
                         position: "absolute",
                         left: layer.x * cardW, top: layer.y * cardH,
+                        width: boxW,
+                        minHeight: boxH,
                         transform: "translate(-50%, -50%)",
                         zIndex: 10,
                         cursor: dragging?.id === layer.id ? "grabbing" : "grab",
                         userSelect: "none",
-                        maxWidth: cardW - padding * 2,
                         textAlign: layer.align,
+                        boxSizing: "border-box",
                       }}>
-                      {/* Delete button — shown when selected */}
+                      {/* Delete button — top-right, one click */}
                       {isSelected && (
                         <button
+                          data-nodelete="1"
                           onMouseDown={e => e.stopPropagation()}
+                          onTouchStart={e => e.stopPropagation()}
                           onClick={e => { e.stopPropagation(); removeLayer(layer.id); }}
                           style={{
                             position: "absolute",
-                            top: -Math.ceil(28 / scale),
-                            right: -Math.ceil(8 / scale),
-                            zIndex: 20,
+                            top: -handleSz * 0.9,
+                            right: -handleSz * 0.5,
+                            zIndex: 30,
                             background: "#ef4444",
                             color: "#fff",
-                            border: "none",
-                            borderRadius: Math.ceil(6 / scale),
-                            padding: `${Math.ceil(2 / scale)}px ${Math.ceil(8 / scale)}px`,
-                            fontSize: Math.ceil(20 / scale),
+                            border: "2px solid #fff",
+                            borderRadius: "50%",
+                            width: handleSz,
+                            height: handleSz,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: Math.ceil(16 / scale),
                             cursor: "pointer",
-                            lineHeight: 1.2,
                             fontWeight: "bold",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                            lineHeight: 1,
                           }}>
                           ✕
                         </button>
@@ -621,14 +666,52 @@ export default function Editor() {
                         fontStyle: layer.italic ? "italic" : "normal",
                         lineHeight: layer.lineHeight,
                         whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
                         textShadow: layer.shadow ? "2px 2px 8px rgba(0,0,0,0.5)" : "none",
                         outline: isSelected ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
-                        outlineOffset: `${Math.ceil(6 / scale)}px`,
+                        outlineOffset: `${Math.ceil(4 / scale)}px`,
                         borderRadius: Math.ceil(4 / scale),
                         padding: `${Math.ceil(4 / scale)}px`,
+                        width: "100%",
+                        minHeight: boxH,
                       }}>
                         {displayText}
                       </div>
+                      {/* Resize handle — bottom-right corner */}
+                      {isSelected && (
+                        <div
+                          data-resize="1"
+                          onMouseDown={e => {
+                            e.stopPropagation();
+                            setResizing({ id: layer.id, startX: e.clientX, startY: e.clientY, origW: boxSize.w, origH: boxSize.h });
+                          }}
+                          onTouchStart={e => {
+                            e.stopPropagation();
+                            setResizing({ id: layer.id, startX: e.touches[0].clientX, startY: e.touches[0].clientY, origW: boxSize.w, origH: boxSize.h });
+                          }}
+                          style={{
+                            position: "absolute",
+                            bottom: -handleSz * 0.5,
+                            right: -handleSz * 0.5,
+                            width: handleSz,
+                            height: handleSz,
+                            background: "#D4A843",
+                            border: "2px solid #fff",
+                            borderRadius: Math.ceil(4 / scale),
+                            cursor: "se-resize",
+                            zIndex: 30,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: Math.ceil(12 / scale),
+                            color: "#000",
+                            fontWeight: "bold",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                          }}>
+                          ⤡
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -850,12 +933,15 @@ export default function Editor() {
                           <span className="text-gray-600 text-xs font-mono">{selectedText.color}</span>
                         </div>
                       </div>
-                      <div>
-                        <label className="text-gray-500 text-xs block mb-1.5">ফন্ট সাইজ</label>
-                        <input type="number" min={10} max={200} value={selectedText.fontSize}
-                          onChange={e => updateText(selectedText.id, { fontSize: +e.target.value })}
-                          className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2 text-sm outline-none" />
+                    <div>
+                      <label className="text-gray-500 text-xs block mb-1.5">ফন্ট সাইজ — <span className="text-[#D4A843] font-bold">{selectedText.fontSize}px</span></label>
+                      <input type="range" min={10} max={200} step={1} value={selectedText.fontSize}
+                        onChange={e => updateText(selectedText.id, { fontSize: +e.target.value })}
+                        className="w-full h-2 rounded-full accent-[#D4A843] cursor-pointer" />
+                      <div className="flex justify-between text-gray-700 text-[10px] mt-0.5">
+                        <span>10px</span><span>100px</span><span>200px</span>
                       </div>
+                    </div>
                     </div>
 
                     <div>
