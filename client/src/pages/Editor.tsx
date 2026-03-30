@@ -1,65 +1,59 @@
 /**
- * ডিজাইন ফরম্যাট — Premium Bengali Writing Card Designer v2
- * New in v2:
- *  - Removed title/author divider lines
- *  - 6 new gradient themes (Aurora, Sunset Blaze, Ocean Deep, Rose Gold, Forest Mist, Midnight Gold)
- *  - Watermark / author logo overlay option
- *  - 8 frame styles (none, inner border, corner ornament, double border, left bar, shadow frame, ornate, minimal dot)
- *  - Pattern backgrounds (dots, lines, grid, diagonal)
- *  - Text glow effect toggle
- *  - Italic title toggle
- *  - Opacity control for author name
- *  - Copy design as image to clipboard
- *  - Canvas-based PNG export (mobile-safe, 2x resolution)
+ * ডিজাইন ফরম্যাট — InShot-style Premium Bengali Writing Card Designer v3
+ * Features:
+ *  - Photo upload as main canvas image (not just background)
+ *  - Real-time CSS image filters: brightness, contrast, saturation, blur, vintage, B&W
+ *  - Draggable text layers (multiple, positioned anywhere on canvas)
+ *  - Draggable sticker layers
+ *  - InShot-style bottom toolbar on mobile
+ *  - All v2 features: themes, gradients, frames, patterns, fonts, PNG export
  */
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useId } from "react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
-import { trpc } from "@/lib/trpc";
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 const FONTS = [
-  { name: "চন্দ্রশীলা", value: "ChandraSheela" },
+  { name: "চন্দ্রশীলা",          value: "ChandraSheela" },
   { name: "চন্দ্রশীলা প্রিমিয়াম", value: "ChandraSheelaPremium" },
-  { name: "মাহবুব সরদার ফন্ট", value: "MahbubSardarSabujFont" },
-  { name: "মাসুদ নান্দনিক", value: "MasudNandanik" },
-  { name: "আদর্শ লিপি", value: "AdorshoLipi" },
-  { name: "BH Sabit Adorsho", value: "BHSabitAdorshoLightUnicode" },
-  { name: "BLAB Norha Gram", value: "BLABNorhaGramUnicode" },
-  { name: "Akhand Bengali", value: "AkhandBengali" },
-  { name: "Tiro Bangla", value: "TiroBangla" },
-  { name: "Noto Sans Bengali", value: "NotoSansBengali" },
+  { name: "মাহবুব সরদার ফন্ট",   value: "MahbubSardarSabujFont" },
+  { name: "মাসুদ নান্দনিক",       value: "MasudNandanik" },
+  { name: "আদর্শ লিপি",          value: "AdorshoLipi" },
+  { name: "BH Sabit Adorsho",    value: "BHSabitAdorshoLightUnicode" },
+  { name: "BLAB Norha Gram",     value: "BLABNorhaGramUnicode" },
+  { name: "Akhand Bengali",      value: "AkhandBengali" },
+  { name: "Tiro Bangla",         value: "TiroBangla" },
+  { name: "Noto Sans Bengali",   value: "NotoSansBengali" },
 ];
 
 const FONT_CSS: Record<string, string> = {
-  ChandraSheela: "'ChandraSheela', serif",
-  ChandraSheelaPremium: "'ChandraSheelaPremium', serif",
-  MahbubSardarSabujFont: "'MahbubSardarSabujFont', serif",
-  MasudNandanik: "'MasudNandanik', serif",
-  AdorshoLipi: "'AdorshoLipi', serif",
-  BHSabitAdorshoLightUnicode: "'BHSabitAdorshoLightUnicode', serif",
-  BLABNorhaGramUnicode: "'BLABNorhaGramUnicode', serif",
-  AkhandBengali: "'AkhandBengali', serif",
-  TiroBangla: "'Tiro Bangla', serif",
-  NotoSansBengali: "'Noto Sans Bengali', sans-serif",
+  ChandraSheela:                "'ChandraSheela', serif",
+  ChandraSheelaPremium:         "'ChandraSheelaPremium', serif",
+  MahbubSardarSabujFont:        "'MahbubSardarSabujFont', serif",
+  MasudNandanik:                "'MasudNandanik', serif",
+  AdorshoLipi:                  "'AdorshoLipi', serif",
+  BHSabitAdorshoLightUnicode:   "'BHSabitAdorshoLightUnicode', serif",
+  BLABNorhaGramUnicode:         "'BLABNorhaGramUnicode', serif",
+  AkhandBengali:                "'AkhandBengali', serif",
+  TiroBangla:                   "'Tiro Bangla', serif",
+  NotoSansBengali:              "'Noto Sans Bengali', sans-serif",
 };
 
 const FONT_URLS: Record<string, string> = {
-  ChandraSheela: "/fonts/\u099a\u09a8\u09cd\u09a6\u09cd\u09b0\u09b6\u09c0\u09b2\u09be.ttf",
-  ChandraSheelaPremium: "/fonts/\u099a\u09a8\u09cd\u09a6\u09cd\u09b0\u09b6\u09c0\u09b2\u09be\u09aa\u09cd\u09b0\u09bf\u09ae\u09bf\u09af\u09bc\u09be\u09ae.ttf",
-  MahbubSardarSabujFont: "/fonts/\u09ae\u09be\u09b9\u09ac\u09c1\u09ac\u09b8\u09b0\u09a6\u09be\u09b0\u09b8\u09ac\u09c1\u099c\u09ab\u09a8\u09cd\u099f.ttf",
-  MasudNandanik: "/fonts/\u09ae\u09be\u09b8\u09c1\u09a6\u09a8\u09be\u09a8\u09cd\u09a6\u09a8\u09bf\u0995.ttf",
-  AdorshoLipi: "/fonts/AdorshoLipi.ttf",
+  ChandraSheela:              "/fonts/চন্দ্রশীলা.ttf",
+  ChandraSheelaPremium:       "/fonts/চন্দ্রশীলাপ্রিমিয়াম.ttf",
+  MahbubSardarSabujFont:      "/fonts/মাহবুবসরদারসবুজফন্ট.ttf",
+  MasudNandanik:              "/fonts/মাসুদনান্দনিক.ttf",
+  AdorshoLipi:                "/fonts/AdorshoLipi.ttf",
   BHSabitAdorshoLightUnicode: "/fonts/BHSabitAdorshoLightUnicode.ttf",
-  BLABNorhaGramUnicode: "/fonts/BLABNorhaGramUnicode.ttf",
-  AkhandBengali: "/fonts/AkhandBengali.ttf",
+  BLABNorhaGramUnicode:       "/fonts/BLABNorhaGramUnicode.ttf",
+  AkhandBengali:              "/fonts/AkhandBengali.ttf",
 };
 
 // ── Themes ────────────────────────────────────────────────────────────────────
 type Theme = { name: string; bg: string; text: string; border: string; gradient?: string };
 
 const THEMES: Theme[] = [
-  // Solid
   { name: "বইয়ের পাতা",     bg: "#F5F0E8", text: "#1a1a1a", border: "#8B7355" },
   { name: "ক্রিম সাদা",     bg: "#FFFEF7", text: "#2d2d2d", border: "#C8B89A" },
   { name: "রাতের আকাশ",    bg: "#0d1b2a", text: "#E8D5A3", border: "#D4A843" },
@@ -69,16 +63,15 @@ const THEMES: Theme[] = [
   { name: "গোলাপি স্বপ্ন",  bg: "#FFF0F5", text: "#4A1942", border: "#E91E8C" },
   { name: "নীল শান্তি",    bg: "#EEF4FF", text: "#1A237E", border: "#3F51B5" },
   { name: "বেগুনি রহস্য",  bg: "#1a0a2e", text: "#E8D5FF", border: "#9C27B0" },
-  // Gradient
-  { name: "সূর্যাস্ত",      bg: "#1a0533", text: "#FFFFFF", border: "#FFD700",
+  { name: "সূর্যাস্ত",     bg: "#1a0533", text: "#FFFFFF", border: "#FFD700",
     gradient: "linear-gradient(135deg,#1a0533 0%,#2d1b69 50%,#11998e 100%)" },
-  { name: "অরোরা",          bg: "#0f0c29", text: "#FFFFFF", border: "#a78bfa",
+  { name: "অরোরা",         bg: "#0f0c29", text: "#FFFFFF", border: "#a78bfa",
     gradient: "linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)" },
   { name: "সানসেট ব্লেজ",  bg: "#f7971e", text: "#1a0000", border: "#ffd200",
     gradient: "linear-gradient(135deg,#f7971e 0%,#ffd200 100%)" },
-  { name: "ওশান ডিপ",      bg: "#0575e6", text: "#FFFFFF", border: "#00f2fe",
+  { name: "ওশান ডিপ",     bg: "#0575e6", text: "#FFFFFF", border: "#00f2fe",
     gradient: "linear-gradient(135deg,#0575e6 0%,#021b79 100%)" },
-  { name: "রোজ গোল্ড",     bg: "#f8b4c8", text: "#3d0020", border: "#c9184a",
+  { name: "রোজ গোল্ড",    bg: "#f8b4c8", text: "#3d0020", border: "#c9184a",
     gradient: "linear-gradient(135deg,#f8b4c8 0%,#ffd6a5 100%)" },
   { name: "ফরেস্ট মিস্ট",  bg: "#134e5e", text: "#e0ffe0", border: "#71b280",
     gradient: "linear-gradient(135deg,#134e5e 0%,#71b280 100%)" },
@@ -88,12 +81,12 @@ const THEMES: Theme[] = [
 
 // ── Sizes ─────────────────────────────────────────────────────────────────────
 const SIZES = [
-  { name: "বর্গ (1:1)",       w: 1080, h: 1080, icon: "⬛" },
-  { name: "পোর্ট্রেট (4:5)", w: 1080, h: 1350, icon: "📱" },
-  { name: "স্টোরি (9:16)",   w: 1080, h: 1920, icon: "📲" },
-  { name: "আড়াআড়ি (16:9)", w: 1920, h: 1080, icon: "🖥️" },
-  { name: "A4 পোর্ট্রেট",   w: 794,  h: 1123, icon: "📄" },
-  { name: "কাস্টম",          w: 0,    h: 0,    icon: "✏️" },
+  { name: "বর্গ (1:1)",       w: 1080, h: 1080 },
+  { name: "পোর্ট্রেট (4:5)", w: 1080, h: 1350 },
+  { name: "স্টোরি (9:16)",   w: 1080, h: 1920 },
+  { name: "আড়াআড়ি (16:9)", w: 1920, h: 1080 },
+  { name: "A4 পোর্ট্রেট",   w: 794,  h: 1123 },
+  { name: "কাস্টম",          w: 0,    h: 0    },
 ];
 
 // ── Frames ────────────────────────────────────────────────────────────────────
@@ -118,20 +111,65 @@ const PATTERNS = [
 ];
 
 // ── Stickers ──────────────────────────────────────────────────────────────────
-const STICKERS = ["🌸","🌙","⭐","✨","🌿","🦋","🕊️","🌹","💫","🔥","🌊","🎋","🌺","💎","🪷","🌟","🏵️","🌴","🎑","🌾","🎐","🎍","🍂","🌻"];
+const STICKER_LIST = ["🌸","🌙","⭐","✨","🌿","🦋","🕊️","🌹","💫","🔥","🌊","🎋","🌺","💎","🪷","🌟","🏵️","🌴","🎑","🌾","🎐","🎍","🍂","🌻","❤️","💛","💙","💜","🤍","🖤","🌈","☁️","⚡","🌑","🌕","🍃","🌷","🫧","🪐","🎆","🎇","🧿","🔮","🪬","🌠","🎴","🀄","🎭","🎪","🎨","🖌️"];
+
+// ── Image Filters ─────────────────────────────────────────────────────────────
+type FilterPreset = { name: string; filter: string; label: string };
+const FILTER_PRESETS: FilterPreset[] = [
+  { name: "normal",    filter: "none",                                                                    label: "স্বাভাবিক" },
+  { name: "vivid",     filter: "saturate(1.8) contrast(1.1)",                                             label: "উজ্জ্বল" },
+  { name: "warm",      filter: "sepia(0.3) saturate(1.4) brightness(1.05)",                               label: "উষ্ণ" },
+  { name: "cool",      filter: "hue-rotate(20deg) saturate(1.2) brightness(1.05)",                        label: "শীতল" },
+  { name: "vintage",   filter: "sepia(0.6) contrast(1.1) brightness(0.9) saturate(0.8)",                  label: "ভিনটেজ" },
+  { name: "bw",        filter: "grayscale(1)",                                                            label: "সাদাকালো" },
+  { name: "dramatic",  filter: "contrast(1.4) brightness(0.85) saturate(1.2)",                            label: "নাটকীয়" },
+  { name: "fade",      filter: "brightness(1.1) contrast(0.85) saturate(0.7)",                            label: "ফেড" },
+  { name: "golden",    filter: "sepia(0.4) saturate(1.6) hue-rotate(-10deg) brightness(1.05)",            label: "সোনালি" },
+  { name: "moonlight", filter: "brightness(0.8) contrast(1.2) hue-rotate(200deg) saturate(0.6)",         label: "জ্যোৎস্না" },
+  { name: "matte",     filter: "contrast(0.9) brightness(1.1) saturate(0.85)",                            label: "ম্যাট" },
+  { name: "pop",       filter: "saturate(2) contrast(1.15) brightness(1.05)",                             label: "পপ" },
+];
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 const TEMPLATES = [
-  { label: "প্রেমের কবিতা", t: "ভালোবাসা", b: "তুমি আমার হৃদয়ের গভীরে\nএক অনন্ত আলোর মতো জ্বলো।\nতোমার স্পর্শে জীবন হয়\nঅর্থবহ, সুন্দর ও কোমল।", a: "— মাহবুব সরদার সবুজ" },
-  { label: "অনুপ্রেরণা",   t: "জীবন",     b: "প্রতিটি ভোরে নতুন সুযোগ আসে,\nসেই সুযোগকে কাজে লাগাও।\nব্যর্থতা থেকে শিক্ষা নাও,\nসাফল্যের পথে এগিয়ে যাও।", a: "— মাহবুব সরদার সবুজ" },
-  { label: "প্রকৃতি",      t: "প্রকৃতির ডাক", b: "সবুজ পাতার ফাঁকে ফাঁকে\nআলো নামে নীরবে।\nনদীর কলতানে মিশে যায়\nমনের সব কথা।", a: "— মাহবুব সরদার সবুজ" },
-  { label: "বিদ্রোহ",     t: "কলমের বিদ্রোহ", b: "কলমের স্পর্শে আমি বিদ্রোহী,\nন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি;\nকেউ কেউ ভালোবেসে ডাকে আমায় কবি।", a: "— মাহবুব সরদার সবুজ" },
-  { label: "বিচ্ছেদ",     t: "বিচ্ছেদের ব্যথা", b: "যে চলে গেছে সে আর ফেরে না,\nস্মৃতিরা শুধু বুকে জ্বলে।\nকষ্টের এই গল্প বলা যায় না,\nনীরবে চোখের জল গড়িয়ে পড়ে।", a: "— মাহবুব সরদার সবুজ" },
-  { label: "আত্মসম্মান",  t: "আত্মসম্মান", b: "নিজেকে ভালোবাসো সবার আগে,\nআত্মসম্মান হারিও না কখনো।\nযে তোমাকে মূল্য দেয় না,\nতার জন্য কাঁদতে নেই।", a: "— মাহবুব সরদার সবুজ" },
+  { label: "প্রেমের কবিতা",  title: "ভালোবাসা",        body: "ভালোবাসা আমার কাছে\nতোমার হাসির মতো সহজ,\nতোমার চোখের মতো গভীর।", author: "— মাহবুব সরদার সবুজ" },
+  { label: "অনুপ্রেরণা",    title: "জীবন",             body: "প্রতিটি ভোরে নতুন সুযোগ আসে,\nসেই সুযোগকে কাজে লাগাও।", author: "— মাহবুব সরদার সবুজ" },
+  { label: "প্রকৃতি",       title: "প্রকৃতির ডাক",    body: "সবুজ পাতার ফাঁকে ফাঁকে\nআলো নামে নীরবে।", author: "— মাহবুব সরদার সবুজ" },
+  { label: "বিচ্ছেদ",       title: "বিচ্ছেদের ব্যথা", body: "যে চলে গেছে সে আর ফেরে না,\nস্মৃতিরা শুধু বুকে জ্বলে।", author: "— মাহবুব সরদার সবুজ" },
+  { label: "আত্মসম্মান",    title: "আত্মসম্মান",       body: "নিজেকে ভালোবাসো সবার আগে,\nআত্মসম্মান হারিও না কখনো।", author: "— মাহবুব সরদার সবুজ" },
 ];
 
-// ── Author watermark photo ────────────────────────────────────────────────────
+// ── Author photo ──────────────────────────────────────────────────────────────
 const AUTHOR_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
+
+// ── Layer types ───────────────────────────────────────────────────────────────
+interface TextLayer {
+  id: string;
+  type: "text";
+  text: string;
+  x: number; // 0-1 fraction of card width
+  y: number; // 0-1 fraction of card height
+  fontSize: number;
+  fontKey: string;
+  color: string;
+  bold: boolean;
+  italic: boolean;
+  align: "left" | "center" | "right";
+  shadow: boolean;
+  bg: string; // background color, "" = none
+  bgOpacity: number;
+}
+
+interface StickerLayer {
+  id: string;
+  type: "sticker";
+  emoji: string;
+  x: number;
+  y: number;
+  size: number;
+}
+
+type Layer = TextLayer | StickerLayer;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 async function ensureFontLoaded(fontKey: string) {
@@ -162,11 +200,12 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
 function drawPattern(ctx: CanvasRenderingContext2D, pattern: string, w: number, h: number, color: string) {
   ctx.save();
   ctx.strokeStyle = color;
+  ctx.fillStyle = color;
   ctx.globalAlpha = 0.06;
   ctx.lineWidth = 1;
   if (pattern === "dots") {
     for (let x = 20; x < w; x += 30) for (let y = 20; y < h; y += 30) {
-      ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
     }
   } else if (pattern === "lines") {
     for (let y = 0; y < h; y += 24) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
@@ -179,74 +218,86 @@ function drawPattern(ctx: CanvasRenderingContext2D, pattern: string, w: number, 
   ctx.restore();
 }
 
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Editor() {
-  // Content
-  const [title, setTitle]           = useState("শিরোনাম");
-  const [body, setBody]             = useState("এখানে আপনার লেখা লিখুন...\n\nকবিতা, উক্তি বা মনের কথা।");
-  const [author, setAuthor]         = useState("— মাহবুব সরদার সবুজ");
-  const [showTitle, setShowTitle]   = useState(true);
-  const [showAuthor, setShowAuthor] = useState(true);
-  const [sticker, setSticker]       = useState("");
+  // ── Photo & Filters
+  const [photoImage, setPhotoImage] = useState<string | null>(null);
+  const [filterPreset, setFilterPreset] = useState("normal");
+  const [brightness, setBrightness] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [saturation, setSaturation] = useState(100);
+  const [blur, setBlur] = useState(0);
+  const [photoOpacity, setPhotoOpacity] = useState(100);
 
-  // Per-element fonts
-  const [titleFontKey, setTitleFontKey]   = useState("ChandraSheela");
-  const [bodyFontKey, setBodyFontKey]     = useState("ChandraSheela");
-  const [authorFontKey, setAuthorFontKey] = useState("ChandraSheela");
-
-  // Design
-  const [themeIdx, setThemeIdx]           = useState(2);
-  const [fontKey, setFontKey]             = useState("ChandraSheela");
-  const [sizeIdx, setSizeIdx]             = useState(0);
-  const [customW, setCustomW]             = useState(800);
-  const [customH, setCustomH]             = useState(800);
-  const [frame, setFrame]                 = useState("corner");
-  const [pattern, setPattern]             = useState("none");
-  const [useCustomColors, setUseCustomColors] = useState(false);
-  const [customBg, setCustomBg]           = useState("#1a1a2e");
-  const [customText, setCustomText]       = useState("#ffffff");
-  const [customBorder, setCustomBorder]   = useState("#D4A843");
-
-  // Typography
-  const [titleSize, setTitleSize]   = useState(52);
-  const [bodySize, setBodySize]     = useState(36);
-  const [authorSize, setAuthorSize] = useState(28);
-  const [lineH, setLineH]           = useState(1.9);
-  const [align, setAlign]           = useState<"left"|"center"|"right">("left");
-  const [padding, setPadding]       = useState(60);
-  const [letterSp, setLetterSp]     = useState(0.5);
-  const [textShadow, setTextShadow] = useState(false);
-  const [textGlow, setTextGlow]     = useState(false);
-  const [boldBody, setBoldBody]     = useState(false);
-  const [italicTitle, setItalicTitle] = useState(false);
-  const [authorOpacity, setAuthorOpacity] = useState(75);
-
-  // Background
-  const [bgImage, setBgImage]     = useState<string | null>(null);
+  // ── Background
+  const [bgImage, setBgImage] = useState<string | null>(null);
   const [bgOpacity, setBgOpacity] = useState(0.12);
-  const [bgBlur, setBgBlur]       = useState(false);
+  const [bgBlur, setBgBlur] = useState(false);
   const [showWatermark, setShowWatermark] = useState(false);
   const [watermarkOpacity, setWatermarkOpacity] = useState(8);
 
+  // ── Design
+  const [themeIdx, setThemeIdx] = useState(2);
+  const [useCustomColors, setUseCustomColors] = useState(false);
+  const [customBg, setCustomBg] = useState("#1a1a2e");
+  const [customText, setCustomText] = useState("#ffffff");
+  const [customBorder, setCustomBorder] = useState("#D4A843");
+  const [sizeIdx, setSizeIdx] = useState(0);
+  const [customW, setCustomW] = useState(800);
+  const [customH, setCustomH] = useState(800);
+  const [frame, setFrame] = useState("corner");
+  const [pattern, setPattern] = useState("none");
 
+  // ── Legacy text (main card text)
+  const [title, setTitle] = useState("শিরোনাম");
+  const [body, setBody] = useState("এখানে আপনার লেখা লিখুন...\n\nকবিতা, উক্তি বা মনের কথা।");
+  const [author, setAuthor] = useState("— মাহবুব সরদার সবুজ");
+  const [showTitle, setShowTitle] = useState(true);
+  const [showAuthor, setShowAuthor] = useState(true);
+  const [titleFontKey, setTitleFontKey] = useState("ChandraSheela");
+  const [bodyFontKey, setBodyFontKey] = useState("ChandraSheela");
+  const [authorFontKey, setAuthorFontKey] = useState("ChandraSheela");
+  const [titleSize, setTitleSize] = useState(52);
+  const [bodySize, setBodySize] = useState(36);
+  const [authorSize, setAuthorSize] = useState(28);
+  const [lineH, setLineH] = useState(1.9);
+  const [align, setAlign] = useState<"left" | "center" | "right">("left");
+  const [padding, setPadding] = useState(60);
+  const [letterSp, setLetterSp] = useState(0.5);
+  const [textShadow, setTextShadow] = useState(false);
+  const [textGlow, setTextGlow] = useState(false);
+  const [boldBody, setBoldBody] = useState(false);
+  const [italicTitle, setItalicTitle] = useState(false);
+  const [authorOpacity, setAuthorOpacity] = useState(75);
 
+  // ── Layers (draggable text + stickers)
+  const [layers, setLayers] = useState<Layer[]>([]);
+  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+  const [dragging, setDragging] = useState<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
 
-  // UI
-  const [tab, setTab]           = useState<"content"|"design"|"typo"|"bg"|"extras">("content");
+  // ── UI
+  const [tab, setTab] = useState<"photo" | "text" | "layers" | "design" | "typo" | "bg" | "extras">("photo");
   const [downloading, setDownloading] = useState(false);
-  const [copied, setCopied]     = useState(false);
-
-  const fileRef    = useRef<HTMLInputElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
   const [scale, setScale] = useState(0.4);
 
-  // Computed
+  const photoRef = useRef<HTMLInputElement>(null);
+  const bgFileRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+
   const theme = useCustomColors
     ? { bg: customBg, text: customText, border: customBorder, gradient: undefined } as Theme
     : THEMES[themeIdx];
   const cardW = SIZES[sizeIdx].name === "কাস্টম" ? customW : SIZES[sizeIdx].w;
   const cardH = SIZES[sizeIdx].name === "কাস্টম" ? customH : SIZES[sizeIdx].h;
-  const fontCss = FONT_CSS[fontKey] || "'Tiro Bangla', serif";
+
+  // Compute CSS filter string
+  const preset = FILTER_PRESETS.find(f => f.name === filterPreset);
+  const customFilterStr = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) blur(${blur}px)`;
+  const effectiveFilter = filterPreset === "normal" ? customFilterStr : `${preset?.filter ?? ""} brightness(${brightness}%) contrast(${contrast}%)`;
 
   useEffect(() => {
     const update = () => {
@@ -260,14 +311,88 @@ export default function Editor() {
     return () => window.removeEventListener("resize", update);
   }, [cardW, cardH]);
 
+  // ── Drag handlers for layers ───────────────────────────────────────────────
+  const startDrag = (e: React.MouseEvent | React.TouchEvent, id: string, lx: number, ly: number) => {
+    e.stopPropagation();
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+    setDragging({ id, startX: clientX, startY: clientY, origX: lx, origY: ly });
+    setSelectedLayerId(id);
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const dx = (clientX - dragging.startX) / (cardW * scale);
+      const dy = (clientY - dragging.startY) / (cardH * scale);
+      setLayers(prev => prev.map(l => l.id === dragging.id
+        ? { ...l, x: Math.max(0, Math.min(1, dragging.origX + dx)), y: Math.max(0, Math.min(1, dragging.origY + dy)) }
+        : l
+      ));
+    };
+    const onUp = () => setDragging(null);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [dragging, cardW, cardH, scale]);
+
+  // ── Add layer helpers ──────────────────────────────────────────────────────
+  const addTextLayer = () => {
+    const id = uid();
+    const newLayer: TextLayer = {
+      id, type: "text",
+      text: "নতুন লেখা",
+      x: 0.5, y: 0.5,
+      fontSize: 48,
+      fontKey: "ChandraSheela",
+      color: theme.text,
+      bold: false, italic: false,
+      align: "center",
+      shadow: false,
+      bg: "", bgOpacity: 0.5,
+    };
+    setLayers(prev => [...prev, newLayer]);
+    setSelectedLayerId(id);
+    setTab("layers");
+  };
+
+  const addStickerLayer = (emoji: string) => {
+    const id = uid();
+    const newLayer: StickerLayer = { id, type: "sticker", emoji, x: 0.5, y: 0.3, size: 80 };
+    setLayers(prev => [...prev, newLayer]);
+    setSelectedLayerId(id);
+    setTab("layers");
+  };
+
+  const deleteLayer = (id: string) => {
+    setLayers(prev => prev.filter(l => l.id !== id));
+    if (selectedLayerId === id) setSelectedLayerId(null);
+  };
+
+  const updateLayer = (id: string, patch: Partial<Layer>) => {
+    setLayers(prev => prev.map(l => l.id === id ? { ...l, ...patch } as Layer : l));
+  };
+
+  const selectedLayer = layers.find(l => l.id === selectedLayerId) ?? null;
+
   // ── Canvas export ─────────────────────────────────────────────────────────
   const buildCanvas = useCallback(async (): Promise<HTMLCanvasElement> => {
-    await Promise.all([ensureFontLoaded(titleFontKey), ensureFontLoaded(bodyFontKey), ensureFontLoaded(authorFontKey), ensureFontLoaded(fontKey)]);
+    const allFontKeys = [titleFontKey, bodyFontKey, authorFontKey, ...layers.filter(l => l.type === "text").map(l => (l as TextLayer).fontKey)];
+    await Promise.all(allFontKeys.map(ensureFontLoaded));
     await document.fonts.ready;
 
     const DPR = 2;
     const canvas = document.createElement("canvas");
-    canvas.width  = cardW * DPR;
+    canvas.width = cardW * DPR;
     canvas.height = cardH * DPR;
     const ctx = canvas.getContext("2d")!;
     ctx.scale(DPR, DPR);
@@ -276,8 +401,7 @@ export default function Editor() {
     if (theme.gradient) {
       const parts = theme.gradient.match(/linear-gradient\(([^,]+),(.*)\)/s);
       if (parts) {
-        const angle = parts[1].trim();
-        const deg = parseFloat(angle) || 135;
+        const deg = parseFloat(parts[1]) || 135;
         const rad = (deg - 90) * Math.PI / 180;
         const cx = cardW / 2, cy = cardH / 2;
         const len = Math.sqrt(cardW ** 2 + cardH ** 2) / 2;
@@ -292,9 +416,6 @@ export default function Editor() {
     } else { ctx.fillStyle = theme.bg; }
     ctx.fillRect(0, 0, cardW, cardH);
 
-    // AI CSS Gradient background removed
-
-    // Pattern
     if (pattern !== "none") drawPattern(ctx, pattern, cardW, cardH, theme.text);
 
     // Background image
@@ -307,15 +428,35 @@ export default function Editor() {
           if (bgBlur) ctx.filter = "blur(8px)";
           ctx.globalAlpha = bgOpacity;
           ctx.drawImage(img, 0, 0, cardW, cardH);
-          ctx.restore();
-          res();
+          ctx.restore(); res();
         };
         img.onerror = () => res();
         img.src = bgImage;
       });
     }
 
-    // Watermark — full background cover
+    // Main photo
+    if (photoImage) {
+      await new Promise<void>(res => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          ctx.save();
+          ctx.globalAlpha = photoOpacity / 100;
+          const imgAspect = img.naturalWidth / img.naturalHeight;
+          const cardAspect = cardW / cardH;
+          let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+          if (imgAspect > cardAspect) { sw = img.naturalHeight * cardAspect; sx = (img.naturalWidth - sw) / 2; }
+          else { sh = img.naturalWidth / cardAspect; sy = (img.naturalHeight - sh) / 2; }
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cardW, cardH);
+          ctx.restore(); res();
+        };
+        img.onerror = () => res();
+        img.src = photoImage;
+      });
+    }
+
+    // Watermark
     if (showWatermark) {
       await new Promise<void>(res => {
         const img = new Image();
@@ -323,20 +464,13 @@ export default function Editor() {
         img.onload = () => {
           ctx.save();
           ctx.globalAlpha = watermarkOpacity / 100;
-          // Cover the entire card
           const imgAspect = img.naturalWidth / img.naturalHeight;
           const cardAspect = cardW / cardH;
           let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-          if (imgAspect > cardAspect) {
-            sw = img.naturalHeight * cardAspect;
-            sx = (img.naturalWidth - sw) / 2;
-          } else {
-            sh = img.naturalWidth / cardAspect;
-            sy = (img.naturalHeight - sh) / 2;
-          }
+          if (imgAspect > cardAspect) { sw = img.naturalHeight * cardAspect; sx = (img.naturalWidth - sw) / 2; }
+          else { sh = img.naturalWidth / cardAspect; sy = (img.naturalHeight - sh) / 2; }
           ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cardW, cardH);
-          ctx.restore();
-          res();
+          ctx.restore(); res();
         };
         img.onerror = () => res();
         img.src = AUTHOR_PHOTO;
@@ -346,155 +480,129 @@ export default function Editor() {
     // Frame
     ctx.strokeStyle = theme.border;
     ctx.lineWidth = 1.5;
-    if (frame === "inner-border") {
-      ctx.save(); ctx.globalAlpha = 0.5;
-      ctx.strokeRect(16, 16, cardW - 32, cardH - 32);
-      ctx.restore();
-    } else if (frame === "corner") {
-      const cs = 50;
+    if (frame === "inner-border") { ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeRect(16, 16, cardW - 32, cardH - 32); ctx.restore(); }
+    if (frame === "corner") {
+      const corners = [[16, 16, 1, 1], [cardW - 16, 16, -1, 1], [16, cardH - 16, 1, -1], [cardW - 16, cardH - 16, -1, -1]];
       ctx.save(); ctx.globalAlpha = 0.7;
-      [{ x: 16, y: 16, dx: 1, dy: 1 }, { x: cardW - 16, y: 16, dx: -1, dy: 1 },
-       { x: 16, y: cardH - 16, dx: 1, dy: -1 }, { x: cardW - 16, y: cardH - 16, dx: -1, dy: -1 }
-      ].forEach(({ x, y, dx, dy }) => {
-        ctx.beginPath(); ctx.moveTo(x + cs * dx, y); ctx.lineTo(x, y); ctx.lineTo(x, y + cs * dy); ctx.stroke();
-      });
-      ctx.restore();
-    } else if (frame === "double-border") {
-      ctx.save();
-      ctx.globalAlpha = 0.5; ctx.strokeRect(10, 10, cardW - 20, cardH - 20);
-      ctx.globalAlpha = 0.3; ctx.strokeRect(22, 22, cardW - 44, cardH - 44);
-      ctx.restore();
-    } else if (frame === "left-bar") {
-      ctx.save(); ctx.globalAlpha = 0.8; ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.moveTo(padding / 2, padding); ctx.lineTo(padding / 2, cardH - padding); ctx.stroke();
-      ctx.restore();
-    } else if (frame === "shadow-frame") {
-      ctx.save();
-      ctx.shadowColor = theme.border; ctx.shadowBlur = 30;
-      ctx.globalAlpha = 0.4;
-      ctx.strokeRect(20, 20, cardW - 40, cardH - 40);
-      ctx.restore();
-    } else if (frame === "ornate") {
-      ctx.save(); ctx.globalAlpha = 0.55;
-      ctx.strokeRect(12, 12, cardW - 24, cardH - 24);
-      ctx.globalAlpha = 0.25;
-      ctx.strokeRect(20, 20, cardW - 40, cardH - 40);
-      // corner diamonds
-      const pts = [[24, 24], [cardW - 24, 24], [24, cardH - 24], [cardW - 24, cardH - 24]];
-      ctx.globalAlpha = 0.5;
-      pts.forEach(([px, py]) => {
-        ctx.beginPath(); ctx.moveTo(px, py - 8); ctx.lineTo(px + 8, py);
-        ctx.lineTo(px, py + 8); ctx.lineTo(px - 8, py); ctx.closePath(); ctx.stroke();
-      });
-      ctx.restore();
-    } else if (frame === "dot-corner") {
-      ctx.save(); ctx.globalAlpha = 0.6;
-      const dotPts = [[20, 20], [cardW - 20, 20], [20, cardH - 20], [cardW - 20, cardH - 20]];
-      dotPts.forEach(([px, py]) => {
-        for (let d = 0; d < 3; d++) {
-          ctx.beginPath(); ctx.arc(px + d * 8 * (px < cardW / 2 ? 1 : -1), py, 2, 0, Math.PI * 2);
-          ctx.fillStyle = theme.border; ctx.fill();
-          ctx.beginPath(); ctx.arc(px, py + d * 8 * (py < cardH / 2 ? 1 : -1), 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      corners.forEach(([x, y, dx, dy]) => {
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 50 * dx, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 50 * dy); ctx.stroke();
       });
       ctx.restore();
     }
+    if (frame === "double-border") {
+      ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeRect(10, 10, cardW - 20, cardH - 20); ctx.globalAlpha = 0.3; ctx.strokeRect(22, 22, cardW - 44, cardH - 44); ctx.restore();
+    }
+    if (frame === "left-bar") { ctx.save(); ctx.globalAlpha = 0.8; ctx.fillStyle = theme.border; ctx.fillRect(padding / 2 - 2, padding, 5, cardH - padding * 2); ctx.restore(); }
+    if (frame === "shadow-frame") { ctx.save(); ctx.globalAlpha = 0.4; ctx.shadowColor = theme.border; ctx.shadowBlur = 30; ctx.strokeRect(20, 20, cardW - 40, cardH - 40); ctx.restore(); }
+    if (frame === "ornate") {
+      ctx.save(); ctx.globalAlpha = 0.55; ctx.strokeRect(12, 12, cardW - 24, cardH - 24);
+      ctx.globalAlpha = 0.25; ctx.strokeRect(20, 20, cardW - 40, cardH - 40); ctx.restore();
+    }
 
-    // Text
-    const titleFF  = `${titleFontKey}, 'Tiro Bangla', serif`;
-    const bodyFF   = `${bodyFontKey}, 'Tiro Bangla', serif`;
-    const authorFF = `${authorFontKey}, 'Tiro Bangla', serif`;
-    ctx.fillStyle = theme.text;
-    const maxW = cardW - padding * 2;
-    const tx = align === "center" ? cardW / 2 : align === "right" ? cardW - padding : padding;
-    ctx.textAlign = align;
-    if (textShadow) { ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
-    if (textGlow)   { ctx.shadowColor = theme.border; ctx.shadowBlur = 20; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; }
+    // Main text content
+    const textShadowStyle = textShadow ? { shadow: true, shadowColor: "rgba(0,0,0,0.5)" } : textGlow ? { glow: true, glowColor: theme.border } : {};
+    const applyTextEffect = () => {
+      if (textShadow) { ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
+      else if (textGlow) { ctx.shadowColor = theme.border; ctx.shadowBlur = 20; }
+      else { ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; }
+    };
+    const clearEffect = () => { ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; };
 
-    // Measure total height
-    let totalH = 0;
-    if (sticker) totalH += 80;
+    const pad = padding;
+    const maxW = cardW - pad * 2;
+    let y = cardH * 0.18;
+
     if (showTitle && title) {
-      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${titleFF}`;
-      totalH += wrapText(ctx, title, maxW).length * titleSize * 1.3 + 20;
-    }
-    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${bodyFF}`;
-    const bLines = wrapText(ctx, body, maxW);
-    bLines.forEach(l => { totalH += l === "" ? bodySize * 0.6 : bodySize * lineH; });
-    if (showAuthor && author) totalH += authorSize + 28;
-
-    let cy = Math.max(padding, (cardH - totalH) / 2);
-
-    // Sticker
-    if (sticker) {
-      ctx.font = "60px serif";
-      ctx.textAlign = "center";
-      ctx.fillText(sticker, cardW / 2, cy + 60);
+      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${FONT_CSS[titleFontKey] || "'Tiro Bangla', serif"}`;
+      ctx.fillStyle = theme.text;
       ctx.textAlign = align;
-      cy += 80;
+      applyTextEffect();
+      const lines = wrapText(ctx, title, maxW);
+      const xPos = align === "center" ? cardW / 2 : align === "right" ? cardW - pad : pad;
+      lines.forEach(line => { ctx.fillText(line, xPos, y); y += titleSize * 1.3; });
+      y += 20;
+      clearEffect();
     }
 
-    // Title (NO divider line)
-    if (showTitle && title) {
-      ctx.font = `${italicTitle ? "italic " : ""}bold ${titleSize}px ${titleFF}`;
-      const tLines = wrapText(ctx, title, maxW);
-      for (const line of tLines) {
-        ctx.fillText(line, tx, cy + titleSize);
-        cy += titleSize * 1.3;
-      }
-      cy += 20;
-    }
+    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${FONT_CSS[bodyFontKey] || "'Tiro Bangla', serif"}`;
+    ctx.fillStyle = theme.text;
+    ctx.textAlign = align;
+    applyTextEffect();
+    const bodyLines = wrapText(ctx, body, maxW);
+    const xPos = align === "center" ? cardW / 2 : align === "right" ? cardW - pad : pad;
+    bodyLines.forEach(line => { ctx.fillText(line, xPos, y); y += bodySize * lineH; });
+    clearEffect();
 
-    // Body
-    ctx.font = `${boldBody ? "bold " : ""}${bodySize}px ${bodyFF}`;
-    for (const line of bLines) {
-      if (line === "") { cy += bodySize * 0.6; continue; }
-      ctx.fillText(line, tx, cy + bodySize);
-      cy += bodySize * lineH;
-    }
-
-    // Author (NO divider line)
     if (showAuthor && author) {
-      cy += 16;
-      ctx.save();
+      y += 28;
+      ctx.font = `italic ${authorSize}px ${FONT_CSS[authorFontKey] || "'Tiro Bangla', serif"}`;
+      ctx.fillStyle = theme.text;
       ctx.globalAlpha = authorOpacity / 100;
-      ctx.font = `italic ${authorSize}px ${authorFF}`;
-      ctx.fillText(author, tx, cy + authorSize);
-      ctx.restore();
+      ctx.textAlign = align;
+      applyTextEffect();
+      wrapText(ctx, author, maxW).forEach(line => { ctx.fillText(line, xPos, y); y += authorSize * 1.4; });
+      ctx.globalAlpha = 1;
+      clearEffect();
+    }
+
+    // Draggable layers
+    for (const layer of layers) {
+      if (layer.type === "sticker") {
+        ctx.font = `${layer.size}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(layer.emoji, layer.x * cardW, layer.y * cardH);
+        ctx.textBaseline = "alphabetic";
+      } else if (layer.type === "text") {
+        const tl = layer as TextLayer;
+        await ensureFontLoaded(tl.fontKey);
+        ctx.font = `${tl.italic ? "italic " : ""}${tl.bold ? "bold " : ""}${tl.fontSize}px ${FONT_CSS[tl.fontKey] || "'Tiro Bangla', serif"}`;
+        ctx.fillStyle = tl.color;
+        ctx.textAlign = tl.align;
+        if (tl.shadow) { ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
+        const tlX = tl.align === "center" ? tl.x * cardW : tl.align === "right" ? tl.x * cardW + 200 : tl.x * cardW;
+        const tlLines = wrapText(ctx, tl.text, 600);
+        tlLines.forEach((line, li) => ctx.fillText(line, tlX, tl.y * cardH + li * tl.fontSize * 1.4));
+        clearEffect();
+      }
     }
 
     return canvas;
-  }, [theme, fontKey, titleFontKey, bodyFontKey, authorFontKey, cardW, cardH, title, body, author, showTitle, showAuthor,
-      titleSize, bodySize, authorSize, lineH, align, padding, letterSp, frame, pattern,
-      bgImage, bgOpacity, bgBlur, textShadow, textGlow, boldBody, italicTitle,
-      authorOpacity, sticker, showWatermark, watermarkOpacity]);
+  }, [theme, cardW, cardH, pattern, bgImage, bgOpacity, bgBlur, photoImage, photoOpacity, showWatermark, watermarkOpacity, frame, title, body, author, showTitle, showAuthor, titleFontKey, bodyFontKey, authorFontKey, titleSize, bodySize, authorSize, lineH, align, padding, letterSp, textShadow, textGlow, boldBody, italicTitle, authorOpacity, layers]);
 
-  const handleDownload = useCallback(async () => {
+  const handleDownload = async () => {
     setDownloading(true);
     try {
       const canvas = await buildCanvas();
       const a = document.createElement("a");
-      a.download = `${title || "ডিজাইন"}.png`;
       a.href = canvas.toDataURL("image/png");
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    } catch (e) { console.error(e); alert("ডাউনলোড করতে সমস্যা হয়েছে।"); }
-    setDownloading(false);
-  }, [buildCanvas, title]);
+      a.download = "mahbub-sardar-sabuj-design.png";
+      a.click();
+    } finally { setDownloading(false); }
+  };
 
-  const handleCopyToClipboard = useCallback(async () => {
+  const handleCopyToClipboard = async () => {
     try {
       const canvas = await buildCanvas();
-      canvas.toBlob(async (blob) => {
+      canvas.toBlob(async blob => {
         if (!blob) return;
         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }, "image/png");
-    } catch { alert("ক্লিপবোর্ডে কপি করা যায়নি।"); }
-  }, [buildCanvas]);
+        setTimeout(() => setCopied(false), 2500);
+      });
+    } catch { /* ignore */ }
+  };
 
-  const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => setPhotoImage(ev.target?.result as string);
+    r.readAsDataURL(f);
+  };
+
+  const onBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
@@ -503,17 +611,17 @@ export default function Editor() {
   };
 
   // ── Sub-components ────────────────────────────────────────────────────────
-  const TabBtn = ({ id, label, emoji }: { id: typeof tab; label: string; emoji: string }) => (
+  const TabBtn = ({ id, label, icon }: { id: typeof tab; label: string; icon: string }) => (
     <button onClick={() => setTab(id)}
-      className={`flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl text-xs font-semibold transition-all flex-1 ${
+      className={`flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl text-xs font-semibold transition-all flex-1 min-w-0 ${
         tab === id ? "bg-[#D4A843] text-black" : "text-gray-400 hover:text-white hover:bg-white/5"
       }`}>
-      <span className="text-base leading-none">{emoji}</span>
-      <span className="text-[10px]">{label}</span>
+      <span className="text-base leading-none">{icon}</span>
+      <span className="text-[9px] leading-tight truncate w-full text-center">{label}</span>
     </button>
   );
 
-  const Slider = ({ label, val, set, min, max, step = 1, unit = "px" }: {
+  const Slider = ({ label, val, set, min, max, step = 1, unit = "" }: {
     label: string; val: number; set: (v: number) => void;
     min: number; max: number; step?: number; unit?: string;
   }) => (
@@ -538,10 +646,10 @@ export default function Editor() {
   return (
     <div className="min-h-screen bg-[#060c18]">
       <Seo title="ডিজাইন ফরম্যাট | মাহবুব সরদার সবুজ"
-        description="বাংলা লেখার কার্ড ডিজাইন করুন ও PNG ডাউনলোড করুন" />
+        description="InShot-স্টাইল বাংলা লেখার কার্ড ডিজাইন করুন ও PNG ডাউনলোড করুন" />
       <Navbar />
 
-      <div className="pt-20 pb-12 px-3 md:px-5">
+      <div className="pt-20 pb-16 px-3 md:px-5">
         <div className="max-w-[1440px] mx-auto">
 
           {/* Header */}
@@ -552,27 +660,97 @@ export default function Editor() {
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">
               আপনার লেখা <span className="text-[#D4A843]">সুন্দরভাবে</span> সাজান
             </h1>
-            <p className="text-gray-400 text-sm md:text-base">ফন্ট · থিম · ফ্রেম · ইফেক্ট বেছে নিন — এক ক্লিকে PNG ডাউনলোড করুন</p>
+            <p className="text-gray-400 text-sm md:text-base">ছবি আপলোড · ফিল্টার · লেখা যোগ করুন · স্টিকার · ডাউনলোড</p>
           </div>
 
           <div className="flex flex-col xl:flex-row gap-4">
 
             {/* ══ LEFT PANEL ══ */}
-            <div className="xl:w-[420px] flex-shrink-0 flex flex-col gap-3">
+            <div className="xl:w-[440px] flex-shrink-0 flex flex-col gap-3">
 
               {/* Tab Bar */}
-              <div className="bg-[#0f1c2e] rounded-2xl p-1.5 border border-[#1e3050] flex gap-1">
-                <TabBtn id="content" label="লেখা"    emoji="✏️" />
-                <TabBtn id="design"  label="ডিজাইন"  emoji="🎨" />
-                <TabBtn id="typo"    label="টাইপো"   emoji="🔤" />
-                <TabBtn id="bg"      label="পটভূমি"  emoji="🖼️" />
-                <TabBtn id="extras"  label="এক্সট্রা" emoji="✨" />
+              <div className="bg-[#0f1c2e] rounded-2xl p-1.5 border border-[#1e3050] flex gap-1 overflow-x-auto">
+                <TabBtn id="photo"   label="ছবি"      icon="🖼️" />
+                <TabBtn id="text"    label="লেখা"     icon="✏️" />
+                <TabBtn id="layers"  label="লেয়ার"    icon="📐" />
+                <TabBtn id="design"  label="ডিজাইন"   icon="🎨" />
+                <TabBtn id="typo"    label="টাইপো"    icon="🔤" />
+                <TabBtn id="bg"      label="পটভূমি"   icon="🌅" />
+                <TabBtn id="extras"  label="এক্সট্রা"  icon="✨" />
               </div>
 
-              {/* ── Content Tab ── */}
-              {tab === "content" && (
+              {/* ── Photo Tab ── */}
+              {tab === "photo" && (
+                <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-5">
+                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">ছবি আপলোড ও ফিল্টার</h3>
+
+                  {/* Upload */}
+                  <div>
+                    <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={onPhotoUpload} />
+                    <button onClick={() => photoRef.current?.click()}
+                      className="w-full py-8 border-2 border-dashed border-[#D4A843]/40 rounded-2xl text-center hover:border-[#D4A843] hover:bg-[#D4A843]/5 transition-all group">
+                      {photoImage ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <img src={photoImage} className="w-20 h-20 object-cover rounded-xl mx-auto" />
+                          <span className="text-[#D4A843] text-xs font-semibold">ছবি পরিবর্তন করুন</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="text-4xl">📷</span>
+                          <span className="text-gray-400 text-sm">ছবি আপলোড করুন</span>
+                          <span className="text-gray-600 text-xs">JPG, PNG, WEBP</span>
+                        </div>
+                      )}
+                    </button>
+                    {photoImage && (
+                      <button onClick={() => setPhotoImage(null)}
+                        className="mt-2 w-full py-2 text-red-400 text-xs border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-all">
+                        ছবি সরিয়ে দিন
+                      </button>
+                    )}
+                  </div>
+
+                  {photoImage && (
+                    <>
+                      {/* Filter Presets */}
+                      <div>
+                        <label className="text-gray-400 text-xs font-semibold block mb-2">ফিল্টার প্রিসেট</label>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {FILTER_PRESETS.map(fp => (
+                            <button key={fp.name} onClick={() => setFilterPreset(fp.name)}
+                              className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-xs transition-all ${
+                                filterPreset === fp.name
+                                  ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                  : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                              }`}>
+                              <div className="w-10 h-10 rounded-lg overflow-hidden">
+                                <img src={photoImage} className="w-full h-full object-cover"
+                                  style={{ filter: fp.filter === "none" ? undefined : fp.filter }} />
+                              </div>
+                              <span className="text-[9px] leading-tight text-center">{fp.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Manual adjustments */}
+                      <div className="space-y-3">
+                        <label className="text-gray-400 text-xs font-semibold block">ম্যানুয়াল অ্যাডজাস্টমেন্ট</label>
+                        <Slider label="উজ্জ্বলতা" val={brightness} set={setBrightness} min={0} max={200} unit="%" />
+                        <Slider label="কনট্রাস্ট"  val={contrast}   set={setContrast}   min={0} max={200} unit="%" />
+                        <Slider label="স্যাচুরেশন" val={saturation}  set={setSaturation}  min={0} max={200} unit="%" />
+                        <Slider label="ব্লার"       val={blur}        set={setBlur}        min={0} max={20}  unit="px" step={0.5} />
+                        <Slider label="অপাসিটি"    val={photoOpacity} set={setPhotoOpacity} min={0} max={100} unit="%" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* ── Text Tab ── */}
+              {tab === "text" && (
                 <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
-                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">লেখার বিষয়বস্তু</h3>
+                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">মূল লেখা</h3>
 
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={showTitle} onChange={e => setShowTitle(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
@@ -585,7 +763,7 @@ export default function Editor() {
 
                   <div>
                     <label className="text-gray-300 text-sm font-medium block mb-1.5">মূল লেখা</label>
-                    <textarea value={body} onChange={e => setBody(e.target.value)} rows={7}
+                    <textarea value={body} onChange={e => setBody(e.target.value)} rows={6}
                       placeholder="কবিতা, উক্তি বা মনের কথা..."
                       className="w-full bg-[#0a1525] text-white border border-[#1e3050] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#D4A843] resize-y transition-colors leading-relaxed" />
                   </div>
@@ -598,6 +776,142 @@ export default function Editor() {
                     <input value={author} onChange={e => setAuthor(e.target.value)} placeholder="লেখকের নাম..."
                       className="w-full bg-[#0a1525] text-white border border-[#1e3050] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#D4A843] transition-colors" />
                   )}
+
+                  {/* Add floating text layer */}
+                  <div className="pt-2 border-t border-[#1e3050]">
+                    <p className="text-gray-500 text-xs mb-2">ক্যানভাসে ড্র্যাগযোগ্য লেখা যোগ করুন:</p>
+                    <button onClick={addTextLayer}
+                      className="w-full py-2.5 bg-[#D4A843]/10 hover:bg-[#D4A843]/20 border border-[#D4A843]/30 hover:border-[#D4A843] text-[#D4A843] font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+                      <span className="text-lg">➕</span> নতুন টেক্সট লেয়ার যোগ করুন
+                    </button>
+                  </div>
+
+                  {/* Templates */}
+                  <div className="pt-2 border-t border-[#1e3050]">
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">টেমপ্লেট</label>
+                    <div className="space-y-1.5">
+                      {TEMPLATES.map(tmpl => (
+                        <button key={tmpl.label}
+                          onClick={() => { setTitle(tmpl.title); setBody(tmpl.body); setAuthor(tmpl.author); setShowTitle(true); setShowAuthor(true); }}
+                          className="w-full text-left px-3 py-2.5 bg-[#0a1525] hover:bg-[#1e3050] text-gray-300 rounded-xl text-xs border border-[#1e3050] hover:border-[#D4A843]/40 transition-all">
+                          📝 {tmpl.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Layers Tab ── */}
+              {tab === "layers" && (
+                <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">লেয়ার ও স্টিকার</h3>
+                    <button onClick={addTextLayer}
+                      className="text-xs bg-[#D4A843]/10 border border-[#D4A843]/30 text-[#D4A843] px-3 py-1.5 rounded-lg hover:bg-[#D4A843]/20 transition-all">
+                      + টেক্সট
+                    </button>
+                  </div>
+
+                  {/* Sticker picker */}
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">স্টিকার যোগ করুন</label>
+                    <div className="grid grid-cols-8 gap-1 max-h-32 overflow-y-auto">
+                      {STICKER_LIST.map(emoji => (
+                        <button key={emoji} onClick={() => addStickerLayer(emoji)}
+                          className="text-xl p-1 rounded-lg hover:bg-[#D4A843]/10 transition-all text-center leading-none">
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Layer list */}
+                  {layers.length > 0 && (
+                    <div>
+                      <label className="text-gray-400 text-xs font-semibold block mb-2">বিদ্যমান লেয়ার ({layers.length}টি)</label>
+                      <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                        {layers.map(layer => (
+                          <div key={layer.id}
+                            onClick={() => setSelectedLayerId(layer.id)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer transition-all ${
+                              selectedLayerId === layer.id
+                                ? "border-[#D4A843] bg-[#D4A843]/10"
+                                : "border-[#1e3050] hover:border-[#D4A843]/40"
+                            }`}>
+                            <span className="text-lg">{layer.type === "sticker" ? (layer as StickerLayer).emoji : "✏️"}</span>
+                            <span className="text-gray-300 text-xs flex-1 truncate">
+                              {layer.type === "sticker" ? "স্টিকার" : (layer as TextLayer).text.slice(0, 20)}
+                            </span>
+                            <button onClick={e => { e.stopPropagation(); deleteLayer(layer.id); }}
+                              className="text-red-400 hover:text-red-300 text-xs px-1">✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Selected layer editor */}
+                  {selectedLayer && selectedLayer.type === "text" && (
+                    <div className="space-y-3 pt-3 border-t border-[#1e3050]">
+                      <label className="text-[#D4A843] text-xs font-bold">নির্বাচিত টেক্সট লেয়ার</label>
+                      <textarea
+                        value={(selectedLayer as TextLayer).text}
+                        onChange={e => updateLayer(selectedLayer.id, { text: e.target.value })}
+                        rows={3}
+                        className="w-full bg-[#0a1525] text-white border border-[#1e3050] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843] resize-none"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-gray-500 text-xs mb-1 block">রঙ</label>
+                          <input type="color" value={(selectedLayer as TextLayer).color}
+                            onChange={e => updateLayer(selectedLayer.id, { color: e.target.value })}
+                            className="w-full h-9 rounded-lg border-0 cursor-pointer bg-transparent" />
+                        </div>
+                        <div>
+                          <label className="text-gray-500 text-xs mb-1 block">ফন্ট সাইজ</label>
+                          <input type="number" min={12} max={200} value={(selectedLayer as TextLayer).fontSize}
+                            onChange={e => updateLayer(selectedLayer.id, { fontSize: +e.target.value })}
+                            className="w-full bg-[#0a1525] text-white border border-[#1e3050] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843]" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-gray-500 text-xs mb-1.5 block">ফন্ট</label>
+                        <div className="space-y-1 max-h-28 overflow-y-auto">
+                          {FONTS.map(f => (
+                            <button key={f.value} onClick={() => updateLayer(selectedLayer.id, { fontKey: f.value })}
+                              className={`w-full text-left px-3 py-1.5 rounded-lg border text-xs transition-all ${
+                                (selectedLayer as TextLayer).fontKey === f.value
+                                  ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                  : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                              }`} style={{ fontFamily: FONT_CSS[f.value] }}>
+                              {f.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        {[["B", "bold"], ["I", "italic"], ["S", "shadow"]].map(([lbl, key]) => (
+                          <button key={key}
+                            onClick={() => updateLayer(selectedLayer.id, { [key]: !(selectedLayer as TextLayer)[key as keyof TextLayer] })}
+                            className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
+                              (selectedLayer as TextLayer)[key as keyof TextLayer]
+                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                : "border-[#1e3050] text-gray-400"
+                            }`}>
+                            {lbl}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedLayer && selectedLayer.type === "sticker" && (
+                    <div className="space-y-3 pt-3 border-t border-[#1e3050]">
+                      <label className="text-[#D4A843] text-xs font-bold">নির্বাচিত স্টিকার: {(selectedLayer as StickerLayer).emoji}</label>
+                      <Slider label="আকার" val={(selectedLayer as StickerLayer).size} set={v => updateLayer(selectedLayer.id, { size: v })} min={20} max={300} unit="px" />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -608,7 +922,7 @@ export default function Editor() {
 
                   {/* Themes */}
                   <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">রঙের থিম ({THEMES.length}টি)</label>
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">রঙের থিম</label>
                     <div className="grid grid-cols-2 gap-1.5 max-h-52 overflow-y-auto pr-1">
                       {THEMES.map((t, i) => (
                         <button key={t.name} onClick={() => { setThemeIdx(i); setUseCustomColors(false); }}
@@ -644,81 +958,26 @@ export default function Editor() {
                     )}
                   </div>
 
-                  {/* Per-element Fonts */}
-                  <div className="space-y-4">
-                    <label className="text-gray-400 text-xs font-semibold block">ফন্ট (আলাদা আলাদা)</label>
-
-                    {/* Quick apply all */}
-                    <div>
-                      <p className="text-gray-600 text-xs mb-1.5">সবকিছুতে এক ফন্ট</p>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                        {FONTS.map(f => (
-                          <button key={f.value} onClick={() => { setFontKey(f.value); setTitleFontKey(f.value); setBodyFontKey(f.value); setAuthorFontKey(f.value); }}
-                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
-                              fontKey === f.value
-                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                            }`}
-                            style={{ fontFamily: FONT_CSS[f.value] }}>
-                            {f.name}
-                          </button>
-                        ))}
+                  {/* Fonts */}
+                  <div className="space-y-3">
+                    <label className="text-gray-400 text-xs font-semibold block">ফন্ট</label>
+                    {[["শিরোনাম", titleFontKey, setTitleFontKey], ["মূল লেখা", bodyFontKey, setBodyFontKey], ["লেখক নাম", authorFontKey, setAuthorFontKey]].map(([lbl, val, set]) => (
+                      <div key={lbl as string}>
+                        <p className="text-[#D4A843] text-xs font-semibold mb-1">{lbl as string}</p>
+                        <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
+                          {FONTS.map(f => (
+                            <button key={f.value} onClick={() => (set as (v: string) => void)(f.value)}
+                              className={`w-full text-left px-3 py-1.5 rounded-xl border text-xs transition-all ${
+                                val === f.value
+                                  ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
+                                  : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                              }`} style={{ fontFamily: FONT_CSS[f.value] }}>
+                              {f.name}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Title font */}
-                    <div>
-                      <p className="text-[#D4A843] text-xs font-semibold mb-1.5">শিরোনামের ফন্ট</p>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                        {FONTS.map(f => (
-                          <button key={f.value} onClick={() => setTitleFontKey(f.value)}
-                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
-                              titleFontKey === f.value
-                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                            }`}
-                            style={{ fontFamily: FONT_CSS[f.value] }}>
-                            {f.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Body font */}
-                    <div>
-                      <p className="text-[#D4A843] text-xs font-semibold mb-1.5">মূল লেখার ফন্ট</p>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                        {FONTS.map(f => (
-                          <button key={f.value} onClick={() => setBodyFontKey(f.value)}
-                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
-                              bodyFontKey === f.value
-                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                            }`}
-                            style={{ fontFamily: FONT_CSS[f.value] }}>
-                            {f.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Author font */}
-                    <div>
-                      <p className="text-[#D4A843] text-xs font-semibold mb-1.5">লেখক নামের ফন্ট</p>
-                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
-                        {FONTS.map(f => (
-                          <button key={f.value} onClick={() => setAuthorFontKey(f.value)}
-                            className={`w-full text-left px-3 py-2 rounded-xl border text-sm transition-all ${
-                              authorFontKey === f.value
-                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                            }`}
-                            style={{ fontFamily: FONT_CSS[f.value] }}>
-                            {f.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
                   {/* Size */}
@@ -727,12 +986,12 @@ export default function Editor() {
                     <div className="grid grid-cols-2 gap-1.5">
                       {SIZES.map((s, i) => (
                         <button key={s.name} onClick={() => setSizeIdx(i)}
-                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
+                          className={`px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
                             sizeIdx === i
                               ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
                               : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
                           }`}>
-                          <span>{s.icon}</span> {s.name}
+                          {s.name}
                         </button>
                       ))}
                     </div>
@@ -749,27 +1008,27 @@ export default function Editor() {
                     )}
                   </div>
 
-                  {/* Frame */}
+                  {/* Frames */}
                   <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">ফ্রেম স্টাইল</label>
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">ফ্রেম</label>
                     <div className="grid grid-cols-2 gap-1.5">
-                      {FRAMES.map(d => (
-                        <button key={d.value} onClick={() => setFrame(d.value)}
+                      {FRAMES.map(f => (
+                        <button key={f.value} onClick={() => setFrame(f.value)}
                           className={`px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
-                            frame === d.value
+                            frame === f.value
                               ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
                               : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
                           }`}>
-                          {d.name}
+                          {f.name}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Pattern */}
+                  {/* Patterns */}
                   <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">প্যাটার্ন ব্যাকগ্রাউন্ড</label>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">প্যাটার্ন</label>
+                    <div className="grid grid-cols-2 gap-1.5">
                       {PATTERNS.map(p => (
                         <button key={p.value} onClick={() => setPattern(p.value)}
                           className={`px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
@@ -789,41 +1048,39 @@ export default function Editor() {
               {tab === "typo" && (
                 <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
                   <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">টাইপোগ্রাফি</h3>
-                  <Slider label="শিরোনামের আকার"    val={titleSize}   set={setTitleSize}   min={24} max={120} />
-                  <Slider label="লেখার আকার"        val={bodySize}    set={setBodySize}    min={16} max={80} />
-                  <Slider label="লেখকের নামের আকার" val={authorSize}  set={setAuthorSize}  min={14} max={60} />
-                  <Slider label="লেখকের নামের স্বচ্ছতা" val={authorOpacity} set={setAuthorOpacity} min={20} max={100} unit="%" />
-                  <Slider label="লাইনের উচ্চতা"    val={lineH}       set={setLineH}       min={1.2} max={3.0} step={0.1} unit="x" />
-                  <Slider label="প্যাডিং"           val={padding}     set={setPadding}     min={20} max={150} />
-                  <Slider label="অক্ষর ব্যবধান"     val={letterSp}    set={setLetterSp}    min={-1} max={5} step={0.1} />
+                  <Slider label="শিরোনাম সাইজ"   val={titleSize}   set={setTitleSize}   min={20} max={120} />
+                  <Slider label="মূল লেখা সাইজ"  val={bodySize}    set={setBodySize}    min={16} max={80}  />
+                  <Slider label="লেখক নাম সাইজ"  val={authorSize}  set={setAuthorSize}  min={12} max={60}  />
+                  <Slider label="লাইন উচ্চতা"    val={lineH}       set={setLineH}       min={1}  max={3.5} step={0.05} unit="x" />
+                  <Slider label="প্যাডিং"         val={padding}     set={setPadding}     min={20} max={160} />
+                  <Slider label="অক্ষর ব্যবধান"   val={letterSp}    set={setLetterSp}    min={0}  max={8}   step={0.1} unit="px" />
+                  <Slider label="লেখক অপাসিটি"   val={authorOpacity} set={setAuthorOpacity} min={10} max={100} unit="%" />
 
+                  {/* Alignment */}
                   <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">টেক্সট সারবদ্ধতা</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">সারিবদ্ধতা</label>
+                    <div className="flex gap-2">
                       {(["left", "center", "right"] as const).map(a => (
                         <button key={a} onClick={() => setAlign(a)}
-                          className={`py-2 rounded-xl border text-xs font-medium transition-all ${
-                            align === a
-                              ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                              : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
+                          className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all ${
+                            align === a ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]" : "border-[#1e3050] text-gray-400"
                           }`}>
-                          {a === "left" ? "⬅ বাম" : a === "center" ? "↔ মাঝ" : "➡ ডান"}
+                          {a === "left" ? "বাম" : a === "center" ? "মাঝ" : "ডান"}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Toggles */}
+                  <div className="space-y-2.5">
                     {[
                       ["টেক্সট শ্যাডো", textShadow, setTextShadow],
                       ["টেক্সট গ্লো",   textGlow,   setTextGlow],
-                      ["বোল্ড লেখা",    boldBody,   setBoldBody],
+                      ["বোল্ড বডি",     boldBody,   setBoldBody],
                       ["ইটালিক শিরোনাম", italicTitle, setItalicTitle],
                     ].map(([lbl, val, set]) => (
                       <label key={lbl as string} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={val as boolean}
-                          onChange={e => (set as (v: boolean) => void)(e.target.checked)}
-                          className="w-4 h-4 accent-[#D4A843]" />
+                        <input type="checkbox" checked={val as boolean} onChange={e => (set as (v: boolean) => void)(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
                         <span className="text-gray-300 text-sm">{lbl as string}</span>
                       </label>
                     ))}
@@ -834,41 +1091,33 @@ export default function Editor() {
               {/* ── Background Tab ── */}
               {tab === "bg" && (
                 <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
-                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">পটভূমি ও ওয়াটারমার্ক</h3>
+                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">পটভূমি</h3>
 
-                  {/* Manual upload */}
-                  <div>
-                    <p className="text-gray-500 text-xs mb-2">অথবা নিজে ছবি আপলোড করুন</p>
-                    <button onClick={() => fileRef.current?.click()}
-                      className="w-full py-3 bg-[#0a1525] hover:bg-[#0f1c2e] text-gray-300 rounded-2xl border-2 border-dashed border-[#1e3050] hover:border-[#D4A843] transition-all text-sm">
-                      {bgImage && !bgImage.includes("pollinations") ? "✓ ছবি নির্বাচিত — পরিবর্তন করুন" : "📁 পটভূমির ছবি আপলোড করুন"}
-                    </button>
-                    <input ref={fileRef} type="file" accept="image/*" onChange={handleBgUpload} className="hidden" />
-                  </div>
-
+                  <input ref={bgFileRef} type="file" accept="image/*" className="hidden" onChange={onBgUpload} />
+                  <button onClick={() => bgFileRef.current?.click()}
+                    className="w-full py-3 border border-dashed border-[#D4A843]/40 rounded-xl text-center hover:border-[#D4A843] hover:bg-[#D4A843]/5 transition-all text-gray-400 text-sm">
+                    {bgImage ? "✅ পটভূমি ছবি পরিবর্তন করুন" : "📁 পটভূমি ছবি আপলোড করুন"}
+                  </button>
                   {bgImage && (
                     <>
-                      <Slider label="ছবির স্বচ্ছতা" val={Math.round(bgOpacity * 100)} set={v => setBgOpacity(v / 100)} min={2} max={100} step={2} unit="%" />
+                      <Slider label="ছবির অপাসিটি" val={Math.round(bgOpacity * 100)} set={v => setBgOpacity(v / 100)} min={0} max={100} unit="%" />
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={bgBlur} onChange={e => setBgBlur(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
-                        <span className="text-gray-300 text-sm">ছবি ব্লার করুন</span>
+                        <span className="text-gray-300 text-sm">ব্লার ইফেক্ট</span>
                       </label>
-                      <button onClick={() => setBgImage(null)}
-                        className="w-full py-2 bg-red-900/20 hover:bg-red-900/40 text-red-400 rounded-xl text-sm transition-all border border-red-900/40">
-                        ছবি সরিয়ে দিন
+                      <button onClick={() => setBgImage(null)} className="w-full py-2 text-red-400 text-xs border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-all">
+                        পটভূমি ছবি সরিয়ে দিন
                       </button>
                     </>
                   )}
 
-                  {/* Watermark — full background cover */}
-                  <div className="border-t border-[#1e3050] pt-4">
-                    <label className="flex items-center gap-2 cursor-pointer mb-1">
+                  <div className="pt-2 border-t border-[#1e3050]">
+                    <label className="flex items-center gap-2 cursor-pointer mb-2">
                       <input type="checkbox" checked={showWatermark} onChange={e => setShowWatermark(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
-                      <span className="text-gray-300 text-sm font-medium">লেখকের ছবি ওয়াটারমার্ক (পুরো পটভূমি)</span>
+                      <span className="text-gray-300 text-sm font-medium">লেখকের ছবি ওয়াটারমার্ক</span>
                     </label>
-                    <p className="text-gray-600 text-xs mb-2">লেখকের ছবি পুরো কার্ডের ব্যাকগ্রাউন্ডে watermark হিসেবে দেখাবে</p>
                     {showWatermark && (
-                      <Slider label="ওয়াটারমার্ক স্বচ্ছতা" val={watermarkOpacity} set={setWatermarkOpacity} min={3} max={40} unit="%" />
+                      <Slider label="ওয়াটারমার্ক অপাসিটি" val={watermarkOpacity} set={setWatermarkOpacity} min={1} max={40} unit="%" />
                     )}
                   </div>
                 </div>
@@ -877,32 +1126,14 @@ export default function Editor() {
               {/* ── Extras Tab ── */}
               {tab === "extras" && (
                 <div className="bg-[#0f1c2e] rounded-2xl p-4 border border-[#1e3050] space-y-4">
-                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">অতিরিক্ত সজ্জা</h3>
-
+                  <h3 className="text-[#D4A843] text-xs font-bold uppercase tracking-widest">এক্সট্রা</h3>
                   <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">ইমোজি স্টিকার (উপরে)</label>
+                    <label className="text-gray-400 text-xs font-semibold block mb-2">দ্রুত স্টিকার</label>
                     <div className="grid grid-cols-8 gap-1">
-                      <button onClick={() => setSticker("")}
-                        className={`text-xs py-1.5 rounded-lg border transition-all ${!sticker ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]" : "border-[#1e3050] text-gray-500 hover:border-[#D4A843]/40"}`}>
-                        ✕
-                      </button>
-                      {STICKERS.map(s => (
-                        <button key={s} onClick={() => setSticker(s)}
-                          className={`text-lg py-0.5 rounded-lg border transition-all ${sticker === s ? "border-[#D4A843] bg-[#D4A843]/10" : "border-[#1e3050] hover:border-[#D4A843]/40"}`}>
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-gray-400 text-xs font-semibold block mb-2">দ্রুত টেমপ্লেট</label>
-                    <div className="space-y-2">
-                      {TEMPLATES.map(tmpl => (
-                        <button key={tmpl.label}
-                          onClick={() => { setTitle(tmpl.t); setBody(tmpl.b); setAuthor(tmpl.a); setShowTitle(true); setShowAuthor(true); }}
-                          className="w-full text-left px-3 py-2.5 bg-[#0a1525] hover:bg-[#1e3050] text-gray-300 rounded-xl text-xs border border-[#1e3050] hover:border-[#D4A843]/40 transition-all">
-                          📝 {tmpl.label}
+                      {STICKER_LIST.slice(0, 24).map(emoji => (
+                        <button key={emoji} onClick={() => addStickerLayer(emoji)}
+                          className="text-xl p-1 rounded-lg hover:bg-[#D4A843]/10 transition-all text-center">
+                          {emoji}
                         </button>
                       ))}
                     </div>
@@ -910,44 +1141,53 @@ export default function Editor() {
                 </div>
               )}
 
-              {/* ── Download & Copy Buttons ── */}
+              {/* ── Download Buttons ── */}
               <div className="space-y-2">
                 <button onClick={handleDownload} disabled={downloading}
                   className="w-full py-3.5 bg-gradient-to-r from-[#D4A843] to-[#c49030] hover:from-[#c49030] hover:to-[#b07820] text-black font-bold rounded-2xl flex items-center justify-center gap-2 transition-all disabled:opacity-60 shadow-lg shadow-[#D4A843]/20">
                   {downloading ? (
                     <><div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" /> ডাউনলোড হচ্ছে...</>
                   ) : (
-                    <><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PNG ডাউনলোড করুন</>
+                    <>⬇️ PNG ডাউনলোড করুন</>
                   )}
                 </button>
                 <button onClick={handleCopyToClipboard}
                   className="w-full py-2.5 bg-[#0f1c2e] hover:bg-[#1e3050] text-[#D4A843] font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all border border-[#D4A843]/30 hover:border-[#D4A843] text-sm">
                   {copied ? "✓ ক্লিপবোর্ডে কপি হয়েছে!" : "📋 ক্লিপবোর্ডে কপি করুন"}
                 </button>
-                <p className="text-gray-600 text-xs text-center">আসল আকার: {cardW} × {cardH} px · 2x রেজোলিউশন</p>
+                <p className="text-gray-600 text-xs text-center">{cardW} × {cardH} px · 2x রেজোলিউশন</p>
               </div>
             </div>
 
             {/* ══ RIGHT PANEL: Live Preview ══ */}
             <div className="flex-1 flex flex-col items-center" ref={previewRef}>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-4 w-full">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#D4A843]/30" />
                 <span className="text-[#D4A843]/60 text-xs uppercase tracking-widest font-semibold">লাইভ প্রিভিউ</span>
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#D4A843]/30" />
               </div>
 
               {/* Preview wrapper */}
-              <div style={{
-                width: cardW * scale, height: cardH * scale,
-                position: "relative", flexShrink: 0,
-                boxShadow: "0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,168,67,0.12)",
-                borderRadius: 8, overflow: "hidden",
-              }}>
+              <div
+                ref={canvasWrapRef}
+                style={{
+                  width: cardW * scale,
+                  height: cardH * scale,
+                  position: "relative",
+                  flexShrink: 0,
+                  boxShadow: "0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,168,67,0.12)",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  cursor: dragging ? "grabbing" : "default",
+                }}
+                onClick={() => setSelectedLayerId(null)}
+              >
                 {/* Card at full size, scaled down */}
                 <div style={{
                   width: cardW, height: cardH,
                   background: theme.gradient || theme.bg,
-                  color: theme.text, fontFamily: fontCss, padding,
+                  color: theme.text,
+                  padding,
                   position: "absolute", top: 0, left: 0,
                   transform: `scale(${scale})`, transformOrigin: "top left",
                   overflow: "hidden", display: "flex", flexDirection: "column",
@@ -962,14 +1202,10 @@ export default function Editor() {
                         pattern === "dots"     ? `radial-gradient(circle, ${theme.text} 1.5px, transparent 1.5px)` :
                         pattern === "lines"    ? `repeating-linear-gradient(0deg, ${theme.text} 0, ${theme.text} 1px, transparent 1px, transparent 24px)` :
                         pattern === "grid"     ? `repeating-linear-gradient(0deg, ${theme.text} 0, ${theme.text} 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, ${theme.text} 0, ${theme.text} 1px, transparent 1px, transparent 40px)` :
-                        pattern === "diagonal" ? `repeating-linear-gradient(45deg, ${theme.text} 0, ${theme.text} 1px, transparent 1px, transparent 32px)` : "none",
-                      backgroundSize:
-                        pattern === "dots" ? "30px 30px" :
-                        pattern === "grid" ? "40px 40px" : undefined,
+                        `repeating-linear-gradient(45deg, ${theme.text} 0, ${theme.text} 1px, transparent 1px, transparent 32px)`,
+                      backgroundSize: pattern === "dots" ? "30px 30px" : pattern === "grid" ? "40px 40px" : undefined,
                     }} />
                   )}
-
-
 
                   {/* Background image */}
                   {bgImage && (
@@ -981,75 +1217,60 @@ export default function Editor() {
                     }} />
                   )}
 
+                  {/* Main photo with filters */}
+                  {photoImage && (
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      backgroundImage: `url(${photoImage})`,
+                      backgroundSize: "cover", backgroundPosition: "center",
+                      opacity: photoOpacity / 100,
+                      filter: effectiveFilter,
+                      zIndex: 2,
+                    }} />
+                  )}
 
-
-                  {/* Watermark — full background cover */}
+                  {/* Watermark */}
                   {showWatermark && (
                     <div style={{
                       position: "absolute", inset: 0,
                       backgroundImage: `url(${AUTHOR_PHOTO})`,
                       backgroundSize: "cover", backgroundPosition: "center top",
-                      opacity: watermarkOpacity / 100, zIndex: 0, pointerEvents: "none",
+                      opacity: watermarkOpacity / 100, zIndex: 3, pointerEvents: "none",
                     }} />
                   )}
 
                   {/* Frames */}
-                  {frame === "inner-border" && (
-                    <div style={{ position: "absolute", inset: 16, border: `1.5px solid ${theme.border}`, opacity: 0.5, zIndex: 1, pointerEvents: "none" }} />
-                  )}
+                  {frame === "inner-border" && <div style={{ position: "absolute", inset: 16, border: `1.5px solid ${theme.border}`, opacity: 0.5, zIndex: 4, pointerEvents: "none" }} />}
                   {frame === "corner" && (
-                    <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}>
-                      {[
-                        { top: 16, left: 16, borderTop: `1.5px solid ${theme.border}`, borderLeft: `1.5px solid ${theme.border}` },
+                    <div style={{ position: "absolute", inset: 0, zIndex: 4, pointerEvents: "none" }}>
+                      {[{ top: 16, left: 16, borderTop: `1.5px solid ${theme.border}`, borderLeft: `1.5px solid ${theme.border}` },
                         { top: 16, right: 16, borderTop: `1.5px solid ${theme.border}`, borderRight: `1.5px solid ${theme.border}` },
                         { bottom: 16, left: 16, borderBottom: `1.5px solid ${theme.border}`, borderLeft: `1.5px solid ${theme.border}` },
-                        { bottom: 16, right: 16, borderBottom: `1.5px solid ${theme.border}`, borderRight: `1.5px solid ${theme.border}` },
+                        { bottom: 16, right: 16, borderBottom: `1.5px solid ${theme.border}`, borderRight: `1.5px solid ${theme.border}` }
                       ].map((s, i) => <div key={i} style={{ position: "absolute", width: 50, height: 50, opacity: 0.7, ...s }} />)}
                     </div>
                   )}
                   {frame === "double-border" && (
                     <>
-                      <div style={{ position: "absolute", inset: 10, border: `1.5px solid ${theme.border}`, opacity: 0.5, zIndex: 1, pointerEvents: "none" }} />
-                      <div style={{ position: "absolute", inset: 22, border: `1.5px solid ${theme.border}`, opacity: 0.3, zIndex: 1, pointerEvents: "none" }} />
+                      <div style={{ position: "absolute", inset: 10, border: `1.5px solid ${theme.border}`, opacity: 0.5, zIndex: 4, pointerEvents: "none" }} />
+                      <div style={{ position: "absolute", inset: 22, border: `1.5px solid ${theme.border}`, opacity: 0.3, zIndex: 4, pointerEvents: "none" }} />
                     </>
                   )}
-                  {frame === "left-bar" && (
-                    <div style={{ position: "absolute", top: padding, bottom: padding, left: padding / 2 - 2, width: 5, backgroundColor: theme.border, opacity: 0.8, zIndex: 1, borderRadius: 3 }} />
-                  )}
-                  {frame === "shadow-frame" && (
-                    <div style={{ position: "absolute", inset: 20, border: `1.5px solid ${theme.border}`, opacity: 0.4, zIndex: 1, pointerEvents: "none", boxShadow: `0 0 30px ${theme.border}` }} />
-                  )}
+                  {frame === "left-bar" && <div style={{ position: "absolute", top: padding, bottom: padding, left: padding / 2 - 2, width: 5, backgroundColor: theme.border, opacity: 0.8, zIndex: 4, borderRadius: 3 }} />}
+                  {frame === "shadow-frame" && <div style={{ position: "absolute", inset: 20, border: `1.5px solid ${theme.border}`, opacity: 0.4, zIndex: 4, pointerEvents: "none", boxShadow: `0 0 30px ${theme.border}` }} />}
                   {frame === "ornate" && (
                     <>
-                      <div style={{ position: "absolute", inset: 12, border: `1.5px solid ${theme.border}`, opacity: 0.55, zIndex: 1, pointerEvents: "none" }} />
-                      <div style={{ position: "absolute", inset: 20, border: `1.5px solid ${theme.border}`, opacity: 0.25, zIndex: 1, pointerEvents: "none" }} />
+                      <div style={{ position: "absolute", inset: 12, border: `1.5px solid ${theme.border}`, opacity: 0.55, zIndex: 4, pointerEvents: "none" }} />
+                      <div style={{ position: "absolute", inset: 20, border: `1.5px solid ${theme.border}`, opacity: 0.25, zIndex: 4, pointerEvents: "none" }} />
                     </>
                   )}
-                  {frame === "dot-corner" && (
-                    <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}>
-                      {[[20, 20, 1, 1], [cardW - 20, 20, -1, 1], [20, cardH - 20, 1, -1], [cardW - 20, cardH - 20, -1, -1]].map(([px, py, dx, dy], ci) => (
-                        <div key={ci} style={{ position: "absolute", left: px - 10, top: py - 10, width: 20, height: 20 }}>
-                          {[0, 1, 2].map(d => (
-                            <div key={d} style={{
-                              position: "absolute", width: 4, height: 4, borderRadius: "50%",
-                              backgroundColor: theme.border, opacity: 0.6,
-                              left: 8 + d * 8 * dx, top: 8,
-                            }} />
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
 
-                  {/* Content */}
-                  <div style={{ position: "relative", zIndex: 2, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    {sticker && <div style={{ fontSize: 60, marginBottom: 16, textAlign: "center" }}>{sticker}</div>}
-
-                    {/* Title */}
+                  {/* Main text content */}
+                  <div style={{ position: "relative", zIndex: 5, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                     {showTitle && title && (
                       <div style={{
                         fontSize: titleSize, fontWeight: "bold",
-                        fontFamily: FONT_CSS[titleFontKey] || fontCss,
+                        fontFamily: FONT_CSS[titleFontKey],
                         fontStyle: italicTitle ? "italic" : "normal",
                         marginBottom: 20, lineHeight: 1.3,
                         letterSpacing: `${letterSp}px`,
@@ -1058,22 +1279,18 @@ export default function Editor() {
                         {title}
                       </div>
                     )}
-
-                    {/* Body */}
                     <div style={{
                       fontSize: bodySize, lineHeight: lineH, whiteSpace: "pre-wrap",
-                      fontFamily: FONT_CSS[bodyFontKey] || fontCss,
+                      fontFamily: FONT_CSS[bodyFontKey],
                       letterSpacing: `${letterSp}px`, fontWeight: boldBody ? "bold" : "normal",
                       ...textShadowStyle,
                     }}>
                       {body}
                     </div>
-
-                    {/* Author */}
                     {showAuthor && author && (
                       <div style={{
                         fontSize: authorSize, marginTop: 28,
-                        fontFamily: FONT_CSS[authorFontKey] || fontCss,
+                        fontFamily: FONT_CSS[authorFontKey],
                         opacity: authorOpacity / 100, fontStyle: "italic",
                         letterSpacing: `${letterSp}px`,
                         ...textShadowStyle,
@@ -1082,11 +1299,54 @@ export default function Editor() {
                       </div>
                     )}
                   </div>
+
+                  {/* Draggable layers */}
+                  {layers.map(layer => (
+                    <div
+                      key={layer.id}
+                      onMouseDown={e => startDrag(e, layer.id, layer.x, layer.y)}
+                      onTouchStart={e => startDrag(e, layer.id, layer.x, layer.y)}
+                      style={{
+                        position: "absolute",
+                        left: layer.x * cardW,
+                        top: layer.y * cardH,
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 10,
+                        cursor: dragging?.id === layer.id ? "grabbing" : "grab",
+                        userSelect: "none",
+                        outline: selectedLayerId === layer.id ? `${2 / scale}px dashed #D4A843` : "none",
+                        outlineOffset: `${4 / scale}px`,
+                        borderRadius: 4,
+                      }}
+                    >
+                      {layer.type === "sticker" ? (
+                        <span style={{ fontSize: (layer as StickerLayer).size, lineHeight: 1, display: "block" }}>
+                          {(layer as StickerLayer).emoji}
+                        </span>
+                      ) : (
+                        <div style={{
+                          fontSize: (layer as TextLayer).fontSize,
+                          fontFamily: FONT_CSS[(layer as TextLayer).fontKey] || "'Tiro Bangla', serif",
+                          color: (layer as TextLayer).color,
+                          fontWeight: (layer as TextLayer).bold ? "bold" : "normal",
+                          fontStyle: (layer as TextLayer).italic ? "italic" : "normal",
+                          textAlign: (layer as TextLayer).align,
+                          whiteSpace: "pre-wrap",
+                          textShadow: (layer as TextLayer).shadow ? "2px 2px 8px rgba(0,0,0,0.6)" : "none",
+                          lineHeight: 1.4,
+                          maxWidth: cardW * 0.8,
+                        }}>
+                          {(layer as TextLayer).text}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <p className="text-gray-600 text-xs mt-3">
                 স্কেল: {Math.round(scale * 100)}% · {cardW}×{cardH}px
+                {layers.length > 0 && ` · ${layers.length}টি লেয়ার`}
               </p>
 
               {/* Quick theme dots */}
@@ -1100,6 +1360,13 @@ export default function Editor() {
                     style={{ background: t.gradient || t.bg }} />
                 ))}
               </div>
+
+              {/* Layer hint */}
+              {layers.length > 0 && (
+                <p className="text-gray-600 text-xs mt-3 text-center">
+                  💡 লেয়ারগুলো ড্র্যাগ করে সরানো যাবে · ক্লিক করে নির্বাচন করুন
+                </p>
+              )}
             </div>
           </div>
         </div>
