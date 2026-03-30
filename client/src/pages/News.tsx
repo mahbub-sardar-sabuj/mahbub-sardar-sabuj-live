@@ -29,6 +29,7 @@ interface NewsItem {
   featured: boolean;
   tag: string;
   link?: string;
+  image?: string;
 }
 
 const newsData: NewsItem[] = [
@@ -200,6 +201,19 @@ const newsData: NewsItem[] = [
     link: "/editor",
   },
   {
+    id: 15,
+    title: "বাবা — আমার সবচেয়ে বড় অনুপ্রেরণা",
+    excerpt: "বাবার অনুপ্রেরণায়ই লেখক হয়ে ওঠার স্বপ্ন দেখেছিলেন মাহবুব সরদার সবুজ। বাবার প্রতি কৃতজ্ঞতা ও ভালোবাসার কথা লিখেছেন লেখক।",
+    content: "বাবা — এই দুটি অক্ষরে লুকিয়ে আছে সমস্ত শক্তি, সাহস ও আশীর্বাদ। মাহবুব সরদার সবুজের লেখক হয়ে ওঠার পেছনে সবচেয়ে বড় ভূমিকা রয়েছে তাঁর বাবার। ছোটবেলা থেকেই বাবা তাঁকে বলতেন, “তুমি একদিন বড় লেখক হবে।” সেই স্বপ্নই আজ বাস্তবে রূপ নিয়েছে।\n\nবাবার হাত ধরে প্রথম কলম ধরা, বাবার প্রতিটি শিক্ষার মধ্যে লুকিয়ে থাকা আশীর্বাদ — সবকিছুর মধ্যে বাবার ছায়া অনুভব করেন লেখক। বাবা শুধু জন্মদাতা নন, তিনি সবচেয়ে বড় বন্ধু, সবচেয়ে বড় অনুপ্রেরণার উৎস।\n\nলেখক বলেন, “বাবার জন্য যা কিছু করেছি, তা কোনোদিন যথেষ্ট হবে না। তিনি আমার প্রতিটি লেখার প্রথম পাঠক, প্রথম সমালোচক। বাবার ভালোবাসাই আমার লেখার শক্তি।”",
+    category: "পরিবার",
+    categoryColor: "#E74C3C",
+    date: "মার্চ ২০২৬",
+    readTime: "২ মিনিট",
+    featured: true,
+    tag: "বাবা",
+    image: "/photos/IMG_6966.JPG",
+  },
+  {
     id: 14,
     title: "পাঠকদের ভালোবাসায় ওয়েবসাইট ১০,০০০ ভিজিটর অতিক্রম করলো",
     excerpt: "মাত্র কয়েক মাসে ওয়েবসাইটটি ১০,০০০-এরও বেশি পাঠকের কাছে পৌঁছেছে। লেখক পাঠকদের প্রতি কৃতজ্ঞতা জানিয়েছেন।",
@@ -213,7 +227,7 @@ const newsData: NewsItem[] = [
   },
 ];
 
-const categories = ["সব", "প্রকাশনা", "ওয়েবসাইট", "ই-বুক", "গ্যালারি", "সোশ্যাল মিডিয়া", "আবৃত্তি", "প্রযুক্তি", "যোগাযোগ", "লেখক পরিচিতি", "মাইলফলক"];
+const categories = ["সব", "প্রকাশনা", "পরিবার", "ওয়েবসাইট", "ই-বুক", "গ্যালারি", "সোশ্যাল মিডিয়া", "আবৃত্তি", "প্রযুক্তি", "যোগাযোগ", "লেখক পরিচিতি", "মাইলফলক"];
 
 function FadeIn({ children, delay = 0, direction = "up" }: { children: React.ReactNode; delay?: number; direction?: "up" | "left" | "right" }) {
   const variants = {
@@ -688,6 +702,17 @@ export default function News() {
 
                 {/* Divider */}
                 <div style={{ height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.3), transparent)", marginBottom: "1.5rem" }} />
+
+                {/* News image if available */}
+                {selectedNews.image && (
+                  <div style={{ marginBottom: "1.8rem", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(201,168,76,0.2)", boxShadow: "0 12px 40px rgba(0,0,0,0.4)" }}>
+                    <img
+                      src={selectedNews.image}
+                      alt={selectedNews.title}
+                      style={{ width: "100%", maxHeight: 380, objectFit: "cover", display: "block" }}
+                    />
+                  </div>
+                )}
 
                 <p style={{
                   color: "rgba(250,246,239,0.75)",
