@@ -521,17 +521,25 @@ export default function Editor() {
 
       <div className="pt-20 pb-28 px-3 max-w-2xl mx-auto">
 
-        {/* ── Page header — elegant, no extra text */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#D4A843]" />
-            <span className="text-[#D4A843] text-[10px] font-bold tracking-[0.3em] uppercase">Design Studio</span>
-            <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#D4A843]" />
+        {/* ── Page header — premium minimal */}
+        <div className="text-center mb-7">
+          <div className="relative inline-block">
+            {/* Glow behind title */}
+            <div className="absolute inset-0 blur-2xl opacity-20 bg-gradient-to-r from-[#D4A843] via-[#f0c96a] to-[#D4A843] rounded-full scale-150" />
+            <h1 className="relative text-4xl font-bold bg-gradient-to-br from-[#f0c96a] via-[#D4A843] to-[#a07020] bg-clip-text text-transparent leading-tight tracking-tight">
+              লেখার শিল্পকলা
+            </h1>
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#D4A843] via-[#f0c96a] to-[#D4A843] bg-clip-text text-transparent leading-tight">
-            লেখার শিল্পকলা
-          </h1>
-          <p className="text-[#D4A843]/40 text-xs mt-1 tracking-widest">✦ মাহবুব সরদার সবুজ ✦</p>
+          {/* Decorative line */}
+          <div className="flex items-center justify-center gap-3 mt-3">
+            <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent to-[#D4A843]/60" />
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4A843]/40" />
+              <span className="w-2.5 h-1.5 rounded-full bg-[#D4A843]/70" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4A843]/40" />
+            </div>
+            <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-[#D4A843]/60" />
+          </div>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════
