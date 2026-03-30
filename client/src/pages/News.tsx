@@ -217,32 +217,49 @@ export default function News() {
         </div>
       </section>
 
-      {/* ── TICKER BAR ── */}
+      {/* ── WELCOME BANNER ── */}
       <div style={{
-        background: "#C9A84C",
-        padding: "10px 0",
-        overflow: "hidden",
+        background: "linear-gradient(135deg, #0d1f3c 0%, #0A1628 50%, #0d2040 100%)",
+        borderTop: "1px solid rgba(201,168,76,0.15)",
+        borderBottom: "1px solid rgba(201,168,76,0.15)",
+        padding: "2.5rem 1.5rem",
+        textAlign: "center",
         position: "relative",
+        overflow: "hidden",
       }}>
+        {/* Subtle glow */}
         <div style={{
-          display: "flex",
-          gap: "4rem",
-          animation: "ticker 30s linear infinite",
-          whiteSpace: "nowrap",
-          color: "#0A1628",
-          fontWeight: 700,
-          fontSize: "0.85rem",
-        }}>
-          {[...Array(4)].map((_, i) => (
-            <span key={i} style={{ display: "flex", gap: "4rem", flexShrink: 0 }}>
-              <span>📚 নতুন বই প্রকাশিত হচ্ছে ২০২৬ সালে</span>
-              <span>✨ সরদার ডিজাইন স্টুডিও চালু হয়েছে</span>
-              <span>📖 তিনটি ই-বুক বিনামূল্যে পড়ুন</span>
-              <span>🎙️ আবৃত্তি সংগ্রহ দেখুন</span>
-            </span>
-          ))}
+          position: "absolute", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 600, height: 200, borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto" }}>
+          {/* Decorative line */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: "1rem" }}>
+            <div style={{ width: 40, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
+            <span style={{ color: "#C9A84C", fontSize: "0.7rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>স্বাগতম</span>
+            <div style={{ width: 40, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
+          </div>
+          <p style={{
+            fontFamily: "'Tiro Bangla', serif",
+            color: "#FAF6EF",
+            fontSize: "clamp(1rem, 3vw, 1.25rem)",
+            fontWeight: 400,
+            lineHeight: 1.9,
+            marginBottom: "1rem",
+          }}>মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে স্বাগতম।</p>
+          <p style={{
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+            color: "rgba(250,246,239,0.65)",
+            fontSize: "clamp(0.85rem, 2.5vw, 0.98rem)",
+            lineHeight: 2,
+          }}>
+            <span style={{ color: "#C9A84C", fontFamily: "'Tiro Bangla', serif", fontWeight: 400 }}>"সরদার ডিজাইন স্টুডিও"</span>
+            {" "}দিয়ে নিজের পছন্দের কবিতা বা উক্তি দিয়ে সুন্দর ডিজাইন তৈরি করে সহজেই শেয়ার করুন—সম্পূর্ণ ফ্রি।
+          </p>
         </div>
-        <style>{`@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
       </div>
 
       {/* ── CATEGORY FILTER ── */}
@@ -289,69 +306,76 @@ export default function News() {
               {featured.map((item, i) => (
                 <FadeIn key={item.id} delay={i * 0.1} direction="up">
                   <motion.div
-                    whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(10,22,40,0.15)" }}
+                    whileHover={{ y: -6, boxShadow: "0 30px 80px rgba(10,22,40,0.35)" }}
                     onClick={() => setSelectedNews(item)}
                     style={{
-                      background: "#fff",
+                      background: "linear-gradient(145deg, #0d1f3c 0%, #0A1628 100%)",
                       borderRadius: 20,
                       overflow: "hidden",
                       cursor: "pointer",
-                      border: "1px solid rgba(10,22,40,0.08)",
-                      boxShadow: "0 8px 30px rgba(10,22,40,0.08)",
+                      border: "1px solid rgba(201,168,76,0.18)",
+                      boxShadow: "0 8px 30px rgba(10,22,40,0.3)",
                       transition: "all 0.3s",
                       position: "relative",
                     }}
                   >
-                    {/* Top accent */}
-                    <div style={{ height: 4, background: `linear-gradient(90deg, ${item.categoryColor}, transparent)` }} />
+                    {/* Top gradient accent */}
+                    <div style={{ height: 3, background: `linear-gradient(90deg, ${item.categoryColor}, rgba(201,168,76,0.3), transparent)` }} />
                     {/* Featured badge */}
                     <div style={{
-                      position: "absolute", top: 20, right: 20,
+                      position: "absolute", top: 18, right: 18,
                       background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
                       color: "#0A1628",
-                      padding: "4px 12px",
+                      padding: "4px 14px",
                       borderRadius: 50,
-                      fontSize: "0.72rem",
+                      fontSize: "0.7rem",
                       fontWeight: 700,
+                      letterSpacing: "0.05em",
                     }}>প্রধান</div>
 
                     <div style={{ padding: "2rem" }}>
                       <div style={{ display: "flex", gap: 10, marginBottom: "1.2rem", alignItems: "center", flexWrap: "wrap" }}>
                         <span style={{
-                          background: item.categoryColor + "18",
+                          background: item.categoryColor + "22",
                           color: item.categoryColor,
                           padding: "4px 12px",
                           borderRadius: 50,
-                          fontSize: "0.75rem",
+                          fontSize: "0.72rem",
                           fontWeight: 600,
-                          border: `1px solid ${item.categoryColor}30`,
+                          border: `1px solid ${item.categoryColor}40`,
                         }}>{item.category}</span>
-                        <span style={{ color: "#8A9AAA", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: 4 }}>
-                          <Calendar size={13} /> {item.date}
+                        <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: 4 }}>
+                          <Calendar size={12} /> {item.date}
                         </span>
-                        <span style={{ color: "#8A9AAA", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: 4 }}>
-                          <Clock size={13} /> {item.readTime}
+                        <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.78rem", display: "flex", alignItems: "center", gap: 4 }}>
+                          <Clock size={12} /> {item.readTime}
                         </span>
                       </div>
 
                       <h3 style={{
                         fontFamily: "'Tiro Bangla', serif",
-                        color: "#0A1628",
-                        fontSize: "1.25rem",
+                        color: "#FAF6EF",
+                        fontSize: "1.2rem",
                         fontWeight: 400,
-                        lineHeight: 1.6,
+                        lineHeight: 1.7,
                         marginBottom: "1rem",
                       }}>{item.title}</h3>
 
                       <p style={{
-                        color: "#5A6A7A",
-                        fontSize: "0.9rem",
+                        color: "rgba(250,246,239,0.55)",
+                        fontSize: "0.88rem",
                         lineHeight: 1.9,
                         marginBottom: "1.5rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
                       }}>{item.excerpt}</p>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C9A84C", fontSize: "0.85rem", fontWeight: 600 }}>
-                        বিস্তারিত পড়ুন <ChevronRight size={16} />
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        color: "#C9A84C", fontSize: "0.82rem", fontWeight: 600,
+                        borderBottom: "1px solid rgba(201,168,76,0.3)",
+                        paddingBottom: 2,
+                      }}>
+                        বিস্তারিত পড়ুন <ChevronRight size={14} />
                       </div>
                     </div>
                   </motion.div>
@@ -370,48 +394,54 @@ export default function News() {
                 <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#0A1628", fontSize: "1.5rem", fontWeight: 400 }}>সাম্প্রতিক সংবাদ</h2>
               </div>
             </FadeIn>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
               {regular.map((item, i) => (
                 <FadeIn key={item.id} delay={i * 0.08} direction="up">
                   <motion.div
-                    whileHover={{ y: -5, boxShadow: "0 20px 50px rgba(10,22,40,0.12)" }}
+                    whileHover={{ y: -5, boxShadow: "0 20px 60px rgba(10,22,40,0.4)", borderColor: "rgba(201,168,76,0.4)" }}
                     onClick={() => setSelectedNews(item)}
                     style={{
-                      background: "#fff",
+                      background: "linear-gradient(145deg, #0d1f3c 0%, #0A1628 100%)",
                       borderRadius: 16,
                       overflow: "hidden",
                       cursor: "pointer",
-                      border: "1px solid rgba(10,22,40,0.07)",
-                      boxShadow: "0 4px 20px rgba(10,22,40,0.06)",
+                      border: "1px solid rgba(201,168,76,0.15)",
+                      boxShadow: "0 4px 20px rgba(10,22,40,0.25)",
                       transition: "all 0.3s",
                     }}
                   >
-                    <div style={{ height: 3, background: `linear-gradient(90deg, ${item.categoryColor}, transparent)` }} />
+                    <div style={{ height: 3, background: `linear-gradient(90deg, ${item.categoryColor}, rgba(201,168,76,0.2), transparent)` }} />
                     <div style={{ padding: "1.5rem" }}>
                       <div style={{ display: "flex", gap: 8, marginBottom: "1rem", alignItems: "center", flexWrap: "wrap" }}>
                         <span style={{
-                          background: item.categoryColor + "18",
+                          background: item.categoryColor + "22",
                           color: item.categoryColor,
                           padding: "3px 10px",
                           borderRadius: 50,
-                          fontSize: "0.72rem",
+                          fontSize: "0.7rem",
                           fontWeight: 600,
+                          border: `1px solid ${item.categoryColor}35`,
                         }}>{item.category}</span>
-                        <span style={{ color: "#8A9AAA", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 3 }}>
-                          <Calendar size={12} /> {item.date}
+                        <span style={{ color: "rgba(201,168,76,0.5)", fontSize: "0.73rem", display: "flex", alignItems: "center", gap: 3 }}>
+                          <Calendar size={11} /> {item.date}
                         </span>
                       </div>
                       <h3 style={{
                         fontFamily: "'Tiro Bangla', serif",
-                        color: "#0A1628",
+                        color: "#FAF6EF",
                         fontSize: "1.05rem",
                         fontWeight: 400,
-                        lineHeight: 1.6,
+                        lineHeight: 1.7,
                         marginBottom: "0.8rem",
                       }}>{item.title}</h3>
-                      <p style={{ color: "#5A6A7A", fontSize: "0.85rem", lineHeight: 1.8, marginBottom: "1rem" }}>{item.excerpt}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#C9A84C", fontSize: "0.8rem", fontWeight: 600 }}>
-                        পড়ুন <ArrowRight size={14} />
+                      <p style={{ color: "rgba(250,246,239,0.5)", fontSize: "0.83rem", lineHeight: 1.85, marginBottom: "1.2rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>{item.excerpt}</p>
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 5,
+                        color: "#C9A84C", fontSize: "0.78rem", fontWeight: 600,
+                        borderBottom: "1px solid rgba(201,168,76,0.25)",
+                        paddingBottom: 2,
+                      }}>
+                        পড়ুন <ArrowRight size={13} />
                       </div>
                     </div>
                   </motion.div>
@@ -454,19 +484,20 @@ export default function News() {
               transition={{ type: "spring", stiffness: 300, damping: 28 }}
               onClick={e => e.stopPropagation()}
               style={{
-                background: "#fff",
+                background: "linear-gradient(145deg, #0d1f3c 0%, #0A1628 100%)",
                 borderRadius: 24,
                 maxWidth: 680,
                 width: "100%",
-                maxHeight: "85vh",
+                maxHeight: "88vh",
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
-                boxShadow: "0 40px 100px rgba(0,0,0,0.4)",
+                boxShadow: "0 40px 100px rgba(0,0,0,0.6)",
+                border: "1px solid rgba(201,168,76,0.2)",
               }}
             >
               {/* Modal header accent */}
-              <div style={{ height: 5, background: `linear-gradient(90deg, ${selectedNews.categoryColor}, transparent)` }} />
+              <div style={{ height: 4, background: `linear-gradient(90deg, ${selectedNews.categoryColor}, rgba(201,168,76,0.5), transparent)` }} />
 
               <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
                 {/* Close button */}
@@ -475,47 +506,51 @@ export default function News() {
                     onClick={() => setSelectedNews(null)}
                     style={{
                       width: 36, height: 36, borderRadius: "50%",
-                      background: "rgba(10,22,40,0.08)",
-                      border: "none", cursor: "pointer",
+                      background: "rgba(201,168,76,0.12)",
+                      border: "1px solid rgba(201,168,76,0.2)",
+                      cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#5A6A7A",
+                      color: "rgba(201,168,76,0.8)",
                     }}
                   >
-                    <X size={18} />
+                    <X size={16} />
                   </button>
                 </div>
 
                 <div style={{ display: "flex", gap: 10, marginBottom: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
                   <span style={{
-                    background: selectedNews.categoryColor + "18",
+                    background: selectedNews.categoryColor + "22",
                     color: selectedNews.categoryColor,
                     padding: "5px 14px",
                     borderRadius: 50,
-                    fontSize: "0.8rem",
+                    fontSize: "0.78rem",
                     fontWeight: 600,
-                    border: `1px solid ${selectedNews.categoryColor}30`,
+                    border: `1px solid ${selectedNews.categoryColor}40`,
                   }}>{selectedNews.category}</span>
-                  <span style={{ color: "#8A9AAA", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 4 }}>
-                    <Calendar size={14} /> {selectedNews.date}
+                  <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: 4 }}>
+                    <Calendar size={13} /> {selectedNews.date}
                   </span>
-                  <span style={{ color: "#8A9AAA", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: 4 }}>
-                    <Clock size={14} /> {selectedNews.readTime}
+                  <span style={{ color: "rgba(201,168,76,0.55)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: 4 }}>
+                    <Clock size={13} /> {selectedNews.readTime}
                   </span>
                 </div>
 
                 <h2 style={{
                   fontFamily: "'Tiro Bangla', serif",
-                  color: "#0A1628",
+                  color: "#FAF6EF",
                   fontSize: "1.5rem",
                   fontWeight: 400,
-                  lineHeight: 1.6,
+                  lineHeight: 1.7,
                   marginBottom: "1.5rem",
                 }}>{selectedNews.title}</h2>
 
+                {/* Divider */}
+                <div style={{ height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.3), transparent)", marginBottom: "1.5rem" }} />
+
                 <p style={{
-                  color: "#3A4A5A",
+                  color: "rgba(250,246,239,0.75)",
                   fontSize: "1rem",
-                  lineHeight: 2.1,
+                  lineHeight: 2.2,
                   marginBottom: "2rem",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
                 }}>{selectedNews.content}</p>
@@ -537,7 +572,7 @@ export default function News() {
                       fontWeight: 700,
                       fontSize: "0.9rem",
                       textDecoration: "none",
-                      boxShadow: "0 8px 24px rgba(201,168,76,0.3)",
+                      boxShadow: "0 8px 24px rgba(201,168,76,0.35)",
                     }}
                   >
                     {selectedNews.link.startsWith("http") ? <ExternalLink size={16} /> : <ArrowRight size={16} />}
