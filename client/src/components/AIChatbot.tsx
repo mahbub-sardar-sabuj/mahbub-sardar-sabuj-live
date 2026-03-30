@@ -458,6 +458,17 @@ export default function AIChatbot() {
   }, [navigate]);
 
   // ── Drag handlers ─────────────────────────────────────────────────────────
+  // Clamp button so it never goes off-screen
+  const clampPos = useCallback((x: number, y: number) => {
+    const BTN = 72; // button diameter + margin
+    const maxX = window.innerWidth - BTN;
+    const maxY = window.innerHeight - BTN;
+    return {
+      x: Math.max(-(window.innerWidth - BTN), Math.min(maxX - BTN, x)),
+      y: Math.max(-(window.innerHeight - BTN), Math.min(maxY - BTN, y)),
+    };
+  }, []);
+
   const handleBtnMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true;
     didDrag.current = false;
@@ -467,7 +478,7 @@ export default function AIChatbot() {
       const dx = ev.clientX - dragStart.current.x;
       const dy = ev.clientY - dragStart.current.y;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      setBtnPos({ x: dragStart.current.bx - dx, y: dragStart.current.by - dy });
+      setBtnPos(clampPos(dragStart.current.bx - dx, dragStart.current.by - dy));
     };
     const onUp = () => {
       isDragging.current = false;
@@ -476,7 +487,7 @@ export default function AIChatbot() {
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [btnPos]);
+  }, [btnPos, clampPos]);
 
   const handleBtnTouchStart = useCallback((e: React.TouchEvent) => {
     isDragging.current = true;
@@ -489,7 +500,7 @@ export default function AIChatbot() {
       const dx = touch.clientX - dragStart.current.x;
       const dy = touch.clientY - dragStart.current.y;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      setBtnPos({ x: dragStart.current.bx - dx, y: dragStart.current.by - dy });
+      setBtnPos(clampPos(dragStart.current.bx - dx, dragStart.current.by - dy));
     };
     const onEnd = () => {
       isDragging.current = false;
@@ -498,7 +509,7 @@ export default function AIChatbot() {
     };
     window.addEventListener("touchmove", onMove, { passive: true });
     window.addEventListener("touchend", onEnd);
-  }, [btnPos]);
+  }, [btnPos, clampPos]);
 
   // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
@@ -596,8 +607,8 @@ export default function AIChatbot() {
       <div
         className="fixed z-[60]"
         style={{
-          bottom: `calc(1.5rem - ${btnPos.y}px)`,
-          right: `calc(1.5rem - ${btnPos.x}px)`,
+          bottom: `calc(1.5rem - ${Math.max(-window.innerHeight + 80, Math.min(window.innerHeight - 80, btnPos.y))}px)`,
+          right: `calc(1.5rem - ${Math.max(-window.innerWidth + 80, Math.min(window.innerWidth - 80, btnPos.x))}px)`,
           filter: "drop-shadow(0 8px 32px rgba(212,168,67,0.45))",
           cursor: isDragging.current ? "grabbing" : "grab",
           userSelect: "none",
@@ -612,6 +623,33 @@ export default function AIChatbot() {
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(212,168,67,0.3)", animationDuration: "1.8s" }} />
             <span className="absolute inset-0 rounded-full" style={{ background: "rgba(212,168,67,0.15)", transform: "scale(1.18)", borderRadius: "9999px" }} />
           </>
+        )}
+
+        {/* Reset position hint — shown when chat is closed and button may be off-screen */}
+        {!isOpen && (btnPos.x !== 0 || btnPos.y !== 0) && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setBtnPos({ x: 0, y: 0 }); }}
+            title="ডিফল্ট অবস্থানে ফিরুন"
+            style={{
+              position: "absolute",
+              top: -10,
+              left: -10,
+              width: 20,
+              height: 20,
+              borderRadius: "50%",
+              background: "#D4A843",
+              color: "#0A1628",
+              fontSize: "10px",
+              fontWeight: 700,
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10,
+              lineHeight: 1,
+            }}
+          >↺</button>
         )}
 
         {/* One-time tooltip label — shows once then fades out */}
