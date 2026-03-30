@@ -61,6 +61,7 @@ export default function Navbar() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
   const [showBanner, setShowBanner] = useState(true);
+  const isEditorPage = location === "/editor";
 
   useEffect(() => {
     const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
@@ -97,7 +98,7 @@ export default function Navbar() {
     <>
       {/* ── TOP BANNER: আমাকে জিজ্ঞেস করুন ── */}
       <AnimatePresence>
-        {showBanner && (
+        {showBanner && !isEditorPage && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -187,7 +188,7 @@ export default function Navbar() {
       transition={{ duration: 0.6, ease: "easeOut" }}
       style={{
         position: "fixed",
-        top: showBanner ? 28 : 0, left: 0, right: 0,
+        top: (showBanner && !isEditorPage) ? 28 : 0, left: 0, right: 0,
         zIndex: 50,
         transition: "all 0.5s",
         background: scrolled ? "rgba(10,18,34,0.97)" : "transparent",

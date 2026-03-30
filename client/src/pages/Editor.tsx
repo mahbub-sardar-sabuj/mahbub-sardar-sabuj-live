@@ -1722,7 +1722,7 @@ export default function Editor() {
         background: "linear-gradient(180deg, #0a1020 0%, #0d1420 100%)",
         borderBottom: "1px solid rgba(212,168,67,0.15)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "72px 16px 14px",
+        padding: "80px 16px 14px",
         position: "relative",
       }}>
         {/* Decorative left line */}
