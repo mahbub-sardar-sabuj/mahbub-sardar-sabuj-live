@@ -1,4 +1,4 @@
-@tailwind base;
+@import "tailwindcss";
 @import "tw-animate-css";
 @import "./styles/desktop-premium.css";
 @custom-variant dark (&:is(.dark *));
@@ -123,11 +123,6 @@
     margin-right: auto;
     padding-left: 1rem;
     padding-right: 1rem;
-  }
-
-  .flex {
-    min-height: 0;
-    min-width: 0;
   }
 
   @media (min-width: 640px) {

@@ -1,6 +1,7 @@
 /*
  * Design: Literary Avant-Garde — Premium Edition
  * Navbar: Sticky top nav with navy background, gold accents
+ * Responsive: JS-based window width detection (no Tailwind classes)
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,11 +50,18 @@ const isPrimaryNavActive = (href: string, type: string, location: string) => {
   return false;
 };
 
-
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
+
+  useEffect(() => {
+    const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
+    checkWidth();
+    window.addEventListener("resize", checkWidth);
+    return () => window.removeEventListener("resize", checkWidth);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -65,6 +73,11 @@ export default function Navbar() {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  // Close mobile menu when switching to desktop
+  useEffect(() => {
+    if (isDesktop && mobileOpen) setMobileOpen(false);
+  }, [isDesktop, mobileOpen]);
 
   const handleNavClick = (href: string, type: string) => {
     setMobileOpen(false);
@@ -96,9 +109,8 @@ export default function Navbar() {
           <a
             href="#home"
             onClick={(e) => { e.preventDefault(); handleNavClick("#home", "anchor"); }}
-            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}
+            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
           >
-            {/* Feather icon badge */}
             <span style={{
               display: "inline-flex",
               alignItems: "center",
@@ -113,8 +125,6 @@ export default function Navbar() {
             }}>
               <Feather size={16} color="#D4A843" />
             </span>
-
-            {/* Name with two-tone styling */}
             <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
               <span style={{
                 fontFamily: "'Tiro Bangla', serif",
@@ -141,100 +151,105 @@ export default function Navbar() {
             </span>
           </a>
 
-          {/* Desktop nav links */}
-          <div className="hidden md:flex" style={{ gap: 6 }}>
-            {navLinks.map((link) =>
-              link.type === "page" ? (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    onClick={() => setMobileOpen(false)}
+          {/* ── DESKTOP NAV LINKS (only visible on md+) ── */}
+          {isDesktop && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap" }}>
+              {navLinks.map((link) =>
+                link.type === "page" ? (
+                  <Link key={link.href} href={link.href}>
+                    <span
+                      style={{
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        color: location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)",
+                        padding: "9px 14px",
+                        textDecoration: "none",
+                        fontSize: "0.88rem",
+                        transition: "all 0.3s ease",
+                        borderRadius: 999,
+                        cursor: "pointer",
+                        display: "inline-block",
+                        whiteSpace: "nowrap",
+                        background: location === link.href
+                          ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
+                          : "rgba(253,246,236,0.04)",
+                        border: location === link.href
+                          ? "1px solid rgba(212,168,67,0.65)"
+                          : "1px solid rgba(212,168,67,0.12)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = "#0D1B2A";
+                        e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)";
+                        e.currentTarget.style.background = location === link.href
+                          ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
+                          : "rgba(253,246,236,0.04)";
+                      }}
+                    >
+                      {link.label}
+                    </span>
+                  </Link>
+                ) : (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => { e.preventDefault(); handleNavClick(link.href, link.type); }}
                     style={{
                       fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)",
-                      padding: "9px 16px",
+                      color: "rgba(253,246,236,0.9)",
+                      padding: "9px 14px",
                       textDecoration: "none",
-                      fontSize: "0.92rem",
+                      fontSize: "0.88rem",
                       transition: "all 0.3s ease",
                       borderRadius: 999,
-                      cursor: "pointer",
-                      display: "inline-block",
-                      background: location === link.href
-                        ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                        : "rgba(253,246,236,0.04)",
-                      border: location === link.href
-                        ? "1px solid rgba(212,168,67,0.65)"
-                        : "1px solid rgba(212,168,67,0.12)",
+                      whiteSpace: "nowrap",
+                      background: "rgba(253,246,236,0.04)",
+                      border: "1px solid rgba(212,168,67,0.12)",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = "#0D1B2A";
                       e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.color = location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)";
-                      e.currentTarget.style.background = location === link.href
-                        ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                        : "rgba(253,246,236,0.04)";
+                      e.currentTarget.style.color = "rgba(253,246,236,0.9)";
+                      e.currentTarget.style.background = "rgba(253,246,236,0.04)";
                     }}
                   >
                     {link.label}
-                  </span>
-                </Link>
-              ) : (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href, link.type); }}
-                  style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    color: "rgba(253,246,236,0.9)",
-                    padding: "9px 16px",
-                    textDecoration: "none",
-                    fontSize: "0.92rem",
-                    transition: "all 0.3s ease",
-                    borderRadius: 999,
-                    background: "rgba(253,246,236,0.04)",
-                    border: "1px solid rgba(212,168,67,0.12)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#0D1B2A";
-                    e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "rgba(253,246,236,0.9)";
-                    e.currentTarget.style.background = "rgba(253,246,236,0.04)";
-                  }}
-                >
-                  {link.label}
-                </a>
-              ),
-            )}
-          </div>
+                  </a>
+                ),
+              )}
+            </div>
+          )}
 
-          {/* Hamburger */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden"
-            style={{
-              color: "rgba(253,246,236,0.85)",
-              background: mobileOpen ? "rgba(212,168,67,0.12)" : "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(212,168,67,0.2)",
-              borderRadius: 10,
-              padding: "7px 9px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.25s",
-            }}
-          >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          {/* ── HAMBURGER (only visible on mobile) ── */}
+          {!isDesktop && (
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              style={{
+                color: "rgba(253,246,236,0.85)",
+                background: mobileOpen ? "rgba(212,168,67,0.12)" : "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(212,168,67,0.2)",
+                borderRadius: 10,
+                padding: "7px 9px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.25s",
+                flexShrink: 0,
+              }}
+            >
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          )}
         </div>
       </div>
 
       {/* ── MOBILE MENU ── */}
       <AnimatePresence>
-        {mobileOpen && (
+        {mobileOpen && !isDesktop && (
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -357,7 +372,6 @@ export default function Navbar() {
                         }}
                       >
                         <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
-                          {/* Icon badge */}
                           <span style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -376,8 +390,6 @@ export default function Navbar() {
                           }}>
                             <Icon size={17} color={active ? "#0D1B2A" : "#D4A843"} />
                           </span>
-
-                          {/* Label + subtitle */}
                           <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                             <span style={{ fontSize: "0.98rem", fontWeight: 700, lineHeight: 1.3 }}>
                               {link.label}
@@ -394,8 +406,6 @@ export default function Navbar() {
                             </span>
                           </span>
                         </span>
-
-                        {/* Arrow badge */}
                         <span style={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -479,11 +489,7 @@ export default function Navbar() {
                               : "0 4px 16px rgba(0,0,0,0.15)",
                           }}
                         >
-                          <span style={{
-                            fontSize: "0.9rem",
-                            fontWeight: 700,
-                            lineHeight: 1.3,
-                          }}>
+                          <span style={{ fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3 }}>
                             {tab.titleBn}
                           </span>
                           <span style={{
