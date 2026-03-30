@@ -3,8 +3,20 @@ import { publicProcedure, router } from "./_core/trpc";
 import { generateImage } from "./_core/imageGeneration";
 import OpenAI from "openai";
 
-// Server-side OpenAI client — uses OPENAI_API_KEY env var (set in Vercel)
-const getClient = () =>
+// OpenRouter client — সম্পূর্ণ বিনামূল্যে, OpenAI-compatible API
+// model: google/gemini-2.0-flash-exp:free — ফ্রি, শক্তিশালী, কখনো ক্রেডিট শেষ হয় না
+const getChatClient = () =>
+  new OpenAI({
+    apiKey: process.env.OPENROUTER_API_KEY || "",
+    baseURL: "https://openrouter.ai/api/v1",
+    defaultHeaders: {
+      "HTTP-Referer": "https://mahbub-sardar-sabuj-live.vercel.app",
+      "X-Title": "Mahbub Sardar Sabuj AI Agent",
+    },
+  });
+
+// OpenAI client — শুধুমাত্র image generation-এর জন্য (editor feature)
+const getOpenAIClient = () =>
   new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
@@ -75,9 +87,9 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const client = getClient();
+      const client = getChatClient();
       const response = await client.chat.completions.create({
-        model: "gpt-4.1-mini",
+        model: "google/gemini-2.0-flash-exp:free",
         messages: [
           { role: "system", content: CHAT_SYSTEM_PROMPT },
           ...input.messages,
@@ -99,7 +111,7 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const client = getClient();
+      const client = getOpenAIClient();
       const translateResponse = await client.chat.completions.create({
         model: "gpt-4.1-mini",
         messages: [
@@ -137,7 +149,7 @@ Make it descriptive and artistic. Include lighting, mood, atmosphere.`,
       })
     )
     .mutation(async ({ input }) => {
-      const client = getClient();
+      const client = getOpenAIClient();
       const response = await client.chat.completions.create({
         model: "gpt-4.1-mini",
         messages: [
