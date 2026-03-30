@@ -1419,154 +1419,257 @@ export default function Home() {
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "8rem 0",
-        background: "linear-gradient(135deg, #0A1628 0%, #0d2040 50%, #0A1628 100%)",
+        background: "linear-gradient(160deg, #060e1a 0%, #0a1628 30%, #0d2040 60%, #0a1628 100%)",
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Decorative grid pattern */}
+        {/* Decorative dots pattern */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: "linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+          backgroundImage: "radial-gradient(rgba(201,168,76,0.12) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
           pointerEvents: "none",
         }} />
-        {/* Radial glow */}
+        {/* Top glow */}
         <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600, height: 600, borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%)",
+          position: "absolute", top: -100, left: "50%",
+          transform: "translateX(-50%)",
+          width: 800, height: 400, borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(201,168,76,0.12) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        {/* Bottom glow */}
+        <div style={{
+          position: "absolute", bottom: -100, right: "10%",
+          width: 500, height: 300, borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(100,140,255,0.06) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 1280, margin: "0 auto", padding: "0 2rem" }}>
+
+          {/* Section header */}
           <FadeIn direction="up">
-            <div style={{ textAlign: "center", marginBottom: "5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: "1rem" }}>
-                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
-                <span style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "#C9A84C",
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                }}>নতুন ফিচার</span>
-                <div style={{ width: 60, height: 1, background: "rgba(201,168,76,0.4)" }} />
+            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 12, marginBottom: "1.2rem",
+                background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)",
+                borderRadius: 50, padding: "6px 20px" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#C9A84C", display: "inline-block", boxShadow: "0 0 8px #C9A84C" }} />
+                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#C9A84C",
+                  fontSize: "0.78rem", letterSpacing: "0.18em", textTransform: "uppercase" }}>নতুন ফিচার</span>
               </div>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#FAF6EF",
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                fontWeight: 400,
-                marginBottom: "1rem",
-              }}>সরদার ডিজাইন স্টুডিও</h2>
-              <p style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                color: "rgba(250,246,239,0.6)",
-                fontSize: "1rem",
-                maxWidth: 560,
-                margin: "0 auto",
-                lineHeight: 2,
-              }}>আপনার পছন্দের কবিতা বা উক্তি দিয়ে সুন্দর ডিজাইন কার্ড তৈরি করুন — সোশ্যাল মিডিয়ায় শেয়ার করুন।</p>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FAF6EF",
+                fontSize: "clamp(2.2rem, 5vw, 3.5rem)", fontWeight: 400, marginBottom: "1.2rem",
+                textShadow: "0 0 40px rgba(201,168,76,0.2)" }}>
+                সরদার ডিজাইন স্টুডিও
+              </h2>
+              <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.65)",
+                fontSize: "1.05rem", maxWidth: 600, margin: "0 auto", lineHeight: 2 }}>
+                আপনার পছন্দের কবিতা বা উক্তি দিয়ে সুন্দর ডিজাইন কার্ড তৈরি করুন।
+                সোশ্যাল মিডিয়ায় শেয়ার করুন — সম্পূর্ণ বিনামূল্যে।
+              </p>
             </div>
           </FadeIn>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "4rem",
-            alignItems: "center",
-          }} className="hero-grid">
+          {/* Main content: mockup left, features right */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "center" }} className="hero-grid">
 
+            {/* Left: animated mockup */}
             <FadeIn direction="left">
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                {[
-                  { icon: "🎨", title: "১৬+ থিম", desc: "Navy, Gold, Vintage, Minimal — বিভিন্ন স্টাইলে" },
-                  { icon: "✍️", title: "ড্র্যাগ লেয়ার", desc: "টেক্সট যেকোনো জায়গায় সরান" },
-                  { icon: "📸", title: "ফটো ফিল্টার", desc: "১২টি প্রিসেট ফিল্টার" },
-                  { icon: "💾", title: "PNG ডাউনলোড", desc: "1080×1080 হাই-রেজ ছবি" },
-                ].map((f, i) => (
-                  <FadeIn key={i} delay={i * 0.1} direction="up">
-                    <div style={{
-                      background: "rgba(201,168,76,0.06)",
-                      border: "1px solid rgba(201,168,76,0.15)",
-                      borderRadius: 16,
-                      padding: "1.5rem",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
-                      <div style={{ fontSize: "1.8rem", marginBottom: "0.8rem" }}>{f.icon}</div>
-                      <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#C9A84C", fontSize: "1rem", fontWeight: 600, marginBottom: "0.4rem" }}>{f.title}</div>
-                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.5)", fontSize: "0.82rem", lineHeight: 1.7 }}>{f.desc}</div>
+              <div style={{ position: "relative" }}>
+                {/* Glow behind card */}
+                <div style={{ position: "absolute", inset: -20, borderRadius: 40,
+                  background: "radial-gradient(ellipse, rgba(201,168,76,0.15) 0%, transparent 70%)",
+                  filter: "blur(20px)", pointerEvents: "none" }} />
+
+                {/* Main mockup card */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    background: "linear-gradient(145deg, #0d1b2a 0%, #142236 50%, #0d1b2a 100%)",
+                    border: "1px solid rgba(201,168,76,0.35)",
+                    borderRadius: 28,
+                    padding: "2.5rem",
+                    boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1), inset 0 1px 0 rgba(201,168,76,0.15)",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* Top accent line */}
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3,
+                    background: "linear-gradient(90deg, transparent 0%, #C9A84C 40%, #E8C4A0 60%, transparent 100%)" }} />
+
+                  {/* Toolbar mockup */}
+                  <div style={{ display: "flex", gap: 6, marginBottom: "1.5rem", opacity: 0.7 }}>
+                    {["#ff5f57","#febc2e","#28c840"].map(c => (
+                      <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
+                    ))}
+                    <div style={{ flex: 1, height: 10, borderRadius: 5, background: "rgba(201,168,76,0.1)", marginLeft: 8 }} />
+                  </div>
+
+                  {/* Poetry card preview */}
+                  <div style={{
+                    background: "linear-gradient(135deg, #1a2e4a 0%, #0d1b2a 100%)",
+                    border: "1px solid rgba(201,168,76,0.2)",
+                    borderRadius: 16,
+                    padding: "2rem",
+                    marginBottom: "1.5rem",
+                    position: "relative",
+                  }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                      background: "linear-gradient(90deg, #C9A84C, #E8C4A0, #C9A84C)" }} />
+                    <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#C9A84C",
+                      fontSize: "1.3rem", lineHeight: 1.9, marginBottom: "1rem" }}>
+                      "তুমি চলে গেছ, তবু<br />তোমার স্মৃতি রয়ে গেছে"
                     </div>
-                  </FadeIn>
-                ))}
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "rgba(250,246,239,0.45)", fontSize: "0.78rem", letterSpacing: "0.1em" }}>
+                      — মাহবুব সরদার সবুজ
+                    </div>
+                    {/* Theme badge */}
+                    <div style={{ position: "absolute", bottom: 10, right: 12,
+                      background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.25)",
+                      borderRadius: 8, padding: "3px 10px", color: "#C9A84C",
+                      fontSize: "0.68rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>Navy থিম</div>
+                  </div>
+
+                  {/* Tool icons row */}
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                    {["✍️","😊","🎨","⚙️","🖼️","🔍","🖊️"].map((icon, i) => (
+                      <motion.div key={i}
+                        whileHover={{ scale: 1.2, y: -2 }}
+                        style={{ width: 36, height: 36, borderRadius: 10,
+                          background: i === 0 ? "rgba(201,168,76,0.25)" : "rgba(201,168,76,0.08)",
+                          border: i === 0 ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(201,168,76,0.15)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "1rem", cursor: "pointer" }}
+                      >{icon}</motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Floating badges */}
+                <motion.div
+                  animate={{ x: [0, 5, 0], y: [0, -3, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  style={{ position: "absolute", top: -16, right: -16,
+                    background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
+                    color: "#0A1628", borderRadius: 12, padding: "8px 14px",
+                    fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", fontWeight: 700,
+                    boxShadow: "0 8px 24px rgba(201,168,76,0.4)" }}
+                >
+                  ✨ ১২০+ Background
+                </motion.div>
+                <motion.div
+                  animate={{ x: [0, -4, 0], y: [0, 4, 0] }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  style={{ position: "absolute", bottom: -12, left: -16,
+                    background: "rgba(13,27,42,0.95)", border: "1px solid rgba(201,168,76,0.4)",
+                    color: "#C9A84C", borderRadius: 12, padding: "8px 14px",
+                    fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", fontWeight: 600,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}
+                >
+                  🔍 4K আপস্কেল
+                </motion.div>
               </div>
             </FadeIn>
 
+            {/* Right: feature list + CTA */}
             <FadeIn direction="right">
-              <div style={{ textAlign: "center" }}>
-                {/* Studio mockup card */}
-                <div style={{
-                  background: "linear-gradient(135deg, #0d1b2a, #1a2e4a)",
-                  border: "1px solid rgba(201,168,76,0.3)",
-                  borderRadius: 24,
-                  padding: "2.5rem",
-                  boxShadow: "0 40px 100px rgba(0,0,0,0.5), 0 0 60px rgba(201,168,76,0.08)",
-                  position: "relative",
-                  overflow: "hidden",
-                  marginBottom: "2rem",
-                }}>
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, transparent, #C9A84C, transparent)" }} />
-                  <div style={{
-                    fontFamily: "'Tiro Bangla', serif",
-                    color: "#C9A84C",
-                    fontSize: "1.4rem",
-                    marginBottom: "1rem",
-                    lineHeight: 1.8,
-                  }}>"তুমি চলে গেছ, তবু<br/>তোমার স্মৃতি রয়ে গেছে"</div>
-                  <div style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    color: "rgba(250,246,239,0.4)",
-                    fontSize: "0.8rem",
-                    letterSpacing: "0.1em",
-                  }}>___ মাহবুব সরদার সবুজ</div>
-                  <div style={{
-                    position: "absolute", bottom: 12, right: 16,
-                    background: "rgba(201,168,76,0.1)",
-                    border: "1px solid rgba(201,168,76,0.2)",
-                    borderRadius: 8,
-                    padding: "3px 10px",
-                    color: "#C9A84C",
-                    fontSize: "0.7rem",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                  }}>Navy থিম</div>
+              <div>
+                {/* Feature grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2.5rem" }}>
+                  {[
+                    { icon: "🎨", title: "১২০+ ব্যাকগ্রাউন্ড", desc: "Gradient, Cosmic, Nature, Artistic — নানা স্টাইল", color: "#C9A84C" },
+                    { icon: "✍️", title: "বাংলা ফন্ট", desc: "১০টি সুন্দর বাংলা ফন্ট — live preview সহ", color: "#8BA888" },
+                    { icon: "🔍", title: "4K আপস্কেল", desc: "ঝাপসা ছবি ক্লিয়ার করুন — AI sharpening", color: "#C4848A" },
+                    { icon: "🖊️", title: "ড্রইং টুলস", desc: "ক্যানভাসে সরাসরি আঁকুন — ৭টি টুল", color: "#7BA7BC" },
+                    { icon: "😊", title: "২১৬ স্টিকার", desc: "৬টি ক্যাটাগরিতে সুন্দর স্টিকার সংগ্রহ", color: "#D4A843" },
+                    { icon: "💾", title: "4K ডাউনলোড", desc: "1080×1080 হাই-রেজ PNG/JPG ডাউনলোড", color: "#A8C4A2" },
+                  ].map((f, i) => (
+                    <FadeIn key={i} delay={i * 0.08} direction="up">
+                      <motion.div
+                        whileHover={{ y: -4, boxShadow: "0 16px 40px rgba(0,0,0,0.4)" }}
+                        style={{
+                          background: "rgba(255,255,255,0.03)",
+                          border: "1px solid rgba(201,168,76,0.12)",
+                          borderRadius: 16,
+                          padding: "1.2rem",
+                          position: "relative",
+                          overflow: "hidden",
+                          cursor: "default",
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 2,
+                          background: `linear-gradient(90deg, ${f.color}, transparent)` }} />
+                        <div style={{ fontSize: "1.6rem", marginBottom: "0.6rem" }}>{f.icon}</div>
+                        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: f.color,
+                          fontSize: "0.88rem", fontWeight: 700, marginBottom: "0.3rem" }}>{f.title}</div>
+                        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif",
+                          color: "rgba(250,246,239,0.45)", fontSize: "0.75rem", lineHeight: 1.6 }}>{f.desc}</div>
+                      </motion.div>
+                    </FadeIn>
+                  ))}
                 </div>
 
-                <Link href="/editor">
-                  <motion.a
-                    whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(201,168,76,0.4)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 10,
-                      background: "linear-gradient(135deg, #C9A84C, #E8C4A0)",
-                      color: "#0A1628",
-                      padding: "16px 40px",
-                      borderRadius: 50,
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontWeight: 700,
-                      fontSize: "1rem",
-                      cursor: "pointer",
-                      boxShadow: "0 10px 30px rgba(201,168,76,0.3)",
-                      textDecoration: "none",
-                    }}
-                  >
-                    ✨ ডিজাইন শুরু করুন
-                  </motion.a>
-                </Link>
+                {/* Stats row */}
+                <div style={{ display: "flex", gap: "2rem", marginBottom: "2.5rem",
+                  padding: "1.5rem", background: "rgba(201,168,76,0.05)",
+                  border: "1px solid rgba(201,168,76,0.12)", borderRadius: 16 }}>
+                  {[
+                    { num: "১০+", label: "টুলস" },
+                    { num: "১২০+", label: "ব্যাকগ্রাউন্ড" },
+                    { num: "২১৬", label: "স্টিকার" },
+                    { num: "4K", label: "এক্সপোর্ট" },
+                  ].map((s, i) => (
+                    <div key={i} style={{ textAlign: "center", flex: 1 }}>
+                      <div style={{ fontFamily: "'Playfair Display', serif", color: "#C9A84C",
+                        fontSize: "1.5rem", fontWeight: 700, lineHeight: 1 }}>{s.num}</div>
+                      <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif",
+                        color: "rgba(250,246,239,0.45)", fontSize: "0.72rem", marginTop: 4 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA buttons */}
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                  <Link href="/editor">
+                    <motion.a
+                      whileHover={{ scale: 1.05, boxShadow: "0 20px 50px rgba(201,168,76,0.45)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 10,
+                        background: "linear-gradient(135deg, #C9A84C 0%, #E8C4A0 100%)",
+                        color: "#0A1628", padding: "16px 36px", borderRadius: 50,
+                        fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 700,
+                        fontSize: "1rem", cursor: "pointer",
+                        boxShadow: "0 10px 30px rgba(201,168,76,0.3)",
+                        textDecoration: "none",
+                      }}
+                    >
+                      ✨ ডিজাইন শুরু করুন
+                    </motion.a>
+                  </Link>
+                  <Link href="/editor">
+                    <motion.a
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 8,
+                        background: "transparent",
+                        border: "1px solid rgba(201,168,76,0.4)",
+                        color: "#C9A84C", padding: "16px 28px", borderRadius: 50,
+                        fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600,
+                        fontSize: "0.9rem", cursor: "pointer",
+                        textDecoration: "none",
+                      }}
+                    >
+                      🔍 আপস্কেল করুন
+                    </motion.a>
+                  </Link>
+                </div>
               </div>
             </FadeIn>
           </div>
