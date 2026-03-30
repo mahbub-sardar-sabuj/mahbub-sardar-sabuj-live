@@ -607,11 +607,11 @@ export default function Home() {
             <div key={i} style={{ display: "flex", gap: "4rem", alignItems: "center" }}>
               {["কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"].map((text, j) => (
                 <span key={j} style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AkhandBengali', 'Noto Sans Bengali', sans-serif",
                   color: "#0A1628",
-                  fontSize: "0.85rem",
+                  fontSize: "1rem",
                   fontWeight: 700,
-                  letterSpacing: "0.1em",
+                  letterSpacing: "0.05em",
                   display: "flex",
                   alignItems: "center",
                   gap: 16,
