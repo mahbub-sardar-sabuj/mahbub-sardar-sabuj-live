@@ -4,7 +4,6 @@
  */
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Monitor, Smartphone } from "lucide-react";
 import {
   Menu,
   X,
@@ -50,36 +49,11 @@ const isPrimaryNavActive = (href: string, type: string, location: string) => {
   return false;
 };
 
-// Global desktop view toggle
-let _desktopViewListeners: (() => void)[] = [];
-let _isDesktopView = false;
-export function toggleDesktopView() {
-  _isDesktopView = !_isDesktopView;
-  if (_isDesktopView) {
-    document.documentElement.style.minWidth = "1280px";
-    document.documentElement.style.overflowX = "auto";
-    (document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null)
-      ?.setAttribute("content", "width=1280");
-  } else {
-    document.documentElement.style.minWidth = "";
-    document.documentElement.style.overflowX = "";
-    (document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null)
-      ?.setAttribute("content", "width=device-width, initial-scale=1");
-  }
-  _desktopViewListeners.forEach(fn => fn());
-}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
-  const [isDesktopMode, setIsDesktopMode] = useState(false);
-
-  useEffect(() => {
-    const listener = () => setIsDesktopMode(_isDesktopView);
-    _desktopViewListeners.push(listener);
-    return () => { _desktopViewListeners = _desktopViewListeners.filter(l => l !== listener); };
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -235,34 +209,6 @@ export default function Navbar() {
               ),
             )}
           </div>
-
-          {/* Desktop/Mobile View Toggle */}
-          <button
-            onClick={() => { toggleDesktopView(); setIsDesktopMode(v => !v); }}
-            title={isDesktopMode ? "মোবাইল ভিউ" : "ডেস্কটপ ভিউ"}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              color: isDesktopMode ? "#0D1B2A" : "rgba(253,246,236,0.85)",
-              background: isDesktopMode
-                ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                : "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(212,168,67,0.3)",
-              borderRadius: 10,
-              padding: "7px 12px",
-              cursor: "pointer",
-              fontSize: "0.78rem",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              fontWeight: 600,
-              transition: "all 0.25s",
-              marginRight: 8,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {isDesktopMode ? <Smartphone size={15} /> : <Monitor size={15} />}
-            <span className="hidden sm:inline">{isDesktopMode ? "মোবাইল" : "ডেস্কটপ"}</span>
-          </button>
 
           {/* Hamburger */}
           <button

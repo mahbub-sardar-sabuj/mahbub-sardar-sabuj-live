@@ -1107,7 +1107,13 @@ export default function Home() {
             gap: "2rem",
           }} className="ebooks-grid">
             {EBOOK_COVERS.map((book, i) => (
-              <FadeIn key={i} delay={i * 0.1} direction="up">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <Link href={`/ebooks/read/${book.slug}`}>
                   <motion.a
                     whileHover={{ y: -10 }}
@@ -1165,7 +1171,7 @@ export default function Home() {
                     }}>মাহবুব সরদার সবুজ</p>
                   </motion.a>
                 </Link>
-              </FadeIn>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -1334,47 +1340,50 @@ export default function Home() {
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gridTemplateRows: "auto",
             gap: "1rem",
           }} className="gallery-grid">
             {galleryImages.map((img, i) => (
-              <FadeIn key={i} delay={i * 0.07} direction="up">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.7, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setLightboxImg(img)}
+                style={{
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  position: "relative",
+                  aspectRatio: "4/3",
+                  boxShadow: "0 10px 30px rgba(10,22,40,0.1)",
+                  ...(i === galleryImages.length - 1 && galleryImages.length % 3 === 1 ? { gridColumn: "1 / -1", maxWidth: "60%", margin: "0 auto" } : {}),
+                }}
+              >
+                <img
+                  src={img.src}
+                  alt={img.caption}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
+                />
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => setLightboxImg(img)}
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
                   style={{
-                    borderRadius: 16,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    position: "relative",
-                    aspectRatio: i === 0 || i === 3 ? "4/5" : "4/3",
-                    boxShadow: "0 10px 30px rgba(10,22,40,0.1)",
+                    position: "absolute", inset: 0,
+                    background: "rgba(10,22,40,0.7)",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    padding: "1.5rem",
                   }}
                 >
-                  <img
-                    src={img.src}
-                    alt={img.caption}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s" }}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    style={{
-                      position: "absolute", inset: 0,
-                      background: "rgba(10,22,40,0.7)",
-                      display: "flex",
-                      alignItems: "flex-end",
-                      padding: "1.5rem",
-                    }}
-                  >
-                    <span style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: "#FAF6EF",
-                      fontSize: "0.9rem",
-                    }}>{img.caption}</span>
-                  </motion.div>
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#FAF6EF",
+                    fontSize: "0.9rem",
+                  }}>{img.caption}</span>
                 </motion.div>
-              </FadeIn>
+              </motion.div>
             ))}
           </div>
 
@@ -1610,7 +1619,13 @@ export default function Home() {
             gap: "1.5rem",
           }} className="news-grid">
             {newsItems.map((item, i) => (
-              <FadeIn key={i} delay={i * 0.1} direction="up">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <a href={item.link} target={item.link.startsWith("http") ? "_blank" : "_self"} rel="noopener noreferrer" style={{ textDecoration: "none" }}>
                   <motion.div
                     whileHover={{ y: -6, boxShadow: "0 30px 70px rgba(0,0,0,0.3)" }}
@@ -1679,7 +1694,7 @@ export default function Home() {
                     </div>
                   </motion.div>
                 </a>
-              </FadeIn>
+              </motion.div>
             ))}
           </div>
         </div>

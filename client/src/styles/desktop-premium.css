@@ -1,6 +1,6 @@
 /*
  * Desktop Premium Styles — World-Class Literary UX
- * Activates when min-width: 1280px (desktop mode)
+ * Activates when min-width: 1024px (desktop mode)
  * Palette: Deep Navy #0A1628, Rich Gold #C9A84C, Warm Ivory #FAF6EF
  */
 
@@ -13,41 +13,43 @@
   ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #C9A84C, #8B6914); border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: #C9A84C; }
 
-  /* Hero grid — two columns */
+  /* Hero grid — two columns (matches Home.tsx inline: 1.1fr 0.9fr) */
   .hero-grid {
     grid-template-columns: 1.1fr 0.9fr !important;
     gap: 6rem !important;
   }
 
-  /* About section — side by side */
+  /* About section — side by side (matches Home.tsx inline: 1fr 1.2fr) */
   .about-grid {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 5rem !important;
+    grid-template-columns: 1fr 1.2fr !important;
+    gap: 6rem !important;
     align-items: center !important;
   }
 
-  /* Book section — 3 columns */
+  /* Book section — two columns (matches Home.tsx inline: 1fr 1.5fr) */
   .book-grid {
     display: grid !important;
-    grid-template-columns: 1fr 1fr 1fr !important;
-    gap: 3rem !important;
-    align-items: start !important;
+    grid-template-columns: 1fr 1.5fr !important;
+    gap: 6rem !important;
+    align-items: center !important;
   }
 
-  /* Writings grid — 3 columns */
+  /* Writings grid — two columns (matches Home.tsx inline: 1fr 1fr) */
   .writings-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  /* News grid — 2 columns featured */
-  .news-grid {
     grid-template-columns: 1fr 1fr !important;
+    gap: 6rem !important;
+    align-items: center !important;
   }
 
-  /* Gallery grid — 4 columns */
+  /* News grid — 2 columns */
+  .news-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Gallery grid — 3 columns (matches Home.tsx inline: repeat(3, 1fr)) */
   .gallery-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 
   /* Stats row — 4 columns */
@@ -56,13 +58,18 @@
   }
 
   /* Ebook grid — 4 columns */
-  .ebook-grid {
+  .ebooks-grid {
     grid-template-columns: repeat(4, 1fr) !important;
   }
 
   /* Social grid — 4 columns */
   .social-grid {
     grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Contact grid — 2 columns */
+  .contact-grid {
+    grid-template-columns: 1fr 1fr !important;
   }
 
   /* Section max-width */
