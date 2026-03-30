@@ -630,11 +630,11 @@ export default function AIChatbot() {
 
   return (
     <>
-      {/* Floating Button — Pill shape, always visible, draggable anywhere */}
+      {/* Floating Button — Avatar + Text Box, always visible, draggable anywhere */}
       {(() => {
         const abs = getAbsPos();
         return (
-          <motion.div
+          <div
             className="fixed z-[60]"
             style={{
               left: abs.x,
@@ -642,93 +642,108 @@ export default function AIChatbot() {
               cursor: isDragging.current ? "grabbing" : "grab",
               userSelect: "none",
               touchAction: "none",
-              filter: "drop-shadow(0 6px 20px rgba(212,168,67,0.4))",
+              display: "flex",
+              alignItems: "center",
+              gap: 0,
             }}
             onMouseDown={handleBtnMouseDown}
             onTouchStart={handleBtnTouchStart}
           >
-            {/* Pill button — expands to show text */}
+            {/* Circular avatar button */}
             <motion.div
               onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
-              animate={{
-                width: isOpen ? 48 : pillExpanded ? "auto" : 48,
-                borderRadius: isOpen ? 24 : pillExpanded ? 28 : 24,
-              }}
-              transition={{ type: "spring", stiffness: 260, damping: 22 }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.94 }}
               style={{
-                height: 48,
+                width: 52, height: 52,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "2.5px solid #D4A843",
+                boxShadow: "0 0 0 3px rgba(212,168,67,0.22), 0 6px 20px rgba(0,0,0,0.55)",
+                background: "#0d1b2a",
+                flexShrink: 0,
+                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                overflow: "hidden",
-                background: "linear-gradient(135deg, #0d1b2a 0%, #1a2e4a 100%)",
-                border: "2px solid #D4A843",
-                boxShadow: "0 0 0 3px rgba(212,168,67,0.18), 0 6px 20px rgba(0,0,0,0.5)",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                minWidth: 48,
+                justifyContent: "center",
+                position: "relative",
+                zIndex: 2,
               }}
             >
-              {/* Avatar circle */}
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%", overflow: "hidden",
-                flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <AnimatePresence mode="wait">
-                  {isOpen ? (
-                    <motion.span key="x"
-                      initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
-                      style={{ color: "#D4A843", fontSize: "1.15rem", fontWeight: 700, width: "100%", textAlign: "center" }}>✕</motion.span>
-                  ) : (
-                    <motion.div key="av" initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
-                      style={{ width: "100%", height: "100%" }}>
-                      <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        onError={(e) => {
-                          const t = e.currentTarget;
-                          t.style.display = "none";
-                          t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1.2rem;font-weight:700;">AI</span>';
-                        }} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Expandable text label */}
-              <AnimatePresence>
-                {!isOpen && pillExpanded && (
-                  <motion.span
-                    key="label"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.35 }}
-                    style={{
-                      color: "#D4A843",
-                      fontSize: "0.72rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontWeight: 700,
-                      paddingRight: 14,
-                      paddingLeft: 6,
-                      overflow: "hidden",
-                      display: "inline-block",
-                      letterSpacing: "0.01em",
-                    }}
-                  >
-                    আমাকে জিজ্ঞেস করুন
-                  </motion.span>
+              {/* Pulse ring */}
+              {!isOpen && (
+                <span style={{
+                  position: "absolute", inset: -3, borderRadius: "50%",
+                  border: "2px solid rgba(212,168,67,0.4)",
+                  animation: "ping 2s ease-in-out infinite",
+                  pointerEvents: "none",
+                }} />
+              )}
+              <AnimatePresence mode="wait">
+                {isOpen ? (
+                  <motion.span key="x"
+                    initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
+                    style={{ color: "#D4A843", fontSize: "1.2rem", fontWeight: 700 }}>✕</motion.span>
+                ) : (
+                  <motion.div key="av"
+                    initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
+                    style={{ width: "100%", height: "100%" }}>
+                    <img src={AUTHOR_PHOTO} alt="AI"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        t.style.display = "none";
+                        t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1.3rem;font-weight:700;">AI</span>';
+                      }} />
+                  </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
 
-            {/* Pulse ring — only when closed */}
-            {!isOpen && (
-              <span style={{
-                position: "absolute", inset: 0, borderRadius: 24,
-                background: "rgba(212,168,67,0.18)",
-                animation: "ping 2.2s cubic-bezier(0,0,0.2,1) infinite",
-                pointerEvents: "none",
-              }} />
-            )}
-          </motion.div>
+            {/* Animated text box — slides in from left, always shows when not open */}
+            <AnimatePresence>
+              {!isOpen && pillExpanded && (
+                <motion.div
+                  key="textbox"
+                  initial={{ opacity: 0, x: -18, scaleX: 0.6 }}
+                  animate={{ opacity: 1, x: 0, scaleX: 1 }}
+                  exit={{ opacity: 0, x: -18, scaleX: 0.6 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                  onClick={() => { if (!didDrag.current) setIsOpen(true); }}
+                  style={{
+                    marginLeft: -10,
+                    paddingLeft: 18,
+                    paddingRight: 14,
+                    paddingTop: 7,
+                    paddingBottom: 7,
+                    background: "linear-gradient(135deg, #1a2e4a 0%, #0d1b2a 100%)",
+                    border: "1.5px solid #D4A843",
+                    borderRadius: "0 20px 20px 0",
+                    boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transformOrigin: "left center",
+                  }}
+                >
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    color: "#D4A843",
+                    letterSpacing: "0.02em",
+                    display: "block",
+                  }}>আমাকে জিজ্ঞেস করুন</span>
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.6rem",
+                    color: "rgba(212,168,67,0.55)",
+                    display: "block",
+                    marginTop: 1,
+                  }}>AI সহকারী সক্রিয়</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         );
       })()}
 
