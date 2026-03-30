@@ -1,5 +1,5 @@
 // Vercel Serverless Function — /api/chat
-// Proxies chat requests to OpenAI-compatible API server-side
+// Uses OpenRouter (free) with Google Gemini 2.0 Flash — no credits, no expiry
 
 export default async function handler(req, res) {
   // CORS headers
@@ -22,17 +22,23 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid messages" });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    const baseURL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+    const apiKey = process.env.OPENROUTER_API_KEY;
 
-    const response = await fetch(`${baseURL}/chat/completions`, {
+    if (!apiKey) {
+      console.error("OPENROUTER_API_KEY not set");
+      return res.status(500).json({ error: "API key not configured" });
+    }
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://mahbub-sardar-sabuj-live.vercel.app",
+        "X-Title": "Mahbub Sardar Sabuj AI Agent",
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "google/gemini-2.0-flash-exp:free",
         messages,
         max_tokens: 2000,
         temperature: 0.7,
@@ -41,7 +47,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("OpenAI error:", response.status, errText);
+      console.error("OpenRouter error:", response.status, errText);
       return res.status(500).json({ error: "AI service error", details: errText });
     }
 
