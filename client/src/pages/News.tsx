@@ -209,7 +209,7 @@ const newsData: NewsItem[] = [
     categoryColor: "#E74C3C",
     date: "মার্চ ২০২৬",
     readTime: "২ মিনিট",
-    featured: true,
+    featured: false,
     tag: "বাবা",
     image: "/photos/IMG_6966.JPG",
   },
