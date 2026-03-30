@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import EBooks from "./pages/EBooks";
 import EBookReader from "./pages/EBookReader";
 import Editor from "./pages/Editor";
+import News from "./pages/News";
 import AIChatbot from "./components/AIChatbot";
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path={"/ebooks"} component={EBooks} />
       <Route path={"/ebooks/read/:slug"} component={EBookReader} />
       <Route path={"/editor"} component={Editor} />
+      <Route path={"/news"} component={News} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

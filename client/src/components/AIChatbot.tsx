@@ -357,6 +357,56 @@ export default function AIChatbot() {
   const inputRef       = useRef<HTMLTextAreaElement>(null);
   const [, navigate]   = useLocation();
 
+  // ── Draggable chatbot position ────────────────────────────────────────────
+  const [btnPos, setBtnPos] = useState({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0, btnX: 0, btnY: 0 });
+  const didDrag = useRef(false);
+
+  const handleBtnMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    didDrag.current = false;
+    dragStart.current = { x: e.clientX, y: e.clientY, btnX: btnPos.x, btnY: btnPos.y };
+    e.preventDefault();
+  };
+
+  const handleBtnTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    isDragging.current = true;
+    didDrag.current = false;
+    dragStart.current = { x: t.clientX, y: t.clientY, btnX: btnPos.x, btnY: btnPos.y };
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const dx = e.clientX - dragStart.current.x;
+      const dy = e.clientY - dragStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      setBtnPos({ x: dragStart.current.btnX + dx, y: dragStart.current.btnY + dy });
+    };
+    const onMouseUp = () => { isDragging.current = false; };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDragging.current) return;
+      const t = e.touches[0];
+      const dx = t.clientX - dragStart.current.x;
+      const dy = t.clientY - dragStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      setBtnPos({ x: dragStart.current.btnX + dx, y: dragStart.current.btnY + dy });
+    };
+    const onTouchEnd = () => { isDragging.current = false; };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -463,8 +513,20 @@ export default function AIChatbot() {
 
   return (
     <>
-      {/* Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50" style={{ filter: "drop-shadow(0 8px 32px rgba(212,168,67,0.45))" }}>
+      {/* Floating Button — Draggable */}
+      <div
+        className="fixed z-50"
+        style={{
+          bottom: `calc(1.5rem - ${btnPos.y}px)`,
+          right: `calc(1.5rem - ${btnPos.x}px)`,
+          filter: "drop-shadow(0 8px 32px rgba(212,168,67,0.45))",
+          cursor: isDragging.current ? "grabbing" : "grab",
+          userSelect: "none",
+          touchAction: "none",
+        }}
+        onMouseDown={handleBtnMouseDown}
+        onTouchStart={handleBtnTouchStart}
+      >
         {/* Pulse ring animation */}
         {!isOpen && (
           <>
@@ -503,7 +565,7 @@ export default function AIChatbot() {
           </motion.div>
         )}
         <motion.button
-          onClick={() => setIsOpen(o => !o)}
+          onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
           className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden"
           whileHover={{ scale: 1.12 }}
           whileTap={{ scale: 0.93 }}
