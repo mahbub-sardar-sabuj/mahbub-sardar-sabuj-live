@@ -1,5 +1,5 @@
 /**
- * ডিজাইন ফরম্যাট v6
+ * ডিজাইন ফরম্যাট v7 — সম্পূর্ণ আপগ্রেড
  */
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -106,10 +106,44 @@ const FILTER_PRESETS = [
   { name: "matte",     filter: "contrast(0.9) brightness(1.1) saturate(0.85)",                  label: "ম্যাট" },
 ];
 
-const STICKER_LIST = [
-  "🌸","🌙","⭐","✨","🌿","🦋","🕊️","🌹","💫","🔥","🌊","🎋",
-  "🌺","💎","🪷","🌟","🏵️","🌴","🍂","🌻","❤️","💛","💙","💜",
-  "🤍","🖤","🌈","☁️","⚡","🌕","🍃","🌷","🪐","🧿","🔮","🌠",
+// ── Expanded Sticker Categories ──────────────────────────────────────────────
+const STICKER_CATEGORIES = [
+  {
+    label: "🌿 প্রকৃতি",
+    stickers: ["🌸","🌙","⭐","✨","🌿","🦋","🕊️","🌹","💫","🔥","🌊","🎋",
+               "🌺","🪷","🌟","🏵️","🌴","🍂","🌻","🌈","☁️","⚡","🌕","🍃",
+               "🌷","🌠","🌾","🍀","🌲","🌳","🌵","🎍","🎑","🌄","🌅","🌃"],
+  },
+  {
+    label: "❤️ আবেগ",
+    stickers: ["❤️","💛","💙","💜","🤍","🖤","💚","🧡","💗","💓","💞","💕",
+               "💔","❣️","💝","💘","🥰","😍","🥺","😢","😭","😊","😄","🤩",
+               "😎","🥳","😇","🤗","😴","😤","🫶","💪","🙏","👏","🤝","✌️"],
+  },
+  {
+    label: "✨ প্রতীক",
+    stickers: ["💎","🧿","🔮","🪐","🌠","☯️","✡️","☪️","✝️","🕉️","☮️","🔯",
+               "⚜️","🏆","🎖️","🥇","🎗️","🎀","🎁","🎊","🎉","🎈","🎆","🎇",
+               "🪄","🔑","🗝️","🧲","💡","🕯️","🪔","🔔","🔕","📿","🧿","🪬"],
+  },
+  {
+    label: "🌺 উৎসব",
+    stickers: ["🎄","🎃","🎋","🎍","🎎","🎏","🎐","🎑","🧧","🎊","🎉","🎈",
+               "🪅","🎆","🎇","🧨","🪔","🕯️","🎂","🍰","🥂","🍾","🥳","🎁",
+               "🎀","🎗️","🎟️","🎫","🪄","🎭","🎪","🎠","🎡","🎢","🎯","🎲"],
+  },
+  {
+    label: "🍎 খাবার",
+    stickers: ["🍎","🍊","🍋","🍇","🍓","🫐","🍒","🍑","🥭","🍍","🥥","🍌",
+               "🍉","🍈","🍏","🥝","🍅","🫒","🥑","🌽","🥕","🧅","🧄","🥦",
+               "🍕","🍔","🍜","🍣","🍦","🎂","☕","🧋","🍵","🥤","🍷","🍸"],
+  },
+  {
+    label: "✈️ ভ্রমণ",
+    stickers: ["✈️","🚂","🚢","🚗","🏔️","🏝️","🗺️","🧭","⛺","🏕️","🌍","🌏",
+               "🌐","🗼","🏰","🏯","🗽","⛩️","🕌","🕍","⛪","🏛️","🌁","🌉",
+               "🎡","🎢","🎠","🏖️","🏜️","🏞️","🌋","🏟️","🏗️","🌃","🌆","🌇"],
+  },
 ];
 
 const TEMPLATES = [
@@ -131,6 +165,7 @@ interface TextBlock {
   text: string;
   x: number; y: number;
   fontSize: number;
+  baseFontSize: number; // original fontSize before resize scaling
   fontKey: string;
   color: string;
   bold: boolean;
@@ -150,6 +185,7 @@ interface StickerLayer {
 }
 
 type ActiveTool = "text" | "style" | "photo" | "design" | "stickers";
+type ExportQuality = "1x" | "2x" | "4k";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -185,15 +221,15 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
 function makeDefaultLayers(themeText: string): TextBlock[] {
   return [
     { id: "title",  kind: "title",  text: "",
-      x: 0.5, y: 0.22, fontSize: 52, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.22, fontSize: 52, baseFontSize: 52, fontKey: "ChandraSheela",
       color: themeText, bold: true,  italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.3 },
     { id: "body",   kind: "body",   text: "",
-      x: 0.5, y: 0.52, fontSize: 36, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.52, fontSize: 36, baseFontSize: 36, fontKey: "ChandraSheela",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.9 },
     { id: "author", kind: "author", text: "",
-      x: 0.5, y: 0.84, fontSize: 28, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.84, fontSize: 28, baseFontSize: 28, fontKey: "ChandraSheela",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.4 },
   ];
@@ -232,7 +268,9 @@ export default function Editor() {
 
   const [activeTool, setActiveTool]   = useState<ActiveTool>("text");
   const [downloading, setDownloading] = useState(false);
+  const [exportQuality, setExportQuality] = useState<ExportQuality>("2x");
   const [scale, setScale]             = useState(0.36);
+  const [activeStickerCat, setActiveStickerCat] = useState(0);
 
   const photoRef    = useRef<HTMLInputElement>(null);
   const bgFileRef   = useRef<HTMLInputElement>(null);
@@ -309,7 +347,7 @@ export default function Editor() {
     const id = uid();
     setTextLayers(prev => [...prev, {
       id, kind: "custom", text: "নতুন লেখা",
-      x: 0.5, y: 0.5, fontSize: 40, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.5, fontSize: 40, baseFontSize: 40, fontKey: "ChandraSheela",
       color: theme.text, bold: false, italic: false, align: "center",
       shadow: false, visible: true, lineHeight: 1.6,
     }]);
@@ -336,7 +374,7 @@ export default function Editor() {
     if (selectedId === id) setSelectedId(null);
   };
 
-  // ── Resize text box ───────────────────────────────────────────────────────
+  // ── Resize text box — InShot style: auto font scale ───────────────────────
   useEffect(() => {
     if (!resizing) return;
     const onMove = (e: MouseEvent | TouchEvent) => {
@@ -347,6 +385,14 @@ export default function Editor() {
       const nw = Math.max(0.1, Math.min(0.98, resizing.origW + dw * 2));
       const nh = Math.max(0.05, Math.min(0.9, resizing.origH + dh * 2));
       setTextBoxSizes(prev => ({ ...prev, [resizing.id]: { w: nw, h: nh } }));
+
+      // InShot-style: scale fontSize proportional to box width change
+      setTextLayers(prev => prev.map(l => {
+        if (l.id !== resizing.id) return l;
+        const ratio = nw / resizing.origW;
+        const newSize = Math.round(Math.max(8, Math.min(300, l.baseFontSize * ratio)));
+        return { ...l, fontSize: newSize };
+      }));
     };
     const onUp = () => setResizing(null);
     window.addEventListener("mousemove", onMove);
@@ -366,14 +412,13 @@ export default function Editor() {
 
   // ── Canvas export ─────────────────────────────────────────────────────────
 
-  const buildCanvas = useCallback(async (): Promise<HTMLCanvasElement> => {
+  const buildCanvas = useCallback(async (dpr: number): Promise<HTMLCanvasElement> => {
     await Promise.all(textLayers.map(l => ensureFontLoaded(l.fontKey)));
     await document.fonts.ready;
-    const DPR = 2;
     const canvas = document.createElement("canvas");
-    canvas.width = cardW * DPR; canvas.height = cardH * DPR;
+    canvas.width = cardW * dpr; canvas.height = cardH * dpr;
     const ctx = canvas.getContext("2d")!;
-    ctx.scale(DPR, DPR);
+    ctx.scale(dpr, dpr);
 
     if (theme.gradient) {
       const parts = theme.gradient.match(/linear-gradient\(([^,]+),([\s\S]*)\)/);
@@ -443,7 +488,10 @@ export default function Editor() {
       ctx.textAlign = layer.align;
       if (layer.shadow) { ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
       const displayText = layer.kind === "author" ? `___❐ ${layer.text}` : layer.text;
-      const lines = wrapText(ctx, displayText, cardW - padding * 2);
+      // Use per-layer box width for text wrapping (InShot-style)
+      const boxSize = textBoxSizes[layer.id] ?? { w: 0.8, h: 0.15 };
+      const maxW = boxSize.w * cardW - padding;
+      const lines = wrapText(ctx, displayText, maxW);
       const totalH = lines.length * layer.fontSize * layer.lineHeight;
       const startY = layer.y * cardH - totalH / 2 + layer.fontSize;
       const xPos = layer.align === "center" ? layer.x * cardW : layer.align === "right" ? layer.x * cardW + 200 : layer.x * cardW;
@@ -459,15 +507,19 @@ export default function Editor() {
     }
 
     return canvas;
-  }, [theme, cardW, cardH, frame, padding, bgImage, bgOpacity, photoImage, photoOpacity, effectiveFilter, showWatermark, watermarkOpacity, textLayers, stickers]);
+  }, [theme, cardW, cardH, frame, padding, bgImage, bgOpacity, photoImage, photoOpacity, effectiveFilter, showWatermark, watermarkOpacity, textLayers, stickers, textBoxSizes]);
 
-  const handleDownload = async () => {
+  const handleDownload = async (quality: ExportQuality) => {
     setDownloading(true);
     try {
-      const canvas = await buildCanvas();
+      let dpr = 2;
+      let suffix = "1080";
+      if (quality === "1x") { dpr = 1; suffix = "standard"; }
+      else if (quality === "4k") { dpr = 4; suffix = "4K"; }
+      const canvas = await buildCanvas(dpr);
       const a = document.createElement("a");
       a.href = canvas.toDataURL("image/png");
-      a.download = "mahbub-sardar-sabuj-design.png";
+      a.download = `mahbub-sardar-sabuj-design-${suffix}.png`;
       a.click();
     } finally { setDownloading(false); }
   };
@@ -487,26 +539,33 @@ export default function Editor() {
 
   const Pill = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
     <button onClick={onClick}
-      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap border ${
-        active
-          ? "bg-[#D4A843] text-black border-[#D4A843]"
-          : "bg-transparent text-gray-400 border-[#1e3050] hover:border-[#D4A843]/50 hover:text-white"
-      }`}>
+      style={{
+        padding: "6px 16px",
+        borderRadius: 999,
+        fontSize: 12,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        border: `1px solid ${active ? "#D4A843" : "#1e3050"}`,
+        background: active ? "#D4A843" : "transparent",
+        color: active ? "#000" : "#9ca3af",
+        cursor: "pointer",
+        transition: "all 0.15s",
+      }}>
       {label}
     </button>
   );
 
   const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div className="flex items-center gap-3">
-      <span className="text-gray-500 text-xs w-20 flex-shrink-0">{label}</span>
-      <div className="flex-1">{children}</div>
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <span style={{ color: "#6b7280", fontSize: 11, width: 80, flexShrink: 0 }}>{label}</span>
+      <div style={{ flex: 1 }}>{children}</div>
     </div>
   );
 
   const Slider = ({ val, set, min, max, step = 1 }: { val: number; set: (v: number) => void; min: number; max: number; step?: number }) => (
     <input type="range" min={min} max={max} step={step} value={val}
       onChange={e => set(+e.target.value)}
-      className="w-full h-1.5 rounded-full accent-[#D4A843] cursor-pointer" />
+      style={{ width: "100%", height: 6, borderRadius: 3, accentColor: "#D4A843", cursor: "pointer" }} />
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -514,12 +573,12 @@ export default function Editor() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#060c18] text-white">
+    <div style={{ minHeight: "100vh", background: "#060c18", color: "#fff" }}>
       <Seo title="ডিজাইন ফরম্যাট | মাহবুব সরদার সবুজ"
         description="প্রিমিয়াম বাংলা লেখার কার্ড ডিজাইন করুন" />
       <Navbar />
 
-      <div className="pt-20 pb-28 px-3 max-w-7xl mx-auto">
+      <div style={{ paddingTop: 80, paddingBottom: 112, paddingLeft: 12, paddingRight: 12, maxWidth: 1280, margin: "0 auto" }}>
         {/* Desktop two-column layout */}
         <div className="lg:grid lg:grid-cols-[1fr_460px] lg:gap-10 lg:items-start">
 
@@ -528,41 +587,37 @@ export default function Editor() {
 
         {/* ── Brand header — animated */}
         <motion.div
-          className="text-center mb-8"
+          style={{ textAlign: "center", marginBottom: 32 }}
           initial={{ opacity: 0, y: -18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <div className="relative inline-block">
-            {/* Pulsing ambient glow */}
+          <div style={{ position: "relative", display: "inline-block" }}>
             <motion.div
-              className="absolute -inset-8 rounded-full"
-              style={{ background: "radial-gradient(ellipse, rgba(212,168,67,0.18) 0%, transparent 70%)" }}
+              style={{ position: "absolute", inset: -32, borderRadius: "50%",
+                background: "radial-gradient(ellipse, rgba(212,168,67,0.18) 0%, transparent 70%)" }}
               animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
             />
-
-            {/* Shimmer underline bar */}
             <motion.div
-              className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full"
-              style={{ background: "linear-gradient(90deg, transparent, #D4A843, #f5e27a, #D4A843, transparent)" }}
+              style={{ position: "absolute", bottom: -8, left: 0, right: 0, height: 2, borderRadius: 2,
+                background: "linear-gradient(90deg, transparent, #D4A843, #f5e27a, #D4A843, transparent)" }}
               animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
-
-            {/* Main brand title */}
             <motion.h1
-              className="relative font-extrabold leading-tight"
               style={{
+                position: "relative",
                 fontFamily: "'AkhandBengali', 'Noto Sans Bengali', sans-serif",
                 fontSize: "clamp(1.9rem, 7vw, 2.8rem)",
+                fontWeight: 800,
+                lineHeight: 1.2,
                 background: "linear-gradient(135deg, #f5e27a 0%, #D4A843 30%, #b8892a 60%, #f0c96a 85%, #fff8dc 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
                 backgroundSize: "200% 200%",
                 filter: "drop-shadow(0 2px 16px rgba(212,168,67,0.35))",
-                letterSpacing: "-0.01em",
               }}
               animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -573,10 +628,10 @@ export default function Editor() {
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════════════
-            LIVE PREVIEW — top, full width
+            LIVE PREVIEW
         ══════════════════════════════════════════════════════════════ */}
-        <div ref={previewRef} className="w-full mb-3">
-          <div className="flex justify-center">
+        <div ref={previewRef} style={{ width: "100%", marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               style={{
                 width: cardW * scale,
@@ -666,7 +721,7 @@ export default function Editor() {
                         textAlign: layer.align,
                         boxSizing: "border-box",
                       }}>
-                      {/* Delete button — top-right, one click */}
+                      {/* Delete button */}
                       {isSelected && (
                         <button
                           data-nodelete="1"
@@ -675,26 +730,16 @@ export default function Editor() {
                           onClick={e => { e.stopPropagation(); removeLayer(layer.id); }}
                           style={{
                             position: "absolute",
-                            top: -handleSz * 0.9,
-                            right: -handleSz * 0.5,
+                            top: -handleSz * 0.9, right: -handleSz * 0.5,
                             zIndex: 30,
-                            background: "#ef4444",
-                            color: "#fff",
-                            border: "2px solid #fff",
-                            borderRadius: "50%",
-                            width: handleSz,
-                            height: handleSz,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
+                            background: "#ef4444", color: "#fff",
+                            border: "2px solid #fff", borderRadius: "50%",
+                            width: handleSz, height: handleSz,
+                            display: "flex", alignItems: "center", justifyContent: "center",
                             fontSize: Math.ceil(16 / scale),
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                            boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
-                            lineHeight: 1,
-                          }}>
-                          ✕
-                        </button>
+                            cursor: "pointer", fontWeight: "bold",
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.5)", lineHeight: 1,
+                          }}>✕</button>
                       )}
                       <div style={{
                         fontSize: layer.fontSize,
@@ -716,39 +761,32 @@ export default function Editor() {
                       }}>
                         {displayText}
                       </div>
-                      {/* Resize handle — bottom-right corner */}
+                      {/* Resize handle — bottom-right corner (InShot style) */}
                       {isSelected && (
                         <div
                           data-resize="1"
                           onMouseDown={e => {
                             e.stopPropagation();
                             setResizing({ id: layer.id, startX: e.clientX, startY: e.clientY, origW: boxSize.w, origH: boxSize.h });
+                            // save current fontSize as baseFontSize for scaling reference
+                            setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
                           }}
                           onTouchStart={e => {
                             e.stopPropagation();
                             setResizing({ id: layer.id, startX: e.touches[0].clientX, startY: e.touches[0].clientY, origW: boxSize.w, origH: boxSize.h });
+                            setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
                           }}
                           style={{
                             position: "absolute",
-                            bottom: -handleSz * 0.5,
-                            right: -handleSz * 0.5,
-                            width: handleSz,
-                            height: handleSz,
-                            background: "#D4A843",
-                            border: "2px solid #fff",
+                            bottom: -handleSz * 0.5, right: -handleSz * 0.5,
+                            width: handleSz, height: handleSz,
+                            background: "#D4A843", border: "2px solid #fff",
                             borderRadius: Math.ceil(4 / scale),
-                            cursor: "se-resize",
-                            zIndex: 30,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: Math.ceil(12 / scale),
-                            color: "#000",
-                            fontWeight: "bold",
+                            cursor: "se-resize", zIndex: 30,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: Math.ceil(12 / scale), color: "#000", fontWeight: "bold",
                             boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-                          }}>
-                          ⤡
-                        </div>
+                          }}>⤡</div>
                       )}
                     </div>
                   );
@@ -776,22 +814,14 @@ export default function Editor() {
                           onClick={e => { e.stopPropagation(); removeLayer(s.id); }}
                           style={{
                             position: "absolute",
-                            top: -Math.ceil(28 / scale),
-                            right: -Math.ceil(8 / scale),
-                            zIndex: 20,
-                            background: "#ef4444",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: Math.ceil(6 / scale),
+                            top: -Math.ceil(28 / scale), right: -Math.ceil(8 / scale),
+                            zIndex: 20, background: "#ef4444", color: "#fff",
+                            border: "none", borderRadius: Math.ceil(6 / scale),
                             padding: `${Math.ceil(2 / scale)}px ${Math.ceil(8 / scale)}px`,
-                            fontSize: Math.ceil(20 / scale),
-                            cursor: "pointer",
-                            lineHeight: 1.2,
-                            fontWeight: "bold",
+                            fontSize: Math.ceil(20 / scale), cursor: "pointer",
+                            lineHeight: 1.2, fontWeight: "bold",
                             boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-                          }}>
-                          ✕
-                        </button>
+                          }}>✕</button>
                       )}
                       <div style={{
                         outline: isSelected ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
@@ -809,15 +839,18 @@ export default function Editor() {
           </div>
 
           {/* Theme dots row */}
-          <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-gray-700 text-[10px]">{cardW}×{cardH}px</span>
-            <div className="flex gap-1.5 flex-wrap justify-end">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8, padding: "0 4px" }}>
+            <span style={{ color: "#374151", fontSize: 10 }}>{cardW}×{cardH}px</span>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
               {THEMES.map((t, i) => (
                 <button key={t.name} onClick={() => setThemeIdx(i)} title={t.name}
-                  className={`w-5 h-5 rounded-full border-2 transition-all ${
-                    themeIdx === i ? "border-[#D4A843] scale-125" : "border-transparent hover:border-[#D4A843]/50"
-                  }`}
-                  style={{ background: t.gradient || t.bg }} />
+                  style={{
+                    width: 20, height: 20, borderRadius: "50%",
+                    border: themeIdx === i ? "2px solid #D4A843" : "2px solid transparent",
+                    background: t.gradient || t.bg,
+                    transform: themeIdx === i ? "scale(1.25)" : "scale(1)",
+                    cursor: "pointer", transition: "all 0.15s",
+                  }} />
               ))}
             </div>
           </div>
@@ -825,23 +858,13 @@ export default function Editor() {
 
         </div>{/* end left column */}
 
-        {/* ── RIGHT COLUMN: Download + Tools ── */}
+        {/* ── RIGHT COLUMN: Tools + Download ── */}
         <div className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
-        {/* ════════════════════════════════════════════════════════════
-            DOWNLOAD BUTTON
-        ══════════════════════════════════════════════════════════════ */}
-        <button onClick={handleDownload} disabled={downloading}
-          className="w-full py-4 bg-gradient-to-r from-[#D4A843] to-[#b8892a] hover:from-[#c49030] hover:to-[#a07020] text-black font-bold rounded-2xl flex items-center justify-center gap-2 transition-all disabled:opacity-60 shadow-lg shadow-[#D4A843]/20 text-base mb-6">
-          {downloading
-            ? <><div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" /> ডাউনলোড হচ্ছে...</>
-            : <>⬇️ PNG ডাউনলোড করুন ({cardW}×{cardH})</>
-          }
-        </button>
 
         {/* ══════════════════════════════════════════════════════════════
             TOOL TABS
         ══════════════════════════════════════════════════════════════ */}
-        <div className="flex gap-2 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 16 }}>
           {([
             ["text",    "✏️ লেখা"],
             ["style",   "🎨 স্টাইল"],
@@ -862,65 +885,71 @@ export default function Editor() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18 }}
-            className="bg-[#0d1a2d] rounded-2xl border border-[#1e3050] overflow-hidden">
+            style={{ background: "#0d1a2d", borderRadius: 16, border: "1px solid #1e3050", overflow: "hidden" }}>
 
             {/* ── TEXT PANEL ── */}
             {activeTool === "text" && (
-              <div className="p-4 space-y-4">
+              <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[#D4A843] text-xs font-bold">লেখার নাম</label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <label style={{ color: "#D4A843", fontSize: 11, fontWeight: 700 }}>লেখার নাম</label>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
                       <input type="checkbox" checked={textLayers.find(l => l.kind === "title")?.visible ?? true}
                         onChange={e => updateText("title", { visible: e.target.checked })}
-                        className="w-3.5 h-3.5 accent-[#D4A843]" />
-                      <span className="text-gray-500 text-xs">দেখাও</span>
+                        style={{ width: 14, height: 14, accentColor: "#D4A843" }} />
+                      <span style={{ color: "#6b7280", fontSize: 11 }}>দেখাও</span>
                     </label>
                   </div>
                   <input value={textLayers.find(l => l.kind === "title")?.text ?? ""}
                     onChange={e => updateText("title", { text: e.target.value })}
-                    className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2.5 text-sm outline-none transition-colors" />
+                    style={{ width: "100%", background: "#060c18", color: "#fff", border: "1px solid #1e3050",
+                      borderRadius: 12, padding: "10px 12px", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[#D4A843] text-xs font-bold">মূল লেখা</label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <label style={{ color: "#D4A843", fontSize: 11, fontWeight: 700 }}>মূল লেখা</label>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
                       <input type="checkbox" checked={textLayers.find(l => l.kind === "body")?.visible ?? true}
                         onChange={e => updateText("body", { visible: e.target.checked })}
-                        className="w-3.5 h-3.5 accent-[#D4A843]" />
-                      <span className="text-gray-500 text-xs">দেখাও</span>
+                        style={{ width: 14, height: 14, accentColor: "#D4A843" }} />
+                      <span style={{ color: "#6b7280", fontSize: 11 }}>দেখাও</span>
                     </label>
                   </div>
                   <textarea value={textLayers.find(l => l.kind === "body")?.text ?? ""}
                     onChange={e => updateText("body", { text: e.target.value })}
                     rows={5}
-                    className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2.5 text-sm outline-none resize-y transition-colors leading-relaxed" />
+                    style={{ width: "100%", background: "#060c18", color: "#fff", border: "1px solid #1e3050",
+                      borderRadius: 12, padding: "10px 12px", fontSize: 14, outline: "none",
+                      resize: "vertical", lineHeight: 1.7, boxSizing: "border-box" }} />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[#D4A843] text-xs font-bold">লেখক নাম</label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <label style={{ color: "#D4A843", fontSize: 11, fontWeight: 700 }}>লেখক নাম</label>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
                       <input type="checkbox" checked={textLayers.find(l => l.kind === "author")?.visible ?? true}
                         onChange={e => updateText("author", { visible: e.target.checked })}
-                        className="w-3.5 h-3.5 accent-[#D4A843]" />
-                      <span className="text-gray-500 text-xs">দেখাও</span>
+                        style={{ width: 14, height: 14, accentColor: "#D4A843" }} />
+                      <span style={{ color: "#6b7280", fontSize: 11 }}>দেখাও</span>
                     </label>
                   </div>
                   <input value={textLayers.find(l => l.kind === "author")?.text ?? ""}
                     onChange={e => updateText("author", { text: e.target.value })}
-                    className="w-full bg-[#060c18] text-white border border-[#1e3050] focus:border-[#D4A843] rounded-xl px-3 py-2.5 text-sm outline-none transition-colors" />
+                    style={{ width: "100%", background: "#060c18", color: "#fff", border: "1px solid #1e3050",
+                      borderRadius: 12, padding: "10px 12px", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                 </div>
 
                 <div>
-                  <p className="text-gray-500 text-xs font-semibold mb-2">দ্রুত টেমপ্লেট</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <p style={{ color: "#6b7280", fontSize: 11, fontWeight: 600, marginBottom: 8 }}>দ্রুত টেমপ্লেট</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     {TEMPLATES.map(t => (
                       <button key={t.label}
                         onClick={() => { updateText("title", { text: t.title, visible: true }); updateText("body", { text: t.body, visible: true }); }}
-                        className="text-left px-3 py-2 bg-[#060c18] hover:bg-[#1e3050] border border-[#1e3050] hover:border-[#D4A843]/40 rounded-xl text-xs text-gray-300 transition-all">
+                        style={{ textAlign: "left", padding: "8px 12px", background: "#060c18",
+                          border: "1px solid #1e3050", borderRadius: 12, fontSize: 12,
+                          color: "#d1d5db", cursor: "pointer" }}>
                         {t.label}
                       </button>
                     ))}
@@ -928,7 +957,9 @@ export default function Editor() {
                 </div>
 
                 <button onClick={addCustomText}
-                  className="w-full py-2.5 border border-dashed border-[#D4A843]/30 hover:border-[#D4A843]/70 text-[#D4A843]/70 hover:text-[#D4A843] rounded-xl text-sm font-semibold transition-all">
+                  style={{ width: "100%", padding: "10px 0", border: "1px dashed rgba(212,168,67,0.3)",
+                    borderRadius: 12, fontSize: 13, fontWeight: 600, color: "rgba(212,168,67,0.7)",
+                    background: "transparent", cursor: "pointer" }}>
                   + নতুন কাস্টম লেখা যোগ করুন
                 </button>
               </div>
@@ -936,27 +967,29 @@ export default function Editor() {
 
             {/* ── STYLE PANEL ── */}
             {activeTool === "style" && (
-              <div className="p-4 space-y-5">
+              <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 20 }}>
                 <div>
-                  <p className="text-gray-500 text-xs font-semibold mb-2">কোন লেখা সম্পাদনা করবেন?</p>
-                  <div className="flex gap-2 flex-wrap">
+                  <p style={{ color: "#6b7280", fontSize: 11, fontWeight: 600, marginBottom: 8 }}>কোন লেখা সম্পাদনা করবেন?</p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {textLayers.filter(l => l.visible).map(l => (
                       <button key={l.id} onClick={() => setSelectedId(l.id)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                          selectedId === l.id
-                            ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                            : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                        }`}>
+                        style={{
+                          padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 500,
+                          border: `1px solid ${selectedId === l.id ? "#D4A843" : "#1e3050"}`,
+                          background: selectedId === l.id ? "rgba(212,168,67,0.1)" : "transparent",
+                          color: selectedId === l.id ? "#D4A843" : "#9ca3af", cursor: "pointer",
+                        }}>
                         {l.kind === "title" ? "শিরোনাম" : l.kind === "body" ? "মূল লেখা" : l.kind === "author" ? "লেখক নাম" : l.text.slice(0, 8) || "কাস্টম"}
                       </button>
                     ))}
                     {stickers.map(s => (
                       <button key={s.id} onClick={() => setSelectedId(s.id)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                          selectedId === s.id
-                            ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                            : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                        }`}>
+                        style={{
+                          padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 500,
+                          border: `1px solid ${selectedId === s.id ? "#D4A843" : "#1e3050"}`,
+                          background: selectedId === s.id ? "rgba(212,168,67,0.1)" : "transparent",
+                          color: selectedId === s.id ? "#D4A843" : "#9ca3af", cursor: "pointer",
+                        }}>
                         {s.emoji}
                       </button>
                     ))}
@@ -964,37 +997,77 @@ export default function Editor() {
                 </div>
 
                 {selectedText && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-gray-500 text-xs block mb-1.5">রঙ</label>
-                        <div className="flex items-center gap-2">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    {/* Color picker — custom color */}
+                    <div>
+                      <label style={{ color: "#6b7280", fontSize: 11, display: "block", marginBottom: 8 }}>রঙ নির্বাচন করুন</label>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        {/* Large color swatch that opens native picker */}
+                        <label style={{ cursor: "pointer", position: "relative" }}>
+                          <div style={{
+                            width: 48, height: 48, borderRadius: 12,
+                            background: selectedText.color,
+                            border: "3px solid rgba(255,255,255,0.2)",
+                            boxShadow: `0 0 0 2px ${selectedText.color}40, 0 4px 12px rgba(0,0,0,0.4)`,
+                            cursor: "pointer",
+                          }} />
                           <input type="color" value={selectedText.color}
                             onChange={e => updateText(selectedText.id, { color: e.target.value })}
-                            className="w-10 h-9 rounded-lg border-0 cursor-pointer bg-transparent" />
-                          <span className="text-gray-600 text-xs font-mono">{selectedText.color}</span>
+                            style={{ position: "absolute", opacity: 0, width: 0, height: 0, top: 0, left: 0 }} />
+                        </label>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ color: "#fff", fontSize: 14, fontWeight: 600, fontFamily: "monospace" }}>
+                            {selectedText.color.toUpperCase()}
+                          </div>
+                          <div style={{ color: "#6b7280", fontSize: 11, marginTop: 2 }}>ক্লিক করে রঙ বদলান</div>
+                        </div>
+                        {/* Quick preset colors */}
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", maxWidth: 120 }}>
+                          {["#FFFFFF","#000000","#D4A843","#E8D5A3","#FF6B6B","#4ECDC4","#45B7D1","#96CEB4"].map(c => (
+                            <button key={c} onClick={() => updateText(selectedText.id, { color: c })}
+                              title={c}
+                              style={{
+                                width: 22, height: 22, borderRadius: 6,
+                                background: c, border: selectedText.color === c ? "2px solid #D4A843" : "1px solid rgba(255,255,255,0.2)",
+                                cursor: "pointer",
+                              }} />
+                          ))}
                         </div>
                       </div>
-                    <div>
-                      <label className="text-gray-500 text-xs block mb-1.5">ফন্ট সাইজ — <span className="text-[#D4A843] font-bold">{selectedText.fontSize}px</span></label>
-                      <input type="range" min={10} max={200} step={1} value={selectedText.fontSize}
-                        onChange={e => updateText(selectedText.id, { fontSize: +e.target.value })}
-                        className="w-full h-2 rounded-full accent-[#D4A843] cursor-pointer" />
-                      <div className="flex justify-between text-gray-700 text-[10px] mt-0.5">
-                        <span>10px</span><span>100px</span><span>200px</span>
-                      </div>
                     </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                      <div>
+                        <label style={{ color: "#6b7280", fontSize: 11, display: "block", marginBottom: 6 }}>
+                          ফন্ট সাইজ — <span style={{ color: "#D4A843", fontWeight: 700 }}>{selectedText.fontSize}px</span>
+                        </label>
+                        <input type="range" min={10} max={200} step={1} value={selectedText.fontSize}
+                          onChange={e => updateText(selectedText.id, { fontSize: +e.target.value, baseFontSize: +e.target.value })}
+                          style={{ width: "100%", height: 6, borderRadius: 3, accentColor: "#D4A843", cursor: "pointer" }} />
+                        <div style={{ display: "flex", justifyContent: "space-between", color: "#374151", fontSize: 10, marginTop: 2 }}>
+                          <span>10</span><span>100</span><span>200</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ color: "#6b7280", fontSize: 11, display: "block", marginBottom: 6 }}>
+                          লাইন উচ্চতা — <span style={{ color: "#D4A843", fontWeight: 700 }}>{selectedText.lineHeight.toFixed(1)}</span>
+                        </label>
+                        <Slider val={selectedText.lineHeight} set={v => updateText(selectedText.id, { lineHeight: v })} min={1} max={3.5} step={0.05} />
+                      </div>
                     </div>
 
                     <div>
-                      <label className="text-gray-500 text-xs block mb-2">স্টাইল</label>
-                      <div className="flex gap-2">
+                      <label style={{ color: "#6b7280", fontSize: 11, display: "block", marginBottom: 8 }}>স্টাইল</label>
+                      <div style={{ display: "flex", gap: 8 }}>
                         {([["bold", "বোল্ড", selectedText.bold], ["italic", "বাঁকা", selectedText.italic], ["shadow", "শ্যাডো", selectedText.shadow]] as [string, string, boolean][]).map(([key, lbl, val]) => (
                           <button key={key}
                             onClick={() => updateText(selectedText.id, { [key]: !val })}
-                            className={`flex-1 py-2 rounded-xl border text-xs font-bold transition-all ${
-                              val ? "border-[#D4A843] bg-[#D4A843]/15 text-[#D4A843]" : "border-[#1e3050] text-gray-500"
-                            }`}>
+                            style={{
+                              flex: 1, padding: "8px 0", borderRadius: 12, fontSize: 11, fontWeight: 700,
+                              border: `1px solid ${val ? "#D4A843" : "#1e3050"}`,
+                              background: val ? "rgba(212,168,67,0.15)" : "transparent",
+                              color: val ? "#D4A843" : "#6b7280", cursor: "pointer",
+                            }}>
                             {lbl}
                           </button>
                         ))}
@@ -1002,13 +1075,16 @@ export default function Editor() {
                     </div>
 
                     <div>
-                      <label className="text-gray-500 text-xs block mb-2">সারিবদ্ধতা</label>
-                      <div className="flex gap-2">
+                      <label style={{ color: "#6b7280", fontSize: 11, display: "block", marginBottom: 8 }}>সারিবদ্ধতা</label>
+                      <div style={{ display: "flex", gap: 8 }}>
                         {(["left", "center", "right"] as const).map(a => (
                           <button key={a} onClick={() => updateText(selectedText.id, { align: a })}
-                            className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all ${
-                              selectedText.align === a ? "border-[#D4A843] bg-[#D4A843]/15 text-[#D4A843]" : "border-[#1e3050] text-gray-500"
-                            }`}>
+                            style={{
+                              flex: 1, padding: "8px 0", borderRadius: 12, fontSize: 13,
+                              border: `1px solid ${selectedText.align === a ? "#D4A843" : "#1e3050"}`,
+                              background: selectedText.align === a ? "rgba(212,168,67,0.15)" : "transparent",
+                              color: selectedText.align === a ? "#D4A843" : "#6b7280", cursor: "pointer",
+                            }}>
                             {a === "left" ? "⬅" : a === "center" ? "↔" : "➡"}
                           </button>
                         ))}
@@ -1016,31 +1092,28 @@ export default function Editor() {
                     </div>
 
                     <div>
-                      <label className="text-gray-500 text-xs block mb-2">ফন্ট</label>
-                      <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                      <label style={{ color: "#6b7280", fontSize: 11, display: "block", marginBottom: 8 }}>ফন্ট</label>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, maxHeight: 160, overflowY: "auto" }}>
                         {FONTS.map(f => (
                           <button key={f.value} onClick={() => updateText(selectedText.id, { fontKey: f.value })}
-                            className={`text-left px-3 py-2 rounded-xl border text-xs transition-all ${
-                              selectedText.fontKey === f.value
-                                ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                                : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                            }`} style={{ fontFamily: FONT_CSS[f.value] }}>
+                            style={{
+                              textAlign: "left", padding: "8px 12px", borderRadius: 12, fontSize: 11,
+                              border: `1px solid ${selectedText.fontKey === f.value ? "#D4A843" : "#1e3050"}`,
+                              background: selectedText.fontKey === f.value ? "rgba(212,168,67,0.1)" : "transparent",
+                              color: selectedText.fontKey === f.value ? "#D4A843" : "#9ca3af",
+                              fontFamily: FONT_CSS[f.value], cursor: "pointer",
+                            }}>
                             {f.name}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <Row label="লাইন উচ্চতা">
-                      <div className="flex items-center gap-3">
-                        <Slider val={selectedText.lineHeight} set={v => updateText(selectedText.id, { lineHeight: v })} min={1} max={3.5} step={0.05} />
-                        <span className="text-[#D4A843] text-xs font-bold w-8 text-right">{selectedText.lineHeight.toFixed(1)}</span>
-                      </div>
-                    </Row>
-
                     {selectedText.kind === "custom" && (
                       <button onClick={() => removeLayer(selectedText.id)}
-                        className="w-full py-2 text-red-400 border border-red-400/20 rounded-xl text-xs hover:bg-red-400/10 transition-all">
+                        style={{ width: "100%", padding: "8px 0", color: "#f87171",
+                          border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12,
+                          fontSize: 11, background: "transparent", cursor: "pointer" }}>
                         এই লেখা মুছে দিন
                       </button>
                     )}
@@ -1048,122 +1121,135 @@ export default function Editor() {
                 )}
 
                 {selectedSticker && (
-                  <div className="space-y-4">
-                    <div className="text-center text-5xl">{selectedSticker.emoji}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <div style={{ textAlign: "center", fontSize: 48 }}>{selectedSticker.emoji}</div>
                     <Row label="আকার">
-                      <div className="flex items-center gap-3">
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         <Slider val={selectedSticker.size} set={v => setStickers(prev => prev.map(s => s.id === selectedSticker.id ? { ...s, size: v } : s))} min={20} max={300} />
-                        <span className="text-[#D4A843] text-xs font-bold w-12 text-right">{selectedSticker.size}px</span>
+                        <span style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, width: 48, textAlign: "right" }}>{selectedSticker.size}px</span>
                       </div>
                     </Row>
                     <button onClick={() => removeLayer(selectedSticker.id)}
-                      className="w-full py-2 text-red-400 border border-red-400/20 rounded-xl text-xs hover:bg-red-400/10 transition-all">
+                      style={{ width: "100%", padding: "8px 0", color: "#f87171",
+                        border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12,
+                        fontSize: 11, background: "transparent", cursor: "pointer" }}>
                       স্টিকার মুছে দিন
                     </button>
                   </div>
                 )}
 
                 {!selectedText && !selectedSticker && (
-                  <p className="text-gray-600 text-sm text-center py-4">উপরে একটি লেখা বা স্টিকার নির্বাচন করুন</p>
+                  <p style={{ color: "#4b5563", fontSize: 13, textAlign: "center", padding: "16px 0" }}>
+                    উপরে একটি লেখা বা স্টিকার নির্বাচন করুন
+                  </p>
                 )}
               </div>
             )}
 
             {/* ── PHOTO PANEL ── */}
             {activeTool === "photo" && (
-              <div className="p-4 space-y-5">
-                <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={onPhotoUpload} />
-                <input ref={bgFileRef} type="file" accept="image/*" className="hidden" onChange={onBgUpload} />
+              <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 20 }}>
+                <input ref={photoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPhotoUpload} />
+                <input ref={bgFileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onBgUpload} />
 
                 <div>
-                  <p className="text-[#D4A843] text-xs font-bold mb-2">মূল ছবি</p>
+                  <p style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>মূল ছবি</p>
                   <button onClick={() => photoRef.current?.click()}
-                    className="w-full py-6 border-2 border-dashed border-[#D4A843]/30 hover:border-[#D4A843] rounded-2xl text-center hover:bg-[#D4A843]/5 transition-all">
+                    style={{ width: "100%", padding: "24px 0", border: "2px dashed rgba(212,168,67,0.3)",
+                      borderRadius: 16, textAlign: "center", background: "transparent", cursor: "pointer" }}>
                     {photoImage ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <img src={photoImage} className="w-16 h-16 object-cover rounded-xl mx-auto" style={{ filter: effectiveFilter }} />
-                        <span className="text-[#D4A843] text-xs">ছবি পরিবর্তন করুন</span>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                        <img src={photoImage} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, filter: effectiveFilter }} />
+                        <span style={{ color: "#D4A843", fontSize: 11 }}>ছবি পরিবর্তন করুন</span>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-3xl">📷</span>
-                        <span className="text-gray-400 text-sm">ছবি আপলোড করুন</span>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 28 }}>📷</span>
+                        <span style={{ color: "#9ca3af", fontSize: 13 }}>ছবি আপলোড করুন</span>
                       </div>
                     )}
                   </button>
 
                   {photoImage && (
                     <>
-                      <div className="mt-3">
-                        <p className="text-gray-500 text-xs font-semibold mb-2">ফিল্টার</p>
-                        <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div style={{ marginTop: 12 }}>
+                        <p style={{ color: "#6b7280", fontSize: 11, fontWeight: 600, marginBottom: 8 }}>ফিল্টার</p>
+                        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
                           {FILTER_PRESETS.map(fp => (
                             <button key={fp.name} onClick={() => setFilterPreset(fp.name)}
-                              className={`flex-shrink-0 flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all ${
-                                filterPreset === fp.name
-                                  ? "border-[#D4A843] bg-[#D4A843]/10"
-                                  : "border-[#1e3050] hover:border-[#D4A843]/40"
-                              }`}>
-                              <div className="w-12 h-12 rounded-lg overflow-hidden">
-                                <img src={photoImage} className="w-full h-full object-cover"
-                                  style={{ filter: fp.filter === "none" ? undefined : fp.filter }} />
+                              style={{
+                                flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                                padding: 6, borderRadius: 12,
+                                border: `1px solid ${filterPreset === fp.name ? "#D4A843" : "#1e3050"}`,
+                                background: filterPreset === fp.name ? "rgba(212,168,67,0.1)" : "transparent",
+                                cursor: "pointer",
+                              }}>
+                              <div style={{ width: 48, height: 48, borderRadius: 8, overflow: "hidden" }}>
+                                <img src={photoImage} style={{ width: "100%", height: "100%", objectFit: "cover",
+                                  filter: fp.filter === "none" ? undefined : fp.filter }} />
                               </div>
-                              <span className={`text-[9px] ${filterPreset === fp.name ? "text-[#D4A843]" : "text-gray-500"}`}>{fp.label}</span>
+                              <span style={{ fontSize: 9, color: filterPreset === fp.name ? "#D4A843" : "#6b7280" }}>{fp.label}</span>
                             </button>
                           ))}
                         </div>
                       </div>
-                      <div className="mt-3">
+                      <div style={{ marginTop: 12 }}>
                         <Row label="অপাসিটি">
-                          <div className="flex items-center gap-3">
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                             <Slider val={photoOpacity} set={setPhotoOpacity} min={0} max={100} />
-                            <span className="text-[#D4A843] text-xs font-bold w-10 text-right">{photoOpacity}%</span>
+                            <span style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, width: 40, textAlign: "right" }}>{photoOpacity}%</span>
                           </div>
                         </Row>
                       </div>
                       <button onClick={() => setPhotoImage(null)}
-                        className="mt-2 w-full py-2 text-red-400 text-xs border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-all">
+                        style={{ marginTop: 8, width: "100%", padding: "8px 0", color: "#f87171",
+                          fontSize: 11, border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12,
+                          background: "transparent", cursor: "pointer" }}>
                         ছবি সরিয়ে দিন
                       </button>
                     </>
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-[#1e3050]">
-                  <p className="text-[#D4A843] text-xs font-bold mb-2">পটভূমি ছবি</p>
+                <div style={{ paddingTop: 16, borderTop: "1px solid #1e3050" }}>
+                  <p style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>পটভূমি ছবি</p>
                   <button onClick={() => bgFileRef.current?.click()}
-                    className="w-full py-3 border border-dashed border-[#1e3050] hover:border-[#D4A843]/50 rounded-xl text-gray-400 text-sm hover:bg-[#D4A843]/5 transition-all">
+                    style={{ width: "100%", padding: 12, border: "1px dashed #1e3050",
+                      borderRadius: 12, color: "#9ca3af", fontSize: 13, background: "transparent", cursor: "pointer" }}>
                     {bgImage ? "✅ পটভূমি পরিবর্তন করুন" : "🌅 পটভূমি ছবি আপলোড করুন"}
                   </button>
                   {bgImage && (
                     <>
-                      <div className="mt-3">
+                      <div style={{ marginTop: 12 }}>
                         <Row label="অপাসিটি">
-                          <div className="flex items-center gap-3">
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                             <Slider val={Math.round(bgOpacity * 100)} set={v => setBgOpacity(v / 100)} min={0} max={100} />
-                            <span className="text-[#D4A843] text-xs font-bold w-10 text-right">{Math.round(bgOpacity * 100)}%</span>
+                            <span style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, width: 40, textAlign: "right" }}>{Math.round(bgOpacity * 100)}%</span>
                           </div>
                         </Row>
                       </div>
                       <button onClick={() => setBgImage(null)}
-                        className="mt-2 w-full py-2 text-red-400 text-xs border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-all">
+                        style={{ marginTop: 8, width: "100%", padding: "8px 0", color: "#f87171",
+                          fontSize: 11, border: "1px solid rgba(248,113,113,0.2)", borderRadius: 12,
+                          background: "transparent", cursor: "pointer" }}>
                         পটভূমি সরিয়ে দিন
                       </button>
                     </>
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-[#1e3050]">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={showWatermark} onChange={e => setShowWatermark(e.target.checked)} className="w-4 h-4 accent-[#D4A843]" />
-                    <span className="text-gray-300 text-sm">লেখকের ছবি ওয়াটারমার্ক</span>
+                <div style={{ paddingTop: 16, borderTop: "1px solid #1e3050" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                    <input type="checkbox" checked={showWatermark} onChange={e => setShowWatermark(e.target.checked)}
+                      style={{ width: 16, height: 16, accentColor: "#D4A843" }} />
+                    <span style={{ color: "#d1d5db", fontSize: 13 }}>লেখকের ছবি ওয়াটারমার্ক</span>
                   </label>
                   {showWatermark && (
-                    <div className="mt-2">
+                    <div style={{ marginTop: 8 }}>
                       <Row label="অপাসিটি">
-                        <div className="flex items-center gap-3">
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <Slider val={watermarkOpacity} set={setWatermarkOpacity} min={1} max={40} />
-                          <span className="text-[#D4A843] text-xs font-bold w-10 text-right">{watermarkOpacity}%</span>
+                          <span style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, width: 40, textAlign: "right" }}>{watermarkOpacity}%</span>
                         </div>
                       </Row>
                     </div>
@@ -1174,35 +1260,38 @@ export default function Editor() {
 
             {/* ── DESIGN PANEL ── */}
             {activeTool === "design" && (
-              <div className="p-4 space-y-5">
+              <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 20 }}>
                 <div>
-                  <p className="text-[#D4A843] text-xs font-bold mb-2">থিম</p>
-                  <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                  <p style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>থিম</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, maxHeight: 192, overflowY: "auto" }}>
                     {THEMES.map((t, i) => (
                       <button key={t.name} onClick={() => setThemeIdx(i)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
-                          themeIdx === i
-                            ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                            : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                        }`}>
-                        <div className="w-5 h-5 rounded-full border border-white/10 flex-shrink-0"
-                          style={{ background: t.gradient || t.bg }} />
-                        <span className="truncate">{t.name}</span>
+                        style={{
+                          display: "flex", alignItems: "center", gap: 8, padding: "8px 12px",
+                          borderRadius: 12, fontSize: 11, fontWeight: 500,
+                          border: `1px solid ${themeIdx === i ? "#D4A843" : "#1e3050"}`,
+                          background: themeIdx === i ? "rgba(212,168,67,0.1)" : "transparent",
+                          color: themeIdx === i ? "#D4A843" : "#9ca3af", cursor: "pointer",
+                        }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                          border: "1px solid rgba(255,255,255,0.1)", background: t.gradient || t.bg }} />
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-[#D4A843] text-xs font-bold mb-2">আকার</p>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <p style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>আকার</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
                     {SIZES.map((s, i) => (
                       <button key={s.name} onClick={() => setSizeIdx(i)}
-                        className={`px-2 py-2 rounded-xl border text-xs font-medium transition-all ${
-                          sizeIdx === i
-                            ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                            : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                        }`}>
+                        style={{
+                          padding: "8px 4px", borderRadius: 12, fontSize: 10, fontWeight: 500,
+                          border: `1px solid ${sizeIdx === i ? "#D4A843" : "#1e3050"}`,
+                          background: sizeIdx === i ? "rgba(212,168,67,0.1)" : "transparent",
+                          color: sizeIdx === i ? "#D4A843" : "#9ca3af", cursor: "pointer",
+                        }}>
                         {s.name}
                       </button>
                     ))}
@@ -1210,15 +1299,16 @@ export default function Editor() {
                 </div>
 
                 <div>
-                  <p className="text-[#D4A843] text-xs font-bold mb-2">ফ্রেম</p>
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <p style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>ফ্রেম</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6 }}>
                     {FRAMES.map(f => (
                       <button key={f.value} onClick={() => setFrame(f.value)}
-                        className={`px-2 py-2 rounded-xl border text-xs font-medium transition-all ${
-                          frame === f.value
-                            ? "border-[#D4A843] bg-[#D4A843]/10 text-[#D4A843]"
-                            : "border-[#1e3050] text-gray-400 hover:border-[#D4A843]/40"
-                        }`}>
+                        style={{
+                          padding: "8px 4px", borderRadius: 12, fontSize: 10, fontWeight: 500,
+                          border: `1px solid ${frame === f.value ? "#D4A843" : "#1e3050"}`,
+                          background: frame === f.value ? "rgba(212,168,67,0.1)" : "transparent",
+                          color: frame === f.value ? "#D4A843" : "#9ca3af", cursor: "pointer",
+                        }}>
                         {f.name}
                       </button>
                     ))}
@@ -1229,25 +1319,48 @@ export default function Editor() {
 
             {/* ── STICKERS PANEL ── */}
             {activeTool === "stickers" && (
-              <div className="p-4">
-                <p className="text-[#D4A843] text-xs font-bold mb-3">স্টিকার যোগ করুন</p>
-                <div className="grid grid-cols-8 gap-1.5">
-                  {STICKER_LIST.map(emoji => (
+              <div style={{ padding: 16 }}>
+                {/* Category tabs */}
+                <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 12 }}>
+                  {STICKER_CATEGORIES.map((cat, i) => (
+                    <button key={i} onClick={() => setActiveStickerCat(i)}
+                      style={{
+                        flexShrink: 0, padding: "5px 12px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+                        border: `1px solid ${activeStickerCat === i ? "#D4A843" : "#1e3050"}`,
+                        background: activeStickerCat === i ? "#D4A843" : "transparent",
+                        color: activeStickerCat === i ? "#000" : "#9ca3af", cursor: "pointer",
+                      }}>
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sticker grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 4 }}>
+                  {STICKER_CATEGORIES[activeStickerCat].stickers.map(emoji => (
                     <button key={emoji} onClick={() => addSticker(emoji)}
-                      className="text-2xl p-1.5 rounded-xl hover:bg-[#D4A843]/10 transition-all text-center leading-none">
+                      style={{
+                        fontSize: 22, padding: 6, borderRadius: 10, textAlign: "center",
+                        lineHeight: 1, background: "transparent", border: "none", cursor: "pointer",
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(212,168,67,0.1)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                       {emoji}
                     </button>
                   ))}
                 </div>
 
                 {stickers.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#1e3050]">
-                    <p className="text-gray-500 text-xs font-semibold mb-2">যোগ করা স্টিকার</p>
-                    <div className="flex gap-2 flex-wrap">
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #1e3050" }}>
+                    <p style={{ color: "#6b7280", fontSize: 11, fontWeight: 600, marginBottom: 8 }}>যোগ করা স্টিকার</p>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       {stickers.map(s => (
-                        <div key={s.id} className="flex items-center gap-1 bg-[#060c18] border border-[#1e3050] rounded-xl px-2 py-1">
-                          <span className="text-xl">{s.emoji}</span>
-                          <button onClick={() => removeLayer(s.id)} className="text-red-400 text-xs ml-1">✕</button>
+                        <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 4,
+                          background: "#060c18", border: "1px solid #1e3050", borderRadius: 12, padding: "4px 8px" }}>
+                          <span style={{ fontSize: 18 }}>{s.emoji}</span>
+                          <button onClick={() => removeLayer(s.id)}
+                            style={{ color: "#f87171", fontSize: 11, background: "none", border: "none", cursor: "pointer" }}>✕</button>
                         </div>
                       ))}
                     </div>
@@ -1258,9 +1371,61 @@ export default function Editor() {
 
           </motion.div>
         </AnimatePresence>
+
+        {/* ══════════════════════════════════════════════════════════════
+            DOWNLOAD SECTION — সব টুলের নিচে
+        ══════════════════════════════════════════════════════════════ */}
+        <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Quality selector */}
+          <div style={{ display: "flex", gap: 6, background: "#0d1a2d", borderRadius: 14, padding: 6, border: "1px solid #1e3050" }}>
+            {([
+              ["1x", "স্ট্যান্ডার্ড", `${cardW}×${cardH}`],
+              ["2x", "HD", `${cardW * 2}×${cardH * 2}`],
+              ["4k", "4K Ultra", `${cardW * 4}×${cardH * 4}`],
+            ] as [ExportQuality, string, string][]).map(([q, label, res]) => (
+              <button key={q} onClick={() => setExportQuality(q)}
+                style={{
+                  flex: 1, padding: "8px 4px", borderRadius: 10, fontSize: 11, fontWeight: 700,
+                  border: `1px solid ${exportQuality === q ? "#D4A843" : "transparent"}`,
+                  background: exportQuality === q ? "rgba(212,168,67,0.15)" : "transparent",
+                  color: exportQuality === q ? "#D4A843" : "#6b7280", cursor: "pointer",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                }}>
+                <span>{label}</span>
+                <span style={{ fontSize: 9, opacity: 0.7 }}>{res}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Main download button */}
+          <button onClick={() => handleDownload(exportQuality)} disabled={downloading}
+            style={{
+              width: "100%", padding: "16px 0",
+              background: downloading ? "rgba(212,168,67,0.5)" : "linear-gradient(135deg, #D4A843 0%, #b8892a 100%)",
+              color: "#000", fontWeight: 700, borderRadius: 16, fontSize: 16,
+              border: "none", cursor: downloading ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              boxShadow: "0 8px 24px rgba(212,168,67,0.3)",
+              transition: "all 0.2s",
+            }}>
+            {downloading
+              ? <><div style={{ width: 20, height: 20, border: "2px solid #000", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> ডাউনলোড হচ্ছে...</>
+              : <>⬇️ ডাউনলোড করুন
+                  <span style={{ fontSize: 11, opacity: 0.75, fontWeight: 500 }}>
+                    ({exportQuality === "1x" ? "স্ট্যান্ডার্ড" : exportQuality === "2x" ? "HD" : "4K"})
+                  </span>
+                </>
+            }
+          </button>
+        </div>
+
         </div>{/* end right column */}
         </div>{/* end desktop grid */}
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }
