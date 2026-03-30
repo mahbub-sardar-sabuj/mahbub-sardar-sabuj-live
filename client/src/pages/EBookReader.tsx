@@ -1,6 +1,7 @@
 /*
  * Premium E-Book Reader — Mahbub Sardar Sabuj
  * Features: PDF.js reader, AdSense ads, no download, beautiful UI
+ * Fix v8: zoom buttons working, high-DPI (retina) rendering, mobile resolution fix
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute } from "wouter";
@@ -11,14 +12,10 @@ import {
   ZoomIn,
   ZoomOut,
   BookOpen,
-  Home,
-  Menu,
-  X,
   Maximize2,
   Minimize2,
   Moon,
   Sun,
-  List,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -103,6 +100,12 @@ function AdBanner({ slot, format = "auto", className = "" }: { slot: string; for
   );
 }
 
+// ডিফল্ট স্কেল: মোবাইলে ছোট, ডেস্কটপে বড়
+function getDefaultScale(): number {
+  if (typeof window === "undefined") return 1.2;
+  return window.innerWidth < 640 ? 0.9 : 1.2;
+}
+
 export default function EBookReader() {
   const [, params] = useRoute("/ebooks/read/:slug");
   const slug = params?.slug || "";
@@ -115,13 +118,13 @@ export default function EBookReader() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [scale, setScale] = useState(1.2);
+  // userScale: ব্যবহারকারীর zoom পছন্দ (zoom বাটন দিয়ে পরিবর্তন হয়)
+  const [userScale, setUserScale] = useState<number>(getDefaultScale);
   const [isLoading, setIsLoading] = useState(true);
   const [pdfReady, setPdfReady] = useState(false);
   const [error, setError] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
   const [pageInput, setPageInput] = useState("1");
   const [pdfJsLoaded, setPdfJsLoaded] = useState(false);
 
@@ -147,6 +150,7 @@ export default function EBookReader() {
     const pdfjsLib = (window as any).pdfjsLib;
     setIsLoading(true);
     setError("");
+    setPdfReady(false);
 
     const loadingTask = pdfjsLib.getDocument({
       url: book.pdfUrl,
@@ -159,7 +163,6 @@ export default function EBookReader() {
         pdfRef.current = pdf;
         setTotalPages(pdf.numPages);
         setIsLoading(false);
-        // setPdfReady triggers a useEffect that renders after canvas is in DOM
         setPdfReady(true);
       })
       .catch((err: any) => {
@@ -169,12 +172,15 @@ export default function EBookReader() {
       });
   }, [pdfJsLoaded, slug]);
 
-  const renderPage = useCallback(async (pageNum: number, pdfDoc?: any) => {
-    const pdf = pdfDoc || pdfRef.current;
-    if (!pdf || !canvasRef.current) return;
+  // ── renderPage: zoom সঠিকভাবে কাজ করে, high-DPI (retina) সাপোর্ট ──────────
+  const renderPage = useCallback(async (pageNum: number) => {
+    const pdf = pdfRef.current;
+    if (!pdf || !canvasRef.current || !containerRef.current) return;
 
+    // চলমান render বাতিল করো
     if (renderTaskRef.current) {
-      renderTaskRef.current.cancel();
+      try { renderTaskRef.current.cancel(); } catch (_) {}
+      renderTaskRef.current = null;
     }
 
     try {
@@ -183,13 +189,32 @@ export default function EBookReader() {
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      const containerWidth = containerRef.current?.clientWidth || 800;
-      const viewport = page.getViewport({ scale: 1 });
-      const autoScale = Math.min((containerWidth - 40) / viewport.width, scale);
-      const scaledViewport = page.getViewport({ scale: autoScale });
+      // কন্টেইনারের প্রস্থ বের করো (padding বাদ দিয়ে)
+      const containerWidth = containerRef.current.clientWidth - 32;
 
-      canvas.height = scaledViewport.height;
+      // PDF পেজের স্বাভাবিক মাপ (scale=1)
+      const baseViewport = page.getViewport({ scale: 1 });
+
+      // কন্টেইনারে ফিট করার জন্য base fit scale
+      const fitScale = containerWidth / baseViewport.width;
+
+      // ব্যবহারকারীর zoom পছন্দ প্রয়োগ করো (fitScale × userScale)
+      // এইভাবে zoom বাটন সত্যিকারের কাজ করে
+      const renderScale = fitScale * userScale;
+
+      // High-DPI (Retina) সাপোর্ট: devicePixelRatio দিয়ে গুণ করলে ঝাপসা হবে না
+      const dpr = window.devicePixelRatio || 1;
+      const finalScale = renderScale * dpr;
+
+      const scaledViewport = page.getViewport({ scale: finalScale });
+
+      // Canvas-এর actual pixel size (high-DPI)
       canvas.width = scaledViewport.width;
+      canvas.height = scaledViewport.height;
+
+      // CSS দিয়ে display size নিয়ন্ত্রণ (logical size)
+      canvas.style.width = `${scaledViewport.width / dpr}px`;
+      canvas.style.height = `${scaledViewport.height / dpr}px`;
 
       const renderContext = {
         canvasContext: context,
@@ -200,28 +225,26 @@ export default function EBookReader() {
       renderTaskRef.current = page.render(renderContext);
       await renderTaskRef.current.promise;
     } catch (err: any) {
-      if (err.name !== "RenderingCancelledException") {
+      if (err?.name !== "RenderingCancelledException") {
         console.error("Render error:", err);
       }
     }
-  }, [scale, isDarkMode]);
+  }, [userScale, isDarkMode]);
 
-  // Render when PDF is ready (after canvas mounts)
+  // PDF ready হলে প্রথম পেজ render করো
   useEffect(() => {
     if (pdfReady && pdfRef.current) {
-      // Small timeout to ensure canvas is in DOM after isLoading=false
-      const timer = setTimeout(() => {
-        renderPage(currentPage);
-      }, 50);
+      const timer = setTimeout(() => renderPage(currentPage), 50);
       return () => clearTimeout(timer);
     }
   }, [pdfReady]);
 
+  // পেজ, zoom বা dark mode পরিবর্তনে re-render
   useEffect(() => {
     if (pdfRef.current && !isLoading) {
       renderPage(currentPage);
     }
-  }, [currentPage, scale, isDarkMode, renderPage]);
+  }, [currentPage, userScale, isDarkMode, renderPage]);
 
   const goToPage = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -234,6 +257,10 @@ export default function EBookReader() {
     const p = parseInt(pageInput);
     if (!isNaN(p)) goToPage(p);
   };
+
+  // Zoom বাটন: userScale পরিবর্তন করে (0.5x থেকে 3x পর্যন্ত)
+  const zoomIn  = () => setUserScale(s => Math.min(3.0, parseFloat((s + 0.2).toFixed(1))));
+  const zoomOut = () => setUserScale(s => Math.max(0.5, parseFloat((s - 0.2).toFixed(1))));
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -298,10 +325,14 @@ export default function EBookReader() {
         {/* Reader Header */}
         <div className={`sticky top-0 z-40 ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border-b shadow-sm`}>
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+
             {/* Left: Book info */}
             <div className="flex items-center gap-3 min-w-0">
               <Link href="/ebooks">
-                <button className={`p-2 rounded-lg hover:bg-gray-100 ${isDarkMode ? "hover:bg-gray-800" : ""} transition-colors flex-shrink-0`} title="ই-বুক তালিকায় ফিরুন">
+                <button
+                  className={`p-2 rounded-lg hover:bg-gray-100 ${isDarkMode ? "hover:bg-gray-800" : ""} transition-colors flex-shrink-0`}
+                  title="ই-বুক তালিকায় ফিরুন"
+                >
                   <ChevronLeft size={20} />
                 </button>
               </Link>
@@ -341,18 +372,38 @@ export default function EBookReader() {
               </button>
             </div>
 
-            {/* Right: Controls */}
+            {/* Right: Zoom & Controls */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              <button onClick={() => setScale(s => Math.max(0.6, s - 0.2))} className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`} title="ছোট করুন">
+              <button
+                onClick={zoomOut}
+                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                title={`ছোট করুন (${Math.round(userScale * 100)}%)`}
+              >
                 <ZoomOut size={16} />
               </button>
-              <button onClick={() => setScale(s => Math.min(3, s + 0.2))} className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`} title="বড় করুন">
+              {/* Zoom percentage indicator */}
+              <span className="text-xs text-gray-500 w-10 text-center select-none">
+                {Math.round(userScale * 100)}%
+              </span>
+              <button
+                onClick={zoomIn}
+                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                title={`বড় করুন (${Math.round(userScale * 100)}%)`}
+              >
                 <ZoomIn size={16} />
               </button>
-              <button onClick={() => setIsDarkMode(d => !d)} className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`} title="রাত/দিন মোড">
+              <button
+                onClick={() => setIsDarkMode(d => !d)}
+                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                title="রাত/দিন মোড"
+              >
                 {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
               </button>
-              <button onClick={toggleFullscreen} className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors hidden md:block`} title="পূর্ণ পর্দা">
+              <button
+                onClick={toggleFullscreen}
+                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors hidden md:block`}
+                title="পূর্ণ পর্দা"
+              >
                 {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
             </div>
@@ -362,8 +413,10 @@ export default function EBookReader() {
         {/* Main Reader Area */}
         <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex gap-6">
+
             {/* PDF Canvas */}
             <div className="flex-1 min-w-0" ref={containerRef}>
+
               {/* Loading State */}
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-24">
@@ -401,16 +454,17 @@ export default function EBookReader() {
                     </div>
                   )}
 
-                  {/* Canvas */}
+                  {/* Canvas wrapper — overflow-x-auto so user can scroll if zoomed in */}
                   <div
-                    className={`shadow-2xl rounded-lg overflow-hidden select-none ${isDarkMode ? "shadow-black" : "shadow-gray-400"}`}
+                    className={`w-full overflow-x-auto shadow-2xl rounded-lg ${isDarkMode ? "shadow-black" : "shadow-gray-400"}`}
                     style={{ userSelect: "none", WebkitUserSelect: "none" }}
                   >
-                    <canvas
-                      ref={canvasRef}
-                      className="max-w-full"
-                      style={{ display: "block" }}
-                    />
+                    <div className="flex justify-center">
+                      <canvas
+                        ref={canvasRef}
+                        style={{ display: "block", maxWidth: "none" }}
+                      />
+                    </div>
                   </div>
 
                   {/* Page indicator */}

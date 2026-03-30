@@ -7,7 +7,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
-  imageUrl?: string; // for photo responses
+  imageUrl?: string;
 }
 
 interface ActionButton {
@@ -15,16 +15,64 @@ interface ActionButton {
   path: string;
 }
 
-// AI calls via Vercel serverless /api/chat function (server-side, no key exposed)
-async function callAI(messages: { role: "user" | "assistant" | "system"; content: string }[]): Promise<string> {
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  const data = await res.json();
-  return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
+// ── AI call with retry + timeout ──────────────────────────────────────────────
+// দীর্ঘস্থায়ী সমাধান:
+//   1. AbortController দিয়ে 30s timeout — request ঝুলে থাকবে না
+//   2. Exponential backoff retry (3 বার) — network glitch এ নিজেই retry করবে
+//   3. প্রতিটি retry-এর আগে delay বাড়বে (1s → 2s → 4s)
+async function callAI(
+  messages: { role: "user" | "assistant" | "system"; content: string }[],
+  attempt = 0
+): Promise<string> {
+  const MAX_RETRIES = 3;
+  const TIMEOUT_MS = 30000; // 30 seconds
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      // 5xx server error হলে retry করো, 4xx হলে করো না
+      if (res.status >= 500 && attempt < MAX_RETRIES - 1) {
+        await delay(Math.pow(2, attempt) * 1000);
+        return callAI(messages, attempt + 1);
+      }
+      throw new Error(`API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
+
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+
+    // Network error বা timeout হলে retry করো
+    if (attempt < MAX_RETRIES - 1) {
+      const isAborted = err?.name === "AbortError";
+      const isNetworkError = err?.name === "TypeError" || err?.message?.includes("fetch");
+
+      if (isAborted || isNetworkError) {
+        await delay(Math.pow(2, attempt) * 1000);
+        return callAI(messages, attempt + 1);
+      }
+    }
+
+    // সব retry শেষ হলে বাংলায় error message
+    throw new Error("connection_failed");
+  }
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
@@ -115,8 +163,6 @@ const SUGGESTIONS = [
   "যোগাযোগ করব কীভাবে?",
 ];
 
-// callAI is now handled via tRPC mutation in the component
-
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
@@ -127,10 +173,8 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
   const seen = new Set<string>();
   let showPhoto = false;
 
-  // Detect [PHOTO] tag
   let text = raw.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
 
-  // Extract [BUTTON:/path] tags
   text = text.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
     if (!seen.has(path)) {
       seen.add(path);
@@ -140,7 +184,6 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
     return "";
   });
 
-  // Strip raw URLs
   text = text.replace(
     new RegExp(`https?://mahbub-sardar-sabuj-live\\.vercel\\.app(/[^\\s)>"]*)`, "g"),
     (_, path) => {
@@ -207,7 +250,6 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
       <div className="max-w-[85%] flex flex-col items-start">
         <div className="px-4 py-3 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-[#1e2d3d]/90 text-gray-100 border border-[#2a3a4a] backdrop-blur-sm">
 
-          {/* Author photo card */}
           {(showPhoto || message.imageUrl) && (
             <div className="mb-3">
               <div className="relative rounded-xl overflow-hidden border-2 border-[#D4A843]/50 shadow-lg"
@@ -228,7 +270,6 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
 
           <p className="whitespace-pre-wrap">{text}</p>
 
-          {/* Action buttons */}
           {buttons.length > 0 && (
             <div className="mt-3 flex flex-col gap-2">
               {buttons.map((btn) => (
@@ -291,6 +332,8 @@ export default function AIChatbot() {
   const [input, setInput]         = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError]         = useState<string | null>(null);
+  // retryPayload: error হলে retry বাটনে ক্লিক করলে আবার পাঠাতে পারবে
+  const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef       = useRef<HTMLTextAreaElement>(null);
   const [, navigate]   = useLocation();
@@ -312,6 +355,38 @@ export default function AIChatbot() {
     navigate(path);
   }, [navigate]);
 
+  // ── AI call করার core function ────────────────────────────────────────────
+  const sendToAI = useCallback(async (
+    history: { role: "user" | "assistant" | "system"; content: string }[]
+  ) => {
+    setIsLoading(true);
+    setError(null);
+    retryPayloadRef.current = history; // retry-এর জন্য সংরক্ষণ
+
+    try {
+      const reply = await callAI(history);
+      const assistantMsg: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: reply,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+      retryPayloadRef.current = null; // সফল হলে retry payload মুছে দাও
+    } catch {
+      setError("সংযোগ সমস্যা হয়েছে। নিচের বাটনে চাপুন।");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // ── Retry বাটন ────────────────────────────────────────────────────────────
+  const handleRetry = useCallback(() => {
+    if (retryPayloadRef.current) {
+      sendToAI(retryPayloadRef.current);
+    }
+  }, [sendToAI]);
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
     const userText = input.trim();
@@ -322,51 +397,32 @@ export default function AIChatbot() {
       content: userText,
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
-    setIsLoading(true);
     setError(null);
 
-    try {
-      // If user is asking for a photo, respond immediately with photo
-      if (isPhotoRequest(userText)) {
-        const photoMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "এই হলেন মাহবুব সরদার সবুজ — বাংলাদেশের প্রিয় লেখক ও কবি। [PHOTO]",
-          timestamp: new Date(),
-          imageUrl: AUTHOR_PHOTO,
-        };
-        setMessages((prev) => [...prev, photoMsg]);
-        setIsLoading(false);
-      } else {
-        const history = [
-          { role: "system" as const, content: SYSTEM_PROMPT },
-          ...[...messages, userMsg]
-            .filter((m) => m.id !== "welcome")
-            .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
-        ];
-        callAI(history)
-          .then((reply) => {
-            const assistantMsg: Message = {
-              id: (Date.now() + 1).toString(),
-              role: "assistant",
-              content: reply,
-              timestamp: new Date(),
-            };
-            setMessages((prev) => [...prev, assistantMsg]);
-            setIsLoading(false);
-          })
-          .catch(() => {
-            setError("সংযোগ সমস্যা। আবার চেষ্টা করুন।");
-            setIsLoading(false);
-          });
-      }
-    } catch {
-      setError("সংযোগ সমস্যা। আবার চেষ্টা করুন।");
-      setIsLoading(false);
+    // ছবির request হলে সরাসরি উত্তর দাও (AI call লাগবে না)
+    if (isPhotoRequest(userText)) {
+      const photoMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "এই হলেন মাহবুব সরদার সবুজ — বাংলাদেশের প্রিয় লেখক ও কবি। [PHOTO]",
+        timestamp: new Date(),
+        imageUrl: AUTHOR_PHOTO,
+      };
+      setMessages(prev => [...prev, photoMsg]);
+      return;
     }
-  }, [input, isLoading, messages]);
+
+    // AI-এর কাছে পাঠাও
+    const history = [
+      { role: "system" as const, content: SYSTEM_PROMPT },
+      ...[...messages, userMsg]
+        .filter(m => m.id !== "welcome" && m.id !== "welcome-new")
+        .map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+    ];
+    await sendToAI(history);
+  }, [input, isLoading, messages, sendToAI]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -383,13 +439,14 @@ export default function AIChatbot() {
       timestamp: new Date(),
     }]);
     setError(null);
+    retryPayloadRef.current = null;
   };
 
   return (
     <>
       {/* Floating Button */}
       <motion.button
-        onClick={() => setIsOpen((o) => !o)}
+        onClick={() => setIsOpen(o => !o)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center overflow-hidden border-2 border-[#D4A843]"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
@@ -427,7 +484,7 @@ export default function AIChatbot() {
             className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             style={{ background: "#0d1b2a" }}
           >
-            {/* ── Full-background watermark ── */}
+            {/* Full-background watermark */}
             <div
               aria-hidden="true"
               style={{
@@ -442,7 +499,6 @@ export default function AIChatbot() {
                 borderRadius: "inherit",
               }}
             />
-            {/* Gradient overlay so text stays readable */}
             <div
               aria-hidden="true"
               style={{
@@ -455,7 +511,6 @@ export default function AIChatbot() {
               }}
             />
 
-            {/* All content above watermark */}
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
 
               {/* Header */}
@@ -485,22 +540,37 @@ export default function AIChatbot() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-                {messages.map((msg) => (
+                {messages.map(msg => (
                   <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
                 ))}
                 {isLoading && <TypingIndicator />}
-                {error && (
-                  <div className="text-center text-red-400 text-xs py-2 bg-red-900/20 rounded-lg px-3">
-                    {error}
+
+                {/* Error + Retry বাটন */}
+                {error && !isLoading && (
+                  <div className="flex flex-col items-center gap-2 py-2">
+                    <div className="text-center text-red-400 text-xs bg-red-900/20 rounded-lg px-3 py-2 w-full">
+                      {error}
+                    </div>
+                    <button
+                      onClick={handleRetry}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D4A843]/20 hover:bg-[#D4A843]/30 border border-[#D4A843]/50 hover:border-[#D4A843] text-[#D4A843] rounded-xl text-xs font-semibold transition-all"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="1 4 1 10 7 10" />
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+                      </svg>
+                      আবার চেষ্টা করুন
+                    </button>
                   </div>
                 )}
+
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Suggestions */}
               {messages.length === 1 && (
                 <div className="px-4 pb-2 flex flex-wrap gap-2">
-                  {SUGGESTIONS.map((s) => (
+                  {SUGGESTIONS.map(s => (
                     <button key={s}
                       onClick={() => { setInput(s); inputRef.current?.focus(); }}
                       className="text-xs bg-[#1e2d3d]/80 text-[#D4A843] border border-[#2a3a4a] rounded-full px-3 py-1 hover:border-[#D4A843] transition-all backdrop-blur-sm">
@@ -516,7 +586,7 @@ export default function AIChatbot() {
                   <textarea
                     ref={inputRef}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="আপনার প্রশ্ন লিখুন... (Enter চাপুন)"
                     rows={1}
