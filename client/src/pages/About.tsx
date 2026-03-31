@@ -157,35 +157,6 @@ export default function About() {
                 বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন।
               </motion.p>
 
-              {/* Location badges */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: "2.5rem" }}
-              >
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "9px 14px",
-                  background: "rgba(201,168,76,0.08)",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 6, whiteSpace: "nowrap",
-                }}>
-                  <MapPin size={14} color="#C9A84C" />
-                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", color: "rgba(250,246,239,0.7)" }}>কুমিল্লা, বাংলাদেশ</span>
-                </div>
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "9px 14px",
-                  background: "rgba(201,168,76,0.08)",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 6, whiteSpace: "nowrap",
-                }}>
-                  <Globe size={14} color="#C9A84C" />
-                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", color: "rgba(250,246,239,0.7)" }}>বর্তমান অবস্থান: সৌদি আরব</span>
-                </div>
-              </motion.div>
-
               {/* CTA buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -295,7 +266,7 @@ export default function About() {
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  position: "absolute", bottom: 60, right: -30,
+                  position: "absolute", bottom: -20, right: -20,
                   background: "rgba(6,14,26,0.85)",
                   backdropFilter: "blur(20px)",
                   border: "1px solid rgba(201,168,76,0.25)",
