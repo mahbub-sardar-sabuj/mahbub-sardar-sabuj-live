@@ -418,11 +418,18 @@ export default function Home() {
           MARQUEE — Gold band
       ══════════════════════════════════════════════════════════════════════ */}
       <div style={{
-        background: "linear-gradient(90deg, #B8922A 0%, #C9A84C 30%, #E8C97A 50%, #C9A84C 70%, #B8922A 100%)",
-        padding: "16px 0",
+        background: "linear-gradient(90deg, #060E1A 0%, #0A1628 20%, #0d1e35 50%, #0A1628 80%, #060E1A 100%)",
+        borderTop: "1px solid rgba(201,168,76,0.2)",
+        borderBottom: "1px solid rgba(201,168,76,0.2)",
+        padding: "14px 0",
         overflow: "hidden",
         position: "relative",
       }}>
+        {/* subtle gold glow line */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent)",
+        }} />
         <motion.div
           animate={{ x: [0, -1400] }}
           transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
@@ -431,21 +438,21 @@ export default function Home() {
           {[...Array(5)].map((_, i) => (
             <div key={i} style={{ display: "flex", gap: "5rem", alignItems: "center" }}>
               <span style={{
-                fontFamily: "'AkhandBengali', 'Noto Sans Bengali', sans-serif",
-                color: "#060E1A",
-                fontSize: "0.9rem",
-                fontWeight: 800,
-                letterSpacing: "0.06em",
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                color: "#C9A84C",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
                 display: "flex",
                 alignItems: "center",
                 gap: 20,
               }}>
-                কলমের স্পর্শে আমি বিদ্রোহী
-                <Star size={10} fill="#060E1A" color="#060E1A" />
-                ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি
-                <Star size={10} fill="#060E1A" color="#060E1A" />
-                কেউ কেউ ভালোবেসে ডাকে আমায় কবি
-                <Star size={10} fill="#060E1A" color="#060E1A" />
+                আপনাকে স্বাগতম
+                <Star size={9} fill="#C9A84C" color="#C9A84C" />
+                মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে
+                <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
+                বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর
+                <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
               </span>
             </div>
           ))}
