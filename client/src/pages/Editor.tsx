@@ -316,17 +316,17 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
 function makeDefaultLayers(themeText: string): TextBlock[] {
   return [
     { id: "title",  kind: "title",  text: "",
-      x: 0.5, y: 0.22, fontSize: 52, baseFontSize: 52, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.22, fontSize: 52, baseFontSize: 52, fontKey: "AdorshoLipi",
       color: themeText, bold: true,  italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.3, opacity: 100, rotation: 0, letterSpacing: 0 },
     { id: "body",   kind: "body",   text: "",
-      x: 0.5, y: 0.52, fontSize: 36, baseFontSize: 36, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.52, fontSize: 36, baseFontSize: 36, fontKey: "AdorshoLipi",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.9, opacity: 100, rotation: 0, letterSpacing: 0 },
     { id: "author", kind: "author", text: "",
-      x: 0.5, y: 0.84, fontSize: 28, baseFontSize: 28, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.84, fontSize: 28, baseFontSize: 28, fontKey: "AdorshoLipi",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.4, opacity: 100, rotation: 0, letterSpacing: 0 },
@@ -912,7 +912,7 @@ export default function Editor() {
     const id = uid();
     setTextLayers(prev => [...prev, {
       id, kind: "custom", text: "নতুন লেখা",
-      x: 0.5, y: 0.5, fontSize: 40, baseFontSize: 40, fontKey: "ChandraSheela",
+      x: 0.5, y: 0.5, fontSize: 40, baseFontSize: 40, fontKey: "AdorshoLipi",
       color: theme.text, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.6, opacity: 100, rotation: 0, letterSpacing: 0,
@@ -931,7 +931,7 @@ export default function Editor() {
     setTextLayers(prev => [...prev, {
       id, kind: "custom", text: inlineTextValue,
       x: inlineTextPos.x / cardW, y: inlineTextPos.y / cardH,
-      fontSize: 40, baseFontSize: 40, fontKey: "ChandraSheela",
+      fontSize: 40, baseFontSize: 40, fontKey: "AdorshoLipi",
       color: theme.text, bold: false, italic: false, align: "left",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.6, opacity: 100, rotation: 0, letterSpacing: 0,
@@ -1281,7 +1281,7 @@ export default function Editor() {
       ctx.save();
       ctx.globalAlpha = (layer.opacity ?? 100) / 100;
       const fs = layer.fontSize;
-      ctx.font = `${layer.italic ? "italic " : ""}${layer.bold ? "bold " : ""}${fs}px ${FONT_CSS[layer.fontKey] || "'Tiro Bangla',serif"}`;
+      ctx.font = `${layer.italic ? "italic " : ""}${layer.bold ? "bold " : ""}${fs}px ${FONT_CSS[layer.fontKey] || "'AdorshoLipi',serif"}`;
       ctx.fillStyle = layer.color;
       ctx.textAlign = layer.align;
       if (layer.shadow) { ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
@@ -1711,9 +1711,9 @@ export default function Editor() {
                           border: `${Math.ceil(2/scale)}px solid #D4A843`,
                           borderRadius: Math.ceil(8/scale),
                           color: layer.color, fontSize: layer.fontSize,
-                          fontFamily: FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif",
-                          fontWeight: layer.bold ? "bold" : "normal",
-                          fontStyle: layer.italic ? "italic" : "normal",
+                          fontFamily: FONT_CSS[layer.fontKey] || "'AdorshoLipi', serif",
+                           fontWeight: layer.bold ? "bold" : "normal",
+                           fontStyle: layer.italic ? "italic" : "normal",
                           lineHeight: layer.lineHeight,
                           padding: `${Math.ceil(4/scale)}px`,
                           boxSizing: "border-box",
@@ -1742,7 +1742,7 @@ export default function Editor() {
                   ) : (
                     <div style={{
                       fontSize: layer.fontSize,
-                      fontFamily: FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif",
+                      fontFamily: FONT_CSS[layer.fontKey] || "'AdorshoLipi', serif",
                       color: layer.color,
                       fontWeight: layer.bold ? "bold" : "normal",
                       fontStyle: layer.italic ? "italic" : "normal",
@@ -1894,7 +1894,7 @@ export default function Editor() {
                   style={{
                     background: "rgba(13,20,32,0.85)", border: "2px solid #D4A843",
                     borderRadius: 8, color: theme.text, fontSize: 40,
-                    fontFamily: "'ChandraSheela', serif", padding: "8px 12px",
+                    fontFamily: "'AdorshoLipi', serif", padding: "8px 12px",
                     minWidth: 300, maxWidth: cardW * 0.8, outline: "none",
                     resize: "both", lineHeight: 1.6,
                     boxShadow: "0 4px 24px rgba(0,0,0,0.6)",
