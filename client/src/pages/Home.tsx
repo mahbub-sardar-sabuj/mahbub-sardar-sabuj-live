@@ -173,110 +173,136 @@ export default function Home() {
 
             {/* Left column — text */}
             <div className="hero-left">
-              {/* Eyebrow */}
+
+              {/* Eyebrow badge */}
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
+                initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
+                transition={{ duration: 0.8, delay: 0.15, ease: [0.16,1,0.3,1] }}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 10,
-                  marginBottom: "2rem",
+                  gap: 12,
+                  marginBottom: "1.8rem",
+                  padding: "7px 18px 7px 14px",
+                  borderRadius: 40,
+                  border: "1px solid rgba(201,168,76,0.35)",
+                  background: "rgba(201,168,76,0.06)",
+                  backdropFilter: "blur(8px)",
+                  boxShadow: "0 0 20px rgba(201,168,76,0.08), inset 0 1px 0 rgba(201,168,76,0.15)",
                 }}
               >
-                <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                {/* Pulsing dot */}
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: "50%",
+                    background: "#C9A84C",
+                    display: "block",
+                    boxShadow: "0 0 8px #C9A84C",
+                    animation: "pulseDot 2s ease-in-out infinite",
+                  }} />
+                </span>
                 <span style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.9rem",
-                  letterSpacing: "0.25em",
+                  fontSize: "0.95rem",
+                  letterSpacing: "0.2em",
                   color: "#C9A84C",
                   fontWeight: 400,
                 }}>লেখক ও কবি</span>
               </motion.div>
 
-              {/* Main name — premium design */}
-              <div style={{ position: "relative", marginBottom: "0.5rem" }}>
-                {/* Decorative gold line left */}
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  style={{
-                    position: "absolute", left: -24, top: "50%",
-                    width: 16, height: 2,
-                    background: "linear-gradient(90deg, transparent, #C9A84C)",
-                    transformOrigin: "left",
-                  }}
-                />
+              {/* Main name */}
+              <div style={{ position: "relative", marginBottom: "0.2rem" }}>
                 <motion.h1
-                  initial={{ opacity: 0, y: 50, skewX: -3 }}
-                  animate={{ opacity: 1, y: 0, skewX: 0 }}
-                  transition={{ duration: 1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'Tiro Bangla', serif",
-                    fontSize: "clamp(3.2rem, 7.5vw, 6.5rem)",
+                    fontSize: "clamp(3.4rem, 8vw, 7rem)",
                     fontWeight: 700,
-                    lineHeight: 1.05,
+                    lineHeight: 1.0,
                     margin: 0,
                     color: "#FAF6EF",
                     letterSpacing: "-0.02em",
-                    textShadow: "0 0 80px rgba(201,168,76,0.15)",
+                    textShadow: "0 2px 40px rgba(201,168,76,0.18), 0 0 80px rgba(201,168,76,0.08)",
                   }}
                 >
                   মাহবুব
                 </motion.h1>
               </div>
-              <motion.h1
-                initial={{ opacity: 0, y: 50, skewX: -3 }}
-                animate={{ opacity: 1, y: 0, skewX: 0 }}
-                transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  fontFamily: "'Tiro Bangla', serif",
-                  fontSize: "clamp(3.2rem, 7.5vw, 6.5rem)",
-                  fontWeight: 700,
-                  lineHeight: 1.05,
-                  margin: "0 0 0.5rem",
-                  background: "linear-gradient(120deg, #B8922A 0%, #C9A84C 25%, #E8C97A 55%, #C9A84C 80%, #B8922A 100%)",
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  letterSpacing: "-0.02em",
-                  filter: "drop-shadow(0 0 20px rgba(201,168,76,0.3))",
-                  animation: "goldShimmer 4s ease-in-out infinite",
-                }}
-              >
-                সরদার সবুজ
-              </motion.h1>
+
+              <div style={{ position: "relative", marginBottom: "0.6rem" }}>
+                <motion.h1
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    fontFamily: "'Tiro Bangla', serif",
+                    fontSize: "clamp(3.4rem, 8vw, 7rem)",
+                    fontWeight: 700,
+                    lineHeight: 1.0,
+                    margin: 0,
+                    background: "linear-gradient(110deg, #9A6E1A 0%, #C9A84C 20%, #F0D98A 45%, #E8C97A 60%, #C9A84C 80%, #9A6E1A 100%)",
+                    backgroundSize: "250% 100%",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    letterSpacing: "-0.02em",
+                    filter: "drop-shadow(0 4px 24px rgba(201,168,76,0.4))",
+                    animation: "goldShimmer 4s ease-in-out infinite",
+                  }}
+                >
+                  সরদার সবুজ
+                </motion.h1>
+                {/* Underline glow */}
+                <motion.div
+                  initial={{ scaleX: 0, opacity: 0 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ duration: 1.2, delay: 0.8, ease: [0.16,1,0.3,1] }}
+                  style={{
+                    position: "absolute", bottom: -6, left: 0,
+                    height: 2,
+                    width: "70%",
+                    background: "linear-gradient(90deg, #C9A84C, rgba(201,168,76,0.3), transparent)",
+                    transformOrigin: "left",
+                    borderRadius: 2,
+                    boxShadow: "0 0 12px rgba(201,168,76,0.5)",
+                  }}
+                />
+              </div>
 
               {/* Tagline */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.6 }}
-                style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "clamp(0.95rem, 1.8vw, 1.15rem)",
-                  color: "rgba(250,246,239,0.55)",
-                  maxWidth: 480,
-                  lineHeight: 1.9,
-                  margin: "1.5rem 0 2.5rem",
-                }}
-              >
-                বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
-              </motion.p>
-
-              {/* CTA buttons — one row, equal width */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.75 }}
+                transition={{ duration: 0.8, delay: 0.65 }}
+                style={{ margin: "2rem 0 2.5rem", maxWidth: 480 }}
+              >
+                <p style={{
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
+                  color: "rgba(250,246,239,0.65)",
+                  lineHeight: 2,
+                  margin: 0,
+                  letterSpacing: "0.02em",
+                  borderLeft: "2px solid rgba(201,168,76,0.4)",
+                  paddingLeft: 16,
+                }}>
+                  বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
+                </p>
+              </motion.div>
+
+              {/* CTA buttons — one row */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.8 }}
                 className="cta-row"
               >
                 <Link href="/ebooks" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.04, boxShadow: "0 20px 50px rgba(201,168,76,0.5)", y: -2 }}
+                    whileHover={{ scale: 1.05, y: -3, boxShadow: "0 20px 50px rgba(201,168,76,0.55)" }}
                     whileTap={{ scale: 0.96 }}
                     className="cta-btn cta-primary"
                   >
@@ -287,7 +313,7 @@ export default function Home() {
                 </Link>
                 <Link href="/about" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.04, borderColor: "rgba(201,168,76,0.8)", background: "rgba(201,168,76,0.06)", y: -2 }}
+                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
                     whileTap={{ scale: 0.96 }}
                     className="cta-btn cta-secondary"
                   >
@@ -297,7 +323,7 @@ export default function Home() {
                 </Link>
                 <Link href="/editor" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.04, borderColor: "rgba(201,168,76,0.8)", background: "rgba(201,168,76,0.06)", y: -2 }}
+                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
                     whileTap={{ scale: 0.96 }}
                     className="cta-btn cta-secondary"
                   >
@@ -1036,6 +1062,10 @@ export default function Home() {
         @keyframes goldShimmer {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
+        }
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C; }
+          50% { opacity: 0.6; transform: scale(1.5); box-shadow: 0 0 16px rgba(201,168,76,0.8); }
         }
 
         /* CTA row — one line, equal boxes */
