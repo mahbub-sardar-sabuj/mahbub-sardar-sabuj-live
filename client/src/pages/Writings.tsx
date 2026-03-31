@@ -1709,19 +1709,21 @@ function WritingCard({
       transition={{ duration: 0.4, delay: index * 0.04 }}
       onClick={onClick}
       style={{
-        background: "#fff",
+        background: "rgba(255,255,255,0.03)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         borderRadius: 14,
         overflow: "hidden",
         cursor: "pointer",
-        border: "1px solid rgba(13,27,42,0.07)",
+        border: "1px solid rgba(201,168,76,0.1)",
         display: "flex",
         flexDirection: "column",
-        boxShadow: "0 2px 12px rgba(13,27,42,0.06)",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
       }}
       whileHover={{
         y: -5,
-        boxShadow: "0 16px 48px rgba(13,27,42,0.14)",
-        borderColor: colors.stripe + "66",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
+        borderColor: colors.stripe + "99",
       }}
     >
       {/* Category stripe */}
@@ -1759,7 +1761,7 @@ function WritingCard({
         <h3 style={{
           fontFamily: "'Tiro Bangla', serif",
           fontSize: "1.08rem",
-          color: "#0D1B2A",
+          color: "#FDF6EC",
           fontWeight: 700,
           lineHeight: 1.55,
           marginBottom: 10,
@@ -1771,7 +1773,7 @@ function WritingCard({
         <p style={{
           fontFamily: "'Tiro Bangla', serif",
           fontSize: "0.9rem",
-          color: "#666",
+          color: "rgba(253,246,236,0.5)",
           lineHeight: 2,
           flex: 1,
           whiteSpace: "pre-line",
@@ -1783,7 +1785,7 @@ function WritingCard({
         <div style={{
           marginTop: 16,
           paddingTop: 14,
-          borderTop: "1px solid rgba(13,27,42,0.06)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -1791,7 +1793,7 @@ function WritingCard({
           <span style={{
             fontFamily: "'Noto Sans Bengali', sans-serif",
             fontSize: "0.7rem",
-            color: "#bbb",
+            color: "rgba(253,246,236,0.3)",
             display: "flex",
             alignItems: "center",
             gap: 4,
@@ -2205,7 +2207,7 @@ export default function Writings() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F7F4" }}>
+    <div style={{ minHeight: "100vh", background: "#060E1A" }}>
       <Seo
         title="লেখালেখি | মাহবুব সরদার সবুজ | কবিতা, ছোট লেখা ও জীবনদর্শন"
         description="মাহবুব সরদার সবুজের লেখালেখির সংগ্রহ। এখানে কবিতা, ছোট লেখা, ভালোবাসা, জীবনদর্শন ও বিচ্ছেদভিত্তিক লেখা পড়তে পারবেন।"
@@ -2299,8 +2301,10 @@ export default function Writings() {
 
       {/* Search + Category Tabs */}
       <div style={{
-        background: "#fff",
-        borderBottom: "1px solid rgba(13,27,42,0.08)",
+        background: "rgba(6,14,26,0.85)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(201,168,76,0.1)",
         position: "sticky",
         top: 70,
         zIndex: 40,
@@ -2310,11 +2314,12 @@ export default function Writings() {
           <div style={{ paddingTop: 12, paddingBottom: 4 }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 8,
-              background: "rgba(13,27,42,0.04)",
+              background: "rgba(255,255,255,0.05)",
               borderRadius: 8, padding: "8px 14px",
               maxWidth: 320,
+              border: "1px solid rgba(201,168,76,0.15)",
             }}>
-              <Search size={14} color="#888" />
+              <Search size={14} color="#C9A84C" />
               <input
                 type="text"
                 placeholder="লেখা খুঁজুন..."
@@ -2323,7 +2328,7 @@ export default function Writings() {
                 style={{
                   border: "none", background: "transparent", outline: "none",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.85rem", color: "#333", width: "100%",
+                  fontSize: "0.85rem", color: "#FDF6EC", width: "100%",
                 }}
               />
             </div>
@@ -2343,8 +2348,8 @@ export default function Writings() {
                   fontSize: "0.83rem",
                   whiteSpace: "nowrap",
                   transition: "all 0.3s",
-                  background: activeCategory === cat.id ? "#0D1B2A" : "transparent",
-                  color: activeCategory === cat.id ? "#D4A843" : "#555",
+                  background: activeCategory === cat.id ? "rgba(201,168,76,0.15)" : "transparent",
+                  color: activeCategory === cat.id ? "#D4A843" : "rgba(253,246,236,0.45)",
                   fontWeight: activeCategory === cat.id ? 700 : 400,
                 }}
               >
@@ -2428,7 +2433,7 @@ export default function Writings() {
           color: "#888",
           marginBottom: 20,
         }}>
-          {filtered.length}টি লেখা পাওয়া গেছে
+          <span style={{ color: "rgba(201,168,76,0.6)" }}>{filtered.length}টি লেখা পাওয়া গেছে</span>
         </div>
 
         {/* Grid */}
@@ -2451,10 +2456,10 @@ export default function Writings() {
           <div style={{
             textAlign: "center",
             padding: "60px 20px",
-            color: "#aaa",
+            color: "rgba(253,246,236,0.4)",
             fontFamily: "'Noto Sans Bengali', sans-serif",
           }}>
-            <Feather size={40} color="#ddd" style={{ marginBottom: 16 }} />
+            <Feather size={40} color="rgba(201,168,76,0.3)" style={{ marginBottom: 16 }} />
             <p>কোনো লেখা পাওয়া যায়নি।</p>
           </div>
         )}

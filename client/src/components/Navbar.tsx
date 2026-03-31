@@ -187,13 +187,15 @@ export default function Navbar() {
         top: (showBanner && !isEditorPage) ? 28 : 0, left: 0, right: 0,
         zIndex: 50,
         transition: "all 0.5s",
-        background: scrolled ? "rgba(10,18,34,0.97)" : "transparent",
-        backdropFilter: scrolled ? "blur(16px)" : "none",
-        boxShadow: scrolled ? "0 2px 40px rgba(0,0,0,0.4), 0 1px 0 rgba(212,168,67,0.15)" : "none",
+        background: scrolled ? "rgba(6,14,26,0.92)" : "transparent",
+        backdropFilter: scrolled ? "blur(24px) saturate(1.5)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(24px) saturate(1.5)" : "none",
+        boxShadow: scrolled ? "0 4px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.03)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(201,168,76,0.1)" : "none",
       }}
     >
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: scrolled ? 58 : 70, transition: "height 0.4s ease" }}>
 
           {/* ── PREMIUM LOGO ── */}
           <Link

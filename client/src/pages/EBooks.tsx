@@ -199,7 +199,7 @@ export default function EBooks() {
   };
 
   return (
-    <div style={{ background: "#FDF6EC", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
         title="ই-বুক সংগ্রহ | মাহবুব সরদার সবুজ"
         description="মাহবুব সরদার সবুজের প্রকাশিত ই-বুক ও ফিজিক্যাল বইয়ের সম্পূর্ণ সংগ্রহ। দুঃখবিলাস, স্মৃতির বসন্তে তুমি, চাঁদফুল, সময়ের গহ্বরে।"
@@ -283,7 +283,7 @@ export default function EBooks() {
           <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Featured</span>
           <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
         </div>
-        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#0D1B2A", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
           প্রধান বই
         </h2>
 
@@ -384,7 +384,7 @@ export default function EBooks() {
           <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>E-Books</span>
           <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
         </div>
-        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#0D1B2A", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "2rem" }}>
+        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "2rem" }}>
           ই-বুক সংগ্রহ
         </h2>
 
@@ -398,13 +398,16 @@ export default function EBooks() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               whileHover={{ y: -8, transition: { duration: 0.3 } }}
               style={{
-                background: "#FFFFFF",
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
                 borderRadius: 20,
                 overflow: "hidden",
-                boxShadow: "0 10px 30px rgba(13,27,42,0.08)",
-                border: "1px solid rgba(13,27,42,0.06)",
+                boxShadow: "0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+                border: "1px solid rgba(201,168,76,0.12)",
                 display: "flex",
                 flexDirection: "column",
+                transition: "box-shadow 0.3s, border-color 0.3s",
               }}
             >
               {/* Cover */}
@@ -446,11 +449,11 @@ export default function EBooks() {
 
               {/* Info */}
               <div style={{ padding: "1.4rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#0D1B2A", fontSize: "1.15rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
+                <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.15rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
                   {book.title}
                 </h3>
-                <p style={{ color: "rgba(13,27,42,0.5)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{book.genre} • {book.year}</p>
-                <p style={{ color: "rgba(13,27,42,0.65)", fontSize: "0.875rem", lineHeight: 1.7, flex: 1, marginBottom: "1.25rem" }}>
+                <p style={{ color: "rgba(201,168,76,0.6)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{book.genre} • {book.year}</p>
+                <p style={{ color: "rgba(253,246,236,0.55)", fontSize: "0.875rem", lineHeight: 1.7, flex: 1, marginBottom: "1.25rem" }}>
                   {book.description.slice(0, 100)}...
                 </p>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -474,10 +477,10 @@ export default function EBooks() {
                     onClick={() => setSelectedBook(book)}
                     style={{
                       display: "flex", alignItems: "center", gap: 6,
-                      background: "transparent", color: "#0D1B2A",
+                      background: "transparent", color: "rgba(253,246,236,0.7)",
                       padding: "9px 18px", borderRadius: 999,
                       fontWeight: 600, fontSize: "0.875rem",
-                      border: "1.5px solid rgba(13,27,42,0.15)", cursor: "pointer",
+                      border: "1.5px solid rgba(201,168,76,0.2)", cursor: "pointer",
                     }}
                   >
                     <Eye size={15} /> বিস্তারিত
@@ -497,8 +500,8 @@ export default function EBooks() {
           style={{
             marginTop: "3rem",
             padding: "1.5rem 2rem",
-            background: "linear-gradient(135deg, rgba(13,27,42,0.04) 0%, rgba(212,168,67,0.06) 100%)",
-            border: "1px solid rgba(212,168,67,0.2)",
+            background: "rgba(201,168,76,0.04)",
+            border: "1px solid rgba(201,168,76,0.15)",
             borderRadius: 16,
             textAlign: "center",
             display: "flex",
@@ -509,7 +512,7 @@ export default function EBooks() {
           }}
         >
           <Sparkles size={18} color="#D4A843" />
-          <p style={{ color: "rgba(13,27,42,0.7)", fontSize: "0.95rem", lineHeight: 1.8, margin: 0 }}>
+            <p style={{ color: "rgba(253,246,236,0.6)", fontSize: "0.95rem", lineHeight: 1.8, margin: 0 }}>
             আরও <strong style={{ color: "#D4A843" }}>৪টি ই-বুক</strong> শীঘ্রই প্রকাশিত হবে।
             নতুন বই সম্পর্কে আপডেট পেতে{" "}
             <a href="https://facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer" style={{ color: "#D4A843", fontWeight: 700 }}>

@@ -94,7 +94,7 @@ export default function Gallery() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #FAF6EF 0%, #f0ebe0 100%)" }}>
+    <div style={{ minHeight: "100vh", background: "#060E1A" }}>
       <Seo
         title="গ্যালারি — মাহবুব সরদার সবুজ"
         description="মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম ও স্মৃতির ফটো গ্যালারি।"
@@ -160,9 +160,10 @@ export default function Gallery() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "rgba(250,246,239,0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(201,168,76,0.15)",
+        background: "rgba(6,14,26,0.88)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(201,168,76,0.12)",
         padding: "0.9rem 1rem",
       }}>
         <div style={{
@@ -187,8 +188,8 @@ export default function Gallery() {
                   border: filter === cat ? "none" : "1px solid rgba(201,168,76,0.3)",
                   background: filter === cat
                     ? "linear-gradient(135deg, #C9A84C, #E8C4A0)"
-                    : "rgba(255,255,255,0.8)",
-                  color: filter === cat ? "#0A1628" : "#5a6a7a",
+                    : "rgba(255,255,255,0.05)",
+                  color: filter === cat ? "#0A1628" : "rgba(253,246,236,0.5)",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
                   fontWeight: filter === cat ? 700 : 500,
                   fontSize: "0.82rem",
@@ -304,7 +305,7 @@ export default function Gallery() {
 
         {/* Count footer */}
         <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-          <p style={{ color: "#8a9aaa", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem" }}>
+          <p style={{ color: "rgba(253,246,236,0.35)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem" }}>
             মোট <strong style={{ color: "#C9A84C" }}>{filtered.length}</strong>টি ছবি প্রদর্শিত হচ্ছে
           </p>
         </div>

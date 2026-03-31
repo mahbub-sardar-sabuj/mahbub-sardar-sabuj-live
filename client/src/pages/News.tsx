@@ -302,7 +302,7 @@ export default function News() {
   const regular = filtered.filter(n => !n.featured);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF6EF", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
       <Navbar />
 
       {/* ── HERO HEADER ── */}
@@ -471,7 +471,7 @@ export default function News() {
             <FadeIn direction="up">
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "2rem" }}>
                 <div style={{ width: 4, height: 24, background: "#C9A84C", borderRadius: 2 }} />
-                <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#0A1628", fontSize: "1.5rem", fontWeight: 400 }}>প্রধান সংবাদ</h2>
+                <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FAF6EF", fontSize: "1.5rem", fontWeight: 400 }}>প্রধান সংবাদ</h2>
               </div>
             </FadeIn>
             <div style={{ display: "grid", gridTemplateColumns: featured.length >= 2 ? "1fr 1fr" : "1fr", gap: "1.5rem" }} className="news-grid">
@@ -558,7 +558,7 @@ export default function News() {
             <FadeIn direction="up">
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "2rem" }}>
                 <div style={{ width: 4, height: 24, background: "#C9A84C", borderRadius: 2 }} />
-                <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#0A1628", fontSize: "1.5rem", fontWeight: 400 }}>সাম্প্রতিক সংবাদ</h2>
+                <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FAF6EF", fontSize: "1.5rem", fontWeight: 400 }}>সাম্প্রতিক সংবাদ</h2>
               </div>
             </FadeIn>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
@@ -617,7 +617,7 @@ export default function News() {
         )}
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: "4rem 0", color: "#8A9AAA" }}>
+          <div style={{ textAlign: "center", padding: "4rem 0", color: "rgba(253,246,236,0.4)" }}>
             <Search size={40} style={{ margin: "0 auto 1rem", opacity: 0.4 }} />
             <p style={{ fontSize: "1rem" }}>কোনো সংবাদ পাওয়া যায়নি।</p>
           </div>
