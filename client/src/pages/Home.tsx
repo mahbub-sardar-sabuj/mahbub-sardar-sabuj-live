@@ -196,38 +196,56 @@ export default function Home() {
                 }}>লেখক ও কবি</span>
               </motion.div>
 
-              {/* Main name */}
+              {/* Main name — premium design */}
+              <div style={{ position: "relative", marginBottom: "0.5rem" }}>
+                {/* Decorative gold line left */}
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  style={{
+                    position: "absolute", left: -24, top: "50%",
+                    width: 16, height: 2,
+                    background: "linear-gradient(90deg, transparent, #C9A84C)",
+                    transformOrigin: "left",
+                  }}
+                />
+                <motion.h1
+                  initial={{ opacity: 0, y: 50, skewX: -3 }}
+                  animate={{ opacity: 1, y: 0, skewX: 0 }}
+                  transition={{ duration: 1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    fontFamily: "'Tiro Bangla', serif",
+                    fontSize: "clamp(3.2rem, 7.5vw, 6.5rem)",
+                    fontWeight: 700,
+                    lineHeight: 1.05,
+                    margin: 0,
+                    color: "#FAF6EF",
+                    letterSpacing: "-0.02em",
+                    textShadow: "0 0 80px rgba(201,168,76,0.15)",
+                  }}
+                >
+                  মাহবুব
+                </motion.h1>
+              </div>
               <motion.h1
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 50, skewX: -3 }}
+                animate={{ opacity: 1, y: 0, skewX: 0 }}
+                transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 style={{
                   fontFamily: "'Tiro Bangla', serif",
-                  fontSize: "clamp(3rem, 7vw, 6rem)",
+                  fontSize: "clamp(3.2rem, 7.5vw, 6.5rem)",
                   fontWeight: 700,
-                  lineHeight: 1.1,
+                  lineHeight: 1.05,
                   margin: "0 0 0.5rem",
-                  color: "#FAF6EF",
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                মাহবুব
-              </motion.h1>
-              <motion.h1
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  fontFamily: "'Tiro Bangla', serif",
-                  fontSize: "clamp(3rem, 7vw, 6rem)",
-                  fontWeight: 700,
-                  lineHeight: 1.1,
-                  margin: "0 0 0.5rem",
-                  background: "linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%)",
+                  background: "linear-gradient(120deg, #B8922A 0%, #C9A84C 25%, #E8C97A 55%, #C9A84C 80%, #B8922A 100%)",
+                  backgroundSize: "200% 100%",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
-                  letterSpacing: "-0.01em",
+                  letterSpacing: "-0.02em",
+                  filter: "drop-shadow(0 0 20px rgba(201,168,76,0.3))",
+                  animation: "goldShimmer 4s ease-in-out infinite",
                 }}
               >
                 সরদার সবুজ
@@ -250,85 +268,39 @@ export default function Home() {
                 বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
               </motion.p>
 
-              {/* CTA buttons */}
+              {/* CTA buttons — one row, equal width */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.75 }}
-                style={{ display: "flex", gap: 16, flexWrap: "wrap" }}
+                className="cta-row"
               >
-                <Link href="/ebooks">
+                <Link href="/ebooks" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.03, boxShadow: "0 16px 48px rgba(201,168,76,0.45)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "15px 32px",
-                      borderRadius: 4,
-                      background: "linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%)",
-                      backgroundSize: "200% 100%",
-                      color: "#060E1A",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.95rem",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      textDecoration: "none",
-                      letterSpacing: "0.02em",
-                      boxShadow: "0 8px 32px rgba(201,168,76,0.3)",
-                    }}
+                    whileHover={{ scale: 1.04, boxShadow: "0 20px 50px rgba(201,168,76,0.5)", y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="cta-btn cta-primary"
                   >
                     <BookOpen size={17} />
-                    বই পড়ুন
+                    বই পড়ুন
                     <ArrowRight size={15} />
                   </motion.span>
                 </Link>
-                <Link href="/about">
+                <Link href="/about" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.03, borderColor: "rgba(201,168,76,0.7)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "15px 32px",
-                      borderRadius: 4,
-                      background: "transparent",
-                      border: "1px solid rgba(201,168,76,0.35)",
-                      color: "rgba(250,246,239,0.8)",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.95rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      textDecoration: "none",
-                      backdropFilter: "blur(8px)",
-                    }}
+                    whileHover={{ scale: 1.04, borderColor: "rgba(201,168,76,0.8)", background: "rgba(201,168,76,0.06)", y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="cta-btn cta-secondary"
                   >
                     <UserRound size={17} />
                     পরিচিতি
                   </motion.span>
                 </Link>
-                <Link href="/editor">
+                <Link href="/editor" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.03, borderColor: "rgba(201,168,76,0.7)", background: "rgba(201,168,76,0.07)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "15px 32px",
-                      borderRadius: 4,
-                      background: "transparent",
-                      border: "1px solid rgba(201,168,76,0.35)",
-                      color: "rgba(250,246,239,0.8)",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.95rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      textDecoration: "none",
-                      backdropFilter: "blur(8px)",
-                    }}
+                    whileHover={{ scale: 1.04, borderColor: "rgba(201,168,76,0.8)", background: "rgba(201,168,76,0.06)", y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="cta-btn cta-secondary"
                   >
                     <Palette size={17} />
                     ডিজাইন করুন
@@ -939,12 +911,12 @@ export default function Home() {
                 position: "relative",
               }}>
                 <img
-                  src={PROFILE_1}
-                  alt="মাহবুব সরদার সবুজ"
+                  src={PROFILE_2}
+                  alt="মাহবুব সরদার সবুজ — লেখার মুহূর্তে"
                   style={{
                     width: "100%",
                     display: "block",
-                    filter: "contrast(1.05) saturate(0.85)",
+                    filter: "contrast(1.05) saturate(0.9) brightness(1.02)",
                   }}
                   className="author-profile-img"
                 />
@@ -1053,6 +1025,57 @@ export default function Home() {
         @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
         * { box-sizing: border-box; }
+
+        @keyframes goldShimmer {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+
+        /* CTA row — one line, equal boxes */
+        .cta-row {
+          display: flex;
+          gap: 10px;
+          width: 100%;
+          max-width: 520px;
+        }
+        .cta-row a {
+          flex: 1;
+          text-decoration: none;
+        }
+        .cta-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 14px 10px;
+          border-radius: 6px;
+          font-family: 'Noto Sans Bengali', sans-serif;
+          font-size: 0.88rem;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: none;
+          width: 100%;
+          white-space: nowrap;
+          transition: all 0.25s ease;
+          letter-spacing: 0.01em;
+        }
+        .cta-primary {
+          background: linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%);
+          background-size: 200% 100%;
+          color: #060E1A;
+          box-shadow: 0 8px 28px rgba(201,168,76,0.35);
+          animation: goldShimmer 3s ease-in-out infinite;
+        }
+        .cta-secondary {
+          background: rgba(201,168,76,0.04);
+          border: 1px solid rgba(201,168,76,0.3);
+          color: rgba(250,246,239,0.85);
+          backdrop-filter: blur(10px);
+        }
+        .cta-secondary:hover {
+          background: rgba(201,168,76,0.08);
+          border-color: rgba(201,168,76,0.7);
+        }
 
         /* Hero layout */
         .hero-container {
