@@ -171,27 +171,27 @@ export default function About() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.8 }}
-                style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: "row", alignItems: "center" }}
+                style={{ display: "flex", gap: 10, flexWrap: "nowrap", flexDirection: "row", alignItems: "center" }}
               >
                 <div style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "10px 20px",
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "9px 14px",
                   background: "rgba(201,168,76,0.08)",
                   border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 6,
+                  borderRadius: 6, whiteSpace: "nowrap",
                 }}>
-                  <MapPin size={15} color="#C9A84C" />
-                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.7)" }}>কুমিল্লা, বাংলাদেশ</span>
+                  <MapPin size={14} color="#C9A84C" />
+                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", color: "rgba(250,246,239,0.7)" }}>কুমিল্লা, বাংলাদেশ</span>
                 </div>
                 <div style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "10px 20px",
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "9px 14px",
                   background: "rgba(201,168,76,0.08)",
                   border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 6,
+                  borderRadius: 6, whiteSpace: "nowrap",
                 }}>
-                  <Globe size={15} color="#C9A84C" />
-                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.7)" }}>বর্তমান অবস্থান: সৌদি আরব</span>
+                  <Globe size={14} color="#C9A84C" />
+                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", color: "rgba(250,246,239,0.7)" }}>বর্তমান অবস্থান: সৌদি আরব</span>
                 </div>
               </motion.div>
             </div>
