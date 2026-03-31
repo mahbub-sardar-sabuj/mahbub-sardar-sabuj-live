@@ -196,38 +196,7 @@ export default function About() {
               </motion.div>
             </div>
 
-            {/* Right portrait */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="about-hero-portrait"
-            >
-              <div style={{ position: "relative" }}>
-                <div style={{
-                  position: "absolute", top: -16, right: -16,
-                  width: "70%", height: "70%",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 8, pointerEvents: "none",
-                }} />
-                <div style={{
-                  borderRadius: 12, overflow: "hidden",
-                  boxShadow: "0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.15)",
-                  position: "relative",
-                }}>
-                  <img
-                    src={PROFILE_2}
-                    alt="মাহবুব সরদার সবুজ"
-                    style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9)" }}
-                    className="about-portrait-img"
-                  />
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, transparent 60%, rgba(6,14,26,0.7) 100%)",
-                  }} />
-                </div>
-              </div>
-            </motion.div>
+
           </div>
         </div>
 
