@@ -713,13 +713,13 @@ export default function AIChatbot() {
                   style={{
                     marginLeft: -10,
                     paddingLeft: 18,
-                    paddingRight: 14,
-                    paddingTop: 7,
-                    paddingBottom: 7,
-                    background: "linear-gradient(135deg, #1a2e4a 0%, #0d1b2a 100%)",
-                    border: "1.5px solid #D4A843",
+                    paddingRight: 16,
+                    paddingTop: 9,
+                    paddingBottom: 9,
+                    background: "linear-gradient(135deg, #060E1A 0%, #0A1628 60%, #0d1e35 100%)",
+                    border: "1.5px solid rgba(201,168,76,0.5)",
                     borderRadius: "0 20px 20px 0",
-                    boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(201,168,76,0.08)",
                     cursor: "pointer",
                     whiteSpace: "nowrap",
                     transformOrigin: "left center",
@@ -727,19 +727,19 @@ export default function AIChatbot() {
                 >
                   <span style={{
                     fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.75rem",
+                    fontSize: "0.78rem",
                     fontWeight: 700,
-                    color: "#D4A843",
+                    color: "#C9A84C",
                     letterSpacing: "0.02em",
                     display: "block",
-                  }}>আমাকে জিজ্ঞেস করুন</span>
+                  }}>আপনাকে স্বাগতম</span>
                   <span style={{
                     fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.6rem",
-                    color: "rgba(212,168,67,0.55)",
+                    fontSize: "0.62rem",
+                    color: "rgba(250,246,239,0.45)",
                     display: "block",
-                    marginTop: 1,
-                  }}>AI সহকারী সক্রিয়</span>
+                    marginTop: 2,
+                  }}>মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে</span>
                 </motion.div>
               )}
             </AnimatePresence>
