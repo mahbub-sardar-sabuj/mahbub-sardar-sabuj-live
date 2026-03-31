@@ -341,7 +341,7 @@
   }
 }
 
-/* ── Desktop footer ───────────────────────────────────────────────────────── */
+/* ── Desktop footer ─────────────────────────────────────────────────────────── */
 @media (min-width: 1024px) {
   .footer-inner {
     display: grid !important;
@@ -350,3 +350,35 @@
     padding: 5rem 3rem 3rem !important;
   }
 }
+
+/* ── Global: Editor panel scrollbar ───────────────────────────────── */
+.editor-panel::-webkit-scrollbar { width: 4px; height: 4px; }
+.editor-panel::-webkit-scrollbar-track { background: transparent; }
+.editor-panel::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 2px; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.editor-panel { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.editor-toolbar { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.editor-toolbar::-webkit-scrollbar { display: none; }
+* { -webkit-tap-highlight-color: transparent; }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+
+/* ── Mobile responsive ──────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .hero-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+  .about-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+  .book-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+  .section-pad { padding: 3rem 0 !important; }
+  .section-inner { padding: 0 1rem !important; }
+  .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .ebooks-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .social-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .gallery-grid { grid-template-columns: repeat(2,1fr) !important; }
+}
+@media (max-width: 768px) {
+  input[type="text"], input[type="email"], textarea, select { font-size: max(16px, 1em) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}/* ── Global: Scrollbar for panels (dark theme) ───────────────────────────── */
