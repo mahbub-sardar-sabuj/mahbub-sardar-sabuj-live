@@ -295,7 +295,7 @@ export default function About() {
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  position: "absolute", bottom: 60, left: -30,
+                  position: "absolute", bottom: 60, right: -30,
                   background: "rgba(6,14,26,0.85)",
                   backdropFilter: "blur(20px)",
                   border: "1px solid rgba(201,168,76,0.25)",
