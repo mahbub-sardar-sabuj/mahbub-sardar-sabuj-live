@@ -79,22 +79,20 @@ export default function About() {
           paddingTop: 80,
         }}
       >
-        {/* Background portrait — blurred, full bleed */}
+        {/* Clean dark background with subtle grid */}
         <div style={{
           position: "absolute", inset: 0,
-          backgroundImage: `url(${PROFILE_1})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center 20%",
-          filter: "blur(2px) saturate(0.6)",
-          transform: "scale(1.05)",
+          background: "#060E1A",
         }} />
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(105deg, rgba(6,14,26,0.97) 0%, rgba(6,14,26,0.85) 50%, rgba(6,14,26,0.5) 100%)",
+          backgroundImage: "radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          pointerEvents: "none",
         }} />
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(6,14,26,1) 0%, transparent 50%)",
+          background: "linear-gradient(to bottom, transparent 60%, rgba(6,14,26,1) 100%)",
         }} />
 
         {/* Gold glow */}
@@ -173,7 +171,7 @@ export default function About() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.8 }}
-                style={{ display: "flex", gap: 16, flexWrap: "wrap" }}
+                style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: "row", alignItems: "center" }}
               >
                 <div style={{
                   display: "flex", alignItems: "center", gap: 8,
