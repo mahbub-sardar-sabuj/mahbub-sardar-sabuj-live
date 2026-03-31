@@ -438,11 +438,11 @@ export default function Home() {
           {[...Array(5)].map((_, i) => (
             <div key={i} style={{ display: "flex", gap: "5rem", alignItems: "center" }}>
               <span style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 color: "#C9A84C",
-                fontSize: "0.85rem",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
+                fontSize: "1rem",
+                fontWeight: 400,
+                letterSpacing: "0.04em",
                 display: "flex",
                 alignItems: "center",
                 gap: 20,
@@ -1030,6 +1030,7 @@ export default function Home() {
       {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        @import url('https://cdn.msar.me/fonts/adorsho-lipi/font.css');
 
         * { box-sizing: border-box; }
 
