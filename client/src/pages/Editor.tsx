@@ -702,6 +702,19 @@ export default function Editor() {
   const [croppedSrc, setCroppedSrc]   = useState<string | null>(null);
   const cropDragRef = useRef<{ corner: string; startX: number; startY: number; origCrop: { x: number; y: number; w: number; h: number } } | null>(null);
 
+  // ── In-canvas photo drag-to-move ─────────────────────────────────────────
+  const [draggingPhoto, setDraggingPhoto] = useState<{
+    startX: number; startY: number; origX: number; origY: number;
+  } | null>(null);
+
+  // ── In-canvas crop overlay drag ───────────────────────────────────────────
+  // cropOverlayDrag: which handle is being dragged on the visual crop overlay
+  const [cropOverlayDrag, setCropOverlayDrag] = useState<{
+    handle: "tl"|"tr"|"bl"|"br"|"move";
+    startX: number; startY: number;
+    origCrop: { x: number; y: number; w: number; h: number };
+  } | null>(null);
+
   // ── PIP (Picture-in-Picture) layers ───────────────────────────────────────
   const [pipLayers, setPipLayers]     = useState<PipLayer[]>([]);
   const [selectedPipId, setSelectedPipId] = useState<string | null>(null);
@@ -951,7 +964,17 @@ export default function Editor() {
   const onPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; if (!f) return;
     const r = new FileReader();
-    r.onload = ev => setPhotoImage(ev.target?.result as string);
+    r.onload = ev => {
+      setPhotoImage(ev.target?.result as string);
+      // Auto-activate imgmove so user can immediately drag the photo
+      setActiveTool("imgmove");
+      // Reset transforms for fresh start
+      setPhotoX(50); setPhotoY(50);
+      setPhotoRotation(0); setPhotoScale(100);
+      setPhotoFlipH(false); setPhotoFlipV(false);
+      setCropX(0); setCropY(0); setCropW(100); setCropH(100);
+      setCroppedSrc(null);
+    };
     r.readAsDataURL(f);
     e.target.value = "";
   };
@@ -1020,6 +1043,82 @@ export default function Editor() {
       window.removeEventListener("touchend", onUp);
     };
   }, [draggingPip, cardW, cardH, scale]);
+
+  // ── In-canvas photo drag-to-move handler ────────────────────────────────
+  useEffect(() => {
+    if (!draggingPhoto) return;
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const cx = "touches" in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+      const cy = "touches" in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+      // Each pixel moved = how many percent of background-position
+      // The image is scaled to photoScale%, so 1px on canvas = 100/(cardW*scale) in bg-pos units
+      const sensitivity = 0.15; // tuned for smooth feel
+      const dx = (cx - draggingPhoto.startX) * sensitivity;
+      const dy = (cy - draggingPhoto.startY) * sensitivity;
+      const nx = Math.max(0, Math.min(100, draggingPhoto.origX - dx));
+      const ny = Math.max(0, Math.min(100, draggingPhoto.origY - dy));
+      setPhotoX(nx);
+      setPhotoY(ny);
+    };
+    const onUp = () => setDraggingPhoto(null);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [draggingPhoto]);
+
+  // ── In-canvas crop overlay drag handler ───────────────────────────────
+  useEffect(() => {
+    if (!cropOverlayDrag) return;
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const cx = "touches" in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+      const cy = "touches" in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+      // Convert pixel delta to percent of canvas
+      const dx = (cx - cropOverlayDrag.startX) / (cardW * scale) * 100;
+      const dy = (cy - cropOverlayDrag.startY) / (cardH * scale) * 100;
+      const o = cropOverlayDrag.origCrop;
+      let nx = o.x, ny = o.y, nw = o.w, nh = o.h;
+      if (cropOverlayDrag.handle === "move") {
+        nx = Math.max(0, Math.min(100 - o.w, o.x + dx));
+        ny = Math.max(0, Math.min(100 - o.h, o.y + dy));
+      } else if (cropOverlayDrag.handle === "tl") {
+        nx = Math.max(0, Math.min(o.x + o.w - 10, o.x + dx));
+        ny = Math.max(0, Math.min(o.y + o.h - 10, o.y + dy));
+        nw = o.w - (nx - o.x);
+        nh = o.h - (ny - o.y);
+      } else if (cropOverlayDrag.handle === "tr") {
+        ny = Math.max(0, Math.min(o.y + o.h - 10, o.y + dy));
+        nw = Math.max(10, Math.min(100 - o.x, o.w + dx));
+        nh = o.h - (ny - o.y);
+      } else if (cropOverlayDrag.handle === "bl") {
+        nx = Math.max(0, Math.min(o.x + o.w - 10, o.x + dx));
+        nw = o.w - (nx - o.x);
+        nh = Math.max(10, Math.min(100 - o.y, o.h + dy));
+      } else if (cropOverlayDrag.handle === "br") {
+        nw = Math.max(10, Math.min(100 - o.x, o.w + dx));
+        nh = Math.max(10, Math.min(100 - o.y, o.h + dy));
+      }
+      setCropX(Math.round(nx)); setCropY(Math.round(ny));
+      setCropW(Math.round(nw)); setCropH(Math.round(nh));
+    };
+    const onUp = () => setCropOverlayDrag(null);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [cropOverlayDrag, cardW, cardH, scale]);
 
   // ── Crop helper ───────────────────────────────────────────────────────────
   const applyCrop = useCallback(() => {
@@ -1356,11 +1455,24 @@ export default function Editor() {
                 opacity: bgOpacity / 100 }} />
             )}
             {photoImage && (
-              <div style={{
-                position: "absolute", inset: 0, zIndex: 2,
-                overflow: "hidden",
-                opacity: photoOpacity / 100,
-              }}>
+              <div
+                style={{
+                  position: "absolute", inset: 0, zIndex: 2,
+                  overflow: "hidden",
+                  opacity: photoOpacity / 100,
+                  cursor: activeTool === "imgmove" ? (draggingPhoto ? "grabbing" : "grab") : "default",
+                }}
+                onMouseDown={e => {
+                  if (activeTool !== "imgmove") return;
+                  e.stopPropagation();
+                  setDraggingPhoto({ startX: e.clientX, startY: e.clientY, origX: photoX, origY: photoY });
+                }}
+                onTouchStart={e => {
+                  if (activeTool !== "imgmove") return;
+                  e.stopPropagation();
+                  setDraggingPhoto({ startX: e.touches[0].clientX, startY: e.touches[0].clientY, origX: photoX, origY: photoY });
+                }}
+              >
                 <div style={{
                   position: "absolute", inset: 0,
                   backgroundImage: `url(${photoImage})`,
@@ -1370,9 +1482,124 @@ export default function Editor() {
                   filter: effectiveFilter,
                   transform: `rotate(${photoRotation}deg) scaleX(${photoFlipH ? -1 : 1}) scaleY(${photoFlipV ? -1 : 1})`,
                   transformOrigin: "center center",
+                  pointerEvents: "none",
                 }} />
+                {/* Drag hint badge when imgmove is active */}
+                {activeTool === "imgmove" && !draggingPhoto && (
+                  <div style={{
+                    position: "absolute", top: "50%", left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    background: "rgba(0,0,0,0.55)", borderRadius: 12,
+                    padding: "8px 14px", pointerEvents: "none",
+                    display: "flex", alignItems: "center", gap: 6,
+                    border: "1.5px solid rgba(212,168,67,0.6)",
+                    backdropFilter: "blur(4px)",
+                  }}>
+                    <span style={{ fontSize: Math.ceil(18 / scale) }}>✋</span>
+                    <span style={{ color: "#D4A843", fontSize: Math.ceil(11 / scale), fontWeight: 700, whiteSpace: "nowrap" }}>টেনে সরান</span>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Crop overlay — shown when activeTool === 'crop' and photoImage exists */}
+            {activeTool === "crop" && photoImage && (() => {
+              const ox = cropX / 100 * cardW;
+              const oy = cropY / 100 * cardH;
+              const ow = cropW / 100 * cardW;
+              const oh = cropH / 100 * cardH;
+              const hSz = Math.ceil(22 / scale); // handle size in canvas px
+              const startOverlayDrag = (handle: "tl"|"tr"|"bl"|"br"|"move", e: React.MouseEvent | React.TouchEvent) => {
+                e.stopPropagation();
+                const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+                const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+                setCropOverlayDrag({ handle, startX: cx, startY: cy, origCrop: { x: cropX, y: cropY, w: cropW, h: cropH } });
+              };
+              return (
+                <div style={{ position: "absolute", inset: 0, zIndex: 30, pointerEvents: "none" }}>
+                  {/* Dark overlay outside crop area */}
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", pointerEvents: "none" }} />
+                  {/* Bright crop window */}
+                  <div style={{
+                    position: "absolute",
+                    left: ox, top: oy, width: ow, height: oh,
+                    boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+                    border: "2px solid #D4A843",
+                    pointerEvents: "auto",
+                    cursor: cropOverlayDrag?.handle === "move" ? "grabbing" : "move",
+                  }}
+                    onMouseDown={e => startOverlayDrag("move", e)}
+                    onTouchStart={e => startOverlayDrag("move", e)}
+                  >
+                    {/* Rule-of-thirds grid lines */}
+                    <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+                      {["33.3%", "66.6%"].map(p => (
+                        <div key={p} style={{ position: "absolute", left: p, top: 0, bottom: 0, width: 1, background: "rgba(212,168,67,0.4)" }} />
+                      ))}
+                      {["33.3%", "66.6%"].map(p => (
+                        <div key={p} style={{ position: "absolute", top: p, left: 0, right: 0, height: 1, background: "rgba(212,168,67,0.4)" }} />
+                      ))}
+                    </div>
+                    {/* Corner handles */}
+                    {(["tl", "tr", "bl", "br"] as const).map(corner => (
+                      <div key={corner}
+                        onMouseDown={e => { e.stopPropagation(); startOverlayDrag(corner, e); }}
+                        onTouchStart={e => { e.stopPropagation(); startOverlayDrag(corner, e); }}
+                        style={{
+                          position: "absolute",
+                          width: hSz, height: hSz,
+                          background: "#D4A843",
+                          borderRadius: 3,
+                          cursor: corner === "tl" || corner === "br" ? "nwse-resize" : "nesw-resize",
+                          ...(corner === "tl" ? { top: -hSz/2, left: -hSz/2 } :
+                              corner === "tr" ? { top: -hSz/2, right: -hSz/2 } :
+                              corner === "bl" ? { bottom: -hSz/2, left: -hSz/2 } :
+                                               { bottom: -hSz/2, right: -hSz/2 }),
+                        }}
+                      />
+                    ))}
+                    {/* Apply crop button inside overlay */}
+                    <div style={{
+                      position: "absolute", bottom: -hSz * 2.5, left: "50%",
+                      transform: "translateX(-50%)",
+                      display: "flex", gap: 6, pointerEvents: "auto",
+                    }}>
+                      <button
+                        onMouseDown={e => e.stopPropagation()}
+                        onClick={e => { e.stopPropagation(); applyCrop(); }}
+                        style={{
+                          padding: `${Math.ceil(5/scale)}px ${Math.ceil(12/scale)}px`,
+                          borderRadius: Math.ceil(8/scale),
+                          border: "none",
+                          background: "linear-gradient(135deg,#D4A843,#b8892a)",
+                          color: "#000", fontWeight: 700,
+                          fontSize: Math.ceil(11/scale),
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                        }}>
+                        ✂️ ক্রপ
+                      </button>
+                      <button
+                        onMouseDown={e => e.stopPropagation()}
+                        onClick={e => { e.stopPropagation(); setCropX(0); setCropY(0); setCropW(100); setCropH(100); }}
+                        style={{
+                          padding: `${Math.ceil(5/scale)}px ${Math.ceil(10/scale)}px`,
+                          borderRadius: Math.ceil(8/scale),
+                          border: `1px solid rgba(212,168,67,0.5)`,
+                          background: "rgba(13,20,32,0.85)",
+                          color: "#D4A843", fontWeight: 600,
+                          fontSize: Math.ceil(11/scale),
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}>
+                        রিসেট
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
             {showWatermark && (
               <div style={{ position: "absolute", inset: 0, zIndex: 3,
                 backgroundImage: `url(${AUTHOR_PHOTO})`, backgroundSize: "cover", backgroundPosition: "center top",
@@ -1815,11 +2042,16 @@ export default function Editor() {
                     </div>
                   ) : (
                     <>
+                      {/* Drag hint */}
+                      <div style={{ background: "rgba(212,168,67,0.1)", border: "1px solid rgba(212,168,67,0.3)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 20 }}>✋</span>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 600, margin: 0 }}>প্রিভিউতে ছবির উপর আঙ্গুল দিয়ে টেনে সরান যাবে! নিচে স্লাইডারও আছে।</p>
+                      </div>
                       <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
                         <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>📍 অবস্থান</p>
-                        <SliderRow label="অনুভূমিক (X)" val={photoX} set={setPhotoX} min={0} max={100} unit="%" />
+                        <SliderRow label="অনুভূমিক (X)" val={Math.round(photoX)} set={setPhotoX} min={0} max={100} unit="%" />
                         <div style={{ marginTop: 10 }}>
-                          <SliderRow label="উল্লম্ব (Y)" val={photoY} set={setPhotoY} min={0} max={100} unit="%" />
+                          <SliderRow label="উল্লম্ব (Y)" val={Math.round(photoY)} set={setPhotoY} min={0} max={100} unit="%" />
                         </div>
                       </div>
                       <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
@@ -1870,8 +2102,9 @@ export default function Editor() {
                     </div>
                   ) : (
                     <>
-                      <div style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.2)", borderRadius: 10, padding: "10px 14px" }}>
-                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 600, margin: 0 }}>ℹ️ স্লাইডার দিয়ে ক্রপ এলাকা নির্ধারণ করুন</p>
+                      <div style={{ background: "rgba(212,168,67,0.1)", border: "1px solid rgba(212,168,67,0.3)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 20 }}>✌️</span>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 600, margin: 0 }}>প্রিভিউতে সোনালি বাক্সটি টেনে সরান বা কোণার হ্যান্ডেল দিয়ে রিসাইজ করুন! নিচে স্লাইডারও আছে।</p>
                       </div>
                       <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
                         <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>📐 ক্রপ এলাকা</p>
