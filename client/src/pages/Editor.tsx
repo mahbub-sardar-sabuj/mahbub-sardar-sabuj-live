@@ -859,6 +859,20 @@ export default function Editor() {
   ].filter(Boolean).join(" ");
   const effectiveFilter = [baseFilter, adjustFilter].filter(Boolean).join(" ") || "none";
 
+  // ── Preload all fonts on mount ───────────────────────────────────────────────
+  useEffect(() => {
+    // Load all fonts in background so they're ready when selected
+    const loadAllFonts = async () => {
+      const fontKeys = Object.keys(FONT_URLS);
+      // Load first 5 fonts immediately (most common ones)
+      const priority = ["AdorshoLipi", "ChandraSheela", "MahbubSardarSabujFont", "MasudNandanik", "ChandraSheelaPremium"];
+      await Promise.all(priority.map(k => ensureFontLoaded(k)));
+      // Load rest in background
+      fontKeys.filter(k => !priority.includes(k)).forEach(k => ensureFontLoaded(k));
+    };
+    loadAllFonts();
+  }, []);
+
   // ── Sync text color with theme ─────────────────────────────────────────────
   useEffect(() => {
     setTextLayers(prev => prev.map(l => ({ ...l, color: theme.text })));
@@ -1025,8 +1039,13 @@ export default function Editor() {
   }, []);
 
   // ── Text helpers ──────────────────────────────────────────────────────────
-  const updateText = (id: string, patch: Partial<TextBlock>) =>
+  const updateText = (id: string, patch: Partial<TextBlock>) => {
+    // If fontKey is being changed, load the font first
+    if (patch.fontKey) {
+      ensureFontLoaded(patch.fontKey);
+    }
     setTextLayers(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l));
+  };
 
   const addCustomText = () => {
     const id = uid();
@@ -2483,7 +2502,11 @@ export default function Editor() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {FONTS.map(f => (
                         <button key={f.value}
-                          onClick={() => selectedText && updateText(selectedText.id, { fontKey: f.value })}
+                          onClick={async () => {
+                            if (!selectedText) return;
+                            await ensureFontLoaded(f.value);
+                            updateText(selectedText.id, { fontKey: f.value });
+                          }}
                           style={{
                             padding: "12px 16px", borderRadius: 10, textAlign: "left",
                             border: `1px solid ${selectedText?.fontKey === f.value ? "#D4A843" : "#1e3050"}`,
