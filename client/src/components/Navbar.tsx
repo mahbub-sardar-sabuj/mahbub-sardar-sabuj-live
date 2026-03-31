@@ -86,6 +86,11 @@ export default function Navbar() {
     if (isDesktop && mobileOpen) setMobileOpen(false);
   }, [isDesktop, mobileOpen]);
 
+  // Auto-close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location]);
+
   const handleNavClick = (_href: string, _type: string) => {
     setMobileOpen(false);
   };

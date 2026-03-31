@@ -158,8 +158,8 @@ export default function Gallery() {
       {/* ── Filter Tabs ── */}
       <div style={{
         position: "sticky",
-        top: 0,
-        zIndex: 100,
+        top: 72,
+        zIndex: 40,
         background: "rgba(6,14,26,0.88)",
         backdropFilter: "blur(16px)",
         WebkitBackdropFilter: "blur(16px)",
