@@ -23,16 +23,16 @@ import {
 import { Link, useLocation } from "wouter";
 
 const navLinks = [
-  { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "#home", type: "anchor", icon: House },
-  { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "#about", type: "anchor", icon: UserRound },
-  { label: "বই", subtitle: "প্রকাশিত বই ও সংগ্রহের তথ্য", href: "#book", type: "anchor", icon: BookOpen },
+  { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "/", type: "page", icon: House },
+  { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "/about", type: "page", icon: UserRound },
+  { label: "বই", subtitle: "প্রকাশিত বই ও সংগ্রহের তথ্য", href: "/ebooks", type: "page", icon: BookOpen },
   { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", type: "page", icon: Mic2 },
   { label: "লেখালেখি", subtitle: "প্রবন্ধ, গদ্য ও সাহিত্যকর্ম", href: "/writings", type: "page", icon: PenLine },
   { label: "ই-বুক", subtitle: "প্রকাশিত বই ও ই-বুকের সংগ্রহ", href: "/ebooks", type: "page", icon: BookOpen },
   { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "#gallery", type: "anchor", icon: Images },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "/gallery", type: "page", icon: Images },
   { label: "সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", type: "page", icon: Newspaper },
-  { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "#contact", type: "anchor", icon: Mail },
+  { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", type: "page", icon: Mail },
 ];
 
 const infoTabs = [
@@ -45,8 +45,8 @@ const infoTabs = [
 const isInfoTabActive = (href: string, location: string) => location === href;
 
 const isPrimaryNavActive = (href: string, type: string, location: string) => {
+  if (href === "/") return location === "/";
   if (type === "page") return location === href;
-  if (href === "#home") return location === "/";
   return false;
 };
 
@@ -86,12 +86,8 @@ export default function Navbar() {
     if (isDesktop && mobileOpen) setMobileOpen(false);
   }, [isDesktop, mobileOpen]);
 
-  const handleNavClick = (href: string, type: string) => {
+  const handleNavClick = (_href: string, _type: string) => {
     setMobileOpen(false);
-    if (type === "page") return;
-    if (location !== "/") { window.location.href = "/" + href; return; }
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -200,9 +196,8 @@ export default function Navbar() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
 
           {/* ── PREMIUM LOGO ── */}
-          <a
-            href="#home"
-            onClick={(e) => { e.preventDefault(); handleNavClick("#home", "anchor"); }}
+          <Link
+            href="/"
             style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
           >
             <span style={{
@@ -243,7 +238,7 @@ export default function Navbar() {
                 লেখক ও কবি
               </span>
             </span>
-          </a>
+          </Link>
 
           {/* ── DESKTOP NAV LINKS (only visible on md+) ── */}
           {isDesktop && (

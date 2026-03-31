@@ -13,13 +13,13 @@ const socialLinks = [
 ];
 
 const quickLinks = [
-  { label: "পরিচিতি", href: "#about", type: "anchor" },
-  { label: "বই", href: "#book", type: "anchor" },
+  { label: "পরিচিতি", href: "/about", type: "page" },
+  { label: "বই", href: "/ebooks", type: "page" },
   { label: "ই-বুক", href: "/ebooks", type: "page" },
   { label: "লেখালেখি", href: "/writings", type: "page" },
   { label: "আবৃত্তি", href: "/facebook-recitations", type: "page" },
-  { label: "গ্যালারি", href: "#gallery", type: "anchor" },
-  { label: "যোগাযোগ", href: "#contact", type: "anchor" },
+  { label: "গ্যালারি", href: "/gallery", type: "page" },
+  { label: "যোগাযোগ", href: "/contact", type: "page" },
 ];
 
 const legalLinks = [
@@ -31,14 +31,6 @@ const legalLinks = [
 
 export default function Footer() {
   const [location] = useLocation();
-
-  const handleAnchorClick = (href: string) => {
-    if (location !== "/") {
-      window.location.href = "/" + href;
-      return;
-    }
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
-  };
 
   return (
     <footer
@@ -95,49 +87,27 @@ export default function Footer() {
               দ্রুত লিংক
             </h4>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {quickLinks.map((link) =>
-                link.type === "page" ? (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: location === link.href ? "#D4A843" : "rgba(253,246,236,0.6)",
-                        textDecoration: "none",
-                        fontSize: "0.875rem",
-                        transition: "color 0.3s",
-                        cursor: "pointer",
-                        display: "inline-block",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "#D4A843")}
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.color = location === link.href ? "#D4A843" : "rgba(253,246,236,0.6)")
-                      }
-                    >
-                      → {link.label}
-                    </span>
-                  </Link>
-                ) : (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAnchorClick(link.href);
-                    }}
+              {quickLinks.map((link) => (
+                <Link key={link.href + link.label} href={link.href}>
+                  <span
                     style={{
                       fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: "rgba(253,246,236,0.6)",
+                      color: location === link.href ? "#D4A843" : "rgba(253,246,236,0.6)",
                       textDecoration: "none",
                       fontSize: "0.875rem",
                       transition: "color 0.3s",
+                      cursor: "pointer",
+                      display: "inline-block",
                     }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#D4A843")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(253,246,236,0.6)")}
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = location === link.href ? "#D4A843" : "rgba(253,246,236,0.6)")
+                    }
                   >
                     → {link.label}
-                  </a>
-                )
-              )}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
 
