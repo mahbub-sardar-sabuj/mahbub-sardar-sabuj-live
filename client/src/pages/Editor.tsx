@@ -1982,7 +1982,7 @@ export default function Editor() {
                             }
                           }}
                           style={{
-                            width: "100%", minHeight: boxH,
+                            width: "100%", minHeight: "auto",
                             background: "rgba(13,20,32,0.9)",
                             border: `${Math.ceil(2/scale)}px solid #D4A843`,
                             borderRadius: Math.ceil(8/scale),
@@ -1994,7 +1994,6 @@ export default function Editor() {
                             lineHeight: layer.lineHeight,
                             letterSpacing: (layer.letterSpacing ?? 0) + "px",
                             padding: `${Math.ceil(4/scale)}px`,
-                             width: "100%", minHeight: "auto",
                             boxSizing: "border-box", boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
                             textAlign: layer.align,
                           }}

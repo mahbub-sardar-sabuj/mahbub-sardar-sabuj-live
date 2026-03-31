@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Clock, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check, Send, ThumbsUp, User } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import Seo from "../components/Seo";
 
 interface Comment {
   id: number;
@@ -303,6 +304,11 @@ export default function News() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+      <Seo
+        title="সংবাদ ও আপডেট | মাহবুব সরদার সবুজ"
+        description="মাহবুব সরদার সবুজের সর্বশেষ সংবাদ, প্রকাশনা আপডেট, সাহিত্যকর্ম ও অনুষ্ঠানের তথ্য।"
+        path="/news"
+      />
       <Navbar />
 
       {/* ── HERO HEADER ── */}

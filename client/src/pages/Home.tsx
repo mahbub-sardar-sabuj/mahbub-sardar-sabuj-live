@@ -9,7 +9,7 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from "fra
 import {
   BookOpen, PenLine, Mic2, Images, Newspaper, Mail,
   UserRound, Palette, ArrowRight, ChevronDown, ExternalLink,
-  Star, Quote
+  Quote
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -22,14 +22,6 @@ const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFG
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
 const BOOK_COVER = "/images/book-cover-20260328.jpg";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
-
-// ── Stats ─────────────────────────────────────────────────────────────────────
-const stats = [
-  { value: "৫+", label: "প্রকাশিত বই" },
-  { value: "৫০K+", label: "পাঠক" },
-  { value: "১০+", label: "বছরের অভিজ্ঞতা" },
-  { value: "১০০+", label: "কবিতা ও গদ্য" },
-];
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
@@ -47,15 +39,7 @@ const sections = [
 // ── Quote ─────────────────────────────────────────────────────────────────────
 const authorQuote = "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।";
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Animated counter
-function Counter({ target, suffix = "" }: { target: string; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  return <span ref={ref}>{inView ? target : "০"}{suffix}</span>;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════════
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
@@ -1025,6 +1009,40 @@ export default function Home() {
                 সৌদি আরবে বসবাসরত এই লেখক তাঁর কবিতা ও গদ্যে দেশ, প্রবাস ও মানুষের জীবনের নানা রঙ তুলে ধরেন।
               </p>
 
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: "1.5rem" }}>
+                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
+                  <motion.button
+                    whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(201,168,76,0.45)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      padding: "12px 24px", borderRadius: 50,
+                      background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
+                      border: "none", cursor: "pointer",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.9rem", fontWeight: 700, color: "#060E1A",
+                    }}
+                  >
+                    📖 বই কিনুন
+                  </motion.button>
+                </a>
+                <a href="https://www.facebook.com/Lekhok.MahbubSardarSabuj" target="_blank" rel="noopener noreferrer">
+                  <motion.button
+                    whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(201,168,76,0.2)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      padding: "12px 24px", borderRadius: 50,
+                      background: "transparent",
+                      border: "1.5px solid rgba(201,168,76,0.5)", cursor: "pointer",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.9rem", fontWeight: 600, color: "#C9A84C",
+                    }}
+                  >
+                    ❤️ সাপোর্ট করুন
+                  </motion.button>
+                </a>
+              </div>
               <Link href="/about">
                 <motion.span
                   whileHover={{ scale: 1.03, x: 4 }}

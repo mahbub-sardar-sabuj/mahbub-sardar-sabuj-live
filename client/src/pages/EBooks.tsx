@@ -355,10 +355,9 @@ export default function EBooks() {
                   <BookOpen size={20} /> এখনই পড়ুন
                 </motion.button>
               </Link>
-              {featuredBook.buyLink && (
-                <a href={featuredBook.buyLink} target="_blank" rel="noopener noreferrer">
+              <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
                   <motion.button
-                    whileHover={{ scale: 1.04 }}
+                    whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(212,168,67,0.3)" }}
                     whileTap={{ scale: 0.97 }}
                     style={{
                       display: "flex", alignItems: "center", gap: 8,
@@ -371,7 +370,6 @@ export default function EBooks() {
                     <ShoppingCart size={20} /> রকমারি থেকে অর্ডার করুন
                   </motion.button>
                 </a>
-              )}
             </div>
           </div>
         </motion.div>
