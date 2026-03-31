@@ -1938,6 +1938,7 @@ export default function Editor() {
                     onTouchMove={e => {
                       if (e.touches.length === 2 && pinchRef.current?.id === layer.id) {
                         e.stopPropagation();
+                        e.preventDefault();
                         const dx = e.touches[0].clientX - e.touches[1].clientX;
                         const dy = e.touches[0].clientY - e.touches[1].clientY;
                         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -1946,7 +1947,7 @@ export default function Editor() {
                         setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, fontSize: newSize } : l));
                       }
                     }}
-                    onTouchEnd={() => { pinchRef.current = null; }}
+                    onTouchEnd={e => { if (pinchRef.current?.id === layer.id) { e.stopPropagation(); } pinchRef.current = null; }}
                     onClick={e => {
                       e.stopPropagation();
                       if (isEditingInline) return;
@@ -1955,13 +1956,17 @@ export default function Editor() {
                     style={{
                       position: "absolute",
                       left: layer.x * cardW, top: layer.y * cardH,
-                      width: boxW, minHeight: boxH,
+                      width: "auto", maxWidth: Math.min(boxW * 1.5, cardW * 0.95),
+                      minWidth: Math.max(60, boxW * 0.3),
+                      minHeight: "auto",
                       transform: `translate(-50%, -50%) rotate(${rot}deg)`,
                       zIndex: isSelected ? 15 : 10,
                       cursor: dragging?.id === layer.id ? "grabbing" : "grab",
                       userSelect: "none", textAlign: layer.align, boxSizing: "border-box",
                       opacity: (layer.opacity ?? 100) / 100,
                       touchAction: "none",
+                      willChange: "transform, font-size",
+                      transition: dragging?.id === layer.id ? "none" : "font-size 0.05s ease",
                     }}>
 
                     {/* Inline edit textarea */}
@@ -1989,7 +1994,7 @@ export default function Editor() {
                             lineHeight: layer.lineHeight,
                             letterSpacing: (layer.letterSpacing ?? 0) + "px",
                             padding: `${Math.ceil(4/scale)}px`,
-                            outline: "none", resize: "none",
+                             width: "100%", minHeight: "auto",
                             boxSizing: "border-box", boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
                             textAlign: layer.align,
                           }}
@@ -2024,13 +2029,13 @@ export default function Editor() {
                         fontStyle: layer.italic ? "italic" : "normal",
                         lineHeight: layer.lineHeight,
                         letterSpacing: (layer.letterSpacing ?? 0) + "px",
-                        whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word",
+                        whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere",
                         textShadow: layer.shadow ? "2px 2px 8px rgba(0,0,0,0.5)" : "none",
                         WebkitTextStroke: layer.outline ? `${Math.ceil(layer.fontSize * 0.06)}px ${layer.outlineColor}` : "none",
                         border: isSelected ? `${Math.ceil(2/scale)}px dashed rgba(212,168,67,0.8)` : "none",
                         borderRadius: Math.ceil(4/scale),
                         padding: `${Math.ceil(6/scale)}px`,
-                        width: "100%", minHeight: boxH,
+                        width: "100%", minHeight: "auto",
                         boxSizing: "border-box",
                       }}>
                         {layer.text}
