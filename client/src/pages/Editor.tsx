@@ -265,7 +265,19 @@ interface StickerLayer {
   rotation: number;
 }
 
-type ActiveTool = "canvas" | "text" | "inlinetext" | "sticker" | "filter" | "adjust" | "bgwall" | "bgphoto" | "upscale" | "crop" | "draw" | null;
+interface PipLayer {
+  id: string;
+  src: string;
+  x: number; // 0-1 relative to cardW
+  y: number; // 0-1 relative to cardH
+  w: number; // 0-1 relative to cardW
+  h: number; // 0-1 relative to cardH
+  rotation: number;
+  opacity: number;
+  shape: "rect" | "circle" | "rounded";
+}
+
+type ActiveTool = "canvas" | "text" | "inlinetext" | "sticker" | "filter" | "adjust" | "bgwall" | "bgphoto" | "upscale" | "crop" | "draw" | "pip" | "imgmove" | null;
 type ExportQuality = "1x" | "2x" | "4k";
 type ExportFormat = "png" | "jpg";
 type DrawTool = "pencil" | "brush" | "eraser" | "line" | "rect" | "circle" | "arrow";
@@ -674,6 +686,28 @@ export default function Editor() {
   const drawStartPos                  = useRef<{ x: number; y: number } | null>(null);
   const drawSnapshot                  = useRef<ImageData | null>(null);
 
+  // ── Photo position, rotation, crop state ──────────────────────────────────
+  const [photoX, setPhotoX]           = useState(50); // 0-100 background-position-x
+  const [photoY, setPhotoY]           = useState(50); // 0-100 background-position-y
+  const [photoRotation, setPhotoRotation] = useState(0); // degrees
+  const [photoScale, setPhotoScale]   = useState(100); // 100 = cover, >100 = zoom in
+  const [photoFlipH, setPhotoFlipH]   = useState(false);
+  const [photoFlipV, setPhotoFlipV]   = useState(false);
+  // Crop state (values in 0-100 percent of image)
+  const [cropMode, setCropMode]       = useState(false);
+  const [cropX, setCropX]             = useState(0);
+  const [cropY, setCropY]             = useState(0);
+  const [cropW, setCropW]             = useState(100);
+  const [cropH, setCropH]             = useState(100);
+  const [croppedSrc, setCroppedSrc]   = useState<string | null>(null);
+  const cropDragRef = useRef<{ corner: string; startX: number; startY: number; origCrop: { x: number; y: number; w: number; h: number } } | null>(null);
+
+  // ── PIP (Picture-in-Picture) layers ───────────────────────────────────────
+  const [pipLayers, setPipLayers]     = useState<PipLayer[]>([]);
+  const [selectedPipId, setSelectedPipId] = useState<string | null>(null);
+  const [draggingPip, setDraggingPip] = useState<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const pipFileRef = useRef<HTMLInputElement>(null);
+
   const photoRef    = useRef<HTMLInputElement>(null);
   const bgFileRef   = useRef<HTMLInputElement>(null);
   const previewRef  = useRef<HTMLDivElement>(null);
@@ -930,6 +964,85 @@ export default function Editor() {
     e.target.value = "";
   };
 
+  // ── PIP upload ────────────────────────────────────────────────────────────
+  const onPipUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      const src = ev.target?.result as string;
+      const newPip: PipLayer = {
+        id: uid(), src,
+        x: 0.1, y: 0.1,
+        w: 0.4, h: 0.35,
+        rotation: 0, opacity: 100,
+        shape: "rounded",
+      };
+      setPipLayers(prev => [...prev, newPip]);
+      setSelectedPipId(newPip.id);
+      setActiveTool("pip");
+    };
+    r.readAsDataURL(f);
+    e.target.value = "";
+  };
+
+  // ── PIP drag ──────────────────────────────────────────────────────────────
+  const startPipDrag = (
+    e: React.MouseEvent | React.TouchEvent,
+    id: string, ox: number, oy: number
+  ) => {
+    e.stopPropagation();
+    const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+    setDraggingPip({ id, startX: cx, startY: cy, origX: ox, origY: oy });
+    setSelectedPipId(id);
+  };
+
+  useEffect(() => {
+    if (!draggingPip) return;
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const cx = "touches" in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+      const cy = "touches" in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+      const dx = (cx - draggingPip.startX) / (cardW * scale);
+      const dy = (cy - draggingPip.startY) / (cardH * scale);
+      const nx = Math.max(0, Math.min(0.98, draggingPip.origX + dx));
+      const ny = Math.max(0, Math.min(0.98, draggingPip.origY + dy));
+      setPipLayers(prev => prev.map(p => p.id === draggingPip.id ? { ...p, x: nx, y: ny } : p));
+    };
+    const onUp = () => setDraggingPip(null);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [draggingPip, cardW, cardH, scale]);
+
+  // ── Crop helper ───────────────────────────────────────────────────────────
+  const applyCrop = useCallback(() => {
+    if (!photoImage) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const sw = img.naturalWidth * (cropW / 100);
+      const sh = img.naturalHeight * (cropH / 100);
+      const sx = img.naturalWidth * (cropX / 100);
+      const sy = img.naturalHeight * (cropY / 100);
+      canvas.width = sw; canvas.height = sh;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      const cropped = canvas.toDataURL("image/png");
+      setCroppedSrc(cropped);
+      setPhotoImage(cropped);
+      setCropMode(false);
+      setCropX(0); setCropY(0); setCropW(100); setCropH(100);
+    };
+    img.src = photoImage;
+  }, [photoImage, cropX, cropY, cropW, cropH]);
+
   // ── Canvas export ─────────────────────────────────────────────────────────
   const buildCanvas = useCallback(async (dpr: number): Promise<HTMLCanvasElement> => {
     await Promise.all(textLayers.map(l => ensureFontLoaded(l.fontKey)));
@@ -986,8 +1099,61 @@ export default function Editor() {
         img.onerror = () => res(); img.src = src;
       });
 
+    const loadPhotoWithTransform = (src: string, opacity: number, filter?: string) =>
+      new Promise<void>(res => {
+        const img = new Image(); img.crossOrigin = "anonymous";
+        img.onload = () => {
+          ctx.save();
+          if (filter && filter !== "none") ctx.filter = filter;
+          ctx.globalAlpha = opacity;
+          // Apply rotation and flip
+          ctx.translate(cardW / 2, cardH / 2);
+          ctx.rotate((photoRotation * Math.PI) / 180);
+          ctx.scale(photoFlipH ? -1 : 1, photoFlipV ? -1 : 1);
+          const scl = photoScale / 100;
+          const ia = img.naturalWidth / img.naturalHeight, ca = cardW / cardH;
+          let sw = img.naturalWidth, sh = img.naturalHeight;
+          let dw = cardW * scl, dh = cardH * scl;
+          if (ia > ca) { dw = dh * ia; }
+          else { dh = dw / ia; }
+          // Apply position offset
+          const offX = ((photoX - 50) / 50) * (dw - cardW) / 2;
+          const offY = ((photoY - 50) / 50) * (dh - cardH) / 2;
+          ctx.drawImage(img, 0, 0, sw, sh, -dw/2 - offX, -dh/2 - offY, dw, dh);
+          ctx.restore(); res();
+        };
+        img.onerror = () => res(); img.src = src;
+      });
+
+    const loadPipImg = (pip: PipLayer) =>
+      new Promise<void>(res => {
+        const img = new Image(); img.crossOrigin = "anonymous";
+        img.onload = () => {
+          ctx.save();
+          ctx.globalAlpha = pip.opacity / 100;
+          const px = pip.x * cardW, py = pip.y * cardH;
+          const pw = pip.w * cardW, ph = pip.h * cardH;
+          ctx.translate(px + pw / 2, py + ph / 2);
+          ctx.rotate((pip.rotation * Math.PI) / 180);
+          if (pip.shape === "circle") {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, pw / 2, ph / 2, 0, 0, Math.PI * 2);
+            ctx.clip();
+          } else if (pip.shape === "rounded") {
+            const r = Math.min(pw, ph) * 0.1;
+            ctx.beginPath();
+            ctx.roundRect(-pw/2, -ph/2, pw, ph, r);
+            ctx.clip();
+          }
+          ctx.drawImage(img, -pw / 2, -ph / 2, pw, ph);
+          ctx.restore(); res();
+        };
+        img.onerror = () => res(); img.src = pip.src;
+      });
+
     if (bgImage)    await loadImg(bgImage, bgOpacity / 100);
-    if (photoImage) await loadImg(photoImage, photoOpacity / 100, effectiveFilter);
+    if (photoImage) await loadPhotoWithTransform(photoImage, photoOpacity / 100, effectiveFilter);
+    for (const pip of pipLayers) await loadPipImg(pip);
     if (showWatermark) await loadImg(AUTHOR_PHOTO, watermarkOpacity / 100);
 
     const drawCanvas = drawCanvasRef.current;
@@ -1055,7 +1221,7 @@ export default function Editor() {
     }
 
     return canvas;
-  }, [textLayers, stickers, textBoxSizes, cardW, cardH, theme, bgWallCss, bgImage, bgOpacity, photoImage, photoOpacity, effectiveFilter, showWatermark, watermarkOpacity, vignette, frame, padding]);
+  }, [textLayers, stickers, pipLayers, textBoxSizes, cardW, cardH, theme, bgWallCss, bgImage, bgOpacity, photoImage, photoOpacity, effectiveFilter, photoRotation, photoFlipH, photoFlipV, photoScale, photoX, photoY, showWatermark, watermarkOpacity, vignette, frame, padding]);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -1190,9 +1356,22 @@ export default function Editor() {
                 opacity: bgOpacity / 100 }} />
             )}
             {photoImage && (
-              <div style={{ position: "absolute", inset: 0, zIndex: 2,
-                backgroundImage: `url(${photoImage})`, backgroundSize: "cover", backgroundPosition: "center",
-                opacity: photoOpacity / 100, filter: effectiveFilter }} />
+              <div style={{
+                position: "absolute", inset: 0, zIndex: 2,
+                overflow: "hidden",
+                opacity: photoOpacity / 100,
+              }}>
+                <div style={{
+                  position: "absolute", inset: 0,
+                  backgroundImage: `url(${photoImage})`,
+                  backgroundSize: `${photoScale}%`,
+                  backgroundPosition: `${photoX}% ${photoY}%`,
+                  backgroundRepeat: "no-repeat",
+                  filter: effectiveFilter,
+                  transform: `rotate(${photoRotation}deg) scaleX(${photoFlipH ? -1 : 1}) scaleY(${photoFlipV ? -1 : 1})`,
+                  transformOrigin: "center center",
+                }} />
+              </div>
             )}
             {showWatermark && (
               <div style={{ position: "absolute", inset: 0, zIndex: 3,
@@ -1424,6 +1603,50 @@ export default function Editor() {
               );
             })}
 
+            {/* PIP Layers */}
+            {pipLayers.map(pip => {
+              const isSelected = selectedPipId === pip.id;
+              const pw = pip.w * cardW;
+              const ph = pip.h * cardH;
+              const handleSz = Math.ceil(28 / scale);
+              const borderRadius = pip.shape === "circle" ? "50%" : pip.shape === "rounded" ? "10%" : "0";
+              return (
+                <div key={pip.id}
+                  onMouseDown={e => startPipDrag(e, pip.id, pip.x, pip.y)}
+                  onTouchStart={e => startPipDrag(e, pip.id, pip.x, pip.y)}
+                  onClick={e => { e.stopPropagation(); setSelectedPipId(pip.id); }}
+                  style={{
+                    position: "absolute",
+                    left: pip.x * cardW, top: pip.y * cardH,
+                    width: pw, height: ph,
+                    transform: `rotate(${pip.rotation}deg)`,
+                    transformOrigin: "center center",
+                    zIndex: isSelected ? 16 : 11,
+                    cursor: draggingPip?.id === pip.id ? "grabbing" : "grab",
+                    userSelect: "none", touchAction: "none",
+                    borderRadius,
+                    overflow: "hidden",
+                    opacity: pip.opacity / 100,
+                    boxShadow: isSelected ? `0 0 0 ${Math.ceil(3/scale)}px #D4A843` : "0 4px 16px rgba(0,0,0,0.5)",
+                  }}>
+                  <img src={pip.src} alt="pip" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }} />
+                  {isSelected && (
+                    <button
+                      onMouseDown={e => e.stopPropagation()}
+                      onClick={e => { e.stopPropagation(); setPipLayers(prev => prev.filter(p => p.id !== pip.id)); setSelectedPipId(null); }}
+                      style={{
+                        position: "absolute", top: -handleSz / 2, right: -handleSz / 2,
+                        width: handleSz, height: handleSz, borderRadius: "50%",
+                        background: "#ef4444", border: "none", color: "#fff",
+                        fontSize: Math.ceil(12/scale), cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        zIndex: 20,
+                      }}>✕</button>
+                  )}
+                </div>
+              );
+            })}
+
             {/* Inline text input */}
             {inlineTextPos && (
               <div style={{
@@ -1575,6 +1798,185 @@ export default function Editor() {
                       <span style={{ color: "#D4A843", fontSize: 12, fontWeight: 600 }}>দেখাও</span>
                     </label>
                   </div>
+                </div>
+              </>
+            )}
+
+            {/* ── IMAGE MOVE PANEL ── */}
+            {activeTool === "imgmove" && (
+              <>
+                <PanelHeader title="🔀 ছবি সরান ও ঘোরান" onClose={() => setActiveTool(null)} />
+                <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+                  {!photoImage ? (
+                    <div style={{ textAlign: "center", padding: "20px 0" }}>
+                      <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
+                      <p style={{ color: "#9ca3af", fontSize: 13 }}>প্রথমে ক্যানভাস থেকে ছবি আপলোড করুন</p>
+                      <button onClick={() => { setActiveTool("canvas"); }} style={{ marginTop: 10, padding: "8px 20px", borderRadius: 10, border: "none", background: "#D4A843", color: "#000", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>📐 ক্যানভাসে যান</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>📍 অবস্থান</p>
+                        <SliderRow label="অনুভূমিক (X)" val={photoX} set={setPhotoX} min={0} max={100} unit="%" />
+                        <div style={{ marginTop: 10 }}>
+                          <SliderRow label="উল্লম্ব (Y)" val={photoY} set={setPhotoY} min={0} max={100} unit="%" />
+                        </div>
+                      </div>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>🔄 ঘূর্ণন ও জুম</p>
+                        <SliderRow label="ঘূর্ণন" val={photoRotation} set={setPhotoRotation} min={-180} max={180} unit="°" />
+                        <div style={{ marginTop: 10 }}>
+                          <SliderRow label="জুম" val={photoScale} set={setPhotoScale} min={100} max={300} unit="%" />
+                        </div>
+                      </div>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>↔️ ফ্লিপ</p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button onClick={() => setPhotoFlipH(v => !v)}
+                            style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${photoFlipH ? "#D4A843" : "#1e3050"}`,
+                              background: photoFlipH ? "rgba(212,168,67,0.15)" : "transparent",
+                              color: photoFlipH ? "#D4A843" : "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                            ↔️ অনুভূমিক
+                          </button>
+                          <button onClick={() => setPhotoFlipV(v => !v)}
+                            style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${photoFlipV ? "#D4A843" : "#1e3050"}`,
+                              background: photoFlipV ? "rgba(212,168,67,0.15)" : "transparent",
+                              color: photoFlipV ? "#D4A843" : "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                            ↕️ উল্লম্ব
+                          </button>
+                        </div>
+                      </div>
+                      <button onClick={() => { setPhotoX(50); setPhotoY(50); setPhotoRotation(0); setPhotoScale(100); setPhotoFlipH(false); setPhotoFlipV(false); }}
+                        style={{ padding: "10px 0", borderRadius: 10, border: "1px solid #1e3050",
+                          background: "transparent", color: "#9ca3af", fontSize: 12, cursor: "pointer" }}>
+                        🔄 রিসেট করুন
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ── CROP PANEL ── */}
+            {activeTool === "crop" && (
+              <>
+                <PanelHeader title="✂️ ক্রপ করুন" onClose={() => setActiveTool(null)} />
+                <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+                  {!photoImage ? (
+                    <div style={{ textAlign: "center", padding: "20px 0" }}>
+                      <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
+                      <p style={{ color: "#9ca3af", fontSize: 13 }}>প্রথমে ক্যানভাস থেকে ছবি আপলোড করুন</p>
+                      <button onClick={() => setActiveTool("canvas")} style={{ marginTop: 10, padding: "8px 20px", borderRadius: 10, border: "none", background: "#D4A843", color: "#000", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>📐 ক্যানভাসে যান</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.2)", borderRadius: 10, padding: "10px 14px" }}>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 600, margin: 0 }}>ℹ️ স্লাইডার দিয়ে ক্রপ এলাকা নির্ধারণ করুন</p>
+                      </div>
+                      <div style={{ background: "#060c18", borderRadius: 10, padding: 12 }}>
+                        <p style={{ color: "#D4A843", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>📐 ক্রপ এলাকা</p>
+                        <SliderRow label="বাম থেকে শুরু (X)" val={cropX} set={v => { setCropX(v); if (v + cropW > 100) setCropW(100 - v); }} min={0} max={90} unit="%" />
+                        <div style={{ marginTop: 10 }}>
+                          <SliderRow label="উপর থেকে শুরু (Y)" val={cropY} set={v => { setCropY(v); if (v + cropH > 100) setCropH(100 - v); }} min={0} max={90} unit="%" />
+                        </div>
+                        <div style={{ marginTop: 10 }}>
+                          <SliderRow label="প্রস্থ (W)" val={cropW} set={v => setCropW(Math.min(v, 100 - cropX))} min={10} max={100} unit="%" />
+                        </div>
+                        <div style={{ marginTop: 10 }}>
+                          <SliderRow label="উচ্চতা (H)" val={cropH} set={v => setCropH(Math.min(v, 100 - cropY))} min={10} max={100} unit="%" />
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        {([["1:1",100,100],["4:3",100,75],["16:9",100,56],["9:16",56,100]] as [string,number,number][]).map(([label, w, h]) => (
+                          <button key={label} onClick={() => { setCropX(0); setCropY(0); setCropW(w); setCropH(h); }}
+                            style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "1px solid #1e3050",
+                              background: "transparent", color: "#9ca3af", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={applyCrop}
+                          style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none",
+                            background: "linear-gradient(135deg,#D4A843,#b8892a)",
+                            color: "#000", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                          ✂️ ক্রপ করুন
+                        </button>
+                        <button onClick={() => { setCropX(0); setCropY(0); setCropW(100); setCropH(100); }}
+                          style={{ padding: "12px 16px", borderRadius: 12, border: "1px solid #1e3050",
+                            background: "transparent", color: "#9ca3af", fontSize: 13, cursor: "pointer" }}>
+                          রিসেট
+                        </button>
+                      </div>
+                      {croppedSrc && (
+                        <div style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: 10, padding: "10px 14px" }}>
+                          <p style={{ color: "#4ade80", fontSize: 12, fontWeight: 600, margin: 0 }}>✅ ক্রপ সফল হয়েছে!</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ── PIP PANEL ── */}
+            {activeTool === "pip" && (
+              <>
+                <PanelHeader title="🖼️ PIP — অতিরিক্ত ছবি" onClose={() => setActiveTool(null)} />
+                <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+                  <button onClick={() => pipFileRef.current?.click()}
+                    style={{ padding: "12px 0", borderRadius: 12, border: "1px dashed #1e3050",
+                      background: "transparent", color: "#D4A843", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    ➕ নতুন ছবি যোগ করুন
+                  </button>
+                  {pipLayers.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "10px 0" }}>
+                      <p style={{ color: "#6b7280", fontSize: 12 }}>এখনো কোনো PIP ছবি নেই</p>
+                    </div>
+                  ) : (
+                    <>
+                      {pipLayers.map((pip, idx) => {
+                        const isSelected = selectedPipId === pip.id;
+                        return (
+                          <div key={pip.id}
+                            onClick={() => setSelectedPipId(pip.id)}
+                            style={{ background: isSelected ? "rgba(212,168,67,0.1)" : "#060c18",
+                              border: `1px solid ${isSelected ? "#D4A843" : "#1e3050"}`,
+                              borderRadius: 10, padding: 12, cursor: "pointer" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: isSelected ? 12 : 0 }}>
+                              <img src={pip.src} alt="pip" style={{ width: 48, height: 36, objectFit: "cover", borderRadius: 6, flexShrink: 0 }} />
+                              <span style={{ color: isSelected ? "#D4A843" : "#9ca3af", fontSize: 12, fontWeight: 600 }}>ছবি {idx + 1}</span>
+                              <button onClick={e => { e.stopPropagation(); setPipLayers(prev => prev.filter(p => p.id !== pip.id)); if (selectedPipId === pip.id) setSelectedPipId(null); }}
+                                style={{ marginLeft: "auto", padding: "4px 10px", borderRadius: 8, border: "1px solid #ef4444",
+                                  background: "rgba(239,68,68,0.1)", color: "#ef4444", fontSize: 11, cursor: "pointer" }}>✕</button>
+                            </div>
+                            {isSelected && (
+                              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                <SliderRow label="প্রস্থ" val={Math.round(pip.w * 100)} set={v => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, w: v / 100 } : l))} min={10} max={100} unit="%" />
+                                <SliderRow label="উচ্চতা" val={Math.round(pip.h * 100)} set={v => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, h: v / 100 } : l))} min={10} max={100} unit="%" />
+                                <SliderRow label="ঘূর্ণন" val={pip.rotation} set={v => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, rotation: v } : l))} min={-180} max={180} unit="°" />
+                                <SliderRow label="অপাসিটি" val={pip.opacity} set={v => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, opacity: v } : l))} min={10} max={100} unit="%" />
+                                <div>
+                                  <p style={{ color: "#9ca3af", fontSize: 11, marginBottom: 6 }}>আকৃতি</p>
+                                  <div style={{ display: "flex", gap: 6 }}>
+                                    {(["rect", "rounded", "circle"] as PipLayer["shape"][]).map(sh => (
+                                      <button key={sh} onClick={() => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, shape: sh } : l))}
+                                        style={{ flex: 1, padding: "8px 0", borderRadius: 8,
+                                          border: `1px solid ${pip.shape === sh ? "#D4A843" : "#1e3050"}`,
+                                          background: pip.shape === sh ? "rgba(212,168,67,0.15)" : "transparent",
+                                          color: pip.shape === sh ? "#D4A843" : "#6b7280", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                                        {sh === "rect" ? "⬜ আয়ত" : sh === "rounded" ? "🔲 গোলাকার" : "⭕ বৃত্ত"}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -1991,7 +2393,10 @@ export default function Editor() {
         } as React.CSSProperties}>
           {([
             { tool: "canvas" as ActiveTool,     icon: "📐", label: "ক্যানভাস" },
-            { tool: "bgwall" as ActiveTool,     icon: "🖼️", label: "ব্যাকগ্রাউন্ড" },
+            { tool: "imgmove" as ActiveTool,    icon: "🔀", label: "সরান" },
+            { tool: "crop" as ActiveTool,       icon: "✂️", label: "ক্রপ" },
+            { tool: "pip" as ActiveTool,        icon: "🖼️", label: "PIP" },
+            { tool: "bgwall" as ActiveTool,     icon: "🌅", label: "ব্যাকগ্রাউন্ড" },
             { tool: "bgphoto" as ActiveTool,    icon: "🎨", label: "থিম" },
             { tool: "filter" as ActiveTool,     icon: "✨", label: "ফিল্টার" },
             { tool: "adjust" as ActiveTool,     icon: "⚙️", label: "অ্যাডজাস্ট" },
@@ -2027,7 +2432,7 @@ export default function Editor() {
         </div>
         {/* Scroll indicator dots */}
         <div style={{ display: "flex", justifyContent: "center", paddingBottom: 6, gap: 3 }}>
-          {[0,1,2,3,4,5,6,7,8,9].map(i => (
+          {[0,1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
             <div key={i} style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(212,168,67,0.3)" }} />
           ))}
         </div>
@@ -2036,6 +2441,7 @@ export default function Editor() {
       {/* Hidden file inputs */}
       <input ref={photoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPhotoUpload} />
       <input ref={bgFileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onBgUpload} />
+      <input ref={pipFileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPipUpload} />
     </div>
   );
 }
