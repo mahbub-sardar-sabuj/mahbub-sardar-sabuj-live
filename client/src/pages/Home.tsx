@@ -309,43 +309,34 @@ export default function Home() {
                     পরিচিতি
                   </motion.span>
                 </Link>
+                <Link href="/editor">
+                  <motion.span
+                    whileHover={{ scale: 1.03, borderColor: "rgba(201,168,76,0.7)", background: "rgba(201,168,76,0.07)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "15px 32px",
+                      borderRadius: 4,
+                      background: "transparent",
+                      border: "1px solid rgba(201,168,76,0.35)",
+                      color: "rgba(250,246,239,0.8)",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      textDecoration: "none",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    <Palette size={17} />
+                    ডিজাইন করুন
+                  </motion.span>
+                </Link>
               </motion.div>
 
-              {/* Stats row */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1 }}
-                style={{
-                  display: "flex",
-                  gap: "2.5rem",
-                  marginTop: "3.5rem",
-                  paddingTop: "2rem",
-                  borderTop: "1px solid rgba(201,168,76,0.15)",
-                  flexWrap: "wrap",
-                }}
-              >
-                {stats.map((s) => (
-                  <div key={s.label}>
-                    <div style={{
-                      fontFamily: "'Tiro Bangla', serif",
-                      fontSize: "clamp(1.6rem, 3vw, 2.2rem)",
-                      fontWeight: 700,
-                      color: "#C9A84C",
-                      lineHeight: 1,
-                    }}>
-                      <Counter target={s.value} />
-                    </div>
-                    <div style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.75rem",
-                      color: "rgba(250,246,239,0.4)",
-                      marginTop: 6,
-                      letterSpacing: "0.05em",
-                    }}>{s.label}</div>
-                  </div>
-                ))}
-              </motion.div>
+
             </div>
 
             {/* Right column — author portrait */}
@@ -385,77 +376,41 @@ export default function Home() {
                   zIndex: 0,
                 }} />
 
-                {/* Main portrait */}
+                {/* Main portrait — suit photo */}
                 <div style={{
                   position: "relative",
-                  borderRadius: 8,
+                  borderRadius: 12,
                   overflow: "hidden",
-                  boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.15)",
+                  boxShadow: "0 40px 100px rgba(0,0,0,0.65), 0 0 0 1px rgba(201,168,76,0.18)",
                   zIndex: 1,
                 }}>
                   <img
-                    src={PROFILE_2}
+                    src={PROFILE_1}
                     alt="মাহবুব সরদার সবুজ"
                     style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
+                      objectPosition: "center top",
                       display: "block",
-                      filter: "contrast(1.05) saturate(0.9)",
+                      filter: "contrast(1.05) saturate(0.88)",
                     }}
                     className="hero-portrait"
                   />
-                  {/* Portrait overlay gradient */}
+                  {/* Gradient overlay */}
                   <div style={{
                     position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.7) 100%)",
+                    background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.8) 100%)",
                   }} />
-
-                </div>
-
-                {/* Floating book card */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  style={{
-                    position: "absolute",
-                    bottom: -30, right: -30,
-                    background: "rgba(201,168,76,0.08)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                    borderRadius: 12,
-                    padding: "14px 18px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    zIndex: 2,
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-                  }}
-                  className="floating-card"
-                >
-                  <img
-                    src={BOOK_COVER}
-                    alt="বই"
-                    style={{ width: 40, height: 56, objectFit: "cover", borderRadius: 4 }}
-                  />
-                  <div>
-                    <div style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.7rem",
-                      color: "#C9A84C",
-                      letterSpacing: "0.1em",
-                      marginBottom: 3,
-                    }}>সর্বশেষ বই</div>
-                    <div style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.78rem",
-                      color: "#FAF6EF",
-                      fontWeight: 600,
-                      maxWidth: 120,
-                      lineHeight: 1.4,
-                    }}>দুঃখবিলাস</div>
+                  {/* Name tag at bottom */}
+                  <div style={{
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    padding: "1.2rem 1.5rem",
+                  }}>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#C9A84C", marginBottom: 3 }}>লেখক ও কবি</div>
+                    <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1rem", color: "#FAF6EF", fontWeight: 700 }}>মাহবুব সরদার সবুজ</div>
                   </div>
-                </motion.div>
+                </div>
               </motion.div>
             </motion.div>
           </div>
