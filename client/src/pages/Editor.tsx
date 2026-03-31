@@ -301,6 +301,8 @@ interface TextBlock {
   visible: boolean;
   lineHeight: number;
   opacity: number;
+  rotation: number;
+  letterSpacing: number;
 }
 
 interface StickerLayer {
@@ -354,17 +356,17 @@ function makeDefaultLayers(themeText: string): TextBlock[] {
       x: 0.5, y: 0.22, fontSize: 52, baseFontSize: 52, fontKey: "ChandraSheela",
       color: themeText, bold: true,  italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
-      visible: true, lineHeight: 1.3, opacity: 100 },
+      visible: true, lineHeight: 1.3, opacity: 100, rotation: 0, letterSpacing: 0 },
     { id: "body",   kind: "body",   text: "",
       x: 0.5, y: 0.52, fontSize: 36, baseFontSize: 36, fontKey: "ChandraSheela",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
-      visible: true, lineHeight: 1.9, opacity: 100 },
+      visible: true, lineHeight: 1.9, opacity: 100, rotation: 0, letterSpacing: 0 },
     { id: "author", kind: "author", text: "",
       x: 0.5, y: 0.84, fontSize: 28, baseFontSize: 28, fontKey: "ChandraSheela",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
-      visible: true, lineHeight: 1.4, opacity: 100 },
+      visible: true, lineHeight: 1.4, opacity: 100, rotation: 0, letterSpacing: 0 },
   ];
 }
 
@@ -1202,6 +1204,12 @@ export default function Editor() {
   const [resizing, setResizing]       = useState<{
     id: string; startX: number; startY: number; origW: number; origH: number;
   } | null>(null);
+  const [rotating, setRotating]       = useState<{
+    id: string; centerX: number; centerY: number; startAngle: number; origRotation: number;
+  } | null>(null);
+  const [editingInlineId, setEditingInlineId] = useState<string | null>(null);
+  const [editingInlineText, setEditingInlineText] = useState("");
+  const pinchRef = useRef<{ dist: number; origSize: number; id: string } | null>(null);
   const [textBoxSizes, setTextBoxSizes] = useState<Record<string, { w: number; h: number }>>({});
 
   const [activeTool, setActiveTool]   = useState<ActiveTool>(null);
@@ -1344,6 +1352,32 @@ export default function Editor() {
     };
   }, [resizing, cardW, cardH, scale]);
 
+  // ── Rotate text layer ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!rotating) return;
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const cx = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const cy = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const dx = cx - rotating.centerX;
+      const dy = cy - rotating.centerY;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const delta = angle - rotating.startAngle;
+      const newRot = ((rotating.origRotation + delta) % 360 + 360) % 360;
+      setTextLayers(prev => prev.map(l => l.id === rotating.id ? { ...l, rotation: newRot } : l));
+    };
+    const onUp = () => setRotating(null);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchend", onUp);
+    };
+  }, [rotating]);
+
   // ── Draw canvas pointer events ─────────────────────────────────────────────
   const getDrawPos = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = drawCanvasRef.current;
@@ -1462,7 +1496,7 @@ export default function Editor() {
       x: 0.5, y: 0.5, fontSize: 40, baseFontSize: 40, fontKey: "ChandraSheela",
       color: theme.text, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
-      visible: true, lineHeight: 1.6, opacity: 100,
+      visible: true, lineHeight: 1.6, opacity: 100, rotation: 0, letterSpacing: 0,
     }]);
     setTextBoxSizes(prev => ({ ...prev, [id]: { w: 0.7, h: 0.15 } }));
     setSelectedId(id);
@@ -1485,7 +1519,7 @@ export default function Editor() {
       x: xFrac, y: yFrac, fontSize: 40, baseFontSize: 40, fontKey: "ChandraSheela",
       color: theme.text, bold: false, italic: false, align: "left",
       shadow: false, outline: false, outlineColor: "#000000",
-      visible: true, lineHeight: 1.6, opacity: 100,
+      visible: true, lineHeight: 1.6, opacity: 100, rotation: 0, letterSpacing: 0,
     }]);
     setTextBoxSizes(prev => ({ ...prev, [id]: { w: 0.7, h: 0.15 } }));
     setSelectedId(id);
@@ -1647,19 +1681,38 @@ export default function Editor() {
       ctx.textAlign = layer.align;
       if (layer.shadow) { ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
       const boxW = (textBoxSizes[layer.id]?.w ?? 0.7) * cardW;
+      // Apply rotation if any
+      const rot = layer.rotation ?? 0;
+      if (rot !== 0) {
+        ctx.translate(layer.x * cardW, layer.y * cardH);
+        ctx.rotate((rot * Math.PI) / 180);
+        ctx.translate(-(layer.x * cardW), -(layer.y * cardH));
+      }
       const lines = wrapText(ctx, displayText, boxW);
       const lh = fs * layer.lineHeight;
       const totalH = lines.length * lh;
       const startY = layer.y * cardH - totalH / 2 + fs;
       const startX = layer.align === "center" ? layer.x * cardW : layer.align === "left" ? layer.x * cardW - boxW / 2 : layer.x * cardW + boxW / 2;
+      const ls = layer.letterSpacing ?? 0;
       lines.forEach((line, i) => {
         const y = startY + i * lh;
         if (layer.outline) {
           ctx.strokeStyle = layer.outlineColor;
           ctx.lineWidth = Math.ceil(fs * 0.06);
-          ctx.strokeText(line, startX, y);
+          if (ls !== 0) {
+            // Manual letter spacing via individual char rendering
+            let cx = startX - (layer.align === "center" ? ctx.measureText(line).width / 2 + ls * (line.length - 1) / 2 : 0);
+            if (layer.align === "right") cx = startX - ctx.measureText(line).width - ls * (line.length - 1);
+            if (layer.align === "left") cx = startX;
+            for (const ch of line) { ctx.strokeText(ch, cx, y); cx += ctx.measureText(ch).width + ls; }
+          } else { ctx.strokeText(line, startX, y); }
         }
-        ctx.fillText(line, startX, y);
+        if (ls !== 0) {
+          let cx = startX - (layer.align === "center" ? ctx.measureText(line).width / 2 + ls * (line.length - 1) / 2 : 0);
+          if (layer.align === "right") cx = startX - ctx.measureText(line).width - ls * (line.length - 1);
+          if (layer.align === "left") cx = startX;
+          for (const ch of line) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + ls; }
+        } else { ctx.fillText(line, startX, y); }
       });
       ctx.restore();
     }
@@ -1848,83 +1901,233 @@ export default function Editor() {
                 </>
               )}
 
-              {/* Text layers */}
+              {/* Text layers — InShot-style */}
               {textLayers.map(layer => {
                 if (!layer.visible || !layer.text.trim()) return null;
-                const displayText = layer.text;
                 const isSelected = selectedId === layer.id;
                 const boxSize = textBoxSizes[layer.id] ?? { w: 0.7, h: 0.15 };
                 const boxW = boxSize.w * cardW;
                 const boxH = boxSize.h * cardH;
-                const handleSz = Math.ceil(28 / scale);
+                const handleSz = Math.ceil(32 / scale);
+                const rot = layer.rotation ?? 0;
+                const isEditingInline = editingInlineId === layer.id;
+
                 return (
                   <div key={layer.id}
-                    onClick={e => { e.stopPropagation(); setSelectedId(layer.id); setActiveTool("text"); setTextSubTab("style"); }}
-                    onMouseDown={e => { if ((e.target as HTMLElement).dataset.resize) return; startDrag(e, layer.id, false, layer.x, layer.y); }}
-                    onTouchStart={e => { if ((e.target as HTMLElement).dataset.resize) return; startDrag(e, layer.id, false, layer.x, layer.y); }}
+                    onMouseDown={e => {
+                      const target = e.target as HTMLElement;
+                      if (target.dataset.resize || target.dataset.rotate || target.dataset.edit || target.dataset.del) return;
+                      if (isEditingInline) return;
+                      startDrag(e, layer.id, false, layer.x, layer.y);
+                    }}
+                    onTouchStart={e => {
+                      const target = e.target as HTMLElement;
+                      if (target.dataset.resize || target.dataset.rotate || target.dataset.edit || target.dataset.del) return;
+                      if (isEditingInline) return;
+                      // Pinch-zoom detection
+                      if (e.touches.length === 2) {
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        pinchRef.current = { dist, origSize: layer.fontSize, id: layer.id };
+                        setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
+                        return;
+                      }
+                      startDrag(e, layer.id, false, layer.x, layer.y);
+                    }}
+                    onTouchMove={e => {
+                      if (e.touches.length === 2 && pinchRef.current?.id === layer.id) {
+                        e.stopPropagation();
+                        const dx = e.touches[0].clientX - e.touches[1].clientX;
+                        const dy = e.touches[0].clientY - e.touches[1].clientY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const ratio = dist / pinchRef.current.dist;
+                        const newSize = Math.round(Math.max(8, Math.min(300, pinchRef.current.origSize * ratio)));
+                        setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, fontSize: newSize } : l));
+                      }
+                    }}
+                    onTouchEnd={() => { pinchRef.current = null; }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      if (isEditingInline) return;
+                      setSelectedId(layer.id);
+                    }}
                     style={{
                       position: "absolute",
                       left: layer.x * cardW, top: layer.y * cardH,
                       width: boxW, minHeight: boxH,
-                      transform: "translate(-50%, -50%)",
-                      zIndex: 10, cursor: dragging?.id === layer.id ? "grabbing" : "grab",
+                      transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+                      zIndex: isSelected ? 15 : 10,
+                      cursor: dragging?.id === layer.id ? "grabbing" : "grab",
                       userSelect: "none", textAlign: layer.align, boxSizing: "border-box",
                       opacity: (layer.opacity ?? 100) / 100,
+                      touchAction: "none",
                     }}>
-                    {isSelected && (
-                      <button data-nodelete="1"
-                        onMouseDown={e => e.stopPropagation()}
-                        onTouchStart={e => e.stopPropagation()}
-                        onClick={e => { e.stopPropagation(); removeLayer(layer.id); }}
-                        style={{
-                          position: "absolute", top: -handleSz * 0.9, right: -handleSz * 0.5,
-                          zIndex: 30, background: "#ef4444", color: "#fff",
-                          border: "2px solid #fff", borderRadius: "50%",
-                          width: handleSz, height: handleSz,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: Math.ceil(16 / scale), cursor: "pointer", fontWeight: "bold",
-                          boxShadow: "0 2px 10px rgba(0,0,0,0.5)", lineHeight: 1,
-                        }}>✕</button>
+
+                    {/* Inline edit textarea */}
+                    {isEditingInline ? (
+                      <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                        <textarea
+                          autoFocus
+                          value={editingInlineText}
+                          onChange={e => setEditingInlineText(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === "Escape") {
+                              setEditingInlineId(null);
+                            }
+                          }}
+                          style={{
+                            width: "100%", minHeight: boxH,
+                            background: "rgba(13,20,32,0.9)",
+                            border: `${Math.ceil(2/scale)}px solid #D4A843`,
+                            borderRadius: Math.ceil(8/scale),
+                            color: layer.color,
+                            fontSize: layer.fontSize,
+                            fontFamily: FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif",
+                            fontWeight: layer.bold ? "bold" : "normal",
+                            fontStyle: layer.italic ? "italic" : "normal",
+                            lineHeight: layer.lineHeight,
+                            letterSpacing: (layer.letterSpacing ?? 0) + "px",
+                            padding: `${Math.ceil(4/scale)}px`,
+                            outline: "none", resize: "none",
+                            boxSizing: "border-box", boxShadow: "0 4px 20px rgba(0,0,0,0.6)",
+                            textAlign: layer.align,
+                          }}
+                          rows={3}
+                        />
+                        <div style={{ display: "flex", gap: Math.ceil(6/scale), marginTop: Math.ceil(4/scale) }}>
+                          <button
+                            onMouseDown={e => { e.preventDefault(); e.stopPropagation(); }}
+                            onClick={e => { e.stopPropagation(); updateText(layer.id, { text: editingInlineText }); setEditingInlineId(null); }}
+                            style={{
+                              flex: 1, padding: `${Math.ceil(6/scale)}px`, borderRadius: Math.ceil(8/scale),
+                              border: "none", background: "#D4A843", color: "#000",
+                              fontWeight: 700, fontSize: Math.ceil(13/scale), cursor: "pointer",
+                            }}>✅ ঠিক আছে</button>
+                          <button
+                            onMouseDown={e => { e.preventDefault(); e.stopPropagation(); }}
+                            onClick={e => { e.stopPropagation(); setEditingInlineId(null); }}
+                            style={{
+                              padding: `${Math.ceil(6/scale)}px ${Math.ceil(12/scale)}px`,
+                              borderRadius: Math.ceil(8/scale), border: "1px solid #ef4444",
+                              background: "rgba(239,68,68,0.15)", color: "#ef4444",
+                              fontWeight: 700, fontSize: Math.ceil(13/scale), cursor: "pointer",
+                            }}>বাতিল</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{
+                        fontSize: layer.fontSize,
+                        fontFamily: FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif",
+                        color: layer.color,
+                        fontWeight: layer.bold ? "bold" : "normal",
+                        fontStyle: layer.italic ? "italic" : "normal",
+                        lineHeight: layer.lineHeight,
+                        letterSpacing: (layer.letterSpacing ?? 0) + "px",
+                        whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word",
+                        textShadow: layer.shadow ? "2px 2px 8px rgba(0,0,0,0.5)" : "none",
+                        WebkitTextStroke: layer.outline ? `${Math.ceil(layer.fontSize * 0.06)}px ${layer.outlineColor}` : "none",
+                        border: isSelected ? `${Math.ceil(2/scale)}px dashed rgba(212,168,67,0.8)` : "none",
+                        borderRadius: Math.ceil(4/scale),
+                        padding: `${Math.ceil(6/scale)}px`,
+                        width: "100%", minHeight: boxH,
+                        boxSizing: "border-box",
+                      }}>
+                        {layer.text}
+                      </div>
                     )}
-                    <div style={{
-                      fontSize: layer.fontSize,
-                      fontFamily: FONT_CSS[layer.fontKey] || "'Tiro Bangla', serif",
-                      color: layer.color,
-                      fontWeight: layer.bold ? "bold" : "normal",
-                      fontStyle: layer.italic ? "italic" : "normal",
-                      lineHeight: layer.lineHeight,
-                      whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word",
-                      textShadow: layer.shadow ? "2px 2px 8px rgba(0,0,0,0.5)" : "none",
-                      WebkitTextStroke: layer.outline ? `${Math.ceil(layer.fontSize * 0.06)}px ${layer.outlineColor}` : "none",
-                      outline: isSelected ? `${Math.ceil(2 / scale)}px dashed #D4A843` : "none",
-                      outlineOffset: `${Math.ceil(4 / scale)}px`,
-                      borderRadius: Math.ceil(4 / scale),
-                      padding: `${Math.ceil(4 / scale)}px`,
-                      width: "100%", minHeight: boxH,
-                    }}>
-                      {displayText}
-                    </div>
-                    {isSelected && (
-                      <div data-resize="1"
-                        onMouseDown={e => {
-                          e.stopPropagation();
-                          setResizing({ id: layer.id, startX: e.clientX, startY: e.clientY, origW: boxSize.w, origH: boxSize.h });
-                          setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
-                        }}
-                        onTouchStart={e => {
-                          e.stopPropagation();
-                          setResizing({ id: layer.id, startX: e.touches[0].clientX, startY: e.touches[0].clientY, origW: boxSize.w, origH: boxSize.h });
-                          setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
-                        }}
-                        style={{
-                          position: "absolute", bottom: -handleSz * 0.5, right: -handleSz * 0.5,
-                          width: handleSz, height: handleSz,
-                          background: "#D4A843", border: "2px solid #fff",
-                          borderRadius: Math.ceil(4 / scale), cursor: "se-resize", zIndex: 30,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: Math.ceil(12 / scale), color: "#000", fontWeight: "bold",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
-                        }}>⤡</div>
+
+                    {/* Handles — only when selected and not inline-editing */}
+                    {isSelected && !isEditingInline && (
+                      <>
+                        {/* ❌ Delete — top left */}
+                        <button data-del="1"
+                          onMouseDown={e => e.stopPropagation()}
+                          onTouchStart={e => e.stopPropagation()}
+                          onClick={e => { e.stopPropagation(); removeLayer(layer.id); }}
+                          style={{
+                            position: "absolute",
+                            top: -handleSz * 0.55, left: -handleSz * 0.55,
+                            zIndex: 30, background: "#ef4444", color: "#fff",
+                            border: `${Math.ceil(2/scale)}px solid #fff`, borderRadius: "50%",
+                            width: handleSz, height: handleSz,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: Math.ceil(15/scale), cursor: "pointer", fontWeight: "bold",
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.6)", lineHeight: 1,
+                          }}>✕</button>
+
+                        {/* ✏️ Edit — top right */}
+                        <button data-edit="1"
+                          onMouseDown={e => e.stopPropagation()}
+                          onTouchStart={e => e.stopPropagation()}
+                          onClick={e => {
+                            e.stopPropagation();
+                            setEditingInlineText(layer.text);
+                            setEditingInlineId(layer.id);
+                          }}
+                          style={{
+                            position: "absolute",
+                            top: -handleSz * 0.55, right: -handleSz * 0.55,
+                            zIndex: 30, background: "#3b82f6", color: "#fff",
+                            border: `${Math.ceil(2/scale)}px solid #fff`, borderRadius: "50%",
+                            width: handleSz, height: handleSz,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: Math.ceil(14/scale), cursor: "pointer",
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.6)", lineHeight: 1,
+                          }}>✏️</button>
+
+                        {/* 🔄 Rotate — bottom left */}
+                        <div data-rotate="1"
+                          onMouseDown={e => {
+                            e.stopPropagation();
+                            const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+                            const cx = rect.left + rect.width / 2;
+                            const cy = rect.top + rect.height / 2;
+                            const startAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+                            setRotating({ id: layer.id, centerX: cx, centerY: cy, startAngle, origRotation: rot });
+                          }}
+                          onTouchStart={e => {
+                            e.stopPropagation();
+                            const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+                            const cx = rect.left + rect.width / 2;
+                            const cy = rect.top + rect.height / 2;
+                            const startAngle = Math.atan2(e.touches[0].clientY - cy, e.touches[0].clientX - cx) * (180 / Math.PI);
+                            setRotating({ id: layer.id, centerX: cx, centerY: cy, startAngle, origRotation: rot });
+                          }}
+                          style={{
+                            position: "absolute",
+                            bottom: -handleSz * 0.55, left: -handleSz * 0.55,
+                            width: handleSz, height: handleSz,
+                            background: "#8b5cf6", border: `${Math.ceil(2/scale)}px solid #fff`,
+                            borderRadius: "50%", cursor: "grab", zIndex: 30,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: Math.ceil(14/scale), color: "#fff",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                          }}>🔄</div>
+
+                        {/* ⤡ Resize — bottom right */}
+                        <div data-resize="1"
+                          onMouseDown={e => {
+                            e.stopPropagation();
+                            setResizing({ id: layer.id, startX: e.clientX, startY: e.clientY, origW: boxSize.w, origH: boxSize.h });
+                            setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
+                          }}
+                          onTouchStart={e => {
+                            e.stopPropagation();
+                            setResizing({ id: layer.id, startX: e.touches[0].clientX, startY: e.touches[0].clientY, origW: boxSize.w, origH: boxSize.h });
+                            setTextLayers(prev => prev.map(l => l.id === layer.id ? { ...l, baseFontSize: l.fontSize } : l));
+                          }}
+                          style={{
+                            position: "absolute",
+                            bottom: -handleSz * 0.55, right: -handleSz * 0.55,
+                            width: handleSz, height: handleSz,
+                            background: "#D4A843", border: `${Math.ceil(2/scale)}px solid #fff`,
+                            borderRadius: Math.ceil(6/scale), cursor: "se-resize", zIndex: 30,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: Math.ceil(14/scale), color: "#000", fontWeight: "bold",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+                          }}>⤡</div>
+                      </>
                     )}
                   </div>
                 );
@@ -2298,6 +2501,8 @@ export default function Editor() {
                             </div>
                             <SliderRow label="ফন্ট সাইজ" val={selectedText.fontSize} set={v => updateText(selectedText.id, { fontSize: v, baseFontSize: v })} min={12} max={200} />
                             <SliderRow label="লাইন স্পেস" val={selectedText.lineHeight} set={v => updateText(selectedText.id, { lineHeight: v })} min={1} max={3} step={0.1} />
+                            <SliderRow label="লেটার স্পেস" val={selectedText.letterSpacing ?? 0} set={v => updateText(selectedText.id, { letterSpacing: v })} min={-5} max={30} unit="px" />
+                            <SliderRow label="ঘূর্ণন" val={selectedText.rotation ?? 0} set={v => updateText(selectedText.id, { rotation: v })} min={-180} max={180} unit="°" />
                             <SliderRow label="অপাসিটি" val={selectedText.opacity ?? 100} set={v => updateText(selectedText.id, { opacity: v })} min={10} max={100} unit="%" />
                             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                               {[
