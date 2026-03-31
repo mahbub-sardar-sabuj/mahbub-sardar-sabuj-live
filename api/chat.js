@@ -1,6 +1,5 @@
-// Vercel Serverless Function — /api/chat
-// Uses Pollinations.ai (gen.pollinations.ai) — সম্পূর্ণ বিনামূল্যে, কোনো API key লাগে না
-// New endpoint: https://gen.pollinations.ai/v1/chat/completions (OpenAI-compatible)
+// AI Chatbot API — OpenAI-compatible (gpt-4.1-mini)
+// Uses OPENAI_API_KEY and OPENAI_BASE_URL environment variables set in Vercel
 
 const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবুজের অফিসিয়াল AI Agent। তুমি একজন অত্যন্ত বুদ্ধিমান, মার্জিত এবং বহুমুখী এআই সহকারী।
 
@@ -37,20 +36,31 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 
 তোমার প্রতিটি উত্তর যেন এই গভীর তথ্যের ভিত্তিতে এবং নির্ধারিত শৈলীতে হয়।`;
 
-// New Pollinations API — OpenAI-compatible format
-async function callPollinations(messages, model = "openai") {
+// Call OpenAI-compatible API
+async function callOpenAI(messages) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  const baseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY not configured");
+  }
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), 28000);
 
   try {
-    const response = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
         model,
         messages,
-        seed: Math.floor(Math.random() * 99999),
-        private: true,
+        max_tokens: 800,
+        temperature: 0.7,
       }),
       signal: controller.signal,
     });
@@ -87,40 +97,25 @@ export default async function handler(req, res) {
   try {
     const { messages } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Invalid messages" });
     }
 
     const allMessages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages,
+      ...messages.slice(-10), // Keep last 10 messages for context
     ];
 
-    // Primary: openai model
     try {
-      const reply = await callPollinations(allMessages, "openai");
+      const reply = await callOpenAI(allMessages);
       return res.status(200).json({ reply });
     } catch (err) {
-      console.warn("Primary model failed:", err.message);
+      console.error("OpenAI API failed:", err.message);
+      return res.status(500).json({
+        error: "AI service temporarily unavailable. Please try again.",
+        details: err.message,
+      });
     }
-
-    // Fallback: mistral model
-    try {
-      const reply = await callPollinations(allMessages, "mistral");
-      return res.status(200).json({ reply });
-    } catch (err) {
-      console.warn("Fallback mistral failed:", err.message);
-    }
-
-    // Last resort: openai-large model
-    try {
-      const reply = await callPollinations(allMessages, "openai-large");
-      return res.status(200).json({ reply });
-    } catch (err) {
-      console.error("All models failed:", err.message);
-      return res.status(500).json({ error: "AI service temporarily unavailable. Please try again." });
-    }
-
   } catch (err) {
     console.error("Chat handler error:", err);
     return res.status(500).json({ error: "Internal server error" });
