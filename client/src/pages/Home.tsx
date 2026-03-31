@@ -187,12 +187,11 @@ export default function Home() {
               >
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
                 <span style={{
-                  fontFamily: "'Space Grotesk', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.3em",
-                  textTransform: "uppercase",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.9rem",
+                  letterSpacing: "0.25em",
                   color: "#C9A84C",
-                  fontWeight: 600,
+                  fontWeight: 400,
                 }}>লেখক ও কবি</span>
               </motion.div>
 
