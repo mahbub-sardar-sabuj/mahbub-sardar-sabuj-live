@@ -1638,7 +1638,7 @@ export default function Editor() {
     for (const layer of textLayers) {
       if (!layer.visible || !layer.text.trim()) continue;
       await ensureFontLoaded(layer.fontKey);
-      const displayText = layer.kind === "author" ? `— ${layer.text}` : layer.text;
+      const displayText = layer.text;
       ctx.save();
       ctx.globalAlpha = (layer.opacity ?? 100) / 100;
       const fs = layer.fontSize;
@@ -1851,7 +1851,7 @@ export default function Editor() {
               {/* Text layers */}
               {textLayers.map(layer => {
                 if (!layer.visible || !layer.text.trim()) return null;
-                const displayText = layer.kind === "author" ? `— ${layer.text}` : layer.text;
+                const displayText = layer.text;
                 const isSelected = selectedId === layer.id;
                 const boxSize = textBoxSizes[layer.id] ?? { w: 0.7, h: 0.15 };
                 const boxW = boxSize.w * cardW;
@@ -2237,6 +2237,24 @@ export default function Editor() {
                             ))}
                           </div>
                         </div>
+                        {/* Custom text layers editing */}
+                        {textLayers.filter(l => l.kind === "custom").map((layer, idx) => (
+                          <div key={layer.id} style={{ border: "1px solid rgba(212,168,67,0.25)", borderRadius: 10, padding: "10px 12px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                              <label style={{ color: "#D4A843", fontSize: 12, fontWeight: 700 }}>কাস্টম লেখা {idx + 1}</label>
+                              <button onClick={() => removeLayer(layer.id)}
+                                style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)",
+                                  borderRadius: 6, color: "#ef4444", fontSize: 11, padding: "2px 8px", cursor: "pointer" }}>
+                                মুছুন
+                              </button>
+                            </div>
+                            <textarea value={layer.text} onChange={e => updateText(layer.id, { text: e.target.value })}
+                              rows={3} placeholder="কাস্টম লেখা লিখুন..."
+                              style={{ width: "100%", background: "#060c18", color: "#fff", border: "1px solid #1e3050",
+                                borderRadius: 10, padding: "9px 12px", fontSize: 14, outline: "none",
+                                resize: "vertical", lineHeight: 1.7, boxSizing: "border-box" }} />
+                          </div>
+                        ))}
                         <button onClick={addCustomText}
                           style={{ width: "100%", padding: "10px 0", border: "1px dashed rgba(212,168,67,0.3)",
                             borderRadius: 10, fontSize: 13, fontWeight: 600, color: "rgba(212,168,67,0.7)",
