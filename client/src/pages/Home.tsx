@@ -410,25 +410,7 @@ export default function Home() {
                     position: "absolute", inset: 0,
                     background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.7) 100%)",
                   }} />
-                  {/* Name badge on portrait */}
-                  <div style={{
-                    position: "absolute",
-                    bottom: 24, left: 24, right: 24,
-                  }}>
-                    <div style={{
-                      fontFamily: "'Tiro Bangla', serif",
-                      fontSize: "1.1rem",
-                      color: "#FAF6EF",
-                      fontWeight: 600,
-                    }}>মাহবুব সরদার সবুজ</div>
-                    <div style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.75rem",
-                      color: "#C9A84C",
-                      marginTop: 4,
-                      letterSpacing: "0.1em",
-                    }}>লেখক ও কবি</div>
-                  </div>
+
                 </div>
 
                 {/* Floating book card */}
@@ -1081,7 +1063,7 @@ export default function Home() {
                 margin: "0 0 2.5rem",
                 maxWidth: 500,
               }}>
-                সংযুক্ত আরব আমিরাতে বসবাসরত এই লেখক তাঁর কবিতা ও গদ্যে দেশ, প্রবাস ও মানুষের জীবনের নানা রঙ তুলে ধরেন।
+                সৌদি আরবে বসবাসরত এই লেখক তাঁর কবিতা ও গদ্যে দেশ, প্রবাস ও মানুষের জীবনের নানা রঙ তুলে ধরেন।
               </p>
 
               <Link href="/about">

@@ -234,7 +234,7 @@ export default function Contact() {
                   }}>📍</div>
                   <div>
                     <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>অবস্থান</div>
-                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: TEXT, fontSize: "0.95rem" }}>কুমিল্লা, বাংলাদেশ</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: TEXT, fontSize: "0.95rem" }}>সৌদি আরব</div>
                   </div>
                 </motion.div>
 

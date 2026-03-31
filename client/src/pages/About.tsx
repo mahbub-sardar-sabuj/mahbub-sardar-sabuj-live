@@ -183,7 +183,7 @@ export default function About() {
                   borderRadius: 6,
                 }}>
                   <MapPin size={15} color="#C9A84C" />
-                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.7)" }}>কুমিল্লা, বাংলাদেশ</span>
+                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.7)" }}>সৌদি আরব</span>
                 </div>
                 <div style={{
                   display: "flex", alignItems: "center", gap: 8,
