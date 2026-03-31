@@ -248,26 +248,7 @@ export default function About() {
         </motion.div>
       </section>
 
-      {/* ══ STATS ═════════════════════════════════════════════════════════════ */}
-      <section style={{
-        background: "linear-gradient(90deg, #B8922A 0%, #C9A84C 30%, #E8C97A 50%, #C9A84C 70%, #B8922A 100%)",
-        padding: "2.5rem 2rem",
-      }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", textAlign: "center" }} className="stats-row">
-          {stats.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <FadeUp key={s.label} delay={i * 0.1}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                  <Icon size={20} color="#060E1A" strokeWidth={2.5} />
-                  <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "2rem", fontWeight: 700, color: "#060E1A", lineHeight: 1 }}>{s.value}</div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "rgba(6,14,26,0.65)", letterSpacing: "0.05em" }}>{s.label}</div>
-                </div>
-              </FadeUp>
-            );
-          })}
-        </div>
-      </section>
+
 
       {/* ══ BIO ═══════════════════════════════════════════════════════════════ */}
       <section style={{ padding: "7rem 2rem", background: "#060E1A", position: "relative", overflow: "hidden" }}>
