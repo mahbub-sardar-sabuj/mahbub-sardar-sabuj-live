@@ -461,8 +461,8 @@ function makeDefaultLayers(themeText: string): TextBlock[] {
 function FontItem({ fontKey, fontName, isSelected, onClick }: {
   fontKey: string; fontName: string; isSelected: boolean; onClick: () => void;
 }) {
-  const [loaded, setLoaded] = React.useState(false);
-  React.useEffect(() => {
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
     let cancelled = false;
     const url = FONT_URLS[fontKey];
     if (!url) { setLoaded(true); return; }
