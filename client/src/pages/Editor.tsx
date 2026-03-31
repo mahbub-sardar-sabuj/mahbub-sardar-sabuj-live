@@ -457,6 +457,36 @@ function makeDefaultLayers(themeText: string): TextBlock[] {
 // Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
+// FontItem: loads font on mount and shows preview in correct font
+function FontItem({ fontKey, fontName, isSelected, onClick }: {
+  fontKey: string; fontName: string; isSelected: boolean; onClick: () => void;
+}) {
+  const [loaded, setLoaded] = React.useState(false);
+  React.useEffect(() => {
+    let cancelled = false;
+    const url = FONT_URLS[fontKey];
+    if (!url) { setLoaded(true); return; }
+    const face = new FontFace(fontKey, `url(${url})`);
+    face.load().then(() => {
+      (document.fonts as FontFaceSet).add(face);
+      if (!cancelled) setLoaded(true);
+    }).catch(() => { if (!cancelled) setLoaded(true); });
+    return () => { cancelled = true; };
+  }, [fontKey]);
+  return (
+    <button onClick={onClick} style={{
+      padding: "12px 16px", borderRadius: 10, textAlign: "left",
+      border: `1px solid ${isSelected ? "#D4A843" : "#1e3050"}`,
+      background: isSelected ? "rgba(212,168,67,0.1)" : "#060c18",
+      cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
+    }}>
+      <span style={{ fontFamily: loaded ? `'${fontKey}', serif` : "serif", fontSize: 18, color: "#fff",
+        opacity: loaded ? 1 : 0.5, transition: "opacity 0.3s" }}>আমার বাংলা</span>
+      <span style={{ fontSize: 11, color: isSelected ? "#D4A843" : "#6b7280" }}>{fontName}</span>
+    </button>
+  );
+}
+
 function PanelHeader({ title, onClose }: { title: string; onClose: () => void }) {
   return (
     <div style={{
@@ -2501,21 +2531,17 @@ export default function Editor() {
                   {textSubTab === "font" && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {FONTS.map(f => (
-                        <button key={f.value}
+                        <FontItem
+                          key={f.value}
+                          fontKey={f.value}
+                          fontName={f.name}
+                          isSelected={selectedText?.fontKey === f.value}
                           onClick={async () => {
                             if (!selectedText) return;
                             await ensureFontLoaded(f.value);
                             updateText(selectedText.id, { fontKey: f.value });
                           }}
-                          style={{
-                            padding: "12px 16px", borderRadius: 10, textAlign: "left",
-                            border: `1px solid ${selectedText?.fontKey === f.value ? "#D4A843" : "#1e3050"}`,
-                            background: selectedText?.fontKey === f.value ? "rgba(212,168,67,0.1)" : "#060c18",
-                            cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
-                          }}>
-                          <span style={{ fontFamily: FONT_CSS[f.value], fontSize: 18, color: "#fff" }}>আমার বাংলা</span>
-                          <span style={{ fontSize: 11, color: selectedText?.fontKey === f.value ? "#D4A843" : "#6b7280" }}>{f.name}</span>
-                        </button>
+                        />
                       ))}
                     </div>
                   )}
