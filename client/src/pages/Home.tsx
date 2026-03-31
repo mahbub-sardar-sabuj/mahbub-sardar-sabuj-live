@@ -9,7 +9,7 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from "fra
 import {
   BookOpen, PenLine, Mic2, Images, Newspaper, Mail,
   UserRound, Palette, ArrowRight, ChevronDown, ExternalLink,
-  Quote
+  Quote, Star
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
