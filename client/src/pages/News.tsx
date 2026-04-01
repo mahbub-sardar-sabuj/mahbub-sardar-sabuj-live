@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Clock, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check, Send, ThumbsUp, User } from "lucide-react";
+import { ArrowRight, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check, Send, ThumbsUp, User } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Seo from "../components/Seo";
@@ -69,7 +69,7 @@ const newsData: NewsItem[] = [
     id: 2,
     title: "সরদার ডিজাইন স্টুডিওতে এলো ৪K আপস্কেল ফিচার",
     excerpt: "এখন থেকে যেকোনো ছবি ৪K মানে উন্নত করে ডাউনলোড করা যাবে। ছবির তীক্ষ্ণতা ও রঙের গভীরতা বহুগুণ বেড়ে যাবে।",
-    content: "সরদার ডিজাইন স্টুডিওতে যুক্ত হয়েছে বহুল প্রতীক্ষিত ৪K আপস্কেল ফিচার। এই ফিচারটি ব্যবহার করে পাঠকরা তাদের তৈরি ডিজাইন কার্ড বা যেকোনো ছবিকে ৪K মানে উন্নত করতে পারবেন। Laplacian sharpening ও unsharp mask প্রযুক্তি ব্যবহার করে ছবির প্রতিটি বিস্তারিত তুলে আনা হয়। আগের ও পরের তুলনা দেখার জন্য রয়েছে বিশেষ স্লাইডার। সম্পূর্ণ বিনামূল্যে এই ফিচারটি ব্যবহার করুন।",
+    content: "সরদার ডিজাইন স্টুডিওতে যুক্ত হয়েছে বহুল প্রতীক্ষিত ৪K আপস্কেল ফিচার. এই ফিচারটি ব্যবহার করে পাঠকরা তাদের তৈরি ডিজাইন কার্ড বা যেকোনো ছবিকে ৪K মানে উন্নত করতে পারবেন। Laplacian sharpening ও unsharp mask প্রযুক্তি ব্যবহার করে ছবির প্রতিটি বিস্তারিত তুলে আনা হয়। আগের ও পরের তুলনা দেখার জন্য রয়েছে বিশেষ স্লাইডার। সম্পূর্ণ বিনামূল্যে এই ফিচারটি ব্যবহার করুন।",
     category: "ওয়েবসাইট",
     categoryColor: "#4A90D9",
     date: "মার্চ ২০২৬",
@@ -146,7 +146,7 @@ const newsData: NewsItem[] = [
   {
     id: 8,
     title: "নতুন AI চ্যাটবট — লেখক সম্পর্কে যেকোনো প্রশ্ন করুন",
-    excerpt: "ওয়েবসাইটে যুক্ত হয়েছে AI চ্যাটবট। লেখক মাহবুব সরদার সবুজ সম্পর্কে যেকোনো প্রশ্নের উত্তর পাবেন তাৎক্ষণিকভাবে।",
+    excerpt: "ওয়েবসাইটে যুক্ত হয়েছে AI চ্যাটবট. লেখক মাহবুব সরদার সবুজ সম্পর্কে যেকোনো প্রশ্নের উত্তর পাবেন তাৎক্ষণিকভাবে।",
     content: "মাহবুব সরদার সবুজের ওয়েবসাইটে একটি AI চ্যাটবট যুক্ত হয়েছে। এই চ্যাটবটটি লেখক সম্পর্কে সম্পূর্ণ সঠিক ও নির্ভুল তথ্য প্রদান করে। পাঠকরা কবিতা, ই-বুক, যোগাযোগ বা ওয়েবসাইট ব্যবহার সংক্রান্ত যেকোনো প্রশ্ন করতে পারবেন।",
     category: "প্রযুক্তি",
     categoryColor: "#27AE60",
@@ -172,7 +172,7 @@ const newsData: NewsItem[] = [
     id: 11,
     title: "লেখকের সাথে সরাসরি যোগাযোগ করুন",
     excerpt: "যোগাযোগ পেজে এখন সরাসরি বার্তা পাঠানোর সুবিধা রয়েছে। লেখক নিজে প্রতিটি বার্তার উত্তর দেন।",
-    content: "মাহবুব সরদার সবুজের ওয়েবসাইটে এখন সরাসরি যোগাযোগ করার সুবিধা যুক্ত করা হয়েছে। পাঠকরা তাদের মতামত, পরামর্শ বা যেকোনো জিজ্ঞাসা সরাসরি লেখকের কাছে পাঠাতে পারবেন। লেখক ব্যক্তিগতভাবে প্রতিটি বার্তার উত্তর দেওয়ার চেষ্টা করেন।",
+    content: "মাহবুব সরদার সবুজের ওয়েবসাইটে এখন সরাসরি যোগাযোগ করার সুবিধা যুক্ত করা হয়েছে। পাঠকরা তাদের মতামত, পরামর্শ বা যেকোনো জিজ্ঞাসা সরাসরি লেখকের কাছে পাঠাতে পারবেন। লেখক ব্যক্তিগতভাবে প্রতিটি বার্তার উত্তর দেওয়ার চেষ্টা করেন।",
     category: "যোগাযোগ",
     categoryColor: "#9B59B6",
     date: "এপ্রিল ২০২৬",
@@ -246,7 +246,6 @@ const newsData: NewsItem[] = [
   }
 ];
 
-// Re-importing the rest of the component logic (simplified for brevity as I will rewrite the whole file)
 export default function News() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
@@ -254,12 +253,11 @@ export default function News() {
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const categories = ["সব", ...Array.from(new Set(newsData.map(item => item.category)))];
 
   const featured = newsData.filter(item => item.featured);
-  const regular = newsData.filter(item => !item.featured);
-
   const filtered = newsData.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
@@ -289,6 +287,15 @@ export default function News() {
         c.id === commentId ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
       )
     }));
+  };
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = selectedNews ? selectedNews.title : '';
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
   };
 
   return (
@@ -520,10 +527,6 @@ export default function News() {
                     textTransform: "uppercase",
                     letterSpacing: "1px"
                   }}>{item.category}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "rgba(250,246,239,0.4)", fontSize: "0.75rem" }}>
-                    <Clock size={12} />
-                    <span>{item.readTime}</span>
-                  </div>
                 </div>
                 <h3 style={{ 
                   fontFamily: "'Tiro Bangla', serif", 
@@ -616,11 +619,43 @@ export default function News() {
               ><X size={20} /></button>
 
               <div style={{ overflowY: "auto", padding: "40px" }} className="custom-scrollbar">
-                <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-                  <span style={{ background: selectedNews.categoryColor, color: "#fff", padding: "4px 15px", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 700 }}>{selectedNews.category}</span>
-                  <span style={{ color: "rgba(250,246,239,0.5)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px" }}>
-                    <Calendar size={14} /> {selectedNews.date}
-                  </span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <span style={{ background: selectedNews.categoryColor, color: "#fff", padding: "4px 15px", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 700 }}>{selectedNews.category}</span>
+                    <span style={{ color: "rgba(250,246,239,0.5)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px" }}>
+                      <Calendar size={14} /> {selectedNews.date}
+                    </span>
+                  </div>
+                  
+                  {/* Share Buttons */}
+                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <span style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.8rem", fontWeight: 600 }}>শেয়ার:</span>
+                    <a 
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#1877F2", background: "rgba(24,119,242,0.1)", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
+                      title="ফেসবুকে শেয়ার করুন"
+                    ><Facebook size={16} /></a>
+                    <a 
+                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#1DA1F2", background: "rgba(29,161,242,0.1)", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
+                      title="টুইটারে শেয়ার করুন"
+                    ><Twitter size={16} /></a>
+                    <a 
+                      href={`https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#25D366", background: "rgba(37,211,102,0.1)", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
+                      title="হোয়াটসঅ্যাপে শেয়ার করুন"
+                    ><MessageCircle size={16} /></a>
+                    <button 
+                      onClick={handleCopyLink}
+                      style={{ background: "rgba(201,168,76,0.1)", border: "none", color: copySuccess ? "#27AE60" : "#C9A84C", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.3s" }}
+                      title="লিঙ্ক কপি করুন"
+                    >
+                      {copySuccess ? <Check size={16} /> : <Link2 size={16} />}
+                    </button>
+                  </div>
                 </div>
                 
                 <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "2.5rem", color: "#FAF6EF", margin: "0 0 30px", lineHeight: 1.3 }}>{selectedNews.title}</h2>
