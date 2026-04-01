@@ -289,11 +289,16 @@ export default function News() {
     }));
   };
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const getShareUrl = (newsId: number) => {
+    if (typeof window === 'undefined') return '';
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?id=${newsId}`;
+  };
+
   const shareTitle = selectedNews ? selectedNews.title : '';
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
+  const handleCopyLink = (newsId: number) => {
+    navigator.clipboard.writeText(getShareUrl(newsId));
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -619,53 +624,17 @@ export default function News() {
               ><X size={20} /></button>
 
               <div style={{ overflowY: "auto", padding: "40px" }} className="custom-scrollbar">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <span style={{ background: selectedNews.categoryColor, color: "#fff", padding: "4px 15px", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 700 }}>{selectedNews.category}</span>
-                    <span style={{ color: "rgba(250,246,239,0.5)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px" }}>
-                      <Calendar size={14} /> {selectedNews.date}
-                    </span>
-                  </div>
-                  
-                  {/* Share Buttons */}
-                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                    <span style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.8rem", fontWeight: 600 }}>শেয়ার:</span>
-                    <a 
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} 
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#1877F2", background: "rgba(24,119,242,0.1)", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
-                      title="ফেসবুকে শেয়ার করুন"
-                    ><Facebook size={16} /></a>
-                    <a 
-                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`} 
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#1DA1F2", background: "rgba(29,161,242,0.1)", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
-                      title="টুইটারে শেয়ার করুন"
-                    ><Twitter size={16} /></a>
-                    <a 
-                      href={`https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`} 
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#25D366", background: "rgba(37,211,102,0.1)", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
-                      title="হোয়াটসঅ্যাপে শেয়ার করুন"
-                    ><MessageCircle size={16} /></a>
-                    <button 
-                      onClick={handleCopyLink}
-                      style={{ background: "rgba(201,168,76,0.1)", border: "none", color: copySuccess ? "#27AE60" : "#C9A84C", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.3s" }}
-                      title="লিঙ্ক কপি করুন"
-                    >
-                      {copySuccess ? <Check size={16} /> : <Link2 size={16} />}
-                    </button>
-                  </div>
-                </div>
-                
+                {/* Modal Title */}
                 <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "2.5rem", color: "#FAF6EF", margin: "0 0 30px", lineHeight: 1.3 }}>{selectedNews.title}</h2>
                 
+                {/* News Image */}
                 {selectedNews.image && (
                   <div style={{ borderRadius: "20px", overflow: "hidden", marginBottom: "30px" }}>
                     <img src={selectedNews.image} alt={selectedNews.title} style={{ width: "100%", height: "auto" }} />
                   </div>
                 )}
 
+                {/* News Content */}
                 <div style={{ 
                   color: "rgba(250,246,239,0.8)", 
                   fontSize: "1.15rem", 
@@ -676,8 +645,53 @@ export default function News() {
                   {selectedNews.content}
                 </div>
 
+                {/* Share Options - Moved to Bottom of Content */}
+                <div style={{ 
+                  marginTop: "40px", 
+                  padding: "20px", 
+                  background: "rgba(255,255,255,0.03)", 
+                  borderRadius: "20px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  border: "1px solid rgba(201,168,76,0.1)"
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <Share2 size={18} color="#C9A84C" />
+                    <span style={{ color: "rgba(250,246,239,0.6)", fontSize: "0.95rem", fontWeight: 600 }}>এই সংবাদটি শেয়ার করুন:</span>
+                  </div>
+                  
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <a 
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl(selectedNews.id))}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#1877F2", background: "rgba(24,119,242,0.1)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
+                      title="ফেসবুকে শেয়ার করুন"
+                    ><Facebook size={18} /></a>
+                    <a 
+                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getShareUrl(selectedNews.id))}&text=${encodeURIComponent(shareTitle)}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#1DA1F2", background: "rgba(29,161,242,0.1)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
+                      title="টুইটারে শেয়ার করুন"
+                    ><Twitter size={18} /></a>
+                    <a 
+                      href={`https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + getShareUrl(selectedNews.id))}`} 
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ color: "#25D366", background: "rgba(37,211,102,0.1)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
+                      title="হোয়াটসঅ্যাপে শেয়ার করুন"
+                    ><MessageCircle size={18} /></a>
+                    <button 
+                      onClick={() => handleCopyLink(selectedNews.id)}
+                      style={{ background: "rgba(201,168,76,0.1)", border: "none", color: copySuccess ? "#27AE60" : "#C9A84C", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.3s" }}
+                      title="লিঙ্ক কপি করুন"
+                    >
+                      {copySuccess ? <Check size={18} /> : <Link2 size={18} />}
+                    </button>
+                  </div>
+                </div>
+
                 {selectedNews.link && (
-                  <div style={{ marginTop: "40px" }}>
+                  <div style={{ marginTop: "30px" }}>
                     <a 
                       href={selectedNews.link}
                       style={{
