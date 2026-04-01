@@ -2,7 +2,7 @@
  * সংবাদ পেজ — Professional News Portal
  * Design: Premium literary news portal with Navy/Gold theme
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check, Send, ThumbsUp, User } from "lucide-react";
 import Navbar from "../components/Navbar";
@@ -254,6 +254,19 @@ export default function News() {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
   const [copySuccess, setCopySuccess] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const newsId = params.get('id');
+      if (newsId) {
+        const newsItem = newsData.find(item => item.id === parseInt(newsId));
+        if (newsItem) {
+          setSelectedNews(newsItem);
+        }
+      }
+    }
+  }, []);
 
   const categories = ["সব", ...Array.from(new Set(newsData.map(item => item.category)))];
 
