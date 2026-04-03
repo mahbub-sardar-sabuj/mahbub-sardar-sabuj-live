@@ -75,29 +75,12 @@ const ebookData: Record<string, {
   },
 };
 
-// AdSense বিজ্ঞাপন কম্পোনেন্ট
-function AdBanner({ slot, format = "auto", className = "" }: { slot: string; format?: string; className?: string }) {
-  const adRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    try {
-      if (adRef.current && typeof window !== "undefined") {
-        const adsbygoogle = (window as any).adsbygoogle || [];
-        adsbygoogle.push({});
-      }
-    } catch (e) {}
-  }, []);
-  return (
-    <div ref={adRef} className={`ad-container overflow-hidden ${className}`}>
-      <ins
-        className="adsbygoogle"
-        style={{ display: "block" }}
-        data-ad-client="ca-pub-3350204114310360"
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive="true"
-      />
-    </div>
-  );
+// AdSense Auto ads — Google স্বয়ংক্রিয়ভাবে সঠিক জায়গায় বিজ্ঞাপন দেখাবে
+// Manual ad units সরানো হয়েছে কারণ slot IDs এখনো তৈরি হয়নি
+// Auto ads চালু আছে AdSense dashboard-এ (pub-3350204114310360)
+function AdBanner({ slot: _slot, format: _format = "auto", className = "" }: { slot: string; format?: string; className?: string }) {
+  // Auto ads enabled — manual slot not needed until site is approved and slots created
+  return <div className={className} style={{ minHeight: 0 }} />;
 }
 
 // ডিফল্ট স্কেল: মোবাইলে ছোট, ডেস্কটপে বড়

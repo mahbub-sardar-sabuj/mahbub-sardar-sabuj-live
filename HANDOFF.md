@@ -1,43 +1,38 @@
-# AI Handoff: Mahbub Sardar Sabuj Official Website (v2026.1)
+# AI Handoff: Mahbub Sardar Sabuj Official Website (v2026.4)
 
 This document provides all necessary information for an AI agent or developer to continue working on the **Mahbub Sardar Sabuj** literary website.
 
 ---
 
 ## 🚀 Project Overview
-A premium literary website for author and poet Mahbub Sardar Sabuj, featuring a rich collection of writings, a news portal, and a custom InShot-style photo design studio.
+A premium literary website for author and poet Mahbub Sardar Sabuj, featuring a rich collection of writings, a news portal, Facebook recitations, and a custom photo design studio.
 
 - **Author Name:** মাহবুব সরদার সবুজ (Mahbub Sardar Sabuj)
-- **Live URL:** [mahbub-sardar-sabuj-live.vercel.app](https://mahbub-sardar-sabuj-live.vercel.app)
+- **Live URL:** [www.mahbubsardarsabuj.com](https://www.mahbubsardarsabuj.com)
 - **GitHub Repo:** `mahbub-sardar-sabuj/mahbub-sardar-sabuj-live`
-- **Tech Stack:** React (Vite) + TypeScript + TailwindCSS + Framer Motion + tRPC (Backend)
+- **Tech Stack:** React (Vite) + TypeScript + TailwindCSS + Framer Motion + Vercel Serverless
 
 ---
 
 ## 🛠 Technical Architecture
 
 ### 1. Design System (Premium Navy & Gold)
-- **Primary Navy:** `#0D1B2A` / `#060c18`
-- **Primary Gold:** `#D4A843` (Gradient: `#E8C97A` to `#C49030`)
-- **Accent Cream:** `#FDF6EC`
+- **Primary Navy:** `#060E1A` / `#0D1B2A`
+- **Primary Gold:** `#C9A84C` / `#D4A843` (Gradient: `#E8C97A` to `#C49030`)
+- **Accent Cream/Ivory:** `#FAF6EF` / `#FDF6EC`
 - **Fonts:** 
   - `Tiro Bangla` (Serif, Literary)
   - `Noto Sans Bengali` (Sans-serif, UI)
   - `Space Grotesk` (English, Modern)
-  - `Akhand Bengali` (Brand/Headings)
+  - `AdorshoLipi` (Brand/Headings)
 
 ### 2. Key Components
-- **`Editor.tsx` (Sardar Design Studio):** 
-  - A sophisticated photo editor using HTML5 Canvas.
-  - Features: Photo upload, CSS filters, draggable/resizable text & sticker layers, 12+ filter presets, multiple aspect ratios.
-  - Layout: Mobile-first single column; Desktop two-column (sticky preview left, tools right).
-- **`AIChatbot.tsx`:** 
-  - Custom AI agent with strict instructions (v6).
-  - Features: Draggable floating button, system prompt containing 80+ categorized writings.
-- **`Writings.tsx`:** 
-  - Premium reading experience with category filters, reading modal, font-size control, and social share features.
-- **`News.tsx`:** 
-  - Professional news portal with hero sections, ticker, and categorized news items.
+- **`Home.tsx`:** Premium landing page with hero section, stats, and navigation to all sections.
+- **`Writings.tsx`:** Premium reading experience with 180+ writings, category filters, reading modal, and social share features.
+- **`News.tsx`:** Professional news portal with deep-linking (`/news/:id`) and dynamic Open Graph meta tags for social sharing.
+- **`FacebookRecitations.tsx`:** Collection of Facebook live recitation videos, recently redesigned to match the premium Navy/Gold theme.
+- **`Editor.tsx` (Sardar Design Studio):** A sophisticated photo editor using HTML5 Canvas for creating quote cards.
+- **`AIChatbot.tsx`:** Custom AI agent using Manus OpenAI-compatible proxy.
 
 ---
 
@@ -49,41 +44,45 @@ client/src/
 │   ├── Navbar.tsx        # Desktop/Mobile toggle + Navigation
 │   └── ...
 ├── pages/
-│   ├── Home.tsx          # Redesigned premium landing page
-│   ├── Editor.tsx        # Sardar Design Studio (Complex Canvas tool)
+│   ├── Home.tsx          # Premium landing page
+│   ├── Editor.tsx        # Sardar Design Studio (Canvas tool)
 │   ├── News.tsx          # News Portal
-│   ├── Writings.tsx      # Literary works gallery
+│   ├── Writings.tsx      # Literary works gallery (180+ items)
+│   ├── FacebookRecitations.tsx # Recitation videos
 │   └── ...
 ├── styles/
 │   ├── index.css         # Base styles
-│   └── desktop-premium.css # World-class desktop layout rules
-└── App.tsx               # Routing & Global Layout
+│   └── desktop-premium.css # Desktop layout rules
+└── App.tsx               # Routing (wouter) & Global Layout
+api/
+└── ssr-og.js             # Vercel Edge Function for dynamic OG tags
 ```
 
 ---
 
-## 📝 Recent Updates (Changelog)
-1. **Desktop Premium:** Implemented `desktop-premium.css` for world-class layout, 2-column Editor, and responsive grids.
-2. **Sardar Design Studio:** Upgraded to v7 with one-click delete, resizable text boxes, and animated brand header.
-3. **Home Page:** Added "Sardar Design Studio" section and premium news preview.
-4. **Chatbot:** Made floating button draggable and updated system prompt with full writing list.
-5. **Writings:** Redesigned reading modal with font-size control and social share buttons.
+## 📝 Recent Updates (April 2026)
+1. **Writings Expansion:** Added 94 new writings from a text file, bringing the total to 180. Applied AI-powered Bengali spelling corrections (e.g., "কখনও" -> "কখনো", "দিবে" -> "দেবে").
+2. **Facebook Recitations Redesign:** Completely redesigned `FacebookRecitations.tsx` to match the homepage's premium Deep Navy, Rich Gold, and Ivory color palette. Added glass-morphism cards and hover animations.
+3. **News Open Graph (OG) Fix:** 
+   - Created `/api/ssr-og.js` Vercel Edge Function to serve dynamic OG meta tags for individual news items.
+   - Updated `vercel.json` to route social media crawlers (Facebook, WhatsApp, etc.) to the `ssr-og.js` endpoint.
+   - Fixed `index.html` to use the custom domain `www.mahbubsardarsabuj.com` instead of the old `vercel.app` URL.
+   - Fixed App.tsx routing to support `/news/:id` direct links.
 
 ---
 
 ## ⚠️ Important Instructions for Next Agent
-1. **System Prompt:** When updating the chatbot, ensure the `SYSTEM_PROMPT` in `AIChatbot.tsx` is kept updated with new writings added to the site.
-2. **Canvas Scaling:** In `Editor.tsx`, the `scale` variable handles high-DPI export. Be careful when modifying the `renderCanvas` function.
+1. **Open Graph (OG) Tags:** Because this is a React SPA, social crawlers cannot execute JS. Any new dynamic pages that need social sharing previews MUST be added to `api/ssr-og.js` and `vercel.json` rewrite rules.
+2. **Adding New Writings:** When adding new writings to `Writings.tsx`, ensure the `id` increments correctly and update the total count in the hero section of the page.
 3. **Deployment:** Pushing to the `main` branch of the GitHub repo triggers automatic Vercel deployment.
-4. **Desktop Toggle:** The desktop/mobile toggle in `Navbar.tsx` uses a global variable `_isDesktopView` to manage viewport width.
+4. **Chatbot API:** The chatbot uses the Manus proxy (`https://api.manus.im/api/llm-proxy/v1`) with the `gpt-4.1-mini` model.
 
 ---
 
 ## 🎯 Pending / Future Work
-- [ ] Implement backend storage for user-designed cards in Sardar Design Studio.
-- [ ] Add more physical book collection details.
-- [ ] Integrate real-time news API or CMS for the News page.
-- [ ] Add multi-language support (English version).
+- [ ] Implement backend storage/database (Drizzle ORM is configured but currently using static arrays in files).
+- [ ] Consolidate image hosting (currently a mix of local `/public` and external URLs).
+- [ ] Update the AIChatbot system prompt with the newly added 94 writings.
 
 ---
-**Handoff generated by Manus AI on March 30, 2026.**
+**Handoff generated by Manus AI on April 3, 2026.**
