@@ -35,6 +35,39 @@ interface NewsItem {
 
 const newsData: NewsItem[] = [
   {
+    id: 24,
+    image: "/images/news/khoshbash-chairman-v2.png",
+    title: "হাতকড়ায় চেয়ারম্যান: খোশবাসে বেদনা, অনিশ্চয়তায় জনজীবন",
+    excerpt: "কুমিল্লার বরুড়া উপজেলার খোশবাস ইউনিয়নে চেয়ারম্যান নাজমুল হাসান সর্দারের গ্রেফতারের ঘটনায় জনজীবনে নেমে এসেছে অনিশ্চয়তা ও উদ্বেগ।",
+    content: `কুমিল্লার বরুড়া উপজেলার খোশবাস ইউনিয়নে যেন এক অদ্ভুত ভারী নীরবতা নেমে এসেছে। আলোচনার কেন্দ্রবিন্দুতে একটাই নাম—চেয়ারম্যান নাজমুল হাসান সর্দার। যিনি একসময় জনগণের ভোটে নির্বাচিত হয়ে নেতৃত্ব দিয়েছেন, আজ তাকেই হাতকড়া পরা অবস্থায় দেখতে হচ্ছে এলাকাবাসীকে।
+
+চার মাস আগে রাজনৈতিক মামলায় কারাভোগ শেষে জামিনে মুক্তি পান তিনি। কিন্তু মুক্তি পেলেও স্বাভাবিক দায়িত্বে ফেরা হয়নি। ৫ আগস্টের পর থেকে ইউনিয়ন পরিষদে বসা বন্ধ হয়ে যায় তার। রাজনৈতিক চাপ ও অনিশ্চয়তার মধ্যে সময় কাটছিল তার।
+
+এই সময়টাতে প্রশাসনিক দায়িত্ব পালন করেন প্যানেল চেয়ারম্যান আয়েত আলী। কার্যক্রম চললেও সাধারণ মানুষের মধ্যে এক ধরনের শূন্যতা ছিল, কারণ তারা তাদের নির্বাচিত প্রতিনিধিকেই দেখতে চেয়েছিল।
+
+পরিস্থিতির পরিবর্তনে নতুন করে আশার সঞ্চার হয়। আইনি প্রক্রিয়ার মাধ্যমে দায়িত্ব ফিরে পাওয়ার উদ্যোগ নেন নাজমুল হাসান সর্দার। হাইকোর্টে রুল জারি হয়, এবং তিনি পুনরায় পরিষদে বসার প্রস্তুতিও নিচ্ছিলেন। স্থানীয় পর্যায়ে যোগাযোগ বাড়াচ্ছিলেন, স্বাভাবিক কার্যক্রমে ফেরার পরিকল্পনা করছিলেন।
+
+কিন্তু সেই প্রস্তুতির মাঝেই নতুন করে বাধা আসে। গত ২৯ মার্চ খোশবাস ইউনিয়ন পরিষদ ঘিরে উত্তেজনা সৃষ্টি হয়। একটি পক্ষ পরিষদ কার্যক্রমে প্রতিবন্ধকতা তৈরি করে, ফলে পরিস্থিতি আরও জটিল হয়ে ওঠে।
+
+এদিকে শারীরিকভাবেও ভীষণ অসুস্থ হয়ে পড়েন তিনি। চিকিৎসাধীন অবস্থায় তাকে একাধিক ব্যাগ রক্ত দিতে হয়। অসুস্থ শরীর নিয়েই তাকে আদালতে হাজির হতে হয়।
+
+৩০ মার্চ কুমিল্লা আদালতে একটি আর্থিক লেনদেন সংক্রান্ত মামলায় হাজিরা দিতে গেলে সেখান থেকেই তাকে গ্রেফতার করা হয়। অভিযোগ—ইট ক্রয় সংক্রান্ত টাকার বিষয়ে প্রতারণা। অভিযোগকারী ব্যক্তি তার পরিচিতজন বলেও জানা গেছে।
+
+ can be seen in the video of him being handcuffed that spread on social media. There, a tired and dejected man is seen. The video has created emotion in many—some are surprised, some are silent.
+
+Currently, the activities of the Union Parishad have come to a standstill. Common people are suffering after coming to take necessary services. Various works including birth registration have fallen into uncertainty.
+
+The local conscious circles think that the incident is not just of one person—it has shaken the administrative and social reality of the entire area. They have called for a speedy solution so that public service becomes normal.
+
+Khoshbash is now waiting—when will this uncertainty pass, when will their daily life return to its normal rhythm.`,
+    category: "জাতীয়",
+    categoryColor: "#E44A4A",
+    date: "৩ এপ্রিল ২০২৬",
+    readTime: "৫ মিনিট",
+    featured: true,
+    tag: "সংবাদ",
+  },
+  {
     id: 25,
     image: "/images/news/akibul-hasan.png.PNG",
     title: "ভোলা থেকে উঠে আসা নতুন সাহিত্যকণ্ঠ আকিবুল হাসান",
