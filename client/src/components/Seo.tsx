@@ -13,7 +13,7 @@ interface SeoProps {
 }
 
 const SITE_NAME = "মাহবুব সরদার সবুজ - Mahbub Sardar Sabuj";
-const SITE_URL = "https://mahbub-sardar-sabuj-live.vercel.app";
+const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 
 function upsertMeta(selector: string, attributes: Record<string, string>) {
