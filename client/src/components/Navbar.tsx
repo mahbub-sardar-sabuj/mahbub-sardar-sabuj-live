@@ -1,4 +1,4 @@
-/*
+/**
  * Design: Literary Avant-Garde — Premium Edition
  * Navbar: Sticky top nav with navy background, gold accents
  * Responsive: JS-based window width detection (no Tailwind classes)
@@ -17,8 +17,8 @@ import {
   Images,
   Newspaper,
   Mail,
-  Feather,
   Palette,
+  Feather,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
@@ -30,7 +30,7 @@ const navLinks = [
   { label: "ই-বুক", subtitle: "প্রকাশিত বই ও ই-বুকের সংগ্রহ", href: "/ebooks", type: "page", icon: BookOpen },
   { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
   { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "/gallery", type: "page", icon: Images },
-  { label: "সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", type: "page", icon: Newspaper },
+  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", type: "page", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", type: "page", icon: Mail },
 ];
 
@@ -60,6 +60,7 @@ export default function Navbar() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
   const [showBanner, setShowBanner] = useState(true);
+  const [logoHovered, setLogoHovered] = useState(false);
   const isEditorPage = location === "/editor";
 
   useEffect(() => {
@@ -96,6 +97,26 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Keyframe animations injected globally */}
+      <style>{`
+        @keyframes logoMicPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.0), 0 2px 12px rgba(212,168,67,0.15); }
+          50% { box-shadow: 0 0 0 6px rgba(245,166,35,0.18), 0 2px 18px rgba(212,168,67,0.35); }
+        }
+        @keyframes logoShimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes ping {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        @keyframes broadcastRing {
+          0% { transform: scale(0.8); opacity: 0.8; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+      `}</style>
+
       {/* ── TOP BANNER: আমাকে জিজ্ঞেস করুন ── */}
       <AnimatePresence>
         {showBanner && !isEditorPage && (
@@ -201,7 +222,7 @@ export default function Navbar() {
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: scrolled ? 58 : 70, transition: "height 0.4s ease" }}>
 
-          {/* ── PREMIUM LOGO ── */}
+          {/* ── PREMIUM LOGO (original) ── */}
           <Link
             href="/"
             style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
@@ -220,13 +241,13 @@ export default function Navbar() {
             }}>
               <Feather size={16} color="#D4A843" />
             </span>
-            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
               <span style={{
-                fontFamily: "'Tiro Bangla', serif",
-                fontSize: "1.05rem",
-                fontWeight: 700,
-                letterSpacing: "0.03em",
-                background: "linear-gradient(90deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
+                fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                fontSize: "1.12rem",
+                fontWeight: 800,
+                letterSpacing: "0.02em",
+                background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -234,12 +255,11 @@ export default function Navbar() {
                 মাহবুব সরদার সবুজ
               </span>
               <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "0.6rem",
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontSize: "0.65rem",
+                letterSpacing: "0.1em",
                 color: "rgba(212,168,67,0.55)",
-                marginTop: 1,
+                marginTop: 2,
               }}>
                 লেখক ও কবি
               </span>
@@ -374,47 +394,88 @@ export default function Navbar() {
               scrollbarColor: "rgba(212,168,67,0.3) rgba(255,255,255,0.03)",
             }}>
 
-              {/* Author badge at top of menu */}
+              {/* Author branding badge at top of mobile menu — Home page style */}
               <div style={{
                 display: "flex",
+                flexDirection: "row",
                 alignItems: "center",
-                gap: 12,
-                padding: "14px 16px",
-                borderRadius: 18,
-                background: "linear-gradient(135deg, rgba(212,168,67,0.1) 0%, rgba(212,168,67,0.04) 100%)",
-                border: "1px solid rgba(212,168,67,0.22)",
+                gap: 16,
+                padding: "18px 16px",
+                borderRadius: 20,
+                background: "linear-gradient(135deg, rgba(212,168,67,0.07) 0%, rgba(212,168,67,0.02) 100%)",
+                border: "1px solid rgba(212,168,67,0.18)",
                 marginBottom: 2,
+                position: "relative",
+                overflow: "hidden",
               }}>
-                <span style={{
-                  width: 44, height: 44,
+                {/* Subtle background glow */}
+                <div style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 200,
+                  height: 200,
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
+                  pointerEvents: "none",
+                }} />
+                {/* Suit photo on left */}
+                <div style={{
+                  width: 80,
+                  height: 90,
                   borderRadius: 12,
-                  background: "linear-gradient(135deg, #D4A843, #C49030)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  overflow: "hidden",
                   flexShrink: 0,
-                  boxShadow: "0 4px 16px rgba(212,168,67,0.3)",
+                  border: "1.5px solid rgba(212,168,67,0.35)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+                  position: "relative",
                 }}>
-                  <Feather size={20} color="#0A1628" />
-                </span>
-                <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <span style={{
-                    fontFamily: "'Tiro Bangla', serif",
-                    fontSize: "1.05rem",
-                    fontWeight: 700,
-                    background: "linear-gradient(90deg, #E8C97A, #D4A843)",
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
+                    alt="মাহবুব সরদার সবুজ"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center top",
+                      display: "block",
+                    }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.4) 100%)",
+                  }} />
+                </div>
+                {/* Name display — single line */}
+                <div style={{ display: "flex", flexDirection: "column", position: "relative", flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                    fontSize: "1.25rem",
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
-                  }}>মাহবুব সরদার সবুজ</span>
-                  <span style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    fontSize: "0.65rem",
-                    letterSpacing: "0.16em",
-                    textTransform: "uppercase",
-                    color: "rgba(212,168,67,0.6)",
-                  }}>লেখক ও কবি</span>
-                </span>
+                    marginBottom: 6,
+                    whiteSpace: "nowrap",
+                  }}>মাহবুব সরদার সবুজ</div>
+                  {/* Divider line */}
+                  <div style={{
+                    width: 40,
+                    height: 1.5,
+                    background: "linear-gradient(90deg, #D4A843, transparent)",
+                    marginBottom: 6,
+                  }} />
+                  <div style={{
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.72rem",
+                    color: "rgba(212,168,67,0.55)",
+                    letterSpacing: "0.06em",
+                  }}>লেখক ও কবি</div>
+                </div>
               </div>
 
               {/* Primary nav links */}

@@ -32,7 +32,7 @@ const sections = [
   { label: "ই-বুক", subtitle: "ডিজিটাল বই", href: "/ebooks", icon: BookOpen },
   { label: "ডিজাইন", subtitle: "কার্ড তৈরি করুন", href: "/editor", icon: Palette },
   { label: "গ্যালারি", subtitle: "ছবির সংগ্রহ", href: "/gallery", icon: Images },
-  { label: "সংবাদ", subtitle: "সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { label: "সরদার সংবাদ", subtitle: "সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "যোগাযোগ করুন", href: "/contact", icon: Mail },
 ];
 
@@ -67,7 +67,7 @@ export default function Home() {
       "@type": "Person",
       "name": "Mahbub Sardar Sabuj",
       "alternateName": "মাহবুব সরদার সবুজ",
-      "url": "https://mahbub-sardar-sabuj-live.vercel.app/",
+      "url": "https://www.mahbubsardarsabuj.com/",
       "image": PROFILE_1,
       "jobTitle": "লেখক ও কবি",
       "description": "বাংলা সাহিত্যের লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
@@ -166,9 +166,10 @@ export default function Home() {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 12,
+                  gap: 10,
                   marginBottom: "1.8rem",
-                  padding: "7px 18px 7px 14px",
+                  marginTop: "0.6rem",
+                  padding: "5px 14px 5px 11px",
                   borderRadius: 40,
                   border: "1px solid rgba(201,168,76,0.35)",
                   background: "rgba(201,168,76,0.06)",
@@ -179,16 +180,16 @@ export default function Home() {
                 {/* Pulsing dot */}
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <span style={{
-                    width: 7, height: 7, borderRadius: "50%",
+                    width: 6, height: 6, borderRadius: "50%",
                     background: "#C9A84C",
                     display: "block",
-                    boxShadow: "0 0 8px #C9A84C",
+                    boxShadow: "0 0 6px #C9A84C",
                     animation: "pulseDot 2s ease-in-out infinite",
                   }} />
                 </span>
                 <span style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.95rem",
+                  fontSize: "0.82rem",
                   letterSpacing: "0.2em",
                   color: "#C9A84C",
                   fontWeight: 400,
@@ -313,6 +314,16 @@ export default function Home() {
                   >
                     <Palette size={17} />
                     ডিজাইন করুন
+                  </motion.span>
+                </Link>
+                <Link href="/news" style={{ flex: 1 }}>
+                  <motion.span
+                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
+                    whileTap={{ scale: 0.96 }}
+                    className="cta-btn cta-secondary"
+                  >
+                    <Newspaper size={17} />
+                    সরদার সংবাদ
                   </motion.span>
                 </Link>
               </motion.div>
@@ -1089,9 +1100,9 @@ export default function Home() {
         /* CTA row — one line, equal boxes */
         .cta-row {
           display: flex;
-          gap: 10px;
+          gap: 8px;
           width: 100%;
-          max-width: 520px;
+          max-width: 680px;
         }
         .cta-row a {
           flex: 1;
@@ -1101,11 +1112,11 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          padding: 14px 10px;
+          gap: 6px;
+          padding: 13px 8px;
           border-radius: 6px;
           font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.88rem;
+          font-size: 0.82rem;
           font-weight: 700;
           cursor: pointer;
           text-decoration: none;
@@ -1207,10 +1218,24 @@ export default function Home() {
           .hero-container { padding-top: 80px; padding-bottom: 60px; }
           .sections-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .hero-portrait { height: 320px; }
+          .cta-row { gap: 5px; max-width: 100%; }
+          .cta-btn {
+            font-size: 0.72rem;
+            padding: 11px 4px;
+            gap: 3px;
+          }
+          .cta-btn svg { width: 13px; height: 13px; }
         }
 
         @media (max-width: 480px) {
           .sections-grid { grid-template-columns: 1fr !important; }
+          .cta-row { gap: 4px; }
+          .cta-btn {
+            font-size: 0.68rem;
+            padding: 10px 3px;
+            gap: 2px;
+          }
+          .cta-btn svg { width: 12px; height: 12px; }
         }
       `}</style>
     </div>

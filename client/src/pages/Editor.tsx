@@ -10,7 +10,7 @@
  * ✅ 100+ backgrounds
  * ✅ Upscale panel
  */
-import { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -365,6 +365,7 @@ interface TextBlock {
   color: string;
   bold: boolean;
   italic: boolean;
+  underline?: boolean;
   align: "left" | "center" | "right";
   shadow: boolean;
   outline: boolean;
@@ -395,9 +396,36 @@ interface PipLayer {
   rotation: number;
   opacity: number;
   shape: "rect" | "circle" | "rounded";
+  caption?: string;
+  captionAlign?: "left" | "center" | "right";
+  captionColor?: string;
+  captionSize?: number;
 }
 
-type ActiveTool = "canvas" | "text" | "inlinetext" | "sticker" | "filter" | "adjust" | "bgwall" | "bgphoto" | "upscale" | "crop" | "draw" | "pip" | "imgmove" | null;
+type ActiveTool = "canvas" | "text" | "inlinetext" | "sticker" | "filter" | "adjust" | "bgwall" | "bgphoto" | "upscale" | "crop" | "draw" | "pip" | "imgmove" | "draft" | null;
+
+// Draft state snapshot
+interface EditorDraft {
+  id: string;
+  name: string;
+  savedAt: number;
+  themeIdx: number;
+  sizeIdx: number;
+  frame: string;
+  textLayers: TextBlock[];
+  stickers: StickerLayer[];
+  pipLayers: PipLayer[];
+  bgWallCss: string;
+  filterPreset: string;
+  photoOpacity: number;
+  bgOpacity: number;
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  blur: number;
+  vignette: number;
+  showWatermark: boolean;
+}
 type ExportQuality = "1x" | "2x" | "4k";
 type ExportFormat = "png" | "jpg";
 type DrawTool = "pencil" | "brush" | "eraser" | "line" | "rect" | "circle" | "arrow";
@@ -815,6 +843,44 @@ export default function Editor() {
   const [editingInlineText, setEditingInlineText] = useState("");
   const pinchRef = useRef<{ dist: number; origSize: number; id: string } | null>(null);
 
+  // ── Undo/Redo History ──────────────────────────────────────────────────────
+  const MAX_HISTORY = 50;
+  type HistorySnapshot = {
+    textLayers: TextBlock[];
+    stickers: StickerLayer[];
+    pipLayers: PipLayer[];
+    themeIdx: number;
+    bgWallCss: string;
+    filterPreset: string;
+  };
+  const historyRef = useRef<HistorySnapshot[]>([]);
+  const historyIdxRef = useRef<number>(-1);
+  const isUndoRedoRef = useRef(false);
+
+  const captureHistory = useCallback((snap: HistorySnapshot) => {
+    if (isUndoRedoRef.current) return;
+    const hist = historyRef.current;
+    // Trim forward history
+    if (historyIdxRef.current < hist.length - 1) {
+      hist.splice(historyIdxRef.current + 1);
+    }
+    hist.push(snap);
+    if (hist.length > MAX_HISTORY) hist.shift();
+    historyIdxRef.current = hist.length - 1;
+  }, []);
+
+  // ── Auto Save / Draft ────────────────────────────────────────────────────
+  const [drafts, setDrafts] = useState<EditorDraft[]>(() => {
+    try {
+      const saved = localStorage.getItem("sardar-editor-drafts");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showDraftModal, setShowDraftModal] = useState(false);
+
+  const activeTool_ref = useRef<ActiveTool>(null);
   const [activeTool, setActiveTool]   = useState<ActiveTool>(null);
   const [downloading, setDownloading] = useState(false);
   const [exportQuality, setExportQuality] = useState<ExportQuality>("2x");
@@ -1506,6 +1572,163 @@ export default function Editor() {
     }
   };
 
+  // ── Get current snapshot for history/draft ────────────────────────────────
+  const getSnapshot = useCallback((): HistorySnapshot => ({
+    textLayers: JSON.parse(JSON.stringify(textLayers)),
+    stickers: JSON.parse(JSON.stringify(stickers)),
+    pipLayers: JSON.parse(JSON.stringify(pipLayers)),
+    themeIdx,
+    bgWallCss,
+    filterPreset,
+  }), [textLayers, stickers, pipLayers, themeIdx, bgWallCss, filterPreset]);
+
+  // ── Capture history on meaningful state changes ─────────────────────────────
+  const prevSnapshotRef = useRef<string>("");
+  useEffect(() => {
+    if (isUndoRedoRef.current) return;
+    const snap = getSnapshot();
+    const key = JSON.stringify(snap);
+    if (key !== prevSnapshotRef.current) {
+      prevSnapshotRef.current = key;
+      captureHistory(snap);
+    }
+  }, [textLayers, stickers, pipLayers, themeIdx, bgWallCss, filterPreset]);
+
+  // ── Undo ──────────────────────────────────────────────────────────────────────────
+  const handleUndo = useCallback(() => {
+    const hist = historyRef.current;
+    if (historyIdxRef.current <= 0) return;
+    historyIdxRef.current -= 1;
+    const snap = hist[historyIdxRef.current];
+    isUndoRedoRef.current = true;
+    setTextLayers(snap.textLayers);
+    setStickers(snap.stickers);
+    setPipLayers(snap.pipLayers);
+    setThemeIdx(snap.themeIdx);
+    setBgWallCss(snap.bgWallCss);
+    setFilterPreset(snap.filterPreset);
+    setTimeout(() => { isUndoRedoRef.current = false; }, 50);
+  }, []);
+
+  // ── Redo ──────────────────────────────────────────────────────────────────────────
+  const handleRedo = useCallback(() => {
+    const hist = historyRef.current;
+    if (historyIdxRef.current >= hist.length - 1) return;
+    historyIdxRef.current += 1;
+    const snap = hist[historyIdxRef.current];
+    isUndoRedoRef.current = true;
+    setTextLayers(snap.textLayers);
+    setStickers(snap.stickers);
+    setPipLayers(snap.pipLayers);
+    setThemeIdx(snap.themeIdx);
+    setBgWallCss(snap.bgWallCss);
+    setFilterPreset(snap.filterPreset);
+    setTimeout(() => { isUndoRedoRef.current = false; }, 50);
+  }, []);
+
+  // ── Keyboard shortcuts: Ctrl+Z / Ctrl+Y ────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleUndo, handleRedo]);
+
+  // ── Auto-save to localStorage every 30 seconds ──────────────────────────────
+  const getDraftSnapshot = useCallback((): Omit<EditorDraft, "id" | "name" | "savedAt"> => ({
+    themeIdx, sizeIdx, frame, textLayers, stickers, pipLayers,
+    bgWallCss, filterPreset, photoOpacity, bgOpacity,
+    brightness, contrast, saturation, blur, vignette, showWatermark,
+  }), [themeIdx, sizeIdx, frame, textLayers, stickers, pipLayers,
+    bgWallCss, filterPreset, photoOpacity, bgOpacity,
+    brightness, contrast, saturation, blur, vignette, showWatermark]);
+
+  const saveDraft = useCallback((name?: string) => {
+    setAutoSaveStatus("saving");
+    const snap = getDraftSnapshot();
+    const newDraft: EditorDraft = {
+      id: uid(),
+      name: name || `ড্রাফট ${new Date().toLocaleString("bn-BD")}`,
+      savedAt: Date.now(),
+      ...snap,
+    };
+    setDrafts(prev => {
+      // Keep max 10 drafts
+      const updated = [newDraft, ...prev].slice(0, 10);
+      try { localStorage.setItem("sardar-editor-drafts", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setTimeout(() => setAutoSaveStatus("saved"), 300);
+    setTimeout(() => setAutoSaveStatus("idle"), 3000);
+  }, [getDraftSnapshot]);
+
+  const loadDraft = useCallback((draft: EditorDraft) => {
+    setThemeIdx(draft.themeIdx);
+    setSizeIdx(draft.sizeIdx);
+    setFrame(draft.frame);
+    setTextLayers(draft.textLayers);
+    setStickers(draft.stickers);
+    setPipLayers(draft.pipLayers);
+    setBgWallCss(draft.bgWallCss);
+    setFilterPreset(draft.filterPreset);
+    setPhotoOpacity(draft.photoOpacity);
+    setBgOpacity(draft.bgOpacity);
+    setBrightness(draft.brightness);
+    setContrast(draft.contrast);
+    setSaturation(draft.saturation);
+    setBlur(draft.blur);
+    setVignette(draft.vignette);
+    setShowWatermark(draft.showWatermark);
+    setShowDraftModal(false);
+    setActiveTool(null);
+  }, []);
+
+  const deleteDraft = useCallback((id: string) => {
+    setDrafts(prev => {
+      const updated = prev.filter(d => d.id !== id);
+      try { localStorage.setItem("sardar-editor-drafts", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  }, []);
+
+  // Auto-save every 30 seconds when there's content
+  useEffect(() => {
+    const hasContent = textLayers.some(l => l.text.trim()) || stickers.length > 0 || pipLayers.length > 0;
+    if (!hasContent) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      // Auto-save silently (update first draft or create new)
+      setAutoSaveStatus("saving");
+      const snap = getDraftSnapshot();
+      setDrafts(prev => {
+        const autoName = "স্বয়ংক্রিয় সেভ";
+        const existingAutoIdx = prev.findIndex(d => d.name === autoName);
+        let updated: EditorDraft[];
+        const newDraft: EditorDraft = { id: existingAutoIdx >= 0 ? prev[existingAutoIdx].id : uid(), name: autoName, savedAt: Date.now(), ...snap };
+        if (existingAutoIdx >= 0) {
+          updated = [...prev];
+          updated[existingAutoIdx] = newDraft;
+        } else {
+          updated = [newDraft, ...prev].slice(0, 10);
+        }
+        try { localStorage.setItem("sardar-editor-drafts", JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+      setTimeout(() => setAutoSaveStatus("saved"), 300);
+      setTimeout(() => setAutoSaveStatus("idle"), 3000);
+    }, 30000);
+    return () => { if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current); };
+  }, [textLayers, stickers, pipLayers, themeIdx, bgWallCss]);
+
   const toggleTool = (tool: ActiveTool) =>
     setActiveTool(prev => prev === tool ? null : tool);
 
@@ -1536,45 +1759,116 @@ export default function Editor() {
       <div style={{
         background: "linear-gradient(180deg, #0a1020 0%, #0d1420 100%)",
         borderBottom: "1px solid rgba(212,168,67,0.15)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "10px 16px 8px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "8px 10px 6px",
         position: "relative",
         flexShrink: 0,
+        gap: 6,
       }}>
-        <div style={{ textAlign: "center" }}>
+        {/* Left: Undo/Redo */}
+        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+          <button
+            onClick={handleUndo}
+            title="আনডু (Ctrl+Z)"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: 10, border: "1px solid #1e3050",
+              background: historyIdxRef.current > 0 ? "rgba(212,168,67,0.1)" : "transparent",
+              color: historyIdxRef.current > 0 ? "#D4A843" : "#3a4a60",
+              fontSize: 16, cursor: historyIdxRef.current > 0 ? "pointer" : "not-allowed",
+            }}
+          >↩</button>
+          <button
+            onClick={handleRedo}
+            title="রিডু (Ctrl+Y)"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: 10, border: "1px solid #1e3050",
+              background: historyIdxRef.current < historyRef.current.length - 1 ? "rgba(212,168,67,0.1)" : "transparent",
+              color: historyIdxRef.current < historyRef.current.length - 1 ? "#D4A843" : "#3a4a60",
+              fontSize: 16, cursor: historyIdxRef.current < historyRef.current.length - 1 ? "pointer" : "not-allowed",
+            }}
+          >↪</button>
+        </div>
+
+        {/* Center: Title */}
+        <div style={{ textAlign: "center", flex: 1, minWidth: 0 }}>
           <h1 style={{
             fontFamily: "'AkhandBengali','Noto Sans Bengali',sans-serif",
-            fontSize: "clamp(1.1rem,4vw,1.5rem)",
+            fontSize: "clamp(0.9rem,3.5vw,1.3rem)",
             fontWeight: 800,
             background: "linear-gradient(135deg,#f5e27a 0%,#D4A843 50%,#b8892a 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            margin: 0, lineHeight: 1.2,
+            margin: 0, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           }}>সরদার ডিজাইন স্টুডিও</h1>
-          <p style={{
-            fontFamily: "'Noto Sans Bengali',sans-serif",
-            fontSize: "0.65rem", color: "rgba(212,168,67,0.5)",
-            margin: "2px 0 0", letterSpacing: "0.1em", textTransform: "uppercase",
-          }}>মাহবুব সরদার সবুজ</p>
+          {autoSaveStatus !== "idle" && (
+            <p style={{
+              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontSize: "0.6rem",
+              color: autoSaveStatus === "saved" ? "#4ade80" : "#D4A843",
+              margin: "1px 0 0",
+            }}>{autoSaveStatus === "saving" ? "⏳ সেভ হচ্ছে..." : "✅ সংরক্ষিত"}</p>
+          )}
+          {autoSaveStatus === "idle" && (
+            <p style={{
+              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontSize: "0.6rem", color: "rgba(212,168,67,0.4)",
+              margin: "1px 0 0",
+            }}>মাহবুব সরদার সবুজ</p>
+          )}
         </div>
-        {/* Save button in top bar */}
-        <button
-          onClick={handleDownload}
-          disabled={downloading}
-          style={{
-            position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
-            display: "flex", alignItems: "center", gap: 5,
-            padding: "7px 14px", borderRadius: 10, border: "none",
-            background: downloading ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
-            color: "#000", fontWeight: 700, fontSize: 12,
-            cursor: downloading ? "not-allowed" : "pointer",
-            boxShadow: "0 2px 12px rgba(212,168,67,0.3)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {downloading ? "⏳" : "⬇️"} সেভ
-        </button>
+
+        {/* Right: Draft + Download */}
+        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+          <button
+            onClick={() => { saveDraft(); }}
+            title="ড্রাফট সেভ করুন"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: 10, border: "1px solid rgba(212,168,67,0.4)",
+              background: "rgba(212,168,67,0.08)",
+              color: "#D4A843", fontSize: 16, cursor: "pointer",
+            }}
+          >💾</button>
+          <button
+            onClick={() => { setShowDraftModal(true); setActiveTool(null); }}
+            title="ড্রাফট দেখুন"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: 10, border: "1px solid #1e3050",
+              background: drafts.length > 0 ? "rgba(212,168,67,0.08)" : "transparent",
+              color: drafts.length > 0 ? "#D4A843" : "#6b7280", fontSize: 14, cursor: "pointer",
+              position: "relative",
+            }}
+          >
+            📋
+            {drafts.length > 0 && (
+              <span style={{
+                position: "absolute", top: -4, right: -4,
+                background: "#D4A843", color: "#000", borderRadius: "50%",
+                width: 16, height: 16, fontSize: 9, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{drafts.length}</span>
+            )}
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            title="ডাউনলোড করুন"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: 10, border: "none",
+              background: downloading ? "rgba(212,168,67,0.4)" : "linear-gradient(135deg,#D4A843,#b8892a)",
+              color: "#000", fontWeight: 700, fontSize: 16,
+              cursor: downloading ? "not-allowed" : "pointer",
+              boxShadow: "0 2px 8px rgba(212,168,67,0.3)",
+            }}
+          >
+            {downloading ? "⏳" : "⬇️"}
+          </button>
+        </div>
       </div>
 
       {/* ── Canvas workspace ── */}
@@ -1915,6 +2209,7 @@ export default function Editor() {
                       color: layer.color,
                       fontWeight: layer.bold ? "bold" : "normal",
                       fontStyle: layer.italic ? "italic" : "normal",
+                      textDecoration: layer.underline ? "underline" : "none",
                       lineHeight: layer.lineHeight,
                       letterSpacing: (layer.letterSpacing ?? 0) + "px",
                       whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "anywhere",
@@ -2006,40 +2301,73 @@ export default function Editor() {
               const ph = pip.h * cardH;
               const handleSz = Math.ceil(28 / scale);
               const borderRadius = pip.shape === "circle" ? "50%" : pip.shape === "rounded" ? "10%" : "0";
+              const captionFontSize = (pip.captionSize || 20);
+              const captionPad = captionFontSize * 0.4;
               return (
-                <div key={pip.id}
-                  onMouseDown={e => startPipDrag(e, pip.id, pip.x, pip.y)}
-                  onTouchStart={e => startPipDrag(e, pip.id, pip.x, pip.y)}
-                  onClick={e => { e.stopPropagation(); setSelectedPipId(pip.id); }}
-                  style={{
-                    position: "absolute",
-                    left: pip.x * cardW, top: pip.y * cardH,
-                    width: pw, height: ph,
-                    transform: `rotate(${pip.rotation}deg)`,
-                    transformOrigin: "center center",
-                    zIndex: isSelected ? 16 : 11,
-                    cursor: draggingPip?.id === pip.id ? "grabbing" : "grab",
-                    userSelect: "none", touchAction: "none",
-                    borderRadius,
-                    overflow: "hidden",
-                    opacity: pip.opacity / 100,
-                    boxShadow: isSelected ? `0 0 0 ${Math.ceil(3/scale)}px #D4A843` : "0 4px 16px rgba(0,0,0,0.5)",
-                  }}>
-                  <img src={pip.src} alt="pip" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }} />
-                  {isSelected && (
-                    <button
-                      onMouseDown={e => e.stopPropagation()}
-                      onClick={e => { e.stopPropagation(); setPipLayers(prev => prev.filter(p => p.id !== pip.id)); setSelectedPipId(null); }}
+                <React.Fragment key={pip.id}>
+                  <div
+                    onMouseDown={e => startPipDrag(e, pip.id, pip.x, pip.y)}
+                    onTouchStart={e => startPipDrag(e, pip.id, pip.x, pip.y)}
+                    onClick={e => { e.stopPropagation(); setSelectedPipId(pip.id); }}
+                    style={{
+                      position: "absolute",
+                      left: pip.x * cardW, top: pip.y * cardH,
+                      width: pw, height: ph,
+                      transform: `rotate(${pip.rotation}deg)`,
+                      transformOrigin: "center center",
+                      zIndex: isSelected ? 16 : 11,
+                      cursor: draggingPip?.id === pip.id ? "grabbing" : "grab",
+                      userSelect: "none", touchAction: "none",
+                      borderRadius,
+                      overflow: "hidden",
+                      opacity: pip.opacity / 100,
+                      boxShadow: isSelected ? `0 0 0 ${Math.ceil(3/scale)}px #D4A843` : "0 4px 16px rgba(0,0,0,0.5)",
+                    }}>
+                    <img src={pip.src} alt="pip" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }} />
+                    {isSelected && (
+                      <button
+                        onMouseDown={e => e.stopPropagation()}
+                        onClick={e => { e.stopPropagation(); setPipLayers(prev => prev.filter(p => p.id !== pip.id)); setSelectedPipId(null); }}
+                        style={{
+                          position: "absolute", top: -handleSz / 2, right: -handleSz / 2,
+                          width: handleSz, height: handleSz, borderRadius: "50%",
+                          background: "#ef4444", border: "none", color: "#fff",
+                          fontSize: Math.ceil(12/scale), cursor: "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          zIndex: 20,
+                        }}>✕</button>
+                    )}
+                  </div>
+                  {/* Caption overlay below PIP image */}
+                  {pip.caption && pip.caption.trim() && (
+                    <div
                       style={{
-                        position: "absolute", top: -handleSz / 2, right: -handleSz / 2,
-                        width: handleSz, height: handleSz, borderRadius: "50%",
-                        background: "#ef4444", border: "none", color: "#fff",
-                        fontSize: Math.ceil(12/scale), cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        zIndex: 20,
-                      }}>✕</button>
+                        position: "absolute",
+                        left: pip.x * cardW,
+                        top: pip.y * cardH + ph + Math.ceil(4 / scale),
+                        width: pw,
+                        zIndex: isSelected ? 17 : 12,
+                        pointerEvents: "none",
+                        transform: `rotate(${pip.rotation}deg)`,
+                        transformOrigin: "top center",
+                        textAlign: pip.captionAlign ?? "center",
+                        color: pip.captionColor || "#ffffff",
+                        fontSize: captionFontSize,
+                        fontFamily: "'AdorshoLipi', serif",
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                        padding: `${captionPad}px ${captionPad * 1.5}px`,
+                        background: "rgba(0,0,0,0.45)",
+                        borderRadius: Math.ceil(6 / scale),
+                        wordBreak: "break-word",
+                        whiteSpace: "pre-wrap",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {pip.caption}
+                    </div>
                   )}
-                </div>
+                </React.Fragment>
               );
             })}
 
@@ -2372,6 +2700,56 @@ export default function Editor() {
                                     ))}
                                   </div>
                                 </div>
+                                {/* ── Caption Section ── */}
+                                <div style={{ borderTop: "1px solid #1e3050", paddingTop: 10 }}>
+                                  <p style={{ color: "#D4A843", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>📝 ছবির ক্যাপশন</p>
+                                  <input
+                                    type="text"
+                                    value={pip.caption || ""}
+                                    onChange={e => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, caption: e.target.value } : l))}
+                                    placeholder="ছবির নিচে ক্যাপশন লিখুন..."
+                                    onClick={e => e.stopPropagation()}
+                                    style={{
+                                      width: "100%", background: "#060c18", color: "#fff",
+                                      border: "1px solid #1e3050", borderRadius: 8,
+                                      padding: "8px 10px", fontSize: 13, outline: "none",
+                                      boxSizing: "border-box", marginBottom: 8,
+                                    }}
+                                  />
+                                  <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                                    {(["left", "center", "right"] as const).map(a => (
+                                      <button key={a}
+                                        onClick={() => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, captionAlign: a } : l))}
+                                        style={{ flex: 1, padding: "6px 0", borderRadius: 6, fontSize: 14,
+                                          border: `1px solid ${(pip.captionAlign ?? "center") === a ? "#D4A843" : "#1e3050"}`,
+                                          background: (pip.captionAlign ?? "center") === a ? "rgba(212,168,67,0.15)" : "transparent",
+                                          cursor: "pointer" }}>
+                                        {a === "left" ? "⬅" : a === "center" ? "↔" : "➡"}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                    <span style={{ color: "#9ca3af", fontSize: 11, flexShrink: 0 }}>রং</span>
+                                    <input
+                                      type="color"
+                                      value={pip.captionColor || "#ffffff"}
+                                      onChange={e => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, captionColor: e.target.value } : l))}
+                                      onClick={e => e.stopPropagation()}
+                                      style={{ width: 30, height: 30, borderRadius: 6, border: "none", cursor: "pointer", padding: 0 }}
+                                    />
+                                    <span style={{ color: "#9ca3af", fontSize: 11, flexShrink: 0 }}>সাইজ</span>
+                                    <input
+                                      type="number"
+                                      value={pip.captionSize || 20}
+                                      min={10} max={60}
+                                      onChange={e => setPipLayers(p => p.map(l => l.id === pip.id ? { ...l, captionSize: Number(e.target.value) } : l))}
+                                      onClick={e => e.stopPropagation()}
+                                      style={{ width: 50, background: "#060c18", color: "#fff",
+                                        border: "1px solid #1e3050", borderRadius: 6,
+                                        padding: "4px 6px", fontSize: 12, outline: "none" }}
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -2495,17 +2873,19 @@ export default function Editor() {
                           <SliderRow label="অপাসিটি" val={selectedText.opacity ?? 100} set={v => updateText(selectedText.id, { opacity: v })} min={10} max={100} unit="%" />
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             {[
-                              { label: "B", key: "bold", val: selectedText.bold },
-                              { label: "I", key: "italic", val: selectedText.italic },
-                              { label: "💫", key: "shadow", val: selectedText.shadow },
-                              { label: "O", key: "outline", val: selectedText.outline },
+                              { label: "B", key: "bold", val: selectedText.bold, style: { fontWeight: 900 } },
+                              { label: "I", key: "italic", val: selectedText.italic, style: { fontStyle: "italic" } },
+                              { label: "U", key: "underline", val: selectedText.underline ?? false, style: { textDecoration: "underline" } },
+                              { label: "💫", key: "shadow", val: selectedText.shadow, style: {} },
+                              { label: "O", key: "outline", val: selectedText.outline, style: { WebkitTextStroke: "1px currentColor" } },
                             ].map(btn => (
                               <button key={btn.key}
-                                onClick={() => updateText(selectedText.id, { [btn.key]: !btn.val } as Partial<TextBlock>)}
+                                onClick={() => updateText(selectedText.id, { [btn.key]: !(btn.val) } as Partial<TextBlock>)}
                                 style={{ padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
                                   border: `1px solid ${btn.val ? "#D4A843" : "#1e3050"}`,
                                   background: btn.val ? "rgba(212,168,67,0.15)" : "transparent",
-                                  color: btn.val ? "#D4A843" : "#6b7280", cursor: "pointer" }}>
+                                  color: btn.val ? "#D4A843" : "#6b7280", cursor: "pointer",
+                                  ...btn.style }}>
                                 {btn.label}
                               </button>
                             ))}
@@ -2844,6 +3224,102 @@ export default function Editor() {
       <input ref={photoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPhotoUpload} />
       <input ref={bgFileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onBgUpload} />
       <input ref={pipFileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPipUpload} />
+
+      {/* ── Draft Modal ── */}
+      {showDraftModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.75)",
+          display: "flex", alignItems: "flex-end", justifyContent: "center",
+          backdropFilter: "blur(4px)",
+        }} onClick={() => setShowDraftModal(false)}>
+          <div style={{
+            background: "#0d1420", borderRadius: "20px 20px 0 0",
+            width: "100%", maxWidth: 480, maxHeight: "80vh",
+            overflow: "hidden", display: "flex", flexDirection: "column",
+          }} onClick={e => e.stopPropagation()}>
+            {/* Modal header */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "16px 20px", borderBottom: "1px solid #1e3050", flexShrink: 0,
+            }}>
+              <div>
+                <h2 style={{ color: "#D4A843", fontWeight: 700, fontSize: 16, margin: 0 }}>💾 সেভ করা ড্রাফট</h2>
+                <p style={{ color: "#6b7280", fontSize: 11, margin: "3px 0 0" }}>{drafts.length} টি ড্রাফট সেভ আছে</p>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => saveDraft()}
+                  style={{
+                    padding: "8px 14px", borderRadius: 10, border: "none",
+                    background: "linear-gradient(135deg,#D4A843,#b8892a)",
+                    color: "#000", fontWeight: 700, fontSize: 12, cursor: "pointer",
+                  }}
+                >💾 নতুন সেভ</button>
+                <button
+                  onClick={() => setShowDraftModal(false)}
+                  style={{
+                    padding: "8px 12px", borderRadius: 10,
+                    border: "1px solid rgba(239,68,68,0.4)",
+                    background: "rgba(239,68,68,0.1)",
+                    color: "#ef4444", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  }}
+                >✕</button>
+              </div>
+            </div>
+            {/* Draft list */}
+            <div style={{ overflowY: "auto", flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+              {drafts.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <div style={{ fontSize: 40, marginBottom: 10 }}>📝</div>
+                  <p style={{ color: "#6b7280", fontSize: 13 }}>এখনো কোনো ড্রাফট নেই</p>
+                  <p style={{ color: "#4a5568", fontSize: 11, marginTop: 4 }}>ডিজাইন তৈরি করে সেভ বাটন চাপুন</p>
+                </div>
+              ) : (
+                drafts.map(draft => (
+                  <div key={draft.id} style={{
+                    background: "#060c18", borderRadius: 12,
+                    border: "1px solid #1e3050", padding: 14,
+                    display: "flex", alignItems: "center", gap: 12,
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ color: "#D4A843", fontWeight: 600, fontSize: 13, margin: 0,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {draft.name}
+                      </p>
+                      <p style={{ color: "#6b7280", fontSize: 11, margin: "3px 0 0" }}>
+                        {new Date(draft.savedAt).toLocaleString("bn-BD")}
+                      </p>
+                      <p style={{ color: "#4a5568", fontSize: 10, margin: "2px 0 0" }}>
+                        {draft.textLayers?.filter(l => l.text.trim()).length || 0} টি লেখা • {draft.stickers?.length || 0} স্টিকার • {draft.pipLayers?.length || 0} ছবি
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <button
+                        onClick={() => loadDraft(draft)}
+                        style={{
+                          padding: "7px 12px", borderRadius: 8, border: "none",
+                          background: "linear-gradient(135deg,#D4A843,#b8892a)",
+                          color: "#000", fontWeight: 700, fontSize: 11, cursor: "pointer",
+                        }}
+                      >লোড</button>
+                      <button
+                        onClick={() => deleteDraft(draft.id)}
+                        style={{
+                          padding: "7px 10px", borderRadius: 8,
+                          border: "1px solid rgba(239,68,68,0.4)",
+                          background: "rgba(239,68,68,0.1)",
+                          color: "#ef4444", fontWeight: 700, fontSize: 11, cursor: "pointer",
+                        }}
+                      >মুছুন</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

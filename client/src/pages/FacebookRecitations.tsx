@@ -12,7 +12,7 @@ export default function FacebookRecitations() {
       {
         "@type": "CollectionPage",
         "name": "Facebook আবৃত্তি | মাহবুব সরদার সবুজ",
-        "url": "https://mahbub-sardar-sabuj-live.vercel.app/facebook-recitations",
+        "url": "https://www.mahbubsardarsabuj.com/facebook-recitations",
         "inLanguage": "bn-BD",
         "description": "মাহবুব সরদার সবুজের Facebook আবৃত্তির সংগ্রহ, যেখানে নির্বাচিত আবৃত্তির ভিডিও লিংক একসাথে পাওয়া যাবে।"
       },
@@ -20,7 +20,7 @@ export default function FacebookRecitations() {
         "@type": "Person",
         "name": "Mahbub Sardar Sabuj",
         "alternateName": "মাহবুব সরদার সবুজ",
-        "url": "https://mahbub-sardar-sabuj-live.vercel.app/"
+        "url": "https://www.mahbubsardarsabuj.com/"
       }
     ]
   };

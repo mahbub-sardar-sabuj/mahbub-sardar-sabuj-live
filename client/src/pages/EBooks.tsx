@@ -191,7 +191,7 @@ export default function EBooks() {
       {
         "@type": "CollectionPage",
         "name": "ই-বুক সংগ্রহ | মাহবুব সরদার সবুজ",
-        "url": "https://mahbub-sardar-sabuj-live.vercel.app/ebooks",
+        "url": "https://www.mahbubsardarsabuj.com/ebooks",
         "inLanguage": "bn-BD",
         "description": "মাহবুব সরদার সবুজের প্রকাশিত ই-বুক ও ফিজিক্যাল বইয়ের সম্পূর্ণ সংগ্রহ।",
       },

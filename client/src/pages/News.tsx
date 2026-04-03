@@ -1,10 +1,15 @@
 /**
- * সংবাদ পেজ — Professional News Portal
- * Design: Premium literary news portal with Navy/Gold theme
+ * সংবাদ পেজ — Premium News Portal
+ * Design: Navy Blue (#1B2A6B) + Amber (#F5A623) — সরদার সংবাদ ব্র্যান্ড
+ * Features: Breaking ticker, magazine hero, animated cards, share popup, comments
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Tag, Search, ChevronRight, BookOpen, Mic2, Award, Calendar, ExternalLink, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check, Send, ThumbsUp, User } from "lucide-react";
+import {
+  Search, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check,
+  ThumbsUp, ExternalLink, ArrowRight, Radio, ChevronRight, Clock, Eye
+} from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Seo from "../components/Seo";
@@ -31,6 +36,7 @@ interface NewsItem {
   tag: string;
   link?: string;
   image?: string;
+  views?: number;
 }
 
 const newsData: NewsItem[] = [
@@ -185,248 +191,258 @@ const newsData: NewsItem[] = [
     views: 789,
   },
   {
+    id: 21,
+    image: "/images/news/zahid-hasan-poet.png",
+    title: "উদীয়মান তরুণ কবি জাহিদ হাসান—ভালোবাসা, বেদনা ও অনুভূতির কণ্ঠস্বর",
+    excerpt: "ময়মনসিংহের চর-ঝাউগড়া গ্রামের নীরব পরিবেশ থেকে উঠে আসা তরুণ লেখক জাহিদ হাসান ধীরে ধীরে নিজস্ব সাহিত্যভুবন গড়ে তুলছেন। ২০০৪ সালের ৫ জানুয়ারি জন্ম নেওয়া এই লেখক মূলত একজন আগ্রহী পাঠক হিসেবে তার যাত্রা শুরু করেন।",
+    content: `ময়মনসিংহের চর-ঝাউগড়া গ্রামের নীরব পরিবেশ থেকে উঠে আসা তরুণ লেখক জাহিদ হাসান ধীরে ধীরে নিজস্ব সাহিত্যভুবন গড়ে তুলছেন। ২০০৪ সালের ৫ জানুয়ারি জন্ম নেওয়া এই লেখক মূলত একজন আগ্রহী পাঠক হিসেবে তার যাত্রা শুরু করেন। বইয়ের প্রতি গভীর ভালোবাসাই তাকে লেখালেখির পথে নিয়ে আসে।
+
+জাহিদের লেখায় গ্রামবাংলার সরলতা, জীবনের গভীর অনুভূতি এবং ব্যক্তিগত আবেগের ছাপ স্পষ্টভাবে ফুটে ওঠে। তার মতে, লেখা শুধুমাত্র শব্দের সমষ্টি নয়, বরং এটি মনের প্রশান্তি এবং অনুভূতির প্রকাশের একটি মাধ্যম।
+
+সম্প্রতি প্রকাশিত তার কয়েকটি কবিতায় প্রেম, বিচ্ছেদ, মানসিক দ্বন্দ্ব এবং আত্মিক টানাপোড়েনের বিষয়গুলো গভীরভাবে উঠে এসেছে। তার কবিতায় ভালোবাসার গভীরতা যেমন আছে, তেমনি আছে ভাঙনের বেদনা এবং আত্মসংঘাতের নিঃশব্দ প্রকাশ।
+
+সাহিত্য বিশ্লেষকদের মতে, জাহিদ হাসানের লেখায় রয়েছে স্বতঃস্ফূর্ততা ও আন্তরিকতা, যা তাকে সমসাময়িক তরুণ কবিদের মধ্যে আলাদা করে তুলতে পারে। তার সহজ ভাষা ও গভীর ভাবনার মেলবন্ধন ইতোমধ্যে পাঠকমহলে আগ্রহ তৈরি করছে।
+
+তরুণ এই লেখকের সাহিত্যযাত্রা এখনও প্রারম্ভিক পর্যায়ে থাকলেও, তার লেখনীতে যে সম্ভাবনার আভাস মিলছে, তা ভবিষ্যতে তাকে একটি শক্তিশালী কণ্ঠ হিসেবে প্রতিষ্ঠিত করতে পারে বলে মনে করছেন অনেকেই।
+
+**তার কবিতা সমূহ:**
+
+**১. তোমাকে ভুলার তাগিদে—**
+সারারাত পানশালাতে মদ পান করেছি,
+অতঃপর জানলাম—
+মদের চেয়ে বড় নেশা তুমি!
+তোমাকে ভুলতে পতিতালয়ে
+বেশ্যার আচল ধরে টান দিয়েছি,
+তবুও তোমাকে ভুলতে পারিনি!
+মদের বোতল, কিংবা বেশ্যার আঁচল—
+আমারে তোমার অভাব ভুলাইয়া দিতে
+পারলো না!
+
+**২.**
+যোগ্যতার মাপকাঠিতে আমি অতি সাধারণ,
+তাই আমি তোমাকে ভালোবাসি—
+এই কথা বলার আগে নিজেকে কতবার ভাবনার টেবিলে বসিয়েছি তার কোনো হিসেবে নেই।
+ভয়, সংশয়, নিজেকে হারানোর আশঙ্কা, সকল কিছু উপেক্ষা করে, তবুও বলেছি—
+আমি তোমাকে ভালোবাসি!
+
+**৩.**
+বছর যায় নতুন বছর আসে, ক্যালেন্ডারের পাতা বদলায়—
+অথচ, তোমার দেয়া ব্যাথা আজো জমে আছে বুকের ভীতর।
+সেই ব্যাথার কোনো পরিবর্তন হয় না!
+সেটা হিমবাহের মতো জমে আছে আমার শিরায়-উপশিরায়।
+অভিযোগ করবো, কি নিয়ে করবো? তোমার সকল দোষ তো আমার কাঁধেই নিয়েছি।
+তোমাকে তো নিষ্পাপ করেই রেখেছি।
+এখন অভিযোগ করলেও শাস্তি পেতে হবে
+না করলেও শাস্তি পেতে হবে!
+
+**৪.**
+এখন আর পৃথিবীর কোনো কিছুই ভালো লাগে না—
+ভালো লাগে না কবিতা, সুফিবাদ, কিংবা বাম রাজনীতি।
+হুমায়ুন আহমেদ কিংবা সক্রেটিস পড়া হয় না আজ বহুদিন।
+আমি জানি এই অন্ধকারের বাহিরে এক নীলাভ আকাশ রয়েছে,
+কিন্তু তা আমায় আকৃষ্ট করেনি।
+আমার এই ধ্বংসের কারিগর তুমি,
+আবার তুমিই আমার পোড়া মনের একমাত্র ঈশ্বর!
+
+**৫.**
+তুমি আমার কবিতার সেই ঈশ্বর
+যাকে খুঁজে পাওয়া যায় ছন্দের প্রতিটি ভাঁজে,
+ঠিক যেমন, মুমিনের হৃদয়ে অমলিন বিশ্বাসে
+বিরাজ করেন পরম করুণাময়।`,
+    category: "সাহিত্য",
+    categoryColor: "#8E44AD",
+    date: "২ এপ্রিল ২০২৬",
+    readTime: "৫ মিনিট",
+    featured: true,
+    tag: "কবিতা",
+    views: 1540,
+  },
+  {
+    id: 20,
+    image: "/images/news/website-launch.png",
+    title: "নতুন আঙ্গিকে সাহিত্যচর্চা: চালু হলো লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট",
+    excerpt: "ডিজিটাল যুগের সঙ্গে তাল মিলিয়ে সাহিত্যকে আরও সহজলভ্য ও সংগঠিত করতে লেখক মাহবুব সরদার সবুজ তার নতুন অফিসিয়াল ওয়েবসাইট চালু করেছেন। সম্প্রতি উন্মুক্ত হওয়া এই প্ল্যাটফর্মটি ইতোমধ্যেই পাঠক মহলে সাড়া ফেলতে শুরু করেছে।",
+    content: `ডিজিটাল যুগের সঙ্গে তাল মিলিয়ে সাহিত্যকে আরও সহজলভ্য ও সংগঠিত করতে লেখক মাহবুব সরদার সবুজ তার নতুন অফিসিয়াল ওয়েবসাইট চালু করেছেন। সম্প্রতি উন্মুক্ত হওয়া এই প্ল্যাটফর্মটি ইতোমধ্যেই পাঠক মহলে সাড়া ফেলতে শুরু করেছে।
+
+জানা গেছে, ওয়েবসাইটটি মূলত লেখকের দীর্ঘদিনের সৃষ্টিশীল কাজকে একত্রে সংরক্ষণ এবং পাঠকদের জন্য সহজভাবে উপস্থাপনের লক্ষ্যেই তৈরি করা হয়েছে। ফলে সামাজিক মাধ্যমে ছড়িয়ে থাকা লেখাগুলো এখন একটি নির্দিষ্ট ঠিকানায় পাওয়া যাচ্ছে, যা পাঠকদের জন্য একটি নির্ভরযোগ্য উৎস হিসেবে কাজ করবে।
+
+ওয়েবসাইটে প্রবেশ করলেই দেখা যায়, কবিতা, গল্প, উক্তি এবং বিভিন্ন চিন্তাধর্মী লেখাগুলো আলাদা ক্যাটাগরিতে সাজানো রয়েছে। এর ফলে পাঠকরা সহজেই তাদের পছন্দের বিষয়বস্তু খুঁজে নিতে পারছেন। পাশাপাশি ব্যবহারবান্ধব ডিজাইন ও পরিষ্কার নেভিগেশন পুরো অভিজ্ঞতাকে আরও সাবলীল করেছে।
+
+শুধু সাহিত্যচর্চাই নয়, এই ওয়েবসাইটের মাধ্যমে এডিটিং সেবা এবং সংবাদ প্রচারের ব্যবস্থাও রাখা হয়েছে। ফলে এটি একটি বহুমুখী প্ল্যাটফর্ম হিসেবে কাজ করছে, যেখানে লেখালেখির পাশাপাশি তথ্য প্রকাশ ও কনটেন্ট উন্নয়নের সুযোগও রয়েছে।
+
+এছাড়াও, ওয়েবসাইটটিতে লেখকের প্রকাশিত সবগুলো ই-বুক সংযোজন করা হয়েছে। পাঠকরা খুব সহজেই এই ই-বুকগুলো পড়তে বা সংগ্রহ করতে পারবেন, যা ডিজিটাল পাঠাভ্যাসকে আরও সমৃদ্ধ করবে।
+
+প্রযুক্তিগত দিক থেকেও ওয়েবসাইটটি বেশ উন্নত। মোবাইল, ট্যাবলেট ও কম্পিউটার সব ধরনের ডিভাইসে সমানভাবে ব্যবহারযোগ্য হওয়ায় যেকোনো স্থান থেকেই সহজে প্রবেশ করা সম্ভব। সবচেয়ে উল্লেখযোগ্য বিষয় হলো, ওয়েবসাইটের সব কনটেন্ট সম্পূর্ণ বিনামূল্যে উন্মুক্ত রাখা হয়েছে।
+
+সাহিত্য বিশ্লেষকদের মতে, এ ধরনের উদ্যোগ লেখক ও পাঠকের মধ্যে একটি শক্তিশালী সংযোগ তৈরি করে। একই সঙ্গে নতুন লেখকদের জন্য এটি একটি অনুপ্রেরণার প্ল্যাটফর্ম হিসেবেও কাজ করবে।
+
+সবমিলিয়ে, লেখক মাহবুব সরদার সবুজের এই নতুন ওয়েবসাইট বাংলা সাহিত্যের ডিজিটাল বিকাশে একটি গুরুত্বপূর্ণ সংযোজন হিসেবে বিবেচিত হচ্ছে। ভবিষ্যতে এটি আরও সমৃদ্ধ হয়ে বৃহত্তর পাঠকগোষ্ঠীর কাছে পৌঁছাবেতেমনটাই প্রত্যাশা করা হচ্ছে।`,
+    category: "প্রযুক্তি",
+    categoryColor: "#2980B9",
+    date: "২ এপ্রিল ২০২৬",
+    readTime: "৫ মিনিট",
+    featured: true,
+    tag: "ওয়েবসাইট",
+    views: 2890,
+  },
+  {
+    id: 19,
+    image: "/images/news/110k-followers.png",
+    title: "১১০ হাজার ফলোয়ার পূর্ণ: কৃতজ্ঞতা জানালেন লেখক মাহবুব সরদার সবুজ",
+    excerpt: "জনপ্রিয় লেখক মাহবুব সরদার সবুজের অফিসিয়াল প্রোফাইল আইডিতে ফলোয়ার সংখ্যা ১১০ হাজারে পৌঁছেছে। এই অর্জনকে ঘিরে পাঠক ও শুভানুধ্যায়ীদের মধ্যে আনন্দের পরিবেশ তৈরি হয়েছে।",
+    content: `জনপ্রিয় লেখক মাহবুব সরদার সবুজের অফিসিয়াল প্রোফাইল আইডিতে ফলোয়ার সংখ্যা ১১০ হাজারে পৌঁছেছে। এই অর্জনকে ঘিরে পাঠক ও শুভানুধ্যায়ীদের মধ্যে আনন্দের পরিবেশ তৈরি হয়েছে।
+
+জানা গেছে, দীর্ঘদিন ধরে সামাজিক মাধ্যমে নিয়মিত লেখালেখি ও পাঠকদের সঙ্গে সরাসরি সংযোগ বজায় রাখার ফলেই এই মাইলফলক স্পর্শ করতে সক্ষম হয়েছেন তিনি। তার লেখা কবিতা, অনুভূতি ও জীবনঘনিষ্ঠ কথাগুলো ইতোমধ্যেই ব্যাপক জনপ্রিয়তা অর্জন করেছে।
+
+এই উপলক্ষে মাহবুব সরদার সবুজ তার সকল ফলোয়ারদের প্রতি আন্তরিক শুভেচ্ছা ও অভিনন্দন জানিয়েছেন। তিনি বলেন, পাঠকদের ভালোবাসা ও সমর্থনই তাকে প্রতিনিয়ত নতুন কিছু লেখার অনুপ্রেরণা জোগায়।
+
+তিনি আরও জানান, এই অর্জন শুধু সংখ্যার হিসাব নয়, বরং এটি একটি দায়িত্বও। ভবিষ্যতে আরও মানসম্মত লেখা উপহার দেওয়ার প্রতিশ্রুতিও ব্যক্ত করেন তিনি।
+
+সাহিত্যপ্রেমীদের মতে, একজন লেখকের জন্য পাঠকদের এমন ভালোবাসা বড় প্রাপ্তি। সামাজিক মাধ্যমের এই সাফল্য তার সাহিত্যিক যাত্রাকে আরও এগিয়ে নিতে গুরুত্বপূর্ণ ভূমিকা রাখবে।
+
+সবমিলিয়ে, ১১০ হাজার ফলোয়ার পূর্ণ হওয়া মাহবুব সরদার সবুজের জন্য একটি উল্লেখযোগ্য মাইলফলক, যা তার জনপ্রিয়তা ও পাঠকপ্রিয়তারই প্রতিফলন।`,
+    category: "সাফল্য",
+    categoryColor: "#27AE60",
+    date: "২ এপ্রিল ২০২৬",
+    readTime: "৩ মিনিট",
+    featured: true,
+    tag: "মাইলফলক",
+    views: 3420,
+  },
+  {
+    id: 18,
+    image: "/images/news/december-shohor.png",
+    title: '"ডিসেম্বরের শহরে" বই নিয়ে পাঠকমহলে আগ্রহ বাড়ছে',
+    excerpt: 'বাংলা সাহিত্য অঙ্গনে সমকালীন রোমান্টিক ধারার আলোচিত বইগুলোর মধ্যে জায়গা করে নিয়েছে “ডিসেম্বরের শহরে”। তরুণ লেখক সবুজ আহম্মদ মুরসালিন রচিত এই উপন্যাসটি প্রকাশের পর থেকেই পাঠকদের মধ্যে আগ্রহ ও আলোচনার কেন্দ্রবিন্দুতে রয়েছে।',
+    content: `বাংলা সাহিত্য অঙ্গনে সমকালীন রোমান্টিক ধারার আলোচিত বইগুলোর মধ্যে জায়গা করে নিয়েছে "ডিসেম্বরের শহরে"। তরুণ লেখক সবুজ আহম্মদ মুরসালিন রচিত এই উপন্যাসটি প্রকাশের পর থেকেই পাঠকদের মধ্যে আগ্রহ ও আলোচনার কেন্দ্রবিন্দুতে রয়েছে।
+
+প্রকাশনা প্রতিষ্ঠান ভূমিপ্রকাশ থেকে প্রকাশিত বইটি মূলত ভালোবাসা, বিচ্ছেদ এবং মানসিক অনুভূতির সূক্ষ্ম দিকগুলো তুলে ধরেছে। প্রায় ৩২০ পৃষ্ঠার এই উপন্যাসে লেখক কাব্যিক ভাষায় মানুষের ভেতরের না বলা কথাগুলো প্রকাশ করার চেষ্টা করেছেন।
+
+উপন্যাসটির কাহিনিতে 'আকাশ' ও 'নীলা' নামের দুই চরিত্রের সম্পর্কের গল্প ফুটে উঠেছে। তাদের সম্পর্কের মধ্যে ভালোবাসা যেমন রয়েছে, তেমনি রয়েছে দূরত্ব, ভুল বোঝাবুঝি এবং সময়ের সাথে বদলে যাওয়া বাস্তবতা। গল্পের প্রেক্ষাপটে "ডিসেম্বর" একটি প্রতীকী উপাদান হিসেবে ব্যবহৃত হয়েছে, যা শীতলতা, নিঃসঙ্গতা এবং একটি অধ্যায়ের সমাপ্তিকে নির্দেশ করে।
+
+সাহিত্য বিশ্লেষকদের মতে, বইটির ভাষা সহজ হলেও এতে গভীর আবেগ ও মানসিক টানাপোড়েনের প্রতিফলন রয়েছে, যা তরুণ পাঠকদের সঙ্গে সহজেই সংযোগ স্থাপন করতে সক্ষম হয়েছে। বিশেষ করে যারা আবেগনির্ভর ও সম্পর্কভিত্তিক গল্প পছন্দ করেন, তাদের কাছে এটি একটি উল্লেখযোগ্য সংযোজন হিসেবে বিবেচিত হচ্ছে।
+
+অনলাইন বই বিক্রয় প্ল্যাটফর্ম ও পাঠক প্রতিক্রিয়া অনুযায়ী, "ডিসেম্বরের শহরে" ইতোমধ্যে ইতিবাচক সাড়া পেয়েছে এবং নতুন প্রজন্মের পাঠকদের মধ্যে জনপ্রিয়তা অর্জন করেছে।
+
+সব মিলিয়ে, সমকালীন বাংলা সাহিত্যে আবেগঘন রোমান্টিক উপন্যাস হিসেবে "ডিসেম্বরের শহরে" নিজস্ব একটি অবস্থান তৈরি করতে সক্ষম হয়েছে বলে মনে করছেন সংশ্লিষ্টরা।`,
+    category: "সাহিত্য",
+    categoryColor: "#8E44AD",
+    date: "১ এপ্রিল ২০২৬",
+    readTime: "৪ মিনিট",
+    featured: true,
+    tag: "বই",
+    views: 1240,
+  },
+  {
+    id: 17,
+    image: "/images/news/platform-announcement.png",
+    title: "আপনার গল্প, আপনার পরিচিতি—এবার বৃহৎ পাঠকের কাছে",
+    excerpt: "ডিজিটাল এই সময়ে নিজের পরিচিতি তুলে ধরা কিংবা ব্যক্তিগত সাফল্যের গল্প শেয়ার করা এখন অনেক সহজ। সেই সুযোগকে আরও বিস্তৃত করতে একটি অনলাইন প্ল্যাটফর্মে উন্মুক্ত করা হয়েছে সংবাদ ও ব্যক্তিগত পরিচিতি প্রকাশের সুযোগ।",
+    content: `ডিজিটাল এই সময়ে নিজের পরিচিতি তুলে ধরা কিংবা ব্যক্তিগত সাফল্যের গল্প শেয়ার করা এখন অনেক সহজ। সেই সুযোগকে আরও বিস্তৃত করতে একটি অনলাইন প্ল্যাটফর্মে উন্মুক্ত করা হয়েছে সংবাদ ও ব্যক্তিগত পরিচিতি প্রকাশের সুযোগ, যেখানে আগ্রহী যে কেউ অংশ নিতে পারবেন।
+
+যারা নিজেদের সংবাদ বা ব্যক্তিগত তথ্য প্রকাশ করতে চান, তাদেরকে নির্ভুল ও বিস্তারিত তথ্যের পাশাপাশি একটি মানসম্মত ছবি জমা দিতে হবে। প্রাপ্ত তথ্য যাচাই-বাছাই করে যথাযথভাবে প্রকাশ করা হবে, যাতে পাঠকদের কাছে নির্ভরযোগ্য ও গ্রহণযোগ্য কনটেন্ট পৌঁছায়।
+
+এছাড়াও, নতুন ও প্রতিষ্ঠিত লেখক-কবিদের জন্য রয়েছে বিশেষ সুযোগ। আগ্রহীরা সংক্ষিপ্ত জীবনী, ছবি এবং প্রয়োজনীয় তথ্যের সঙ্গে তাদের উপন্যাস, কবিতা বা অন্যান্য লেখা জমা দিতে পারবেন। নির্বাচিত লেখাগুলো ওয়েবসাইটে প্রকাশ করা হবে, যা লেখকদের পরিচিতি বাড়ানোর পাশাপাশি তাদের সৃষ্টিকে পৌঁছে দেবে বৃহৎ পাঠকের কাছে।
+
+এই উদ্যোগের লক্ষ্য একটি এমন প্ল্যাটফর্ম তৈরি করা, যেখানে প্রতিটি মানুষের গল্প গুরুত্ব পায় এবং প্রতিভা পায় যথাযথ মূল্যায়ন।
+
+আপনার গল্প, আপনার পরিচিতি—এবার ছড়িয়ে পড়ুক আরও বিস্তৃত পাঠকের মাঝে।
+
+যোগাযোগ: lekhokmahbubsardarsabuj@gmail.com`,
+    category: "ঘোষণা",
+    categoryColor: "#F5A623",
+    date: "১ এপ্রিল ২০২৬",
+    readTime: "৩ মিনিট",
+    featured: true,
+    tag: "প্ল্যাটফর্ম",
+    views: 2180,
+  },
+  {
     id: 10,
+    image: "/images/news/baighar-visit.png",
     title: "ঢাকা বাতিঘরে তরুণ আবৃত্তিকারদের বই-পরিচিতি",
     excerpt: "তরুণ আবৃত্তিকার মরিয়ম ও সোহানী ঢাকা বাতিঘরে মাহবুব সরদার সবুজের বই \"আমি বিচ্ছেদকে বলি দুঃখবিলাস\"-এর সাথে পরিচিত হন এবং আবৃত্তি রেকর্ড করেন।",
-    content: `ঢাকা: তরুণ আবৃত্তিকার মরিয়ম আক্তার ও সোহানী ইসলাম সমাপ্তি গতকাল রাজধানীর বাতিঘর বইঘরে গিয়ে পরিচিত হয়েছেন লেখক মাহবুব সরদার সবুজের প্রথম প্রকাশিত বই “আমি বিচ্ছেদকে বলি দুঃখবিলাস”-এর সঙ্গে।
+    content: `ঢাকা: তরুণ আবৃত্তিকার মরিয়ম আক্তার ও সোহানী ইসলাম সমাপ্তি গতকাল রাজধানীর বাতিঘর বইঘরে গিয়ে পরিচিত হয়েছেন লেখক মাহবুব সরদার সবুজের প্রথম প্রকাশিত বই "আমি বিচ্ছেদকে বলি দুঃখবিলাস"-এর সঙ্গে।
 
-বাতিঘর কর্তৃপক্ষ জানায়, বইটি ঘিরে তাদের আগ্রহ ছিল চোখে পড়ার মতো। আবৃত্তির প্রতি ভালোবাসা থেকে তারা শুধু বইটি পড়েই থেমে থাকেননি, বরং নিজেদের কণ্ঠে এর অংশবিশেষ আবৃত্তি করে রেকর্ডও করেন। এতে করে বইটির আবেগ ও অনুভূতিকে তারা নতুনভাবে প্রকাশের চেষ্টা করেছেন।
+বাতিঘর কর্তৃপক্ষ জানায়, বইটি ঘিরে তাদের আগ্রহ ছিল চোখে পড়ার মতো। আবৃত্তির প্রতি ভালোবাসা থেকে তারা শুধু বইটি পড়েই থেমে থাকেননি, বরং নিজেদের কণ্ঠে এর অংশবিশেষ আবৃত্তি করে রেকর্ডও করেন। এতে করে বইটির আবেগ ও অনুভূতিকে তারা নতুনভাবে প্রকাশের চেষ্টা করেছেন।
 
-জানা গেছে, মাহবুব সরদার সবুজের এই বইটি পাঠকদের জন্য বিনামূল্যে ই-বুক হিসেবে তার ব্যক্তিগত ওয়েবসাইটে উপলব্ধ রয়েছে। পাশাপাশি, যারা প্রিন্ট কপি সংগ্রহ করতে চান, তারা অনলাইন বই বিক্রয় প্ল্যাটফর্ম রকমারি থেকেও বইটি সংগ্রহ করতে পারবেন।
+জানা গেছে, মাহবুব সরদার সবুজের এই বইটি পাঠকদের জন্য বিনামূল্যে ই-বুক হিসেবে তার ব্যক্তিগত ওয়েবসাইটে উপলব্ধ রয়েছে। পাশাপাশি, যারা প্রিন্ট কপি সংগ্রহ করতে চান, তারা অনলাইন বই বিক্রয় প্ল্যাটফর্ম রকমারি থেকেও বইটি সংগ্রহ করতে পারবেন।
 
-তরুণ এই দুই আবৃত্তিকার মনে করেন, সমসাময়িক সাহিত্য ও আবৃত্তির মধ্যে সংযোগ তৈরি করা জরুরি। তাদের এমন উদ্যোগ নতুন প্রজন্মের পাঠক ও শ্রোতাদের কাছে সাহিত্যকে আরও আকর্ষণীয় করে তুলতে সহায়ক হবে।`,
+তরুণ এই দুই আবৃত্তিকার মনে করেন, সমসাময়িক সাহিত্য ও আবৃত্তির মধ্যে সংযোগ তৈরি করা জরুরি। তাদের এমন উদ্যোগ নতুন প্রজন্মের পাঠক ও শ্রোতাদের কাছে সাহিত্যকে আরও আকর্ষণীয় করে তুলতে সহায়ক হবে।`,
     category: "সাহিত্য",
-    categoryColor: "#C9A84C",
+    categoryColor: "#F5A623",
     date: "১ এপ্রিল ২০২৬",
     readTime: "২ মিনিট",
     featured: false,
     tag: "আবৃত্তি",
-    image: "/images/news/baighar-visit.png",
+    views: 876,
   },
-  {
-    id: 1,
-    title: "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" — নতুন বই প্রকাশিত হচ্ছে ২০২৬ সালে",
-    excerpt: "মাহবুব সরদার সবুজের নতুন কাব্যগ্রন্থ ২০২৬ সালে প্রকাশিত হতে চলেছে। বইটিতে বিচ্ছেদ, প্রেম ও জীবনদর্শনের গভীর অনুভূতি শব্দে বাঁধা হয়েছে।",
-    content: "মাহবুব সরদার সবুজের বহুল প্রতীক্ষিত কাব্যগ্রন্থ \"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" ২০২৬ সালে প্রকাশিত হতে চলেছে। বইটিতে লেখকের জীবনের বিভিন্ন পর্যায়ের অনুভূতি — বিচ্ছেদের বেদনা, প্রেমের মাধুর্য এবং জীবনদর্শনের গভীরতা — কাব্যিক ভাষায় উপস্থাপিত হয়েছে। পাঠকদের মধ্যে ইতিমধ্যেই এই বইটি নিয়ে ব্যাপক আগ্রহ তৈরি হয়েছে।",
-    category: "প্রকাশনা",
-    categoryColor: "#C9A84C",
-    date: "মার্চ ২০২৬",
-    readTime: "৩ মিনিট",
-    featured: true,
-    tag: "নতুন বই",
-  },
-  {
-    id: 2,
-    title: "সরদার ডিজাইন স্টুডিওতে এলো ৪K আপস্কেল ফিচার",
-    excerpt: "এখন থেকে যেকোনো ছবি ৪K মানে উন্নত করে ডাউনলোড করা যাবে। ছবির তীক্ষ্ণতা ও রঙের গভীরতা বহুগুণ বেড়ে যাবে।",
-    content: "সরদার ডিজাইন স্টুডিওতে যুক্ত হয়েছে বহুল প্রতীক্ষিত ৪K আপস্কেল ফিচার. এই ফিচারটি ব্যবহার করে পাঠকরা তাদের তৈরি ডিজাইন কার্ড বা যেকোনো ছবিকে ৪K মানে উন্নত করতে পারবেন। Laplacian sharpening ও unsharp mask প্রযুক্তি ব্যবহার করে ছবির প্রতিটি বিস্তারিত তুলে আনা হয়। আগের ও পরের তুলনা দেখার জন্য রয়েছে বিশেষ স্লাইডার। সম্পূর্ণ বিনামূল্যে এই ফিচারটি ব্যবহার করুন।",
-    category: "ওয়েবসাইট",
-    categoryColor: "#4A90D9",
-    date: "মার্চ ২০২৬",
-    readTime: "২ মিনিট",
-    featured: true,
-    tag: "আপডেট",
-    link: "/editor",
-  },
-  {
-    id: 3,
-    title: "ডিজাইন স্টুডিওতে ২১৬টি স্টিকার যুক্ত হলো",
-    excerpt: "ফুল, প্রকৃতি, হৃদয়, তারা, বাংলা ক্যালিগ্রাফি সহ ৬টি ক্যাটাগরিতে ২১৬টি স্টিকার এখন ব্যবহার করা যাচ্ছে।",
-    content: "সরদার ডিজাইন স্টুডিওতে এখন ২১৬টি স্টিকার ব্যবহার করা যাচ্ছে। ফুল ও প্রকৃতি, হৃদয় ও প্রেম, তারা ও চাঁদ, বাংলা ক্যালিগ্রাফি, ইমোজি এবং ডেকোরেটিভ — এই ৬টি ক্যাটাগরিতে সাজানো স্টিকারগুলো ডিজাইনকে আরও প্রাণবন্ত করে তুলবে। ক্যানভাসে যেকোনো জায়গায় টেনে নিয়ে বসানো যাবে এবং আকার পরিবর্তন করা যাবে।",
-    category: "ওয়েবসাইট",
-    categoryColor: "#4A90D9",
-    date: "মার্চ ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "ফিচার",
-    link: "/editor",
-  },
-  {
-    id: 4,
-    title: "চারটি ই-বুক এখন বিনামূল্যে পড়া যাচ্ছে",
-    excerpt: "আমি বিচ্ছেদকে বলি দুঃখবিলাস, স্মৃতির বসন্তে তুমি, চাঁদফুল এবং সময়ের গহ্বরে — এই চারটি ই-বুক এখন ওয়েবসাইটে বিনামূল্যে পড়া যাচ্ছে।",
-    content: "মাহবুব সরদার সবুজের চারটি ই-বুক — \"আমি বিচ্ছেদকে বলি দুঃখবিলাস\", \"স্মৃতির বসন্তে তুমি\", \"চাঁদফুল\" এবং \"সময়ের গহ্বরে\" — এখন ওয়েবসাইটে বিনামূল্যে পড়া যাচ্ছে। পাঠকরা যেকোনো ডিভাইস থেকে সহজেই এই বইগুলো পড়তে পারবেন। প্রতিটি বই সুন্দর পাঠযোগ্য ফরম্যাটে উপস্থাপন করা হয়েছে।",
-    category: "ই-বুক",
-    categoryColor: "#7B68EE",
-    date: "ফেব্রুয়ারি ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "ই-বুক",
-    link: "/ebooks",
-  },
-  {
-    id: 5,
-    title: "গ্যালারিতে যুক্ত হলো ১০০+ কবিতার ডিজাইন কার্ড",
-    excerpt: "পাঠকদের তৈরি ও লেখকের নিজের ডিজাইন করা শতাধিক কবিতা কার্ড এখন গ্যালারিতে দেখা যাচ্ছে।",
-    content: "মাহবুব সরদার সবুজের ওয়েবসাইটের গ্যালারি সেকশনে এখন ১০০-এরও বেশি কবিতার ডিজাইন কার্ড সংযুক্ত হয়েছে। প্রতিটি কার্ড সরদার ডিজাইন স্টুডিও ব্যবহার করে তৈরি করা হয়েছে। বিভিন্ন থিম, রঙ ও ফন্টে সাজানো এই কার্ডগুলো সোশ্যাল মিডিয়ায় শেয়ার করার জন্য আদর্শ।",
-    category: "গ্যালারি",
-    categoryColor: "#E67E22",
-    date: "ফেব্রুয়ারি ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "গ্যালারি",
-    link: "/gallery",
-  },
-  {
-    id: 6,
-    title: "ফেসবুকে ৭,০০০+ কবিতা ও লেখার বিশাল সংগ্রহ",
-    excerpt: "মাহবুব সরদার সবুজের ফেসবুক পেজে এখন ৭,০০০-এরও বেশি কবিতা ও গল্প সংরক্ষিত আছে, যা পাঠকদের মধ্যে ব্যাপক সাড়া ফেলেছে।",
-    content: "মাহবুব সরদার সবুজের ফেসবুক পেজে এখন ৭,০০০-এরও বেশি কবিতা ও গল্প সংরক্ষিত আছে। প্রেম, বিচ্ছেদ, প্রকৃতি, জীবনদর্শন — প্রতিটি অনুভূতি শব্দে বাঁধা। পাঠকদের মধ্যে এই লেখাগুলো ব্যাপক সাড়া ফেলেছে এবং প্রতিদিন হাজার হাজার মানুষ এই লেখাগুলো পড়ছেন।",
-    category: "সোশ্যাল মিডিয়া",
-    categoryColor: "#1877F2",
-    date: "জানুয়ারি ২০২৬",
-    readTime: "৩ মিনিট",
-    featured: false,
-    tag: "ফেসবুক",
-    link: "https://www.facebook.com/mahbubsardarsabuj",
-  },
-  {
-    id: 7,
-    title: "আবৃত্তি সংগ্রহ — ফেসবুক লাইভ রেকর্ডিং",
-    excerpt: "লেখকের ফেসবুক লাইভ আবৃত্তির সংগ্রহ এখন ওয়েবসাইটে দেখা যাচ্ছে। নিজের কণ্ঠে কবিতা পাঠের অনন্য অভিজ্ঞতা নিন।",
-    content: "মাহবুব সরদার সবুজের ফেসবুক লাইভ আবৃত্তির সংগ্রহ এখন ওয়েবসাইটে দেখা যাচ্ছে। লেখক নিজের কণ্ঠে তাঁর কবিতা পাঠ করেছেন, যা শ্রোতাদের মধ্যে গভীর আবেগ তৈরি করেছে। এই সংগ্রহটি সাহিত্যপ্রেমীদের জন্য একটি অমূল্য সম্পদ।",
-    category: "আবৃত্তি",
-    categoryColor: "#E74C3C",
-    date: "ডিসেম্বর ২০২৫",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "আবৃত্তি",
-    link: "/facebook-recitations",
-  },
-  {
-    id: 8,
-    title: "নতুন AI চ্যাটবট — লেখক সম্পর্কে যেকোনো প্রশ্ন করুন",
-    excerpt: "ওয়েবসাইটে যুক্ত হয়েছে AI চ্যাটবট. লেখক মাহবুব সরদার সবুজ সম্পর্কে যেকোনো প্রশ্নের উত্তর পাবেন তাৎক্ষণিকভাবে।",
-    content: "মাহবুব সরদার সবুজের ওয়েবসাইটে একটি AI চ্যাটবট যুক্ত হয়েছে। এই চ্যাটবটটি লেখক সম্পর্কে সম্পূর্ণ সঠিক ও নির্ভুল তথ্য প্রদান করে। পাঠকরা কবিতা, ই-বুক, যোগাযোগ বা ওয়েবসাইট ব্যবহার সংক্রান্ত যেকোনো প্রশ্ন করতে পারবেন।",
-    category: "প্রযুক্তি",
-    categoryColor: "#27AE60",
-    date: "নভেম্বর ২০২৫",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "AI",
-  },
-  {
-    id: 9,
-    title: "ডিজাইন স্টুডিওতে ১২০+ ব্যাকগ্রাউন্ড ওয়াল যুক্ত হলো",
-    excerpt: "প্রকৃতি, শহর, রাত্রির আকাশ, বৃষ্টি সহ ১২০টিরও বেশি ব্যাকগ্রাউন্ড ওয়াল এখন ডিজাইনে ব্যবহার করা যাচ্ছে।",
-    content: "সরদার ডিজাইন স্টুডিওতে এখন ১২০টিরও বেশি ব্যাকগ্রাউন্ড ওয়াল ব্যবহার করা যাচ্ছে। প্রকৃতির দৃশ্য, শহরের রাত, বৃষ্টিভেজা পথ, ফুলের বাগান, মেঘলা আকাশ — প্রতিটি ব্যাকগ্রাউন্ড আপনার কবিতার মেজাজ অনুযায়ী বেছে নিন। এছাড়াও ১০টি ফটো ফিল্টার দিয়ে ব্যাকগ্রাউন্ডের রং ও আলো পরিবর্তন করা যাবে।",
-    category: "ওয়েবসাইট",
-    categoryColor: "#4A90D9",
-    date: "মার্চ ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "ফিচার",
-    link: "/editor",
-  },
-  {
-    id: 11,
-    title: "লেখকের সাথে সরাসরি যোগাযোগ করুন",
-    excerpt: "যোগাযোগ পেজে এখন সরাসরি বার্তা পাঠানোর সুবিধা রয়েছে। লেখক নিজে প্রতিটি বার্তার উত্তর দেন।",
-    content: "মাহবুব সরদার সবুজের ওয়েবসাইটে এখন সরাসরি যোগাযোগ করার সুবিধা যুক্ত করা হয়েছে। পাঠকরা তাদের মতামত, পরামর্শ বা যেকোনো জিজ্ঞাসা সরাসরি লেখকের কাছে পাঠাতে পারবেন। লেখক ব্যক্তিগতভাবে প্রতিটি বার্তার উত্তর দেওয়ার চেষ্টা করেন।",
-    category: "যোগাযোগ",
-    categoryColor: "#9B59B6",
-    date: "এপ্রিল ২০২৬",
-    readTime: "১ মিনিট",
-    featured: false,
-    tag: "যোগাযোগ",
-    link: "/contact",
-  },
-  {
-    id: 12,
-    title: "ডিজাইন স্টুডিওতে ড্রয়িং টুল — নিজেই আঁকুন",
-    excerpt: "পেন্সিল, ব্রাশ, ইরেজার, লাইন, আয়তক্ষেত্র, বৃত্ত ও তীর — ৭টি ড্রয়িং টুল দিয়ে এখন ক্যানভাসে সরাসরি আঁকা যাবে।",
-    content: "সরদার ডিজাইন স্টুডিওতে নতুন ড্রয়িং টুলস যুক্ত হয়েছে। এখন আপনি পেন্সিল, ব্রাশ, ইরেজার ব্যবহার করে ক্যানভাসে সরাসরি আঁকতে পারবেন। এছাড়াও জ্যামিতিক আকার যেমন লাইন, আয়তক্ষেত্র, বৃত্ত ও তীর চিহ্ন যুক্ত করার সুবিধা রয়েছে। এটি আপনার ডিজাইনকে আরও সৃজনশীল করে তুলবে।",
-    category: "ওয়েবসাইট",
-    categoryColor: "#4A90D9",
-    date: "এপ্রিল ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "ফিচার",
-    link: "/editor",
-  },
-  {
-    id: 13,
-    title: "লেখকের জীবনী ও সাহিত্যকর্মের পূর্ণ পরিচয় এখন অনলাইনে",
-    excerpt: "সম্পর্কে পেজে লেখকের জীবন, সাহিত্যদর্শন ও প্রকাশিত রচনার বিস্তারিত তথ্য পাওয়া যাচ্ছে।",
-    content: "মাহবুব সরদার সবুজের ওয়েবসাইটের 'পরিচিতি' সেকশনে লেখকের বিস্তারিত জীবনী ও সাহিত্যকর্মের তথ্য যুক্ত করা হয়েছে। এখানে লেখকের শৈশব, শিক্ষা, সাহিত্যিক যাত্রা এবং তাঁর প্রকাশিত বইগুলো সম্পর্কে বিস্তারিত জানতে পারবেন।",
-    category: "লেখক পরিচিতি",
-    categoryColor: "#34495E",
-    date: "এপ্রিল ২০২৬",
-    readTime: "৩ মিনিট",
-    featured: false,
-    tag: "পরিচিতি",
-    link: "/about",
-  },
-  {
-    id: 14,
-    title: "ওয়েবসাইটে যুক্ত হলো ক্রপ ও ইমেজ অ্যাডজাস্টমেন্ট টুল",
-    excerpt: "ডিজাইন স্টুডিওতে এখন ছবি ক্রপ করা এবং উজ্জ্বলতা, কনট্রাস্ট, স্যাচুরেশন সরাসরি নিয়ন্ত্রণ করা যাবে।",
-    content: "সরদার ডিজাইন স্টুডিওতে ছবি এডিট করার নতুন ফিচার যুক্ত হয়েছে। এখন আপনি আপলোড করা ছবি সরাসরি ক্রপ করতে পারবেন। এছাড়াও ছবির উজ্জ্বলতা (Brightness), কনট্রাস্ট (Contrast) এবং স্যাচুরেশন (Saturation) নিয়ন্ত্রণ করার জন্য স্লাইডার যুক্ত করা হয়েছে।",
-    category: "ওয়েবসাইট",
-    categoryColor: "#4A90D9",
-    date: "এপ্রিল ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "ফিচার",
-    link: "/editor",
-  },
-  {
-    id: 15,
-    title: "বাবা — আমার সবচেয়ে বড় অনুপ্রেরণা",
-    excerpt: "বাবার অনুপ্রেরণায়ই লেখক হয়ে ওঠার স্বপ্ন দেখেছিলেন মাহবুব সরদার সবুজ। বাবার প্রতি কৃতজ্ঞতা ও ভালোবাসার কথা লিখেছেন লেখক।",
-    content: "লেখক মাহবুব সরদার সবুজের জীবনে তাঁর বাবার ভূমিকা অপরিসীম। বাবার অনুপ্রেরণা ও উৎসাহেই তিনি সাহিত্যচর্চায় উদ্বুদ্ধ হয়েছেন। লেখকের মতে, তাঁর প্রতিটি সাফল্যের পেছনে বাবার দোয়া ও দিকনির্দেশনা কাজ করেছে। বাবার প্রতি শ্রদ্ধা জানিয়ে তিনি এই বিশেষ লেখাটি প্রকাশ করেছেন।",
-    category: "পরিবার",
-    categoryColor: "#F1C40F",
-    date: "এপ্রিল ২০২৬",
-    readTime: "২ মিনিট",
-    featured: false,
-    tag: "অনুপ্রেরণা",
-  },
-  {
-    id: 16,
-    title: "পাঠকদের ভালোবাসায় ওয়েবসাইট ১০,০০০ ভিজিটর অতিক্রম করলো",
-    excerpt: "মাত্র কয়েক মাসে ওয়েবসাইটটি ১০,০০০-এরও বেশি পাঠকের কাছে পৌঁছেছে। লেখক পাঠকদের প্রতি কৃতজ্ঞতা জানিয়েছেন।",
-    content: "মাহবুব সরদার সবুজের অফিশিয়াল ওয়েবসাইটটি একটি নতুন মাইলফলক স্পর্শ করেছে। যাত্রা শুরুর মাত্র কয়েক মাসের মধ্যেই ১০,০০০-এরও বেশি পাঠক ওয়েবসাইটটি পরিদর্শন করেছেন। পাঠকদের এই অভূতপূর্ব সাড়ায় লেখক অত্যন্ত আনন্দিত ও কৃতজ্ঞ।",
-    category: "মাইলফলক",
-    categoryColor: "#1ABC9C",
-    date: "এপ্রিল ২০২৬",
-    readTime: "১ মিনিট",
-    featured: false,
-    tag: "সাফল্য",
-  }
+];
+
+// Breaking news ticker items
+const breakingNews = [
+  "১১০ হাজার ফলোয়ার পূর্ণ: কৃতজ্ঞতা জানালেন লেখক মাহবুব সরদার সবুজ",
+  "\"ডিসেম্বরের শহরে\" পাঠকমহলে ব্যাপক সাড়া ফেলেছে",
+  "ঢাকা বাতিঘরে তরুণ আবৃত্তিকারদের বই-পরিচিতি অনুষ্ঠিত",
+  "সরদার সংবাদ প্র্যাটফর্মে এখন সংবাদ ও পরিচিতি প্রকাশের সুযোগ",
 ];
 
 export default function News() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [copySuccessId, setCopySuccessId] = useState<number | null>(null);
+  const [sharePopupId, setSharePopupId] = useState<number | null>(null);
+  const [tickerIndex, setTickerIndex] = useState(0);
+  const [cardHovered, setCardHovered] = useState<number | null>(null);
+  const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Breaking news ticker rotation
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const newsId = params.get('id');
-      if (newsId) {
-        const newsItem = newsData.find(item => item.id === parseInt(newsId));
-        if (newsItem) {
-          setSelectedNews(newsItem);
-        }
-      }
+    tickerRef.current = setInterval(() => {
+      setTickerIndex(prev => (prev + 1) % breakingNews.length);
+    }, 4000);
+    return () => { if (tickerRef.current) clearInterval(tickerRef.current); };
+  }, []);
+
+  // Handle initial load from URL
+  useEffect(() => {
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const match = pathname.match(/^\/news\/(\d+)$/);
+    if (match) {
+      const newsId = parseInt(match[1]);
+      const news = newsData.find(n => n.id === newsId);
+      if (news) setSelectedNews(news);
+    } else {
+      setSelectedNews(null);
     }
   }, []);
 
+  const handleSelectNews = (news: NewsItem | null) => {
+    if (news) {
+      setLocation(`/news/${news.id}`);
+      setSelectedNews(news);
+    } else {
+      setLocation("/news");
+      setSelectedNews(null);
+    }
+  };
+
   const categories = ["সব", ...Array.from(new Set(newsData.map(item => item.category)))];
 
-  const featured = newsData.filter(item => item.featured);
   const filtered = newsData.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "সব" || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const heroNews = filtered[0];
+  const gridNews = filtered.slice(1);
 
   const handleAddComment = (newsId: number) => {
     if (!commentName.trim() || !commentText.trim()) return;
@@ -446,7 +462,7 @@ export default function News() {
   const handleLikeComment = (newsId: number, commentId: number) => {
     setComments(prev => ({
       ...prev,
-      [newsId]: (prev[newsId] || []).map(c => 
+      [newsId]: (prev[newsId] || []).map(c =>
         c.id === commentId ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
       )
     }));
@@ -454,281 +470,479 @@ export default function News() {
 
   const getShareUrl = (newsId: number) => {
     if (typeof window === 'undefined') return '';
-    const baseUrl = window.location.origin + window.location.pathname;
-    return `${baseUrl}?id=${newsId}`;
+    return `${window.location.origin}/api/news-og?id=${newsId}`;
+  };
+
+  const getNewsPageUrl = (newsId: number) => {
+    if (typeof window === 'undefined') return '';
+    return `${window.location.origin}/news/${newsId}`;
   };
 
   const shareTitle = selectedNews ? selectedNews.title : '';
 
-  const handleCopyLink = (newsId: number) => {
-    navigator.clipboard.writeText(getShareUrl(newsId));
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2000);
+  const handleShareClick = async (e: React.MouseEvent, newsId: number) => {
+    e.stopPropagation();
+    const shareUrl = getShareUrl(newsId);
+    const pageUrl = getNewsPageUrl(newsId);
+    const title = newsData.find(n => n.id === newsId)?.title || '';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url: pageUrl });
+        return;
+      } catch { /* show popup */ }
+    }
+    setSharePopupId(newsId);
+  };
+
+  const handleCopyLink = async (newsId: number) => {
+    const url = getNewsPageUrl(newsId);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopySuccessId(newsId);
+    setTimeout(() => { setCopySuccessId(null); setSharePopupId(null); }, 2000);
   };
 
   return (
-    <div style={{ background: "#050B14", minHeight: "100vh", color: "#FAF6EF" }}>
-      <Seo 
-        title={selectedNews ? `${selectedNews.title} | সংবাদ ও আপডেট` : "সংবাদ ও আপডেট | মাহবুব সরদার সবুজ"}
+    <div style={{ background: "#060E1A", minHeight: "100vh", color: "#FAF6EF" }}>
+      <style>{`
+        @keyframes tickerSlide {
+          0% { opacity: 0; transform: translateY(8px); }
+          10% { opacity: 1; transform: translateY(0); }
+          85% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-8px); }
+        }
+        @keyframes shimmerCard {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes heroGlow {
+          0%, 100% { box-shadow: 0 0 40px rgba(245,166,35,0.08); }
+          50% { box-shadow: 0 0 60px rgba(245,166,35,0.18); }
+        }
+        @keyframes borderPulse {
+          0%, 100% { border-color: rgba(245,166,35,0.15); }
+          50% { border-color: rgba(245,166,35,0.4); }
+        }
+        @keyframes logoShimmer {
+          0% { background-position: -300% center; }
+          100% { background-position: 300% center; }
+        }
+        @keyframes logoPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(220,30,30,0), 0 8px 40px rgba(0,0,0,0.25); }
+          50% { box-shadow: 0 0 0 8px rgba(220,30,30,0.08), 0 8px 40px rgba(0,0,0,0.3); }
+        }
+        @keyframes logoFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
+        }
+        .logo-shimmer-overlay {
+          position: absolute;
+          inset: 0;
+          border-radius: 16px;
+          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%);
+          background-size: 300% 100%;
+          animation: logoShimmer 3.5s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 2;
+        }
+        .news-card:hover .card-img { transform: scale(1.06); }
+        .news-card:hover .read-btn { gap: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 4px; }
+      `}</style>
+
+      <Seo
+        title={selectedNews ? `${selectedNews.title} | সরদার সংবাদ` : "সরদার সংবাদ | মাহবুব সরদার সবুজ"}
         description={selectedNews ? selectedNews.excerpt : "মাহবুব সরদার সবুজের সর্বশেষ সংবাদ, প্রকাশনা আপডেট, সাহিত্যকর্ম ও অনুষ্ঠানের তথ্য।"}
-        path={selectedNews ? `/news?id=${selectedNews.id}` : "/news"}
+        path={selectedNews ? `/news/${selectedNews.id}` : "/news"}
         image={selectedNews?.image}
       />
       <Navbar />
-      
-      {/* Header */}
-      <div style={{ 
-        padding: "100px 20px 60px", 
-        textAlign: "center",
-        background: "linear-gradient(to bottom, rgba(13,32,64,0.4), transparent)"
-      }}>
-        <motion.span 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ color: "#C9A84C", fontSize: "0.9rem", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 600 }}
-        >সাম্প্রতিক</motion.span>
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          style={{ 
-            fontFamily: "'Tiro Bangla', serif", 
-            fontSize: "3.5rem", 
-            margin: "15px 0",
-            background: "linear-gradient(135deg, #FAF6EF 0%, #C9A84C 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent"
-          }}>সংবাদ ও আপডেট</motion.h1>
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          style={{ color: "rgba(250,246,239,0.6)", maxWidth: "600px", margin: "0 auto", fontSize: "1.1rem" }}>
-          লেখক মাহবুব সরদার সবুজের সর্বশেষ খবর, প্রকাশনা ও ওয়েবসাইট আপডেট
-        </motion.p>
 
-        {/* Search */}
-        <div style={{ position: "relative", maxWidth: "500px", margin: "40px auto 0" }}>
-          <Search style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", color: "rgba(201,168,76,0.5)" }} size={20} />
-          <input 
-            type="text" 
-            placeholder="সংবাদ খুঁজুন..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: "100%",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(201,168,76,0.2)",
-              borderRadius: "50px",
-              padding: "15px 20px 15px 50px",
-              color: "#FAF6EF",
-              fontSize: "1rem",
-              outline: "none",
-              transition: "all 0.3s",
-              boxSizing: "border-box"
-            }}
-            onFocus={(e) => e.currentTarget.style.borderColor = "#C9A84C"}
-            onBlur={(e) => e.currentTarget.style.borderColor = "rgba(201,168,76,0.2)"}
-          />
+      {/* ── PAGE HEADER ── */}
+      <div style={{
+        paddingTop: "70px",
+        paddingBottom: "0",
+        background: "linear-gradient(180deg, rgba(27,42,107,0.25) 0%, transparent 100%)",
+      }}>
+
+        {/* Page title */}
+        <div style={{ padding: "8px 0 0", textAlign: "center", width: "100%" }}>
+          {/* Logo brand */}
+          <motion.div
+            initial={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0 }}
+            style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: 10 }}
+          >
+            <img
+              src="/images/sardar-sangbad-logo-final.png"
+              alt="সরদার সংবাদ"
+              style={{
+                height: "auto",
+                maxWidth: "min(88vw, 640px)",
+                width: "min(88vw, 640px)",
+                display: "block",
+                objectFit: "contain",
+              }}
+            />
+          </motion.div>
+
+          {/* Breaking ticker bar — below logo */}
+          <motion.div
+            initial={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0 }}
+            style={{ marginBottom: 32 }}
+          >
+            <div style={{
+              background: "linear-gradient(90deg, #1B2A6B 0%, #0F1E52 50%, #1B2A6B 100%)",
+              borderTop: "2px solid #F5A623",
+              borderBottom: "2px solid #F5A623",
+              overflow: "hidden",
+              maxWidth: 700,
+              margin: "0 auto",
+              borderRadius: 8,
+            }}>
+              <div style={{
+                display: "flex",
+                alignItems: "stretch",
+              }}>
+                <div style={{
+                  background: "#F5A623",
+                  color: "#060E1A",
+                  padding: "9px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  flexShrink: 0,
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  borderRadius: "8px 0 0 8px",
+                }}>
+                  <Radio size={13} />
+                  ব্রেকিং
+                </div>
+                <div style={{
+                  flex: 1,
+                  overflow: "hidden",
+                  position: "relative",
+                  height: 38,
+                  display: "flex",
+                  alignItems: "center",
+                }}>
+                  <motion.div
+                    animate={{ x: ["0%", "-200%"] }}
+                    transition={{ duration: 150, repeat: Infinity, ease: "linear", repeatDelay: 0 }}
+                    style={{
+                      display: "flex",
+                      gap: "4rem",
+                      whiteSpace: "nowrap",
+                      width: "max-content",
+                      alignItems: "center",
+                    }}
+                  >
+                    {[...Array(3)].map((_, i) => (
+                      <span key={i} style={{
+                        color: "#FAF6EF",
+                        fontSize: "0.85rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "3rem",
+                      }}>
+                        {breakingNews.map((item, j) => (
+                          <span key={j} style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+                            {item}
+                            <span style={{ color: "#F5A623", fontSize: "0.6rem" }}>●</span>
+                          </span>
+                        ))}
+                      </span>
+                    ))}
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Search bar */}
+          <motion.div
+            initial={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0 }}
+            style={{ position: "relative", maxWidth: 480, margin: "24px auto 0" }}
+          >
+            <Search style={{
+              position: "absolute", left: 18, top: "50%",
+              transform: "translateY(-50%)",
+              color: "rgba(245,166,35,0.5)"
+            }} size={18} />
+            <input
+              type="text"
+              placeholder="সংবাদ খুঁজুন..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: "100%",
+                background: "rgba(27,42,107,0.3)",
+                border: "1.5px solid rgba(245,166,35,0.2)",
+                borderRadius: 50,
+                padding: "13px 20px 13px 50px",
+                color: "#FAF6EF",
+                fontSize: "1rem",
+                outline: "none",
+                transition: "all 0.3s",
+                boxSizing: "border-box",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "#F5A623";
+                e.currentTarget.style.background = "rgba(27,42,107,0.5)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(245,166,35,0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "rgba(245,166,35,0.2)";
+                e.currentTarget.style.background = "rgba(27,42,107,0.3)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            />
+          </motion.div>
         </div>
       </div>
 
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px 100px" }}>
-        {/* Welcome Section */}
-        <div style={{ 
-          background: "rgba(201,168,76,0.03)", 
-          border: "1px solid rgba(201,168,76,0.1)",
-          borderRadius: "20px",
-          padding: "30px",
-          textAlign: "center",
-          marginBottom: "60px"
-        }}>
-          <span style={{ color: "rgba(201,168,76,0.6)", fontSize: "0.8rem", letterSpacing: "2px", textTransform: "uppercase" }}>স্বাগতম</span>
-          <h2 style={{ fontFamily: "'Tiro Bangla', serif", margin: "10px 0", fontSize: "1.5rem" }}>মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে স্বাগতম।</h2>
-          <p style={{ color: "rgba(250,246,239,0.7)", fontSize: "1rem" }}>
-            <span style={{ color: "#C9A84C" }}>"সরদার ডিজাইন স্টুডিও"</span> দিয়ে নিজের পছন্দের কবিতা বা উক্তি দিয়ে সুন্দর ডিজাইন তৈরি করে সহজেই শেয়ার করুন—সম্পূর্ণ ফ্রি।
-          </p>
-        </div>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 100px" }}>
 
-        {/* Categories */}
-        <div style={{ 
-          display: "flex", 
-          gap: "10px", 
-          overflowX: "auto", 
-          paddingBottom: "20px",
-          marginBottom: "40px",
-          scrollbarWidth: "none"
+        {/* ── CATEGORY FILTER ── */}
+        <div style={{
+          display: "flex",
+          gap: 12,
+          overflowX: "auto",
+          paddingBottom: 8,
+          marginTop: 28,
+          marginBottom: 40,
+          scrollbarWidth: "none",
+          justifyContent: "center",
         }} className="no-scrollbar">
           {categories.map(cat => (
-            <button
+            <motion.button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.04 }}
               style={{
-                padding: "8px 20px",
-                borderRadius: "50px",
-                background: selectedCategory === cat ? "#C9A84C" : "rgba(255,255,255,0.05)",
-                color: selectedCategory === cat ? "#050B14" : "rgba(250,246,239,0.7)",
-                border: "1px solid " + (selectedCategory === cat ? "#C9A84C" : "rgba(201,168,76,0.1)"),
+                padding: "10px 26px",
+                borderRadius: 50,
+                background: selectedCategory === cat
+                  ? "linear-gradient(135deg, #F5A623, #E8920F)"
+                  : "rgba(27,42,107,0.35)",
+                color: selectedCategory === cat ? "#060E1A" : "rgba(250,246,239,0.85)",
+                border: `1.5px solid ${selectedCategory === cat ? "#F5A623" : "rgba(245,166,35,0.2)"}`,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                transition: "all 0.3s"
+                fontSize: "1rem",
+                fontWeight: 700,
+                transition: "all 0.25s",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                boxShadow: selectedCategory === cat ? "0 4px 18px rgba(245,166,35,0.35)" : "0 2px 8px rgba(0,0,0,0.18)",
+                letterSpacing: "0.01em",
               }}
-            >{cat}</button>
+            >{cat}</motion.button>
           ))}
         </div>
 
-        {/* Featured news */}
-        {selectedCategory === "সব" && !searchTerm && featured.length > 0 && (
-          <div style={{ marginBottom: "80px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "30px" }}>
-              <div style={{ height: "2px", width: "40px", background: "#C9A84C" }}></div>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FAF6EF", fontSize: "1.5rem", fontWeight: 400 }}>প্রধান সংবাদ</h2>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: featured.length >= 2 ? "1fr 1fr" : "1fr", gap: "1.5rem" }} className="news-grid">
-              {featured.map((item, idx) => (
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 20px", color: "rgba(250,246,239,0.4)" }}>
+            <p style={{ fontSize: "1.2rem" }}>কোনো সংবাদ পাওয়া যায়নি।</p>
+          </div>
+        ) : (
+          <>
+            {/* ── ALL NEWS GRID (equal cards) ── */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+              gap: "1.8rem",
+            }}>
+              {filtered.map((item, idx) => (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
+                  transition={{ delay: idx * 0.08, duration: 0.5 }}
                   viewport={{ once: true }}
-                  onClick={() => setSelectedNews(item)}
+                  onClick={() => handleSelectNews(item)}
+                  onHoverStart={() => setCardHovered(item.id)}
+                  onHoverEnd={() => setCardHovered(null)}
+                  className="news-card"
                   style={{
-                    position: "relative",
-                    height: "400px",
-                    borderRadius: "24px",
+                    background: "rgba(27,42,107,0.12)",
+                    border: `1.5px solid ${cardHovered === item.id ? "rgba(245,166,35,0.4)" : "rgba(245,166,35,0.12)"}`,
+                    borderRadius: 24,
                     overflow: "hidden",
                     cursor: "pointer",
-                    boxShadow: "0 20px 40px rgba(0,0,0,0.4)"
+                    transition: "all 0.35s ease",
+                    boxShadow: cardHovered === item.id ? "0 16px 48px rgba(245,166,35,0.12)" : "none",
                   }}
+                  whileHover={{ y: -8 }}
                 >
-                  <div style={{ 
-                    position: "absolute", 
-                    inset: 0, 
-                    background: item.image ? `url(${item.image}) center/cover` : "linear-gradient(45deg, #0d2040, #050B14)",
-                    transition: "transform 0.5s ease"
-                  }} className="hover-zoom"></div>
-                  <div style={{ 
-                    position: "absolute", 
-                    inset: 0, 
-                    background: "linear-gradient(to top, rgba(5,11,20,0.95) 0%, rgba(5,11,20,0.4) 50%, transparent 100%)" 
-                  }}></div>
-                  
-                  <div style={{ position: "absolute", top: "20px", left: "20px", display: "flex", gap: "10px" }}>
-                    <span style={{ 
-                      background: item.categoryColor, 
-                      color: "#fff", 
-                      padding: "4px 12px", 
-                      borderRadius: "50px", 
-                      fontSize: "0.75rem", 
-                      fontWeight: 700 
-                    }}>{item.category}</span>
-                    <span style={{ 
-                      background: "rgba(201,168,76,0.8)", 
-                      color: "#050B14", 
-                      padding: "4px 12px", 
-                      borderRadius: "50px", 
-                      fontSize: "0.75rem", 
-                      fontWeight: 700 
-                    }}>প্রধান</span>
-                  </div>
+                  {/* Card image */}
+                  {item.image && (
+                    <div style={{ height: 210, overflow: "hidden", position: "relative" }}>
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="card-img"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          transition: "transform 0.6s ease",
+                        }}
+                      />
+                      {/* Gradient overlay */}
+                      <div style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "50%",
+                        background: "linear-gradient(to top, rgba(6,14,26,0.7), transparent)",
+                      }} />
+                      {/* Category badge */}
+                      <div style={{
+                        position: "absolute",
+                        top: 14,
+                        left: 14,
+                        background: item.categoryColor,
+                        color: "#fff",
+                        padding: "4px 12px",
+                        borderRadius: 50,
+                        fontSize: "0.7rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                      }}
+                    >
+                      {item.category}
+                    </div>
+                    </div>
+                  )}
 
-                  <div style={{ position: "absolute", bottom: "30px", left: "30px", right: "30px" }}>
-                    <h3 style={{ 
-                      fontFamily: "'Tiro Bangla', serif", 
-                      fontSize: "1.8rem", 
-                      color: "#FAF6EF", 
-                      margin: "0 0 15px",
-                      lineHeight: 1.3
-                    }}>{item.title}</h3>
-                    <p style={{ color: "rgba(250,246,239,0.7)", fontSize: "0.95rem", margin: "0 0 20px", lineHeight: 1.6 }}>{item.excerpt}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: "15px", color: "#C9A84C", fontWeight: 600, fontSize: "0.9rem" }}>
-                      <span>বিস্তারিত পড়ুন</span>
-                      <ArrowRight size={16} />
+                  {/* Card content */}
+                  <div style={{ padding: "24px" }}>
+                    {/* Meta row */}
+                    <div style={{
+                      display: "flex",
+                      gap: 14,
+                      marginBottom: 14,
+                      alignItems: "center",
+                    }}>
+                      {item.views && (
+                        <span style={{
+                          color: "rgba(245,166,35,0.6)",
+                          fontSize: "0.75rem",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        }}>
+                          <Eye size={11} /> {item.views.toLocaleString('bn-BD')}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 style={{
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
+                      fontSize: "1.25rem",
+                      color: "#FAF6EF",
+                      margin: "0 0 12px",
+                      lineHeight: 1.4,
+                    }}>
+                      {item.title}
+                    </h3>
+
+                    <p style={{
+                      color: "rgba(250,246,239,0.55)",
+                      fontSize: "0.88rem",
+                      lineHeight: 1.65,
+                      margin: "0 0 20px",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    }}>
+                      {item.excerpt}
+                    </p>
+
+                    {/* Footer row */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{
+                        color: "rgba(250,246,239,0.35)",
+                        fontSize: "0.78rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      }}>
+                        {item.date}
+                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <button
+                          onClick={(e) => handleShareClick(e, item.id)}
+                          style={{
+                            background: copySuccessId === item.id ? "rgba(39,174,96,0.15)" : "rgba(245,166,35,0.1)",
+                            border: `1px solid ${copySuccessId === item.id ? "rgba(39,174,96,0.5)" : "rgba(245,166,35,0.25)"}`,
+                            borderRadius: "50%",
+                            width: 34,
+                            height: 34,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            color: copySuccessId === item.id ? "#27AE60" : "#F5A623",
+                            transition: "all 0.3s",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {copySuccessId === item.id ? <Check size={14} /> : <Share2 size={14} />}
+                        </button>
+                        <div style={{
+                          color: "#F5A623",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          fontSize: "0.88rem",
+                          fontWeight: 700,
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        }}>
+                          পড়ুন <ChevronRight size={14} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
               ))}
             </div>
-          </div>
+          </>
         )}
-
-        {/* Regular news grid */}
-        <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "30px" }}>
-          <div style={{ height: "2px", width: "40px", background: "#C9A84C" }}></div>
-          <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FAF6EF", fontSize: "1.5rem", fontWeight: 400 }}>
-            {selectedCategory === "সব" ? "সাম্প্রতিক সংবাদ" : selectedCategory}
-          </h2>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "2rem" }}>
-          {filtered.filter(item => selectedCategory !== "সব" || !item.featured).map((item, idx) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              viewport={{ once: true }}
-              onClick={() => setSelectedNews(item)}
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(201,168,76,0.1)",
-                borderRadius: "24px",
-                overflow: "hidden",
-                cursor: "pointer",
-                transition: "all 0.3s"
-              }}
-              whileHover={{ y: -10, borderColor: "rgba(201,168,76,0.3)", background: "rgba(255,255,255,0.05)" }}
-            >
-              {item.image && (
-                <div style={{ height: "200px", overflow: "hidden" }}>
-                  <img src={item.image} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-              )}
-              <div style={{ padding: "25px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-                  <span style={{ 
-                    color: item.categoryColor, 
-                    fontSize: "0.75rem", 
-                    fontWeight: 700, 
-                    textTransform: "uppercase",
-                    letterSpacing: "1px"
-                  }}>{item.category}</span>
-                </div>
-                <h3 style={{ 
-                  fontFamily: "'Tiro Bangla', serif", 
-                  fontSize: "1.3rem", 
-                  color: "#FAF6EF", 
-                  margin: "0 0 15px",
-                  lineHeight: 1.4,
-                  minHeight: "3.6em"
-                }}>{item.title}</h3>
-                <p style={{ 
-                  color: "rgba(250,246,239,0.6)", 
-                  fontSize: "0.9rem", 
-                  lineHeight: 1.6, 
-                  margin: "0 0 20px",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden"
-                }}>{item.excerpt}</p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.8rem" }}>{item.date}</span>
-                  <div style={{ color: "#C9A84C", display: "flex", alignItems: "center", gap: "5px", fontSize: "0.9rem", fontWeight: 600 }}>
-                    <span>পড়ুন</span>
-                    <ArrowRight size={14} />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
       </div>
 
-      {/* News Detail Modal */}
+      {/* ── NEWS DETAIL MODAL ── */}
       <AnimatePresence>
         {selectedNews && (
           <motion.div
@@ -739,218 +953,474 @@ export default function News() {
               position: "fixed",
               inset: 0,
               zIndex: 1000,
-              background: "rgba(5,11,20,0.95)",
-              backdropFilter: "blur(10px)",
+              background: "rgba(6,14,26,0.96)",
+              backdropFilter: "blur(12px)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "20px"
+              padding: "20px",
             }}
-            onClick={() => setSelectedNews(null)}
+            onClick={() => handleSelectNews(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.92, opacity: 0, y: 24 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              exit={{ scale: 0.92, opacity: 0, y: 24 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
               style={{
+                background: "linear-gradient(180deg, #0F1E52 0%, #060E1A 100%)",
                 width: "100%",
-                maxWidth: "800px",
-                maxHeight: "90vh",
-                background: "#0d2040",
-                borderRadius: "30px",
-                border: "1px solid rgba(201,168,76,0.2)",
+                maxWidth: 900,
+                maxHeight: "92vh",
+                borderRadius: 32,
                 overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                position: "relative"
+                position: "relative",
+                boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,166,35,0.2)",
+                border: "1.5px solid rgba(245,166,35,0.2)",
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button 
-                onClick={() => setSelectedNews(null)}
+              {/* Close button */}
+              <button
+                onClick={() => handleSelectNews(null)}
                 style={{
                   position: "absolute",
-                  top: "20px",
-                  right: "20px",
+                  top: 20,
+                  right: 20,
                   zIndex: 10,
                   background: "rgba(0,0,0,0.5)",
                   border: "1px solid rgba(255,255,255,0.1)",
                   color: "#fff",
-                  width: "40px",
-                  height: "40px",
+                  width: 42,
+                  height: 42,
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  transition: "all 0.2s",
                 }}
-              ><X size={20} /></button>
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(245,166,35,0.2)";
+                  e.currentTarget.style.borderColor = "rgba(245,166,35,0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(0,0,0,0.5)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                }}
+              >
+                <X size={20} />
+              </button>
 
-              <div style={{ overflowY: "auto", padding: "40px" }} className="custom-scrollbar">
-                {/* Modal Title */}
-                <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "2.5rem", color: "#FAF6EF", margin: "0 0 30px", lineHeight: 1.3 }}>{selectedNews.title}</h2>
-                
-                {/* News Image */}
+              <div style={{ overflowY: "auto", maxHeight: "92vh", WebkitOverflowScrolling: "touch" }} className="custom-scrollbar">
+                {/* Modal hero image */}
                 {selectedNews.image && (
-                  <div style={{ borderRadius: "20px", overflow: "hidden", marginBottom: "30px" }}>
-                    <img src={selectedNews.image} alt={selectedNews.title} style={{ width: "100%", height: "auto" }} />
+                  <div style={{ height: 220, overflow: "hidden", position: "relative" }}>
+                    <img
+                      src={selectedNews.image}
+                      alt={selectedNews.title}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(to top, rgba(15,30,82,0.9) 0%, transparent 60%)",
+                    }} />
+                    {/* Category + date overlay */}
+                    <div style={{
+                      position: "absolute",
+                      bottom: 24,
+                      left: 32,
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "center",
+                    }}>
+                      <span style={{
+                        background: selectedNews.categoryColor,
+                        color: "#fff",
+                        padding: "5px 14px",
+                        borderRadius: 50,
+                        fontSize: "0.75rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                      }}>
+                        {selectedNews.category}
+                      </span>
+
+                    </div>
                   </div>
                 )}
 
-                {/* News Content */}
-                <div style={{ 
-                  color: "rgba(250,246,239,0.8)", 
-                  fontSize: "1.15rem", 
-                  lineHeight: 1.8,
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  whiteSpace: "pre-wrap"
-                }}>
-                  {selectedNews.content}
-                </div>
+                <div style={{ padding: "36px 40px" }}>
+                  {/* Title */}
+                  <h2 style={{
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
+                    fontSize: "2rem",
+                    color: "#FAF6EF",
+                    margin: "0 0 12px",
+                    lineHeight: 1.35,
+                  }}>
+                    {selectedNews.title}
+                  </h2>
 
-                {/* Share Options - Moved to Bottom of Content */}
-                <div style={{ 
-                  marginTop: "40px", 
-                  padding: "20px", 
-                  background: "rgba(255,255,255,0.03)", 
-                  borderRadius: "20px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  border: "1px solid rgba(201,168,76,0.1)"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <Share2 size={18} color="#C9A84C" />
-                    <span style={{ color: "rgba(250,246,239,0.6)", fontSize: "0.95rem", fontWeight: 600 }}>এই সংবাদটি শেয়ার করুন:</span>
-                  </div>
-                  
-                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    <a 
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl(selectedNews.id))}`} 
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#1877F2", background: "rgba(24,119,242,0.1)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
-                      title="ফেসবুকে শেয়ার করুন"
-                    ><Facebook size={18} /></a>
-                    <a 
-                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getShareUrl(selectedNews.id))}&text=${encodeURIComponent(shareTitle)}`} 
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#1DA1F2", background: "rgba(29,161,242,0.1)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
-                      title="টুইটারে শেয়ার করুন"
-                    ><Twitter size={18} /></a>
-                    <a 
-                      href={`https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + getShareUrl(selectedNews.id))}`} 
-                      target="_blank" rel="noopener noreferrer"
-                      style={{ color: "#25D366", background: "rgba(37,211,102,0.1)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s" }}
-                      title="হোয়াটসঅ্যাপে শেয়ার করুন"
-                    ><MessageCircle size={18} /></a>
-                    <button 
-                      onClick={() => handleCopyLink(selectedNews.id)}
-                      style={{ background: "rgba(201,168,76,0.1)", border: "none", color: copySuccess ? "#27AE60" : "#C9A84C", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.3s" }}
-                      title="লিঙ্ক কপি করুন"
-                    >
-                      {copySuccess ? <Check size={18} /> : <Link2 size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                {selectedNews.link && (
-                  <div style={{ marginTop: "30px" }}>
-                    <a 
-                      href={selectedNews.link}
-                      style={{
-                        display: "inline-flex",
+                  {/* Meta */}
+                  <div style={{
+                    display: "flex",
+                    gap: 20,
+                    marginBottom: 28,
+                    paddingBottom: 20,
+                    borderBottom: "1px solid rgba(245,166,35,0.1)",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  }}>
+                    <span style={{ color: "rgba(250,246,239,0.45)", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+                      {selectedNews.date}
+                    </span>
+                    {selectedNews.views && (
+                      <span style={{
+                        color: "rgba(245,166,35,0.6)",
+                        fontSize: "0.82rem",
+                        display: "flex",
                         alignItems: "center",
-                        gap: "10px",
-                        background: "#C9A84C",
-                        color: "#050B14",
-                        padding: "12px 30px",
-                        borderRadius: "50px",
-                        fontWeight: 700,
-                        textDecoration: "none",
-                        transition: "all 0.3s"
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                    >
-                      আরও দেখুন <ExternalLink size={18} />
-                    </a>
-                  </div>
-                )}
-
-                {/* Interaction Section */}
-                <div style={{ marginTop: "60px", borderTop: "1px solid rgba(201,168,76,0.1)", paddingTop: "40px" }}>
-                  <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.5rem", marginBottom: "20px" }}>মতামত দিন</h3>
-                  <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "20px", padding: "25px", marginBottom: "30px" }}>
-                    <input 
-                      type="text" 
-                      placeholder="আপনার নাম"
-                      value={commentName}
-                      onChange={(e) => setCommentName(e.target.value)}
-                      style={{
-                        width: "100%", background: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(201,168,76,0.2)",
-                        borderRadius: 8, padding: "10px 15px",
-                        color: "#FAF6EF", fontSize: "0.9rem",
-                        marginBottom: "15px", outline: "none",
-                        boxSizing: "border-box"
-                      }}
-                    />
-                    <textarea 
-                      placeholder="আপনার মন্তব্য লিখুন..."
-                      rows={3}
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      style={{
-                        width: "100%", background: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(201,168,76,0.2)",
-                        borderRadius: 8, padding: "10px 15px",
-                        color: "#FAF6EF", fontSize: "0.9rem",
-                        marginBottom: "15px", outline: "none",
-                        resize: "vertical", boxSizing: "border-box"
-                      }}
-                    />
-                    <button 
-                      onClick={() => handleAddComment(selectedNews.id)}
-                      disabled={!commentName || !commentText}
-                      style={{
-                        background: commentName && commentText ? "#C9A84C" : "rgba(201,168,76,0.2)",
-                        color: "#050B14", border: "none",
-                        padding: "10px 25px", borderRadius: "50px",
-                        fontWeight: 700, cursor: "pointer"
-                      }}
-                    >পাঠান</button>
+                        gap: 4,
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      }}>
+                        <Eye size={13} /> {selectedNews.views.toLocaleString('bn-BD')} পাঠক
+                      </span>
+                    )}
+                    <span style={{
+                      background: "rgba(245,166,35,0.1)",
+                      border: "1px solid rgba(245,166,35,0.2)",
+                      color: "#F5A623",
+                      padding: "3px 12px",
+                      borderRadius: 50,
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    }}>
+                      #{selectedNews.tag}
+                    </span>
                   </div>
 
-                  {/* Comments List */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                    {(comments[selectedNews.id] || []).map(comment => (
-                      <div key={comment.id} style={{ background: "rgba(255,255,255,0.02)", padding: "20px", borderRadius: "15px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-                          <span style={{ fontWeight: 700, color: "#C9A84C" }}>{comment.name}</span>
-                          <span style={{ fontSize: "0.8rem", color: "rgba(250,246,239,0.4)" }}>{comment.time}</span>
-                        </div>
-                        <p style={{ color: "rgba(250,246,239,0.7)", fontSize: "0.95rem", lineHeight: 1.6 }}>{comment.text}</p>
-                        <button 
-                          onClick={() => handleLikeComment(selectedNews.id, comment.id)}
-                          style={{ 
-                            background: "none", border: "none", 
-                            color: comment.liked ? "#C9A84C" : "rgba(250,246,239,0.4)",
-                            display: "flex", alignItems: "center", gap: "5px",
-                            marginTop: "10px", cursor: "pointer", fontSize: "0.85rem"
-                          }}
-                        >
-                          <ThumbsUp size={14} /> {comment.likes} পছন্দ
-                        </button>
-                      </div>
-                    ))}
+                  {/* Content */}
+                  <div style={{
+                    color: "rgba(250,246,239,0.82)",
+                    fontSize: "1.05rem",
+                    lineHeight: 1.9,
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    whiteSpace: "pre-wrap",
+                    marginBottom: 36,
+                  }}>
+                    {selectedNews.content}
                   </div>
+
+                  {/* Share section — improved */}
+                  <div style={{
+                    padding: "22px 24px",
+                    background: "rgba(27,42,107,0.2)",
+                    borderRadius: 20,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    border: "1px solid rgba(245,166,35,0.1)",
+                    marginBottom: 24,
+                    flexWrap: "wrap",
+                    gap: 16,
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <Share2 size={18} color="#F5A623" />
+                      <span style={{
+                        color: "rgba(250,246,239,0.65)",
+                        fontSize: "0.95rem",
+                        fontWeight: 600,
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      }}>
+                        শেয়ার করুন:
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl(selectedNews.id))}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{
+                          color: "#1877F2",
+                          background: "rgba(24,119,242,0.12)",
+                          border: "1px solid rgba(24,119,242,0.25)",
+                          width: 38, height: 38,
+                          borderRadius: "50%",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.3s",
+                        }}
+                        title="ফেসবুকে শেয়ার করুন"
+                      >
+                        <Facebook size={17} />
+                      </a>
+                      <a
+                        href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getShareUrl(selectedNews.id))}&text=${encodeURIComponent(shareTitle)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{
+                          color: "#1DA1F2",
+                          background: "rgba(29,161,242,0.12)",
+                          border: "1px solid rgba(29,161,242,0.25)",
+                          width: 38, height: 38,
+                          borderRadius: "50%",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.3s",
+                        }}
+                        title="টুইটারে শেয়ার করুন"
+                      >
+                        <Twitter size={17} />
+                      </a>
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + getShareUrl(selectedNews.id))}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{
+                          color: "#25D366",
+                          background: "rgba(37,211,102,0.12)",
+                          border: "1px solid rgba(37,211,102,0.25)",
+                          width: 38, height: 38,
+                          borderRadius: "50%",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.3s",
+                        }}
+                        title="হোয়াটসঅ্যাপে শেয়ার করুন"
+                      >
+                        <MessageCircle size={17} />
+                      </a>
+                      <button
+                        onClick={() => handleCopyLink(selectedNews.id)}
+                        style={{
+                          background: copySuccessId === selectedNews.id ? "rgba(39,174,96,0.15)" : "rgba(245,166,35,0.12)",
+                          border: `1px solid ${copySuccessId === selectedNews.id ? "rgba(39,174,96,0.5)" : "rgba(245,166,35,0.3)"}`,
+                          color: copySuccessId === selectedNews.id ? "#27AE60" : "#F5A623",
+                          borderRadius: 10,
+                          padding: "8px 14px",
+                          display: "flex", alignItems: "center", gap: 6,
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          whiteSpace: "nowrap",
+                        }}
+                        title="লিঙ্ক কপি করুন"
+                      >
+                        {copySuccessId === selectedNews.id ? <><Check size={14} /> কপি হয়েছে!</> : <><Link2 size={14} /> লিঙ্ক কপি</>}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* External link button */}
+                  {selectedNews.link && (
+                    <div style={{ marginBottom: 36 }}>
+                      <a
+                        href={selectedNews.link}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 10,
+                          background: "linear-gradient(135deg, #F5A623, #E8920F)",
+                          color: "#060E1A",
+                          padding: "12px 28px",
+                          borderRadius: 50,
+                          fontWeight: 800,
+                          textDecoration: "none",
+                          transition: "all 0.3s",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          boxShadow: "0 4px 20px rgba(245,166,35,0.3)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.04)";
+                          e.currentTarget.style.boxShadow = "0 8px 32px rgba(245,166,35,0.5)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow = "0 4px 20px rgba(245,166,35,0.3)";
+                        }}
+                      >
+                        আরও দেখুন <ExternalLink size={17} />
+                      </a>
+                    </div>
+                  )}
+
+
                 </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── SHARE POPUP ── */}
+      <AnimatePresence>
+        {sharePopupId !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSharePopupId(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              background: "rgba(6,14,26,0.75)",
+              backdropFilter: "blur(8px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 20,
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.88, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.88, y: 20 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "linear-gradient(180deg, #0F1E52 0%, #060E1A 100%)",
+                border: "1.5px solid rgba(245,166,35,0.3)",
+                borderRadius: 20,
+                padding: 28,
+                width: "100%",
+                maxWidth: 420,
+                boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
+                <h3 style={{
+                  color: "#F5A623",
+                  fontFamily: "'Tiro Bangla', serif",
+                  margin: 0,
+                  fontSize: "1.2rem",
+                }}>
+                  শেয়ার করুন
+                </h3>
+                <button
+                  onClick={() => setSharePopupId(null)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "rgba(250,246,239,0.5)",
+                    cursor: "pointer",
+                    padding: 4,
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: 14, marginBottom: 22, justifyContent: "center" }}>
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl(sharePopupId!))}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center",
+                    gap: 7, color: "#1877F2", textDecoration: "none", fontSize: "0.75rem",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                  }}
+                >
+                  <div style={{
+                    background: "rgba(24,119,242,0.15)",
+                    border: "1px solid rgba(24,119,242,0.3)",
+                    borderRadius: "50%",
+                    width: 52, height: 52,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Facebook size={24} />
+                  </div>
+                  ফেসবুক
+                </a>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent((newsData.find(n => n.id === sharePopupId)?.title || '') + ' ' + getShareUrl(sharePopupId!))}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center",
+                    gap: 7, color: "#25D366", textDecoration: "none", fontSize: "0.75rem",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                  }}
+                >
+                  <div style={{
+                    background: "rgba(37,211,102,0.15)",
+                    border: "1px solid rgba(37,211,102,0.3)",
+                    borderRadius: "50%",
+                    width: 52, height: 52,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <MessageCircle size={24} />
+                  </div>
+                  হোয়াটসঅ্যাপ
+                </a>
+                <a
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getShareUrl(sharePopupId!))}&text=${encodeURIComponent(newsData.find(n => n.id === sharePopupId)?.title || '')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center",
+                    gap: 7, color: "#1DA1F2", textDecoration: "none", fontSize: "0.75rem",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                  }}
+                >
+                  <div style={{
+                    background: "rgba(29,161,242,0.15)",
+                    border: "1px solid rgba(29,161,242,0.3)",
+                    borderRadius: "50%",
+                    width: 52, height: 52,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Twitter size={24} />
+                  </div>
+                  টুইটার
+                </a>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{
+                  flex: 1,
+                  background: "rgba(250,246,239,0.04)",
+                  border: "1px solid rgba(245,166,35,0.2)",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  color: "rgba(250,246,239,0.6)",
+                  fontSize: "0.8rem",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                }}>
+                  {getNewsPageUrl(sharePopupId)}
+                </div>
+                <button
+                  onClick={() => handleCopyLink(sharePopupId!)}
+                  style={{
+                    background: copySuccessId === sharePopupId ? "rgba(39,174,96,0.2)" : "rgba(245,166,35,0.15)",
+                    border: `1px solid ${copySuccessId === sharePopupId ? "rgba(39,174,96,0.5)" : "rgba(245,166,35,0.4)"}`,
+                    borderRadius: 10,
+                    padding: "10px 16px",
+                    color: copySuccessId === sharePopupId ? "#27AE60" : "#F5A623",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    whiteSpace: "nowrap",
+                    transition: "all 0.3s",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                  }}
+                >
+                  {copySuccessId === sharePopupId
+                    ? <><Check size={14} /> কপি হয়েছে!</>
+                    : <><Link2 size={14} /> কপি করুন</>
+                  }
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Footer />
     </div>
   );

@@ -2193,7 +2193,7 @@ export default function Writings() {
       {
         "@type": "CollectionPage",
         "name": "লেখালেখি | মাহবুব সরদার সবুজ",
-        "url": "https://mahbub-sardar-sabuj-live.vercel.app/writings",
+        "url": "https://www.mahbubsardarsabuj.com/writings",
         "inLanguage": "bn-BD",
         "description": "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ভালোবাসা, জীবনদর্শন ও বিচ্ছেদভিত্তিক লেখার সংগ্রহ।"
       },
@@ -2201,7 +2201,7 @@ export default function Writings() {
         "@type": "Person",
         "name": "Mahbub Sardar Sabuj",
         "alternateName": "মাহবুব সরদার সবুজ",
-        "url": "https://mahbub-sardar-sabuj-live.vercel.app/"
+        "url": "https://www.mahbubsardarsabuj.com/"
       }
     ]
   };
