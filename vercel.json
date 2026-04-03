@@ -3,14 +3,65 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "mahbubsardarsabuj.com"
+        }
+      ],
+      "destination": "https://www.mahbubsardarsabuj.com/$1",
+      "permanent": true
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
     },
     {
-      "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml).*)",
-      "destination": "/index.html"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map))$",
+      "dest": "/$1"
+    },
+    {
+      "src": "/([^.]*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver).*"
+        }
+      ],
+      "dest": "/api/ssr-og?path=/$1"
+    },
+    {
+      "src": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver).*"
+        }
+      ],
+      "dest": "/api/ssr-og?path=/"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "index, follow" }
+      ]
     }
   ]
 }
