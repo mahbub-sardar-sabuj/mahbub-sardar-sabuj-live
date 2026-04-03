@@ -32,6 +32,7 @@ function Router() {
       <Route path={"/ebooks/read/:slug"} component={EBookReader} />
       <Route path={"/editor"} component={Editor} />
       <Route path={"/news"} component={News} />
+      <Route path={"/news/:id"} component={News} />
       <Route path={"/gallery"} component={Gallery} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
