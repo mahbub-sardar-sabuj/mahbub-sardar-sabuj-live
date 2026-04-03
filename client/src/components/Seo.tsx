@@ -13,10 +13,11 @@ interface SeoProps {
 }
 
 const SITE_NAME = "মাহবুব সরদার সবুজ - Mahbub Sardar Sabuj";
-const SITE_URL = "https://mahbub-sardar-sabuj-live.vercel.app";
+const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 
 function upsertMeta(selector: string, attributes: Record<string, string>) {
+  if (typeof document === 'undefined') return;
   let element = document.head.querySelector(selector) as HTMLMetaElement | null;
 
   if (!element) {
@@ -30,6 +31,7 @@ function upsertMeta(selector: string, attributes: Record<string, string>) {
 }
 
 function upsertLink(selector: string, attributes: Record<string, string>) {
+  if (typeof document === 'undefined') return;
   let element = document.head.querySelector(selector) as HTMLLinkElement | null;
 
   if (!element) {
@@ -53,6 +55,7 @@ export default function Seo({
 }: SeoProps) {
   useEffect(() => {
     const canonicalUrl = new URL(path, SITE_URL).toString();
+    const fullImageUrl = image.startsWith('http') ? image : new URL(image, SITE_URL).toString();
     const previousTitle = document.title;
     document.title = title;
 
@@ -65,11 +68,13 @@ export default function Seo({
     upsertMeta('meta[property="og:url"]', { property: "og:url", content: canonicalUrl });
     upsertMeta('meta[property="og:site_name"]', { property: "og:site_name", content: SITE_NAME });
     upsertMeta('meta[property="og:locale"]', { property: "og:locale", content: "bn_BD" });
-    upsertMeta('meta[property="og:image"]', { property: "og:image", content: image });
+    upsertMeta('meta[property="og:image"]', { property: "og:image", content: fullImageUrl });
+    upsertMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1200" });
+    upsertMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "630" });
     upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
     upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: title });
     upsertMeta('meta[name="twitter:description"]', { name: "twitter:description", content: description });
-    upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: image });
+    upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: fullImageUrl });
     upsertMeta('meta[name="robots"]', { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" });
     upsertLink('link[rel="canonical"]', { rel: "canonical", href: canonicalUrl });
 

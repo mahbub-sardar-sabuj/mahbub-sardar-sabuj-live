@@ -319,9 +319,10 @@ export default function News() {
   return (
     <div style={{ background: "#050B14", minHeight: "100vh", color: "#FAF6EF" }}>
       <Seo 
-        title="সংবাদ ও আপডেট | মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের সর্বশেষ সংবাদ, প্রকাশনা আপডেট, সাহিত্যকর্ম ও অনুষ্ঠানের তথ্য।"
-        path="/news"
+        title={selectedNews ? `${selectedNews.title} | সংবাদ ও আপডেট` : "সংবাদ ও আপডেট | মাহবুব সরদার সবুজ"}
+        description={selectedNews ? selectedNews.excerpt : "মাহবুব সরদার সবুজের সর্বশেষ সংবাদ, প্রকাশনা আপডেট, সাহিত্যকর্ম ও অনুষ্ঠানের তথ্য।"}
+        path={selectedNews ? `/news?id=${selectedNews.id}` : "/news"}
+        image={selectedNews?.image}
       />
       <Navbar />
       
