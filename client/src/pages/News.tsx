@@ -53,13 +53,13 @@ const newsData: NewsItem[] = [
 
 ৩০ মার্চ কুমিল্লা আদালতে একটি আর্থিক লেনদেন সংক্রান্ত মামলায় হাজিরা দিতে গেলে সেখান থেকেই তাকে গ্রেফতার করা হয়। অভিযোগ—ইট ক্রয় সংক্রান্ত টাকার বিষয়ে প্রতারণা। অভিযোগকারী ব্যক্তি তার পরিচিতজন বলেও জানা গেছে।
 
- can be seen in the video of him being handcuffed that spread on social media. There, a tired and dejected man is seen. The video has created emotion in many—some are surprised, some are silent.
+সোশ্যাল মিডিয়ায় ছড়িয়ে পড়া হাতকড়া পরানোর ভিডিওতে দেখা যায় একজন ক্লান্ত ও বিষণ্ণ মানুষকে। ভিডিওটি অনেকের মনে আবেগ তৈরি করেছে—কেউ বিস্মিত, কেউ নীরব।
 
-Currently, the activities of the Union Parishad have come to a standstill. Common people are suffering after coming to take necessary services. Various works including birth registration have fallen into uncertainty.
+বর্তমানে ইউনিয়ন পরিষদের কার্যক্রম প্রায় থমকে গেছে। প্রয়োজনীয় সেবা নিতে আসা সাধারণ মানুষ ভোগান্তিতে পড়ছেন। জন্মনিবন্ধনসহ বিভিন্ন কাজ অনিশ্চয়তায় পড়েছে।
 
-The local conscious circles think that the incident is not just of one person—it has shaken the administrative and social reality of the entire area. They have called for a speedy solution so that public service becomes normal.
+স্থানীয় সচেতন মহল মনে করেন, এই ঘটনা শুধু একজন ব্যক্তির নয়—এটি পুরো এলাকার প্রশাসনিক ও সামাজিক বাস্তবতাকে নাড়িয়ে দিয়েছে। তারা দ্রুত সমাধানের আহ্বান জানিয়েছেন, যাতে জনসেবা স্বাভাবিক হয়।
 
-Khoshbash is now waiting—when will this uncertainty pass, when will their daily life return to its normal rhythm.`,
+খোশবাস এখন অপেক্ষায়—কখন কাটবে এই অনিশ্চয়তা, কখন ফিরবে তাদের দৈনন্দিন জীবনের স্বাভাবিক ছন্দ।`,
     category: "জাতীয়",
     categoryColor: "#E44A4A",
     date: "৩ এপ্রিল ২০২৬",
