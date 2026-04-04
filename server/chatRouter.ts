@@ -1,19 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, router } from "./_core/trpc";
 import { generateImage } from "./_core/imageGeneration";
+import { invokeLLM } from "./_core/llm";
 import OpenAI from "openai";
-
-// OpenRouter client — সম্পূর্ণ বিনামূল্যে, OpenAI-compatible API
-// model: google/gemini-2.0-flash-exp:free — ফ্রি, শক্তিশালী, কখনো ক্রেডিট শেষ হয় না
-const getChatClient = () =>
-  new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY || "",
-    baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: {
-      "HTTP-Referer": "https://mahbub-sardar-sabuj-live.vercel.app",
-      "X-Title": "Mahbub Sardar Sabuj AI Agent",
-    },
-  });
 
 // OpenAI client — শুধুমাত্র image generation-এর জন্য (editor feature)
 const getOpenAIClient = () =>
@@ -87,20 +76,25 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const client = getChatClient();
-      const response = await client.chat.completions.create({
-        model: "google/gemini-2.0-flash-exp:free",
-        messages: [
-          { role: "system", content: CHAT_SYSTEM_PROMPT },
-          ...input.messages,
-        ],
-        max_tokens: 2000,
-        temperature: 0.7,
-      });
+      try {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: CHAT_SYSTEM_PROMPT },
+            ...input.messages.map(m => ({
+              role: m.role as "user" | "assistant",
+              content: m.content
+            })),
+          ],
+        });
 
-      return {
-        reply: response.choices[0]?.message?.content || "দুঃখিত, উত্তর দিতে পারছি না।",
-      };
+        const content = response.choices[0]?.message?.content;
+        const reply = typeof content === "string" ? content : "দুঃখিত, উত্তর দিতে পারছি না।";
+
+        return { reply };
+      } catch (error: any) {
+        console.error("Chat LLM error:", error);
+        return { reply: "দুঃখিত, এই মুহূর্তে চ্যাটবটটি কাজ করছে না। অনুগ্রহ করে পরে চেষ্টা করুন।" };
+      }
     }),
 
   // ── AI Background Image Generation — actual image via Forge ──────────────────
