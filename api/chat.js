@@ -40,12 +40,20 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 async function callAI(messages) {
   // Use BUILT_IN_FORGE_API_KEY if available, otherwise fallback to OPENAI_API_KEY
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY || process.env.OPENAI_API_KEY;
-  const baseUrl = process.env.FORGE_API_URL 
-    ? `${process.env.FORGE_API_URL.replace(/\/$/, "")}/v1`
-    : (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1");
   
-  // Use gemini-2.5-flash for Forge, or fallback to configured model
-  const model = process.env.BUILT_IN_FORGE_API_KEY ? "gemini-2.5-flash" : (process.env.OPENAI_MODEL || "gpt-4.1-mini");
+  // Correctly resolve the base URL and model
+  let baseUrl = "https://api.openai.com/v1";
+  let model = "gpt-4.1-mini";
+
+  if (process.env.BUILT_IN_FORGE_API_KEY) {
+    baseUrl = process.env.FORGE_API_URL 
+      ? `${process.env.FORGE_API_URL.replace(/\/$/, "")}/v1`
+      : "https://forge.manus.im/v1";
+    model = "gemini-2.5-flash";
+  } else if (process.env.OPENAI_BASE_URL) {
+    baseUrl = process.env.OPENAI_BASE_URL.replace(/\/$/, "");
+    model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  }
 
   if (!apiKey) {
     throw new Error("API key not configured");
@@ -67,7 +75,8 @@ async function callAI(messages) {
       payload.thinking = { budget_tokens: 128 };
     }
 
-    const response = await fetch(`${baseUrl}/chat/completions`, {
+    const fetchUrl = baseUrl.endsWith("/chat/completions") ? baseUrl : `${baseUrl}/chat/completions`;
+    const response = await fetch(fetchUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
