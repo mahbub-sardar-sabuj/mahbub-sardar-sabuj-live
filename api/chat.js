@@ -47,12 +47,19 @@ async function callAI(messages) {
 
   if (process.env.BUILT_IN_FORGE_API_KEY) {
     baseUrl = process.env.BUILT_IN_FORGE_API_URL 
-      ? `${process.env.BUILT_IN_FORGE_API_URL.replace(/\/$/, "")}/v1`
+      ? process.env.BUILT_IN_FORGE_API_URL.replace(/\/$/, "")
       : "https://forge.manus.im/v1";
     model = "gemini-2.5-flash";
   } else if (process.env.OPENAI_BASE_URL) {
     baseUrl = process.env.OPENAI_BASE_URL.replace(/\/$/, "");
     model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  }
+
+  // Ensure baseUrl doesn't end with /v1 if we're going to append /chat/completions
+  // unless it's specifically required by the proxy.
+  // Most OpenAI-compatible proxies expect the base to be the root or /v1.
+  if (baseUrl.endsWith("/v1")) {
+    baseUrl = baseUrl.slice(0, -3);
   }
 
   if (!apiKey) {
@@ -75,7 +82,7 @@ async function callAI(messages) {
       payload.thinking = { budget_tokens: 128 };
     }
 
-    const fetchUrl = baseUrl.endsWith("/chat/completions") ? baseUrl : `${baseUrl}/chat/completions`;
+    const fetchUrl = baseUrl.endsWith("/chat/completions") ? baseUrl : `${baseUrl}/v1/chat/completions`;
     const response = await fetch(fetchUrl, {
       method: "POST",
       headers: {
