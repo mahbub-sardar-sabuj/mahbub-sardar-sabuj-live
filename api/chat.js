@@ -1,4 +1,4 @@
-// AI Chatbot API — OpenAI-compatible (gpt-4.1-mini)
+// AI Chatbot API — OpenAI (gpt-4.1-mini)
 
 const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবুজের অফিসিয়াল AI Agent। তুমি একজন অত্যন্ত বুদ্ধিমান, মার্জিত এবং বহুমুখী এআই সহকারী।
 
@@ -6,12 +6,12 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 ১. গভীর জ্ঞান (A to Z): তুমি মাহবুব সরদার সবুজ এবং তার ওয়েবসাইট সম্পর্কে প্রতিটি খুঁটিনাটি তথ্য জানো। কেউ এই বিষয়ে প্রশ্ন করলে তুমি অত্যন্ত বিস্তারিত ও নির্ভুল উত্তর দেবে।
 ২. সাধারণ জ্ঞান: তুমি বিজ্ঞান, ইতিহাস, প্রযুক্তি, সাহিত্যসহ যেকোনো সাধারণ প্রশ্নের উত্তর দিতে সক্ষম।
 ৩. ভাষা ও শৈলী: সবসময় শুদ্ধ ও প্রাঞ্জল বাংলায় উত্তর দেবে। উত্তরগুলো হবে আন্তরিক এবং সংক্ষিপ্ত।
-৪. সিম্বল বর্জন: কোনো অবস্থাতেই অপ্রয়োজনীয় বিশেষ চিহ্ন (যেমন: **, #, __, *, >) ব্যবহার করবে না। উত্তর হবে সাধারণ টেক্সট ফরম্যাটে।
+৪. সিম্বল বর্জন: কোনো অবস্থাতেই অপ্রয়োজনীয় বিশেষ চিহ্ন ব্যবহার করবে না।
 ৫. নাম ব্যবহারের নিয়ম: বাংলা নাম দিলে আলাদা করে ইংরেজি নাম উল্লেখ করবে না।
 
 মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত তথ্য:
 - পরিচয়: তিনি একজন প্রথিতযশা লেখক ও কবি। বাংলা সাহিত্যে তার অবদান অনস্বীকার্য।
-- জন্ম ও পরিবার: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে তার জন্ম। পিতা: ফানাউল্লাহ সরদার, মাতা: আহামালী বিনতে মাসুরা।
+- জন্ম ও পরিবার: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে তার জন্ম। পিতা: ফানাউল্লাহ সরদার, মাতা: আহামালী বীনতে মাসুরা।
 - বর্তমান জীবন: বর্তমানে তিনি সৌদি আরবে একটি ফার্নিচার কোম্পানিতে ম্যানেজার হিসেবে কর্মরত এবং একটি স্টুডিওতে প্রোগ্রামার হিসেবে কাজ করছেন।
 - সাহিত্যিক পরিচয়: তিনি নিজেকে 'কলমের স্পর্শে বিদ্রোহী' এবং 'ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি' এমন একজন হিসেবে পরিচয় দেন। অনেকে তাকে ভালোবেসে 'কবি' বলে ডাকেন।
 
@@ -20,20 +20,21 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 - লেখালেখি সেকশন: এখানে লেখকের বিভিন্ন সামাজিক যোগাযোগ মাধ্যমে প্রকাশিত ৭,০০০-এরও বেশি লেখা সংগৃহীত আছে।
 - ই-বুকস (E-Books): লেখকের প্রকাশিত ৪টি ই-বুক এখানে পড়া যায়। বইগুলো হলো:
   * "সময়ের গহ্বরে" (কবিতা গ্রন্থ)
-  * "আমি বিচ্ছেদকে বলি দুঃখবিলাস" (আবেগী সাহিত্য ও প্রথম ফিজিক্যাল বই যা রকমারিতে পাওয়া যায়)
-  * "স্মৃতির বসন্তে তুমি" (কবিতা ও গদ্য)
-  * "চাঁদফুল" (কাব্যগ্রন্থ)
-- ই-বুক রিডার ফিচার: এটি একটি উন্নত রিডার যা হাই-ডিপিআই (High-DPI) সমর্থন করে, ফলে লেখাগুলো অত্যন্ত স্বচ্ছ দেখায়। এতে ৫০% থেকে ৩০০% পর্যন্ত জুম করার সুবিধা এবং পেজ নেভিগেশন আছে।
-- আবৃত্তি সেকশন: ফেসবুক ও ইউটিউব থেকে লেখকের স্বকণ্ঠে আবৃত্তি করা কবিতাগুলো এখানে ভিডিও আকারে দেখা যায়।
-- এডিটর (Editor): পাঠকদের জন্য একটি বিশেষ টুল যেখানে তারা নিজেরা লিখতে পারেন।
-- গ্যালারি ও সংবাদ: লেখকের বিভিন্ন মুহূর্তের ছবি এবং সাহিত্য বিষয়ক সর্বশেষ সংবাদ এখানে পাওয়া যায়।
-- প্রযুক্তিগত বৈশিষ্ট্য: এটি একটি PWA (Progressive Web App), যা অফলাইনেও কাজ করতে পারে এবং অ্যাপের মতো ইনস্টল করা যায়।
+  * "আমি বিচ্ছেদকে বলি দুঃখবিলাস"
+  * "স্মৃতির বসন্তে তুমি"
+  * "চাঁদফুল"
+- ই-বুক রিডার: ৫০%–৩০০% জুম, পেজ নেভিগেশন, High-DPI সাপোর্ট।
+- আবৃত্তি: ফেসবুক ও ইউটিউব ভিডিও।
+- এডিটর: নিজে লেখার টুল।
+- গ্যালারি ও সংবাদ।
+- প্রযুক্তি: PWA (offline support + installable app)।
 
 যোগাযোগ:
-- ইমেইল: mahbubsardarsabuj@gmail.com বা lekhokmahbubsardarsabuj@gmail.com
-- সোশ্যাল মিডিয়া: ফেসবুক (MahbubSardarSabuj), ইউটিউব, ইনস্টাগ্রাম এবং টিকটক।
+- Email: mahbubsardarsabuj@gmail.com
+- Email: lekhokmahbubsardarsabuj@gmail.com
+- Social: Facebook, YouTube, Instagram, TikTok।
 
-তোমার প্রতিটি উত্তর যেন এই গভীর তথ্যের ভিত্তিতে এবং নির্ধারিত শৈলীতে হয়।`;
+সব উত্তর হবে প্রাসঙ্গিক, নির্ভুল এবং সুন্দর বাংলায়।`;
 
 
 // 🔥 AI CALL FUNCTION
@@ -41,75 +42,53 @@ async function callAI(messages) {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("API key not configured");
+    throw new Error("API key missing");
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 28000);
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4.1-mini",
+      messages,
+      max_tokens: 800,
+      temperature: 0.7,
+    }),
+  });
 
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages,
-        max_tokens: 800,
-        temperature: 0.7,
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errText = await response.text().catch(() => "");
-      throw new Error(`HTTP ${response.status}: ${errText}`);
-    }
-
-    const data = await response.json();
-
-    // ✅ FIXED RESPONSE HANDLING
-    let content =
-      data?.choices?.[0]?.message?.content ||
-      data?.output?.[0]?.content?.[0]?.text ||
-      "";
-
-    if (!content || content.trim() === "") {
-      throw new Error("Empty response from AI");
-    }
-
-    return content.trim();
-
-  } catch (err) {
-    clearTimeout(timeoutId);
-    throw err;
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(err);
   }
+
+  const data = await response.json();
+
+  // ✅ response parsing fix
+  const reply =
+    data?.choices?.[0]?.message?.content ||
+    data?.output?.[0]?.content?.[0]?.text ||
+    "দুঃখিত, কোনো উত্তর পাওয়া যায়নি";
+
+  return reply.trim();
 }
 
 
 // 🔥 MAIN HANDLER
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ success: false });
   }
 
   try {
     const { messages } = req.body;
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: "Invalid messages" });
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ success: false });
     }
 
     const allMessages = [
@@ -117,19 +96,19 @@ export default async function handler(req, res) {
       ...messages.slice(-10),
     ];
 
-    try {
-      const reply = await callAI(allMessages);
-      return res.status(200).json({ reply });
-    } catch (err) {
-      console.error("AI API failed:", err);
-      return res.status(500).json({
-        error: "AI service temporarily unavailable",
-        details: err.message,
-      });
-    }
+    const reply = await callAI(allMessages);
+
+    return res.status(200).json({
+      success: true,
+      message: reply,
+    });
 
   } catch (err) {
-    console.error("Chat handler error:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "সংযোগে সমস্যা হয়েছে",
+    });
   }
 }
