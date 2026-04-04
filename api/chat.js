@@ -42,13 +42,17 @@ async function callAI(messages) {
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY || process.env.OPENAI_API_KEY;
   
   // Correctly resolve the base URL and model
-  let baseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
-  let model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  // Hardcode the base URL for now to ensure it works, as the proxy seems to have issues
+  let baseUrl = "https://api.openai.com/v1";
+  let model = "gpt-4.1-mini";
 
-  // If we have the Forge API key, use it as the primary service
-  if (process.env.BUILT_IN_FORGE_API_KEY) {
-    baseUrl = process.env.BUILT_IN_FORGE_API_URL || "https://forge.manus.im/v1";
+  // Only use Forge if specifically requested and we're sure about the URL
+  if (process.env.BUILT_IN_FORGE_API_KEY && process.env.BUILT_IN_FORGE_API_URL) {
+    baseUrl = process.env.BUILT_IN_FORGE_API_URL;
     model = "gemini-2.5-flash";
+  } else if (process.env.OPENAI_BASE_URL) {
+    baseUrl = process.env.OPENAI_BASE_URL;
+    model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
   }
 
   if (!apiKey) {
