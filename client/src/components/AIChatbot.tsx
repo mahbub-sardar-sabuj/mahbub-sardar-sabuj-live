@@ -27,17 +27,10 @@ async function callAI(
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    // Filter messages to only include user and assistant roles for tRPC schema
-    const filteredMessages = messages
-      .filter(m => m.role === "user" || m.role === "assistant")
-      .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
-
-    const res = await fetch("/api/trpc/chat.send?batch=1", {
+    const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        "0": { json: { messages: filteredMessages } }
-      }),
+      body: JSON.stringify({ messages }),
       signal: controller.signal,
     });
 
@@ -52,9 +45,7 @@ async function callAI(
     }
 
     const data = await res.json();
-    // tRPC batch response format: [{ result: { data: { json: { reply: "..." } } } }]
-    const reply = data[0]?.result?.data?.json?.reply;
-    return reply || "দুঃখিত, উত্তর দিতে পারছি না।";
+    return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
 
   } catch (err: any) {
     clearTimeout(timeoutId);

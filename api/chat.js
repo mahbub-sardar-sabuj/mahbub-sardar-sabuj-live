@@ -36,32 +36,44 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 
 তোমার প্রতিটি উত্তর যেন এই গভীর তথ্যের ভিত্তিতে এবং নির্ধারিত শৈলীতে হয়।`;
 
-// Call OpenAI-compatible API
-async function callOpenAI(messages) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const baseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
-  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+// Call AI API (Manus Forge or OpenAI)
+async function callAI(messages) {
+  // Use BUILT_IN_FORGE_API_KEY if available, otherwise fallback to OPENAI_API_KEY
+  const apiKey = process.env.BUILT_IN_FORGE_API_KEY || process.env.OPENAI_API_KEY;
+  const baseUrl = process.env.FORGE_API_URL 
+    ? `${process.env.FORGE_API_URL.replace(/\/$/, "")}/v1`
+    : (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1");
+  
+  // Use gemini-2.5-flash for Forge, or fallback to configured model
+  const model = process.env.BUILT_IN_FORGE_API_KEY ? "gemini-2.5-flash" : (process.env.OPENAI_MODEL || "gpt-4.1-mini");
 
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY not configured");
+    throw new Error("API key not configured");
   }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 28000);
 
   try {
+    const payload = {
+      model,
+      messages,
+      max_tokens: 800,
+      temperature: 0.7,
+    };
+
+    // Add thinking budget for Forge models
+    if (model.includes("gemini")) {
+      payload.thinking = { budget_tokens: 128 };
+    }
+
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        max_tokens: 800,
-        temperature: 0.7,
-      }),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
 
@@ -107,10 +119,10 @@ export default async function handler(req, res) {
     ];
 
     try {
-      const reply = await callOpenAI(allMessages);
+      const reply = await callAI(allMessages);
       return res.status(200).json({ reply });
     } catch (err) {
-      console.error("OpenAI API failed:", err.message);
+      console.error("AI API failed:", err.message);
       return res.status(500).json({
         error: "AI service temporarily unavailable. Please try again.",
         details: err.message,
