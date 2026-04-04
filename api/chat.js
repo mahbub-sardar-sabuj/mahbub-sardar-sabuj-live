@@ -46,8 +46,8 @@ async function callAI(messages) {
   let model = "gpt-4.1-mini";
 
   if (process.env.BUILT_IN_FORGE_API_KEY) {
-    baseUrl = process.env.FORGE_API_URL 
-      ? `${process.env.FORGE_API_URL.replace(/\/$/, "")}/v1`
+    baseUrl = process.env.BUILT_IN_FORGE_API_URL 
+      ? `${process.env.BUILT_IN_FORGE_API_URL.replace(/\/$/, "")}/v1`
       : "https://forge.manus.im/v1";
     model = "gemini-2.5-flash";
   } else if (process.env.OPENAI_BASE_URL) {
