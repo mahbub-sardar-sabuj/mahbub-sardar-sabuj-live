@@ -61,7 +61,7 @@ const newsData: NewsItem[] = [
     readTime: "২ মিনিট",
     featured: true,
     tag: "সমাজ",
-    views: 0,
+    views: 2995,
   },
   {
     id: 27,
