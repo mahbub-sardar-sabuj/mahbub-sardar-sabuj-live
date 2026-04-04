@@ -55,17 +55,6 @@ async function callAI(messages) {
     model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
   }
 
-  // If using the proxy, we need to be careful about the path.
-  // The proxy might expect /v1/chat/completions or just /chat/completions.
-  // Let's try to detect if it's the Manus proxy.
-  const isManusProxy = baseUrl.includes("manus.im");
-  
-  if (isManusProxy && baseUrl.endsWith("/v1")) {
-    // Keep /v1 for Manus proxy as it might be part of the base
-  } else if (baseUrl.endsWith("/v1")) {
-    baseUrl = baseUrl.slice(0, -3);
-  }
-
   if (!apiKey) {
     throw new Error("API key not configured");
   }
@@ -88,10 +77,16 @@ async function callAI(messages) {
 
     let fetchUrl = baseUrl;
     if (!fetchUrl.endsWith("/chat/completions")) {
+      // If it ends with /v1, just append /chat/completions
+      // If it doesn't end with /v1, append /v1/chat/completions
+      // But if it's already a full path like /api/llm-proxy/v1, we should be careful
       if (fetchUrl.endsWith("/v1")) {
         fetchUrl = `${fetchUrl}/chat/completions`;
+      } else if (fetchUrl.includes("/v1/")) {
+        // If /v1 is already in the middle, just append /chat/completions
+        fetchUrl = `${fetchUrl.replace(/\/$/, "")}/chat/completions`;
       } else {
-        fetchUrl = `${fetchUrl}/v1/chat/completions`;
+        fetchUrl = `${fetchUrl.replace(/\/$/, "")}/v1/chat/completions`;
       }
     }
     const response = await fetch(fetchUrl, {
