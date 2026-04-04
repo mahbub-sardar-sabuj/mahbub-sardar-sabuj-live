@@ -55,10 +55,14 @@ async function callAI(messages) {
     model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
   }
 
-  // Ensure baseUrl doesn't end with /v1 if we're going to append /chat/completions
-  // unless it's specifically required by the proxy.
-  // Most OpenAI-compatible proxies expect the base to be the root or /v1.
-  if (baseUrl.endsWith("/v1")) {
+  // If using the proxy, we need to be careful about the path.
+  // The proxy might expect /v1/chat/completions or just /chat/completions.
+  // Let's try to detect if it's the Manus proxy.
+  const isManusProxy = baseUrl.includes("manus.im");
+  
+  if (isManusProxy && baseUrl.endsWith("/v1")) {
+    // Keep /v1 for Manus proxy as it might be part of the base
+  } else if (baseUrl.endsWith("/v1")) {
     baseUrl = baseUrl.slice(0, -3);
   }
 
@@ -82,7 +86,14 @@ async function callAI(messages) {
       payload.thinking = { budget_tokens: 128 };
     }
 
-    const fetchUrl = baseUrl.endsWith("/chat/completions") ? baseUrl : `${baseUrl}/v1/chat/completions`;
+    let fetchUrl = baseUrl;
+    if (!fetchUrl.endsWith("/chat/completions")) {
+      if (fetchUrl.endsWith("/v1")) {
+        fetchUrl = `${fetchUrl}/chat/completions`;
+      } else {
+        fetchUrl = `${fetchUrl}/v1/chat/completions`;
+      }
+    }
     const response = await fetch(fetchUrl, {
       method: "POST",
       headers: {
