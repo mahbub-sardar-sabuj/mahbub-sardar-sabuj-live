@@ -42,17 +42,13 @@ async function callAI(messages) {
   const apiKey = process.env.BUILT_IN_FORGE_API_KEY || process.env.OPENAI_API_KEY;
   
   // Correctly resolve the base URL and model
-  let baseUrl = "https://api.openai.com/v1";
-  let model = "gpt-4.1-mini";
+  let baseUrl = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+  let model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
+  // If we have the Forge API key, use it as the primary service
   if (process.env.BUILT_IN_FORGE_API_KEY) {
-    baseUrl = process.env.BUILT_IN_FORGE_API_URL 
-      ? process.env.BUILT_IN_FORGE_API_URL.replace(/\/$/, "")
-      : "https://forge.manus.im/v1";
+    baseUrl = process.env.BUILT_IN_FORGE_API_URL || "https://forge.manus.im/v1";
     model = "gemini-2.5-flash";
-  } else if (process.env.OPENAI_BASE_URL) {
-    baseUrl = process.env.OPENAI_BASE_URL.replace(/\/$/, "");
-    model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
   }
 
   if (!apiKey) {
@@ -75,18 +71,15 @@ async function callAI(messages) {
       payload.thinking = { budget_tokens: 128 };
     }
 
-    let fetchUrl = baseUrl;
+    // Robust URL construction
+    let fetchUrl = baseUrl.replace(/\/$/, "");
     if (!fetchUrl.endsWith("/chat/completions")) {
-      // If it ends with /v1, just append /chat/completions
-      // If it doesn't end with /v1, append /v1/chat/completions
-      // But if it's already a full path like /api/llm-proxy/v1, we should be careful
       if (fetchUrl.endsWith("/v1")) {
         fetchUrl = `${fetchUrl}/chat/completions`;
-      } else if (fetchUrl.includes("/v1/")) {
-        // If /v1 is already in the middle, just append /chat/completions
-        fetchUrl = `${fetchUrl.replace(/\/$/, "")}/chat/completions`;
       } else {
-        fetchUrl = `${fetchUrl.replace(/\/$/, "")}/v1/chat/completions`;
+        // If it doesn't end with /v1, we try to see if it's a base URL that needs /v1
+        // Most OpenAI-compatible APIs use /v1/chat/completions
+        fetchUrl = `${fetchUrl}/v1/chat/completions`;
       }
     }
     const response = await fetch(fetchUrl, {
