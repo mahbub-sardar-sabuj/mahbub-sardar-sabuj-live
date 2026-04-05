@@ -44,7 +44,7 @@ async function callAI(messages) {
   // Correctly resolve the base URL and model
   // Hardcode the base URL for now to ensure it works, as the proxy seems to have issues
   let baseUrl = "https://api.openai.com/v1";
-  let model = "process.env.OPENAI_API_KEY";
+  let model = "gpt-4.1-mini";
 
   // Only use Forge if specifically requested and we're sure about the URL
   if (process.env.BUILT_IN_FORGE_API_KEY && process.env.BUILT_IN_FORGE_API_URL) {
