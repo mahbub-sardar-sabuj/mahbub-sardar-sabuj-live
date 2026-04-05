@@ -49,28 +49,61 @@ function buildChatCompletionsUrl(baseUrl) {
   return `${normalized}/v1/chat/completions`;
 }
 
-// Call AI API
-async function callAI(messages) {
+function resolveAiConfig() {
+  const chatbotApiKey = process.env.CHATBOT_API_KEY?.trim();
+  const chatbotBaseUrl = process.env.CHATBOT_BASE_URL?.trim();
+  const chatbotModel = process.env.CHATBOT_MODEL?.trim();
+
   const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
+  const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim();
+  const openAiModel = process.env.OPENAI_MODEL?.trim();
+
   const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+  const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || "gemini-2.5-flash";
 
-  // IMPORTANT:
-  // Prefer the site owner's dedicated OPENAI_* configuration.
-  // The previous implementation prioritized BUILT_IN_FORGE_* first,
-  // which can return "Session not found" on Vercel when that transient key/session expires.
-  const useForge = !openAiApiKey && !!(forgeApiKey && forgeBaseUrl);
-  const apiKey = openAiApiKey || forgeApiKey;
+  // Easiest long-term setup:
+  // 1) Put your active provider key in CHATBOT_API_KEY.
+  // 2) Leave CHATBOT_BASE_URL and CHATBOT_MODEL empty unless you need a custom provider.
+  // 3) The server auto-detects OpenRouter keys (sk-or-...) and otherwise defaults to OpenAI.
+  if (chatbotApiKey) {
+    const isOpenRouterKey = chatbotApiKey.startsWith("sk-or-");
 
-  if (!apiKey) {
-    throw new Error("No AI API key configured. Set OPENAI_API_KEY in production.");
+    return {
+      apiKey: chatbotApiKey,
+      baseUrl: chatbotBaseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
+      model: chatbotModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
+      useForge: false,
+      source: "CHATBOT_API_KEY",
+    };
   }
 
-  const baseUrl = useForge
-    ? forgeBaseUrl
-    : (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1");
+  if (openAiApiKey) {
+    return {
+      apiKey: openAiApiKey,
+      baseUrl: openAiBaseUrl || "https://api.openai.com/v1",
+      model: openAiModel || "gpt-4.1-mini",
+      useForge: false,
+      source: "OPENAI_API_KEY",
+    };
+  }
 
-  const model = process.env.OPENAI_MODEL?.trim() || (useForge ? "gemini-2.5-flash" : "gpt-4.1-mini");
+  if (forgeApiKey && forgeBaseUrl) {
+    return {
+      apiKey: forgeApiKey,
+      baseUrl: forgeBaseUrl,
+      model: forgeModel,
+      useForge: true,
+      source: "BUILT_IN_FORGE_API_KEY",
+    };
+  }
+
+  throw new Error("No AI API key configured. Set CHATBOT_API_KEY for the simplest production setup.");
+}
+
+// Call AI API
+async function callAI(messages) {
+  const { apiKey, baseUrl, model, useForge } = resolveAiConfig();
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 28000);
