@@ -1,7 +1,6 @@
-// AI Chatbot API — OpenAI-compatible (gpt-4.1-mini)
-// Uses OPENAI_API_KEY and OPENAI_BASE_URL environment variables set in Vercel
+// Uses OPENAI_API_KEY and optional OPENAI_BASE_URL / OPENAI_MODEL environment variables
 
-const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবুজের অফিসিয়াল AI Agent। তুমি একজন অত্যন্ত বুদ্ধিমান, মার্জিত এবং বহুমুখী এআই সহকারী।
+const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবুজের অফিসিয়াল AI Agent। তুমি একজন অত্যন্ত বুদ্ধিমান, মার্জিত এবং বহুমুখী এআই সহকারী。
 
 তোমার কাজের মূলনীতি:
 ১. গভীর জ্ঞান (A to Z): তুমি মাহবুব সরদার সবুজ এবং তার ওয়েবসাইট সম্পর্কে প্রতিটি খুঁটিনাটি তথ্য জানো। কেউ এই বিষয়ে প্রশ্ন করলে তুমি অত্যন্ত বিস্তারিত ও নির্ভুল উত্তর দেবে।
@@ -36,28 +35,42 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 
 তোমার প্রতিটি উত্তর যেন এই গভীর তথ্যের ভিত্তিতে এবং নির্ধারিত শৈলীতে হয়।`;
 
-// Call AI API (Manus Forge or OpenAI)
-async function callAI(messages) {
-  // Use BUILT_IN_FORGE_API_KEY if available, otherwise fallback to OPENAI_API_KEY
-  const apiKey = process.env.BUILT_IN_FORGE_API_KEY || process.env.OPENAI_API_KEY;
-  
-  // Correctly resolve the base URL and model
-  // Hardcode the base URL for now to ensure it works, as the proxy seems to have issues
-  let baseUrl = "https://api.openai.com/v1";
-  let model = "gpt-4.1-mini";
+function buildChatCompletionsUrl(baseUrl) {
+  const normalized = (baseUrl || "https://api.openai.com/v1").replace(/\/$/, "");
 
-  // Only use Forge if specifically requested and we're sure about the URL
-  if (process.env.BUILT_IN_FORGE_API_KEY && process.env.BUILT_IN_FORGE_API_URL) {
-    baseUrl = process.env.BUILT_IN_FORGE_API_URL;
-    model = "gemini-2.5-flash";
-  } else if (process.env.OPENAI_BASE_URL) {
-    baseUrl = process.env.OPENAI_BASE_URL;
-    model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  if (normalized.endsWith("/chat/completions")) {
+    return normalized;
   }
+
+  if (normalized.endsWith("/v1")) {
+    return `${normalized}/chat/completions`;
+  }
+
+  return `${normalized}/v1/chat/completions`;
+}
+
+// Call AI API
+async function callAI(messages) {
+  const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
+  const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
+  const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+
+  // IMPORTANT:
+  // Prefer the site owner's dedicated OPENAI_* configuration.
+  // The previous implementation prioritized BUILT_IN_FORGE_* first,
+  // which can return "Session not found" on Vercel when that transient key/session expires.
+  const useForge = !openAiApiKey && !!(forgeApiKey && forgeBaseUrl);
+  const apiKey = openAiApiKey || forgeApiKey;
 
   if (!apiKey) {
-    throw new Error("API key not configured");
+    throw new Error("No AI API key configured. Set OPENAI_API_KEY in production.");
   }
+
+  const baseUrl = useForge
+    ? forgeBaseUrl
+    : (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1");
+
+  const model = process.env.OPENAI_MODEL?.trim() || (useForge ? "gemini-2.5-flash" : "gpt-4.1-mini");
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 28000);
@@ -70,23 +83,11 @@ async function callAI(messages) {
       temperature: 0.7,
     };
 
-    // Add thinking budget for Forge models
-    if (model.includes("gemini")) {
+    if (useForge && model.includes("gemini")) {
       payload.thinking = { budget_tokens: 128 };
     }
 
-    // Robust URL construction
-    let fetchUrl = baseUrl.replace(/\/$/, "");
-    if (!fetchUrl.endsWith("/chat/completions")) {
-      if (fetchUrl.endsWith("/v1")) {
-        fetchUrl = `${fetchUrl}/chat/completions`;
-      } else {
-        // If it doesn't end with /v1, we try to see if it's a base URL that needs /v1
-        // Most OpenAI-compatible APIs use /v1/chat/completions
-        fetchUrl = `${fetchUrl}/v1/chat/completions`;
-      }
-    }
-    const response = await fetch(fetchUrl, {
+    const response = await fetch(buildChatCompletionsUrl(baseUrl), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -100,7 +101,7 @@ async function callAI(messages) {
 
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
-      throw new Error(`HTTP ${response.status}: ${errText.slice(0, 200)}`);
+      throw new Error(`HTTP ${response.status}: ${errText.slice(0, 300)}`);
     }
 
     const data = await response.json();
@@ -121,12 +122,13 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Cache-Control", "no-store");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { messages } = req.body;
+    const { messages } = req.body || {};
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Invalid messages" });
@@ -134,7 +136,7 @@ export default async function handler(req, res) {
 
     const allMessages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages.slice(-10), // Keep last 10 messages for context
+      ...messages.slice(-10),
     ];
 
     try {
@@ -152,5 +154,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Internal server error" });
   }
 }
-
-
