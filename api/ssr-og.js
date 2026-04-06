@@ -1,8 +1,8 @@
 export const config = { runtime: "edge" };
 
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
-const DEFAULT_IMAGE = `${SITE_URL}/images/og-home.jpg`;
-const SITE_NAME = "মাহবুব সরদার সবুজ - Mahbub Sardar Sabuj";
+const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
+const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 
 const newsData = [
   { id: 30, title: "আবু বকরের প্রথম বই ‘ভাবনার আঙিনায়’ পাঠকমহলে আলোচনায়", excerpt: "তরুণ লেখক আবু বকরের প্রথম আত্মউন্নয়নমূলক গ্রন্থ ‘ভাবনার আঙিনায়’ ইসলামি মূল্যবোধ ও আত্মবিশ্লেষণধর্মী ভাবনার সংমিশ্রণে ইতোমধ্যেই পাঠকমহলে আলোচনার জন্ম দিয়েছে।", image: `${SITE_URL}/images/news/news30.jpg` },
@@ -28,7 +28,7 @@ const ebookData = [
 ];
 
 const staticPages = {
-  "/": { title: "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj", description: "লেখক ও কবির অফিসিয়াল ওয়েবসাইট। কবিতা, গল্প, ই-বুক ও সাহিত্যের এক অনন্য জগৎ।", image: DEFAULT_IMAGE, type: "website" },
+  "/": { title: "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি", description: "লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। কবিতা, গল্প, ই-বুক, সংবাদ ও সাহিত্যের এক অনন্য জগৎ।", image: DEFAULT_IMAGE, type: "website" },
   "/writings": { title: "লেখালেখি | মাহবুব সরদার সবুজ", description: "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ভালোবাসা ও জীবনদর্শনের বিশাল সংকলন।", image: DEFAULT_IMAGE, type: "website" },
   "/ebooks": { title: "ই-বুক সংগ্রহ | মাহবুব সরদার সবুজ", description: "মাহবুব সরদার সবুজের প্রকাশিত ই-বুক সমূহ বিনামূল্যে পড়ুন।", image: `${SITE_URL}/images/ebooks/dukkhovilash.png`, type: "website" },
   "/gallery": { title: "গ্যালারি | মাহবুব সরদার সবুজ", description: "মাহবুব সরদার সবুজের কবিতা ও লেখার ডিজাইন কার্ডের গ্যালারি।", image: DEFAULT_IMAGE, type: "website" },
@@ -62,7 +62,7 @@ function getOGData(pathname) {
   if (staticPages[cleanPath]) {
     return { ...staticPages[cleanPath], url: SITE_URL + pathname };
   }
-  return { title: "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj", description: "লেখক ও কবির অফিসিয়াল ওয়েবসাইট", image: DEFAULT_IMAGE, url: SITE_URL + pathname, type: "website" };
+  return { title: "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি", description: "লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট", image: DEFAULT_IMAGE, url: SITE_URL + pathname, type: "website" };
 }
 
 function escapeHtml(str) {

@@ -12,9 +12,9 @@ interface SeoProps {
   jsonLd?: JsonLd;
 }
 
-const SITE_NAME = "মাহবুব সরদার সবুজ - Mahbub Sardar Sabuj";
+const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
-const DEFAULT_IMAGE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
+const DEFAULT_IMAGE = "https://www.mahbubsardarsabuj.com/images/og-home-suit.jpg";
 
 function upsertMeta(selector: string, attributes: Record<string, string>) {
   let element = document.head.querySelector(selector) as HTMLMetaElement | null;
