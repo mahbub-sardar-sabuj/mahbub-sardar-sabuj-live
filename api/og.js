@@ -8,6 +8,24 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 33,
+    image: "/images/news/IMG_7993.jpeg",
+    title: "ইরানকে ঘিরে মধ্যপ্রাচ্যে অস্থিরতা, হরমুজ প্রণালী নিয়ে বাড়ছে উদ্বেগ",
+    excerpt: "যুদ্ধবিরতি কার্যকর থাকলেও হরমুজ প্রণালী, নিষেধাজ্ঞা ও সীমান্ত উত্তেজনা নিয়ে মধ্যপ্রাচ্যে নতুন করে অনিশ্চয়তা তৈরি হয়েছে।",
+    category: "আন্তর্জাতিক",
+    date: "৯ এপ্রিল ২০২৬",
+    tag: "মধ্যপ্রাচ্য",
+  },
+  {
+    id: 32,
+    image: "/images/news/news_32_parliament.jpg",
+    title: "ঠিকমতো বাংলা রিডিং পড়তে পারে না, অথচ বসে আছেন এমপি–মন্ত্রী পদে।",
+    excerpt: "একজন মন্ত্রী যদি প্রকাশ্যে ঠিকভাবে লিখিত বক্তব্যও পড়তে না পারেন, তা শুধু ব্যক্তিগত অদক্ষতার পরিচয় নয়, বরং রাষ্ট্রের ভাবমূর্তির জন্যও বিব্রতকর।",
+    category: "রাজনীতি",
+    date: "৯ এপ্রিল ২০২৬",
+    tag: "সংসদ",
+  },
+  {
     id: 24,
     image: "/images/news/khoshbash-chairman-v2.png",
     title: "হাতকড়ায় চেয়ারম্যান: খোশবাসে বেদনা, অনিশ্চয়তায় জনজীবন",
