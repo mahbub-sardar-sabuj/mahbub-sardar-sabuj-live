@@ -3,7 +3,8 @@ Allow: /
 Disallow: /api/
 Disallow: /.env
 
-Sitemap: https://mahbub-sardar-sabuj-live.vercel.app/sitemap.xml
+# Sitemap location
+Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 
-# Crawl delay (optional, in seconds)
+# Crawl delay
 Crawl-delay: 1

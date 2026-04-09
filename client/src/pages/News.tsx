@@ -1085,7 +1085,13 @@ export default function News() {
                       margin: "0 0 12px",
                       lineHeight: 1.4,
                     }}>
-                      {item.title}
+                      <a
+                        href={`/news/${item.id}`}
+                        onClick={(e) => { e.preventDefault(); handleSelectNews(item); }}
+                        style={{ color: 'inherit', textDecoration: 'none' }}
+                      >
+                        {item.title}
+                      </a>
                     </h3>
 
                     <p style={{
