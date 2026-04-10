@@ -8,6 +8,15 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 34,
+    image: "/images/news/economy_reform_bangladesh_april_2026.jpg.jpg",
+    title: "অর্থনীতি সচল রাখতে সংস্কারে জোর, বলছেন বিশেষজ্ঞরা",
+    excerpt: "অর্থনীতিকে সচল রাখতে নীতিগত সংস্কার, স্বচ্ছতা ও বাস্তবমুখী পদক্ষেপের ওপর গুরুত্ব দিয়েছেন অর্থনীতিবিদরা।",
+    category: "অর্থনীতি",
+    date: "১০ এপ্রিল ২০২৬",
+    tag: "বাংলাদেশ",
+  },
+  {
     id: 33,
     image: "/images/news/IMG_7993.jpeg",
     title: "ইরানকে ঘিরে মধ্যপ্রাচ্যে অস্থিরতা, হরমুজ প্রণালী নিয়ে বাড়ছে উদ্বেগ",
