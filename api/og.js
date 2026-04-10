@@ -9,7 +9,7 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 const newsData = [
   {
     id: 36,
-    image: "/client/public/images/news/sulaiman_gufran_new_book_2026.JPG",
+    image: "/images/news/sulaiman_gufran_new_book_2026.JPG",
     title: "তরুণ কবি সুলাইমান গুফরানের নতুন বই ঘিরে পাঠকমহলে আগ্রহ",
     excerpt: "বরিশালের তরুণ কবি ও লেখক সুলাইমান গুফরানের নতুন বই নিয়ে ইতোমধ্যে পাঠকদের মধ্যে তৈরি হয়েছে আগ্রহ।",
     category: "সাহিত্য",
