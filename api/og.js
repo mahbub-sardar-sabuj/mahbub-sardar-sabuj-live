@@ -8,6 +8,15 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 35,
+    image: "/images/news/tumi_chile_bolei_eid_book_2026.jpg",
+    title: "ঈদে আসছে ‘তুমি ছিলে বলেই’: প্রি-অর্ডারেই পাঠকদের উচ্ছ্বাস, বিশেষ চিঠির ঘোষণা",
+    excerpt: "ঈদকে সামনে রেখে নতুন উপন্যাস ‘তুমি ছিলে বলেই’ নিয়ে পাঠকদের আগ্রহ বাড়ছে। প্রি-অর্ডারেই মিলছে ব্যাপক সাড়া।",
+    category: "সাহিত্য",
+    date: "১০ এপ্রিল ২০২৬",
+    tag: "বই",
+  },
+  {
     id: 34,
     image: "/images/news/economy_reform_bangladesh_april_2026.jpg.jpg",
     title: "অর্থনীতি সচল রাখতে সংস্কারে জোর, বলছেন বিশেষজ্ঞরা",
