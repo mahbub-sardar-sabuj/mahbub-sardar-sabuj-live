@@ -8,6 +8,15 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 36,
+    image: "/images/news/sulaiman_gufran_new_book_2026.JPG",
+    title: "তরুণ কবি সুলাইমান গুফরানের নতুন বই ঘিরে পাঠকমহলে আগ্রহ",
+    excerpt: "বরিশালের তরুণ কবি ও লেখক সুলাইমান গুফরানের নতুন বই নিয়ে ইতোমধ্যে পাঠকদের মধ্যে তৈরি হয়েছে আগ্রহ।",
+    category: "সাহিত্য",
+    date: "১০ এপ্রিল ২০২৬",
+    tag: "কবিতা",
+  },
+  {
     id: 35,
     image: "/images/news/tumi_chile_bolei_eid_book_2026.jpg",
     title: "ঈদে আসছে ‘তুমি ছিলে বলেই’: প্রি-অর্ডারেই পাঠকদের উচ্ছ্বাস, বিশেষ চিঠির ঘোষণা",
