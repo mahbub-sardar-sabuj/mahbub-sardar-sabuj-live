@@ -8,6 +8,15 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 37,
+    image: "/images/news/tumi_chaya_naki_alo_nusrat_aporna.png",
+    title: "“তুমি ছায়া নাকি আলো”—ভালোবাসা ও নৈতিক দ্বন্দ্বের গল্প নিয়ে নতুন উপন্যাস",
+    excerpt: "ঢাকা শহরের অদৃশ্য অন্ধকার বাস্তবতা ও মানুষের ভেতরের নৈতিক দ্বন্দ্বকে কেন্দ্র করে প্রকাশিত হয়েছে তরুণ লেখিকা নুসরাত অপর্ণার নতুন উপন্যাস “তুমি ছায়া নাকি আলো”।",
+    category: "সাহিত্য",
+    date: "১৪ এপ্রিল ২০২৬",
+    tag: "উপন্যাস",
+  },
+  {
     id: 36,
     image: "/images/news/sulaiman_gufran_new_book_2026.jpg",
     title: "তরুণ কবি সুলাইমান গুফরানের নতুন বই ঘিরে পাঠকমহলে আগ্রহ",
