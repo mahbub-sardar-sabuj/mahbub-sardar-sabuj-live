@@ -8,6 +8,15 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 38,
+    image: "/images/news/fer_dekha_hobe_nusrat_aporna.png",
+    title: "নতুন প্রজন্মের কাব্যধারায় ‘ফের দেখা হবে’—নুসরাত অপর্ণার আবেগঘন অভিষেক",
+    excerpt: "বাংলা সাহিত্যাঙ্গনে নতুন প্রজন্মের তরুণ লেখকদের উপস্থিতি ক্রমেই দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় পাঠকসমাজে আলোচনায় এসেছে সম্ভাবনাময় লেখিকা নুসরাত অপর্ণার প্রথম কাব্যগ্রন্থ ‘ফের দেখা হবে’।",
+    category: "সাহিত্য",
+    date: "১৪ এপ্রিল ২০২৬",
+    tag: "কবিতা",
+  },
+  {
     id: 37,
     image: "/images/news/tumi_chaya_naki_alo_nusrat_aporna.png",
     title: "“তুমি ছায়া নাকি আলো”—ভালোবাসা ও নৈতিক দ্বন্দ্বের গল্প নিয়ে নতুন উপন্যাস",
