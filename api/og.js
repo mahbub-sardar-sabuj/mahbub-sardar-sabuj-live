@@ -8,6 +8,15 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 // Mirror of the news data in News.tsx — keep in sync when adding news
 const newsData = [
   {
+    id: 39,
+    image: "/images/news/shunnotar_songlap_junaid_bin_kamal.png",
+    title: "তরুণ লেখক জুনাইদ বিন কামালের ‘শূন্যতার সংলাপ’ পাঠকমহলে আলোচনায়",
+    excerpt: "সাহিত্যাঙ্গনে নতুন প্রজন্মের লেখকদের পদচারণা দিন দিন দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় আলোচনায় উঠে এসেছে তরুণ লেখক জুনাইদ বিন কামালের বই ‘শূন্যতার সংলাপ’।",
+    category: "সাহিত্য",
+    date: "১৬ এপ্রিল ২০২৬",
+    tag: "বই",
+  },
+  {
     id: 38,
     image: "/images/news/fer_dekha_hobe_nusrat_aporna.png",
     title: "নতুন প্রজন্মের কাব্যধারায় ‘ফের দেখা হবে’—নুসরাত অপর্ণার আবেগঘন অভিষেক",
