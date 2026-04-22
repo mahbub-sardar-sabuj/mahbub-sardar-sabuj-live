@@ -322,14 +322,14 @@ export default function EBookReader() {
             {/* Book thumbnail + title — desktop only */}
             <div className="hidden md:flex items-center gap-2 flex-shrink-0">
               <img src={book.cover} alt={book.title} className="w-7 h-9 object-cover rounded shadow" />
-              <div>
-                <h1 className="text-sm font-bold truncate max-w-[200px]">{book.title}</h1>
-                <p className="text-xs text-gray-500">{book.author}</p>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold truncate max-w-[150px] lg:max-w-[300px]">{book.title}</h1>
+                <p className="text-xs text-gray-500 truncate">{book.author}</p>
               </div>
             </div>
 
             {/* Page navigation — centered, takes remaining space */}
-            <div className="flex items-center justify-center gap-2 flex-1">
+            <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1 min-w-0">
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1}
@@ -342,7 +342,7 @@ export default function EBookReader() {
                   type="number"
                   value={pageInput}
                   onChange={(e) => setPageInput(e.target.value)}
-                  className={`w-14 text-center text-sm border rounded px-1 py-1 ${isDarkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
+                  className={`w-10 sm:w-14 text-center text-xs sm:text-sm border rounded px-0.5 py-1 ${isDarkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
                   min={1}
                   max={totalPages}
                 />
