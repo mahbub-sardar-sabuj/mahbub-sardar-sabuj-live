@@ -307,27 +307,66 @@ export default function EBookReader() {
 
         {/* Reader Header */}
         <div className={`sticky top-0 z-40 ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border-b shadow-sm`}>
-          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="max-w-5xl mx-auto px-4 py-2">
 
-            {/* Left: Book info */}
-            <div className="flex items-center gap-3 min-w-0">
-              <Link href="/ebooks">
+            {/* Row 1 (mobile): Book info + controls */}
+            <div className="flex items-center justify-between gap-2">
+
+              {/* Left: Back button + Book info */}
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Link href="/ebooks">
+                  <button
+                    className={`p-2 rounded-lg hover:bg-gray-100 ${isDarkMode ? "hover:bg-gray-800" : ""} transition-colors flex-shrink-0`}
+                    title="ই-বুক তালিকায় ফিরুন"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                </Link>
+                <img src={book.cover} alt={book.title} className="w-7 h-9 object-cover rounded shadow flex-shrink-0" />
+                <div className="min-w-0 hidden sm:block">
+                  <h1 className="text-sm font-bold truncate max-w-[160px]">{book.title}</h1>
+                  <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                </div>
+              </div>
+
+              {/* Right: Zoom & Controls */}
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  className={`p-2 rounded-lg hover:bg-gray-100 ${isDarkMode ? "hover:bg-gray-800" : ""} transition-colors flex-shrink-0`}
-                  title="ই-বুক তালিকায় ফিরুন"
+                  onClick={zoomOut}
+                  className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                  title={`ছোট করুন (${Math.round(userScale * 100)}%)`}
                 >
-                  <ChevronLeft size={20} />
+                  <ZoomOut size={16} />
                 </button>
-              </Link>
-              <img src={book.cover} alt={book.title} className="w-8 h-10 object-cover rounded shadow flex-shrink-0" />
-              <div className="min-w-0">
-                <h1 className="text-sm font-bold truncate">{book.title}</h1>
-                <p className="text-xs text-gray-500">{book.author}</p>
+                <span className="text-xs text-gray-500 w-10 text-center select-none">
+                  {Math.round(userScale * 100)}%
+                </span>
+                <button
+                  onClick={zoomIn}
+                  className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                  title={`বড় করুন (${Math.round(userScale * 100)}%)`}
+                >
+                  <ZoomIn size={16} />
+                </button>
+                <button
+                  onClick={() => setIsDarkMode(d => !d)}
+                  className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                  title="রাত/দিন মোড"
+                >
+                  {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+                <button
+                  onClick={toggleFullscreen}
+                  className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors hidden md:block`}
+                  title="পূর্ণ পর্দা"
+                >
+                  {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </button>
               </div>
             </div>
 
-            {/* Center: Page navigation */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Row 2: Page navigation — always full width centered */}
+            <div className="flex items-center justify-center gap-2 mt-2 pb-1">
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1}
@@ -340,7 +379,7 @@ export default function EBookReader() {
                   type="number"
                   value={pageInput}
                   onChange={(e) => setPageInput(e.target.value)}
-                  className={`w-12 text-center text-sm border rounded px-1 py-1 ${isDarkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
+                  className={`w-14 text-center text-sm border rounded px-1 py-1 ${isDarkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
                   min={1}
                   max={totalPages}
                 />
@@ -355,41 +394,6 @@ export default function EBookReader() {
               </button>
             </div>
 
-            {/* Right: Zoom & Controls */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button
-                onClick={zoomOut}
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-                title={`ছোট করুন (${Math.round(userScale * 100)}%)`}
-              >
-                <ZoomOut size={16} />
-              </button>
-              {/* Zoom percentage indicator */}
-              <span className="text-xs text-gray-500 w-10 text-center select-none">
-                {Math.round(userScale * 100)}%
-              </span>
-              <button
-                onClick={zoomIn}
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-                title={`বড় করুন (${Math.round(userScale * 100)}%)`}
-              >
-                <ZoomIn size={16} />
-              </button>
-              <button
-                onClick={() => setIsDarkMode(d => !d)}
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-                title="রাত/দিন মোড"
-              >
-                {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-              <button
-                onClick={toggleFullscreen}
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors hidden md:block`}
-                title="পূর্ণ পর্দা"
-              >
-                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-              </button>
-            </div>
           </div>
         </div>
 
