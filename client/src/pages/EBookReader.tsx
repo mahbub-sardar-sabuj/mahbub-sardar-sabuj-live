@@ -320,7 +320,7 @@ export default function EBookReader() {
             </Link>
 
             {/* Book thumbnail + title — desktop only */}
-            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-2 flex-shrink-0" style={{ display: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : 'flex' }}>
               <img src={book.cover} alt={book.title} className="w-7 h-9 object-cover rounded shadow" />
               <div className="min-w-0">
                 <h1 className="text-sm font-bold truncate max-w-[150px] lg:max-w-[300px]">{book.title}</h1>
