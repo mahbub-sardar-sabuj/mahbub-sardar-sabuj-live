@@ -873,9 +873,10 @@ export default function News() {
       `}</style>
 
       <Seo
-        title={selectedNews ? `${selectedNews.title} | সরদার সংবাদ` : "সরদার সংবাদ | মাহবুব সরদার সবুজ"}
-        description={selectedNews ? selectedNews.excerpt : "মাহবুব সরদার সবুজের সর্বশেষ সংবাদ, প্রকাশনা আপডেট, সাহিত্যকর্ম ও অনুষ্ঠানের তথ্য।"}
+        title={selectedNews ? `${selectedNews.title} | সরদার সংবাদ | মাহবুব সরদার সবুজ` : "সরদার সংবাদ | বাংলা সাহিত্য আপডেট | মাহবুব সরদার সবুজ"}
+        description={selectedNews ? selectedNews.excerpt : "মাহবুব সরদার সবুজের সর্বশেষ সংবাদ, নতুন বই প্রকাশনা, সাহিত্য পুরস্কার, বাংলা সাহিত্য অনুষ্ঠান ও লেখকের সাম্প্রতিক কার্যক্রমের আপডেট।"}
         path={selectedNews ? `/news/${selectedNews.id}` : "/news"}
+        keywords="বাংলা সাহিত্য সংবাদ, বাংলা বই প্রকাশনা, মাহবুব সরদার সবুজ সংবাদ, Mahbub Sardar Sabuj news, বাংলাদেশ সাহিত্য, নতুন বাংলা বই, বাংলা লেখক সংবাদ"
         image={selectedNews?.image}
       />
       <Navbar />
