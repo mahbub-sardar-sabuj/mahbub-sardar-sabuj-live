@@ -335,7 +335,7 @@ export default function EBookReader() {
         </div>
 
         {/* Reader Header — Mobile: single clean row; Desktop: full info */}
-        <div className={`sticky top-0 z-40 ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border-b shadow-sm`}>
+        <div className={`sticky top-0 z-[60] ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border-b shadow-sm`}>
           <div className="max-w-5xl mx-auto px-3 py-2 flex items-center gap-2">
 
             {/* Back button — always visible */}

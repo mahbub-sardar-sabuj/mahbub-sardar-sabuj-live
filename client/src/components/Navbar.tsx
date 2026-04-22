@@ -62,6 +62,7 @@ export default function Navbar() {
   const [showBanner, setShowBanner] = useState(true);
   const [logoHovered, setLogoHovered] = useState(false);
   const isEditorPage = location === "/editor";
+  const isEBookReaderPage = location.startsWith("/ebooks/read/");
 
   useEffect(() => {
     const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
@@ -95,6 +96,7 @@ export default function Navbar() {
     setMobileOpen(false);
   };
 
+  if (isEBookReaderPage) return null;
   return (
     <>
       {/* Keyframe animations injected globally */}
@@ -119,7 +121,7 @@ export default function Navbar() {
 
       {/* ── TOP BANNER: আমাকে জিজ্ঞেস করুন ── */}
       <AnimatePresence>
-        {showBanner && !isEditorPage && (
+        {showBanner && !isEditorPage && !isEBookReaderPage && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -209,7 +211,7 @@ export default function Navbar() {
       transition={{ duration: 0.6, ease: "easeOut" }}
       style={{
         position: "fixed",
-        top: (showBanner && !isEditorPage) ? 28 : 0, left: 0, right: 0,
+        top: (showBanner && !isEditorPage && !isEBookReaderPage) ? 28 : 0, left: 0, right: 0,
         zIndex: 50,
         transition: "all 0.5s",
         background: scrolled ? "rgba(6,14,26,0.92)" : "transparent",
