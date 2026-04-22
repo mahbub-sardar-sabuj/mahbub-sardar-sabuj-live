@@ -1,7 +1,7 @@
 /*
  * Premium E-Book Reader — Mahbub Sardar Sabuj
  * Features: PDF.js reader, AdSense ads, no download, beautiful UI
- * Fix v8: zoom buttons working, high-DPI (retina) rendering, mobile resolution fix
+ * Fix v9: zoom buttons working on mobile, pinch-to-zoom, high-DPI (retina) rendering
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute } from "wouter";
@@ -101,8 +101,11 @@ export default function EBookReader() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  // userScale: ব্যবহারকারীর zoom পছন্দ (zoom বাটন দিয়ে পরিবর্তন হয়)
+  // userScale: ব্যবহারকারীর zoom পছন্দ (zoom বাটন ও pinch দিয়ে পরিবর্তন হয়)
   const [userScale, setUserScale] = useState<number>(getDefaultScale);
+  // pinch-to-zoom tracking
+  const lastPinchDistRef = useRef<number | null>(null);
+  const lastPinchScaleRef = useRef<number>(getDefaultScale());
   const [isLoading, setIsLoading] = useState(true);
   const [pdfReady, setPdfReady] = useState(false);
   const [error, setError] = useState("");
@@ -242,8 +245,34 @@ export default function EBookReader() {
   };
 
   // Zoom বাটন: userScale পরিবর্তন করে (0.5x থেকে 3x পর্যন্ত)
-  const zoomIn  = () => setUserScale(s => Math.min(3.0, parseFloat((s + 0.2).toFixed(1))));
-  const zoomOut = () => setUserScale(s => Math.max(0.5, parseFloat((s - 0.2).toFixed(1))));
+  const zoomIn  = () => setUserScale(s => { const next = Math.min(3.0, parseFloat((s + 0.2).toFixed(1))); lastPinchScaleRef.current = next; return next; });
+  const zoomOut = () => setUserScale(s => { const next = Math.max(0.5, parseFloat((s - 0.2).toFixed(1))); lastPinchScaleRef.current = next; return next; });
+
+  // Pinch-to-zoom handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastPinchDistRef.current = Math.hypot(dx, dy);
+      lastPinchScaleRef.current = userScale;
+    }
+  }, [userScale]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const newDist = Math.hypot(dx, dy);
+      const ratio = newDist / lastPinchDistRef.current;
+      const newScale = Math.min(3.0, Math.max(0.5, parseFloat((lastPinchScaleRef.current * ratio).toFixed(2))));
+      setUserScale(newScale);
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    lastPinchDistRef.current = null;
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -361,20 +390,24 @@ export default function EBookReader() {
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={zoomOut}
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+                onTouchEnd={(e) => { e.preventDefault(); zoomOut(); }}
+                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800 active:bg-gray-700" : "hover:bg-gray-100 active:bg-gray-200"} transition-colors`}
                 title="ছোট করুন"
+                style={{ touchAction: "manipulation" }}
               >
-                <ZoomOut size={16} />
+                <ZoomOut size={18} />
               </button>
-              <span className="text-xs text-gray-500 w-9 text-center select-none hidden sm:inline">
+              <span className="text-xs font-medium text-gray-600 w-10 text-center select-none" style={{ minWidth: 36 }}>
                 {Math.round(userScale * 100)}%
               </span>
               <button
                 onClick={zoomIn}
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-                title="বড় করুন"
+                onTouchEnd={(e) => { e.preventDefault(); zoomIn(); }}
+                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800 active:bg-gray-700" : "hover:bg-gray-100 active:bg-gray-200"} transition-colors`}
+                title="বড় করুন"
+                style={{ touchAction: "manipulation" }}
               >
-                <ZoomIn size={16} />
+                <ZoomIn size={18} />
               </button>
               <button
                 onClick={() => setIsDarkMode(d => !d)}
@@ -442,7 +475,10 @@ export default function EBookReader() {
                   {/* Canvas wrapper — overflow-x-auto so user can scroll if zoomed in */}
                   <div
                     className={`w-full overflow-x-auto shadow-2xl rounded-lg ${isDarkMode ? "shadow-black" : "shadow-gray-400"}`}
-                    style={{ userSelect: "none", WebkitUserSelect: "none" }}
+                    style={{ userSelect: "none", WebkitUserSelect: "none", touchAction: "pan-x pan-y" }}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                   >
                     <div className="flex justify-center">
                       <canvas
