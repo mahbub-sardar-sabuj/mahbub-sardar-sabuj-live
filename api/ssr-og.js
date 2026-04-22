@@ -35,11 +35,11 @@ const ebookData = [
 export default async function handler(req) {
   const { searchParams } = new URL(req.url);
   const path = searchParams.get("path") || "/";
-
   let title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
   let description = "জনপ্রিয় লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। এখানে পাবেন তার কবিতা, সাহিত্যকর্ম, সরদার সংবাদ এবং আরও অনেক কিছু।";
   let image = DEFAULT_IMAGE;
   let url = `${SITE_URL}${path}`;
+  let bodyContent = "";
 
   // News Detail Page
   if (path.startsWith("/news/")) {
@@ -49,6 +49,16 @@ export default async function handler(req) {
       title = `${news.title} | সরদার সংবাদ`;
       description = news.excerpt;
       image = news.image;
+      bodyContent = `
+        <article itemscope itemtype="https://schema.org/NewsArticle">
+          <h1 itemprop="headline">${news.title}</h1>
+          <p><time itemprop="datePublished" datetime="${news.date}">${news.date}</time> | <span itemprop="articleSection">${news.category}</span></p>
+          <img src="${news.image}" alt="${news.title}" itemprop="image" />
+          <p itemprop="description">${news.excerpt}</p>
+          <div itemprop="articleBody">${news.content}</div>
+          <p>লেখক: <a href="${SITE_URL}" itemprop="author">মাহবুব সরদার সবুজ</a></p>
+        </article>
+      `;
     }
   }
   // E-book Detail Page
@@ -59,15 +69,25 @@ export default async function handler(req) {
       title = `${ebook.title} | ই-বুক - মাহবুব সরদার সবুজ`;
       description = ebook.description;
       image = ebook.image;
+      bodyContent = `
+        <article>
+          <h1>${ebook.title}</h1>
+          <img src="${ebook.image}" alt="${ebook.title}" />
+          <p>${ebook.description}</p>
+          <p><a href="${SITE_URL}/ebooks">সব ই-বুক দেখুন</a></p>
+        </article>
+      `;
     }
   }
-  // Other specific pages
+  // News list page
   else if (path === "/news") {
     title = "সরদার সংবাদ | সর্বশেষ খবর ও সাহিত্য - মাহবুব সরদার সবুজ";
-    description = "সরদার সংবাদ পোর্টালে পড়ুন দেশ-বিদেশের সর্বশেষ খবর, সাহিত্যচর্চা এবং সমসাময়িক নানা বিষয়ের বিশ্লেষণ।";
+    description = "সরদার সংবাদ পোর্টালে পড়ুন দেশ-বিদেশের সর্বশেষ খবর, সাহিত্যচর্চা এবং সমসাময়িক নানা বিষয়ের বিশ্লেষণ।";
+    bodyContent = `<h1>সরদার সংবাদ</h1><ul>${newsData.map(n => `<li><a href="${SITE_URL}/news/${n.id}">${n.title}</a> — ${n.excerpt}</li>`).join("")}</ul>`;
   } else if (path === "/ebooks") {
     title = "ই-বুক সংগ্রহ | মাহবুব সরদার সবুজ";
     description = "লেখক মাহবুব সরদার সবুজের প্রকাশিত সকল কাব্যগ্রন্থ ও উপন্যাসের ই-বুক সংস্করণ সংগ্রহ করুন।";
+    bodyContent = `<h1>ই-বুক সংগ্রহ</h1><ul>${ebookData.map(e => `<li><a href="${SITE_URL}/ebooks/${e.slug}">${e.title}</a> — ${e.description}</li>`).join("")}</ul>`;
   } else if (path === "/gallery") {
     title = "গ্যালারি | মাহবুব সরদার সবুজ";
     description = "লেখকের বিভিন্ন অনুষ্ঠান, সাহিত্য আড্ডা এবং ব্যক্তিগত মুহূর্তের আলোকচিত্র।";
@@ -80,9 +100,10 @@ export default async function handler(req) {
       <meta charset="UTF-8">
       <title>${title}</title>
       <meta name="description" content="${description}">
+      <link rel="canonical" href="${url}">
       
       <!-- Open Graph / Facebook -->
-      <meta property="og:type" content="website">
+      <meta property="og:type" content="article">
       <meta property="og:url" content="${url}">
       <meta property="og:title" content="${title}">
       <meta property="og:description" content="${description}">
@@ -100,11 +121,15 @@ export default async function handler(req) {
       <meta property="twitter:description" content="${description}">
       <meta property="twitter:image" content="${image}">
 
-      <!-- Redirect to main site for users -->
-      <meta http-equiv="refresh" content="0;url=${url}">
+      <!-- Redirect human users to main site, keep bots here -->
+      <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>
     </head>
     <body>
-      <p>Redirecting to <a href="${url}">${url}</a>...</p>
+      <header><a href="${SITE_URL}">মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj</a></header>
+      <main>
+        ${bodyContent || `<h1>${title}</h1><p>${description}</p>`}
+      </main>
+      <footer><p>© মাহবুব সরদার সবুজ | <a href="${SITE_URL}">www.mahbubsardarsabuj.com</a></p></footer>
     </body>
     </html>
   `;

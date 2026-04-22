@@ -54,7 +54,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver).*"
+          "value": "(?i).*(Googlebot|Googlebot-News|Googlebot-Image|Googlebot-Video|AdsBot-Google|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver).*"
         }
       ],
       "dest": "/api/ssr-og?path=/$1"
@@ -65,7 +65,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver).*"
+          "value": "(?i).*(Googlebot|Googlebot-News|Googlebot-Image|Googlebot-Video|AdsBot-Google|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver).*"
         }
       ],
       "dest": "/api/ssr-og?path=/"

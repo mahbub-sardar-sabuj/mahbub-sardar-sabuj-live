@@ -30,6 +30,78 @@
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/39</loc>
+    <lastmod>2026-04-16</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-16</news:publication_date>
+      <news:title>তরুণ লেখক জুনাইদ বিন কামালের 'শূন্যতার সংলাপ' পাঠকমহলে আলোচনায়</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/38</loc>
+    <lastmod>2026-04-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-14</news:publication_date>
+      <news:title>নতুন প্রজন্মের কাব্যধারায় 'ফের দেখা হবে'—নুসরাত অপর্ণার আবেগঘন অভিষেক</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/37</loc>
+    <lastmod>2026-04-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-14</news:publication_date>
+      <news:title>'তুমি ছায়া নাকি আলো'—ভালোবাসা ও নৈতিক দ্বন্দ্বের গল্প নিয়ে নতুন উপন্যাস</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/36</loc>
+    <lastmod>2026-04-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-10</news:publication_date>
+      <news:title>তরুণ কবি সুলাইমান গুফরানের নতুন বই ঘিরে পাঠকমহলে আগ্রহ</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/35</loc>
+    <lastmod>2026-04-10</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-10</news:publication_date>
+      <news:title>ঈদে আসছে 'তুমি ছিলে বলেই': প্রি-অর্ডারেই পাঠকদের উচ্ছ্বাস, বিশেষ চিঠির ঘোষণা</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/34</loc>
+    <lastmod>2026-04-09</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-09</news:publication_date>
+      <news:title>বিশ্বসাহিত্যের নতুন কণ্ঠস্বর: তরুণ লেখক রাফি হাসানের প্রথম উপন্যাস</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/33</loc>
+    <lastmod>2026-04-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-08</news:publication_date>
+      <news:title>সাহিত্যিক আড্ডায় মাহবুব সরদার সবুজ: লেখকদের সংগঠিত হওয়ার আহ্বান</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/32</loc>
+    <lastmod>2026-04-07</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-07</news:publication_date>
+      <news:title>সাহিত্যাঙ্গনে নতুন আলো: তরুণ কবি রাফিউল ইসলামের প্রথম কাব্যগ্রন্থ প্রকাশ</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/31</loc>
     <lastmod>2026-04-06</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
     <news:news>
