@@ -26,10 +26,9 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
   { label: "পরিচিতি", subtitle: "লেখক পরিচয়", href: "/about", icon: UserRound },
-  { label: "বই", subtitle: "প্রকাশিত বই", href: "/ebooks", icon: BookOpen },
+  { label: "ই-বুক", subtitle: "প্রকাশিত বই", href: "/ebooks", icon: BookOpen },
   { label: "আবৃত্তি", subtitle: "ভিডিও সংগ্রহ", href: "/facebook-recitations", icon: Mic2 },
   { label: "লেখালেখি", subtitle: "প্রবন্ধ ও গদ্য", href: "/writings", icon: PenLine },
-  { label: "ই-বুক", subtitle: "ডিজিটাল বই", href: "/ebooks", icon: BookOpen },
   { label: "ডিজাইন", subtitle: "কার্ড তৈরি করুন", href: "/editor", icon: Palette },
   { label: "গ্যালারি", subtitle: "ছবির সংগ্রহ", href: "/gallery", icon: Images },
   { label: "সরদার সংবাদ", subtitle: "সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
@@ -388,6 +387,8 @@ export default function Home() {
                       filter: "contrast(1.05) saturate(0.88)",
                     }}
                     className="hero-portrait"
+                    fetchPriority="high"
+                    decoding="async"
                   />
                   {/* Gradient overlay */}
                   <div style={{
@@ -617,6 +618,8 @@ export default function Home() {
                       boxShadow: "0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.2), 8px 8px 0 rgba(201,168,76,0.08)",
                       display: "block",
                     }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </motion.div>
               </div>
@@ -946,6 +949,8 @@ export default function Home() {
                     filter: "contrast(1.05) saturate(0.9) brightness(1.02)",
                   }}
                   className="author-profile-img"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div style={{
                   position: "absolute", inset: 0,

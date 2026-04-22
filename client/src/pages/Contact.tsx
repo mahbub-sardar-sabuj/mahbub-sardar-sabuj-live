@@ -60,19 +60,34 @@ export default function Contact() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [focused, setFocused] = useState<string | null>(null);
 
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) return;
     setStatus("sending");
-    await new Promise(r => setTimeout(r, 1000));
-    const subject = encodeURIComponent(form.subject || "ওয়েবসাইট থেকে বার্তা");
-    const body = encodeURIComponent(`নাম: ${form.name}\nইমেইল: ${form.email}\n\n${form.message}`);
-    window.open(`mailto:lekhokmahbubsardarsabuj@gmail.com?subject=${subject}&body=${body}`, "_blank");
-    setStatus("sent");
-    setTimeout(() => {
+    setErrorMsg(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatus("sent");
+        setTimeout(() => {
+          setStatus("idle");
+          setForm({ name: "", email: "", subject: "", message: "" });
+        }, 5000);
+      } else {
+        setErrorMsg(data.error || "বার্তা পাঠাতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
+        setStatus("idle");
+      }
+    } catch {
+      setErrorMsg("নেটওয়ার্ক সমস্যা। ইন্টারনেট সংযোগ পরীক্ষা করুন।");
       setStatus("idle");
-      setForm({ name: "", email: "", subject: "", message: "" });
-    }, 5000);
+    }
   };
 
   const getFocusStyle = (field: string): React.CSSProperties =>
@@ -341,7 +356,7 @@ export default function Contact() {
                       >✅</motion.div>
                       <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: GOLD, fontSize: "1.5rem", marginBottom: "0.8rem" }}>বার্তা পাঠানো হয়েছে!</h3>
                       <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.9rem", lineHeight: 1.9 }}>
-                        আপনার ইমেইল অ্যাপ খুলেছে। ধন্যবাদ আপনার বার্তার জন্য — আমি শীঘ্রই উত্তর দেব।
+                        আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ আপনার বার্তার জন্য — আমি শীঘ্রই উত্তর দেব।
                       </p>
                     </motion.div>
                   ) : (
@@ -461,6 +476,20 @@ export default function Contact() {
                           )}
                         </motion.button>
 
+                        {errorMsg && (
+                          <div style={{
+                            background: "rgba(255,80,80,0.08)",
+                            border: "1px solid rgba(255,80,80,0.25)",
+                            borderRadius: 10,
+                            padding: "10px 14px",
+                            color: "#ff6b6b",
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            fontSize: "0.85rem",
+                            textAlign: "center",
+                          }}>
+                            ⚠️ {errorMsg}
+                          </div>
+                        )}
                         <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.73rem", textAlign: "center", margin: 0 }}>
                           * চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক
                         </p>

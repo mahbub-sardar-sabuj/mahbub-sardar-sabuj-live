@@ -1,56 +1,91 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
+import { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+
+// Eagerly load Home and NotFound for instant first render
 import Home from "./pages/Home";
-import FacebookRecitations from "./pages/FacebookRecitations";
-import Writings from "./pages/Writings";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import EBooks from "./pages/EBooks";
-import EBookReader from "./pages/EBookReader";
-import Editor from "./pages/Editor";
-import News from "./pages/News";
-import Gallery from "./pages/Gallery";
-import AIChatbot from "./components/AIChatbot";
+import NotFound from "@/pages/NotFound";
+
+// Lazy load all other pages to reduce initial bundle size
+const FacebookRecitations = lazy(() => import("./pages/FacebookRecitations"));
+const Writings = lazy(() => import("./pages/Writings"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const EBooks = lazy(() => import("./pages/EBooks"));
+const EBookReader = lazy(() => import("./pages/EBookReader"));
+const Editor = lazy(() => import("./pages/Editor"));
+const News = lazy(() => import("./pages/News"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const AIChatbot = lazy(() => import("./components/AIChatbot"));
+
+// Page loading fallback
+function PageLoader() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "60vh",
+        background: "transparent",
+      }}
+      aria-label="পেজ লোড হচ্ছে..."
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          border: "3px solid rgba(201,168,76,0.2)",
+          borderTop: "3px solid #C9A84C",
+          borderRadius: "50%",
+          animation: "spin 0.8s linear infinite",
+        }}
+      />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/facebook-recitations"} component={FacebookRecitations} />
-      <Route path={"/writings"} component={Writings} />
-      <Route path={"/privacy-policy"} component={PrivacyPolicy} />
-      <Route path={"/terms"} component={Terms} />
-      <Route path={"/about"} component={About} />
-      <Route path={"/contact"} component={Contact} />
-      <Route path={"/ebooks"} component={EBooks} />
-      <Route path={"/ebooks/read/:slug"} component={EBookReader} />
-      <Route path={"/editor"} component={Editor} />
-      <Route path={"/news"} component={News} />
-      <Route path={"/news/:id"} component={News} />
-      <Route path={"/gallery"} component={Gallery} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/facebook-recitations"} component={FacebookRecitations} />
+        <Route path={"/writings"} component={Writings} />
+        <Route path={"/privacy-policy"} component={PrivacyPolicy} />
+        <Route path={"/terms"} component={Terms} />
+        <Route path={"/about"} component={About} />
+        <Route path={"/contact"} component={Contact} />
+        <Route path={"/ebooks"} component={EBooks} />
+        <Route path={"/ebooks/read/:slug"} component={EBookReader} />
+        <Route path={"/editor"} component={Editor} />
+        <Route path={"/news"} component={News} />
+        <Route path={"/news/:id"} component={News} />
+        <Route path={"/gallery"} component={Gallery} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />
-          <AIChatbot />
+          <Suspense fallback={null}>
+            <AIChatbot />
+          </Suspense>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

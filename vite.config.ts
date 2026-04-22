@@ -168,6 +168,7 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
+    minify: "esbuild",
     rollupOptions: {
       output: {
         manualChunks: {
@@ -175,8 +176,14 @@ export default defineConfig({
           "vendor-motion": ["framer-motion"],
           "vendor-router": ["wouter"],
           "vendor-icons": ["lucide-react"],
+          "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-tooltip", "@radix-ui/react-dropdown-menu"],
+          "vendor-query": ["@tanstack/react-query"],
         },
       },
+    },
+    // Drop console.log statements in production builds
+    esbuild: {
+      drop: ["console", "debugger"],
     },
   },
   server: {
