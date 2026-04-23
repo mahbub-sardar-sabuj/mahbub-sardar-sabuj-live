@@ -16,6 +16,7 @@ import {
   Minimize2,
   Moon,
   Sun,
+  PenLine,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -423,6 +424,16 @@ export default function EBookReader() {
               >
                 {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
+              {/* লেখালেখি শর্টকাট বাটন */}
+              <Link href="/writings" className="flex-shrink-0">
+                <button
+                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg bg-[#D4A843] text-[#0D1B2A] hover:bg-[#c49535] transition-colors`}
+                  title="লেখালেখি পড়ুন"
+                >
+                  <PenLine size={15} />
+                  <span className="hidden md:inline text-xs font-bold">লেখালেখি</span>
+                </button>
+              </Link>
             </div>
 
           </div>
