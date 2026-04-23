@@ -54,7 +54,7 @@ const newsData = [
   },
   {
     id: 34,
-    image: "/images/news/economy_reform_bangladesh_april_2026.jpg.jpg",
+    image: "/images/news/economy_reform_bangladesh_april_2026.jpg",
     title: "অর্থনীতি সচল রাখতে সংস্কারে জোর, বলছেন বিশেষজ্ঞরা",
     excerpt: "অর্থনীতিকে সচল রাখতে নীতিগত সংস্কার, স্বচ্ছতা ও বাস্তবমুখী পদক্ষেপের ওপর গুরুত্ব দিয়েছেন অর্থনীতিবিদরা।",
     category: "অর্থনীতি",
