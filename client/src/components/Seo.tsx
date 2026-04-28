@@ -2,6 +2,16 @@ import { useEffect } from "react";
 
 type JsonLd = Record<string, unknown> | Array<Record<string, unknown>>;
 
+interface NewsArticleSeo {
+  headline?: string;
+  datePublished: string;
+  dateModified?: string;
+  author?: string;
+  publisherName?: string;
+  publisherLogo?: string;
+  articleSection?: string;
+}
+
 interface SeoProps {
   title: string;
   description: string;
@@ -10,11 +20,20 @@ interface SeoProps {
   keywords?: string;
   type?: string;
   jsonLd?: JsonLd;
+  newsArticle?: NewsArticleSeo;
 }
 
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = "https://www.mahbubsardarsabuj.com/images/og-home-suit.jpg";
+const DEFAULT_PUBLISHER_LOGO = "https://www.mahbubsardarsabuj.com/images/sardar-sangbad-logo-final.png";
+
+function toIsoDateTime(date: string) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return `${date}T00:00:00+06:00`;
+  }
+  return date;
+}
 
 function upsertMeta(selector: string, attributes: Record<string, string>) {
   let element = document.head.querySelector(selector) as HTMLMetaElement | null;
@@ -50,6 +69,7 @@ export default function Seo({
   keywords,
   type = "website",
   jsonLd,
+  newsArticle,
 }: SeoProps) {
   useEffect(() => {
     const canonicalUrl = new URL(path, SITE_URL).toString();
@@ -75,12 +95,46 @@ export default function Seo({
     upsertMeta('meta[name="robots"]', { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" });
     upsertLink('link[rel="canonical"]', { rel: "canonical", href: canonicalUrl });
 
+    const newsArticleJsonLd = newsArticle ? {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": canonicalUrl,
+      },
+      headline: newsArticle.headline ?? title,
+      description,
+      image: [absoluteImage],
+      datePublished: toIsoDateTime(newsArticle.datePublished),
+      dateModified: toIsoDateTime(newsArticle.dateModified ?? newsArticle.datePublished),
+      author: {
+        "@type": "Person",
+        name: newsArticle.author ?? "মাহবুব সরদার সবুজ",
+        url: SITE_URL,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: newsArticle.publisherName ?? "সরদার সংবাদ",
+        logo: {
+          "@type": "ImageObject",
+          url: newsArticle.publisherLogo ?? DEFAULT_PUBLISHER_LOGO,
+        },
+      },
+      articleSection: newsArticle.articleSection,
+      inLanguage: "bn-BD",
+      isAccessibleForFree: true,
+    } : null;
+
+    const structuredData = newsArticleJsonLd
+      ? (jsonLd ? [newsArticleJsonLd, ...(Array.isArray(jsonLd) ? jsonLd : [jsonLd])] : newsArticleJsonLd)
+      : jsonLd;
+
     let jsonLdScript: HTMLScriptElement | null = null;
-    if (jsonLd) {
+    if (structuredData) {
       jsonLdScript = document.createElement("script");
       jsonLdScript.type = "application/ld+json";
       jsonLdScript.setAttribute("data-seo-jsonld", canonicalUrl);
-      jsonLdScript.text = JSON.stringify(jsonLd);
+      jsonLdScript.text = JSON.stringify(structuredData);
       document.head.appendChild(jsonLdScript);
     }
 
@@ -90,7 +144,7 @@ export default function Seo({
         jsonLdScript.parentNode.removeChild(jsonLdScript);
       }
     };
-  }, [title, description, path, image, keywords, type, jsonLd]);
+  }, [title, description, path, image, keywords, type, jsonLd, newsArticle]);
 
   return null;
 }

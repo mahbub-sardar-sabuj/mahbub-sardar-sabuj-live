@@ -1,7 +1,60 @@
 export const config = { runtime: "edge" };
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
-const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";const newsData = [
+const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
+const NEWS_PUBLISHER_NAME = "সরদার সংবাদ";
+const NEWS_PUBLISHER_LOGO = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
+
+function toIsoDateTime(date) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return `${date}T00:00:00+06:00`;
+  }
+  return date;
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildNewsArticleJsonLd(news, url, image) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    headline: news.title,
+    description: news.excerpt,
+    image: [image],
+    datePublished: toIsoDateTime(news.date),
+    dateModified: toIsoDateTime(news.date),
+    author: {
+      "@type": "Person",
+      name: "মাহবুব সরদার সবুজ",
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: NEWS_PUBLISHER_NAME,
+      logo: {
+        "@type": "ImageObject",
+        url: NEWS_PUBLISHER_LOGO,
+      },
+    },
+    articleSection: news.category,
+    keywords: news.keywords || news.category,
+    inLanguage: "bn-BD",
+    isAccessibleForFree: true,
+  };
+}
+
+const newsData = [
   { id: 39, title: "তরুণ লেখক জুনাইদ বিন কামালের ‘শূন্যতার সংলাপ’ পাঠকমহলে আলোচনায়", excerpt: "সাহিত্যাঙ্গনে নতুন প্রজন্মের লেখকদের পদচারণা দিন দিন দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় আলোচনায় উঠে এসেছে তরুণ লেখক জুনাইদ বিন কামালের বই ‘শূন্যতার সংলাপ’।", content: "সাহিত্যাঙ্গনে নতুন প্রজন্মের লেখকদের পদচারণা দিন দিন দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় আলোচনায় উঠে এসেছে তরুণ লেখক জুনাইদ বিন কামালের বই ‘শূন্যতার সংলাপ’। চট্টগ্রামের পটিয়া থানার অন্তর্গত ছনহরা ইউনিয়নের মৌলভী পাড়া গ্রামের এক মধ্যবিত্ত পরিবারে জন্ম ও বেড়ে ওঠা এই লেখক। তার বাবা মোঃ কামাল উদ্দীন এবং মাতা মোছাঃ শাকেরা বেগম। পারিবারিক স্নেহ ও সহজ পরিবেশে বেড়ে উঠেই তিনি সাহিত্যচর্চার প্রতি আগ্রহী হয়ে ওঠেন। জানা যায়, ‘শূন্যতার সংলাপ’ বইটিতে লেখক শূন্যতাকে একটি সংলাপের আকারে তুলে ধরেছেন। এতে একাকীত্ব, না বলা অনুভূতি এবং জীবনের গভীর কিছু সত্য খুব সূক্ষ্মভাবে প্রকাশ পেয়েছে। পাঠকদের মতে, বইটি শুধু একটি সাহিত্যকর্ম নয়; বরং চিন্তা, অনুভব এবং সময়ের প্রতিফলন। অল্প বয়সেই লেখকের এমন পরিপক্ব চিন্তাভাবনা ও লেখনশৈলী পাঠকমহলে প্রশংসিত হচ্ছে। তার লেখায় সাহিত্যের সৌন্দর্য, অনুভূতির গভীরতা এবং বাস্তবতার ছোঁয়া স্পষ্টভাবে ফুটে উঠেছে। বইটি পাঠকদের হৃদয়ে নাড়া দেয় এবং তাদেরকে নতুন করে ভাবতে উদ্বুদ্ধ করে। এছাড়া, জুনাইদ বিন কামাল গল্প, কবিতা ও উপন্যাস লেখার পাশাপাশি বিভিন্ন পত্রপত্রিকা, ম্যাগাজিন এবং অনলাইন প্ল্যাটফর্মে নিয়মিত লিখে থাকেন। সাহিত্যপ্রেমীদের কাছে ‘শূন্যতার সংলাপ’ ইতোমধ্যেই আগ্রহের কেন্দ্রবিন্দুতে পরিণত হয়েছে। সংশ্লিষ্টরা মনে করছেন, এ ধরনের গভীর ভাবনার বই নতুন প্রজন্মের পাঠকদের মাঝেও ইতিবাচক প্রভাব ফেলবে। লেখকের ভবিষ্যৎ সাহিত্যজীবনের জন্য শুভকামনা জানিয়েছেন পাঠক ও শুভানুধ্যায়ীরা।", image: `${SITE_URL}/images/news/shunnotar_songlap_junaid_bin_kamal.jpg`, date: "2026-04-16", category: "সাহিত্য", keywords: "শূন্যতার সংলাপ, জুনাইদ বিন কামাল, সাহিত্য, সরদার সংবাদ" },
   { id: 38, title: "নতুন প্রজন্মের কাব্যধারায় ‘ফের দেখা হবে’—নুসরাত অপর্ণার আবেগঘন অভিষেক", excerpt: "বাংলা সাহিত্যাঙ্গনে নতুন প্রজন্মের তরুণ লেখকদের উপস্থিতি ক্রমেই দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় পাঠকসমাজে আলোচনায় এসেছে সম্ভাবনাময় লেখিকা নুসরাত অপর্ণার প্রথম কাব্যগ্রন্থ ‘ফের দেখা হবে’।", content: "বাংলা সাহিত্যাঙ্গনে নতুন প্রজন্মের তরুণ লেখকদের উপস্থিতি ক্রমেই দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় পাঠকসমাজে আলোচনায় এসেছে সম্ভাবনাময় লেখিকা নুসরাত অপর্ণার প্রথম কাব্যগ্রন্থ ‘ফের দেখা হবে’। অমর একুশে বইমেলা ২০২৫-এ প্রকাশিত এ গ্রন্থটি প্রকাশের পর থেকেই তরুণ পাঠকদের মধ্যে সাড়া ফেলেছে। কাব্যগ্রন্থটির প্রতিটি কবিতায় প্রেম, বিচ্ছেদ, স্মৃতি ও অনুভূতির সূক্ষ্ম মেলবন্ধন ফুটে উঠেছে। সহজ অথচ গভীর ভাষায় রচিত এসব কবিতা পাঠককে কখনও আবেগতাড়িত করে, কখনও স্মৃতির গভীরে নিয়ে যায়। লেখিকার শব্দচয়ন ও ভাবনার প্রকাশভঙ্গি পাঠকদের মুগ্ধ করেছে। নুসরাত অপর্ণা মূলত একজন কবি ও গীতিকার। তার লেখা বেশ কিছু গান ইতোমধ্যেই জনপ্রিয় শিল্পীদের কণ্ঠে পরিবেশিত হয়েছে। এছাড়া বিভিন্ন পত্রপত্রিকা, ম্যাগাজিন ও অনলাইন প্ল্যাটফর্মে তিনি নিয়মিত লিখে থাকেন। ‘ফের দেখা হবে’ কাব্যগ্রন্থটি প্রকাশ করেছে ছায়া প্রকাশন। বইটির মূল্য ২০০ টাকা। বর্তমানে বইটি প্রকাশনীর নির্ধারিত বিক্রয়কেন্দ্র ও অনলাইন প্ল্যাটফর্মে পাওয়া যাচ্ছে। সাহিত্যপ্রেমীদের মতে, নতুন প্রজন্মের আবেগ ও বাস্তবতার সংমিশ্রণে গড়ে ওঠা এই কাব্যগ্রন্থটি ইতোমধ্যেই পাঠকমনে বিশেষ জায়গা করে নিয়েছে এবং ভবিষ্যতেও তার আবেদন ধরে রাখবে।", image: `${SITE_URL}/images/news/fer_dekha_hobe_nusrat_aporna.jpg`, date: "2026-04-14", category: "সাহিত্য", keywords: "ফের দেখা হবে, নুসরাত অপর্ণার, কাব্যগ্রন্থ, কবিতা, সাহিত্য, সরদার সংবাদ" },
   { id: 37, title: "“তুমি ছায়া নাকি আলো”—ভালোবাসা ও নৈতিক দ্বন্দ্বের গল্প নিয়ে নতুন উপন্যাস", excerpt: "ঢাকা শহরের অদৃশ্য অন্ধকার বাস্তবতা ও মানুষের ভেতরের নৈতিক দ্বন্দ্বকে কেন্দ্র করে প্রকাশিত হয়েছে তরুণ লেখিকা নুসরাত অপর্ণার নতুন উপন্যাস “তুমি ছায়া নাকি আলো”।", content: "ঢাকা শহরের অদৃশ্য অন্ধকার বাস্তবতা ও মানুষের ভেতরের নৈতিক দ্বন্দ্বকে কেন্দ্র করে প্রকাশিত হয়েছে তরুণ লেখিকা নুসরাত অপর্ণার নতুন উপন্যাস “তুমি ছায়া নাকি আলো”। উপন্যাসটি এমন এক শহরের গল্প তুলে ধরে, যেখানে দিনের আলোয় জীবন স্বাভাবিক মনে হলেও, রাত নামলেই উন্মোচিত হয় এক ভিন্ন জগৎ। গল্পের কেন্দ্রীয় চরিত্র অয়ন—একজন আইন শিক্ষার্থী, যে বিশ্বাস করে ন্যায়বিচার আইনের মাধ্যমেই প্রতিষ্ঠিত হয়। কিন্তু তার জীবনের গুরুত্বপূর্ণ মানুষ মায়ার হঠাৎ অন্তর্ধান তাকে ঠেলে দেয় এক অজানা অন্ধকারের দিকে। মায়াকে খুঁজতে গিয়ে অয়ন আবিষ্কার করে শহরের এমন এক স্তর, যেখানে আইন থাকলেও ন্যায় সবসময় উপস্থিত থাকে না। একসময় সে জানতে পারে, মায়া বেঁচে আছে, কিন্তু বদলে গেছে সম্পূর্ণভাবে। সমাজের অন্যায় ও বিশ্বাসঘাতকতার অভিজ্ঞতা তাকে এমন এক গোপন শক্তির অংশ বানিয়েছে, যারা বিশ্বাস করে—ন্যায় প্রতিষ্ঠার জন্য কখনো কখনো ছায়ার পথ বেছে নিতে হয়। এই অবস্থায় অয়ন পড়ে গভীর নৈতিক সংকটে। একদিকে ভালোবাসা, অন্যদিকে তার বিশ্বাস—এই দ্বন্দ্বই গল্পটিকে নিয়ে যায় একটি চিন্তাপ্রসূত পরিণতির দিকে। উপন্যাসটি পাঠকের সামনে প্রশ্ন তোলে: অন্যায়ের বিরুদ্ধে দাঁড়াতে গিয়ে মানুষ নিজেই কি অন্ধকারের অংশ হয়ে ওঠে? লেখিকা নুসরাত অপর্ণা বলেন, এই বইয়ের মাধ্যমে তিনি শুধু একটি প্রেমের গল্প নয়, বরং মানুষের ভেতরের আলো-অন্ধকারের লড়াই এবং সমাজের বাস্তবতাকে তুলে ধরতে চেয়েছেন। উল্লেখ্য, নুসরাত অপর্ণা ইতোমধ্যে তার প্রথম কাব্যগ্রন্থ “ফের দেখা হবে” এর মাধ্যমে পাঠকমহলে পরিচিতি লাভ করেছেন। নতুন এই উপন্যাসে তিনি ব্যক্তিগত অনুভূতির পাশাপাশি সমাজের জটিলতা ও মানুষের অভ্যন্তরীণ দ্বন্দ্বকে আরও বিস্তৃতভাবে উপস্থাপন করেছেন। সাহিত্যপ্রেমীদের কাছে “তুমি ছায়া নাকি আলো” ইতোমধ্যেই আগ্রহের কেন্দ্রবিন্দুতে পরিণত হয়েছে বলে জানা গেছে।", image: `${SITE_URL}/images/news/tumi_chaya_naki_alo_nusrat_aporna.jpg`, date: "2026-04-14", category: "সাহিত্য", keywords: "তুমি ছায়া নাকি আলো, নুসরাত অপর্ণা, নতুন উপন্যাস, সাহিত্য, সরদার সংবাদ" },
@@ -5100,6 +5153,11 @@ export default async function handler(req) {
   let image = DEFAULT_IMAGE;
   let url = `${SITE_URL}${path}`;
   let bodyContent = "";
+  let ogType = "website";
+  let jsonLd = null;
+  let publishedTime = "";
+  let modifiedTime = "";
+  let articleSection = "";
 
   // News Detail Page
   if (path.startsWith("/news/")) {
@@ -5108,15 +5166,23 @@ export default async function handler(req) {
     if (news) {
       title = `${news.title} | সরদার সংবাদ`;
       description = news.excerpt;
-      image = news.image;
+      image = news.image && news.image.startsWith("http") ? news.image : new URL(news.image || DEFAULT_IMAGE, SITE_URL).toString();
+      ogType = "article";
+      publishedTime = toIsoDateTime(news.date);
+      modifiedTime = toIsoDateTime(news.date);
+      articleSection = news.category;
+      jsonLd = buildNewsArticleJsonLd(news, url, image);
       bodyContent = `
         <article itemscope itemtype="https://schema.org/NewsArticle">
-          <h1 itemprop="headline">${news.title}</h1>
-          <p><time itemprop="datePublished" datetime="${news.date}">${news.date}</time> | <span itemprop="articleSection">${news.category}</span></p>
-          <img src="${news.image}" alt="${news.title}" itemprop="image" />
-          <p itemprop="description">${news.excerpt}</p>
-          <div itemprop="articleBody">${news.content}</div>
+          <h1 itemprop="headline">${escapeHtml(news.title)}</h1>
+          <p><time itemprop="datePublished" datetime="${publishedTime}">${escapeHtml(news.date)}</time> | <span itemprop="articleSection">${escapeHtml(news.category)}</span></p>
+          <img src="${image}" alt="${escapeHtml(news.title)}" itemprop="image" />
+          <p itemprop="description">${escapeHtml(news.excerpt)}</p>
+          <div itemprop="articleBody">${String(news.content).split("\n").map((paragraph) => paragraph.trim()).filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div>
           <p>লেখক: <a href="${SITE_URL}" itemprop="author">মাহবুব সরদার সবুজ</a></p>
+          <p itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><span itemprop="name">${NEWS_PUBLISHER_NAME}</span><meta itemprop="logo" content="${NEWS_PUBLISHER_LOGO}"></p>
+          <meta itemprop="dateModified" content="${modifiedTime}">
+          <meta itemprop="mainEntityOfPage" content="${url}">
         </article>
       `;
     }
@@ -5229,7 +5295,7 @@ export default async function handler(req) {
       <link rel="canonical" href="${url}">
       
       <!-- Open Graph / Facebook -->
-      <meta property="og:type" content="article">
+      <meta property="og:type" content="${ogType}">
       <meta property="og:url" content="${url}">
       <meta property="og:title" content="${title}">
       <meta property="og:description" content="${description}">
@@ -5239,6 +5305,10 @@ export default async function handler(req) {
       <meta property="og:image:width" content="1200">
       <meta property="og:image:height" content="630">
       <meta property="og:site_name" content="${SITE_NAME}">
+      ${publishedTime ? `<meta property="article:published_time" content="${publishedTime}">` : ""}
+      ${modifiedTime ? `<meta property="article:modified_time" content="${modifiedTime}">` : ""}
+      ${articleSection ? `<meta property="article:section" content="${escapeHtml(articleSection)}">` : ""}
+      ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>` : ""}
 
       <!-- Twitter -->
       <meta property="twitter:card" content="summary_large_image">

@@ -878,6 +878,16 @@ export default function News() {
         path={selectedNews ? `/news/${selectedNews.id}` : "/news"}
         keywords="বাংলা সাহিত্য সংবাদ, বাংলা বই প্রকাশনা, মাহবুব সরদার সবুজ সংবাদ, Mahbub Sardar Sabuj news, বাংলাদেশ সাহিত্য, নতুন বাংলা বই, বাংলা লেখক সংবাদ"
         image={selectedNews?.image}
+        type={selectedNews ? "article" : "website"}
+        newsArticle={selectedNews ? {
+          headline: selectedNews.title,
+          datePublished: selectedNews.date,
+          dateModified: selectedNews.date,
+          author: "মাহবুব সরদার সবুজ",
+          publisherName: "সরদার সংবাদ",
+          publisherLogo: "/images/sardar-sangbad-logo-final.png",
+          articleSection: selectedNews.category,
+        } : undefined}
       />
       <Navbar />
 
