@@ -513,7 +513,8 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent।
+    content: `আস্সালামু আলাইকুম!
+আমি মাহবুব সরদার সবুজ AI Agent।
 
 আমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ। এছাড়া সরদার ডিজাইন স্টুডিও ব্যবহারের গাইডলাইনও দিতে পারি। যেকোনো বিষয়ে প্রশ্ন করুন!`,
     timestamp: new Date(),
