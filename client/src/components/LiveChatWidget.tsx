@@ -1,48 +1,52 @@
 /**
  * LiveChatWidget — Visitor-facing Live Chat component
  * Uses Telegram API via serverless /api/live-chat endpoint
- * No database required — messages go directly to Telegram
+ * Collects WhatsApp or Gmail so admin reply can reach visitor later
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
 const GOLD = "#D4A843";
 const NAVY = "#060E1A";
 const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
-
 interface Message {
   id: string;
   text: string;
   sender: "visitor" | "admin";
   timestamp: number;
 }
-
-const STORAGE_KEY = "mss_live_chat_v2";
-
+const STORAGE_KEY = "mss_live_chat_v3";
 function generateSessionId() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
-
 function formatTime(ts: number) {
   return new Date(ts).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
-
 interface Props {
   onClose?: () => void;
 }
-
 export default function LiveChatWidget({ onClose }: Props) {
   const [visitorName, setVisitorName] = useState("");
   const [nameInput, setNameInput] = useState("");
+  const [contactInput, setContactInput] = useState(""); // WhatsApp or Gmail
+  const [contactType, setContactType] = useState<"whatsapp" | "gmail" | "">("");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [lastUpdateId, setLastUpdateId] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+  const [lastUpdateId, setLastUpdateId] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [error, setError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Detect contact type from input
+  useEffect(() => {
+    const val = contactInput.trim();
+    if (!val) { setContactType(""); return; }
+    if (val.includes("@")) setContactType("gmail");
+    else if (/^[\d\s\+\-()]+$/.test(val) && val.replace(/\D/g, "").length >= 7) setContactType("whatsapp");
+    else setContactType("");
+  }, [contactInput]);
 
   // Restore session from localStorage
   useEffect(() => {
@@ -120,7 +124,7 @@ export default function LiveChatWidget({ onClose }: Props) {
     setError("");
     try {
       const sid = generateSessionId();
-      // Send a "session started" notification to Telegram
+      const contact = contactInput.trim();
       const res = await fetch("/api/live-chat?action=send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,6 +132,8 @@ export default function LiveChatWidget({ onClose }: Props) {
           visitorName: nameInput.trim(),
           message: "🟢 নতুন সেশন শুরু হয়েছে",
           sessionId: sid,
+          contact: contact || null,
+          contactType: contactType || null,
           isSystemMessage: true,
         }),
       });
@@ -141,7 +147,7 @@ export default function LiveChatWidget({ onClose }: Props) {
       setMessages([
         {
           id: "welcome",
-          text: `স্বাগতম ${nameInput.trim()}! আপনার বার্তা পাঠান। মাহবুব সরদার সবুজ অনলাইনে থাকলে উত্তর দেবেন।`,
+          text: `স্বাগতম ${nameInput.trim()}! আপনার বার্তা পাঠান। মাহবুব সরদার সবুজ অনলাইনে থাকলে উত্তর দেবেন।${contact ? " অনলাইনে না থাকলে আপনার দেওয়া যোগাযোগ মাধ্যমে উত্তর পাঠানো হবে।" : ""}`,
           sender: "admin",
           timestamp: Date.now(),
         },
@@ -159,7 +165,6 @@ export default function LiveChatWidget({ onClose }: Props) {
     setInputText("");
     setIsSending(true);
     setError("");
-
     const tempMsg: Message = {
       id: `v-${Date.now()}`,
       text,
@@ -167,7 +172,6 @@ export default function LiveChatWidget({ onClose }: Props) {
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, tempMsg]);
-
     try {
       const res = await fetch("/api/live-chat?action=send", {
         method: "POST",
@@ -190,13 +194,15 @@ export default function LiveChatWidget({ onClose }: Props) {
     localStorage.removeItem(STORAGE_KEY);
     setVisitorName("");
     setNameInput("");
+    setContactInput("");
+    setContactType("");
     setSessionId(null);
     setMessages([]);
     setLastUpdateId(0);
     setError("");
   };
 
-  // ── Name entry screen ──────────────────────────────────────────────────────
+  // ── Name + Contact entry screen ────────────────────────────────────────────
   if (!sessionId) {
     return (
       <motion.div
@@ -209,7 +215,7 @@ export default function LiveChatWidget({ onClose }: Props) {
           justifyContent: "center",
           alignItems: "center",
           padding: "24px 20px",
-          gap: 16,
+          gap: 14,
         }}
       >
         {/* Icon */}
@@ -231,17 +237,17 @@ export default function LiveChatWidget({ onClose }: Props) {
           </h3>
           <p style={{ color: "rgba(245,238,222,0.65)", fontFamily: FONT, fontSize: "0.82rem", marginTop: 6, lineHeight: 1.7 }}>
             মাহবুব সরদার সবুজের সাথে সরাসরি কথোপকথন শুরু করুন।
-            তিনি অনলাইনে থাকলে উত্তর দেবেন।
           </p>
         </div>
 
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Name input */}
           <input
             type="text"
             value={nameInput}
             onChange={e => setNameInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && startSession()}
-            placeholder="আপনার নাম লিখুন..."
+            placeholder="আপনার নাম লিখুন... *"
             maxLength={50}
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -256,6 +262,68 @@ export default function LiveChatWidget({ onClose }: Props) {
               boxSizing: "border-box",
             }}
           />
+
+          {/* Contact input — WhatsApp or Gmail */}
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              value={contactInput}
+              onChange={e => setContactInput(e.target.value)}
+              placeholder="WhatsApp নম্বর বা Gmail (ঐচ্ছিক)"
+              maxLength={100}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: `1px solid ${contactType === "gmail" ? "rgba(66,133,244,0.5)" : contactType === "whatsapp" ? "rgba(37,211,102,0.5)" : "rgba(212,168,67,0.25)"}`,
+                borderRadius: 12,
+                padding: "12px 16px",
+                paddingRight: contactType ? "44px" : "16px",
+                color: "#FAF6EF",
+                fontFamily: FONT,
+                fontSize: "0.88rem",
+                outline: "none",
+                width: "100%",
+                boxSizing: "border-box",
+                transition: "border-color 0.2s",
+              }}
+            />
+            {/* Contact type indicator */}
+            {contactType && (
+              <div style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}>
+                {contactType === "whatsapp" ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#4285F4">
+                    <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.910 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                  </svg>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Helper text */}
+          <p style={{
+            color: "rgba(245,238,222,0.4)",
+            fontFamily: FONT,
+            fontSize: "0.72rem",
+            margin: "-4px 0 0",
+            textAlign: "center",
+            lineHeight: 1.5,
+          }}>
+            {contactType === "whatsapp" && "✓ WhatsApp নম্বর — অনলাইনে না থাকলে WhatsApp-এ জানানো হবে"}
+            {contactType === "gmail" && "✓ Gmail — অনলাইনে না থাকলে ইমেইলে জানানো হবে"}
+            {!contactType && "অনলাইনে না থাকলে আপনার দেওয়া মাধ্যমে উত্তর পাঠানো হবে"}
+          </p>
+
           <button
             onClick={startSession}
             disabled={!nameInput.trim() || isStarting}
@@ -288,7 +356,6 @@ export default function LiveChatWidget({ onClose }: Props) {
   // ── Chat screen ────────────────────────────────────────────────────────────
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-
       {/* Status bar */}
       <div style={{
         padding: "8px 14px",
