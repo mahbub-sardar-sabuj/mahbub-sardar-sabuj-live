@@ -510,6 +510,29 @@ function TypingIndicator() {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  // Cycling: 'photo' for 3s, then 'chat' for 2s, repeat
+  const [btnFace, setBtnFace] = useState<'photo' | 'chat'>('photo');
+  const cycleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (cycleRef.current) clearTimeout(cycleRef.current);
+      return;
+    }
+    let cancelled = false;
+    const cycle = (face: 'photo' | 'chat') => {
+      if (cancelled) return;
+      setBtnFace(face);
+      cycleRef.current = setTimeout(() => {
+        cycle(face === 'photo' ? 'chat' : 'photo');
+      }, face === 'photo' ? 3000 : 2000);
+    };
+    cycle('photo');
+    return () => {
+      cancelled = true;
+      if (cycleRef.current) clearTimeout(cycleRef.current);
+    };
+  }, [isOpen]);
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
@@ -767,9 +790,10 @@ export default function AIChatbot() {
                   <motion.span key="x"
                     initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
                     style={{ color: "#D4A843", fontSize: "1.3rem", fontWeight: 700 }}>✕</motion.span>
-                ) : (
-                  <motion.div key="av"
-                    initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
+                ) : btnFace === 'photo' ? (
+                  <motion.div key="av-photo"
+                    initial={{ scale: 0.75, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.75, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
                     style={{ width: "100%", height: "100%" }}>
                     <img src={AUTHOR_PHOTO} alt="AI"
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -778,6 +802,20 @@ export default function AIChatbot() {
                         t.style.display = "none";
                         t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1.3rem;font-weight:700;">AI</span>';
                       }} />
+                  </motion.div>
+                ) : (
+                  <motion.div key="av-chat"
+                    initial={{ scale: 0.75, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.75, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+                    {/* Chat bubble icon */}
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                        fill="rgba(212,168,67,0.18)" stroke="#D4A843" strokeWidth="1.8" strokeLinejoin="round"/>
+                      <circle cx="8.5" cy="11" r="1" fill="#D4A843"/>
+                      <circle cx="12" cy="11" r="1" fill="#D4A843"/>
+                      <circle cx="15.5" cy="11" r="1" fill="#D4A843"/>
+                    </svg>
                   </motion.div>
                 )}
               </AnimatePresence>
