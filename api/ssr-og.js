@@ -5155,6 +5155,7 @@ export default async function handler(req) {
   let url = `${SITE_URL}${path}`;
   let bodyContent = "";
   let ogType = "website";
+  let imageType = "image/jpeg";
   let jsonLd = null;
   let publishedTime = "";
   let modifiedTime = "";
@@ -5168,6 +5169,7 @@ export default async function handler(req) {
       title = `${news.title} | সরদার সংবাদ`;
       description = news.excerpt;
       image = news.image && news.image.startsWith("http") ? news.image : new URL(news.image || DEFAULT_IMAGE, SITE_URL).toString();
+      imageType = /\.jpe?g(?:$|[?#])/i.test(image) ? "image/jpeg" : /\.webp(?:$|[?#])/i.test(image) ? "image/webp" : /\.gif(?:$|[?#])/i.test(image) ? "image/gif" : "image/png";
       ogType = "article";
       publishedTime = toIsoDateTime(news.date);
       modifiedTime = toIsoDateTime(news.date);
@@ -5302,7 +5304,7 @@ export default async function handler(req) {
       <meta property="og:description" content="${description}">
       <meta property="og:image" content="${image}">
       <meta property="og:image:secure_url" content="${image}">
-      <meta property="og:image:type" content="image/png">
+      <meta property="og:image:type" content="${imageType}">
       <meta property="og:image:width" content="1200">
       <meta property="og:image:height" content="630">
       <meta property="og:site_name" content="${SITE_NAME}">
