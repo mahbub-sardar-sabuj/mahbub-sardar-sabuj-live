@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import LiveChatWidget from "./LiveChatWidget";
 
 interface Message {
   id: string;
@@ -689,6 +690,7 @@ export default function AIChatbot() {
   const dragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
 
   const [, navigate] = useLocation();
+  const [activeTab, setActiveTab] = useState<"ai" | "live">("ai");
 
   const handleNavigate = useCallback((path: string) => {
     setIsOpen(false);
@@ -1135,6 +1137,51 @@ export default function AIChatbot() {
                 </div>
               </div>
 
+              {/* ── Tabs ── */}
+              <div style={{
+                display: "flex",
+                borderBottom: "1px solid rgba(212,168,67,0.15)",
+                background: "rgba(5,10,20,0.7)",
+                flexShrink: 0,
+              }}>
+                {(["ai", "live"] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      flex: 1,
+                      padding: "9px 8px",
+                      background: activeTab === tab ? "rgba(212,168,67,0.1)" : "transparent",
+                      border: "none",
+                      borderBottom: activeTab === tab ? "2px solid #D4A843" : "2px solid transparent",
+                      color: activeTab === tab ? "#D4A843" : "rgba(180,160,120,0.5)",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.78rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {tab === "ai" ? (
+                      <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI সহকারী</>
+                    ) : (
+                      <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> সরাসরি চ্যাট</>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* ── Tab Content ── */}
+              {activeTab === "live" ? (
+                <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                  <LiveChatWidget />
+                </div>
+              ) : (
+              <>
               {/* ── Messages ── */}
               <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
                 {messages.map(msg => (
@@ -1331,6 +1378,8 @@ export default function AIChatbot() {
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 }}>Shift+Enter = নতুন লাইন</p>
               </div>
+              </>
+              )}
 
             </div>
           </motion.div>

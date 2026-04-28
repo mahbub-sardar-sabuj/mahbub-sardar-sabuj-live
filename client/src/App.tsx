@@ -22,6 +22,7 @@ const Editor = lazy(() => import("./pages/Editor"));
 const News = lazy(() => import("./pages/News"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const AIChatbot = lazy(() => import("./components/AIChatbot"));
+const AdminLiveChat = lazy(() => import("./pages/AdminLiveChat"));
 
 // Page loading fallback
 function PageLoader() {
@@ -69,6 +70,7 @@ function Router() {
         <Route path={"/news"} component={News} />
         <Route path={"/news/:id"} component={News} />
         <Route path={"/gallery"} component={Gallery} />
+        <Route path={"/admin/live-chat"} component={AdminLiveChat} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />

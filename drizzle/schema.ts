@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -25,4 +25,31 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// ── Live Chat Sessions ────────────────────────────────────────────────────────
+export const liveChatSessions = mysqlTable("live_chat_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 64 }).notNull().unique(),
+  visitorName: varchar("visitorName", { length: 128 }).default("অতিথি"),
+  visitorId: varchar("visitorId", { length: 64 }).notNull(),
+  status: mysqlEnum("status", ["active", "closed", "waiting"]).default("waiting").notNull(),
+  adminRead: boolean("adminRead").default(false).notNull(),
+  lastMessageAt: timestamp("lastMessageAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LiveChatSession = typeof liveChatSessions.$inferSelect;
+export type InsertLiveChatSession = typeof liveChatSessions.$inferInsert;
+
+// ── Live Chat Messages ────────────────────────────────────────────────────────
+export const liveChatMessages = mysqlTable("live_chat_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 64 }).notNull(),
+  sender: mysqlEnum("sender", ["visitor", "admin"]).notNull(),
+  content: text("content").notNull(),
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type LiveChatMessage = typeof liveChatMessages.$inferSelect;
+export type InsertLiveChatMessage = typeof liveChatMessages.$inferInsert;
