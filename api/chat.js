@@ -174,6 +174,34 @@ export default async function handler(req, res) {
 
     try {
       const reply = await callAI(allMessages);
+
+      // Send conversation to Telegram (non-blocking, fire-and-forget)
+      const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+      const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+      if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
+        const lastUserMsg = messages.filter(m => m.role === "user").slice(-1)[0];
+        const userQuestion = lastUserMsg ? lastUserMsg.content : "(অজানা)";
+        const shortReply = reply.length > 300 ? reply.slice(0, 300) + "..." : reply;
+        const shortQ = userQuestion.length > 200 ? userQuestion.slice(0, 200) + "..." : userQuestion;
+        const notifText =
+          `🤖 <b>AI চ্যাটবট কথোপকথন</b>
+
+` +
+          `❓ <b>প্রশ্ন:</b> ${shortQ}
+
+` +
+          `💡 <b>AI উত্তর:</b> ${shortReply}`;
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_ADMIN_CHAT_ID,
+            text: notifText,
+            parse_mode: "HTML",
+          }),
+        }).catch(() => {}); // ignore errors — don't block response
+      }
+
       return res.status(200).json({ reply });
     } catch (err) {
       console.error("AI API failed:", err.message);
