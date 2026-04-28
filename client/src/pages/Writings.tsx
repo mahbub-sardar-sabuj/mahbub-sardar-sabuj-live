@@ -7,8 +7,8 @@
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { Link } from "wouter";
+import { useState, useEffect } from "react";
+import { Link, useRoute, useLocation } from "wouter";
 import {
   Feather,
   ArrowLeft,
@@ -38,6 +38,29 @@ interface Writing {
   featured?: boolean;
 }
 
+
+// ── Slug Utility ──────────────────────────────────────────────────────────────
+const BENGALI_TRANS: Record<string, string> = {
+  'অ':'o','আ':'a','ই':'i','ঈ':'i','উ':'u','ঊ':'u','এ':'e','ঐ':'oi','ও':'o','ঔ':'ou',
+  'ক':'k','খ':'kh','গ':'g','ঘ':'gh','ঙ':'ng',
+  'চ':'ch','ছ':'chh','জ':'j','ঝ':'jh','ঞ':'n',
+  'ট':'t','ঠ':'th','ড':'d','ঢ':'dh','ণ':'n',
+  'ত':'t','থ':'th','দ':'d','ধ':'dh','ন':'n',
+  'প':'p','ফ':'ph','ব':'b','ভ':'bh','ম':'m',
+  'য':'j','র':'r','ল':'l','শ':'sh','ষ':'sh','স':'s','হ':'h',
+  'ড়':'r','ঢ়':'rh','য়':'y','ৎ':'t',
+  'া':'a','ি':'i','ী':'i','ু':'u','ূ':'u','ে':'e','ৈ':'oi','ো':'o','ৌ':'ou',
+  'ং':'ng','ঃ':'h','ঁ':'n','্':'',
+  ' ':'-','?':'','!':'',',':'','.':'','"':'',\'\':'',' ':'','—':'-','–':'-',
+};
+function makeSlug(title: string, id: number): string {
+  let slug = '';
+  for (const ch of title) {
+    slug += BENGALI_TRANS[ch] ?? '';
+  }
+  slug = slug.replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+  return slug.length >= 3 ? slug : `writing-${id}`;
+}
 // ── Categories ────────────────────────────────────────────────────────────────
 const CATEGORIES = [
   { id: "all", label: "সব লেখা", icon: "✦" },
@@ -9878,6 +9901,7 @@ function WritingCard({
   index: number;
   onClick: () => void;
 }) {
+  const slug = makeSlug(writing.title, writing.id);
   const isShort = writing.content.length < 200;
   const preview = writing.content.slice(0, isShort ? writing.content.length : 140);
   const colors = getCategoryColor(writing.category);
@@ -9887,7 +9911,7 @@ function WritingCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.04 }}
-      onClick={onClick}
+      onClick={() => { onClick(); window.history.pushState(null, '', `/writings/${slug}`); }}
       style={{
         background: "rgba(255,255,255,0.03)",
         backdropFilter: "blur(12px)",
@@ -10010,6 +10034,16 @@ function WritingModal({
   const [copied, setCopied] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [fontSize, setFontSize] = useState(1.1);
+  const slug = makeSlug(writing.title, writing.id);
+  // Update URL when modal opens/navigates
+  useEffect(() => {
+    window.history.pushState(null, '', `/writings/${slug}`);
+    document.title = `${writing.title} | মাহবুব সরদার সবুজ`;
+    return () => {
+      window.history.pushState(null, '', '/writings');
+      document.title = 'বাংলা কবিতা ও লেখা | মাহবুব সরদার সবুজ';
+    };
+  }, [slug, writing.title]);
 
   const currentIndex = allWritings.findIndex((w) => w.id === writing.id);
   const prevWriting = currentIndex > 0 ? allWritings[currentIndex - 1] : null;
@@ -10295,7 +10329,7 @@ function WritingModal({
         }}>
           {/* Prev */}
           <button
-            onClick={() => prevWriting && onNavigate(prevWriting)}
+            onClick={() => { if (prevWriting) { onNavigate(prevWriting); window.history.pushState(null, '', `/writings/${makeSlug(prevWriting.title, prevWriting.id)}`); } }}
             disabled={!prevWriting}
             style={{
               flex: 1,
@@ -10322,7 +10356,7 @@ function WritingModal({
 
           {/* Next */}
           <button
-            onClick={() => nextWriting && onNavigate(nextWriting)}
+            onClick={() => { if (nextWriting) { onNavigate(nextWriting); window.history.pushState(null, '', `/writings/${makeSlug(nextWriting.title, nextWriting.id)}`); } }}
             disabled={!nextWriting}
             style={{
               flex: 1,
@@ -10356,6 +10390,15 @@ export default function Writings() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedWriting, setSelectedWriting] = useState<typeof writings[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [, setLocation] = useLocation();
+  // URL-based routing: /writings/:slug
+  const [matchSlug, params] = useRoute("/writings/:slug");
+  useEffect(() => {
+    if (matchSlug && params?.slug) {
+      const found = writings.find(w => makeSlug(w.title, w.id) === params.slug);
+      if (found) setSelectedWriting(found);
+    }
+  }, [matchSlug, params?.slug]);
 
   const filtered = writings.filter((w) => {
     const matchCat = activeCategory === "all" || w.category === activeCategory;

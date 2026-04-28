@@ -58,6 +58,7 @@ function Router() {
         <Route path={"/"} component={Home} />
         <Route path={"/facebook-recitations"} component={FacebookRecitations} />
         <Route path={"/writings"} component={Writings} />
+        <Route path={"/writings/:slug"} component={Writings} />
         <Route path={"/privacy-policy"} component={PrivacyPolicy} />
         <Route path={"/terms"} component={Terms} />
         <Route path={"/about"} component={About} />
