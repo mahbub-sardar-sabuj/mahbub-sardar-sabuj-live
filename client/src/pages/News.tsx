@@ -731,7 +731,6 @@ export default function News() {
   const [sharePopupId, setSharePopupId] = useState<number | null>(null);
   const [tickerIndex, setTickerIndex] = useState(0);
   const [cardHovered, setCardHovered] = useState<number | null>(null);
-  const [isPageReady, setIsPageReady] = useState(false);
   const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Breaking news ticker rotation
@@ -740,11 +739,6 @@ export default function News() {
       setTickerIndex(prev => (prev + 1) % breakingNews.length);
     }, 4000);
     return () => { if (tickerRef.current) clearInterval(tickerRef.current); };
-  }, []);
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setIsPageReady(true), 260);
-    return () => window.clearTimeout(t);
   }, []);
 
   // Handle initial load from URL
@@ -780,10 +774,7 @@ export default function News() {
   });
 
   const heroNews = filtered[0];
-  const highlightNews = filtered.slice(1, 4);
-  const gridNews = filtered.slice(4);
-  const visibleGridNews = heroNews ? gridNews : filtered;
-  const hasActiveFilter = searchTerm.trim().length > 0 || selectedCategory !== "সব";
+  const gridNews = filtered.slice(1);
 
   const handleAddComment = (newsId: number) => {
     if (!commentName.trim() || !commentText.trim()) return;
@@ -954,302 +945,11 @@ export default function News() {
         .news-modal-content {
           padding: clamp(24px, 4vw, 40px);
         }
-
-        .premium-news-shell {
-          position: relative;
-          max-width: 1240px;
-          margin: 0 auto;
-          padding: 0 20px 110px;
-        }
-        .premium-news-shell::before {
-          content: "";
-          position: absolute;
-          top: 80px;
-          left: 50%;
-          width: min(740px, 88vw);
-          height: 340px;
-          transform: translateX(-50%);
-          background: radial-gradient(circle, rgba(245,166,35,0.16), transparent 68%);
-          pointer-events: none;
-          filter: blur(8px);
-        }
-        .premium-section-label {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 14px;
-          border-radius: 999px;
-          color: #F5A623;
-          background: rgba(245,166,35,0.10);
-          border: 1px solid rgba(245,166,35,0.22);
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 800;
-        }
-        .premium-filter-panel {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 18px;
-          padding: 16px;
-          margin: 28px 0 34px;
-          border-radius: 24px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
-          border: 1px solid rgba(245,166,35,0.13);
-          box-shadow: 0 18px 60px rgba(0,0,0,0.22);
-          backdrop-filter: blur(14px);
-        }
-        .premium-category-row {
-          display: flex;
-          gap: 10px;
-          overflow-x: auto;
-          scrollbar-width: none;
-          flex: 1;
-          min-width: 0;
-          scroll-padding-inline: 16px;
-        }
-        .premium-category-row::-webkit-scrollbar { display: none; }
-        .premium-results-pill {
-          flex: 0 0 auto;
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          padding: 10px 14px;
-          border-radius: 999px;
-          background: rgba(6,14,26,0.58);
-          border: 1px solid rgba(245,166,35,0.16);
-          color: rgba(250,246,239,0.72);
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-          font-size: 0.86rem;
-          white-space: nowrap;
-        }
-        .featured-news-layout {
-          position: relative;
-          z-index: 1;
-          display: grid;
-          grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.72fr);
-          gap: clamp(1.1rem, 2.2vw, 1.6rem);
-          margin-bottom: 36px;
-        }
-        .featured-hero-card {
-          position: relative;
-          min-height: clamp(430px, 48vw, 560px);
-          border-radius: 34px;
-          overflow: hidden;
-          cursor: pointer;
-          border: 1px solid rgba(245,166,35,0.22);
-          background: #091426;
-          box-shadow: 0 26px 84px rgba(0,0,0,0.34), 0 0 0 1px rgba(255,255,255,0.025) inset;
-          isolation: isolate;
-        }
-        .featured-hero-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(6,14,26,0.10) 0%, rgba(6,14,26,0.52) 48%, rgba(6,14,26,0.94) 100%);
-          z-index: 1;
-          pointer-events: none;
-        }
-        .featured-hero-image {
-          width: 100%;
-          height: 100%;
-          min-height: inherit;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.8s ease, filter 0.8s ease;
-        }
-        .featured-hero-card:hover .featured-hero-image {
-          transform: scale(1.055);
-          filter: saturate(1.08) contrast(1.04);
-        }
-        .featured-hero-content {
-          position: absolute;
-          left: clamp(22px, 4vw, 42px);
-          right: clamp(22px, 4vw, 42px);
-          bottom: clamp(24px, 4vw, 42px);
-          z-index: 2;
-          text-align: left;
-        }
-        .featured-hero-title {
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', serif;
-          font-size: clamp(1.75rem, 3.4vw, 3.15rem);
-          line-height: 1.22;
-          color: #fffaf0;
-          margin: 14px 0 14px;
-          text-shadow: 0 10px 34px rgba(0,0,0,0.48);
-        }
-        .featured-hero-excerpt {
-          max-width: 760px;
-          color: rgba(250,246,239,0.75);
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-          font-size: clamp(0.95rem, 1.35vw, 1.08rem);
-          line-height: 1.78;
-          margin: 0 0 22px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .hero-meta-row, .compact-meta-row {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 10px 14px;
-          color: rgba(250,246,239,0.72);
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-          font-size: 0.88rem;
-        }
-        .hero-cta-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        .premium-read-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 9px;
-          border-radius: 999px;
-          padding: 12px 18px;
-          background: linear-gradient(135deg, #F5A623, #F9C55F);
-          color: #06101f;
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-          font-weight: 900;
-          box-shadow: 0 12px 34px rgba(245,166,35,0.32);
-        }
-        .highlight-news-stack {
-          display: grid;
-          gap: 16px;
-        }
-        .highlight-news-card {
-          position: relative;
-          min-height: 172px;
-          border-radius: 26px;
-          overflow: hidden;
-          cursor: pointer;
-          background: rgba(12,26,48,0.82);
-          border: 1px solid rgba(245,166,35,0.14);
-          box-shadow: 0 18px 54px rgba(0,0,0,0.24);
-        }
-        .highlight-news-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, rgba(6,14,26,0.82), rgba(6,14,26,0.34));
-          z-index: 1;
-        }
-        .highlight-news-card img {
-          width: 100%;
-          height: 100%;
-          min-height: inherit;
-          object-fit: cover;
-          display: block;
-          transition: transform 0.6s ease;
-        }
-        .highlight-news-card:hover img { transform: scale(1.06); }
-        .highlight-news-content {
-          position: absolute;
-          inset: auto 18px 18px 18px;
-          z-index: 2;
-          text-align: left;
-        }
-        .highlight-news-content h3 {
-          margin: 9px 0 0;
-          color: #fffaf0;
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', serif;
-          font-size: 1.05rem;
-          line-height: 1.42;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .news-card-grid-heading {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          align-items: end;
-          justify-content: space-between;
-          gap: 16px;
-          margin: 8px 0 18px;
-        }
-        .news-card-grid-heading h2 {
-          margin: 0;
-          color: #fffaf0;
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', serif;
-          font-size: clamp(1.35rem, 2.3vw, 2rem);
-        }
-        .news-card-grid {
-          position: relative;
-          z-index: 1;
-        }
-        .premium-skeleton-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: clamp(1rem, 2.4vw, 1.8rem);
-        }
-        .premium-skeleton-card {
-          min-height: 365px;
-          border-radius: 24px;
-          background: linear-gradient(110deg, rgba(255,255,255,0.04) 8%, rgba(245,166,35,0.12) 18%, rgba(255,255,255,0.04) 33%);
-          background-size: 220% 100%;
-          animation: shimmerCard 1.35s linear infinite;
-          border: 1px solid rgba(245,166,35,0.10);
-        }
-        .premium-empty-state {
-          position: relative;
-          z-index: 1;
-          text-align: center;
-          padding: 80px 22px;
-          border-radius: 30px;
-          background: rgba(255,255,255,0.035);
-          border: 1px solid rgba(245,166,35,0.12);
-          box-shadow: 0 22px 70px rgba(0,0,0,0.22);
-        }
-        .premium-clear-button {
-          border: 1px solid rgba(245,166,35,0.24);
-          background: rgba(245,166,35,0.10);
-          color: #F5A623;
-          border-radius: 999px;
-          padding: 10px 16px;
-          cursor: pointer;
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-          font-weight: 800;
-        }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 4px; }
         @media (max-width: 767px) {
-
-          .premium-news-shell { padding: 0 14px 90px; }
-          .premium-filter-panel {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 12px;
-            margin-top: 22px;
-            border-radius: 20px;
-          }
-          .premium-category-row {
-            justify-content: flex-start;
-            margin-left: -2px;
-            margin-right: -2px;
-            padding: 2px;
-          }
-          .premium-results-pill { justify-content: center; }
-          .featured-news-layout { grid-template-columns: 1fr; margin-bottom: 28px; }
-          .featured-hero-card { min-height: 430px; border-radius: 26px; }
-          .featured-hero-content { left: 20px; right: 20px; bottom: 24px; }
-          .featured-hero-title { font-size: clamp(1.55rem, 7vw, 2.2rem); }
-          .featured-hero-excerpt { -webkit-line-clamp: 3; }
-          .highlight-news-stack { grid-template-columns: 1fr; }
-          .highlight-news-card { min-height: 170px; border-radius: 22px; }
-          .news-card-grid-heading { align-items: flex-start; flex-direction: column; }
-          .hero-cta-row { align-items: stretch; }
           .news-card-grid {
             grid-template-columns: 1fr;
             gap: 1.1rem;
@@ -1448,169 +1148,80 @@ export default function News() {
         </div>
       </div>
 
-      <div className="premium-news-shell">
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 100px" }}>
 
-        {/* ── CATEGORY FILTER + RESULTS BAR ── */}
-        <div className="premium-filter-panel">
-          <div className="premium-category-row" aria-label="সংবাদ বিভাগ">
-            {categories.map(cat => (
-              <motion.button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                whileTap={{ scale: 0.96 }}
-                whileHover={{ scale: 1.035 }}
-                style={{
-                  padding: "10px 22px",
-                  borderRadius: 50,
-                  background: selectedCategory === cat
-                    ? "linear-gradient(135deg, #F5A623, #F9C55F)"
-                    : "rgba(6,14,26,0.48)",
-                  color: selectedCategory === cat ? "#060E1A" : "rgba(250,246,239,0.84)",
-                  border: `1.5px solid ${selectedCategory === cat ? "rgba(245,166,35,0.95)" : "rgba(245,166,35,0.18)"}`,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  fontSize: "0.96rem",
-                  fontWeight: 800,
-                  transition: "all 0.25s",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  boxShadow: selectedCategory === cat ? "0 8px 26px rgba(245,166,35,0.32)" : "0 4px 14px rgba(0,0,0,0.18)",
-                  letterSpacing: "0.01em",
-                }}
-              >{cat}</motion.button>
-            ))}
-          </div>
-          <div className="premium-results-pill">
-            <Eye size={15} /> {filtered.length.toLocaleString('bn-BD')}টি সংবাদ
-          </div>
+        {/* ── CATEGORY FILTER ── */}
+        <div style={{
+          display: "flex",
+          gap: 12,
+          overflowX: "auto",
+          paddingBottom: 8,
+          marginTop: 28,
+          marginBottom: 40,
+          scrollbarWidth: "none",
+          justifyContent: "center",
+        }} className="no-scrollbar">
+          {categories.map(cat => (
+            <motion.button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.04 }}
+              style={{
+                padding: "10px 26px",
+                borderRadius: 50,
+                background: selectedCategory === cat
+                  ? "linear-gradient(135deg, #F5A623, #E8920F)"
+                  : "rgba(27,42,107,0.35)",
+                color: selectedCategory === cat ? "#060E1A" : "rgba(250,246,239,0.85)",
+                border: `1.5px solid ${selectedCategory === cat ? "#F5A623" : "rgba(245,166,35,0.2)"}`,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                fontSize: "1rem",
+                fontWeight: 700,
+                transition: "all 0.25s",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                boxShadow: selectedCategory === cat ? "0 4px 18px rgba(245,166,35,0.35)" : "0 2px 8px rgba(0,0,0,0.18)",
+                letterSpacing: "0.01em",
+              }}
+            >{cat}</motion.button>
+          ))}
         </div>
 
-        {!isPageReady ? (
-          <div className="premium-skeleton-grid" aria-label="সংবাদ লোড হচ্ছে">
-            {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="premium-skeleton-card" />)}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="premium-empty-state">
-            <div className="premium-section-label" style={{ marginBottom: 16 }}><Search size={16} /> ফলাফল নেই</div>
-            <p style={{ fontSize: "1.15rem", color: "rgba(250,246,239,0.72)", margin: "0 0 20px", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-              আপনার খোঁজা সংবাদ পাওয়া যায়নি। অন্য শব্দ বা বিভাগ দিয়ে আবার চেষ্টা করুন।
-            </p>
-            {hasActiveFilter && (
-              <button className="premium-clear-button" onClick={() => { setSearchTerm(""); setSelectedCategory("সব"); }}>
-                ফিল্টার মুছুন
-              </button>
-            )}
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 20px", color: "rgba(250,246,239,0.4)" }}>
+            <p style={{ fontSize: "1.2rem" }}>কোনো সংবাদ পাওয়া যায়নি।</p>
           </div>
         ) : (
           <>
-            {heroNews && !hasActiveFilter && (
-              <section className="featured-news-layout" aria-label="প্রধান সংবাদ">
-                <motion.article
-                  className="featured-hero-card"
-                  onClick={() => handleSelectNews(heroNews)}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.55 }}
-                  viewport={{ once: true }}
-                >
-                  <img
-                    src={heroNews.image || "/images/sardar-sangbad-logo-final.png"}
-                    alt={heroNews.title}
-                    className="featured-hero-image"
-                    loading="eager"
-                    decoding="async"
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/sardar-sangbad-logo-final.png";
-                      e.currentTarget.style.objectFit = "contain";
-                      e.currentTarget.style.padding = "52px";
-                      e.currentTarget.style.background = "linear-gradient(135deg, #1B2A6B, #060E1A)";
-                    }}
-                  />
-                  <div className="featured-hero-content">
-                    <div className="hero-meta-row">
-                      <span className="premium-section-label" style={{ background: heroNews.categoryColor, color: "#fff", borderColor: "rgba(255,255,255,0.25)" }}>{heroNews.category}</span>
-                      <span><Clock size={14} style={{ verticalAlign: "-2px", marginRight: 4 }} /> {heroNews.readTime}</span>
-                      {heroNews.views && <span><Eye size={14} style={{ verticalAlign: "-2px", marginRight: 4 }} /> {heroNews.views.toLocaleString('bn-BD')}</span>}
-                    </div>
-                    <h1 className="featured-hero-title">{heroNews.title}</h1>
-                    <p className="featured-hero-excerpt">{heroNews.excerpt}</p>
-                    <div className="hero-cta-row">
-                      <span className="premium-read-button">প্রধান সংবাদ পড়ুন <ArrowRight size={17} /></span>
-                      <span className="compact-meta-row">{heroNews.date}</span>
-                    </div>
-                  </div>
-                </motion.article>
-
-                <aside className="highlight-news-stack" aria-label="ট্রেন্ডিং সংবাদ">
-                  <div className="premium-section-label"><Radio size={15} /> ট্রেন্ডিং আপডেট</div>
-                  {highlightNews.map((item, idx) => (
-                    <motion.article
-                      key={item.id}
-                      className="highlight-news-card"
-                      onClick={() => handleSelectNews(item)}
-                      initial={{ opacity: 0, y: 18 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.08, duration: 0.45 }}
-                      viewport={{ once: true }}
-                    >
-                      <img
-                        src={item.image || "/images/sardar-sangbad-logo-final.png"}
-                        alt={item.title}
-                        loading="eager"
-                        decoding="async"
-                        onError={(e) => { e.currentTarget.src = "/images/sardar-sangbad-logo-final.png"; e.currentTarget.style.objectFit = "contain"; e.currentTarget.style.padding = "24px"; }}
-                      />
-                      <div className="highlight-news-content">
-                        <span className="premium-section-label" style={{ padding: "5px 10px", fontSize: "0.72rem", background: item.categoryColor, color: "#fff", borderColor: "rgba(255,255,255,0.22)" }}>{item.category}</span>
-                        <h3>{item.title}</h3>
-                        <div className="compact-meta-row" style={{ fontSize: "0.76rem", marginTop: 8 }}>
-                          <span>{item.date}</span><span>•</span><span>{item.readTime}</span>
-                        </div>
-                      </div>
-                    </motion.article>
-                  ))}
-                </aside>
-              </section>
-            )}
-
-            <div className="news-card-grid-heading">
-              <div>
-                <span className="premium-section-label"><Radio size={15} /> {hasActiveFilter ? "ফিল্টার করা সংবাদ" : "সর্বশেষ সংবাদ"}</span>
-                <h2>{hasActiveFilter ? "আপনার অনুসন্ধানের ফলাফল" : "আরও পড়ুন"}</h2>
-              </div>
-              {hasActiveFilter && (
-                <button className="premium-clear-button" onClick={() => { setSearchTerm(""); setSelectedCategory("সব"); }}>
-                  সব সংবাদ দেখুন
-                </button>
-              )}
-            </div>
-
-            {/* ── PREMIUM NEWS GRID ── */}
+            {/* ── ALL NEWS GRID (equal cards) ── */}
             <div className="news-card-grid">
-              {(hasActiveFilter ? filtered : visibleGridNews).map((item, idx) => (
+              {filtered.map((item, idx) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(idx * 0.055, 0.35), duration: 0.48 }}
+                  transition={{ delay: idx * 0.08, duration: 0.5 }}
                   viewport={{ once: true }}
                   onClick={() => handleSelectNews(item)}
                   onHoverStart={() => setCardHovered(item.id)}
                   onHoverEnd={() => setCardHovered(null)}
                   className="news-card"
                   style={{
-                    background: "linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(6,14,26,0.92) 100%)",
-                    border: `1.5px solid ${cardHovered === item.id ? "rgba(245,166,35,0.45)" : "rgba(245,166,35,0.13)"}`,
-                    borderRadius: 26,
+                    background: "linear-gradient(180deg, rgba(27,42,107,0.20) 0%, rgba(6,14,26,0.88) 100%)",
+                    border: `1.5px solid ${cardHovered === item.id ? "rgba(245,166,35,0.4)" : "rgba(245,166,35,0.12)"}`,
+                    borderRadius: 24,
                     overflow: "hidden",
                     cursor: "pointer",
                     transition: "all 0.35s ease",
-                    boxShadow: cardHovered === item.id ? "0 22px 64px rgba(245,166,35,0.16), 0 0 0 1px rgba(245,166,35,0.16) inset" : "0 14px 36px rgba(0,0,0,0.22)",
+                    boxShadow: cardHovered === item.id ? "0 18px 58px rgba(245,166,35,0.15)" : "0 10px 30px rgba(0,0,0,0.18)",
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
                   }}
                   whileHover={{ y: -8 }}
                 >
+                  {/* Card image */}
                   {item.image && (
                     <div className="news-thumb">
                       <img
@@ -1625,44 +1236,144 @@ export default function News() {
                           e.currentTarget.style.padding = "34px";
                           e.currentTarget.style.background = "linear-gradient(135deg, #1B2A6B, #060E1A)";
                         }}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.6s ease" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                          transition: "transform 0.6s ease",
+                        }}
                       />
-                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "62%", background: "linear-gradient(to top, rgba(6,14,26,0.84), transparent)", zIndex: 1 }} />
-                      <div className="category-badge" style={{ position: "absolute", top: 14, left: 14, background: item.categoryColor, color: "#fff", padding: "5px 12px", borderRadius: 50, fontSize: "0.72rem", fontWeight: 900, letterSpacing: "0.04em", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", boxShadow: "0 8px 18px rgba(0,0,0,0.28)" }}>
-                        {item.category}
-                      </div>
-                      <div style={{ position: "absolute", right: 14, bottom: 14, zIndex: 2, display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, background: "rgba(6,14,26,0.72)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(250,246,239,0.82)", fontSize: "0.72rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                        <Clock size={12} /> {item.readTime}
-                      </div>
+                      {/* Gradient overlay */}
+                      <div style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "55%",
+                        background: "linear-gradient(to top, rgba(6,14,26,0.78), transparent)",
+                        zIndex: 1,
+                      }} />
+                      {/* Category badge */}
+                      <div style={{
+                        position: "absolute",
+                        top: 14,
+                        left: 14,
+                        background: item.categoryColor,
+                        color: "#fff",
+                        padding: "4px 12px",
+                        borderRadius: 50,
+                        fontSize: "0.7rem",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                      }}
+                      className="category-badge"
+                    >
+                      {item.category}
+                    </div>
                     </div>
                   )}
 
+                  {/* Card content */}
                   <div className="news-card-body" style={{ padding: "24px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                    <div className="compact-meta-row" style={{ marginBottom: 12, fontSize: "0.78rem" }}>
-                      <span>{item.date}</span>
-                      {item.views && <><span>•</span><span><Eye size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} /> {item.views.toLocaleString('bn-BD')}</span></>}
+                    {/* Meta row */}
+                    <div style={{
+                      display: "flex",
+                      gap: 14,
+                      marginBottom: 14,
+                      alignItems: "center",
+                    }}>
+                      {item.views && (
+                        <span style={{
+                          color: "rgba(245,166,35,0.6)",
+                          fontSize: "0.75rem",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        }}>
+                          <Eye size={11} /> {item.views.toLocaleString('bn-BD')}
+                        </span>
+                      )}
                     </div>
 
-                    <h3 style={{ fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif", fontSize: "1.25rem", color: "#FAF6EF", margin: "0 0 12px", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
-                      <a href={`/news/${item.id}`} onClick={(e) => { e.preventDefault(); handleSelectNews(item); }} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <h3 style={{
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
+                      fontSize: "1.25rem",
+                      color: "#FAF6EF",
+                      margin: "0 0 12px",
+                      lineHeight: 1.4,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                    }}>
+                      <a
+                        href={`/news/${item.id}`}
+                        onClick={(e) => { e.preventDefault(); handleSelectNews(item); }}
+                        style={{ color: 'inherit', textDecoration: 'none' }}
+                      >
                         {item.title}
                       </a>
                     </h3>
 
-                    <p style={{ color: "rgba(250,246,239,0.60)", fontSize: "0.9rem", lineHeight: 1.7, margin: "0 0 22px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+                    <p style={{
+                      color: "rgba(250,246,239,0.55)",
+                      fontSize: "0.88rem",
+                      lineHeight: 1.65,
+                      margin: "0 0 20px",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    }}>
                       {item.excerpt}
                     </p>
 
+                    {/* Footer row */}
                     <div className="news-card-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
-                      <button
-                        onClick={(e) => handleShareClick(e, item.id)}
-                        style={{ background: copySuccessId === item.id ? "rgba(39,174,96,0.15)" : "rgba(245,166,35,0.1)", border: `1px solid ${copySuccessId === item.id ? "rgba(39,174,96,0.5)" : "rgba(245,166,35,0.25)"}`, borderRadius: "50%", width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: copySuccessId === item.id ? "#27AE60" : "#F5A623", transition: "all 0.3s", flexShrink: 0 }}
-                        aria-label="সংবাদ শেয়ার করুন"
-                      >
-                        {copySuccessId === item.id ? <Check size={15} /> : <Share2 size={15} />}
-                      </button>
-                      <div className="read-btn" style={{ color: "#F5A623", display: "flex", alignItems: "center", gap: 6, fontSize: "0.9rem", fontWeight: 850, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", transition: "gap 0.25s" }}>
-                        বিস্তারিত পড়ুন <ChevronRight size={15} />
+                      <span style={{
+                        color: "rgba(250,246,239,0.35)",
+                        fontSize: "0.78rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      }}>
+                        {item.date}
+                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <button
+                          onClick={(e) => handleShareClick(e, item.id)}
+                          style={{
+                            background: copySuccessId === item.id ? "rgba(39,174,96,0.15)" : "rgba(245,166,35,0.1)",
+                            border: `1px solid ${copySuccessId === item.id ? "rgba(39,174,96,0.5)" : "rgba(245,166,35,0.25)"}`,
+                            borderRadius: "50%",
+                            width: 34,
+                            height: 34,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            color: copySuccessId === item.id ? "#27AE60" : "#F5A623",
+                            transition: "all 0.3s",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {copySuccessId === item.id ? <Check size={14} /> : <Share2 size={14} />}
+                        </button>
+                        <div style={{
+                          color: "#F5A623",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          fontSize: "0.88rem",
+                          fontWeight: 700,
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        }}>
+                          পড়ুন <ChevronRight size={14} />
+                        </div>
                       </div>
                     </div>
                   </div>
