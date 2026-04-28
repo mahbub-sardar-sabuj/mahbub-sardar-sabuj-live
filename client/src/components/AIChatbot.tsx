@@ -2,12 +2,16 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
-  imageUrl?: string;
+  imageUrl?: string;       // user-uploaded image (data URL)
+  imageAnalysis?: boolean; // was this an image analysis response?
+  upscaledUrl?: string;    // 4K upscaled result
+  isUpscaling?: boolean;   // upscaling in progress
 }
 
 interface ActionButton {
@@ -15,16 +19,48 @@ interface ActionButton {
   path: string;
 }
 
-// ── AI call with retry + timeout ──────────────────────────────────────────────
+type ActiveTab = "chat" | "upscale";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// Convert file to base64 data URL
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Extract base64 content from data URL
+function extractBase64(dataUrl: string): { base64: string; mimeType: string } {
+  const [header, base64] = dataUrl.split(",");
+  const mimeType = header.match(/data:([^;]+)/)?.[1] || "image/jpeg";
+  return { base64, mimeType };
+}
+
+// ── AI Chat API call (text only) ──────────────────────────────────────────────
 async function callAI(
   messages: { role: "user" | "assistant" | "system"; content: string }[],
   attempt = 0
 ): Promise<string> {
   const MAX_RETRIES = 3;
-  const TIMEOUT_MS = 30000;
-
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   try {
     const res = await fetch("/api/chat", {
@@ -33,7 +69,6 @@ async function callAI(
       body: JSON.stringify({ messages }),
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
 
     if (!res.ok) {
@@ -46,31 +81,180 @@ async function callAI(
 
     const data = await res.json();
     return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
-
   } catch (err: any) {
     clearTimeout(timeoutId);
-
     if (attempt < MAX_RETRIES - 1) {
       const isAborted = err?.name === "AbortError";
       const isNetworkError = err?.name === "TypeError" || err?.message?.includes("fetch");
-
       if (isAborted || isNetworkError) {
         await delay(Math.pow(2, attempt) * 1000);
         return callAI(messages, attempt + 1);
       }
     }
-
     throw new Error("connection_failed");
   }
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+// ── AI Vision API call (image + text) ────────────────────────────────────────
+async function callAIVision(
+  imageDataUrl: string,
+  userText: string,
+  attempt = 0
+): Promise<string> {
+  const MAX_RETRIES = 2;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+  const { base64, mimeType } = extractBase64(imageDataUrl);
+
+  try {
+    const res = await fetch("/api/chat-vision", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image: base64,
+        mimeType,
+        prompt: userText || "এই ছবিটি বিশ্লেষণ করুন এবং বাংলায় বিস্তারিত বলুন।",
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      if (res.status >= 500 && attempt < MAX_RETRIES - 1) {
+        await delay(2000);
+        return callAIVision(imageDataUrl, userText, attempt + 1);
+      }
+      throw new Error(`Vision API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.reply || "ছবিটি বিশ্লেষণ করতে পারিনি।";
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (attempt < MAX_RETRIES - 1) {
+      await delay(2000);
+      return callAIVision(imageDataUrl, userText, attempt + 1);
+    }
+    throw new Error("vision_failed");
+  }
+}
+
+// ── Client-side image upscaling using Canvas + bicubic interpolation ──────────
+async function upscaleImageClient(
+  imageDataUrl: string,
+  scale: 2 | 4
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const newW = img.width * scale;
+      const newH = img.height * scale;
+
+      // Limit to reasonable max (8K = 7680px)
+      const maxDim = 7680;
+      const actualScale = Math.min(scale, maxDim / Math.max(img.width, img.height));
+      const finalW = Math.round(img.width * actualScale);
+      const finalH = Math.round(img.height * actualScale);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = finalW;
+      canvas.height = finalH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas not supported")); return; }
+
+      // Use imageSmoothingQuality for best results
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      // Multi-step upscaling for better quality
+      if (scale === 4) {
+        // Step 1: 2x
+        const temp = document.createElement("canvas");
+        temp.width = img.width * 2;
+        temp.height = img.height * 2;
+        const tCtx = temp.getContext("2d")!;
+        tCtx.imageSmoothingEnabled = true;
+        tCtx.imageSmoothingQuality = "high";
+        tCtx.drawImage(img, 0, 0, temp.width, temp.height);
+        // Step 2: 2x again
+        ctx.drawImage(temp, 0, 0, finalW, finalH);
+      } else {
+        ctx.drawImage(img, 0, 0, finalW, finalH);
+      }
+
+      // Apply sharpening via unsharp mask effect
+      const imageData = ctx.getImageData(0, 0, finalW, finalH);
+      const sharpened = applySharpen(imageData);
+      ctx.putImageData(sharpened, 0, 0);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.95));
+    };
+    img.onerror = () => reject(new Error("Image load failed"));
+    img.src = imageDataUrl;
+  });
+}
+
+// Simple unsharp mask / sharpening filter
+function applySharpen(imageData: ImageData): ImageData {
+  const { data, width, height } = imageData;
+  const output = new Uint8ClampedArray(data);
+  const kernel = [
+    0, -0.5, 0,
+    -0.5, 3, -0.5,
+    0, -0.5, 0,
+  ];
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      for (let c = 0; c < 3; c++) {
+        let val = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const idx = ((y + ky) * width + (x + kx)) * 4 + c;
+            val += data[idx] * kernel[(ky + 1) * 3 + (kx + 1)];
+          }
+        }
+        output[(y * width + x) * 4 + c] = Math.max(0, Math.min(255, val));
+      }
+    }
+  }
+
+  return new ImageData(output, width, height);
+}
+
+// ── Server-side AI upscaling via Replicate Real-ESRGAN ───────────────────────
+async function upscaleImageAI(
+  imageDataUrl: string,
+  scale: 2 | 4
+): Promise<string> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+
+  try {
+    const res = await fetch("/api/upscale", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: imageDataUrl, scale }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) throw new Error(`Upscale API error: ${res.status}`);
+    const data = await res.json();
+    if (data.outputUrl) return data.outputUrl;
+    throw new Error("No output URL");
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    // Fallback to client-side upscaling
+    console.warn("AI upscale failed, falling back to client-side:", err.message);
+    return upscaleImageClient(imageDataUrl, scale);
+  }
 }
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
-// ── Page map ─────────────────────────────────────────────────────────────────
+// ── Page map ──────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/about",    label: "পরিচিতি পেজ দেখুন",    keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
   { path: "/ebooks",   label: "ই-বুক সংগ্রহ দেখুন",   keywords: ["ebooks", "ebook", "ই-বুক", "বই"] },
@@ -99,7 +283,7 @@ function isPhotoRequest(text: string): boolean {
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী।
 
 ## তোমার পরিচয়
-তুমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI Agent। তুমি বাংলায় এবং ইংরেজিতে যেকোনো প্রশ্নের উত্তর দাও।
+তুমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI Agent। তুমি বাংলায় এবং ইংরেজিতে যেকোনো প্রশ্নের উত্তর দাও। তুমি ছবি বিশ্লেষণ করতে পারো এবং ছবি সম্পর্কে বিস্তারিত বলতে পারো।
 
 ## ভাষা ও বানান নির্দেশনা (অত্যন্ত গুরুত্বপূর্ণ)
 - সবসময় শুদ্ধ ও নির্ভুল বাংলা বানান ব্যবহার করবে
@@ -114,7 +298,7 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 ২. ব্যবহারকারীদের সহায়তা করবে — ওয়েবসাইট ব্যবহার, ডিজাইন টুল, ই-বুক পড়া সব বিষয়ে গাইড করবে।
 ৩. লেখক সম্পর্কে শুধুমাত্র যাচাইকৃত তথ্য প্রদান করবে।
 ৪. কবিতা বা লেখা চাইলে নিজে তৈরি না করে ওয়েবসাইটের বিদ্যমান লেখা থেকে দেখাবে এবং [BUTTON:/writings] পেজে যেতে বলবে।
-৫. ডিজাইন বা এডিটিং সংক্রান্ত প্রশ্নে বিস্তারিত গাইডলাইন দেবে।
+৫. ছবি আপলোড করা হলে সেটি বিস্তারিতভাবে বিশ্লেষণ করবে।
 
 ## মাহবুব সরদার সবুজ — সম্পূর্ণ তথ্য
 
@@ -151,77 +335,6 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - সরদার ডিজাইন স্টুডিও [BUTTON:/editor] — ডিজাইন কার্ড তৈরির টুল
 - Facebook আবৃত্তি [BUTTON:/facebook-recitations] — কবিতার আবৃত্তি সংগ্রহ
 
-### ওয়েবসাইটে থাকা লেখার তালিকা
-
-জীবনদর্শন: আচরণই আসল পরিচয়, অনুভূতির অসমতা, অব্যক্ত দীর্ঘশ্বাস, দিশাহীনতা, আমার জন্য সময় কোথায়, ভালো মানুষেরা সবসময় ঠকে, আমি মানুষ চিনিনি, ভুল মানুষের শহর, মূল্য থাকে প্রয়োজনে, মূল্যহীন অনুভূতি, বিশ্বাসের মূল্য, প্রকৃত কাছের মানুষ, সুদিনের দেখা মিলবে, অনুশোচনা, একাকী হয়ে বাঁচতে শেখে, সব ঠিক হয়ে যাবে একদিন, অনিশ্চিত জীবন, ভাগ্য পরিবর্তন, মানুষের যত্ন নিতে হয়, নিজেকে বাঁচানো, জীবন কাউকে ধরে রাখে না, মানুষের আসল চেহারা, সময় নেয় বিচার করতে, সম্মানের মূল্য
-
-ভালোবাসা: ভালোবাসার সিংহাসন, অঘোষিত অপেক্ষা, ভালোবাসা প্রমাণ, মনের মানুষের কথা, ভালোবাসার মর্যাদা, ভুলগুলো ক্ষমা করে দিও, সত্যি যদি ভালোবাসো রেখে দিও, মন আগে দেহ পরে, তুমি কেন মন না খুঁজে দেহ খুঁজো, ভালোবাসা অটুট থাকুক, তোমাকে তোমার মতো করেই ভালোবাসি, আমার তোমাকেই লাগবে, অভিমানও এক ধরনের ভালোবাসা, আমি কখনো তোমায় ঘৃণা করিনি, ভালোবাসার দাগ, ভালোবাসার দোষ নেই, বন্ধুত্ব কখনো ভাঙে না
-
-বিচ্ছেদ: দূরত্বের কৌশল, বুকে মাথা রাখার তৃষ্ণা, যাকে তুমি ভালোবাসো, নিষ্ঠুরতার শিকার, কারো হতে পারিনি, দূরত্বের পরিণতি, দূরে যাওয়ার শিক্ষা, দূরত্বের মূল্য, আমি ভালোবেসেছিলাম অগাধ বিশ্বাস নিয়ে
-
-ছোট লেখা: রাতের বেঈমানি, বিনয়ের শক্তি, মেয়েদের কঠিন হওয়ার কারণ, নারীর মূল্য, ভালো মানুষকে ঠকানো হয়, স্বার্থের জন্য স্বপ্ন ভাঙা, মনের যত্ন নিন, সত্য চুপ থাকে, নীরবতাই যথেষ্ট, ভালো থাকা আর ভালো রাখা
-
-## সরদার ডিজাইন স্টুডিও — সম্পূর্ণ গাইড [BUTTON:/editor]
-
-সরদার ডিজাইন স্টুডিও একটি বিনামূল্যের অনলাইন ডিজাইন টুল যেখানে আপনি সুন্দর কবিতা কার্ড ও ডিজাইন তৈরি করতে পারবেন।
-
-### টুলসমূহ ও ব্যবহার পদ্ধতি
-
-**ক্যানভাস টুল (📐)**
-- ক্যানভাসের আকার পরিবর্তন করুন (1:1, 4:5, 9:16 ইত্যাদি)
-- Export quality নির্বাচন করুন (PNG বা JPG)
-- "সেভ করুন" বাটনে ক্লিক করে ডাউনলোড করুন
-
-**লেখা টুল (✍️)**
-- বিষয়বস্তু ট্যাব: শিরোনাম, মূল লেখা, লেখকের নাম লিখুন
-- স্টাইল ট্যাব: রং, ফন্ট সাইজ, bold/italic, alignment পরিবর্তন করুন
-- ফন্ট ট্যাব: ১০টি বাংলা ফন্ট থেকে পছন্দের ফন্ট বেছে নিন
-
-**টেক্সট টুল (🖊️)**
-- এই টুলে ক্লিক করুন, তারপর ক্যানভাসে যেখানে লিখতে চান সেখানে ট্যাপ করুন
-- সরাসরি সেখানে একটি লেখার বাক্স আসবে — বাংলা বা ইংরেজি লিখুন
-- Enter চাপুন বা "✅ যোগ করুন" বাটনে ক্লিক করুন
-
-**স্টিকার টুল (😊)**
-- ২১৬টি স্টিকার — ৬টি ক্যাটাগরিতে বিভক্ত
-- পছন্দের স্টিকারে ক্লিক করলে ক্যানভাসে যোগ হবে
-- স্টিকার drag করে সরানো যাবে, rotation slider দিয়ে ঘোরানো যাবে
-
-**ফিল্টার টুল (🎨)**
-- ১০টি ফিল্টার preset — Normal, Warm, Cool, Vintage, Dramatic, Fade, B&W, Sepia, Vivid, Matte
-- যেকোনো ফিল্টারে ক্লিক করলে সাথে সাথে প্রিভিউ দেখাবে
-
-**সামঞ্জস্য টুল (⚙️)**
-- Brightness, Contrast, Saturation, Blur, Vignette স্লাইডার দিয়ে ছবি সামঞ্জস্য করুন
-
-**পটভূমি টুল (🌄)**
-- ছবি আপলোড করুন ক্যানভাসের পটভূমি হিসেবে
-- Watermark যোগ করুন
-
-**ব্যাকগ্রাউন্ড টুল (🖼️)**
-- ১২০+ সুন্দর background — Gradient, Solid, Cosmic, Nature, Artistic, Urban
-- পছন্দের background-এ ক্লিক করলে সাথে সাথে ক্যানভাসে যোগ হবে
-
-**আপস্কেল টুল (🔍)**
-- ঝাপসা ছবি ক্লিয়ার করুন
-- ছবি আপলোড করুন → 2× বা 4× নির্বাচন করুন → "✨ ক্লিয়ার করুন" বাটনে ক্লিক করুন
-- "আগে" ও "পরে" বাটন দিয়ে পার্থক্য দেখুন → ডাউনলোড করুন
-
-**ক্রপ টুল (✂️)**
-- Aspect ratio পরিবর্তন করুন (1:1, 4:5, 9:16, 16:9, A4)
-
-**ড্রইং টুল (🖊️ ড্র)**
-- ক্যানভাসে সরাসরি আঁকুন
-- পেন্সিল, ব্রাশ, ইরেজার, লাইন, আয়তক্ষেত্র, বৃত্ত, তীর টুল
-- রং ও ব্রাশ সাইজ কাস্টমাইজ করুন
-
-### ডিজাইন টিপস
-- ভালো ডিজাইনের জন্য: গাঢ় background + হালকা লেখার রং ব্যবহার করুন
-- Navy থিম + সোনালি লেখা সবচেয়ে আকর্ষণীয় দেখায়
-- ফন্ট সাইজ: শিরোনামের জন্য ৪০-৬০px, মূল লেখার জন্য ২৪-৩২px উপযুক্ত
-- সোশ্যাল মিডিয়ার জন্য 1:1 (1080×1080) অনুপাত সবচেয়ে ভালো
-- ডাউনলোড করতে উপরের "⬇ সেভ করুন" বাটনে ক্লিক করুন
-
 ## প্রযুক্তিগত নির্দেশনা
 - কখনো URL লিংক দেবে না (https://... ধরনের কোনো লিংক টেক্সটে লিখবে না)
 - যখন কোনো পেজের কথা বলবে, শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে
@@ -237,10 +350,6 @@ const SUGGESTIONS = [
   "ভালোবাসার কবিতা কোথায় পাব?",
   "যোগাযোগ করব কীভাবে?",
 ];
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
-}
 
 // ── Parse AI response ─────────────────────────────────────────────────────────
 function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean } {
@@ -287,18 +396,53 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
         animate={{ opacity: 1, y: 0 }}
         className="flex justify-end mb-3"
       >
-        <div style={{
-          background: "linear-gradient(135deg, #C9A84C, #D4A843)",
-          color: "#0A1628",
-          borderRadius: "18px 18px 4px 18px",
-          padding: "10px 14px",
-          maxWidth: "80%",
-          fontFamily: "'Noto Sans Bengali', sans-serif",
-          fontSize: "0.88rem",
-          lineHeight: 1.7,
-          fontWeight: 500,
-        }}>
-          {message.content}
+        <div style={{ maxWidth: "85%", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          {message.imageUrl && (
+            <div style={{ position: "relative" }}>
+              <img
+                src={message.imageUrl}
+                alt="আপলোড করা ছবি"
+                style={{
+                  maxWidth: 200,
+                  maxHeight: 200,
+                  borderRadius: 12,
+                  border: "2px solid rgba(212,168,67,0.5)",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+              <div style={{
+                position: "absolute",
+                bottom: 4,
+                right: 4,
+                background: "rgba(0,0,0,0.6)",
+                color: "#D4A843",
+                fontSize: "0.6rem",
+                padding: "2px 6px",
+                borderRadius: 8,
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+              }}>
+                ছবি
+              </div>
+            </div>
+          )}
+          {message.content && (
+            <div style={{
+              background: "linear-gradient(135deg, #C9A84C, #D4A843)",
+              color: "#0A1628",
+              borderRadius: "18px 18px 4px 18px",
+              padding: "10px 14px",
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontSize: "0.88rem",
+              lineHeight: 1.7,
+              fontWeight: 500,
+            }}>
+              {message.content}
+            </div>
+          )}
+          <div style={{ color: "rgba(150,160,170,0.6)", fontSize: "0.68rem", paddingRight: 2 }}>
+            {formatTime(message.timestamp)}
+          </div>
         </div>
       </motion.div>
     );
@@ -326,6 +470,23 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
             <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ"
               className="rounded-xl w-full max-w-[200px] border-2 border-[#D4A843]"
               style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }} />
+          </div>
+        )}
+        {message.imageAnalysis && (
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            background: "rgba(212,168,67,0.1)",
+            border: "1px solid rgba(212,168,67,0.3)",
+            borderRadius: 12,
+            padding: "3px 8px",
+            marginBottom: 6,
+            fontSize: "0.7rem",
+            color: "#D4A843",
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+          }}>
+            <span>ছবি বিশ্লেষণ</span>
           </div>
         )}
         {text && (
@@ -410,49 +571,421 @@ function TypingIndicator() {
   );
 }
 
+// ── Upscale Tab Component ─────────────────────────────────────────────────────
+function UpscaleTab() {
+  const [upscaleImage, setUpscaleImage] = useState<string | null>(null);
+  const [upscaledResult, setUpscaledResult] = useState<string | null>(null);
+  const [upscaleScale, setUpscaleScale] = useState<2 | 4>(2);
+  const [isUpscaling, setIsUpscaling] = useState(false);
+  const [upscaleError, setUpscaleError] = useState<string | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
+  const [originalInfo, setOriginalInfo] = useState<{ w: number; h: number; size: string } | null>(null);
+  const [resultInfo, setResultInfo] = useState<{ w: number; h: number } | null>(null);
+  const upscaleInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpscaleFileSelect = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setUpscaleError("শুধুমাত্র ছবি ফাইল সমর্থিত।");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUpscaleError("ছবির সাইজ সর্বোচ্চ ১০ MB হতে পারবে।");
+      return;
+    }
+
+    const dataUrl = await fileToBase64(file);
+    setUpscaleImage(dataUrl);
+    setUpscaledResult(null);
+    setUpscaleError(null);
+    setShowComparison(false);
+
+    // Get original dimensions
+    const img = new Image();
+    img.onload = () => {
+      setOriginalInfo({ w: img.width, h: img.height, size: formatFileSize(file.size) });
+    };
+    img.src = dataUrl;
+  };
+
+  const handleUpscale = async () => {
+    if (!upscaleImage) return;
+    setIsUpscaling(true);
+    setUpscaleError(null);
+    setUpscaledResult(null);
+
+    try {
+      const result = await upscaleImageAI(upscaleImage, upscaleScale);
+      setUpscaledResult(result);
+      setShowComparison(true);
+
+      // Get result dimensions
+      const img = new Image();
+      img.onload = () => setResultInfo({ w: img.width, h: img.height });
+      img.src = result;
+    } catch {
+      setUpscaleError("আপস্কেল করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    } finally {
+      setIsUpscaling(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!upscaledResult) return;
+    const a = document.createElement("a");
+    a.href = upscaledResult;
+    a.download = `upscaled-${upscaleScale}x-${Date.now()}.jpg`;
+    a.click();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleUpscaleFileSelect(file);
+  };
+
+  return (
+    <div style={{ padding: "12px 16px", overflowY: "auto", height: "100%" }}>
+      {/* Header */}
+      <div style={{ marginBottom: 12, textAlign: "center" }}>
+        <div style={{
+          fontFamily: "'Noto Sans Bengali', sans-serif",
+          fontSize: "0.9rem",
+          fontWeight: 700,
+          color: "#D4A843",
+          marginBottom: 4,
+        }}>
+          AI ছবি উন্নতকরণ
+        </div>
+        <div style={{
+          fontFamily: "'Noto Sans Bengali', sans-serif",
+          fontSize: "0.72rem",
+          color: "rgba(253,246,236,0.55)",
+        }}>
+          পুরনো বা ঝাপসা ছবিকে 4K মানে রূপান্তর করুন
+        </div>
+      </div>
+
+      {/* Upload Area */}
+      {!upscaleImage ? (
+        <div
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+          onClick={() => upscaleInputRef.current?.click()}
+          style={{
+            border: "2px dashed rgba(212,168,67,0.4)",
+            borderRadius: 12,
+            padding: "24px 16px",
+            textAlign: "center",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            background: "rgba(212,168,67,0.04)",
+            marginBottom: 12,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(212,168,67,0.7)")}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(212,168,67,0.4)")}
+        >
+          <div style={{ fontSize: "2rem", marginBottom: 8 }}>📷</div>
+          <div style={{
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontSize: "0.82rem",
+            color: "#D4A843",
+            fontWeight: 600,
+            marginBottom: 4,
+          }}>
+            ছবি আপলোড করুন
+          </div>
+          <div style={{
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontSize: "0.7rem",
+            color: "rgba(253,246,236,0.45)",
+          }}>
+            ক্লিক করুন বা drag করে ছেড়ে দিন
+          </div>
+          <div style={{
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontSize: "0.65rem",
+            color: "rgba(253,246,236,0.3)",
+            marginTop: 4,
+          }}>
+            JPG, PNG, WEBP — সর্বোচ্চ ১০ MB
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Image Preview */}
+          <div style={{ marginBottom: 10 }}>
+            {!showComparison ? (
+              <div style={{ position: "relative" }}>
+                <img
+                  src={upscaleImage}
+                  alt="মূল ছবি"
+                  style={{
+                    width: "100%",
+                    maxHeight: 160,
+                    objectFit: "contain",
+                    borderRadius: 10,
+                    border: "1px solid rgba(212,168,67,0.3)",
+                    background: "rgba(0,0,0,0.3)",
+                  }}
+                />
+                {originalInfo && (
+                  <div style={{
+                    position: "absolute",
+                    bottom: 6,
+                    left: 6,
+                    background: "rgba(0,0,0,0.7)",
+                    color: "rgba(253,246,236,0.7)",
+                    fontSize: "0.62rem",
+                    padding: "2px 7px",
+                    borderRadius: 6,
+                    fontFamily: "monospace",
+                  }}>
+                    {originalInfo.w}×{originalInfo.h} · {originalInfo.size}
+                  </div>
+                )}
+                <button
+                  onClick={() => { setUpscaleImage(null); setUpscaledResult(null); setOriginalInfo(null); }}
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    background: "rgba(0,0,0,0.6)",
+                    border: "none",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    width: 22,
+                    height: 22,
+                    cursor: "pointer",
+                    fontSize: "0.75rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >✕</button>
+              </div>
+            ) : (
+              /* Before/After Comparison */
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                <div>
+                  <div style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.65rem",
+                    color: "rgba(253,246,236,0.5)",
+                    textAlign: "center",
+                    marginBottom: 3,
+                  }}>আগে</div>
+                  <img src={upscaleImage} alt="আগে"
+                    style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(212,168,67,0.2)" }} />
+                  {originalInfo && (
+                    <div style={{ fontSize: "0.6rem", color: "rgba(253,246,236,0.35)", textAlign: "center", marginTop: 2, fontFamily: "monospace" }}>
+                      {originalInfo.w}×{originalInfo.h}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.65rem",
+                    color: "#D4A843",
+                    textAlign: "center",
+                    marginBottom: 3,
+                    fontWeight: 600,
+                  }}>পরে ({upscaleScale}×)</div>
+                  <img src={upscaledResult!} alt="পরে"
+                    style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(212,168,67,0.5)" }} />
+                  {resultInfo && (
+                    <div style={{ fontSize: "0.6rem", color: "#D4A843", textAlign: "center", marginTop: 2, fontFamily: "monospace" }}>
+                      {resultInfo.w}×{resultInfo.h}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Scale Selector */}
+          {!showComparison && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+              {([2, 4] as const).map(s => (
+                <button
+                  key={s}
+                  onClick={() => setUpscaleScale(s)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 0",
+                    borderRadius: 8,
+                    border: upscaleScale === s ? "1.5px solid #D4A843" : "1.5px solid rgba(212,168,67,0.25)",
+                    background: upscaleScale === s ? "rgba(212,168,67,0.15)" : "rgba(212,168,67,0.04)",
+                    color: upscaleScale === s ? "#D4A843" : "rgba(253,246,236,0.5)",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.8rem",
+                    fontWeight: upscaleScale === s ? 700 : 400,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {s}× {s === 2 ? "HD" : "4K"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {upscaleError && (
+            <div style={{
+              background: "rgba(220,50,50,0.12)",
+              border: "1px solid rgba(220,50,50,0.3)",
+              borderRadius: 8,
+              padding: "8px 12px",
+              marginBottom: 10,
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontSize: "0.78rem",
+              color: "#ff8080",
+            }}>
+              {upscaleError}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {!showComparison ? (
+              <button
+                onClick={handleUpscale}
+                disabled={isUpscaling}
+                style={{
+                  width: "100%",
+                  padding: "10px 0",
+                  borderRadius: 10,
+                  border: "none",
+                  background: isUpscaling
+                    ? "rgba(212,168,67,0.3)"
+                    : "linear-gradient(135deg, #C9A84C, #D4A843)",
+                  color: isUpscaling ? "rgba(253,246,236,0.5)" : "#0A1628",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  cursor: isUpscaling ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  transition: "all 0.2s",
+                }}
+              >
+                {isUpscaling ? (
+                  <>
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      style={{ display: "inline-block" }}
+                    >⟳</motion.span>
+                    উন্নত করা হচ্ছে...
+                  </>
+                ) : (
+                  <>✨ {upscaleScale}× উন্নত করুন</>
+                )}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleDownload}
+                  style={{
+                    width: "100%",
+                    padding: "10px 0",
+                    borderRadius: 10,
+                    border: "none",
+                    background: "linear-gradient(135deg, #C9A84C, #D4A843)",
+                    color: "#0A1628",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.85rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  ⬇ উন্নত ছবি ডাউনলোড করুন
+                </button>
+                <button
+                  onClick={() => { setUpscaleImage(null); setUpscaledResult(null); setShowComparison(false); setOriginalInfo(null); setResultInfo(null); }}
+                  style={{
+                    width: "100%",
+                    padding: "8px 0",
+                    borderRadius: 10,
+                    border: "1px solid rgba(212,168,67,0.3)",
+                    background: "transparent",
+                    color: "rgba(253,246,236,0.6)",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  নতুন ছবি আপলোড করুন
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      <input
+        ref={upscaleInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={e => {
+          const file = e.target.files?.[0];
+          if (file) handleUpscaleFileSelect(file);
+          e.target.value = "";
+        }}
+      />
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("chat");
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
     content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent।
 
-আমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ। এছাড়া সরদার ডিজাইন স্টুডিও ব্যবহারের গাইডলাইনও দিতে পারি। যেকোনো বিষয়ে প্রশ্ন করুন!`,
+আমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ। এছাড়া ছবি আপলোড করে বিশ্লেষণ করতে পারি। যেকোনো বিষয়ে প্রশ্ন করুন!`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Use absolute position from top-left for free drag anywhere
-  const [btnPos, setBtnPos] = useState({ x: -1, y: -1 }); // -1 = use default bottom-right
-  // Pill expanded state: true = show text label
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [pendingImageName, setPendingImageName] = useState<string>("");
+
+  // Drag state
+  const [btnPos, setBtnPos] = useState({ x: -1, y: -1 });
   const [pillExpanded, setPillExpanded] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isDragging = useRef(false);
   const didDrag = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
   const [, navigate] = useLocation();
 
-  // Listen for open-chatbot event from the top banner
+  // Listen for open-chatbot event
   useEffect(() => {
     const handler = () => setIsOpen(true);
     window.addEventListener("open-chatbot", handler);
     return () => window.removeEventListener("open-chatbot", handler);
   }, []);
 
-  // Periodic pill expand: expand for 3s every 10s (only when chat closed)
+  // Periodic pill expand
   useEffect(() => {
     if (isOpen) { setPillExpanded(false); return; }
-    // Show text after 1.5s on mount
     const firstShow = setTimeout(() => {
       setPillExpanded(true);
       setTimeout(() => setPillExpanded(false), 3000);
     }, 1500);
-    // Then repeat every 10s
     const interval = setInterval(() => {
       setPillExpanded(true);
       setTimeout(() => setPillExpanded(false), 3000);
@@ -467,15 +1000,15 @@ export default function AIChatbot() {
   }, [messages, isOpen]);
 
   useEffect(() => {
-    if (isOpen) setTimeout(() => inputRef.current?.focus(), 300);
-  }, [isOpen]);
+    if (isOpen && activeTab === "chat") setTimeout(() => inputRef.current?.focus(), 300);
+  }, [isOpen, activeTab]);
 
   const handleNavigate = useCallback((path: string) => {
     setIsOpen(false);
     navigate(path);
   }, [navigate]);
 
-  // ── Drag handlers (absolute position from top-left) ─────────────────────
+  // ── Drag handlers ─────────────────────────────────────────────────────────
   const clampPos = useCallback((x: number, y: number) => {
     const BTN = 56;
     return {
@@ -484,7 +1017,6 @@ export default function AIChatbot() {
     };
   }, []);
 
-  // Get current pixel position (default = bottom-right)
   const getAbsPos = useCallback(() => {
     if (btnPos.x === -1) {
       return { x: window.innerWidth - 72, y: window.innerHeight - 88 };
@@ -538,24 +1070,60 @@ export default function AIChatbot() {
     window.addEventListener("touchend", onEnd);
   }, [getAbsPos, clampPos]);
 
+  // ── Image upload handler ──────────────────────────────────────────────────
+  const handleImageSelect = async (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("ছবির সাইজ সর্বোচ্চ ১০ MB হতে পারবে।");
+      return;
+    }
+    const dataUrl = await fileToBase64(file);
+    setPendingImage(dataUrl);
+    setPendingImageName(file.name);
+    inputRef.current?.focus();
+  };
+
   // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text || isLoading) return;
+    if ((!text && !pendingImage) || isLoading) return;
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: "user",
       content: text,
       timestamp: new Date(),
+      imageUrl: pendingImage || undefined,
     };
 
     setMessages(prev => [...prev, userMsg]);
     setInput("");
+    const capturedImage = pendingImage;
+    setPendingImage(null);
+    setPendingImageName("");
     setIsLoading(true);
     setError(null);
 
-    // Photo shortcut
+    // If image is attached → use Vision API
+    if (capturedImage) {
+      try {
+        const reply = await callAIVision(capturedImage, text);
+        setMessages(prev => [...prev, {
+          id: `ai-vision-${Date.now()}`,
+          role: "assistant",
+          content: reply,
+          timestamp: new Date(),
+          imageAnalysis: true,
+        }]);
+      } catch {
+        setError("ছবি বিশ্লেষণে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Photo shortcut (text only)
     if (isPhotoRequest(text)) {
       const photoMsg: Message = {
         id: `photo-${Date.now()}`,
@@ -589,7 +1157,7 @@ export default function AIChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages]);
+  }, [input, pendingImage, isLoading, messages]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -625,12 +1193,14 @@ export default function AIChatbot() {
       timestamp: new Date(),
     }]);
     setError(null);
+    setPendingImage(null);
     retryPayloadRef.current = null;
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Floating Button — Avatar + Text Box, always visible, draggable anywhere */}
+      {/* Floating Button */}
       {(() => {
         const abs = getAbsPos();
         return (
@@ -670,7 +1240,6 @@ export default function AIChatbot() {
                 zIndex: 2,
               }}
             >
-              {/* Pulse ring */}
               {!isOpen && (
                 <span style={{
                   position: "absolute", inset: -3, borderRadius: "50%",
@@ -700,7 +1269,7 @@ export default function AIChatbot() {
               </AnimatePresence>
             </motion.div>
 
-            {/* Animated text box — slides in from left, always shows when not open */}
+            {/* Pill text */}
             <AnimatePresence>
               {!isOpen && pillExpanded && (
                 <motion.div
@@ -755,10 +1324,10 @@ export default function AIChatbot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-24 right-6 z-[60] w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-6 z-[60] w-[380px] max-w-[calc(100vw-24px)] h-[600px] max-h-[calc(100vh-120px)] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             style={{ background: "#0d1b2a" }}
           >
-            {/* Full-background watermark */}
+            {/* Background watermark */}
             <div aria-hidden="true" style={{
               position: "absolute", inset: 0,
               backgroundImage: `url(${AUTHOR_PHOTO})`,
@@ -787,112 +1356,369 @@ export default function AIChatbot() {
                       onError={(e) => {
                         const t = e.currentTarget;
                         t.style.display = "none";
-                        t.parentElement!.innerHTML = '<span class="text-black font-bold text-sm flex items-center justify-center w-full h-full bg-[#D4A843]">AI</span>';
+                        t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;">AI</span>';
                       }} />
                   </div>
                   <div>
-                    <div className="text-white font-semibold text-sm">মাহবুব সরদার সবুজ AI Agent</div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                      <span className="text-green-400 text-xs">সক্রিয়</span>
+                    <div style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.88rem",
+                      fontWeight: 700,
+                      color: "#D4A843",
+                    }}>মাহবুব সরদার সবুজ</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80" }} />
+                      <span style={{
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.68rem",
+                        color: "rgba(253,246,236,0.5)",
+                      }}>AI Agent · সক্রিয়</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={clearChat} title="নতুন কথোপকথন"
-                    className="text-gray-400 hover:text-[#D4A843] text-xs transition-colors px-2 py-1 rounded border border-[#2a3a4a] hover:border-[#D4A843]">
-                    নতুন
-                  </button>
-                  {/* Close button */}
+                  {activeTab === "chat" && (
+                    <button
+                      onClick={clearChat}
+                      title="চ্যাট পরিষ্কার করুন"
+                      style={{
+                        background: "rgba(212,168,67,0.1)",
+                        border: "1px solid rgba(212,168,67,0.2)",
+                        color: "rgba(212,168,67,0.7)",
+                        borderRadius: 8,
+                        padding: "4px 8px",
+                        fontSize: "0.7rem",
+                        cursor: "pointer",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                      }}
+                    >
+                      পরিষ্কার
+                    </button>
+                  )}
                   <button
                     onClick={() => setIsOpen(false)}
-                    title="বন্ধ করুন"
-                    className="w-7 h-7 flex items-center justify-center rounded-full border border-[#2a3a4a] hover:border-red-400 text-gray-400 hover:text-red-400 transition-all text-sm font-bold"
-                    style={{ lineHeight: 1 }}
-                  >
-                    ✕
-                  </button>
+                    style={{
+                      background: "rgba(212,168,67,0.1)",
+                      border: "1px solid rgba(212,168,67,0.2)",
+                      color: "#D4A843",
+                      borderRadius: 8,
+                      padding: "4px 8px",
+                      fontSize: "0.85rem",
+                      cursor: "pointer",
+                    }}
+                  >✕</button>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-                {messages.map(msg => (
-                  <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
-                ))}
-                {isLoading && <TypingIndicator />}
-
-                {/* Error + Retry */}
-                {error && !isLoading && (
-                  <div className="flex flex-col items-center gap-2 py-2">
-                    <div className="text-center text-red-400 text-xs bg-red-900/20 rounded-lg px-3 py-2 w-full">
-                      {error}
-                    </div>
-                    <button
-                      onClick={handleRetry}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#D4A843]/20 hover:bg-[#D4A843]/30 border border-[#D4A843]/50 hover:border-[#D4A843] text-[#D4A843] rounded-xl text-xs font-semibold transition-all"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="1 4 1 10 7 10" />
-                        <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
-                      </svg>
-                      আবার চেষ্টা করুন
-                    </button>
-                  </div>
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Suggestions */}
-              {messages.length === 1 && (
-                <div className="px-4 pb-2 flex flex-wrap gap-2">
-                  {SUGGESTIONS.map(s => (
-                    <button key={s}
-                      onClick={() => { setInput(s); inputRef.current?.focus(); }}
-                      className="text-xs bg-[#1e2d3d]/80 text-[#D4A843] border border-[#2a3a4a] rounded-full px-3 py-1 hover:border-[#D4A843] transition-all backdrop-blur-sm">
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Input */}
-              <div className="px-4 py-3 border-t border-[#2a3a4a] bg-[#111827]/90 backdrop-blur-sm">
-                <div className="flex gap-2 items-end">
-                  <textarea
-                    ref={inputRef}
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="আপনার প্রশ্ন লিখুন... (Enter চাপুন)"
-                    rows={1}
-                    className="flex-1 bg-[#1e2d3d] text-white border border-[#2a3a4a] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-500 max-h-24 overflow-y-auto"
-                    style={{ minHeight: "40px", fontFamily: "'Noto Sans Bengali', sans-serif" }}
-                    disabled={isLoading}
-                  />
+              {/* Tab Bar */}
+              <div style={{
+                display: "flex",
+                borderBottom: "1px solid rgba(42,58,74,0.8)",
+                background: "rgba(10,22,40,0.6)",
+              }}>
+                {(["chat", "upscale"] as ActiveTab[]).map(tab => (
                   <button
-                    onClick={handleSend}
-                    disabled={!input.trim() || isLoading}
-                    className="w-10 h-10 rounded-xl bg-[#D4A843] text-black flex items-center justify-center hover:bg-[#c49030] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      flex: 1,
+                      padding: "8px 0",
+                      border: "none",
+                      background: "transparent",
+                      borderBottom: activeTab === tab ? "2px solid #D4A843" : "2px solid transparent",
+                      color: activeTab === tab ? "#D4A843" : "rgba(253,246,236,0.4)",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.78rem",
+                      fontWeight: activeTab === tab ? 700 : 400,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                    }}
                   >
-                    {isLoading ? (
-                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                    )}
+                    {tab === "chat" ? "💬 চ্যাট" : "✨ ছবি উন্নতকরণ"}
                   </button>
-                </div>
-                <p className="text-gray-600 text-xs mt-1 text-center">Shift+Enter = নতুন লাইন</p>
+                ))}
               </div>
+
+              {/* Tab Content */}
+              {activeTab === "upscale" ? (
+                <div style={{ flex: 1, overflowY: "auto" }}>
+                  <UpscaleTab />
+                </div>
+              ) : (
+                <>
+                  {/* Messages */}
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: "auto",
+                      padding: "12px 14px",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "rgba(212,168,67,0.2) transparent",
+                    }}
+                  >
+                    {/* Suggestions */}
+                    {messages.length === 1 && (
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.7rem",
+                          color: "rgba(253,246,236,0.35)",
+                          marginBottom: 6,
+                          textAlign: "center",
+                        }}>
+                          প্রস্তাবিত প্রশ্ন
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+                          {SUGGESTIONS.map(s => (
+                            <button
+                              key={s}
+                              onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                              style={{
+                                background: "rgba(212,168,67,0.08)",
+                                border: "1px solid rgba(212,168,67,0.25)",
+                                color: "rgba(253,246,236,0.7)",
+                                borderRadius: 16,
+                                padding: "4px 10px",
+                                fontSize: "0.72rem",
+                                fontFamily: "'Noto Sans Bengali', sans-serif",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                              }}
+                              onMouseEnter={e => {
+                                (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.18)";
+                                (e.currentTarget as HTMLButtonElement).style.color = "#D4A843";
+                              }}
+                              onMouseLeave={e => {
+                                (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.08)";
+                                (e.currentTarget as HTMLButtonElement).style.color = "rgba(253,246,236,0.7)";
+                              }}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {messages.map(msg => (
+                      <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
+                    ))}
+
+                    {isLoading && <TypingIndicator />}
+
+                    {error && (
+                      <div style={{
+                        background: "rgba(220,50,50,0.12)",
+                        border: "1px solid rgba(220,50,50,0.3)",
+                        borderRadius: 10,
+                        padding: "8px 12px",
+                        marginBottom: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                      }}>
+                        <span style={{
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.78rem",
+                          color: "#ff8080",
+                        }}>{error}</span>
+                        <button
+                          onClick={handleRetry}
+                          style={{
+                            background: "rgba(220,50,50,0.2)",
+                            border: "1px solid rgba(220,50,50,0.4)",
+                            color: "#ff8080",
+                            borderRadius: 6,
+                            padding: "3px 8px",
+                            fontSize: "0.7rem",
+                            cursor: "pointer",
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          আবার চেষ্টা
+                        </button>
+                      </div>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Pending image preview */}
+                  {pendingImage && (
+                    <div style={{
+                      padding: "6px 14px",
+                      borderTop: "1px solid rgba(42,58,74,0.5)",
+                      background: "rgba(10,22,40,0.5)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}>
+                      <img
+                        src={pendingImage}
+                        alt="pending"
+                        style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(212,168,67,0.4)" }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.72rem",
+                          color: "#D4A843",
+                          fontWeight: 600,
+                        }}>ছবি সংযুক্ত</div>
+                        <div style={{
+                          fontFamily: "monospace",
+                          fontSize: "0.65rem",
+                          color: "rgba(253,246,236,0.4)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}>{pendingImageName}</div>
+                      </div>
+                      <button
+                        onClick={() => { setPendingImage(null); setPendingImageName(""); }}
+                        style={{
+                          background: "rgba(220,50,50,0.15)",
+                          border: "none",
+                          color: "#ff8080",
+                          borderRadius: "50%",
+                          width: 20,
+                          height: 20,
+                          cursor: "pointer",
+                          fontSize: "0.7rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >✕</button>
+                    </div>
+                  )}
+
+                  {/* Input area */}
+                  <div style={{
+                    padding: "10px 14px",
+                    borderTop: "1px solid rgba(42,58,74,0.8)",
+                    background: "rgba(10,22,40,0.8)",
+                    backdropFilter: "blur(8px)",
+                  }}>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      gap: 8,
+                      background: "rgba(30,45,61,0.8)",
+                      border: "1px solid rgba(42,58,74,0.8)",
+                      borderRadius: 14,
+                      padding: "6px 8px 6px 12px",
+                    }}>
+                      {/* Image upload button */}
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        title="ছবি আপলোড করুন"
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: pendingImage ? "#D4A843" : "rgba(212,168,67,0.5)",
+                          cursor: "pointer",
+                          padding: "4px",
+                          borderRadius: 6,
+                          fontSize: "1.1rem",
+                          flexShrink: 0,
+                          transition: "color 0.2s",
+                          alignSelf: "flex-end",
+                          marginBottom: 2,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#D4A843")}
+                        onMouseLeave={e => (e.currentTarget.style.color = pendingImage ? "#D4A843" : "rgba(212,168,67,0.5)")}
+                      >
+                        📎
+                      </button>
+
+                      <textarea
+                        ref={inputRef}
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={pendingImage ? "ছবি সম্পর্কে প্রশ্ন করুন..." : "বার্তা লিখুন..."}
+                        rows={1}
+                        style={{
+                          flex: 1,
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "rgba(253,246,236,0.9)",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.88rem",
+                          lineHeight: 1.6,
+                          resize: "none",
+                          maxHeight: 80,
+                          overflowY: "auto",
+                          padding: "4px 0",
+                        }}
+                        onInput={e => {
+                          const el = e.currentTarget;
+                          el.style.height = "auto";
+                          el.style.height = Math.min(el.scrollHeight, 80) + "px";
+                        }}
+                      />
+
+                      <button
+                        onClick={handleSend}
+                        disabled={(!input.trim() && !pendingImage) || isLoading}
+                        style={{
+                          background: (!input.trim() && !pendingImage) || isLoading
+                            ? "rgba(212,168,67,0.2)"
+                            : "linear-gradient(135deg, #C9A84C, #D4A843)",
+                          border: "none",
+                          borderRadius: 10,
+                          width: 34,
+                          height: 34,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: (!input.trim() && !pendingImage) || isLoading ? "not-allowed" : "pointer",
+                          flexShrink: 0,
+                          transition: "all 0.2s",
+                          alignSelf: "flex-end",
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M22 2L11 13" stroke={(!input.trim() && !pendingImage) || isLoading ? "rgba(212,168,67,0.5)" : "#0A1628"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={(!input.trim() && !pendingImage) || isLoading ? "rgba(212,168,67,0.5)" : "#0A1628"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.62rem",
+                      color: "rgba(253,246,236,0.25)",
+                      textAlign: "center",
+                      marginTop: 6,
+                    }}>
+                      📎 ছবি আপলোড করুন · Enter পাঠান · Shift+Enter নতুন লাইন
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={e => {
+          const file = e.target.files?.[0];
+          if (file) handleImageSelect(file);
+          e.target.value = "";
+        }}
+      />
     </>
   );
 }
