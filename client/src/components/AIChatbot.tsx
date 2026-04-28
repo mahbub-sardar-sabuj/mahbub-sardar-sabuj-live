@@ -140,87 +140,46 @@ async function callAIVision(
   }
 }
 
-// ── Client-side image upscaling using Canvas + bicubic interpolation ──────────
+// ── Client-side image upscaling using Canvas ─────────────────────────────────
 async function upscaleImageClient(
   imageDataUrl: string,
   scale: 2 | 4
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => {
-      const newW = img.width * scale;
-      const newH = img.height * scale;
+      try {
+        // Cap output at 4096px on longest side to avoid browser memory crash
+        const maxDim = 4096;
+        const rawScale = scale;
+        const longestSide = Math.max(img.width, img.height);
+        const safeScale = longestSide * rawScale > maxDim
+          ? maxDim / longestSide
+          : rawScale;
 
-      // Limit to reasonable max (8K = 7680px)
-      const maxDim = 7680;
-      const actualScale = Math.min(scale, maxDim / Math.max(img.width, img.height));
-      const finalW = Math.round(img.width * actualScale);
-      const finalH = Math.round(img.height * actualScale);
+        const finalW = Math.max(1, Math.round(img.width * safeScale));
+        const finalH = Math.max(1, Math.round(img.height * safeScale));
 
-      const canvas = document.createElement("canvas");
-      canvas.width = finalW;
-      canvas.height = finalH;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) { reject(new Error("Canvas not supported")); return; }
+        const canvas = document.createElement("canvas");
+        canvas.width = finalW;
+        canvas.height = finalH;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("Canvas not supported")); return; }
 
-      // Use imageSmoothingQuality for best results
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-
-      // Multi-step upscaling for better quality
-      if (scale === 4) {
-        // Step 1: 2x
-        const temp = document.createElement("canvas");
-        temp.width = img.width * 2;
-        temp.height = img.height * 2;
-        const tCtx = temp.getContext("2d")!;
-        tCtx.imageSmoothingEnabled = true;
-        tCtx.imageSmoothingQuality = "high";
-        tCtx.drawImage(img, 0, 0, temp.width, temp.height);
-        // Step 2: 2x again
-        ctx.drawImage(temp, 0, 0, finalW, finalH);
-      } else {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, finalW, finalH);
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        resolve(dataUrl);
+      } catch (e) {
+        reject(e);
       }
-
-      // Apply sharpening via unsharp mask effect
-      const imageData = ctx.getImageData(0, 0, finalW, finalH);
-      const sharpened = applySharpen(imageData);
-      ctx.putImageData(sharpened, 0, 0);
-
-      resolve(canvas.toDataURL("image/jpeg", 0.95));
     };
     img.onerror = () => reject(new Error("Image load failed"));
     img.src = imageDataUrl;
   });
-}
-
-// Simple unsharp mask / sharpening filter
-function applySharpen(imageData: ImageData): ImageData {
-  const { data, width, height } = imageData;
-  const output = new Uint8ClampedArray(data);
-  const kernel = [
-    0, -0.5, 0,
-    -0.5, 3, -0.5,
-    0, -0.5, 0,
-  ];
-
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      for (let c = 0; c < 3; c++) {
-        let val = 0;
-        for (let ky = -1; ky <= 1; ky++) {
-          for (let kx = -1; kx <= 1; kx++) {
-            const idx = ((y + ky) * width + (x + kx)) * 4 + c;
-            val += data[idx] * kernel[(ky + 1) * 3 + (kx + 1)];
-          }
-        }
-        output[(y * width + x) * 4 + c] = Math.max(0, Math.min(255, val));
-      }
-    }
-  }
-
-  return new ImageData(output, width, height);
 }
 
 // ── Server-side AI upscaling via Replicate Real-ESRGAN ───────────────────────
