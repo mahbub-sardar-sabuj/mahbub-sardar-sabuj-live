@@ -173,6 +173,67 @@ async function callAI(messages) {
   }
 }
 
+function escapeTelegramHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function truncateTelegramText(value = "", maxLength = 3500) {
+  const text = String(value);
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength - 20) + "\n…[truncated]";
+}
+
+async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent }) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+
+  if (!botToken || !adminChatId) {
+    console.warn("Telegram notification skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID is not configured.");
+    return { ok: false, skipped: true, reason: "missing_env" };
+  }
+
+  const text = [
+    "🤖 <b>AI Chatbot Conversation</b>",
+    "",
+    "<b>Visitor:</b> " + escapeTelegramHtml(truncateTelegramText(userMessage, 1200)),
+    "",
+    "<b>AI Reply:</b> " + escapeTelegramHtml(truncateTelegramText(aiResponse, 1800)),
+    "",
+    "<b>IP:</b> " + escapeTelegramHtml(clientIp || "unknown"),
+    "<b>User Agent:</b> " + escapeTelegramHtml(truncateTelegramText(userAgent || "unknown", 400)),
+    "<b>Time:</b> " + escapeTelegramHtml(new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })),
+  ].join("\n");
+
+  try {
+    const response = await fetch("https://api.telegram.org/bot" + botToken + "/sendMessage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: adminChatId,
+        text,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) {
+      console.error("Telegram notification failed:", {
+        status: response.status,
+        description: result.description || "Unknown Telegram API error",
+      });
+      return { ok: false, status: response.status, description: result.description };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    console.error("Telegram notification failed:", error);
+    return { ok: false, error: error?.message || String(error) };
+  }
+}
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -197,32 +258,16 @@ export default async function handler(req, res) {
     try {
       const reply = await callAI(allMessages);
 
-      // Send conversation to Telegram (non-blocking, fire-and-forget)
-      const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-      const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
-      if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
-        const lastUserMsg = messages.filter(m => m.role === "user").slice(-1)[0];
-        const userQuestion = lastUserMsg ? lastUserMsg.content : "(অজানা)";
-        const shortReply = reply.length > 300 ? reply.slice(0, 300) + "..." : reply;
-        const shortQ = userQuestion.length > 200 ? userQuestion.slice(0, 200) + "..." : userQuestion;
-        const notifText =
-          `🤖 <b>AI চ্যাটবট কথোপকথন</b>
-
-` +
-          `❓ <b>প্রশ্ন:</b> ${shortQ}
-
-` +
-          `💡 <b>AI উত্তর:</b> ${shortReply}`;
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_ADMIN_CHAT_ID,
-            text: notifText,
-            parse_mode: "HTML",
-          }),
-        }).catch(() => {}); // ignore errors — don't block response
-      }
+      // Send notification to Telegram before returning the response.
+      // Vercel serverless functions can stop background work after res.json(),
+      // so fire-and-forget fetch calls may never reach Telegram.
+      const lastUserMsg = messages.filter((message) => message.role === "user").slice(-1)[0];
+      await notifyTelegram({
+        userMessage: lastUserMsg ? lastUserMsg.content : "(অজানা)",
+        aiResponse: reply,
+        clientIp: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
+        userAgent: req.headers["user-agent"],
+      });
 
       return res.status(200).json({ reply });
     } catch (err) {
