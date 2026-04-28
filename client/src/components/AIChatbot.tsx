@@ -96,13 +96,26 @@ function isPhotoRequest(text: string): boolean {
   return PHOTO_KEYWORDS.some(kw => lower.includes(kw));
 }
 
+// ── Live Chat request detection ─────────────────────────────────────────────
+const LIVE_CHAT_KEYWORDS = [
+  "সরাসরি কথা বলতে চাই", "সরাসরি কথা বলব", "সরাসরি কথা বলবো",
+  "লাইভ চ্যাট", "live chat", "livechat",
+  "সরাসরি চ্যাট", "real person", "মানুষের সাথে কথা",
+  "আপনার সাথে কথা বলতে চাই", "তার সাথে কথা বলতে চাই",
+  "সরাসরি যোগাযোগ", "সরাসরি বলতে চাই",
+];
+function isLiveChatRequest(text: string): boolean {
+  const lower = text.toLowerCase();
+  return LIVE_CHAT_KEYWORDS.some(kw => lower.includes(kw));
+}
+
 // ── Contact request detection ─────────────────────────────────────────────────
 const CONTACT_KEYWORDS = [
-  "মেসেজ পাঠাও", "মেসেজ করো", "মেসেজ করতে চাই", "মেসেজ দিতে চাই",
+  "মেসেঞ্জ পাঠাও", "মেসেঞ্জ করো", "মেসেঞ্জ করতে চাই", "মেসেঞ্জ দিতে চাই",
   "যোগাযোগ করতে চাই", "যোগাযোগ করব", "যোগাযোগ করবো",
   "ইমেইল করব", "ইমেইল করতে চাই", "ইমেইল পাঠাব", "ইমেইল দিতে চাই",
   "মেসেঞ্জারে", "messenger", "facebook message", "fb message",
-  "contact", "সরাসরি কথা বলতে চাই", "কথা বলতে চাই",
+  "contact", "কথা বলতে চাই",
   "reach out", "get in touch",
 ];
 
@@ -238,7 +251,8 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - যখন কোনো পেজের কথা বলবে, শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে
 - [BUTTON:/path] ট্যাগ স্বয়ংক্রিয়ভাবে সুন্দর বাটনে পরিণত হবে
 - যদি কেউ মাহবুব সরদার সবুজের ছবি চায়, তাহলে [PHOTO] ট্যাগ ব্যবহার করো
-- সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)`;
+- সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)
+- যদি কেউ সরাসরি কথা বলতে চায় বা লাইভ চ্যাট করতে চায়, তাহলে [LIVE_CHAT] ট্যাগ ব্যবহার করো — এটি স্বয়ংক্রিয়ভাবে "সরাসরি চ্যাট" ট্যাবে যাওয়ার বাটন দেখাবে`;
 
 const SUGGESTIONS = [
   "পরিচয় দাও",
@@ -365,13 +379,15 @@ function ContactCard() {
 }
 
 // ── Parse AI response ───────────────
-function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean; showContact: boolean } {
+function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean; showContact: boolean; showLiveChat: boolean } {
   const buttons: ActionButton[] = [];
   const seen = new Set<string>();
   let showPhoto = false;
   let showContact = false;
+  let showLiveChat = false;
 
-  let text = raw.replace(/\[CONTACT\]/gi, () => { showContact = true; return ""; });
+  let text = raw.replace(/\[LIVE_CHAT\]/gi, () => { showLiveChat = true; return ""; });
+  text = text.replace(/\[CONTACT\]/gi, () => { showContact = true; return ""; });
   text = text.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
 
   text = text.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
@@ -397,7 +413,7 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
   );
 
   text = text.replace(/:\s*\n\n/g, ":\n").replace(/\n{3,}/g, "\n\n").trim();
-  return { text, buttons, showPhoto, showContact };
+  return { text, buttons, showPhoto, showContact, showLiveChat };
 }
 
 // ── CSS Keyframes injected once ───────────────────────────────────────────────
@@ -473,7 +489,7 @@ if (!document.getElementById(STYLE_ID)) {
 }
 
 // ── Message Bubble ────────────────────────────────────────────────────────────
-function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: (path: string) => void }) {
+function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Message; onNavigate: (path: string) => void; onSwitchToLive: () => void }) {
   const isUser = message.role === "user";
 
   if (isUser) {
@@ -506,7 +522,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
     );
   }
 
-  const { text, buttons, showPhoto, showContact } = parseContent(message.content);
+  const { text, buttons, showPhoto, showContact, showLiveChat } = parseContent(message.content);
 
   return (
     <motion.div
@@ -534,6 +550,55 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
       </div>
 
       <div style={{ maxWidth: "calc(100% - 44px)", flex: 1, minWidth: 0 }}>
+        {showLiveChat && (
+          <div style={{ marginBottom: 10 }}>
+            <motion.button
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={onSwitchToLive}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "11px 16px",
+                background: "linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(22,163,74,0.1) 100%)",
+                border: "1px solid rgba(34,197,94,0.45)",
+                borderRadius: 14,
+                cursor: "pointer",
+                width: "100%",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg, rgba(34,197,94,0.28) 0%, rgba(22,163,74,0.2) 100%)";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(34,197,94,0.75)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(22,163,74,0.1) 100%)";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(34,197,94,0.45)";
+              }}
+            >
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(34,197,94,0.15)",
+                border: "1.5px solid rgba(34,197,94,0.5)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ color: "#22c55e", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", fontWeight: 700 }}>সরাসরি চ্যাট শুরু করুন</div>
+                <div style={{ color: "rgba(134,239,172,0.6)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>লাইভ চ্যাটে সরাসরি কথা বলুন</div>
+              </div>
+              <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(34,197,94,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </motion.button>
+          </div>
+        )}
         {showContact && (
           <div style={{ marginBottom: 10 }}>
             <ContactCard />
@@ -800,6 +865,18 @@ export default function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, photoMsg]);
+      setIsLoading(false);
+      return;
+    }
+
+    if (isLiveChatRequest(text)) {
+      const liveChatMsg: Message = {
+        id: `livechat-${Date.now()}`,
+        role: "assistant",
+        content: "[LIVE_CHAT]সরাসরি কথা বলতে চাইলে নিচের বাটনে ক্লিক করুন — লাইভ চ্যাটে সরাসরি যোগাযোগ করতে পারবেন।",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, liveChatMsg]);
       setIsLoading(false);
       return;
     }
@@ -1185,7 +1262,7 @@ export default function AIChatbot() {
               {/* ── Messages ── */}
               <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
                 {messages.map(msg => (
-                  <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
+                  <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} onSwitchToLive={() => setActiveTab("live")} />
                 ))}
                 {isLoading && <TypingIndicator />}
 
