@@ -164,6 +164,9 @@ export default defineConfig({
   envDir: path.resolve(import.meta.dirname),
   root: path.resolve(import.meta.dirname, "client"),
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
+  esbuild: {
+    drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+  },
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
@@ -182,10 +185,6 @@ export default defineConfig({
           }
         },
       },
-    },
-    // Drop console.log statements in production builds
-    esbuild: {
-      drop: ["console", "debugger"],
     },
   },
   server: {

@@ -54,6 +54,10 @@ function resolveAiConfig() {
   const chatbotBaseUrl = process.env.CHATBOT_BASE_URL?.trim();
   const chatbotModel = process.env.CHATBOT_MODEL?.trim();
 
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
+  const openRouterBaseUrl = process.env.OPENROUTER_BASE_URL?.trim();
+  const openRouterModel = process.env.OPENROUTER_MODEL?.trim();
+
   const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
   const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim();
   const openAiModel = process.env.OPENAI_MODEL?.trim();
@@ -64,8 +68,9 @@ function resolveAiConfig() {
 
   // Easiest long-term setup:
   // 1) Put your active provider key in CHATBOT_API_KEY.
-  // 2) Leave CHATBOT_BASE_URL and CHATBOT_MODEL empty unless you need a custom provider.
-  // 3) The server auto-detects OpenRouter keys (sk-or-...) and otherwise defaults to OpenAI.
+  // 2) Or set OPENROUTER_API_KEY directly for OpenRouter.
+  // 3) Leave *_BASE_URL and *_MODEL empty unless you need a custom provider.
+  // 4) CHATBOT_API_KEY auto-detects OpenRouter keys (sk-or-...) and otherwise defaults to OpenAI.
   if (chatbotApiKey) {
     const isOpenRouterKey = chatbotApiKey.startsWith("sk-or-");
 
@@ -75,6 +80,16 @@ function resolveAiConfig() {
       model: chatbotModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
       useForge: false,
       source: "CHATBOT_API_KEY",
+    };
+  }
+
+  if (openRouterApiKey) {
+    return {
+      apiKey: openRouterApiKey,
+      baseUrl: openRouterBaseUrl || "https://openrouter.ai/api/v1",
+      model: openRouterModel || "openai/gpt-4.1-mini",
+      useForge: false,
+      source: "OPENROUTER_API_KEY",
     };
   }
 
@@ -103,7 +118,7 @@ function resolveAiConfig() {
 
 // Call AI API
 async function callAI(messages) {
-  const { apiKey, baseUrl, model, useForge } = resolveAiConfig();
+  const { apiKey, baseUrl, model, useForge, source } = resolveAiConfig();
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 28000);
@@ -120,12 +135,19 @@ async function callAI(messages) {
       payload.thinking = { budget_tokens: 128 };
     }
 
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    };
+
+    if (source === "OPENROUTER_API_KEY" || baseUrl.includes("openrouter.ai")) {
+      headers["HTTP-Referer"] = process.env.SITE_URL || process.env.VERCEL_URL || "https://mahbub-sardar-sabuj-live.vercel.app";
+      headers["X-Title"] = "Mahbub Sardar Sabuj Live";
+    }
+
     const response = await fetch(buildChatCompletionsUrl(baseUrl), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
+      headers,
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
