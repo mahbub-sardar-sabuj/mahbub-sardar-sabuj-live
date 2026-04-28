@@ -312,7 +312,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
       animate={{ opacity: 1, y: 0 }}
       className="flex gap-2 mb-3"
     >
-      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#D4A843] flex-shrink-0 mt-1">
+      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mt-1" style={{ border: "1.5px solid #D4A843", boxShadow: "0 0 8px rgba(212,168,67,0.4), 0 0 16px rgba(212,168,67,0.15)" }}>
         <img src={AUTHOR_PHOTO} alt="AI" className="w-full h-full object-cover"
           onError={(e) => {
             const t = e.currentTarget;
@@ -330,8 +330,9 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
         )}
         {text && (
           <div style={{
-            background: "rgba(30,45,61,0.9)",
-            border: "1px solid rgba(212,168,67,0.2)",
+            background: "linear-gradient(135deg, rgba(25,40,60,0.95) 0%, rgba(20,35,55,0.95) 100%)",
+            border: "1px solid rgba(212,168,67,0.18)",
+            borderLeft: "3px solid rgba(212,168,67,0.7)",
             borderRadius: "4px 18px 18px 18px",
             padding: "10px 14px",
             color: "rgba(253,246,236,0.92)",
@@ -339,6 +340,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
             fontSize: "0.88rem",
             lineHeight: 1.8,
             whiteSpace: "pre-wrap",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,168,67,0.08)",
           }}>
             {text}
           </div>
@@ -386,12 +388,13 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
 function TypingIndicator() {
   return (
     <div className="flex gap-2 mb-3">
-      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#D4A843] flex-shrink-0">
+      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style={{ border: "1.5px solid #D4A843", boxShadow: "0 0 8px rgba(212,168,67,0.4)" }}>
         <img src={AUTHOR_PHOTO} alt="AI" className="w-full h-full object-cover" />
       </div>
       <div style={{
-        background: "rgba(30,45,61,0.9)",
-        border: "1px solid rgba(212,168,67,0.2)",
+        background: "linear-gradient(135deg, rgba(25,40,60,0.95) 0%, rgba(20,35,55,0.95) 100%)",
+        border: "1px solid rgba(212,168,67,0.18)",
+        borderLeft: "3px solid rgba(212,168,67,0.7)",
         borderRadius: "4px 18px 18px 18px",
         padding: "12px 16px",
         display: "flex",
@@ -672,12 +675,20 @@ export default function AIChatbot() {
             >
               {/* Pulse ring */}
               {!isOpen && (
-                <span style={{
-                  position: "absolute", inset: -3, borderRadius: "50%",
-                  border: "2px solid rgba(212,168,67,0.4)",
-                  animation: "ping 2s ease-in-out infinite",
-                  pointerEvents: "none",
-                }} />
+                <>
+                  <span style={{
+                    position: "absolute", inset: -4, borderRadius: "50%",
+                    border: "2px solid rgba(212,168,67,0.5)",
+                    animation: "ping 2s ease-in-out infinite",
+                    pointerEvents: "none",
+                  }} />
+                  <span style={{
+                    position: "absolute", inset: -8, borderRadius: "50%",
+                    border: "1.5px solid rgba(212,168,67,0.2)",
+                    animation: "ping 2s ease-in-out infinite 0.5s",
+                    pointerEvents: "none",
+                  }} />
+                </>
               )}
               <AnimatePresence mode="wait">
                 {isOpen ? (
@@ -755,8 +766,14 @@ export default function AIChatbot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-24 right-6 z-[60] w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ background: "#0d1b2a" }}
+            className="fixed bottom-24 right-6 z-[60] w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            style={{
+              background: "rgba(10,20,35,0.92)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(212,168,67,0.25)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,168,67,0.1), inset 0 1px 0 rgba(212,168,67,0.15)",
+            }}
           >
             {/* Full-background watermark */}
             <div aria-hidden="true" style={{
@@ -780,9 +797,16 @@ export default function AIChatbot() {
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
 
               {/* Header */}
-              <div className="bg-[#111827]/90 px-4 py-3 flex items-center justify-between border-b border-[#2a3a4a] backdrop-blur-sm">
+              <div className="px-4 py-3 flex items-center justify-between backdrop-blur-sm" style={{
+                background: "linear-gradient(135deg, rgba(8,16,28,0.95) 0%, rgba(15,25,42,0.95) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.2)",
+                boxShadow: "0 1px 0 rgba(212,168,67,0.08)",
+              }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#D4A843] flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
+                    border: "2px solid #D4A843",
+                    boxShadow: "0 0 0 3px rgba(212,168,67,0.2), 0 0 16px rgba(212,168,67,0.35), 0 0 32px rgba(212,168,67,0.15)",
+                  }}>
                     <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" className="w-full h-full object-cover"
                       onError={(e) => {
                         const t = e.currentTarget;
@@ -791,7 +815,7 @@ export default function AIChatbot() {
                       }} />
                   </div>
                   <div>
-                    <div className="text-white font-semibold text-sm">মাহবুব সরদার সবুজ AI Agent</div>
+                    <div className="font-semibold text-sm" style={{ background: "linear-gradient(90deg, #F0D080, #D4A843, #C9A84C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>মাহবুব সরদার সবুজ AI Agent</div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                       <span className="text-green-400 text-xs">সক্রিয়</span>
@@ -816,7 +840,7 @@ export default function AIChatbot() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(212,168,67,0.3) transparent" }}>
                 {messages.map(msg => (
                   <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
                 ))}
@@ -846,35 +870,80 @@ export default function AIChatbot() {
 
               {/* Suggestions */}
               {messages.length === 1 && (
-                <div className="px-4 pb-2 flex flex-wrap gap-2">
-                  {SUGGESTIONS.map(s => (
-                    <button key={s}
-                      onClick={() => { setInput(s); inputRef.current?.focus(); }}
-                      className="text-xs bg-[#1e2d3d]/80 text-[#D4A843] border border-[#2a3a4a] rounded-full px-3 py-1 hover:border-[#D4A843] transition-all backdrop-blur-sm">
-                      {s}
-                    </button>
-                  ))}
+                <div className="px-4 pb-3" style={{ borderTop: "1px solid rgba(212,168,67,0.1)" }}>
+                  <p className="text-xs mb-2 mt-2" style={{ color: "rgba(212,168,67,0.5)", fontFamily: "'Noto Sans Bengali', sans-serif" }}>জিজ্ঞেস করুন:</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {SUGGESTIONS.map(s => (
+                      <button key={s}
+                        onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                        className="text-xs text-left transition-all"
+                        style={{
+                          background: "rgba(30,45,61,0.6)",
+                          color: "#D4A843",
+                          border: "1px solid rgba(42,58,74,0.8)",
+                          borderRadius: "10px",
+                          padding: "7px 10px",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          backdropFilter: "blur(8px)",
+                          lineHeight: 1.4,
+                        }}
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLButtonElement).style.border = "1px solid rgba(212,168,67,0.6)";
+                          (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.1)";
+                          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 8px rgba(212,168,67,0.15)";
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLButtonElement).style.border = "1px solid rgba(42,58,74,0.8)";
+                          (e.currentTarget as HTMLButtonElement).style.background = "rgba(30,45,61,0.6)";
+                          (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                        }}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* Input */}
-              <div className="px-4 py-3 border-t border-[#2a3a4a] bg-[#111827]/90 backdrop-blur-sm">
+              <div className="px-4 py-3 backdrop-blur-sm" style={{
+                borderTop: "1px solid rgba(212,168,67,0.15)",
+                background: "linear-gradient(135deg, rgba(8,16,28,0.95) 0%, rgba(15,25,42,0.95) 100%)",
+              }}>
                 <div className="flex gap-2 items-end">
                   <textarea
                     ref={inputRef}
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="আপনার প্রশ্ন লিখুন... (Enter চাপুন)"
+                    placeholder="মাহবুব সরদার সবুজ সম্পর্কে জিজ্ঞেস করুন..."
                     rows={1}
-                    className="flex-1 bg-[#1e2d3d] text-white border border-[#2a3a4a] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-500 max-h-24 overflow-y-auto"
+                    className="flex-1 text-white rounded-xl px-3 py-2 text-sm focus:outline-none resize-none max-h-24 overflow-y-auto"
+                    style={{
+                      background: "rgba(20,35,55,0.8)",
+                      border: "1px solid rgba(42,58,74,0.9)",
+                      transition: "border-color 0.2s, box-shadow 0.2s",
+                    }}
+                    onFocus={e => {
+                      e.currentTarget.style.borderColor = "rgba(212,168,67,0.7)";
+                      e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,168,67,0.12), 0 0 16px rgba(212,168,67,0.1)";
+                    }}
+                    onBlur={e => {
+                      e.currentTarget.style.borderColor = "rgba(42,58,74,0.9)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
                     style={{ minHeight: "40px", fontFamily: "'Noto Sans Bengali', sans-serif" }}
                     disabled={isLoading}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading}
-                    className="w-10 h-10 rounded-xl bg-[#D4A843] text-black flex items-center justify-center hover:bg-[#c49030] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                    className="w-10 h-10 rounded-xl text-black flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                    style={{
+                      background: "linear-gradient(135deg, #F0D080 0%, #D4A843 50%, #C9A84C 100%)",
+                      boxShadow: "0 4px 12px rgba(212,168,67,0.4)",
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(212,168,67,0.6)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(212,168,67,0.4)"; }}
                   >
                     {isLoading ? (
                       <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
