@@ -991,31 +991,25 @@ export default function News() {
                   alignItems: "center",
                 }}>
                   <motion.div
-                    animate={{ x: ["0%", "-200%"] }}
-                    transition={{ duration: 150, repeat: Infinity, ease: "linear", repeatDelay: 0 }}
+                    animate={{ x: [0, -1000] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear", repeatType: "loop" }}
                     style={{
                       display: "flex",
                       gap: "4rem",
                       whiteSpace: "nowrap",
-                      width: "max-content",
                       alignItems: "center",
                     }}
                   >
-                    {[...Array(3)].map((_, i) => (
-                      <span key={i} style={{
-                        color: "#FAF6EF",
-                        fontSize: "0.85rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "3rem",
-                      }}>
-                        {breakingNews.map((item, j) => (
-                          <span key={j} style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-                            {item}
-                            <span style={{ color: "#F5A623", fontSize: "0.6rem" }}>●</span>
-                          </span>
-                        ))}
+                    {breakingNews.map((item, j) => (
+                      <span key={j} style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexShrink: 0 }}>
+                        {item}
+                        <span style={{ color: "#F5A623", fontSize: "0.6rem" }}>●</span>
+                      </span>
+                    ))}
+                    {breakingNews.map((item, j) => (
+                      <span key={`dup-${j}`} style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexShrink: 0 }}>
+                        {item}
+                        <span style={{ color: "#F5A623", fontSize: "0.6rem" }}>●</span>
                       </span>
                     ))}
                   </motion.div>
