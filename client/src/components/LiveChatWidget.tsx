@@ -131,6 +131,10 @@ export default function LiveChatWidget({ onClose }: Props) {
 
   const startSession = async () => {
     if (!nameInput.trim()) return;
+    if (!contactInput.trim() || !contactType) {
+      setError("WhatsApp নম্বর বা Gmail ঠিকানা দেওয়া বাধ্যতামূলক।");
+      return;
+    }
     setIsStarting(true);
     setError("");
     try {
@@ -318,11 +322,11 @@ export default function LiveChatWidget({ onClose }: Props) {
               type="text"
               value={contactInput}
               onChange={e => setContactInput(e.target.value)}
-              placeholder="WhatsApp নম্বর বা Gmail (ঐচ্ছিক)"
+              placeholder="WhatsApp নম্বর বা Gmail *"
               maxLength={100}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: `1px solid ${contactType === "gmail" ? "rgba(66,133,244,0.5)" : contactType === "whatsapp" ? "rgba(37,211,102,0.5)" : "rgba(212,168,67,0.25)"}`,
+            style={{
+              background: "rgba(255,255,255,0.05)",
+                border: `1px solid ${contactType === "gmail" ? "rgba(66,133,244,0.5)" : contactType === "whatsapp" ? "rgba(37,211,102,0.5)" : "rgba(212,168,67,0.45)"}`,
                 borderRadius: 12, padding: "12px 16px",
                 paddingRight: contactType ? "44px" : "16px",
                 color: "#FAF6EF", fontFamily: FONT, fontSize: "0.88rem",
@@ -354,20 +358,20 @@ export default function LiveChatWidget({ onClose }: Props) {
           }}>
             {contactType === "whatsapp" && "✓ WhatsApp নম্বর — অনলাইনে না থাকলে WhatsApp-এ জানানো হবে"}
             {contactType === "gmail" && "✓ Gmail — অনলাইনে না থাকলে ইমেইলে জানানো হবে"}
-            {!contactType && "অনলাইনে না থাকলে আপনার দেওয়া মাধ্যমে উত্তর পাঠানো হবে"}
+            {!contactType && "✱ লাইভ চ্যাট শুরু করতে WhatsApp নম্বর বা Gmail দিন"}
           </p>
 
           <button
             onClick={startSession}
-            disabled={!nameInput.trim() || isStarting}
+            disabled={!nameInput.trim() || !contactInput.trim() || !contactType || isStarting}
             style={{
-              background: nameInput.trim() && !isStarting
+              background: nameInput.trim() && contactInput.trim() && contactType && !isStarting
                 ? "linear-gradient(135deg, #C9A84C, #D4A843)"
                 : "rgba(212,168,67,0.2)",
               border: "none", borderRadius: 12, padding: "12px",
-              color: nameInput.trim() && !isStarting ? NAVY : "rgba(212,168,67,0.4)",
+              color: nameInput.trim() && contactInput.trim() && contactType && !isStarting ? NAVY : "rgba(212,168,67,0.4)",
               fontFamily: FONT, fontSize: "0.9rem", fontWeight: 700,
-              cursor: nameInput.trim() && !isStarting ? "pointer" : "not-allowed",
+              cursor: nameInput.trim() && contactInput.trim() && contactType && !isStarting ? "pointer" : "not-allowed",
               transition: "all 0.2s",
             }}
           >
