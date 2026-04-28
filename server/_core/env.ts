@@ -7,4 +7,7 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  // Telegram Live Chat Bot
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
+  telegramAdminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID ?? "",
 };

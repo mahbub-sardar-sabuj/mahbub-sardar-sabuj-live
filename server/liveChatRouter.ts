@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import { publicProcedure, adminProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
 import { liveChatSessions, liveChatMessages } from "../drizzle/schema";
+import { sendTelegramNotification, sendTelegramSessionClosed } from "./telegramService";
 
 // ── Visitor: start or resume a session ───────────────────────────────────────
 export const liveChatRouter = router({
@@ -99,6 +100,14 @@ export const liveChatRouter = router({
         content: input.content,
         read: false,
       });
+
+      // Send Telegram notification to admin
+      const visitorName = session[0].visitorName || "অতিথি";
+      sendTelegramNotification({
+        sessionId: input.sessionId,
+        visitorName,
+        message: input.content,
+      }).catch(err => console.error("[Telegram notify error]", err));
 
       // Update session status to active & update lastMessageAt
       await db
@@ -240,10 +249,23 @@ export const liveChatRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
 
+      // Get visitor name before closing
+      const sessions = await db
+        .select()
+        .from(liveChatSessions)
+        .where(eq(liveChatSessions.sessionId, input.sessionId))
+        .limit(1);
+
       await db
         .update(liveChatSessions)
         .set({ status: "closed" })
         .where(eq(liveChatSessions.sessionId, input.sessionId));
+
+      // Notify via Telegram
+      if (sessions.length > 0) {
+        sendTelegramSessionClosed(input.sessionId, sessions[0].visitorName || "অতিথি")
+          .catch(err => console.error("[Telegram close notify error]", err));
+      }
 
       return { success: true };
     }),

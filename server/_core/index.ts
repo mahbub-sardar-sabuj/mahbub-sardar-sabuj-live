@@ -7,6 +7,8 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { handleTelegramWebhook, registerTelegramWebhook } from "../telegramService";
+import { ENV } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,6 +45,18 @@ async function startServer() {
       createContext,
     })
   );
+
+  // Telegram Bot Webhook — receives replies from admin
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      await handleTelegramWebhook(req.body);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[Telegram webhook error]", err);
+      res.status(500).json({ ok: false });
+    }
+  });
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
@@ -59,6 +73,13 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Register Telegram webhook after server starts (production only)
+    if (ENV.isProduction && ENV.telegramBotToken) {
+      const appUrl = process.env.APP_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : `http://localhost:${port}`;
+      registerTelegramWebhook(`${appUrl}/api/telegram/webhook`);
+    }
   });
 }
 
