@@ -95,6 +95,21 @@ function isPhotoRequest(text: string): boolean {
   return PHOTO_KEYWORDS.some(kw => lower.includes(kw));
 }
 
+// ── Contact request detection ─────────────────────────────────────────────────
+const CONTACT_KEYWORDS = [
+  "মেসেজ পাঠাও", "মেসেজ করো", "মেসেজ করতে চাই", "মেসেজ দিতে চাই",
+  "যোগাযোগ করতে চাই", "যোগাযোগ করব", "যোগাযোগ করবো",
+  "ইমেইল করব", "ইমেইল করতে চাই", "ইমেইল পাঠাব", "ইমেইল দিতে চাই",
+  "মেসেঞ্জারে", "messenger", "facebook message", "fb message",
+  "contact", "সরাসরি কথা বলতে চাই", "কথা বলতে চাই",
+  "reach out", "get in touch",
+];
+
+function isContactRequest(text: string): boolean {
+  const lower = text.toLowerCase();
+  return CONTACT_KEYWORDS.some(kw => lower.includes(kw));
+}
+
 // ── System prompt ─────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী।
 
@@ -237,13 +252,126 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
+// ── Contact Card ─────────────────────────────────────────────────────────────
+function ContactCard() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      style={{
+        background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
+        borderRadius: "4px 18px 18px 18px",
+        padding: "14px 16px",
+        border: "1px solid rgba(212,168,67,0.18)",
+        borderLeft: "3px solid rgba(212,168,67,0.7)",
+        boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
+        marginBottom: 4,
+      }}
+    >
+      <p style={{
+        color: "rgba(245,238,222,0.9)",
+        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+        fontSize: "0.85rem",
+        lineHeight: 1.8,
+        marginBottom: 12,
+      }}>
+        মাহবুব সরদার সবুজের সাথে সরাসরি যোগাযোগ করুন:
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {/* Messenger button */}
+        <a
+          href="https://m.me/Lekhok.MahbubSardarSabuj"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 14px",
+            background: "linear-gradient(135deg, rgba(0,120,255,0.15) 0%, rgba(0,90,200,0.1) 100%)",
+            border: "1px solid rgba(0,120,255,0.35)",
+            borderRadius: 12,
+            textDecoration: "none",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLAnchorElement).style.background = "linear-gradient(135deg, rgba(0,120,255,0.28) 0%, rgba(0,90,200,0.2) 100%)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(0,120,255,0.65)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLAnchorElement).style.background = "linear-gradient(135deg, rgba(0,120,255,0.15) 0%, rgba(0,90,200,0.1) 100%)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(0,120,255,0.35)";
+          }}
+        >
+          {/* Messenger icon */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.906 1.419 5.5 3.638 7.22V22l3.316-1.82c.885.245 1.823.376 2.795.376 5.523 0 10-4.145 10-9.243C22 6.145 17.523 2 12 2z" fill="#0084FF"/>
+            <path d="M13.5 14.5l-2.5-2.667L6 14.5l5.5-5.833 2.5 2.666L18.5 9l-5 5.5z" fill="white"/>
+          </svg>
+          <div>
+            <div style={{ color: "#60a5fa", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>Messenger-এ মেসেজ করুন</div>
+            <div style={{ color: "rgba(150,180,220,0.65)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>Lekhok.MahbubSardarSabuj</div>
+          </div>
+          <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(100,160,255,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+
+        {/* Email button */}
+        <a
+          href="mailto:lekhokmahbubsardarsabuj@gmail.com"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 14px",
+            background: "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.06) 100%)",
+            border: "1px solid rgba(212,168,67,0.35)",
+            borderRadius: 12,
+            textDecoration: "none",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLAnchorElement).style.background = "linear-gradient(135deg, rgba(212,168,67,0.25) 0%, rgba(212,168,67,0.15) 100%)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(212,168,67,0.65)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLAnchorElement).style.background = "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.06) 100%)";
+            (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(212,168,67,0.35)";
+          }}
+        >
+          {/* Email icon */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="4" width="20" height="16" rx="3" fill="rgba(212,168,67,0.2)" stroke="#D4A843" strokeWidth="1.5"/>
+            <polyline points="2,4 12,13 22,4" stroke="#D4A843" strokeWidth="1.5" fill="none"/>
+          </svg>
+          <div>
+            <div style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>ইমেইল করুন</div>
+            <div style={{ color: "rgba(212,168,67,0.55)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>lekhokmahbubsardarsabuj@gmail.com</div>
+          </div>
+          <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Parse AI response ───────────────
-function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean } {
+function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean; showContact: boolean } {
   const buttons: ActionButton[] = [];
   const seen = new Set<string>();
   let showPhoto = false;
+  let showContact = false;
 
-  let text = raw.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
+  let text = raw.replace(/\[CONTACT\]/gi, () => { showContact = true; return ""; });
+  text = text.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
 
   text = text.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
     if (!seen.has(path)) {
@@ -268,7 +396,7 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
   );
 
   text = text.replace(/:\s*\n\n/g, ":\n").replace(/\n{3,}/g, "\n\n").trim();
-  return { text, buttons, showPhoto };
+  return { text, buttons, showPhoto, showContact };
 }
 
 // ── CSS Keyframes injected once ───────────────────────────────────────────────
@@ -377,7 +505,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
     );
   }
 
-  const { text, buttons, showPhoto } = parseContent(message.content);
+  const { text, buttons, showPhoto, showContact } = parseContent(message.content);
 
   return (
     <motion.div
@@ -405,6 +533,11 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
       </div>
 
       <div style={{ maxWidth: "calc(100% - 44px)", flex: 1, minWidth: 0 }}>
+        {showContact && (
+          <div style={{ marginBottom: 10 }}>
+            <ContactCard />
+          </div>
+        )}
         {showPhoto && (
           <div style={{ marginBottom: 10 }}>
             <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ"
@@ -665,6 +798,18 @@ export default function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, photoMsg]);
+      setIsLoading(false);
+      return;
+    }
+
+    if (isContactRequest(text)) {
+      const contactMsg: Message = {
+        id: `contact-${Date.now()}`,
+        role: "assistant",
+        content: "[CONTACT]",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, contactMsg]);
       setIsLoading(false);
       return;
     }
