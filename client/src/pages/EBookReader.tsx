@@ -47,7 +47,7 @@ const ebookData: Record<string, {
   "smritir-boshonte": {
     title: "স্মৃতির বসন্তে তুমি",
     author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/smritir-boshonte.png",
+    cover: "/images/ebooks/smritir-boshonte.jpg",
     pdfUrl: "/ebooks/smritir-boshonte.pdf",
     description: "স্মৃতির গভীরে হারিয়ে যাওয়া প্রিয় মুহূর্তগুলো নিয়ে লেখা এই বইটি।",
     genre: "কবিতা ও গদ্য",
@@ -57,7 +57,7 @@ const ebookData: Record<string, {
   "chand-phool": {
     title: "চাঁদফুল",
     author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/chand-phool.png",
+    cover: "/images/ebooks/chand-phool.jpg",
     pdfUrl: "/ebooks/chand-phool.pdf",
     description: "প্রকৃতির অপরূপ সৌন্দর্য আর মানবমনের কোমল অনুভূতির মেলবন্ধনে রচিত এই কাব্যগ্রন্থ।",
     genre: "কবিতা",
@@ -67,7 +67,7 @@ const ebookData: Record<string, {
   "shomoyer-gohvore": {
     title: "সময়ের গহ্বরে",
     author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/shomoyer-gohvore.png",
+    cover: "/images/ebooks/shomoyer-gohvore.jpg",
     pdfUrl: "/ebooks/shomoyer-gohvore.pdf",
     description: "সময়ের স্রোতে হারিয়ে যাওয়া শহর, মানুষ আর স্মৃতির কথা।",
     genre: "গদ্য ও কবিতা",

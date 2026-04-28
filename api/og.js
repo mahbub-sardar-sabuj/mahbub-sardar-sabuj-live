@@ -9,7 +9,7 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 const newsData = [
   {
     id: 39,
-    image: "/images/news/shunnotar_songlap_junaid_bin_kamal.png",
+    image: "/images/news/shunnotar_songlap_junaid_bin_kamal.jpg",
     title: "তরুণ লেখক জুনাইদ বিন কামালের ‘শূন্যতার সংলাপ’ পাঠকমহলে আলোচনায়",
     excerpt: "সাহিত্যাঙ্গনে নতুন প্রজন্মের লেখকদের পদচারণা দিন দিন দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় আলোচনায় উঠে এসেছে তরুণ লেখক জুনাইদ বিন কামালের বই ‘শূন্যতার সংলাপ’।",
     category: "সাহিত্য",
@@ -18,7 +18,7 @@ const newsData = [
   },
   {
     id: 38,
-    image: "/images/news/fer_dekha_hobe_nusrat_aporna.png",
+    image: "/images/news/fer_dekha_hobe_nusrat_aporna.jpg",
     title: "নতুন প্রজন্মের কাব্যধারায় ‘ফের দেখা হবে’—নুসরাত অপর্ণার আবেগঘন অভিষেক",
     excerpt: "বাংলা সাহিত্যাঙ্গনে নতুন প্রজন্মের তরুণ লেখকদের উপস্থিতি ক্রমেই দৃশ্যমান হচ্ছে। সেই ধারাবাহিকতায় পাঠকসমাজে আলোচনায় এসেছে সম্ভাবনাময় লেখিকা নুসরাত অপর্ণার প্রথম কাব্যগ্রন্থ ‘ফের দেখা হবে’।",
     category: "সাহিত্য",
@@ -27,7 +27,7 @@ const newsData = [
   },
   {
     id: 37,
-    image: "/images/news/tumi_chaya_naki_alo_nusrat_aporna.png",
+    image: "/images/news/tumi_chaya_naki_alo_nusrat_aporna.jpg",
     title: "“তুমি ছায়া নাকি আলো”—ভালোবাসা ও নৈতিক দ্বন্দ্বের গল্প নিয়ে নতুন উপন্যাস",
     excerpt: "ঢাকা শহরের অদৃশ্য অন্ধকার বাস্তবতা ও মানুষের ভেতরের নৈতিক দ্বন্দ্বকে কেন্দ্র করে প্রকাশিত হয়েছে তরুণ লেখিকা নুসরাত অপর্ণার নতুন উপন্যাস “তুমি ছায়া নাকি আলো”।",
     category: "সাহিত্য",
@@ -81,7 +81,7 @@ const newsData = [
   },
   {
     id: 24,
-    image: "/images/news/khoshbash-chairman-v2.png",
+    image: "/images/news/khoshbash-chairman-v2.jpg",
     title: "হাতকড়ায় চেয়ারম্যান: খোশবাসে বেদনা, অনিশ্চয়তায় জনজীবন",
     excerpt:
       "কুমিল্লার বরুড়া উপজেলার খোশবাস ইউনিয়নে চেয়ারম্যান নাজমুল হাসান সর্দারের গ্রেফতারের ঘটনায় জনজীবনে নেমে এসেছে অনিশ্চয়তা ও উদ্বেগ।",
@@ -91,7 +91,7 @@ const newsData = [
   },
   {
     id: 25,
-    image: "/images/news/akibul-hasan.png",
+    image: "/images/news/akibul-hasan.jpg",
     title: "ভোলা থেকে উঠে আসা নতুন সাহিত্যকণ্ঠ আকিবুল হাসান",
     excerpt:
       "ভালোবাসা, বেদনা আর জীবনের গভীর অনুভূতি—এই তিনটিকেই শব্দে রূপ দিতে ভালোবাসেন তরুণ লেখক আকিবুল হাসান।",
@@ -101,7 +101,7 @@ const newsData = [
   },
   {
     id: 21,
-    image: "/images/news/zahid-hasan-poet.png",
+    image: "/images/news/zahid-hasan-poet.jpg",
     title: "উদীয়মান তরুণ কবি জাহিদ হাসান—ভালোবাসা, বেদনা ও অনুভূতির কণ্ঠস্বর",
     excerpt:
       "ময়মনসিংহের চর-ঝাউগড়া গ্রামের নীরব পরিবেশ থেকে উঠে আসা তরুণ লেখক জাহিদ হাসান ধীরে ধীরে নিজস্ব সাহিত্যভুবন গড়ে তুলছেন।",
@@ -111,7 +111,7 @@ const newsData = [
   },
   {
     id: 20,
-    image: "/images/news/website-launch.png",
+    image: "/images/news/website-launch.jpg",
     title: "নতুন আঙ্গিকে সাহিত্যচর্চা: চালু হলো লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট",
     excerpt:
       "ডিজিটাল যুগের সঙ্গে তাল মিলিয়ে সাহিত্যকে আরও সহজলভ্য ও সংগঠিত করতে লেখক মাহবুব সরদার সবুজ তার নতুন অফিসিয়াল ওয়েবসাইট চালু করেছেন।",
@@ -121,7 +121,7 @@ const newsData = [
   },
   {
     id: 19,
-    image: "/images/news/110k-followers.png",
+    image: "/images/news/110k-followers.jpg",
     title: "১১০ হাজার ফলোয়ার পূর্ণ: কৃতজ্ঞতা জানালেন লেখক মাহবুব সরদার সবুজ",
     excerpt:
       "জনপ্রিয় লেখক মাহবুব সরদার সবুজের অফিসিয়াল প্রোফাইল আইডিতে ফলোয়ার সংখ্যা ১১০ হাজারে পৌঁছেছে।",
@@ -131,7 +131,7 @@ const newsData = [
   },
   {
     id: 18,
-    image: "/images/news/december-shohor.png",
+    image: "/images/news/december-shohor.jpg",
     title: '"ডিসেম্বরের শহরে" বই নিয়ে পাঠকমহলে আগ্রহ বাড়ছে',
     excerpt:
       'বাংলা সাহিত্য অঙ্গনে সমকালীন রোমান্টিক ধারার আলোচিত বইগুলোর মধ্যে জায়গা করে নিয়েছে "ডিসেম্বরের শহরে"।',
@@ -141,7 +141,7 @@ const newsData = [
   },
   {
     id: 17,
-    image: "/images/news/platform-announcement.png",
+    image: "/images/news/platform-announcement.jpg",
     title: "আপনার গল্প, আপনার পরিচিতি—এবার বৃহৎ পাঠকের কাছে",
     excerpt:
       "ডিজিটাল এই সময়ে নিজের পরিচিতি তুলে ধরা কিংবা ব্যক্তিগত সাফল্যের গল্প শেয়ার করা এখন অনেক সহজ।",
@@ -151,7 +151,7 @@ const newsData = [
   },
   {
     id: 10,
-    image: "/images/news/baighar-visit.png",
+    image: "/images/news/baighar-visit.jpg",
     title: "ঢাকা বাতিঘরে তরুণ আবৃত্তিকারদের বই-পরিচিতি",
     excerpt:
       'তরুণ আবৃত্তিকার মরিয়ম ও সোহানী ঢাকা বাতিঘরে মাহবুব সরদার সবুজের বই "আমি বিচ্ছেদকে বলি দুঃখবিলাস"-এর সাথে পরিচিত হন।',
