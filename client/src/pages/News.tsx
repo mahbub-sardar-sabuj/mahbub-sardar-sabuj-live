@@ -890,10 +890,95 @@ export default function News() {
         }
         .news-card:hover .card-img { transform: scale(1.06); }
         .news-card:hover .read-btn { gap: 10px; }
+        .news-card-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: clamp(1rem, 2.4vw, 1.8rem);
+          align-items: stretch;
+        }
+        .news-card {
+          min-width: 0;
+          isolation: isolate;
+        }
+        .news-thumb {
+          flex: 0 0 auto;
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          min-height: 190px;
+          max-height: 250px;
+          overflow: hidden;
+          position: relative;
+          background: linear-gradient(135deg, rgba(27,42,107,0.95), rgba(6,14,26,0.92));
+        }
+        .news-thumb::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(180deg, rgba(6,14,26,0.02) 0%, rgba(6,14,26,0.18) 55%, rgba(6,14,26,0.72) 100%);
+        }
+        .news-thumb .category-badge {
+          z-index: 2;
+        }
+        .news-card-body {
+          min-height: 0;
+          flex: 1 1 auto;
+        }
+        .news-card-footer {
+          gap: 14px;
+        }
+        .news-modal-shell {
+          width: min(900px, 100%);
+          max-height: min(92vh, 980px);
+        }
+        .news-modal-scroll {
+          overflow-y: auto;
+          max-height: min(92vh, 980px);
+          -webkit-overflow-scrolling: touch;
+        }
+        .news-modal-hero {
+          height: clamp(210px, 34vw, 330px);
+          overflow: hidden;
+          position: relative;
+          background: linear-gradient(135deg, rgba(27,42,107,0.95), rgba(6,14,26,0.92));
+        }
+        .news-modal-content {
+          padding: clamp(24px, 4vw, 40px);
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 4px; }
+        @media (max-width: 767px) {
+          .news-card-grid {
+            grid-template-columns: 1fr;
+            gap: 1.1rem;
+          }
+          .news-thumb {
+            min-height: 185px;
+            max-height: none;
+          }
+          .news-card-body {
+            padding: 18px !important;
+          }
+          .news-card-footer {
+            align-items: flex-start !important;
+            flex-direction: column;
+          }
+          .news-modal-shell {
+            border-radius: 22px !important;
+            max-height: 94vh !important;
+          }
+          .news-modal-scroll {
+            max-height: 94vh !important;
+          }
+          .news-modal-hero {
+            height: 210px;
+          }
+        }
+        @media (max-width: 390px) {
+          .news-thumb { min-height: 170px; }
+        }
       `}</style>
 
       <Seo
@@ -1110,12 +1195,7 @@ export default function News() {
         ) : (
           <>
             {/* ── ALL NEWS GRID (equal cards) ── */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              gridAutoRows: "1fr",
-              gap: "1.8rem",
-            }}>
+            <div className="news-card-grid">
               {filtered.map((item, idx) => (
                 <motion.div
                   key={item.id}
@@ -1128,29 +1208,39 @@ export default function News() {
                   onHoverEnd={() => setCardHovered(null)}
                   className="news-card"
                   style={{
-                    background: "rgba(27,42,107,0.12)",
+                    background: "linear-gradient(180deg, rgba(27,42,107,0.20) 0%, rgba(6,14,26,0.88) 100%)",
                     border: `1.5px solid ${cardHovered === item.id ? "rgba(245,166,35,0.4)" : "rgba(245,166,35,0.12)"}`,
                     borderRadius: 24,
                     overflow: "hidden",
                     cursor: "pointer",
                     transition: "all 0.35s ease",
-                    boxShadow: cardHovered === item.id ? "0 16px 48px rgba(245,166,35,0.12)" : "none",
+                    boxShadow: cardHovered === item.id ? "0 18px 58px rgba(245,166,35,0.15)" : "0 10px 30px rgba(0,0,0,0.18)",
                     display: "flex",
                     flexDirection: "column",
+                    height: "100%",
                   }}
                   whileHover={{ y: -8 }}
                 >
                   {/* Card image */}
                   {item.image && (
-                    <div style={{ height: 210, overflow: "hidden", position: "relative" }}>
+                    <div className="news-thumb">
                       <img
                         src={item.image}
                         alt={item.title}
                         className="card-img"
+                        loading={idx < 6 ? "eager" : "lazy"}
+                        decoding="async"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/sardar-sangbad-logo-final.png";
+                          e.currentTarget.style.objectFit = "contain";
+                          e.currentTarget.style.padding = "34px";
+                          e.currentTarget.style.background = "linear-gradient(135deg, #1B2A6B, #060E1A)";
+                        }}
                         style={{
                           width: "100%",
                           height: "100%",
                           objectFit: "cover",
+                          display: "block",
                           transition: "transform 0.6s ease",
                         }}
                       />
@@ -1160,8 +1250,9 @@ export default function News() {
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: "50%",
-                        background: "linear-gradient(to top, rgba(6,14,26,0.7), transparent)",
+                        height: "55%",
+                        background: "linear-gradient(to top, rgba(6,14,26,0.78), transparent)",
+                        zIndex: 1,
                       }} />
                       {/* Category badge */}
                       <div style={{
@@ -1179,6 +1270,7 @@ export default function News() {
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                       }}
+                      className="category-badge"
                     >
                       {item.category}
                     </div>
@@ -1186,7 +1278,7 @@ export default function News() {
                   )}
 
                   {/* Card content */}
-                  <div style={{ padding: "24px", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: "100%" }}>
+                  <div className="news-card-body" style={{ padding: "24px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                     {/* Meta row */}
                     <div style={{
                       display: "flex",
@@ -1243,7 +1335,7 @@ export default function News() {
                     </p>
 
                     {/* Footer row */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="news-card-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
                       <span style={{
                         color: "rgba(250,246,239,0.35)",
                         fontSize: "0.78rem",
@@ -1329,6 +1421,7 @@ export default function News() {
                 border: "1.5px solid rgba(245,166,35,0.2)",
               }}
               onClick={(e) => e.stopPropagation()}
+              className="news-modal-shell"
             >
               {/* Close button */}
               <button
@@ -1362,14 +1455,22 @@ export default function News() {
                 <X size={20} />
               </button>
 
-              <div style={{ overflowY: "auto", maxHeight: "92vh", WebkitOverflowScrolling: "touch" }} className="custom-scrollbar">
+              <div className="news-modal-scroll custom-scrollbar">
                 {/* Modal hero image */}
                 {selectedNews.image && (
-                  <div style={{ height: 220, overflow: "hidden", position: "relative" }}>
+                  <div className="news-modal-hero">
                     <img
                       src={selectedNews.image}
                       alt={selectedNews.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      loading="eager"
+                      decoding="async"
+                      onError={(e) => {
+                        e.currentTarget.src = "/images/sardar-sangbad-logo-final.png";
+                        e.currentTarget.style.objectFit = "contain";
+                        e.currentTarget.style.padding = "44px";
+                        e.currentTarget.style.background = "linear-gradient(135deg, #1B2A6B, #060E1A)";
+                      }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                     />
                     <div style={{
                       position: "absolute",
@@ -1403,11 +1504,11 @@ export default function News() {
                   </div>
                 )}
 
-                <div style={{ padding: "36px 40px" }}>
+                <div className="news-modal-content">
                   {/* Title */}
                   <h2 style={{
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
-                    fontSize: "2rem",
+                    fontSize: "clamp(1.45rem, 3.6vw, 2rem)",
                     color: "#FAF6EF",
                     margin: "0 0 12px",
                     lineHeight: 1.35,
