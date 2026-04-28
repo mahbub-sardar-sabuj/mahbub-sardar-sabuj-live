@@ -10,8 +10,6 @@ interface Message {
   timestamp: Date;
   imageUrl?: string;       // user-uploaded image (data URL)
   imageAnalysis?: boolean; // was this an image analysis response?
-  upscaledUrl?: string;    // 4K upscaled result
-  isUpscaling?: boolean;   // upscaling in progress
 }
 
 interface ActionButton {
@@ -19,7 +17,7 @@ interface ActionButton {
   path: string;
 }
 
-type ActiveTab = "chat" | "upscale";
+type ActiveTab = "chat";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function delay(ms: number): Promise<void> {
@@ -137,77 +135,6 @@ async function callAIVision(
       return callAIVision(imageDataUrl, userText, attempt + 1);
     }
     throw new Error("vision_failed");
-  }
-}
-
-// ── Client-side image upscaling using Canvas ─────────────────────────────────
-async function upscaleImageClient(
-  imageDataUrl: string,
-  scale: 2 | 4
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        // Cap output at 4096px on longest side to avoid browser memory crash
-        const maxDim = 4096;
-        const rawScale = scale;
-        const longestSide = Math.max(img.width, img.height);
-        const safeScale = longestSide * rawScale > maxDim
-          ? maxDim / longestSide
-          : rawScale;
-
-        const finalW = Math.max(1, Math.round(img.width * safeScale));
-        const finalH = Math.max(1, Math.round(img.height * safeScale));
-
-        const canvas = document.createElement("canvas");
-        canvas.width = finalW;
-        canvas.height = finalH;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) { reject(new Error("Canvas not supported")); return; }
-
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, 0, 0, finalW, finalH);
-
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
-        resolve(dataUrl);
-      } catch (e) {
-        reject(e);
-      }
-    };
-    img.onerror = () => reject(new Error("Image load failed"));
-    img.src = imageDataUrl;
-  });
-}
-
-// ── Server-side AI upscaling via Replicate Real-ESRGAN ───────────────────────
-async function upscaleImageAI(
-  imageDataUrl: string,
-  scale: 2 | 4
-): Promise<string> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
-
-  try {
-    const res = await fetch("/api/upscale", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: imageDataUrl, scale }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) throw new Error(`Upscale API error: ${res.status}`);
-    const data = await res.json();
-    if (data.outputUrl) return data.outputUrl;
-    throw new Error("No output URL");
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    // Fallback to client-side upscaling
-    console.warn("AI upscale failed, falling back to client-side:", err.message);
-    return upscaleImageClient(imageDataUrl, scale);
   }
 }
 
@@ -527,376 +454,6 @@ function TypingIndicator() {
           />
         ))}
       </div>
-    </div>
-  );
-}
-
-// ── Upscale Tab Component ─────────────────────────────────────────────────────
-function UpscaleTab() {
-  const [upscaleImage, setUpscaleImage] = useState<string | null>(null);
-  const [upscaledResult, setUpscaledResult] = useState<string | null>(null);
-  const [upscaleScale, setUpscaleScale] = useState<2 | 4>(2);
-  const [isUpscaling, setIsUpscaling] = useState(false);
-  const [upscaleError, setUpscaleError] = useState<string | null>(null);
-  const [showComparison, setShowComparison] = useState(false);
-  const [originalInfo, setOriginalInfo] = useState<{ w: number; h: number; size: string } | null>(null);
-  const [resultInfo, setResultInfo] = useState<{ w: number; h: number } | null>(null);
-  const upscaleInputRef = useRef<HTMLInputElement>(null);
-
-  const handleUpscaleFileSelect = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      setUpscaleError("শুধুমাত্র ছবি ফাইল সমর্থিত।");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setUpscaleError("ছবির সাইজ সর্বোচ্চ ১০ MB হতে পারবে।");
-      return;
-    }
-
-    const dataUrl = await fileToBase64(file);
-    setUpscaleImage(dataUrl);
-    setUpscaledResult(null);
-    setUpscaleError(null);
-    setShowComparison(false);
-
-    // Get original dimensions
-    const img = new Image();
-    img.onload = () => {
-      setOriginalInfo({ w: img.width, h: img.height, size: formatFileSize(file.size) });
-    };
-    img.src = dataUrl;
-  };
-
-  const handleUpscale = async () => {
-    if (!upscaleImage) return;
-    setIsUpscaling(true);
-    setUpscaleError(null);
-    setUpscaledResult(null);
-
-    try {
-      const result = await upscaleImageAI(upscaleImage, upscaleScale);
-      setUpscaledResult(result);
-      setShowComparison(true);
-
-      // Get result dimensions
-      const img = new Image();
-      img.onload = () => setResultInfo({ w: img.width, h: img.height });
-      img.src = result;
-    } catch {
-      setUpscaleError("আপস্কেল করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-    } finally {
-      setIsUpscaling(false);
-    }
-  };
-
-  const handleDownload = () => {
-    if (!upscaledResult) return;
-    const a = document.createElement("a");
-    a.href = upscaledResult;
-    a.download = `upscaled-${upscaleScale}x-${Date.now()}.jpg`;
-    a.click();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) handleUpscaleFileSelect(file);
-  };
-
-  return (
-    <div style={{ padding: "12px 16px", overflowY: "auto", height: "100%" }}>
-      {/* Header */}
-      <div style={{ marginBottom: 12, textAlign: "center" }}>
-        <div style={{
-          fontFamily: "'Noto Sans Bengali', sans-serif",
-          fontSize: "0.9rem",
-          fontWeight: 700,
-          color: "#D4A843",
-          marginBottom: 4,
-        }}>
-          AI ছবি উন্নতকরণ
-        </div>
-        <div style={{
-          fontFamily: "'Noto Sans Bengali', sans-serif",
-          fontSize: "0.72rem",
-          color: "rgba(253,246,236,0.55)",
-        }}>
-          পুরনো বা ঝাপসা ছবিকে 4K মানে রূপান্তর করুন
-        </div>
-      </div>
-
-      {/* Upload Area */}
-      {!upscaleImage ? (
-        <div
-          onDrop={handleDrop}
-          onDragOver={e => e.preventDefault()}
-          onClick={() => upscaleInputRef.current?.click()}
-          style={{
-            border: "2px dashed rgba(212,168,67,0.4)",
-            borderRadius: 12,
-            padding: "24px 16px",
-            textAlign: "center",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            background: "rgba(212,168,67,0.04)",
-            marginBottom: 12,
-          }}
-          onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(212,168,67,0.7)")}
-          onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(212,168,67,0.4)")}
-        >
-          <div style={{ fontSize: "2rem", marginBottom: 8 }}>📷</div>
-          <div style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.82rem",
-            color: "#D4A843",
-            fontWeight: 600,
-            marginBottom: 4,
-          }}>
-            ছবি আপলোড করুন
-          </div>
-          <div style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.7rem",
-            color: "rgba(253,246,236,0.45)",
-          }}>
-            ক্লিক করুন বা drag করে ছেড়ে দিন
-          </div>
-          <div style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.65rem",
-            color: "rgba(253,246,236,0.3)",
-            marginTop: 4,
-          }}>
-            JPG, PNG, WEBP — সর্বোচ্চ ১০ MB
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Image Preview */}
-          <div style={{ marginBottom: 10 }}>
-            {!showComparison ? (
-              <div style={{ position: "relative" }}>
-                <img
-                  src={upscaleImage}
-                  alt="মূল ছবি"
-                  style={{
-                    width: "100%",
-                    maxHeight: 160,
-                    objectFit: "contain",
-                    borderRadius: 10,
-                    border: "1px solid rgba(212,168,67,0.3)",
-                    background: "rgba(0,0,0,0.3)",
-                  }}
-                />
-                {originalInfo && (
-                  <div style={{
-                    position: "absolute",
-                    bottom: 6,
-                    left: 6,
-                    background: "rgba(0,0,0,0.7)",
-                    color: "rgba(253,246,236,0.7)",
-                    fontSize: "0.62rem",
-                    padding: "2px 7px",
-                    borderRadius: 6,
-                    fontFamily: "monospace",
-                  }}>
-                    {originalInfo.w}×{originalInfo.h} · {originalInfo.size}
-                  </div>
-                )}
-                <button
-                  onClick={() => { setUpscaleImage(null); setUpscaledResult(null); setOriginalInfo(null); }}
-                  style={{
-                    position: "absolute",
-                    top: 6,
-                    right: 6,
-                    background: "rgba(0,0,0,0.6)",
-                    border: "none",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    width: 22,
-                    height: 22,
-                    cursor: "pointer",
-                    fontSize: "0.75rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >✕</button>
-              </div>
-            ) : (
-              /* Before/After Comparison */
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                <div>
-                  <div style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.65rem",
-                    color: "rgba(253,246,236,0.5)",
-                    textAlign: "center",
-                    marginBottom: 3,
-                  }}>আগে</div>
-                  <img src={upscaleImage} alt="আগে"
-                    style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(212,168,67,0.2)" }} />
-                  {originalInfo && (
-                    <div style={{ fontSize: "0.6rem", color: "rgba(253,246,236,0.35)", textAlign: "center", marginTop: 2, fontFamily: "monospace" }}>
-                      {originalInfo.w}×{originalInfo.h}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.65rem",
-                    color: "#D4A843",
-                    textAlign: "center",
-                    marginBottom: 3,
-                    fontWeight: 600,
-                  }}>পরে ({upscaleScale}×)</div>
-                  <img src={upscaledResult!} alt="পরে"
-                    style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(212,168,67,0.5)" }} />
-                  {resultInfo && (
-                    <div style={{ fontSize: "0.6rem", color: "#D4A843", textAlign: "center", marginTop: 2, fontFamily: "monospace" }}>
-                      {resultInfo.w}×{resultInfo.h}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Scale Selector */}
-          {!showComparison && (
-            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-              {([2, 4] as const).map(s => (
-                <button
-                  key={s}
-                  onClick={() => setUpscaleScale(s)}
-                  style={{
-                    flex: 1,
-                    padding: "8px 0",
-                    borderRadius: 8,
-                    border: upscaleScale === s ? "1.5px solid #D4A843" : "1.5px solid rgba(212,168,67,0.25)",
-                    background: upscaleScale === s ? "rgba(212,168,67,0.15)" : "rgba(212,168,67,0.04)",
-                    color: upscaleScale === s ? "#D4A843" : "rgba(253,246,236,0.5)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.8rem",
-                    fontWeight: upscaleScale === s ? 700 : 400,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {s}× {s === 2 ? "HD" : "4K"}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Error */}
-          {upscaleError && (
-            <div style={{
-              background: "rgba(220,50,50,0.12)",
-              border: "1px solid rgba(220,50,50,0.3)",
-              borderRadius: 8,
-              padding: "8px 12px",
-              marginBottom: 10,
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              fontSize: "0.78rem",
-              color: "#ff8080",
-            }}>
-              {upscaleError}
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {!showComparison ? (
-              <button
-                onClick={handleUpscale}
-                disabled={isUpscaling}
-                style={{
-                  width: "100%",
-                  padding: "10px 0",
-                  borderRadius: 10,
-                  border: "none",
-                  background: isUpscaling
-                    ? "rgba(212,168,67,0.3)"
-                    : "linear-gradient(135deg, #C9A84C, #D4A843)",
-                  color: isUpscaling ? "rgba(253,246,236,0.5)" : "#0A1628",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  cursor: isUpscaling ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  transition: "all 0.2s",
-                }}
-              >
-                {isUpscaling ? (
-                  <>
-                    <motion.span
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      style={{ display: "inline-block" }}
-                    >⟳</motion.span>
-                    উন্নত করা হচ্ছে...
-                  </>
-                ) : (
-                  <>✨ {upscaleScale}× উন্নত করুন</>
-                )}
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={handleDownload}
-                  style={{
-                    width: "100%",
-                    padding: "10px 0",
-                    borderRadius: 10,
-                    border: "none",
-                    background: "linear-gradient(135deg, #C9A84C, #D4A843)",
-                    color: "#0A1628",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.85rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  ⬇ উন্নত ছবি ডাউনলোড করুন
-                </button>
-                <button
-                  onClick={() => { setUpscaleImage(null); setUpscaledResult(null); setShowComparison(false); setOriginalInfo(null); setResultInfo(null); }}
-                  style={{
-                    width: "100%",
-                    padding: "8px 0",
-                    borderRadius: 10,
-                    border: "1px solid rgba(212,168,67,0.3)",
-                    background: "transparent",
-                    color: "rgba(253,246,236,0.6)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.8rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  নতুন ছবি আপলোড করুন
-                </button>
-              </>
-            )}
-          </div>
-        </>
-      )}
-
-      <input
-        ref={upscaleInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={e => {
-          const file = e.target.files?.[0];
-          if (file) handleUpscaleFileSelect(file);
-          e.target.value = "";
-        }}
-      />
     </div>
   );
 }
@@ -1376,7 +933,7 @@ export default function AIChatbot() {
                 borderBottom: "1px solid rgba(42,58,74,0.8)",
                 background: "rgba(10,22,40,0.6)",
               }}>
-                {(["chat", "upscale"] as ActiveTab[]).map(tab => (
+                {(["chat"] as ActiveTab[]).map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -1394,18 +951,13 @@ export default function AIChatbot() {
                       transition: "all 0.2s",
                     }}
                   >
-                    {tab === "chat" ? "💬 চ্যাট" : "✨ ছবি উন্নতকরণ"}
+                    {"💬 চ্যাট"}
                   </button>
                 ))}
               </div>
 
-              {/* Tab Content */}
-              {activeTab === "upscale" ? (
-                <div style={{ flex: 1, overflowY: "auto" }}>
-                  <UpscaleTab />
-                </div>
-              ) : (
-                <>
+              {/* Chat Content */}
+              <>
                   {/* Messages */}
                   <div
                     style={{
@@ -1661,7 +1213,6 @@ export default function AIChatbot() {
                     </div>
                   </div>
                 </>
-              )}
             </div>
           </motion.div>
         )}
