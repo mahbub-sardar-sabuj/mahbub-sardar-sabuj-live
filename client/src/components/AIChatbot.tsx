@@ -202,11 +202,6 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - ১২০+ সুন্দর background — Gradient, Solid, Cosmic, Nature, Artistic, Urban
 - পছন্দের background-এ ক্লিক করলে সাথে সাথে ক্যানভাসে যোগ হবে
 
-**আপস্কেল টুল (🔍)**
-- ঝাপসা ছবি ক্লিয়ার করুন
-- ছবি আপলোড করুন → 2× বা 4× নির্বাচন করুন → "✨ ক্লিয়ার করুন" বাটনে ক্লিক করুন
-- "আগে" ও "পরে" বাটন দিয়ে পার্থক্য দেখুন → ডাউনলোড করুন
-
 **ক্রপ টুল (✂️)**
 - Aspect ratio পরিবর্তন করুন (1:1, 4:5, 9:16, 16:9, A4)
 
@@ -230,19 +225,19 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)`;
 
 const SUGGESTIONS = [
-  "মাহবুব সরদার সবুজের পরিচয় দাও",
-  "তার ই-বুকগুলো কোথায় পাব?",
-  "ডিজাইন স্টুডিও কীভাবে ব্যবহার করব?",
-  "তার বিখ্যাত লেখাগুলো কী কী?",
-  "ভালোবাসার কবিতা কোথায় পাব?",
-  "যোগাযোগ করব কীভাবে?",
+  "পরিচয় দাও",
+  "ই-বুক কোথায়?",
+  "ডিজাইন স্টুডিও",
+  "বিখ্যাত লেখা",
+  "কবিতা কোথায়?",
+  "যোগাযোগ করব?",
 ];
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
-// ── Parse AI response ─────────────────────────────────────────────────────────
+// ── Parse AI response ───────────────
 function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean } {
   const buttons: ActionButton[] = [];
   const seen = new Set<string>();
@@ -282,6 +277,16 @@ if (!document.getElementById(STYLE_ID)) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
+    @font-face {
+      font-family: 'AdorshoLipi';
+      src: url('/fonts/AdorshoLipi.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    .chatbot-adorsho, .chatbot-adorsho * {
+      font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+    }
     @keyframes chatbot-ping {
       0% { transform: scale(1); opacity: 0.7; }
       70% { transform: scale(1.6); opacity: 0; }
@@ -304,10 +309,36 @@ if (!document.getElementById(STYLE_ID)) {
       0%, 80%, 100% { transform: translateY(0); }
       40% { transform: translateY(-8px); }
     }
-    .chatbot-scrollbar::-webkit-scrollbar { width: 4px; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .chatbot-scrollbar::-webkit-scrollbar { width: 3px; }
     .chatbot-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .chatbot-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.35); border-radius: 4px; }
-    .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.6); }
+    .chatbot-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 4px; }
+    .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.55); }
+    .chatbot-input::placeholder {
+      color: rgba(180,160,120,0.45) !important;
+      font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+    }
+    .chatbot-suggestion-btn {
+      transition: all 0.2s ease;
+    }
+    .chatbot-suggestion-btn:hover {
+      background: rgba(212,168,67,0.14) !important;
+      border-color: rgba(212,168,67,0.55) !important;
+      color: #D4A843 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(212,168,67,0.18);
+    }
+    .chatbot-nav-btn {
+      transition: all 0.2s ease;
+    }
+    .chatbot-nav-btn:hover {
+      background: linear-gradient(135deg, rgba(212,168,67,0.28) 0%, rgba(212,168,67,0.18) 100%) !important;
+      border-color: #D4A843 !important;
+      box-shadow: 0 4px 12px rgba(212,168,67,0.25);
+      transform: translateY(-1px);
+    }
   `;
   document.head.appendChild(style);
 }
@@ -322,22 +353,23 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
         initial={{ opacity: 0, x: 20, y: 5 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ type: "spring", stiffness: 400, damping: 28 }}
-        className="flex justify-end mb-4"
+        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}
       >
         <div style={{
           background: "linear-gradient(135deg, #C9A84C 0%, #D4A843 40%, #E8C060 100%)",
           color: "#0A1628",
-          borderRadius: "20px 20px 4px 20px",
-          padding: "11px 16px",
-          maxWidth: "78%",
+          borderRadius: "18px 18px 4px 18px",
+          padding: "10px 14px",
+          maxWidth: "80%",
           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-          fontSize: "0.875rem",
-          lineHeight: 1.75,
+          fontSize: "0.85rem",
+          lineHeight: 1.7,
           fontWeight: 600,
-          boxShadow: "0 4px 20px rgba(212,168,67,0.35), 0 2px 8px rgba(0,0,0,0.3)",
+          boxShadow: "0 4px 18px rgba(212,168,67,0.3), 0 2px 8px rgba(0,0,0,0.25)",
+          wordBreak: "break-word",
         }}>
           {message.content}
-          <div style={{ fontSize: "0.65rem", color: "rgba(10,22,40,0.55)", marginTop: 4, textAlign: "right" }}>
+          <div style={{ fontSize: "0.6rem", color: "rgba(10,22,40,0.5)", marginTop: 3, textAlign: "right" }}>
             {formatTime(message.timestamp)}
           </div>
         </div>
@@ -352,87 +384,74 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
       initial={{ opacity: 0, x: -20, y: 5 }}
       animate={{ opacity: 1, x: 0, y: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className="flex gap-3 mb-4"
+      style={{ display: "flex", gap: 10, marginBottom: 14 }}
     >
       {/* Small avatar */}
       <div style={{
-        width: 34, height: 34,
+        width: 32, height: 32,
         borderRadius: "50%",
         overflow: "hidden",
         flexShrink: 0,
         marginTop: 2,
-        border: "1.5px solid rgba(212,168,67,0.7)",
-        boxShadow: "0 0 10px rgba(212,168,67,0.4)",
+        border: "1.5px solid rgba(212,168,67,0.65)",
+        boxShadow: "0 0 10px rgba(212,168,67,0.35)",
       }}>
         <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => {
             const t = e.currentTarget;
             t.style.display = "none";
-            t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:10px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;font-weight:700;">AI</span>';
+            t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:9px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;font-weight:700;">AI</span>';
           }} />
       </div>
 
-      <div style={{ maxWidth: "82%", flex: 1 }}>
+      <div style={{ maxWidth: "calc(100% - 44px)", flex: 1, minWidth: 0 }}>
         {showPhoto && (
           <div style={{ marginBottom: 10 }}>
             <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ"
               style={{
-                borderRadius: 14,
+                borderRadius: 12,
                 width: "100%",
-                maxWidth: 200,
-                border: "2px solid rgba(212,168,67,0.6)",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                maxWidth: 180,
+                border: "2px solid rgba(212,168,67,0.55)",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
               }} />
           </div>
         )}
         {text && (
           <div style={{
-            background: "linear-gradient(145deg, rgba(18,32,52,0.98) 0%, rgba(14,26,44,0.98) 100%)",
-            borderRadius: "4px 20px 20px 20px",
-            padding: "12px 16px",
-            color: "rgba(248,242,230,0.95)",
+            background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
+            borderRadius: "4px 18px 18px 18px",
+            padding: "11px 14px",
+            color: "rgba(245,238,222,0.95)",
             fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-            fontSize: "0.875rem",
-            lineHeight: 1.85,
+            fontSize: "0.85rem",
+            lineHeight: 1.8,
             whiteSpace: "pre-wrap",
-            border: "1px solid rgba(212,168,67,0.2)",
-            borderLeft: "3px solid rgba(212,168,67,0.75)",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
+            border: "1px solid rgba(212,168,67,0.18)",
+            borderLeft: "3px solid rgba(212,168,67,0.7)",
+            boxShadow: "0 4px 18px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)",
+            wordBreak: "break-word",
           }}>
             {text}
           </div>
         )}
         {buttons.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
             {buttons.map(btn => (
               <button
                 key={btn.path}
                 onClick={() => onNavigate(btn.path)}
+                className="chatbot-nav-btn"
                 style={{
-                  background: "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.06) 100%)",
-                  border: "1px solid rgba(212,168,67,0.45)",
+                  background: "linear-gradient(135deg, rgba(212,168,67,0.1) 0%, rgba(212,168,67,0.05) 100%)",
+                  border: "1px solid rgba(212,168,67,0.4)",
                   color: "#D4A843",
-                  borderRadius: 20,
-                  padding: "6px 14px",
-                  fontSize: "0.78rem",
+                  borderRadius: 18,
+                  padding: "5px 12px",
+                  fontSize: "0.75rem",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   cursor: "pointer",
-                  transition: "all 0.2s ease",
                   fontWeight: 600,
-                }}
-                onMouseEnter={e => {
-                  const b = e.currentTarget as HTMLButtonElement;
-                  b.style.background = "linear-gradient(135deg, rgba(212,168,67,0.28) 0%, rgba(212,168,67,0.18) 100%)";
-                  b.style.borderColor = "#D4A843";
-                  b.style.boxShadow = "0 4px 12px rgba(212,168,67,0.25)";
-                  b.style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={e => {
-                  const b = e.currentTarget as HTMLButtonElement;
-                  b.style.background = "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.06) 100%)";
-                  b.style.borderColor = "rgba(212,168,67,0.45)";
-                  b.style.boxShadow = "none";
-                  b.style.transform = "translateY(0)";
                 }}
               >
                 {btn.label} →
@@ -440,7 +459,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
             ))}
           </div>
         )}
-        <div style={{ color: "rgba(140,155,170,0.55)", fontSize: "0.65rem", marginTop: 5, paddingLeft: 4 }}>
+        <div style={{ color: "rgba(130,148,165,0.5)", fontSize: "0.6rem", marginTop: 4, paddingLeft: 2 }}>
           {formatTime(message.timestamp)}
         </div>
       </div>
@@ -454,31 +473,31 @@ function TypingIndicator() {
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex gap-3 mb-4"
+      style={{ display: "flex", gap: 10, marginBottom: 14 }}
     >
       <div style={{
-        width: 34, height: 34, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
-        border: "1.5px solid rgba(212,168,67,0.7)",
-        boxShadow: "0 0 10px rgba(212,168,67,0.4)",
+        width: 32, height: 32, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+        border: "1.5px solid rgba(212,168,67,0.65)",
+        boxShadow: "0 0 10px rgba(212,168,67,0.35)",
       }}>
         <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
       <div style={{
-        background: "linear-gradient(145deg, rgba(18,32,52,0.98) 0%, rgba(14,26,44,0.98) 100%)",
-        border: "1px solid rgba(212,168,67,0.2)",
-        borderLeft: "3px solid rgba(212,168,67,0.75)",
-        borderRadius: "4px 20px 20px 20px",
-        padding: "14px 18px",
+        background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
+        border: "1px solid rgba(212,168,67,0.18)",
+        borderLeft: "3px solid rgba(212,168,67,0.7)",
+        borderRadius: "4px 18px 18px 18px",
+        padding: "13px 16px",
         display: "flex",
-        gap: 6,
+        gap: 5,
         alignItems: "center",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.35)",
+        boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
       }}>
         {[0, 1, 2].map(i => (
           <div key={i} style={{
-            width: 8, height: 8, borderRadius: "50%",
+            width: 7, height: 7, borderRadius: "50%",
             background: "linear-gradient(135deg, #E8C060, #D4A843)",
-            boxShadow: "0 0 6px rgba(212,168,67,0.5)",
+            boxShadow: "0 0 5px rgba(212,168,67,0.45)",
             animation: `chatbot-dot-bounce 1.2s ease-in-out infinite`,
             animationDelay: `${i * 0.2}s`,
           }} />
@@ -519,8 +538,6 @@ export default function AIChatbot() {
     navigate(path);
   }, [navigate]);
 
-
-
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 300);
@@ -534,7 +551,7 @@ export default function AIChatbot() {
   const getAbsPos = useCallback(() => {
     const W = window.innerWidth;
     const H = window.innerHeight;
-    const BW = 220, BH = 52;
+    const BW = 54, BH = 54;
     const defaultX = W - BW - 16;
     const defaultY = H - BH - 24;
     return {
@@ -546,7 +563,7 @@ export default function AIChatbot() {
   const clampPos = useCallback((x: number, y: number) => {
     const W = window.innerWidth;
     const H = window.innerHeight;
-    const BW = 220, BH = 52;
+    const BW = 54, BH = 54;
     return {
       x: Math.max(0, Math.min(x, W - BW)),
       y: Math.max(0, Math.min(y, H - BH)),
@@ -690,18 +707,6 @@ export default function AIChatbot() {
 
   return (
     <>
-      <style>{`
-        @font-face {
-          font-family: 'AdorshoLipi';
-          src: url('/fonts/AdorshoLipi.ttf') format('truetype');
-          font-weight: normal;
-          font-style: normal;
-          font-display: swap;
-        }
-        .chatbot-adorsho * {
-          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
-        }
-      `}</style>
       {/* ── Floating Trigger Button ── */}
       {(() => {
         const abs = getAbsPos();
@@ -714,9 +719,6 @@ export default function AIChatbot() {
               cursor: isDragging.current ? "grabbing" : "grab",
               userSelect: "none",
               touchAction: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 0,
             }}
             onMouseDown={handleBtnMouseDown}
             onTouchStart={handleBtnTouchStart}
@@ -771,7 +773,7 @@ export default function AIChatbot() {
                     <img src={AUTHOR_PHOTO} alt="AI"
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       onError={(e) => {
-                        const t = e.currentTarget;
+                        const t = e.currentTarget as HTMLImageElement;
                         t.style.display = "none";
                         t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1.3rem;font-weight:700;">AI</span>';
                       }} />
@@ -779,8 +781,6 @@ export default function AIChatbot() {
                 )}
               </AnimatePresence>
             </motion.div>
-
-
           </div>
         );
       })()}
@@ -790,28 +790,27 @@ export default function AIChatbot() {
         {isOpen && (
           <motion.div
             className="chatbot-adorsho"
-            initial={{ opacity: 0, scale: 0.85, y: 24 }}
+            initial={{ opacity: 0, scale: 0.88, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: 24 }}
-            transition={{ type: "spring", stiffness: 320, damping: 26 }}
+            exit={{ opacity: 0, scale: 0.88, y: 20 }}
+            transition={{ type: "spring", stiffness: 340, damping: 28 }}
             style={{
               position: "fixed",
-              bottom: 96,
-              right: 16,
+              bottom: 80,
+              right: 12,
               zIndex: 60,
-              width: 390,
-              maxWidth: "calc(100vw - 20px)",
-              height: 600,
-              maxHeight: "calc(100vh - 120px)",
-              borderRadius: 24,
+              width: 370,
+              maxWidth: "calc(100vw - 16px)",
+              height: "min(600px, calc(100vh - 110px))",
+              borderRadius: 22,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              background: "rgba(7,14,26,0.96)",
+              background: "rgba(6,12,22,0.97)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(212,168,67,0.3)",
-              boxShadow: "0 30px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(212,168,67,0.12), 0 0 60px rgba(212,168,67,0.06)",
+              border: "1px solid rgba(212,168,67,0.28)",
+              boxShadow: "0 24px 70px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,168,67,0.1), 0 0 50px rgba(212,168,67,0.05)",
             }}
           >
             {/* Watermark */}
@@ -820,7 +819,7 @@ export default function AIChatbot() {
               backgroundImage: `url(${AUTHOR_PHOTO})`,
               backgroundSize: "cover",
               backgroundPosition: "center top",
-              opacity: 0.05,
+              opacity: 0.04,
               pointerEvents: "none",
               zIndex: 0,
               borderRadius: "inherit",
@@ -828,39 +827,40 @@ export default function AIChatbot() {
             {/* Gradient overlay */}
             <div aria-hidden="true" style={{
               position: "absolute", inset: 0,
-              background: "linear-gradient(180deg, rgba(7,14,26,0.88) 0%, rgba(7,14,26,0.75) 40%, rgba(7,14,26,0.92) 100%)",
+              background: "linear-gradient(180deg, rgba(6,12,22,0.9) 0%, rgba(6,12,22,0.78) 40%, rgba(6,12,22,0.94) 100%)",
               pointerEvents: "none",
               zIndex: 0,
               borderRadius: "inherit",
             }} />
 
-            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
+            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
 
               {/* ── Header ── */}
               <div style={{
-                padding: "14px 16px 12px",
+                padding: "12px 14px 11px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                background: "linear-gradient(135deg, rgba(6,12,22,0.97) 0%, rgba(10,20,36,0.97) 100%)",
-                borderBottom: "1px solid rgba(212,168,67,0.2)",
-                boxShadow: "0 2px 16px rgba(0,0,0,0.4)",
+                background: "linear-gradient(135deg, rgba(5,10,20,0.98) 0%, rgba(8,16,30,0.98) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.18)",
+                boxShadow: "0 2px 14px rgba(0,0,0,0.4)",
+                flexShrink: 0,
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {/* Header avatar with glow */}
                   <div style={{
-                    width: 44, height: 44,
+                    width: 42, height: 42,
                     borderRadius: "50%",
                     overflow: "hidden",
                     flexShrink: 0,
                     border: "2px solid #D4A843",
-                    boxShadow: "0 0 0 3px rgba(212,168,67,0.18), 0 0 20px rgba(212,168,67,0.45), 0 0 40px rgba(212,168,67,0.2)",
+                    boxShadow: "0 0 0 3px rgba(212,168,67,0.15), 0 0 18px rgba(212,168,67,0.4), 0 0 36px rgba(212,168,67,0.18)",
                   }}>
                     <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       onError={(e) => {
                         const t = e.currentTarget;
                         t.style.display = "none";
-                        t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:700;font-size:0.8rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#D4A843,#C9A84C);">AI</span>';
+                        t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:700;font-size:0.75rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#D4A843,#C9A84C);">AI</span>';
                       }} />
                   </div>
                   <div>
@@ -868,7 +868,7 @@ export default function AIChatbot() {
                     <div style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontWeight: 700,
-                      fontSize: "0.92rem",
+                      fontSize: "0.88rem",
                       background: "linear-gradient(90deg, #C9A84C 0%, #F0D080 30%, #D4A843 60%, #E8C060 80%, #C9A84C 100%)",
                       backgroundSize: "200% auto",
                       WebkitBackgroundClip: "text",
@@ -877,42 +877,43 @@ export default function AIChatbot() {
                     }}>
                       মাহবুব সরদার সবুজ
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
                       <div style={{
-                        width: 7, height: 7, borderRadius: "50%",
+                        width: 6, height: 6, borderRadius: "50%",
                         background: "#4ade80",
-                        boxShadow: "0 0 6px rgba(74,222,128,0.8)",
+                        boxShadow: "0 0 5px rgba(74,222,128,0.8)",
                         animation: "chatbot-glow-pulse 2s ease-in-out infinite",
                       }} />
-                      <span style={{ color: "#4ade80", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>AI Agent · সক্রিয়</span>
+                      <span style={{ color: "#4ade80", fontSize: "0.67rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>AI Agent · সক্রিয়</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Header buttons */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                   <button onClick={clearChat} title="নতুন কথোপকথন"
                     style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.72rem",
-                      color: "rgba(212,168,67,0.8)",
-                      background: "rgba(212,168,67,0.08)",
-                      border: "1px solid rgba(212,168,67,0.25)",
-                      borderRadius: 10,
-                      padding: "5px 10px",
+                      fontSize: "0.68rem",
+                      color: "rgba(212,168,67,0.75)",
+                      background: "rgba(212,168,67,0.07)",
+                      border: "1px solid rgba(212,168,67,0.22)",
+                      borderRadius: 9,
+                      padding: "4px 9px",
                       cursor: "pointer",
-                      transition: "all 0.2s",
                       fontWeight: 600,
+                      transition: "all 0.2s",
+                      whiteSpace: "nowrap",
                     }}
                     onMouseEnter={e => {
                       const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(212,168,67,0.18)";
-                      b.style.borderColor = "rgba(212,168,67,0.6)";
+                      b.style.background = "rgba(212,168,67,0.16)";
+                      b.style.borderColor = "rgba(212,168,67,0.55)";
                     }}
                     onMouseLeave={e => {
                       const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(212,168,67,0.08)";
-                      b.style.borderColor = "rgba(212,168,67,0.25)";
+                      b.style.background = "rgba(212,168,67,0.07)";
+                      b.style.borderColor = "rgba(212,168,67,0.22)";
                     }}>
                     নতুন
                   </button>
@@ -920,28 +921,29 @@ export default function AIChatbot() {
                     onClick={() => setIsOpen(false)}
                     title="বন্ধ করুন"
                     style={{
-                      width: 30, height: 30,
+                      width: 28, height: 28,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       borderRadius: "50%",
-                      border: "1px solid rgba(255,100,100,0.25)",
-                      color: "rgba(200,120,120,0.7)",
-                      background: "rgba(255,80,80,0.06)",
+                      border: "1px solid rgba(255,100,100,0.22)",
+                      color: "rgba(200,120,120,0.65)",
+                      background: "rgba(255,80,80,0.05)",
                       cursor: "pointer",
-                      fontSize: "0.85rem",
+                      fontSize: "0.8rem",
                       fontWeight: 700,
                       transition: "all 0.2s",
+                      flexShrink: 0,
                     }}
                     onMouseEnter={e => {
                       const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(255,80,80,0.18)";
-                      b.style.borderColor = "rgba(255,100,100,0.6)";
+                      b.style.background = "rgba(255,80,80,0.16)";
+                      b.style.borderColor = "rgba(255,100,100,0.55)";
                       b.style.color = "#ff6464";
                     }}
                     onMouseLeave={e => {
                       const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(255,80,80,0.06)";
-                      b.style.borderColor = "rgba(255,100,100,0.25)";
-                      b.style.color = "rgba(200,120,120,0.7)";
+                      b.style.background = "rgba(255,80,80,0.05)";
+                      b.style.borderColor = "rgba(255,100,100,0.22)";
+                      b.style.color = "rgba(200,120,120,0.65)";
                     }}
                   >
                     ✕
@@ -950,22 +952,22 @@ export default function AIChatbot() {
               </div>
 
               {/* ── Messages ── */}
-              <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", padding: "16px 14px 8px" }}>
+              <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
                 {messages.map(msg => (
                   <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
                 ))}
                 {isLoading && <TypingIndicator />}
 
                 {error && !isLoading && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "8px 0" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "6px 0" }}>
                     <div style={{
                       textAlign: "center",
                       color: "#f87171",
-                      fontSize: "0.78rem",
-                      background: "rgba(239,68,68,0.1)",
-                      border: "1px solid rgba(239,68,68,0.25)",
-                      borderRadius: 12,
-                      padding: "10px 14px",
+                      fontSize: "0.75rem",
+                      background: "rgba(239,68,68,0.09)",
+                      border: "1px solid rgba(239,68,68,0.22)",
+                      borderRadius: 11,
+                      padding: "9px 13px",
                       width: "100%",
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     }}>
@@ -974,13 +976,13 @@ export default function AIChatbot() {
                     <button
                       onClick={handleRetry}
                       style={{
-                        display: "flex", alignItems: "center", gap: 8,
-                        padding: "8px 18px",
-                        background: "rgba(212,168,67,0.12)",
-                        border: "1px solid rgba(212,168,67,0.4)",
+                        display: "flex", alignItems: "center", gap: 7,
+                        padding: "7px 16px",
+                        background: "rgba(212,168,67,0.1)",
+                        border: "1px solid rgba(212,168,67,0.38)",
                         color: "#D4A843",
-                        borderRadius: 14,
-                        fontSize: "0.78rem",
+                        borderRadius: 13,
+                        fontSize: "0.75rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontWeight: 600,
                         cursor: "pointer",
@@ -997,49 +999,39 @@ export default function AIChatbot() {
               {/* ── Suggestions ── */}
               {messages.length === 1 && (
                 <div style={{
-                  padding: "10px 14px 12px",
+                  padding: "8px 12px 10px",
                   borderTop: "1px solid rgba(212,168,67,0.1)",
-                  background: "rgba(6,12,22,0.5)",
+                  background: "rgba(5,10,20,0.6)",
+                  flexShrink: 0,
                 }}>
                   <p style={{
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.68rem",
-                    color: "rgba(212,168,67,0.5)",
-                    marginBottom: 8,
-                    letterSpacing: "0.04em",
+                    fontSize: "0.65rem",
+                    color: "rgba(212,168,67,0.45)",
+                    marginBottom: 7,
+                    letterSpacing: "0.03em",
                   }}>জিজ্ঞেস করুন:</p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                     {SUGGESTIONS.map(s => (
                       <button key={s}
+                        className="chatbot-suggestion-btn"
                         onClick={() => { setInput(s); inputRef.current?.focus(); }}
                         style={{
                           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.75rem",
-                          color: "rgba(212,168,67,0.85)",
-                          background: "rgba(18,32,52,0.7)",
-                          border: "1px solid rgba(42,58,74,0.9)",
-                          borderRadius: 12,
-                          padding: "8px 10px",
+                          fontSize: "0.72rem",
+                          color: "rgba(212,168,67,0.8)",
+                          background: "rgba(16,28,48,0.75)",
+                          border: "1px solid rgba(40,56,72,0.95)",
+                          borderRadius: 10,
+                          padding: "7px 8px",
+                          lineHeight: 1.35,
                           cursor: "pointer",
                           textAlign: "left",
-                          lineHeight: 1.45,
-                          transition: "all 0.2s",
-                        }}
-                        onMouseEnter={e => {
-                          const b = e.currentTarget as HTMLButtonElement;
-                          b.style.background = "rgba(212,168,67,0.12)";
-                          b.style.borderColor = "rgba(212,168,67,0.5)";
-                          b.style.color = "#D4A843";
-                          b.style.transform = "translateY(-1px)";
-                          b.style.boxShadow = "0 4px 12px rgba(212,168,67,0.15)";
-                        }}
-                        onMouseLeave={e => {
-                          const b = e.currentTarget as HTMLButtonElement;
-                          b.style.background = "rgba(18,32,52,0.7)";
-                          b.style.borderColor = "rgba(42,58,74,0.9)";
-                          b.style.color = "rgba(212,168,67,0.85)";
-                          b.style.transform = "translateY(0)";
-                          b.style.boxShadow = "none";
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical" as any,
+                          wordBreak: "break-word",
                         }}>
                         {s}
                       </button>
@@ -1050,85 +1042,97 @@ export default function AIChatbot() {
 
               {/* ── Input ── */}
               <div style={{
-                padding: "12px 14px 14px",
-                borderTop: "1px solid rgba(212,168,67,0.15)",
-                background: "linear-gradient(135deg, rgba(6,12,22,0.97) 0%, rgba(10,20,36,0.97) 100%)",
+                padding: "10px 12px 12px",
+                borderTop: "1px solid rgba(212,168,67,0.13)",
+                background: "linear-gradient(135deg, rgba(5,10,20,0.98) 0%, rgba(8,16,30,0.98) 100%)",
+                flexShrink: 0,
               }}>
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-                  <textarea
-                    ref={inputRef}
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="মাহবুব সরদার সবুজ সম্পর্কে জিজ্ঞেস করুন..."
-                    rows={1}
-                    disabled={isLoading}
-                    style={{
-                      flex: 1,
-                      background: "rgba(14,26,44,0.9)",
-                      color: "rgba(248,242,230,0.95)",
-                      border: "1px solid rgba(42,58,74,0.9)",
-                      borderRadius: 16,
-                      padding: "10px 14px",
-                      fontSize: "0.875rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      resize: "none",
-                      minHeight: 42,
-                      maxHeight: 100,
-                      overflowY: "auto",
-                      outline: "none",
-                      transition: "border-color 0.2s, box-shadow 0.2s",
-                      lineHeight: 1.6,
-                    }}
-                    onFocus={e => {
-                      e.currentTarget.style.borderColor = "rgba(212,168,67,0.65)";
-                      e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,168,67,0.1), 0 0 20px rgba(212,168,67,0.08)";
-                    }}
-                    onBlur={e => {
-                      e.currentTarget.style.borderColor = "rgba(42,58,74,0.9)";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  />
+                <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                  <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+                    <textarea
+                      ref={inputRef}
+                      value={input}
+                      onChange={e => {
+                        setInput(e.target.value);
+                        // Auto-resize
+                        const ta = e.target;
+                        ta.style.height = "auto";
+                        ta.style.height = Math.min(ta.scrollHeight, 90) + "px";
+                      }}
+                      onKeyDown={handleKeyDown}
+                      placeholder="জিজ্ঞেস করুন..."
+                      rows={1}
+                      disabled={isLoading}
+                      className="chatbot-input"
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        background: "rgba(12,22,38,0.92)",
+                        color: "rgba(245,238,222,0.95)",
+                        border: "1px solid rgba(40,56,72,0.95)",
+                        borderRadius: 14,
+                        padding: "9px 12px",
+                        fontSize: "0.82rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        resize: "none",
+                        minHeight: 40,
+                        maxHeight: 90,
+                        overflowY: "auto",
+                        outline: "none",
+                        transition: "border-color 0.2s, box-shadow 0.2s",
+                        lineHeight: 1.55,
+                        display: "block",
+                      }}
+                      onFocus={e => {
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.6)";
+                        e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,168,67,0.08), 0 0 18px rgba(212,168,67,0.07)";
+                      }}
+                      onBlur={e => {
+                        e.currentTarget.style.borderColor = "rgba(40,56,72,0.95)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    />
+                  </div>
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading}
                     style={{
-                      width: 42, height: 42,
-                      borderRadius: 14,
+                      width: 40, height: 40,
+                      borderRadius: 12,
                       background: input.trim() && !isLoading
                         ? "linear-gradient(135deg, #E8C060 0%, #D4A843 50%, #C9A84C 100%)"
-                        : "rgba(212,168,67,0.2)",
+                        : "rgba(212,168,67,0.18)",
                       border: "none",
-                      color: input.trim() && !isLoading ? "#0A1628" : "rgba(212,168,67,0.4)",
+                      color: input.trim() && !isLoading ? "#0A1628" : "rgba(212,168,67,0.38)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: input.trim() && !isLoading ? "pointer" : "not-allowed",
                       flexShrink: 0,
                       transition: "all 0.2s",
-                      boxShadow: input.trim() && !isLoading ? "0 4px 16px rgba(212,168,67,0.4)" : "none",
+                      boxShadow: input.trim() && !isLoading ? "0 4px 14px rgba(212,168,67,0.38)" : "none",
                     }}
                     onMouseEnter={e => {
                       if (input.trim() && !isLoading) {
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 24px rgba(212,168,67,0.6)";
+                        (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 22px rgba(212,168,67,0.55)";
                         (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
                       }
                     }}
                     onMouseLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.boxShadow = input.trim() && !isLoading ? "0 4px 16px rgba(212,168,67,0.4)" : "none";
+                      (e.currentTarget as HTMLButtonElement).style.boxShadow = input.trim() && !isLoading ? "0 4px 14px rgba(212,168,67,0.38)" : "none";
                       (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
                     }}
                   >
                     {isLoading ? (
                       <div style={{
-                        width: 16, height: 16,
-                        border: "2px solid rgba(212,168,67,0.4)",
+                        width: 15, height: 15,
+                        border: "2px solid rgba(212,168,67,0.35)",
                         borderTop: "2px solid #D4A843",
                         borderRadius: "50%",
                         animation: "spin 0.8s linear infinite",
                       }} />
                     ) : (
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13" />
                         <polygon points="22 2 15 22 11 13 2 9 22 2" />
                       </svg>
@@ -1136,9 +1140,9 @@ export default function AIChatbot() {
                   </button>
                 </div>
                 <p style={{
-                  color: "rgba(100,120,140,0.5)",
-                  fontSize: "0.65rem",
-                  marginTop: 6,
+                  color: "rgba(90,110,130,0.45)",
+                  fontSize: "0.6rem",
+                  marginTop: 5,
                   textAlign: "center",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 }}>Shift+Enter = নতুন লাইন</p>
