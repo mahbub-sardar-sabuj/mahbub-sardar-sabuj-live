@@ -1,36 +1,30 @@
 /**
  * LiveChatWidget — Visitor-facing Live Chat component
- * Integrates into AIChatbot as a "Live Chat" mode tab
- * Design: matches "Ink & Gold" theme
+ * Uses Telegram API via serverless /api/live-chat endpoint
+ * No database required — messages go directly to Telegram
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { trpc } from "@/lib/trpc";
-
-// ── Visitor ID (browser-persistent) ──────────────────────────────────────────
-function getVisitorId(): string {
-  const KEY = "mss_visitor_id";
-  let id = localStorage.getItem(KEY);
-  if (!id) {
-    id = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    localStorage.setItem(KEY, id);
-  }
-  return id;
-}
-
-interface LiveMessage {
-  id: number;
-  sender: "visitor" | "admin";
-  content: string;
-  createdAt: Date | string;
-}
 
 const GOLD = "#D4A843";
 const NAVY = "#060E1A";
 const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
-function formatTime(date: Date | string) {
-  return new Date(date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+interface Message {
+  id: string;
+  text: string;
+  sender: "visitor" | "admin";
+  timestamp: number;
+}
+
+const STORAGE_KEY = "mss_live_chat_v2";
+
+function generateSessionId() {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
+function formatTime(ts: number) {
+  return new Date(ts).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
 interface Props {
@@ -38,115 +32,172 @@ interface Props {
 }
 
 export default function LiveChatWidget({ onClose }: Props) {
-  const visitorId = getVisitorId();
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<LiveMessage[]>([]);
-  const [input, setInput] = useState("");
   const [visitorName, setVisitorName] = useState("");
-  const [nameSubmitted, setNameSubmitted] = useState(false);
-  const [sessionStatus, setSessionStatus] = useState<"waiting" | "active" | "closed">("waiting");
-  const [lastId, setLastId] = useState<number>(0);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [nameInput, setNameInput] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [lastUpdateId, setLastUpdateId] = useState(0);
+  const [error, setError] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startSession = trpc.liveChat.startSession.useMutation();
-  const sendMessage = trpc.liveChat.sendMessage.useMutation();
-
-  // Poll for new messages
-  const { data: pollData, refetch: refetchMessages } = trpc.liveChat.pollMessages.useQuery(
-    { sessionId: sessionId || "", visitorId, afterId: lastId || undefined },
-    {
-      enabled: !!sessionId,
-      refetchInterval: 3000,
-      refetchIntervalInBackground: false,
-    }
-  );
-
+  // Restore session from localStorage
   useEffect(() => {
-    if (pollData?.messages && pollData.messages.length > 0) {
-      setMessages(prev => {
-        const existingIds = new Set(prev.map(m => m.id));
-        const newMsgs = pollData.messages.filter(m => !existingIds.has(m.id));
-        if (newMsgs.length === 0) return prev;
-        const maxId = Math.max(...pollData.messages.map(m => m.id));
-        setLastId(maxId);
-        return [...prev, ...newMsgs];
-      });
-    }
-    if (pollData?.sessionStatus) {
-      setSessionStatus(pollData.sessionStatus as "waiting" | "active" | "closed");
-    }
-  }, [pollData]);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { name, sid, msgs, lastId } = JSON.parse(saved);
+        setVisitorName(name || "");
+        setSessionId(sid || null);
+        setMessages(msgs || []);
+        setLastUpdateId(lastId || 0);
+      }
+    } catch {}
+  }, []);
 
+  // Save session to localStorage
+  useEffect(() => {
+    if (sessionId) {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ name: visitorName, sid: sessionId, msgs: messages, lastId: lastUpdateId })
+        );
+      } catch {}
+    }
+  }, [sessionId, visitorName, messages, lastUpdateId]);
+
+  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Check localStorage for existing session
-  useEffect(() => {
-    const savedSession = localStorage.getItem("mss_live_session");
-    const savedName = localStorage.getItem("mss_visitor_name");
-    if (savedSession) {
-      setSessionId(savedSession);
-      setNameSubmitted(true);
-      if (savedName) setVisitorName(savedName);
-    }
-  }, []);
-
-  const handleStartChat = async () => {
-    if (!visitorName.trim()) return;
+  // Poll for replies
+  const pollReplies = useCallback(async () => {
+    if (!sessionId) return;
     try {
-      const result = await startSession.mutateAsync({ visitorId, visitorName: visitorName.trim() });
-      setSessionId(result.sessionId);
-      setNameSubmitted(true);
-      localStorage.setItem("mss_live_session", result.sessionId);
-      localStorage.setItem("mss_visitor_name", visitorName.trim());
+      const res = await fetch(
+        `/api/live-chat?action=poll&sessionId=${encodeURIComponent(sessionId)}&since=${lastUpdateId}`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.ok && data.replies && data.replies.length > 0) {
+        const newMsgs: Message[] = data.replies.map((r: { text: string; timestamp: number; updateId: number }) => ({
+          id: `admin-${r.updateId}`,
+          text: r.text,
+          sender: "admin" as const,
+          timestamp: r.timestamp,
+        }));
+        setMessages(prev => {
+          const existingIds = new Set(prev.map(m => m.id));
+          const fresh = newMsgs.filter(m => !existingIds.has(m.id));
+          return fresh.length > 0 ? [...prev, ...fresh] : prev;
+        });
+      }
+      if (data.ok && typeof data.lastUpdateId === "number" && data.lastUpdateId > lastUpdateId) {
+        setLastUpdateId(data.lastUpdateId);
+      }
+    } catch {}
+  }, [sessionId, lastUpdateId]);
+
+  // Start/stop polling
+  useEffect(() => {
+    if (sessionId) {
+      pollReplies();
+      pollRef.current = setInterval(pollReplies, 4000);
+    }
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [sessionId, pollReplies]);
+
+  const startSession = async () => {
+    if (!nameInput.trim()) return;
+    setIsStarting(true);
+    setError("");
+    try {
+      const sid = generateSessionId();
+      // Send a "session started" notification to Telegram
+      const res = await fetch("/api/live-chat?action=send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          visitorName: nameInput.trim(),
+          message: "🟢 নতুন সেশন শুরু হয়েছে",
+          sessionId: sid,
+          isSystemMessage: true,
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        setError("সংযোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        return;
+      }
+      setVisitorName(nameInput.trim());
+      setSessionId(sid);
+      setMessages([
+        {
+          id: "welcome",
+          text: `স্বাগতম ${nameInput.trim()}! আপনার বার্তা পাঠান। মাহবুব সরদার সবুজ অনলাইনে থাকলে উত্তর দেবেন।`,
+          sender: "admin",
+          timestamp: Date.now(),
+        },
+      ]);
     } catch {
-      setError("সেশন শুরু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      setError("নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।");
+    } finally {
+      setIsStarting(false);
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || !sessionId || sending) return;
-    if (sessionStatus === "closed") {
-      setError("এই কথোপকথনটি বন্ধ হয়ে গেছে।");
-      return;
-    }
-    setSending(true);
-    setError(null);
-    const content = input.trim();
-    setInput("");
+  const sendMessage = async () => {
+    if (!inputText.trim() || !sessionId || isSending) return;
+    const text = inputText.trim();
+    setInputText("");
+    setIsSending(true);
+    setError("");
 
-    // Optimistic update
-    const tempMsg: LiveMessage = {
-      id: Date.now(),
+    const tempMsg: Message = {
+      id: `v-${Date.now()}`,
+      text,
       sender: "visitor",
-      content,
-      createdAt: new Date(),
+      timestamp: Date.now(),
     };
     setMessages(prev => [...prev, tempMsg]);
 
     try {
-      await sendMessage.mutateAsync({ sessionId, content, visitorId });
+      const res = await fetch("/api/live-chat?action=send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visitorName, message: text, sessionId }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        setError("বার্তা পাঠাতে সমস্যা হয়েছে।");
+      }
     } catch {
-      setError("বার্তা পাঠাতে সমস্যা হয়েছে।");
-      setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+      setError("নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।");
     } finally {
-      setSending(false);
+      setIsSending(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  const resetSession = () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    localStorage.removeItem(STORAGE_KEY);
+    setVisitorName("");
+    setNameInput("");
+    setSessionId(null);
+    setMessages([]);
+    setLastUpdateId(0);
+    setError("");
   };
 
-  // ── Name entry screen ─────────────────────────────────────────────────────
-  if (!nameSubmitted) {
+  // ── Name entry screen ──────────────────────────────────────────────────────
+  if (!sessionId) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -187,9 +238,9 @@ export default function LiveChatWidget({ onClose }: Props) {
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
           <input
             type="text"
-            value={visitorName}
-            onChange={e => setVisitorName(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleStartChat()}
+            value={nameInput}
+            onChange={e => setNameInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && startSession()}
             placeholder="আপনার নাম লিখুন..."
             maxLength={50}
             style={{
@@ -206,24 +257,24 @@ export default function LiveChatWidget({ onClose }: Props) {
             }}
           />
           <button
-            onClick={handleStartChat}
-            disabled={!visitorName.trim() || startSession.isPending}
+            onClick={startSession}
+            disabled={!nameInput.trim() || isStarting}
             style={{
-              background: visitorName.trim()
+              background: nameInput.trim() && !isStarting
                 ? "linear-gradient(135deg, #C9A84C, #D4A843)"
                 : "rgba(212,168,67,0.2)",
               border: "none",
               borderRadius: 12,
               padding: "12px",
-              color: visitorName.trim() ? NAVY : "rgba(212,168,67,0.4)",
+              color: nameInput.trim() && !isStarting ? NAVY : "rgba(212,168,67,0.4)",
               fontFamily: FONT,
               fontSize: "0.9rem",
               fontWeight: 700,
-              cursor: visitorName.trim() ? "pointer" : "not-allowed",
+              cursor: nameInput.trim() && !isStarting ? "pointer" : "not-allowed",
               transition: "all 0.2s",
             }}
           >
-            {startSession.isPending ? "শুরু হচ্ছে..." : "চ্যাট শুরু করুন →"}
+            {isStarting ? "সংযোগ হচ্ছে..." : "চ্যাট শুরু করুন →"}
           </button>
         </div>
 
@@ -234,7 +285,7 @@ export default function LiveChatWidget({ onClose }: Props) {
     );
   }
 
-  // ── Chat screen ───────────────────────────────────────────────────────────
+  // ── Chat screen ────────────────────────────────────────────────────────────
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
@@ -245,21 +296,34 @@ export default function LiveChatWidget({ onClose }: Props) {
         borderBottom: "1px solid rgba(212,168,67,0.12)",
         display: "flex",
         alignItems: "center",
+        justifyContent: "space-between",
         gap: 8,
       }}>
-        <span style={{
-          width: 8, height: 8, borderRadius: "50%",
-          background: sessionStatus === "active" ? "#4ade80" : sessionStatus === "closed" ? "#f87171" : "#fbbf24",
-          display: "inline-block",
-          boxShadow: sessionStatus === "active" ? "0 0 6px #4ade80" : "none",
-        }} />
-        <span style={{ color: "rgba(245,238,222,0.7)", fontFamily: FONT, fontSize: "0.75rem" }}>
-          {sessionStatus === "active"
-            ? "সক্রিয় — লেখক অনলাইনে আছেন"
-            : sessionStatus === "closed"
-            ? "কথোপকথন বন্ধ হয়েছে"
-            : "অপেক্ষা করুন — লেখককে জানানো হচ্ছে"}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            width: 8, height: 8, borderRadius: "50%",
+            background: "#fbbf24",
+            display: "inline-block",
+            animation: "pulse 2s infinite",
+          }} />
+          <span style={{ color: "rgba(245,238,222,0.7)", fontFamily: FONT, fontSize: "0.75rem" }}>
+            বার্তা পাঠানো হয়েছে — উত্তরের অপেক্ষায়
+          </span>
+        </div>
+        <button
+          onClick={resetSession}
+          style={{
+            background: "none",
+            border: "none",
+            color: "rgba(245,238,222,0.4)",
+            fontFamily: FONT,
+            fontSize: "0.72rem",
+            cursor: "pointer",
+            padding: "2px 6px",
+          }}
+        >
+          নতুন চ্যাট
+        </button>
       </div>
 
       {/* Messages */}
@@ -274,26 +338,6 @@ export default function LiveChatWidget({ onClose }: Props) {
           gap: 10,
         }}
       >
-        {/* Welcome message */}
-        {messages.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              background: "rgba(212,168,67,0.07)",
-              border: "1px solid rgba(212,168,67,0.15)",
-              borderRadius: "4px 16px 16px 16px",
-              padding: "12px 14px",
-              color: "rgba(245,238,222,0.75)",
-              fontFamily: FONT,
-              fontSize: "0.82rem",
-              lineHeight: 1.8,
-            }}
-          >
-            আপনার বার্তা পাঠান। মাহবুব সরদার সবুজ অনলাইনে থাকলে সরাসরি উত্তর দেবেন।
-          </motion.div>
-        )}
-
         <AnimatePresence initial={false}>
           {messages.map(msg => (
             <motion.div
@@ -309,129 +353,108 @@ export default function LiveChatWidget({ onClose }: Props) {
               <div style={{
                 maxWidth: "80%",
                 background: msg.sender === "visitor"
-                  ? "linear-gradient(135deg, #C9A84C 0%, #D4A843 100%)"
-                  : "linear-gradient(145deg, rgba(16,28,48,0.98), rgba(12,22,40,0.98))",
-                color: msg.sender === "visitor" ? NAVY : "rgba(245,238,222,0.9)",
-                borderRadius: msg.sender === "visitor" ? "18px 18px 4px 18px" : "4px 18px 18px 18px",
+                  ? "linear-gradient(135deg, #C9A84C, #D4A843)"
+                  : "rgba(255,255,255,0.06)",
+                border: msg.sender === "visitor" ? "none" : "1px solid rgba(212,168,67,0.18)",
+                borderRadius: msg.sender === "visitor" ? "16px 16px 4px 16px" : "4px 16px 16px 16px",
                 padding: "10px 14px",
+                color: msg.sender === "visitor" ? NAVY : "rgba(245,238,222,0.9)",
                 fontFamily: FONT,
-                fontSize: "0.84rem",
-                lineHeight: 1.7,
-                fontWeight: msg.sender === "visitor" ? 600 : 400,
-                border: msg.sender === "admin" ? "1px solid rgba(212,168,67,0.18)" : "none",
-                boxShadow: msg.sender === "visitor"
-                  ? "0 4px 14px rgba(212,168,67,0.25)"
-                  : "0 2px 10px rgba(0,0,0,0.2)",
+                fontSize: "0.85rem",
+                lineHeight: 1.75,
               }}>
-                {msg.sender === "admin" && (
-                  <div style={{ color: GOLD, fontSize: "0.7rem", fontWeight: 700, marginBottom: 4 }}>
-                    মাহবুব সরদার সবুজ
-                  </div>
-                )}
-                <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
-                <div style={{
-                  fontSize: "0.6rem",
-                  color: msg.sender === "visitor" ? "rgba(10,22,40,0.5)" : "rgba(180,160,120,0.5)",
-                  marginTop: 4,
-                  textAlign: "right",
+                <p style={{ margin: 0 }}>{msg.text}</p>
+                <p style={{
+                  margin: "4px 0 0",
+                  fontSize: "0.7rem",
+                  color: msg.sender === "visitor" ? "rgba(6,14,26,0.55)" : "rgba(245,238,222,0.35)",
                 }}>
-                  {formatTime(msg.createdAt)}
-                </div>
+                  {formatTime(msg.timestamp)}
+                </p>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
-
-        {sessionStatus === "closed" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{
-              textAlign: "center",
-              color: "rgba(248,113,113,0.7)",
-              fontFamily: FONT,
-              fontSize: "0.75rem",
-              padding: "8px 0",
-            }}
-          >
-            — কথোপকথন শেষ হয়েছে —
-          </motion.div>
-        )}
-
         <div ref={messagesEndRef} />
       </div>
 
       {/* Error */}
       {error && (
-        <div style={{
-          padding: "6px 14px",
-          color: "#f87171",
-          fontFamily: FONT,
-          fontSize: "0.75rem",
-          background: "rgba(248,113,113,0.08)",
-        }}>
-          {error}
+        <div style={{ padding: "4px 14px" }}>
+          <p style={{ color: "#f87171", fontFamily: FONT, fontSize: "0.75rem", textAlign: "center", margin: 0 }}>{error}</p>
         </div>
       )}
 
       {/* Input */}
-      {sessionStatus !== "closed" && (
-        <div style={{
-          padding: "10px 12px",
-          borderTop: "1px solid rgba(212,168,67,0.12)",
-          display: "flex",
-          gap: 8,
-          alignItems: "flex-end",
-        }}>
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="বার্তা লিখুন..."
-            rows={1}
-            maxLength={2000}
-            className="chatbot-input chatbot-scrollbar"
-            style={{
-              flex: 1,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(212,168,67,0.25)",
-              borderRadius: 12,
-              padding: "10px 12px",
-              color: "#FAF6EF",
-              fontFamily: FONT,
-              fontSize: "0.84rem",
-              resize: "none",
-              outline: "none",
-              lineHeight: 1.6,
-              maxHeight: 80,
-              overflowY: "auto",
-            }}
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || sending}
-            style={{
-              width: 40, height: 40,
+      <div style={{
+        padding: "10px 12px",
+        borderTop: "1px solid rgba(212,168,67,0.12)",
+        display: "flex",
+        gap: 8,
+        alignItems: "flex-end",
+      }}>
+        <textarea
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+          placeholder="বার্তা লিখুন..."
+          rows={1}
+          style={{
+            flex: 1,
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(212,168,67,0.3)",
+            borderRadius: 12,
+            padding: "10px 14px",
+            color: "#FAF6EF",
+            fontFamily: FONT,
+            fontSize: "0.85rem",
+            outline: "none",
+            resize: "none",
+            lineHeight: 1.5,
+          }}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={!inputText.trim() || isSending}
+          style={{
+            width: 40, height: 40,
+            borderRadius: 12,
+            background: inputText.trim() && !isSending
+              ? "linear-gradient(135deg, #C9A84C, #D4A843)"
+              : "rgba(212,168,67,0.15)",
+            border: "none",
+            cursor: inputText.trim() && !isSending ? "pointer" : "not-allowed",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "all 0.2s",
+          }}
+        >
+          {isSending ? (
+            <div style={{
+              width: 16, height: 16,
+              border: "2px solid rgba(6,14,26,0.3)",
+              borderTop: "2px solid rgba(6,14,26,0.8)",
               borderRadius: "50%",
-              background: input.trim()
-                ? "linear-gradient(135deg, #C9A84C, #D4A843)"
-                : "rgba(212,168,67,0.15)",
-              border: "none",
-              cursor: input.trim() ? "pointer" : "not-allowed",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-              transition: "all 0.2s",
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke={input.trim() ? NAVY : "rgba(212,168,67,0.4)"}
-              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              animation: "spin 0.8s linear infinite",
+            }} />
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={inputText.trim() ? NAVY : "rgba(212,168,67,0.4)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"/>
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
-          </button>
-        </div>
-      )}
+          )}
+        </button>
+      </div>
+      <p style={{ color: "rgba(245,238,222,0.25)", fontFamily: FONT, fontSize: "0.68rem", textAlign: "center", padding: "0 0 8px", margin: 0 }}>
+        Shift+Enter = নতুন লাইন
+      </p>
     </div>
   );
 }
