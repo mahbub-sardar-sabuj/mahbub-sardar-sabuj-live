@@ -1,13 +1,10 @@
 // api/live-chat.js — Telegram-based Live Chat serverless API
-// Visitor messages go to Telegram, replies come back via webhook polling
+// Visitor messages go to Telegram; admin replies via Telegram Reply
+// Poll fetches ALL recent updates and filters by sessionId
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
-
-// In-memory store for replies (per serverless instance, short-lived)
-// We use Telegram message_id as session key
-// For production persistence, replies are fetched from Telegram getUpdates
 
 async function sendToTelegram(text) {
   const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
@@ -22,9 +19,12 @@ async function sendToTelegram(text) {
   return res.json();
 }
 
-async function getUpdates(offset) {
+// Fetch last N updates without consuming them (offset=0 always)
+async function getRecentUpdates() {
+  // Use a large negative offset trick: fetch last 100 updates
+  // We never advance the offset so updates stay available
   const res = await fetch(
-    `${TELEGRAM_API}/getUpdates?offset=${offset || 0}&limit=100&timeout=0`
+    `${TELEGRAM_API}/getUpdates?offset=0&limit=100&timeout=0&allowed_updates=["message"]`
   );
   return res.json();
 }
@@ -43,18 +43,28 @@ export default async function handler(req, res) {
 
   // POST /api/live-chat?action=send — visitor sends a message
   if (req.method === "POST" && action === "send") {
-    const { visitorName, message, sessionId } = req.body;
+    const { visitorName, message, sessionId, isSystemMessage } = req.body;
 
     if (!message || !visitorName) {
       return res.status(400).json({ error: "Missing fields" });
     }
 
-    const text =
-      `💬 <b>লাইভ চ্যাট — নতুন বার্তা</b>\n\n` +
-      `👤 <b>ভিজিটর:</b> ${visitorName}\n` +
-      `🔑 <b>Session:</b> <code>${sessionId}</code>\n` +
-      `📝 <b>বার্তা:</b> ${message}\n\n` +
-      `↩️ এই মেসেজে <b>Reply</b> করুন উত্তর দিতে`;
+    let text;
+    if (isSystemMessage) {
+      text =
+        `🟢 <b>নতুন সেশন শুরু হয়েছে</b>\n\n` +
+        `👤 <b>ভিজিটর:</b> ${visitorName}\n` +
+        `🔑 <b>Session:</b> <code>${sessionId}</code>\n\n` +
+        `↩️ যেকোনো বার্তায় <b>Reply</b> করুন উত্তর দিতে\n` +
+        `<i>(Reply-তে Session ID থাকলে ভিজিটর উত্তর পাবে)</i>`;
+    } else {
+      text =
+        `💬 <b>লাইভ চ্যাট — নতুন বার্তা</b>\n\n` +
+        `👤 <b>ভিজিটর:</b> ${visitorName}\n` +
+        `🔑 <b>Session:</b> <code>${sessionId}</code>\n` +
+        `📝 <b>বার্তা:</b> ${message}\n\n` +
+        `↩️ এই মেসেজে <b>Reply</b> করুন উত্তর দিতে`;
+    }
 
     const result = await sendToTelegram(text);
 
@@ -64,11 +74,11 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      messageId: result.result.message_id,
+      messageId: result.result?.message_id,
     });
   }
 
-  // GET /api/live-chat?action=poll&sessionId=xxx&since=<update_id>
+  // GET /api/live-chat?action=poll&sessionId=xxx&since=<unix_timestamp_ms>
   // Visitor polls for replies from admin
   if (req.method === "GET" && action === "poll") {
     const { sessionId, since } = req.query;
@@ -77,37 +87,55 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing sessionId" });
     }
 
-    const offset = since ? parseInt(since) + 1 : 0;
-    const updates = await getUpdates(offset);
+    const sinceTs = since ? parseInt(since) : 0;
+    // Convert ms to seconds for Telegram date comparison
+    const sinceSec = Math.floor(sinceTs / 1000);
+
+    const updates = await getRecentUpdates();
 
     if (!updates.ok) {
-      return res.status(500).json({ error: "Telegram error" });
+      return res.status(500).json({ error: "Telegram error", detail: updates });
     }
 
-    // Find replies that contain the sessionId in the replied-to message
     const replies = [];
-    let lastUpdateId = since ? parseInt(since) : 0;
+    let lastUpdateId = sinceTs;
 
     for (const update of updates.result || []) {
-      if (update.update_id > lastUpdateId) {
-        lastUpdateId = update.update_id;
-      }
-
       const msg = update.message;
       if (!msg) continue;
 
+      // Only messages from admin chat
+      if (msg.chat.id.toString() !== TELEGRAM_ADMIN_CHAT_ID.toString()) continue;
+
+      // Only messages newer than since
+      if (msg.date <= sinceSec) continue;
+
       // Check if this is a reply to a message containing our sessionId
-      if (
+      const isReplyWithSession =
         msg.reply_to_message &&
         msg.reply_to_message.text &&
-        msg.reply_to_message.text.includes(sessionId) &&
-        msg.chat.id.toString() === TELEGRAM_ADMIN_CHAT_ID
-      ) {
+        msg.reply_to_message.text.includes(sessionId);
+
+      // Also accept direct messages containing the sessionId (for convenience)
+      const isDirectWithSession =
+        msg.text && msg.text.includes(sessionId);
+
+      if (isReplyWithSession || isDirectWithSession) {
+        // Extract just the reply text (remove sessionId if it was a direct message)
+        let replyText = msg.text || "";
+        // If direct message with sessionId prefix like "LB8P77CE: হ্যালো", strip it
+        replyText = replyText.replace(new RegExp(`^${sessionId}[:\\s]*`, "i"), "").trim();
+        if (!replyText) replyText = msg.text || "";
+
         replies.push({
-          text: msg.text,
+          text: replyText,
           timestamp: msg.date * 1000,
-          updateId: update.update_id,
+          updateId: msg.date * 1000, // use timestamp as unique id
         });
+
+        if (msg.date * 1000 > lastUpdateId) {
+          lastUpdateId = msg.date * 1000;
+        }
       }
     }
 
