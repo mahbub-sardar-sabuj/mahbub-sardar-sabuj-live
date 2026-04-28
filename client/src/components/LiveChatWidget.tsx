@@ -38,7 +38,7 @@ export default function LiveChatWidget({ onClose }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [lastUpdateId, setLastUpdateId] = useState(0);
+  const [lastUpdateId, setLastUpdateId] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
   const [error, setError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export default function LiveChatWidget({ onClose }: Props) {
         setVisitorName(name || "");
         setSessionId(sid || null);
         setMessages(msgs || []);
-        setLastUpdateId(lastId || 0);
+        setLastUpdateId(lastId || (Date.now() - 7 * 24 * 60 * 60 * 1000));
       }
     } catch {}
   }, []);
