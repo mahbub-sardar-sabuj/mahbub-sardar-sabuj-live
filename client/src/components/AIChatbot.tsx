@@ -502,7 +502,7 @@ export default function AIChatbot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pillExpanded, setPillExpanded] = useState(false);
+
   const [btnPos, setBtnPos] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -519,10 +519,7 @@ export default function AIChatbot() {
     navigate(path);
   }, [navigate]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setPillExpanded(true), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -771,50 +768,7 @@ export default function AIChatbot() {
               </AnimatePresence>
             </motion.div>
 
-            {/* Pill text */}
-            <AnimatePresence>
-              {!isOpen && pillExpanded && (
-                <motion.div
-                  key="textbox"
-                  initial={{ opacity: 0, x: -18, scaleX: 0.6 }}
-                  animate={{ opacity: 1, x: 0, scaleX: 1 }}
-                  exit={{ opacity: 0, x: -18, scaleX: 0.6 }}
-                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                  onClick={() => { if (!didDrag.current) setIsOpen(true); }}
-                  style={{
-                    marginLeft: -10,
-                    paddingLeft: 20,
-                    paddingRight: 16,
-                    paddingTop: 10,
-                    paddingBottom: 10,
-                    background: "linear-gradient(135deg, #060E1A 0%, #0A1628 60%, #0d1e35 100%)",
-                    border: "1.5px solid rgba(201,168,76,0.5)",
-                    borderLeft: "none",
-                    borderRadius: "0 24px 24px 0",
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.55), 0 0 16px rgba(201,168,76,0.1)",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transformOrigin: "left center",
-                  }}
-                >
-                  <span style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.78rem",
-                    fontWeight: 700,
-                    color: "#D4A843",
-                    letterSpacing: "0.02em",
-                    display: "block",
-                  }}>আমাকে জিজ্ঞেস করুন</span>
-                  <span style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.62rem",
-                    color: "rgba(250,246,239,0.4)",
-                    display: "block",
-                    marginTop: 2,
-                  }}>— AI সহকারী সক্রিয়</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+
           </div>
         );
       })()}
