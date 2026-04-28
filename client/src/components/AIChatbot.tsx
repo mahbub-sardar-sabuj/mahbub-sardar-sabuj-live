@@ -330,7 +330,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
           borderRadius: "20px 20px 4px 20px",
           padding: "11px 16px",
           maxWidth: "78%",
-          fontFamily: "'Noto Sans Bengali', sans-serif",
+          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
           fontSize: "0.875rem",
           lineHeight: 1.75,
           fontWeight: 600,
@@ -391,7 +391,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
             borderRadius: "4px 20px 20px 20px",
             padding: "12px 16px",
             color: "rgba(248,242,230,0.95)",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
             fontSize: "0.875rem",
             lineHeight: 1.85,
             whiteSpace: "pre-wrap",
@@ -415,7 +415,7 @@ function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: 
                   borderRadius: 20,
                   padding: "6px 14px",
                   fontSize: "0.78rem",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                   fontWeight: 600,
@@ -690,6 +690,18 @@ export default function AIChatbot() {
 
   return (
     <>
+      <style>{`
+        @font-face {
+          font-family: 'AdorshoLipi';
+          src: url('/fonts/AdorshoLipi.ttf') format('truetype');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+        .chatbot-adorsho * {
+          font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+        }
+      `}</style>
       {/* ── Floating Trigger Button ── */}
       {(() => {
         const abs = getAbsPos();
@@ -777,6 +789,7 @@ export default function AIChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            className="chatbot-adorsho"
             initial={{ opacity: 0, scale: 0.85, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 24 }}
@@ -853,7 +866,7 @@ export default function AIChatbot() {
                   <div>
                     {/* Shimmer title */}
                     <div style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontWeight: 700,
                       fontSize: "0.92rem",
                       background: "linear-gradient(90deg, #C9A84C 0%, #F0D080 30%, #D4A843 60%, #E8C060 80%, #C9A84C 100%)",
@@ -871,7 +884,7 @@ export default function AIChatbot() {
                         boxShadow: "0 0 6px rgba(74,222,128,0.8)",
                         animation: "chatbot-glow-pulse 2s ease-in-out infinite",
                       }} />
-                      <span style={{ color: "#4ade80", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>AI Agent · সক্রিয়</span>
+                      <span style={{ color: "#4ade80", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>AI Agent · সক্রিয়</span>
                     </div>
                   </div>
                 </div>
@@ -880,7 +893,7 @@ export default function AIChatbot() {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button onClick={clearChat} title="নতুন কথোপকথন"
                     style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.72rem",
                       color: "rgba(212,168,67,0.8)",
                       background: "rgba(212,168,67,0.08)",
@@ -954,7 +967,7 @@ export default function AIChatbot() {
                       borderRadius: 12,
                       padding: "10px 14px",
                       width: "100%",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     }}>
                       {error}
                     </div>
@@ -968,7 +981,7 @@ export default function AIChatbot() {
                         color: "#D4A843",
                         borderRadius: 14,
                         fontSize: "0.78rem",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontWeight: 600,
                         cursor: "pointer",
                         transition: "all 0.2s",
@@ -989,7 +1002,7 @@ export default function AIChatbot() {
                   background: "rgba(6,12,22,0.5)",
                 }}>
                   <p style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     fontSize: "0.68rem",
                     color: "rgba(212,168,67,0.5)",
                     marginBottom: 8,
@@ -1000,7 +1013,7 @@ export default function AIChatbot() {
                       <button key={s}
                         onClick={() => { setInput(s); inputRef.current?.focus(); }}
                         style={{
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                           fontSize: "0.75rem",
                           color: "rgba(212,168,67,0.85)",
                           background: "rgba(18,32,52,0.7)",
@@ -1058,7 +1071,7 @@ export default function AIChatbot() {
                       borderRadius: 16,
                       padding: "10px 14px",
                       fontSize: "0.875rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       resize: "none",
                       minHeight: 42,
                       maxHeight: 100,
@@ -1127,7 +1140,7 @@ export default function AIChatbot() {
                   fontSize: "0.65rem",
                   marginTop: 6,
                   textAlign: "center",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 }}>Shift+Enter = নতুন লাইন</p>
               </div>
 
