@@ -1242,6 +1242,26 @@ export default function Home() {
           }
           .cta-btn svg { width: 12px; height: 12px; }
         }
+        /* Extra small mobile — 320px fix */
+        @media (max-width: 360px) {
+          .hero-container { padding-top: 70px; padding-bottom: 50px; }
+          .cta-row {
+            flex-wrap: wrap;
+            gap: 6px;
+          }
+          .cta-row a {
+            flex: 1 1 calc(50% - 3px);
+            min-width: 0;
+          }
+          .cta-btn {
+            font-size: 0.6rem;
+            padding: 9px 4px;
+            gap: 2px;
+            justify-content: center;
+          }
+          .cta-btn svg { width: 10px; height: 10px; }
+          .sections-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );

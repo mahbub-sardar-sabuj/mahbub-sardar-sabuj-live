@@ -103,6 +103,19 @@ export default function Contact() {
           .name-email-row { grid-template-columns: 1fr !important; }
           .contact-hero h1 { font-size: 2.2rem !important; }
         }
+        @media (max-width: 360px) {
+          .contact-hero h1 { font-size: 1.8rem !important; }
+          .contact-email-card {
+            padding: 1rem !important;
+            gap: 0.6rem !important;
+          }
+          .contact-email-card .email-arrow { display: none !important; }
+          .contact-email-text {
+            font-size: 0.68rem !important;
+            word-break: break-all !important;
+            overflow-wrap: anywhere !important;
+          }
+        }
         input::placeholder, textarea::placeholder { color: rgba(250,246,239,0.3); }
         input:-webkit-autofill, textarea:-webkit-autofill {
           -webkit-box-shadow: 0 0 0 1000px rgba(13,27,42,0.95) inset !important;
@@ -210,6 +223,7 @@ export default function Contact() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                   whileHover={{ y: -3, boxShadow: "0 20px 50px rgba(0,0,0,0.4)" }}
+                  className="contact-email-card"
                   style={{
                     display: "flex", alignItems: "center", gap: "1rem",
                     background: "rgba(201,168,76,0.06)",
@@ -226,9 +240,9 @@ export default function Contact() {
                   }}>✉️</div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>ইমেইল</div>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: TEXT, fontSize: "0.82rem", fontWeight: 500, wordBreak: "break-all" }}>lekhokmahbubsardarsabuj@gmail.com</div>
+                    <div className="contact-email-text" style={{ fontFamily: "'Space Grotesk', sans-serif", color: TEXT, fontSize: "0.82rem", fontWeight: 500, wordBreak: "break-all" }}>lekhokmahbubsardarsabuj@gmail.com</div>
                   </div>
-                  <div style={{ marginLeft: "auto", color: GOLD, fontSize: "1.1rem", flexShrink: 0 }}>→</div>
+                  <div className="email-arrow" style={{ marginLeft: "auto", color: GOLD, fontSize: "1.1rem", flexShrink: 0 }}>→</div>
                 </motion.a>
 
                 {/* Location */}

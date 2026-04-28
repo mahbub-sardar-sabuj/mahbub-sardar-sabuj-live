@@ -10503,7 +10503,7 @@ export default function Writings() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ display: "flex", gap: 32, marginTop: 32, flexWrap: "wrap" }}
+            style={{ display: "flex", gap: "clamp(16px, 4vw, 32px)", marginTop: 32, flexWrap: "wrap", rowGap: 16 }}
           >
             {[
               { icon: <BookOpen size={16} />, label: "মোট লেখা", value: `${writings.length}+` },
