@@ -2,124 +2,30 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
   imageUrl?: string;
-  imageAnalysis?: boolean;
-  reaction?: string;
-  isStreaming?: boolean;
 }
+
 interface ActionButton {
   label: string;
   path: string;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
-}
-async function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-function extractBase64(dataUrl: string): { base64: string; mimeType: string } {
-  const [header, base64] = dataUrl.split(",");
-  const mimeType = header.match(/data:([^;]+)/)?.[1] || "image/jpeg";
-  return { base64, mimeType };
-}
-
-// ── LocalStorage chat history ─────────────────────────────────────────────────
-const STORAGE_KEY = "mss_chat_history_v2";
-function loadHistory(): Message[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
-  } catch {
-    return [];
-  }
-}
-function saveHistory(messages: Message[]) {
-  try {
-    const toSave = messages.slice(-50).map(m => ({
-      ...m,
-      isStreaming: false,
-    }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-  } catch {}
-}
-
-// ── Streaming AI call ─────────────────────────────────────────────────────────
-async function callAIStream(
-  messages: { role: "user" | "assistant" | "system"; content: string }[],
-  onToken: (token: string) => void,
-  onDone: () => void,
-  onError: (err: string) => void
-): Promise<void> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 35000);
-  try {
-    const res = await fetch("/api/chat-stream", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    if (!res.ok || !res.body) {
-      // Fallback to non-streaming
-      const data = await res.json().catch(() => ({}));
-      onError(data?.error || "API error");
-      return;
-    }
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed === "data: [DONE]") { onDone(); return; }
-        if (trimmed.startsWith("data: ")) {
-          try {
-            const json = JSON.parse(trimmed.slice(6));
-            if (json.error) { onError(json.error); return; }
-            if (json.token) onToken(json.token);
-          } catch {}
-        }
-      }
-    }
-    onDone();
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    onError(err?.message || "connection_failed");
-  }
-}
-
-// ── Non-streaming fallback ────────────────────────────────────────────────────
+// ── AI call with retry + timeout ──────────────────────────────────────────────
 async function callAI(
   messages: { role: "user" | "assistant" | "system"; content: string }[],
   attempt = 0
 ): Promise<string> {
   const MAX_RETRIES = 3;
+  const TIMEOUT_MS = 30000;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -127,7 +33,9 @@ async function callAI(
       body: JSON.stringify({ messages }),
       signal: controller.signal,
     });
+
     clearTimeout(timeoutId);
+
     if (!res.ok) {
       if (res.status >= 500 && attempt < MAX_RETRIES - 1) {
         await delay(Math.pow(2, attempt) * 1000);
@@ -135,76 +43,192 @@ async function callAI(
       }
       throw new Error(`API error: ${res.status}`);
     }
+
     const data = await res.json();
     return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
+
   } catch (err: any) {
     clearTimeout(timeoutId);
+
     if (attempt < MAX_RETRIES - 1) {
       const isAborted = err?.name === "AbortError";
-      const isNetworkError = err?.name === "TypeError";
+      const isNetworkError = err?.name === "TypeError" || err?.message?.includes("fetch");
+
       if (isAborted || isNetworkError) {
         await delay(Math.pow(2, attempt) * 1000);
         return callAI(messages, attempt + 1);
       }
     }
+
     throw new Error("connection_failed");
   }
 }
 
-// ── AI Vision API call ────────────────────────────────────────────────────────
-async function callAIVision(
-  imageDataUrl: string,
-  userText: string,
-  attempt = 0
-): Promise<string> {
-  const MAX_RETRIES = 2;
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 45000);
-  try {
-    const { base64, mimeType } = extractBase64(imageDataUrl);
-    const res = await fetch("/api/chat-vision", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageBase64: base64, mimeType, userText }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    if (!res.ok) {
-      if (attempt < MAX_RETRIES - 1) {
-        await delay(2000);
-        return callAIVision(imageDataUrl, userText, attempt + 1);
-      }
-      throw new Error(`Vision API error: ${res.status}`);
-    }
-    const data = await res.json();
-    return data.reply || "ছবিটি বিশ্লেষণ করতে পারছি না।";
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    if (attempt < MAX_RETRIES - 1) {
-      await delay(2000);
-      return callAIVision(imageDataUrl, userText, attempt + 1);
-    }
-    throw new Error("vision_failed");
-  }
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ── Page map ──────────────────────────────────────────────────────────────────
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
+
+// ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
-  { path: "/", label: "হোম পেজ", keywords: ["হোম", "মূল পেজ"] },
-  { path: "/about", label: "পরিচিতি পেজ", keywords: ["পরিচয়", "জীবনী"] },
-  { path: "/ebooks", label: "ই-বুক পেজ", keywords: ["বই", "ই-বুক"] },
-  { path: "/writings", label: "লেখালেখি পেজ", keywords: ["লেখা", "কবিতা"] },
-  { path: "/contact", label: "যোগাযোগ পেজ", keywords: ["যোগাযোগ"] },
-  { path: "/editor", label: "সরদার ডিজাইন স্টুডিও", keywords: ["এডিটর", "ডিজাইন"] },
-  { path: "/facebook-recitations", label: "Facebook আবৃত্তি", keywords: ["আবৃত্তি"] },
+  { path: "/about",    label: "পরিচিতি পেজ দেখুন",    keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
+  { path: "/ebooks",   label: "ই-বুক সংগ্রহ দেখুন",   keywords: ["ebooks", "ebook", "ই-বুক", "বই"] },
+  { path: "/writings", label: "লেখালেখি পেজ দেখুন",   keywords: ["writings", "writing", "লেখালেখি", "লেখা", "কবিতা"] },
+  { path: "/contact",  label: "যোগাযোগ পেজ দেখুন",    keywords: ["contact", "যোগাযোগ", "ইমেইল"] },
+  { path: "/editor",   label: "ডিজাইন স্টুডিও খুলুন", keywords: ["editor", "ডিজাইন", "স্টুডিও", "ফরম্যাট"] },
+  { path: "/",         label: "হোম পেজ দেখুন",        keywords: ["home", "হোম"] },
+  { path: "/ebooks/read/smritir-boshonte", label: "স্মৃতির বসন্তে তুমি পড়ুন",  keywords: ["smritir", "স্মৃতির বসন্তে"] },
+  { path: "/ebooks/read/chand-phool",      label: "চাঁদফুল পড়ুন",              keywords: ["chand-phool", "চাঁদফুল"] },
+  { path: "/ebooks/read/shomoyer-gohvore", label: "সময়ের গহ্বরে পড়ুন",        keywords: ["shomoyer", "সময়ের গহ্বরে"] },
+  { path: "/facebook-recitations",         label: "আবৃত্তি সংগ্রহ দেখুন",      keywords: ["recitation", "আবৃত্তি", "facebook"] },
 ];
-const PHOTO_KEYWORDS = ["ছবি", "photo", "picture", "দেখাও", "দেখতে চাই"];
+
+// ── Photo request detection ───────────────────────────────────────────────────
+const PHOTO_KEYWORDS = [
+  "ছবি", "photo", "picture", "image", "ফটো", "দেখতে", "চেহারা",
+  "মুখ", "face", "look", "দেখাও", "দেখান", "কেমন দেখতে",
+];
+
 function isPhotoRequest(text: string): boolean {
-  return PHOTO_KEYWORDS.some(k => text.toLowerCase().includes(k));
+  const lower = text.toLowerCase();
+  return PHOTO_KEYWORDS.some(kw => lower.includes(kw));
 }
 
-// ── Suggestions ───────────────────────────────────────────────────────────────
+// ── System prompt ─────────────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত AI সহকারী।
+
+## তোমার পরিচয়
+তুমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI Agent। তুমি বাংলায় এবং ইংরেজিতে যেকোনো প্রশ্নের উত্তর দাও।
+
+## ভাষা ও বানান নির্দেশনা (অত্যন্ত গুরুত্বপূর্ণ)
+- সবসময় শুদ্ধ ও নির্ভুল বাংলা বানান ব্যবহার করবে
+- ভদ্র ও সম্মানজনক ভাষায় কথা বলবে — "আপনি", "আপনার" ব্যবহার করবে
+- সহজ, পরিষ্কার ও প্রাঞ্জল বাংলায় উত্তর দেবে
+- অপ্রয়োজনীয় ইমোজি বা বিশেষ চিহ্ন ব্যবহার করবে না
+- উত্তর সংক্ষিপ্ত ও স্পষ্ট রাখবে — অতিরিক্ত দীর্ঘ উত্তর দেবে না
+- কখনো URL লিংক (https://...) সরাসরি টেক্সটে লিখবে না, শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে
+
+## মূল আচরণবিধি
+১. সম্পূর্ণ সঠিক ও নির্ভুল তথ্য প্রদান করবে। কোনো তথ্য সম্পর্কে নিশ্চিত না হলে অনুমান করে উত্তর দেবে না।
+২. ব্যবহারকারীদের সহায়তা করবে — ওয়েবসাইট ব্যবহার, ডিজাইন টুল, ই-বুক পড়া সব বিষয়ে গাইড করবে।
+৩. লেখক সম্পর্কে শুধুমাত্র যাচাইকৃত তথ্য প্রদান করবে।
+৪. কবিতা বা লেখা চাইলে নিজে তৈরি না করে ওয়েবসাইটের বিদ্যমান লেখা থেকে দেখাবে এবং [BUTTON:/writings] পেজে যেতে বলবে।
+৫. ডিজাইন বা এডিটিং সংক্রান্ত প্রশ্নে বিস্তারিত গাইডলাইন দেবে।
+
+## মাহবুব সরদার সবুজ — সম্পূর্ণ তথ্য
+
+### ব্যক্তিগত পরিচয়
+- পুরো নাম: মাহবুব সরদার সবুজ (Mahbub Sardar Sabuj)
+- পেশা: লেখক ও কবি (বাংলা সাহিত্য)
+- জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি
+- পিতা: ফানাউল্লাহ সরদার
+- মাতা: আহামালী বিনতে মাসুরা। তিনি অবিবাহিত।
+- বর্তমান অবস্থান: সৌদি আরব
+- কর্মক্ষেত্র: সৌদি আরবে একটি ফার্নিচার কোম্পানিতে ম্যানেজার এবং একটি স্টুডিওতে প্রোগ্রামার
+- ইমেইল: lekhokmahbubsardarsabuj@gmail.com
+- Facebook: Lekhok.MahbubSardarSabuj
+
+### সাহিত্যকর্ম ও পরিসংখ্যান
+- মোট লেখা: ৭,০০০+ (কবিতা, গদ্য, প্রবন্ধ)
+- প্রকাশিত ই-বুক: ৪টি
+- পাঠক: লক্ষাধিক
+- বিশেষত্ব: ভালোবাসা, জীবনের বাস্তবতা, আত্মসম্মান, মানবিক সম্পর্ক বিষয়ক লেখা
+- বিখ্যাত উক্তি: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"
+
+### প্রকাশিত বই ও ই-বুক
+১. আমি বিচ্ছেদকে বলি দুঃখবিলাস — প্রথম ফিজিক্যাল বই (২০২৬), রকমারিতে পাওয়া যায়
+২. স্মৃতির বসন্তে তুমি — ই-বুক [BUTTON:/ebooks/read/smritir-boshonte]
+৩. চাঁদফুল — ই-বুক [BUTTON:/ebooks/read/chand-phool]
+৪. সময়ের গহ্বরে — ই-বুক [BUTTON:/ebooks/read/shomoyer-gohvore]
+
+### ওয়েবসাইটের পেজসমূহ
+- হোম পেজ [BUTTON:/] — লেখকের পরিচয়, বই, লেখা, সংবাদ সব এক জায়গায়
+- পরিচিতি পেজ [BUTTON:/about] — লেখকের বিস্তারিত জীবনী ও পরিচয়
+- বই ও ই-বুক [BUTTON:/ebooks] — সব প্রকাশিত বই ও ই-বুক
+- লেখালেখি [BUTTON:/writings] — ৭,০০০+ লেখার সংগ্রহ
+- যোগাযোগ [BUTTON:/contact] — ইমেইল ও সামাজিক মাধ্যমের তথ্য
+- সরদার ডিজাইন স্টুডিও [BUTTON:/editor] — ডিজাইন কার্ড তৈরির টুল
+- Facebook আবৃত্তি [BUTTON:/facebook-recitations] — কবিতার আবৃত্তি সংগ্রহ
+
+### ওয়েবসাইটে থাকা লেখার তালিকা
+
+জীবনদর্শন: আচরণই আসল পরিচয়, অনুভূতির অসমতা, অব্যক্ত দীর্ঘশ্বাস, দিশাহীনতা, আমার জন্য সময় কোথায়, ভালো মানুষেরা সবসময় ঠকে, আমি মানুষ চিনিনি, ভুল মানুষের শহর, মূল্য থাকে প্রয়োজনে, মূল্যহীন অনুভূতি, বিশ্বাসের মূল্য, প্রকৃত কাছের মানুষ, সুদিনের দেখা মিলবে, অনুশোচনা, একাকী হয়ে বাঁচতে শেখে, সব ঠিক হয়ে যাবে একদিন, অনিশ্চিত জীবন, ভাগ্য পরিবর্তন, মানুষের যত্ন নিতে হয়, নিজেকে বাঁচানো, জীবন কাউকে ধরে রাখে না, মানুষের আসল চেহারা, সময় নেয় বিচার করতে, সম্মানের মূল্য
+
+ভালোবাসা: ভালোবাসার সিংহাসন, অঘোষিত অপেক্ষা, ভালোবাসা প্রমাণ, মনের মানুষের কথা, ভালোবাসার মর্যাদা, ভুলগুলো ক্ষমা করে দিও, সত্যি যদি ভালোবাসো রেখে দিও, মন আগে দেহ পরে, তুমি কেন মন না খুঁজে দেহ খুঁজো, ভালোবাসা অটুট থাকুক, তোমাকে তোমার মতো করেই ভালোবাসি, আমার তোমাকেই লাগবে, অভিমানও এক ধরনের ভালোবাসা, আমি কখনো তোমায় ঘৃণা করিনি, ভালোবাসার দাগ, ভালোবাসার দোষ নেই, বন্ধুত্ব কখনো ভাঙে না
+
+বিচ্ছেদ: দূরত্বের কৌশল, বুকে মাথা রাখার তৃষ্ণা, যাকে তুমি ভালোবাসো, নিষ্ঠুরতার শিকার, কারো হতে পারিনি, দূরত্বের পরিণতি, দূরে যাওয়ার শিক্ষা, দূরত্বের মূল্য, আমি ভালোবেসেছিলাম অগাধ বিশ্বাস নিয়ে
+
+ছোট লেখা: রাতের বেঈমানি, বিনয়ের শক্তি, মেয়েদের কঠিন হওয়ার কারণ, নারীর মূল্য, ভালো মানুষকে ঠকানো হয়, স্বার্থের জন্য স্বপ্ন ভাঙা, মনের যত্ন নিন, সত্য চুপ থাকে, নীরবতাই যথেষ্ট, ভালো থাকা আর ভালো রাখা
+
+## সরদার ডিজাইন স্টুডিও — সম্পূর্ণ গাইড [BUTTON:/editor]
+
+সরদার ডিজাইন স্টুডিও একটি বিনামূল্যের অনলাইন ডিজাইন টুল যেখানে আপনি সুন্দর কবিতা কার্ড ও ডিজাইন তৈরি করতে পারবেন।
+
+### টুলসমূহ ও ব্যবহার পদ্ধতি
+
+**ক্যানভাস টুল (📐)**
+- ক্যানভাসের আকার পরিবর্তন করুন (1:1, 4:5, 9:16 ইত্যাদি)
+- Export quality নির্বাচন করুন (PNG বা JPG)
+- "সেভ করুন" বাটনে ক্লিক করে ডাউনলোড করুন
+
+**লেখা টুল (✍️)**
+- বিষয়বস্তু ট্যাব: শিরোনাম, মূল লেখা, লেখকের নাম লিখুন
+- স্টাইল ট্যাব: রং, ফন্ট সাইজ, bold/italic, alignment পরিবর্তন করুন
+- ফন্ট ট্যাব: ১০টি বাংলা ফন্ট থেকে পছন্দের ফন্ট বেছে নিন
+
+**টেক্সট টুল (🖊️)**
+- এই টুলে ক্লিক করুন, তারপর ক্যানভাসে যেখানে লিখতে চান সেখানে ট্যাপ করুন
+- সরাসরি সেখানে একটি লেখার বাক্স আসবে — বাংলা বা ইংরেজি লিখুন
+- Enter চাপুন বা "✅ যোগ করুন" বাটনে ক্লিক করুন
+
+**স্টিকার টুল (😊)**
+- ২১৬টি স্টিকার — ৬টি ক্যাটাগরিতে বিভক্ত
+- পছন্দের স্টিকারে ক্লিক করলে ক্যানভাসে যোগ হবে
+- স্টিকার drag করে সরানো যাবে, rotation slider দিয়ে ঘোরানো যাবে
+
+**ফিল্টার টুল (🎨)**
+- ১০টি ফিল্টার preset — Normal, Warm, Cool, Vintage, Dramatic, Fade, B&W, Sepia, Vivid, Matte
+- যেকোনো ফিল্টারে ক্লিক করলে সাথে সাথে প্রিভিউ দেখাবে
+
+**সামঞ্জস্য টুল (⚙️)**
+- Brightness, Contrast, Saturation, Blur, Vignette স্লাইডার দিয়ে ছবি সামঞ্জস্য করুন
+
+**পটভূমি টুল (🌄)**
+- ছবি আপলোড করুন ক্যানভাসের পটভূমি হিসেবে
+- Watermark যোগ করুন
+
+**ব্যাকগ্রাউন্ড টুল (🖼️)**
+- ১২০+ সুন্দর background — Gradient, Solid, Cosmic, Nature, Artistic, Urban
+- পছন্দের background-এ ক্লিক করলে সাথে সাথে ক্যানভাসে যোগ হবে
+
+**আপস্কেল টুল (🔍)**
+- ঝাপসা ছবি ক্লিয়ার করুন
+- ছবি আপলোড করুন → 2× বা 4× নির্বাচন করুন → "✨ ক্লিয়ার করুন" বাটনে ক্লিক করুন
+- "আগে" ও "পরে" বাটন দিয়ে পার্থক্য দেখুন → ডাউনলোড করুন
+
+**ক্রপ টুল (✂️)**
+- Aspect ratio পরিবর্তন করুন (1:1, 4:5, 9:16, 16:9, A4)
+
+**ড্রইং টুল (🖊️ ড্র)**
+- ক্যানভাসে সরাসরি আঁকুন
+- পেন্সিল, ব্রাশ, ইরেজার, লাইন, আয়তক্ষেত্র, বৃত্ত, তীর টুল
+- রং ও ব্রাশ সাইজ কাস্টমাইজ করুন
+
+### ডিজাইন টিপস
+- ভালো ডিজাইনের জন্য: গাঢ় background + হালকা লেখার রং ব্যবহার করুন
+- Navy থিম + সোনালি লেখা সবচেয়ে আকর্ষণীয় দেখায়
+- ফন্ট সাইজ: শিরোনামের জন্য ৪০-৬০px, মূল লেখার জন্য ২৪-৩২px উপযুক্ত
+- সোশ্যাল মিডিয়ার জন্য 1:1 (1080×1080) অনুপাত সবচেয়ে ভালো
+- ডাউনলোড করতে উপরের "⬇ সেভ করুন" বাটনে ক্লিক করুন
+
+## প্রযুক্তিগত নির্দেশনা
+- কখনো URL লিংক দেবে না (https://... ধরনের কোনো লিংক টেক্সটে লিখবে না)
+- যখন কোনো পেজের কথা বলবে, শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে
+- [BUTTON:/path] ট্যাগ স্বয়ংক্রিয়ভাবে সুন্দর বাটনে পরিণত হবে
+- যদি কেউ মাহবুব সরদার সবুজের ছবি চায়, তাহলে [PHOTO] ট্যাগ ব্যবহার করো
+- সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)`;
+
 const SUGGESTIONS = [
   "মাহবুব সরদার সবুজের পরিচয় দাও",
   "তার ই-বুকগুলো কোথায় পাব?",
@@ -214,15 +238,18 @@ const SUGGESTIONS = [
   "যোগাযোগ করব কীভাবে?",
 ];
 
-// ── Reactions ─────────────────────────────────────────────────────────────────
-const REACTIONS = ["❤️", "👍", "😊", "🔥", "👏"];
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+}
 
 // ── Parse AI response ─────────────────────────────────────────────────────────
 function parseContent(raw: string): { text: string; buttons: ActionButton[]; showPhoto: boolean } {
   const buttons: ActionButton[] = [];
   const seen = new Set<string>();
   let showPhoto = false;
+
   let text = raw.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
+
   text = text.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
     if (!seen.has(path)) {
       seen.add(path);
@@ -231,8 +258,9 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
     }
     return "";
   });
+
   text = text.replace(
-    new RegExp(`https?://mahbub-sardar-sabuj-live\\.vercel\\.app(/[^\\s)>"]*)`,"g"),
+    new RegExp(`https?://mahbub-sardar-sabuj-live\\.vercel\\.app(/[^\\s)>"]*)`, "g"),
     (_, path) => {
       const cleanPath = path || "/";
       if (!seen.has(cleanPath)) {
@@ -243,1043 +271,628 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
       return "";
     }
   );
+
   text = text.replace(/:\s*\n\n/g, ":\n").replace(/\n{3,}/g, "\n\n").trim();
   return { text, buttons, showPhoto };
 }
 
-// ── Typing indicator ──────────────────────────────────────────────────────────
-function TypingIndicator() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className="flex items-start gap-2 mb-3"
-    >
-      <div className="w-7 h-7 rounded-full overflow-hidden border border-[#D4A843] flex-shrink-0 mt-1" style={{ boxShadow: "0 0 8px rgba(212,168,67,0.4)" }}>
-        <img src={AUTHOR_PHOTO} alt="AI" className="w-full h-full object-cover"
-          onError={e => { (e.target as HTMLImageElement).parentElement!.innerHTML = '<span style="color:#D4A843;font-size:9px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;">AI</span>'; }} />
-      </div>
-      <div style={{
-        background: "rgba(20,35,55,0.85)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid rgba(212,168,67,0.2)",
-        borderRadius: "4px 16px 16px 16px",
-        padding: "10px 14px",
-        display: "flex",
-        gap: 5,
-        alignItems: "center",
-      }}>
-        {[0, 1, 2].map(i => (
-          <motion.div
-            key={i}
-            style={{ width: 7, height: 7, borderRadius: "50%", background: "#D4A843" }}
-            animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 0.9, delay: i * 0.18, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
 // ── Message Bubble ────────────────────────────────────────────────────────────
-function MessageBubble({
-  message,
-  onNavigate,
-  onReact,
-  onCopy,
-}: {
-  message: Message;
-  onNavigate: (path: string) => void;
-  onReact: (id: string, emoji: string) => void;
-  onCopy: (text: string) => void;
-}) {
+function MessageBubble({ message, onNavigate }: { message: Message; onNavigate: (path: string) => void }) {
   const isUser = message.role === "user";
-  const [showReactions, setShowReactions] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    onCopy(message.content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
 
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         className="flex justify-end mb-3"
       >
-        <div style={{ maxWidth: "85%", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-          {message.imageUrl && (
-            <div style={{ position: "relative" }}>
-              <img
-                src={message.imageUrl}
-                alt="আপলোড করা ছবি"
-                style={{
-                  maxWidth: 180,
-                  maxHeight: 180,
-                  borderRadius: 14,
-                  border: "2px solid rgba(212,168,67,0.5)",
-                  objectFit: "cover",
-                  display: "block",
-                  boxShadow: "0 4px 20px rgba(212,168,67,0.2)",
-                }}
-              />
-            </div>
-          )}
-          {message.content && (
-            <div style={{
-              background: "linear-gradient(135deg, #C9A84C, #D4A843)",
-              color: "#0A1628",
-              borderRadius: "18px 18px 4px 18px",
-              padding: "10px 14px",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              fontSize: "0.82rem",
-              lineHeight: 1.6,
-              fontWeight: 500,
-              boxShadow: "0 4px 15px rgba(212,168,67,0.3)",
-            }}>
-              {message.content}
-            </div>
-          )}
-          <div style={{
-            fontSize: "0.6rem",
-            color: "rgba(253,246,236,0.35)",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}>
-            <button onClick={handleCopy} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(212,168,67,0.5)", fontSize: "0.65rem", padding: 0 }}>
-              {copied ? "✓ কপি" : "কপি"}
-            </button>
-            {formatTime(message.timestamp)}
-          </div>
+        <div style={{
+          background: "linear-gradient(135deg, #C9A84C, #D4A843)",
+          color: "#0A1628",
+          borderRadius: "18px 18px 4px 18px",
+          padding: "10px 14px",
+          maxWidth: "80%",
+          fontFamily: "'Noto Sans Bengali', sans-serif",
+          fontSize: "0.88rem",
+          lineHeight: 1.7,
+          fontWeight: 500,
+        }}>
+          {message.content}
         </div>
       </motion.div>
     );
   }
 
-  // AI message
   const { text, buttons, showPhoto } = parseContent(message.content);
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className="flex items-start gap-2 mb-3"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex gap-2 mb-3"
     >
-      <div className="flex-shrink-0 mt-1" style={{ position: "relative" }}>
-        <div style={{
-          width: 30,
-          height: 30,
-          borderRadius: "50%",
-          overflow: "hidden",
-          border: "1.5px solid #D4A843",
-          boxShadow: "0 0 10px rgba(212,168,67,0.5)",
-        }}>
-          <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            onError={e => { (e.target as HTMLImageElement).parentElement!.innerHTML = '<span style="color:#D4A843;font-size:9px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;">AI</span>'; }} />
-        </div>
-        <div style={{
-          position: "absolute",
-          bottom: -1,
-          right: -1,
-          width: 9,
-          height: 9,
-          borderRadius: "50%",
-          background: "#22c55e",
-          border: "1.5px solid #0A1628",
-        }} />
+      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#D4A843] flex-shrink-0 mt-1">
+        <img src={AUTHOR_PHOTO} alt="AI" className="w-full h-full object-cover"
+          onError={(e) => {
+            const t = e.currentTarget;
+            t.style.display = "none";
+            t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:10px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;">AI</span>';
+          }} />
       </div>
-      <div style={{ maxWidth: "88%", display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ maxWidth: "85%" }}>
         {showPhoto && (
-          <motion.img
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            src={AUTHOR_PHOTO}
-            alt="মাহবুব সরদার সবুজ"
-            style={{
-              borderRadius: 14,
-              width: "100%",
-              maxWidth: 200,
-              border: "2px solid #D4A843",
-              boxShadow: "0 4px 20px rgba(212,168,67,0.3)",
-            }}
-          />
+          <div className="mb-2">
+            <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ"
+              className="rounded-xl w-full max-w-[200px] border-2 border-[#D4A843]"
+              style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }} />
+          </div>
         )}
         {text && (
           <div style={{
-            background: "rgba(15,28,48,0.85)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
+            background: "rgba(30,45,61,0.9)",
             border: "1px solid rgba(212,168,67,0.2)",
-            borderRadius: "4px 16px 16px 16px",
+            borderRadius: "4px 18px 18px 18px",
             padding: "10px 14px",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.82rem",
-            lineHeight: 1.7,
             color: "rgba(253,246,236,0.92)",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,168,67,0.1)",
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontSize: "0.88rem",
+            lineHeight: 1.8,
             whiteSpace: "pre-wrap",
           }}>
-            {message.isStreaming ? (
-              <>
-                {text}
-                <motion.span
-                  animate={{ opacity: [1, 0, 1] }}
-                  transition={{ duration: 0.7, repeat: Infinity }}
-                  style={{ display: "inline-block", width: 2, height: "1em", background: "#D4A843", marginLeft: 2, verticalAlign: "text-bottom", borderRadius: 1 }}
-                />
-              </>
-            ) : text}
+            {text}
           </div>
         )}
-        {buttons.length > 0 && !message.isStreaming && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
-            {buttons.map((btn, i) => (
-              <motion.button
-                key={i}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
+        {buttons.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {buttons.map(btn => (
+              <button
+                key={btn.path}
                 onClick={() => onNavigate(btn.path)}
                 style={{
-                  background: "rgba(212,168,67,0.1)",
+                  background: "rgba(212,168,67,0.12)",
                   border: "1px solid rgba(212,168,67,0.4)",
                   color: "#D4A843",
                   borderRadius: 20,
                   padding: "5px 12px",
-                  fontSize: "0.72rem",
+                  fontSize: "0.78rem",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
                   cursor: "pointer",
-                  backdropFilter: "blur(8px)",
                   transition: "all 0.2s",
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.25)";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 12px rgba(212,168,67,0.3)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#D4A843";
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.1)";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.12)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(212,168,67,0.4)";
                 }}
               >
                 {btn.label} →
-              </motion.button>
+              </button>
             ))}
           </div>
         )}
-        {/* Reaction & Copy bar */}
-        {!message.isStreaming && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-            <span style={{ fontSize: "0.6rem", color: "rgba(253,246,236,0.3)", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-              {formatTime(message.timestamp)}
-            </span>
-            <button onClick={handleCopy} style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "rgba(212,168,67,0.45)", fontSize: "0.65rem",
-              fontFamily: "'Noto Sans Bengali', sans-serif", padding: 0,
-            }}>
-              {copied ? "✓" : "কপি"}
-            </button>
-            <div style={{ position: "relative" }}>
-              <button
-                onClick={() => setShowReactions(v => !v)}
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.75rem", padding: "0 2px", opacity: 0.5 }}
-              >
-                {message.reaction || "☺"}
-              </button>
-              <AnimatePresence>
-                {showReactions && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 5 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    style={{
-                      position: "absolute",
-                      bottom: "100%",
-                      left: 0,
-                      background: "rgba(10,22,40,0.95)",
-                      backdropFilter: "blur(16px)",
-                      border: "1px solid rgba(212,168,67,0.3)",
-                      borderRadius: 20,
-                      padding: "4px 8px",
-                      display: "flex",
-                      gap: 4,
-                      zIndex: 100,
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {REACTIONS.map(emoji => (
-                      <button
-                        key={emoji}
-                        onClick={() => { onReact(message.id, emoji); setShowReactions(false); }}
-                        style={{
-                          background: "none", border: "none", cursor: "pointer",
-                          fontSize: "1rem", padding: "2px 3px",
-                          transition: "transform 0.15s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.3)")}
-                        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
+        <div style={{ color: "rgba(150,160,170,0.6)", fontSize: "0.68rem", marginTop: 4, paddingLeft: 2 }}>
+          {formatTime(message.timestamp)}
+        </div>
       </div>
     </motion.div>
+  );
+}
+
+// ── Typing indicator ──────────────────────────────────────────────────────────
+function TypingIndicator() {
+  return (
+    <div className="flex gap-2 mb-3">
+      <div className="w-8 h-8 rounded-full overflow-hidden border border-[#D4A843] flex-shrink-0">
+        <img src={AUTHOR_PHOTO} alt="AI" className="w-full h-full object-cover" />
+      </div>
+      <div style={{
+        background: "rgba(30,45,61,0.9)",
+        border: "1px solid rgba(212,168,67,0.2)",
+        borderRadius: "4px 18px 18px 18px",
+        padding: "12px 16px",
+        display: "flex",
+        gap: 5,
+        alignItems: "center",
+      }}>
+        {[0, 1, 2].map(i => (
+          <motion.div key={i}
+            style={{ width: 7, height: 7, borderRadius: "50%", background: "#D4A843" }}
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15 }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const history = loadHistory();
-    if (history.length > 0) return history;
-    return [{
-      id: "welcome",
-      role: "assistant",
-      content: "আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent।\n\nআমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ। এছাড়া সরদার ডিজাইন স্টুডিও ব্যবহারের গাইডলাইনও দিতে পারি। যেকোনো বিষয়ে প্রশ্ন করুন!",
-      timestamp: new Date(),
-    }];
-  });
+  const [messages, setMessages] = useState<Message[]>([{
+    id: "welcome",
+    role: "assistant",
+    content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent।
+
+আমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ। এছাড়া সরদার ডিজাইন স্টুডিও ব্যবহারের গাইডলাইনও দিতে পারি। যেকোনো বিষয়ে প্রশ্ন করুন!`,
+    timestamp: new Date(),
+  }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [pendingImage, setPendingImage] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const [pulseOpen, setPulseOpen] = useState(true);
-  const [copiedToast, setCopiedToast] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // Use absolute position from top-left for free drag anywhere
+  const [btnPos, setBtnPos] = useState({ x: -1, y: -1 }); // -1 = use default bottom-right
+  // Pill expanded state: true = show text label
+  const [pillExpanded, setPillExpanded] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const isDragging = useRef(false);
+  const didDrag = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
+  const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
   const [, navigate] = useLocation();
 
-  // Pulse animation for open button
+  // Listen for open-chatbot event from the top banner
   useEffect(() => {
-    const t = setTimeout(() => setPulseOpen(false), 8000);
-    return () => clearTimeout(t);
+    const handler = () => setIsOpen(true);
+    window.addEventListener("open-chatbot", handler);
+    return () => window.removeEventListener("open-chatbot", handler);
   }, []);
 
-  // Auto scroll
+  // Periodic pill expand: expand for 3s every 10s (only when chat closed)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (isOpen) { setPillExpanded(false); return; }
+    // Show text after 1.5s on mount
+    const firstShow = setTimeout(() => {
+      setPillExpanded(true);
+      setTimeout(() => setPillExpanded(false), 3000);
+    }, 1500);
+    // Then repeat every 10s
+    const interval = setInterval(() => {
+      setPillExpanded(true);
+      setTimeout(() => setPillExpanded(false), 3000);
+    }, 10000);
+    return () => { clearTimeout(firstShow); clearInterval(interval); };
+  }, [isOpen]);
 
-  // Save history
   useEffect(() => {
-    if (messages.length > 1) saveHistory(messages);
-  }, [messages]);
-
-  // Focus input when opened
-  useEffect(() => {
-    if (isOpen && !isMinimized) setTimeout(() => inputRef.current?.focus(), 300);
-  }, [isOpen, isMinimized]);
-
-  // Clear chat
-  const clearChat = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setMessages([{
-      id: "welcome-" + Date.now(),
-      role: "assistant",
-      content: "আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent।\n\nআমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ। যেকোনো বিষয়ে প্রশ্ন করুন!",
-      timestamp: new Date(),
-    }]);
-    setPendingImage(null);
-  }, []);
-
-  // React to message
-  const handleReact = useCallback((id: string, emoji: string) => {
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, reaction: emoji } : m));
-  }, []);
-
-  // Copy text
-  const handleCopy = useCallback((text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedToast(true);
-      setTimeout(() => setCopiedToast(false), 2000);
-    });
-  }, []);
-
-  // Voice input
-  const toggleVoice = useCallback(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("আপনার browser-এ voice input সমর্থিত নয়।");
-      return;
+    if (isOpen) {
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     }
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = "bn-BD";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.onresult = (e: any) => {
-      const transcript = e.results[0][0].transcript;
-      setInput(prev => prev + transcript);
-      setIsListening(false);
+  }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) setTimeout(() => inputRef.current?.focus(), 300);
+  }, [isOpen]);
+
+  const handleNavigate = useCallback((path: string) => {
+    setIsOpen(false);
+    navigate(path);
+  }, [navigate]);
+
+  // ── Drag handlers (absolute position from top-left) ─────────────────────
+  const clampPos = useCallback((x: number, y: number) => {
+    const BTN = 56;
+    return {
+      x: Math.max(0, Math.min(window.innerWidth - BTN, x)),
+      y: Math.max(0, Math.min(window.innerHeight - BTN, y)),
     };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
-  }, [isListening]);
-
-  // Image upload
-  const handleImageSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    if (file.size > 10 * 1024 * 1024) { alert("ছবির সাইজ সর্বোচ্চ ১০ MB হতে পারবে।"); return; }
-    const dataUrl = await fileToBase64(file);
-    setPendingImage(dataUrl);
   }, []);
 
-  // Send message
-  const sendMessage = useCallback(async () => {
+  // Get current pixel position (default = bottom-right)
+  const getAbsPos = useCallback(() => {
+    if (btnPos.x === -1) {
+      return { x: window.innerWidth - 72, y: window.innerHeight - 88 };
+    }
+    return btnPos;
+  }, [btnPos]);
+
+  const handleBtnMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true;
+    didDrag.current = false;
+    const abs = getAbsPos();
+    dragStart.current = { x: e.clientX, y: e.clientY, bx: abs.x, by: abs.y };
+
+    const onMove = (ev: MouseEvent) => {
+      const dx = ev.clientX - dragStart.current.x;
+      const dy = ev.clientY - dragStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      setBtnPos(clampPos(dragStart.current.bx + dx, dragStart.current.by + dy));
+    };
+    const onUp = () => {
+      isDragging.current = false;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    e.preventDefault();
+  }, [getAbsPos, clampPos]);
+
+  const handleBtnTouchStart = useCallback((e: React.TouchEvent) => {
+    isDragging.current = true;
+    didDrag.current = false;
+    const t = e.touches[0];
+    const abs = getAbsPos();
+    dragStart.current = { x: t.clientX, y: t.clientY, bx: abs.x, by: abs.y };
+
+    const onMove = (ev: TouchEvent) => {
+      ev.preventDefault();
+      const touch = ev.touches[0];
+      const dx = touch.clientX - dragStart.current.x;
+      const dy = touch.clientY - dragStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      setBtnPos(clampPos(dragStart.current.bx + dx, dragStart.current.by + dy));
+    };
+    const onEnd = () => {
+      isDragging.current = false;
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+    };
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd);
+  }, [getAbsPos, clampPos]);
+
+  // ── Send message ──────────────────────────────────────────────────────────
+  const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text && !pendingImage) return;
-    if (isLoading) return;
+    if (!text || isLoading) return;
 
     const userMsg: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       role: "user",
-      content: text || (pendingImage ? "এই ছবিটি বিশ্লেষণ করো।" : ""),
+      content: text,
       timestamp: new Date(),
-      imageUrl: pendingImage || undefined,
     };
+
     setMessages(prev => [...prev, userMsg]);
     setInput("");
-    setPendingImage(null);
     setIsLoading(true);
+    setError(null);
 
-    // Placeholder streaming message
-    const aiMsgId = (Date.now() + 1).toString();
-    const aiMsg: Message = {
-      id: aiMsgId,
-      role: "assistant",
-      content: "",
-      timestamp: new Date(),
-      isStreaming: true,
-    };
+    // Photo shortcut
+    if (isPhotoRequest(text)) {
+      const photoMsg: Message = {
+        id: `photo-${Date.now()}`,
+        role: "assistant",
+        content: "[PHOTO]\nএটি মাহবুব সরদার সবুজের ছবি।",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, photoMsg]);
+      setIsLoading(false);
+      return;
+    }
+
+    const payload = [
+      { role: "system" as const, content: SYSTEM_PROMPT },
+      ...messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+      { role: "user" as const, content: text },
+    ];
+
+    retryPayloadRef.current = payload;
 
     try {
-      if (pendingImage) {
-        // Vision (non-streaming)
-        setMessages(prev => [...prev, { ...aiMsg, isStreaming: false }]);
-        const reply = await callAIVision(pendingImage, text || "এই ছবিটি বিশ্লেষণ করো।");
-        setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: reply, isStreaming: false } : m));
-      } else {
-        // Streaming
-        const history = messages.filter(m => !m.isStreaming).slice(-8).map(m => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-        }));
-        history.push({ role: "user", content: text });
-
-        setMessages(prev => [...prev, aiMsg]);
-        let fullText = "";
-
-        await callAIStream(
-          history,
-          (token) => {
-            fullText += token;
-            setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: fullText } : m));
-          },
-          () => {
-            setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, isStreaming: false } : m));
-          },
-          async (err) => {
-            // Fallback to non-streaming
-            try {
-              const reply = await callAI(history);
-              setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: reply, isStreaming: false } : m));
-            } catch {
-              setMessages(prev => prev.map(m => m.id === aiMsgId ? {
-                ...m,
-                content: "দুঃখিত, সংযোগে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।",
-                isStreaming: false,
-              } : m));
-            }
-          }
-        );
-      }
-    } catch (err: any) {
-      setMessages(prev => {
-        const hasAiMsg = prev.some(m => m.id === aiMsgId);
-        const errMsg: Message = {
-          id: aiMsgId,
-          role: "assistant",
-          content: "দুঃখিত, সংযোগে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।",
-          timestamp: new Date(),
-          isStreaming: false,
-        };
-        if (hasAiMsg) return prev.map(m => m.id === aiMsgId ? errMsg : m);
-        return [...prev, errMsg];
-      });
+      const reply = await callAI(payload);
+      setMessages(prev => [...prev, {
+        id: `ai-${Date.now()}`,
+        role: "assistant",
+        content: reply,
+        timestamp: new Date(),
+      }]);
+    } catch {
+      setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
     } finally {
       setIsLoading(false);
     }
-  }, [input, pendingImage, isLoading, messages]);
+  }, [input, isLoading, messages]);
 
-  // Keyboard handler
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSend();
     }
-  }, [sendMessage]);
+  }, [handleSend]);
 
-  const showTyping = isLoading && !messages.some(m => m.isStreaming && m.content.length > 0);
+  const handleRetry = useCallback(async () => {
+    if (!retryPayloadRef.current) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const reply = await callAI(retryPayloadRef.current);
+      setMessages(prev => [...prev, {
+        id: `ai-retry-${Date.now()}`,
+        role: "assistant",
+        content: reply,
+        timestamp: new Date(),
+      }]);
+    } catch {
+      setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearChat = () => {
+    setMessages([{
+      id: "welcome-new",
+      role: "assistant",
+      content: "নতুন কথোপকথন শুরু হয়েছে। আপনাকে কীভাবে সাহায্য করতে পারি?",
+      timestamp: new Date(),
+    }]);
+    setError(null);
+    retryPayloadRef.current = null;
+  };
 
   return (
     <>
-      {/* ── Floating open button ── */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            style={{ position: "fixed", bottom: 24, right: 20, zIndex: 9999 }}
-          >
-            {/* Pulse ring */}
-            {pulseOpen && (
-              <motion.div
-                style={{
-                  position: "absolute",
-                  inset: -6,
-                  borderRadius: "50%",
-                  border: "2px solid rgba(212,168,67,0.5)",
-                }}
-                animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-            )}
-            <motion.button
-              onClick={() => setIsOpen(true)}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                width: 58,
-                height: 58,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #C9A84C, #D4A843, #B8942A)",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 1,
-                boxShadow: "0 4px 20px rgba(212,168,67,0.5), 0 0 0 3px rgba(212,168,67,0.15)",
-                overflow: "hidden",
-                padding: 0,
-              }}
-            >
-              <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                onError={e => {
-                  const btn = (e.target as HTMLImageElement).parentElement!;
-                  (e.target as HTMLImageElement).style.display = "none";
-                  btn.innerHTML += '<span style="color:#0A1628;font-size:11px;font-weight:700;font-family:sans-serif;position:absolute;">AI</span>';
-                }} />
-            </motion.button>
-            {/* Tooltip */}
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1 }}
-              style={{
-                position: "absolute",
-                right: "110%",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "rgba(10,22,40,0.95)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(212,168,67,0.3)",
-                borderRadius: 10,
-                padding: "6px 12px",
-                whiteSpace: "nowrap",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                fontSize: "0.72rem",
-                color: "#D4A843",
-                pointerEvents: "none",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.4)",
-              }}
-            >
-              আমাকে জিজ্ঞেস করুন
-            </motion.div>
-            {/* Online dot */}
-            <div style={{
-              position: "absolute",
-              bottom: 2,
-              right: 2,
-              width: 13,
-              height: 13,
-              borderRadius: "50%",
-              background: "#22c55e",
-              border: "2px solid #0A1628",
-            }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Chat window ── */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 280, damping: 28 }}
+      {/* Floating Button — Avatar + Text Box, always visible, draggable anywhere */}
+      {(() => {
+        const abs = getAbsPos();
+        return (
+          <div
+            className="fixed z-[60]"
             style={{
-              position: "fixed",
-              bottom: 20,
-              right: 16,
-              width: "min(400px, calc(100vw - 32px))",
-              height: isMinimized ? "auto" : "min(600px, calc(100vh - 80px))",
-              zIndex: 9998,
-              display: "flex",
-              flexDirection: "column",
-              borderRadius: 20,
-              overflow: "hidden",
-              background: "rgba(8,18,35,0.88)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(212,168,67,0.25)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,168,67,0.1), inset 0 1px 0 rgba(212,168,67,0.15)",
-            }}
-          >
-            {/* ── Header ── */}
-            <div style={{
-              background: "linear-gradient(135deg, rgba(20,35,55,0.95) 0%, rgba(30,48,70,0.95) 100%)",
-              borderBottom: "1px solid rgba(212,168,67,0.2)",
-              padding: "12px 14px",
+              left: abs.x,
+              top: abs.y,
+              cursor: isDragging.current ? "grabbing" : "grab",
+              userSelect: "none",
+              touchAction: "none",
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              flexShrink: 0,
-              position: "relative",
-              overflow: "hidden",
-            }}>
-              {/* Shimmer effect */}
-              <motion.div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: "-100%",
-                  width: "60%",
-                  height: "100%",
-                  background: "linear-gradient(90deg, transparent, rgba(212,168,67,0.08), transparent)",
+              gap: 0,
+            }}
+            onMouseDown={handleBtnMouseDown}
+            onTouchStart={handleBtnTouchStart}
+          >
+            {/* Circular avatar button */}
+            <motion.div
+              onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.94 }}
+              style={{
+                width: 52, height: 52,
+                borderRadius: "50%",
+                overflow: "hidden",
+                border: "2.5px solid #D4A843",
+                boxShadow: "0 0 0 3px rgba(212,168,67,0.22), 0 6px 20px rgba(0,0,0,0.55)",
+                background: "#0d1b2a",
+                flexShrink: 0,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                zIndex: 2,
+              }}
+            >
+              {/* Pulse ring */}
+              {!isOpen && (
+                <span style={{
+                  position: "absolute", inset: -3, borderRadius: "50%",
+                  border: "2px solid rgba(212,168,67,0.4)",
+                  animation: "ping 2s ease-in-out infinite",
                   pointerEvents: "none",
-                }}
-                animate={{ left: ["−100%", "200%"] }}
-                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
-              />
-              {/* Avatar */}
-              <div style={{ position: "relative", flexShrink: 0 }}>
-                <motion.div
-                  animate={{ boxShadow: ["0 0 8px rgba(212,168,67,0.4)", "0 0 16px rgba(212,168,67,0.7)", "0 0 8px rgba(212,168,67,0.4)"] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", border: "2px solid #D4A843" }}
-                >
-                  <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={e => { (e.target as HTMLImageElement).parentElement!.innerHTML = '<span style="color:#D4A843;font-size:10px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;">AI</span>'; }} />
-                </motion.div>
-                <div style={{
-                  position: "absolute", bottom: 0, right: 0,
-                  width: 11, height: 11, borderRadius: "50%",
-                  background: "#22c55e", border: "2px solid #0A1628",
                 }} />
-              </div>
-              {/* Title */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", fontWeight: 700, color: "#FDF6EC", letterSpacing: "0.01em" }}>
-                  মাহবুব সরদার সবুজ
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
-                  <motion.div
-                    animate={{ opacity: [1, 0.4, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }}
-                  />
-                  <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: "#22c55e" }}>
-                    AI Agent · সক্রিয়
-                  </span>
-                </div>
-              </div>
-              {/* Controls */}
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <button
-                  onClick={clearChat}
-                  title="চ্যাট পরিষ্কার করুন"
-                  style={{
-                    background: "rgba(212,168,67,0.08)",
-                    border: "1px solid rgba(212,168,67,0.2)",
-                    color: "rgba(212,168,67,0.6)",
-                    borderRadius: 8,
-                    padding: "4px 8px",
-                    fontSize: "0.65rem",
-                    cursor: "pointer",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(212,168,67,0.2)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(212,168,67,0.08)")}
-                >
-                  পরিষ্কার
-                </button>
-                <button
-                  onClick={() => setIsMinimized(v => !v)}
-                  title={isMinimized ? "বড় করুন" : "ছোট করুন"}
-                  style={{
-                    background: "rgba(212,168,67,0.08)",
-                    border: "1px solid rgba(212,168,67,0.2)",
-                    color: "#D4A843",
-                    borderRadius: 8,
-                    padding: "4px 8px",
-                    fontSize: "0.85rem",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(212,168,67,0.2)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(212,168,67,0.08)")}
-                >
-                  {isMinimized ? "▲" : "▼"}
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  style={{
-                    background: "rgba(212,168,67,0.08)",
-                    border: "1px solid rgba(212,168,67,0.2)",
-                    color: "#D4A843",
-                    borderRadius: 8,
-                    padding: "4px 8px",
-                    fontSize: "0.85rem",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(212,168,67,0.2)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(212,168,67,0.08)")}
-                >✕</button>
-              </div>
-            </div>
+              )}
+              <AnimatePresence mode="wait">
+                {isOpen ? (
+                  <motion.span key="x"
+                    initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
+                    style={{ color: "#D4A843", fontSize: "1.2rem", fontWeight: 700 }}>✕</motion.span>
+                ) : (
+                  <motion.div key="av"
+                    initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
+                    style={{ width: "100%", height: "100%" }}>
+                    <img src={AUTHOR_PHOTO} alt="AI"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        t.style.display = "none";
+                        t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:1.3rem;font-weight:700;">AI</span>';
+                      }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-            {/* ── Body (hidden when minimized) ── */}
+            {/* Animated text box — slides in from left, always shows when not open */}
             <AnimatePresence>
-              {!isMinimized && (
+              {!isOpen && pillExpanded && (
                 <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}
+                  key="textbox"
+                  initial={{ opacity: 0, x: -18, scaleX: 0.6 }}
+                  animate={{ opacity: 1, x: 0, scaleX: 1 }}
+                  exit={{ opacity: 0, x: -18, scaleX: 0.6 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                  onClick={() => { if (!didDrag.current) setIsOpen(true); }}
+                  style={{
+                    marginLeft: -10,
+                    paddingLeft: 18,
+                    paddingRight: 16,
+                    paddingTop: 9,
+                    paddingBottom: 9,
+                    background: "linear-gradient(135deg, #060E1A 0%, #0A1628 60%, #0d1e35 100%)",
+                    border: "1.5px solid rgba(201,168,76,0.5)",
+                    borderRadius: "0 20px 20px 0",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(201,168,76,0.08)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transformOrigin: "left center",
+                  }}
                 >
-                  {/* Messages */}
-                  <div style={{
-                    flex: 1,
-                    overflowY: "auto",
-                    padding: "14px 14px 8px",
-                    scrollbarWidth: "thin",
-                    scrollbarColor: "rgba(212,168,67,0.25) transparent",
-                  }}>
-                    {/* Suggestions */}
-                    {messages.length === 1 && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        style={{ marginBottom: 14 }}
-                      >
-                        <div style={{
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.68rem",
-                          color: "rgba(253,246,236,0.3)",
-                          marginBottom: 8,
-                          textAlign: "center",
-                          letterSpacing: "0.05em",
-                        }}>
-                          ✦ প্রস্তাবিত প্রশ্ন ✦
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
-                          {SUGGESTIONS.map((s, i) => (
-                            <motion.button
-                              key={i}
-                              initial={{ opacity: 0, y: 8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.1 + i * 0.07 }}
-                              onClick={() => { setInput(s); setTimeout(() => inputRef.current?.focus(), 100); }}
-                              style={{
-                                background: "rgba(212,168,67,0.07)",
-                                border: "1px solid rgba(212,168,67,0.25)",
-                                color: "rgba(253,246,236,0.75)",
-                                borderRadius: 20,
-                                padding: "5px 12px",
-                                fontSize: "0.72rem",
-                                fontFamily: "'Noto Sans Bengali', sans-serif",
-                                cursor: "pointer",
-                                backdropFilter: "blur(8px)",
-                                transition: "all 0.2s",
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.background = "rgba(212,168,67,0.18)";
-                                e.currentTarget.style.color = "#D4A843";
-                                e.currentTarget.style.borderColor = "rgba(212,168,67,0.5)";
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.background = "rgba(212,168,67,0.07)";
-                                e.currentTarget.style.color = "rgba(253,246,236,0.75)";
-                                e.currentTarget.style.borderColor = "rgba(212,168,67,0.25)";
-                              }}
-                            >
-                              {s}
-                            </motion.button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {messages.map(msg => (
-                      <MessageBubble
-                        key={msg.id}
-                        message={msg}
-                        onNavigate={path => { navigate(path); setIsOpen(false); }}
-                        onReact={handleReact}
-                        onCopy={handleCopy}
-                      />
-                    ))}
-                    <AnimatePresence>
-                      {showTyping && <TypingIndicator />}
-                    </AnimatePresence>
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  {/* ── Pending image preview ── */}
-                  <AnimatePresence>
-                    {pendingImage && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        style={{
-                          padding: "6px 14px",
-                          borderTop: "1px solid rgba(212,168,67,0.1)",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          background: "rgba(212,168,67,0.05)",
-                        }}
-                      >
-                        <img src={pendingImage} alt="preview" style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(212,168,67,0.4)" }} />
-                        <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.72rem", color: "#D4A843", flex: 1 }}>ছবি যোগ করা হয়েছে</span>
-                        <button onClick={() => setPendingImage(null)} style={{ background: "none", border: "none", color: "rgba(253,246,236,0.5)", cursor: "pointer", fontSize: "1rem" }}>✕</button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* ── Input area ── */}
-                  <div style={{
-                    padding: "10px 12px 12px",
-                    borderTop: "1px solid rgba(212,168,67,0.15)",
-                    background: "rgba(8,18,35,0.6)",
-                    backdropFilter: "blur(12px)",
-                    flexShrink: 0,
-                  }}>
-                    <div style={{
-                      display: "flex",
-                      gap: 8,
-                      alignItems: "flex-end",
-                      background: "rgba(20,35,55,0.8)",
-                      border: "1px solid rgba(212,168,67,0.25)",
-                      borderRadius: 16,
-                      padding: "8px 10px",
-                      transition: "border-color 0.2s, box-shadow 0.2s",
-                    }}
-                      onFocus={() => {}}
-                    >
-                      {/* Image upload */}
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        title="ছবি আপলোড"
-                        style={{
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          color: pendingImage ? "#D4A843" : "rgba(212,168,67,0.45)",
-                          fontSize: "1.1rem",
-                          padding: "2px 4px",
-                          flexShrink: 0,
-                          transition: "color 0.2s",
-                          alignSelf: "flex-end",
-                          marginBottom: 2,
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.color = "#D4A843")}
-                        onMouseLeave={e => (e.currentTarget.style.color = pendingImage ? "#D4A843" : "rgba(212,168,67,0.45)")}
-                      >
-                        📎
-                      </button>
-                      {/* Voice input */}
-                      <motion.button
-                        onClick={toggleVoice}
-                        title="ভয়েস ইনপুট"
-                        animate={isListening ? { scale: [1, 1.2, 1] } : {}}
-                        transition={{ duration: 0.6, repeat: Infinity }}
-                        style={{
-                          background: isListening ? "rgba(239,68,68,0.2)" : "none",
-                          border: isListening ? "1px solid rgba(239,68,68,0.5)" : "none",
-                          borderRadius: 8,
-                          cursor: "pointer",
-                          color: isListening ? "#ef4444" : "rgba(212,168,67,0.45)",
-                          fontSize: "1rem",
-                          padding: "2px 5px",
-                          flexShrink: 0,
-                          transition: "all 0.2s",
-                          alignSelf: "flex-end",
-                          marginBottom: 2,
-                        }}
-                        onMouseEnter={e => !isListening && (e.currentTarget.style.color = "#D4A843")}
-                        onMouseLeave={e => !isListening && (e.currentTarget.style.color = "rgba(212,168,67,0.45)")}
-                      >
-                        🎤
-                      </motion.button>
-                      {/* Text input */}
-                      <textarea
-                        ref={inputRef}
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={isListening ? "শুনছি..." : "আপনার প্রশ্ন লিখুন..."}
-                        rows={1}
-                        style={{
-                          flex: 1,
-                          background: "none",
-                          border: "none",
-                          outline: "none",
-                          color: "#FDF6EC",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.82rem",
-                          resize: "none",
-                          lineHeight: 1.5,
-                          maxHeight: 100,
-                          overflowY: "auto",
-                          scrollbarWidth: "none",
-                        }}
-                        onInput={e => {
-                          const el = e.currentTarget;
-                          el.style.height = "auto";
-                          el.style.height = Math.min(el.scrollHeight, 100) + "px";
-                        }}
-                      />
-                      {/* Send button */}
-                      <motion.button
-                        onClick={sendMessage}
-                        disabled={(!input.trim() && !pendingImage) || isLoading}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 10,
-                          background: (!input.trim() && !pendingImage) || isLoading
-                            ? "rgba(212,168,67,0.15)"
-                            : "linear-gradient(135deg, #C9A84C, #D4A843)",
-                          border: "none",
-                          cursor: (!input.trim() && !pendingImage) || isLoading ? "not-allowed" : "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          transition: "all 0.2s",
-                          alignSelf: "flex-end",
-                          boxShadow: (!input.trim() && !pendingImage) || isLoading ? "none" : "0 2px 10px rgba(212,168,67,0.4)",
-                        }}
-                      >
-                        {isLoading ? (
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                            style={{ width: 14, height: 14, border: "2px solid rgba(212,168,67,0.3)", borderTopColor: "#D4A843", borderRadius: "50%" }}
-                          />
-                        ) : (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                            <path d="M22 2L11 13" stroke={(!input.trim() && !pendingImage) ? "rgba(212,168,67,0.4)" : "#0A1628"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke={(!input.trim() && !pendingImage) ? "rgba(212,168,67,0.4)" : "#0A1628"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                      </motion.button>
-                    </div>
-                    <div style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.6rem",
-                      color: "rgba(253,246,236,0.2)",
-                      textAlign: "center",
-                      marginTop: 5,
-                    }}>
-                      📎 ছবি · 🎤 ভয়েস · Enter পাঠান · Shift+Enter নতুন লাইন
-                    </div>
-                  </div>
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    color: "#C9A84C",
+                    letterSpacing: "0.02em",
+                    display: "block",
+                  }}>আপনাকে স্বাগতম</span>
+                  <span style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "0.62rem",
+                    color: "rgba(250,246,239,0.45)",
+                    display: "block",
+                    marginTop: 2,
+                  }}>মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে</span>
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        );
+      })()}
 
-      {/* ── Copied toast ── */}
+      {/* Chat Window */}
       <AnimatePresence>
-        {copiedToast && (
+        {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            style={{
-              position: "fixed",
-              bottom: 90,
-              right: 20,
-              background: "rgba(10,22,40,0.95)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(212,168,67,0.3)",
-              borderRadius: 10,
-              padding: "8px 16px",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              fontSize: "0.75rem",
-              color: "#D4A843",
-              zIndex: 10000,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-            }}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="fixed bottom-24 right-6 z-[60] w-[380px] max-w-[calc(100vw-24px)] h-[580px] max-h-[calc(100vh-120px)] border border-[#2a3a4a] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            style={{ background: "#0d1b2a" }}
           >
-            ✓ কপি হয়েছে
+            {/* Full-background watermark */}
+            <div aria-hidden="true" style={{
+              position: "absolute", inset: 0,
+              backgroundImage: `url(${AUTHOR_PHOTO})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center top",
+              opacity: 0.07,
+              pointerEvents: "none",
+              zIndex: 0,
+              borderRadius: "inherit",
+            }} />
+            <div aria-hidden="true" style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(180deg, rgba(13,27,42,0.82) 0%, rgba(13,27,42,0.70) 50%, rgba(13,27,42,0.88) 100%)",
+              pointerEvents: "none",
+              zIndex: 0,
+              borderRadius: "inherit",
+            }} />
+
+            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
+
+              {/* Header */}
+              <div className="bg-[#111827]/90 px-4 py-3 flex items-center justify-between border-b border-[#2a3a4a] backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#D4A843] flex-shrink-0">
+                    <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        t.style.display = "none";
+                        t.parentElement!.innerHTML = '<span class="text-black font-bold text-sm flex items-center justify-center w-full h-full bg-[#D4A843]">AI</span>';
+                      }} />
+                  </div>
+                  <div>
+                    <div className="text-white font-semibold text-sm">মাহবুব সরদার সবুজ AI Agent</div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                      <span className="text-green-400 text-xs">সক্রিয়</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={clearChat} title="নতুন কথোপকথন"
+                    className="text-gray-400 hover:text-[#D4A843] text-xs transition-colors px-2 py-1 rounded border border-[#2a3a4a] hover:border-[#D4A843]">
+                    নতুন
+                  </button>
+                  {/* Close button */}
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    title="বন্ধ করুন"
+                    className="w-7 h-7 flex items-center justify-center rounded-full border border-[#2a3a4a] hover:border-red-400 text-gray-400 hover:text-red-400 transition-all text-sm font-bold"
+                    style={{ lineHeight: 1 }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+                {messages.map(msg => (
+                  <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} />
+                ))}
+                {isLoading && <TypingIndicator />}
+
+                {/* Error + Retry */}
+                {error && !isLoading && (
+                  <div className="flex flex-col items-center gap-2 py-2">
+                    <div className="text-center text-red-400 text-xs bg-red-900/20 rounded-lg px-3 py-2 w-full">
+                      {error}
+                    </div>
+                    <button
+                      onClick={handleRetry}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#D4A843]/20 hover:bg-[#D4A843]/30 border border-[#D4A843]/50 hover:border-[#D4A843] text-[#D4A843] rounded-xl text-xs font-semibold transition-all"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="1 4 1 10 7 10" />
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+                      </svg>
+                      আবার চেষ্টা করুন
+                    </button>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Suggestions */}
+              {messages.length === 1 && (
+                <div className="px-4 pb-2 flex flex-wrap gap-2">
+                  {SUGGESTIONS.map(s => (
+                    <button key={s}
+                      onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                      className="text-xs bg-[#1e2d3d]/80 text-[#D4A843] border border-[#2a3a4a] rounded-full px-3 py-1 hover:border-[#D4A843] transition-all backdrop-blur-sm">
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="px-4 py-3 border-t border-[#2a3a4a] bg-[#111827]/90 backdrop-blur-sm">
+                <div className="flex gap-2 items-end">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="আপনার প্রশ্ন লিখুন... (Enter চাপুন)"
+                    rows={1}
+                    className="flex-1 bg-[#1e2d3d] text-white border border-[#2a3a4a] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A843] resize-none placeholder-gray-500 max-h-24 overflow-y-auto"
+                    style={{ minHeight: "40px", fontFamily: "'Noto Sans Bengali', sans-serif" }}
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!input.trim() || isLoading}
+                    className="w-10 h-10 rounded-xl bg-[#D4A843] text-black flex items-center justify-center hover:bg-[#c49030] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  >
+                    {isLoading ? (
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <p className="text-gray-600 text-xs mt-1 text-center">Shift+Enter = নতুন লাইন</p>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── Hidden file input ── */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={e => {
-          const file = e.target.files?.[0];
-          if (file) handleImageSelect(file);
-          e.target.value = "";
-        }}
-      />
     </>
   );
 }
