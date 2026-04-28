@@ -9502,6 +9502,15 @@
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/40</loc>
+    <lastmod>2026-04-28</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-28T00:00:00+06:00</news:publication_date>
+      <news:title>ব্যক্তিগত লেখা ও অভিজ্ঞতা প্রকাশের নতুন প্ল্যাটফর্ম ‘MahbubSardarSabuj.com’ চালু</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/39</loc>
     <lastmod>2026-04-16</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
     <news:news>
