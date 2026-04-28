@@ -1183,13 +1183,14 @@ export default function News() {
                   )}
 
                   {/* Card content */}
-                  <div style={{ padding: "24px" }}>
+                  <div style={{ padding: "24px", minHeight: 220, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                     {/* Meta row */}
                     <div style={{
                       display: "flex",
                       gap: 14,
                       marginBottom: 14,
                       alignItems: "center",
+                      height: 16,
                     }}>
                       {item.views && (
                         <span style={{
@@ -1211,6 +1212,11 @@ export default function News() {
                       color: "#FAF6EF",
                       margin: "0 0 12px",
                       lineHeight: 1.4,
+                      height: 70,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
                     }}>
                       <a
                         href={`/news/${item.id}`}
@@ -1227,10 +1233,11 @@ export default function News() {
                       lineHeight: 1.65,
                       margin: "0 0 20px",
                       display: "-webkit-box",
-                      WebkitLineClamp: 3,
+                      WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
                       overflow: "hidden",
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      height: 55,
                     }}>
                       {item.excerpt}
                     </p>
