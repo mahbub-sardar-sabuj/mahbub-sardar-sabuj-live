@@ -883,7 +883,7 @@ export default function AIChatbot() {
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: text || (“দয়া করে এই ছবিটি বিশ্লেষণ করুন।”),
+      content: text || "দয়া করে এই ছবিটি বিশ্লেষণ করুন।",
       timestamp: new Date(),
       imageUrl: imagePreview || undefined,
     };
