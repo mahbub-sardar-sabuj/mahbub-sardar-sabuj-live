@@ -64,7 +64,7 @@ const newsData: NewsItem[] = [
     readTime: "৩ মিনিট",
     featured: true,
     tag: "ভয়েস আর্টিস্ট",
-    views: 0,
+    views: 1879,
   },
   {
     id: 40,
