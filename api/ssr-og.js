@@ -2,7 +2,7 @@ export const config = { runtime: "edge" };
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
-const NEWS_PUBLISHER_NAME = "সরদার সংবাদ";
+const NEWS_PUBLISHER_NAME = "সরদার সংবাদ | Sardar Sangbad";
 const NEWS_PUBLISHER_LOGO = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
 
 function toIsoDateTime(date) {
@@ -5167,7 +5167,7 @@ export default async function handler(req) {
     const id = parseInt(path.replace("/news/", ""));
     const news = newsData.find((n) => n.id === id);
     if (news) {
-      title = `${news.title} | সরদার সংবাদ`;
+      title = `${news.title} | সরদার সংবাদ | Sardar Sangbad`;
       description = news.excerpt;
       image = news.image && news.image.startsWith("http") ? news.image : new URL(news.image || DEFAULT_IMAGE, SITE_URL).toString();
       imageType = /\.jpe?g(?:$|[?#])/i.test(image) ? "image/jpeg" : /\.webp(?:$|[?#])/i.test(image) ? "image/webp" : /\.gif(?:$|[?#])/i.test(image) ? "image/gif" : "image/png";
@@ -5211,7 +5211,7 @@ export default async function handler(req) {
   }
   // News list page
   else if (path === "/news") {
-    title = "সরদার সংবাদ | সর্বশেষ খবর ও সাহিত্য - মাহবুব সরদার সবুজ";
+    title = "সরদার সংবাদ | Sardar Sangbad - সর্বশেষ খবর ও সাহিত্য";
     description = "সরদার সংবাদ পোর্টালে পড়ুন দেশ-বিদেশের সর্বশেষ খবর, সাহিত্যচর্চা এবং সমসাময়িক নানা বিষয়ের বিশ্লেষণ।";
     bodyContent = `<h1>সরদার সংবাদ</h1><ul>${newsData.map(n => `<li><a href="${SITE_URL}/news/${n.id}">${n.title}</a> — ${n.excerpt}</li>`).join("")}</ul>`;
   } else if (path === "/ebooks") {
