@@ -191,7 +191,37 @@ function truncateTelegramText(value = "", maxLength = 3500) {
   return text.slice(0, maxLength - 20) + "\n…[truncated]";
 }
 
-async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent }) {
+
+// Send photo to Telegram (base64 data URL)
+async function sendPhotoToTelegram(botToken, adminChatId, base64Data, caption) {
+  const matches = base64Data.match(/^data:(.+);base64,(.+)$/s);
+  if (!matches) return { ok: false, error: "Invalid image data" };
+  const mimeType = matches[1];
+  const buffer = Buffer.from(matches[2], "base64");
+  const ext = mimeType.split("/")[1] || "jpg";
+  const boundary = "----FormBoundary" + Math.random().toString(36).slice(2);
+  const CRLF = "\r\n";
+  const parts = [];
+  parts.push(`--${boundary}${CRLF}Content-Disposition: form-data; name="chat_id"${CRLF}${CRLF}${adminChatId}`);
+  if (caption) {
+    parts.push(`--${boundary}${CRLF}Content-Disposition: form-data; name="caption"${CRLF}Content-Type: text/plain; charset=utf-8${CRLF}${CRLF}${caption}`);
+    parts.push(`--${boundary}${CRLF}Content-Disposition: form-data; name="parse_mode"${CRLF}${CRLF}HTML`);
+  }
+  const headerStr = parts.join(CRLF) + CRLF;
+  const fileHeader = `--${boundary}${CRLF}Content-Disposition: form-data; name="photo"; filename="photo.${ext}"${CRLF}Content-Type: ${mimeType}${CRLF}${CRLF}`;
+  const footer = `${CRLF}--${boundary}--`;
+  const headerBuf = Buffer.from(headerStr, "utf-8");
+  const fileHeaderBuf = Buffer.from(fileHeader, "utf-8");
+  const footerBuf = Buffer.from(footer, "utf-8");
+  const body = Buffer.concat([headerBuf, fileHeaderBuf, buffer, footerBuf]);
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+    method: "POST",
+    headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
+    body,
+  });
+  return res.json().catch(() => ({}));
+}
+async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent, imageData }) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
 
@@ -213,26 +243,29 @@ async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent }) 
   ].join("\n");
 
   try {
-    const response = await fetch("https://api.telegram.org/bot" + botToken + "/sendMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: adminChatId,
-        text,
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }),
-    });
-
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok || result.ok === false) {
-      console.error("Telegram notification failed:", {
-        status: response.status,
-        description: result.description || "Unknown Telegram API error",
+    if (imageData && imageData.startsWith("data:")) {
+      // Send photo with caption (text as caption)
+      await sendPhotoToTelegram(botToken, adminChatId, imageData, text);
+    } else {
+      const response = await fetch("https://api.telegram.org/bot" + botToken + "/sendMessage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: adminChatId,
+          text,
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+        }),
       });
-      return { ok: false, status: response.status, description: result.description };
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.ok === false) {
+        console.error("Telegram notification failed:", {
+          status: response.status,
+          description: result.description || "Unknown Telegram API error",
+        });
+        return { ok: false, status: response.status, description: result.description };
+      }
     }
-
     return { ok: true };
   } catch (error) {
     console.error("Telegram notification failed:", error);
@@ -267,11 +300,16 @@ export default async function handler(req, res) {
       // Vercel serverless functions can stop background work after res.json(),
       // so fire-and-forget fetch calls may never reach Telegram.
       const lastUserMsg = messages.filter((message) => message.role === "user").slice(-1)[0];
+      // Extract image from last user message if present
+      const lastUserImgPart = Array.isArray(lastUserMsg?.content)
+        ? lastUserMsg.content.find(p => p.type === "image_url")?.image_url?.url
+        : null;
       await notifyTelegram({
         userMessage: lastUserMsg ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find(p => p.type === 'text')?.text || '[ছবি পাঠানো হয়েছে]' : lastUserMsg.content) : "(অজানা)",
         aiResponse: reply,
         clientIp: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
         userAgent: req.headers["user-agent"],
+        imageData: lastUserImgPart || null,
       });
 
       return res.status(200).json({ reply });
