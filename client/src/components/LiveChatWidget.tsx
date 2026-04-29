@@ -374,7 +374,7 @@ export default function LiveChatWidget({ onClose }: Props) {
               type="text"
               value={contactInput}
               onChange={e => setContactInput(e.target.value)}
-              placeholder="WhatsApp নম্বর অথবা Gmail"
+              placeholder="হোয়াটসঅ্যাপ নম্বর অথবা জিমেইল"
               maxLength={100}
               style={{
                 background: contactType === "whatsapp"
