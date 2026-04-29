@@ -413,22 +413,17 @@ export default function LiveChatWidget({ onClose }: Props) {
             }`,
             transition: "all 0.25s",
           }}>
-            <span style={{
-              color: contactType === "gmail" ? "#4285F4" : contactType === "whatsapp" ? "#25D366" : GOLD,
-              fontSize: "0.85rem", lineHeight: 1, marginTop: 1, flexShrink: 0,
-              transition: "color 0.2s",
-            }}>✱</span>
             <p style={{
               color: contactType
                 ? (contactType === "gmail" ? "rgba(66,133,244,0.9)" : "rgba(37,211,102,0.9)")
                 : "rgba(245,238,222,0.45)",
               fontFamily: FONT, fontSize: "0.75rem",
-              margin: 0, lineHeight: 1.6,
+              margin: 0, lineHeight: 1.6, whiteSpace: "nowrap",
               transition: "color 0.2s",
             }}>
-              {contactType === "whatsapp" && "হোয়াটসঅ্যাপ নম্বর নিশ্চিত হয়েছে — অনলাইনে না থাকলে হোয়াটসঅ্যাপে জানানো হবে"}
-              {contactType === "gmail" && "জিমেইল নিশ্চিত হয়েছে — অনলাইনে না থাকলে ইমেইলে জানানো হবে"}
-              {!contactType && "লাইভ চ্যাট শুরু করতে হোয়াটসঅ্যাপ নম্বর বা জিমেইল দিন"}
+              {contactType === "whatsapp" && "হোয়াটসঅ্যাপ নম্বর নিশ্চিত — অনলাইনে না থাকলে হোয়াটসঅ্যাপে জানানো হবে"}
+              {contactType === "gmail" && "জিমেইল নিশ্চিত — অনলাইনে না থাকলে ইমেইলে জানানো হবে"}
+              {!contactType && "লাইভ চ্যাট শুরু করতে হোয়াটসঅ্যাপ নম্বর বা জিমেইল দিন।"}
             </p>
           </div>
 
