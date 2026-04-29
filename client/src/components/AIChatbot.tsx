@@ -16,9 +16,10 @@ interface ActionButton {
   path: string;
 }
 
-// ── AI call with retry + timeout ──────────────────────────────────────────────
+// ── AI call with retry + timeout ────────────────────────────────────────────
+type AIMessageContent = string | { type: "text"; text: string }[] | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
 async function callAI(
-  messages: { role: "user" | "assistant" | "system"; content: string }[],
+  messages: { role: "user" | "assistant" | "system"; content: AIMessageContent }[],
   attempt = 0
 ): Promise<string> {
   const MAX_RETRIES = 3;
@@ -31,7 +32,7 @@ async function callAI(
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, hasImage: messages.some(m => Array.isArray(m.content)) }),
       signal: controller.signal,
     });
 
@@ -513,6 +514,21 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
           boxShadow: "0 4px 18px rgba(212,168,67,0.3), 0 2px 8px rgba(0,0,0,0.25)",
           wordBreak: "break-word",
         }}>
+          {message.imageUrl && (
+            <img
+              src={message.imageUrl}
+              alt="সংযুক্ত ছবি"
+              style={{
+                display: "block",
+                maxWidth: "100%",
+                maxHeight: 180,
+                borderRadius: 10,
+                marginBottom: message.content ? 8 : 4,
+                objectFit: "contain",
+                border: "2px solid rgba(10,22,40,0.15)",
+              }}
+            />
+          )}
           {message.content}
           <div style={{ fontSize: "0.6rem", color: "rgba(10,22,40,0.5)", marginTop: 3, textAlign: "right" }}>
             {formatTime(message.timestamp)}
@@ -749,7 +765,9 @@ export default function AIChatbot() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: string }[] | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: AIMessageContent }[] | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const isDragging = useRef(false);
   const didDrag = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
@@ -840,20 +858,39 @@ export default function AIChatbot() {
     window.addEventListener("touchend", onEnd);
   }, [getAbsPos, clampPos]);
 
-  // ── Send message ──────────────────────────────────────────────────────────
+  // ── Image select handler ──────────────────────────────────────────────
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError("ছবির আকার সর্বোচ্চ ৫ MB হতে হবে।");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setImagePreview(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    // reset input so same file can be re-selected
+    e.target.value = "";
+  }, []);
+
+  // ── Send message ────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
     const text = input.trim();
-    if (!text || isLoading) return;
+    if (!text && !imagePreview || isLoading) return;
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: text,
+      content: text || (“দয়া করে এই ছবিটি বিশ্লেষণ করুন।”),
       timestamp: new Date(),
+      imageUrl: imagePreview || undefined,
     };
 
     setMessages(prev => [...prev, userMsg]);
     setInput("");
+    setImagePreview(null);
     setIsLoading(true);
     setError(null);
 
@@ -893,10 +930,18 @@ export default function AIChatbot() {
       return;
     }
 
+    // Build multimodal content if image is attached
+    const userContent: AIMessageContent = imagePreview
+      ? [
+          ...(text ? [{ type: "text" as const, text }] : [{ type: "text" as const, text: "দয়া করে এই ছবিটি বিশ্লেষণ করুন।" }]),
+          { type: "image_url" as const, image_url: { url: imagePreview } },
+        ]
+      : text;
+
     const payload = [
       { role: "system" as const, content: SYSTEM_PROMPT },
       ...messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
-      { role: "user" as const, content: text },
+      { role: "user" as const, content: userContent },
     ];
 
     retryPayloadRef.current = payload;
@@ -914,7 +959,7 @@ export default function AIChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages]);
+  }, [input, isLoading, messages, imagePreview]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -1355,7 +1400,78 @@ export default function AIChatbot() {
                 background: "linear-gradient(135deg, rgba(5,10,20,0.98) 0%, rgba(8,16,30,0.98) 100%)",
                 flexShrink: 0,
               }}>
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  style={{ display: "none" }}
+                />
+
+                {/* Image preview strip */}
+                {imagePreview && (
+                  <div style={{
+                    marginBottom: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 10px",
+                    background: "rgba(212,168,67,0.06)",
+                    borderRadius: 10,
+                    border: "1px solid rgba(212,168,67,0.2)",
+                  }}>
+                    <div style={{ position: "relative", flexShrink: 0 }}>
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        style={{ height: 52, width: 52, borderRadius: 8, objectFit: "cover", display: "block", border: "1.5px solid rgba(212,168,67,0.4)" }}
+                      />
+                      <button
+                        onClick={() => setImagePreview(null)}
+                        style={{
+                          position: "absolute", top: -5, right: -5,
+                          width: 17, height: 17, borderRadius: "50%",
+                          background: "#ef4444", border: "none",
+                          color: "#fff", fontSize: "9px", cursor: "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          lineHeight: 1, fontWeight: 700,
+                        }}
+                      >✕</button>
+                    </div>
+                    <span style={{
+                      color: "rgba(212,168,67,0.65)",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.72rem",
+                      lineHeight: 1.4,
+                    }}>ছবি যুক্ত — পাঠাতে Send বাটনে চাপুন</span>
+                  </div>
+                )}
+
                 <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                  {/* Image attach button */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    title="ছবি যুক্ত করুন"
+                    style={{
+                      width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                      background: imagePreview ? "rgba(212,168,67,0.2)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${imagePreview ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.2)"}`,
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.2s",
+                      boxShadow: imagePreview ? "0 0 0 3px rgba(212,168,67,0.1)" : "none",
+                    }}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                      stroke={imagePreview ? "#D4A843" : "rgba(212,168,67,0.45)"}
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </button>
+
                   <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
                     <textarea
                       ref={inputRef}
@@ -1403,22 +1519,22 @@ export default function AIChatbot() {
                   </div>
                   <button
                     onClick={handleSend}
-                    disabled={!input.trim() || isLoading}
+                    disabled={(!input.trim() && !imagePreview) || isLoading}
                     style={{
                       width: 40, height: 40,
                       borderRadius: 12,
-                      background: input.trim() && !isLoading
+                      background: (input.trim() || imagePreview) && !isLoading
                         ? "linear-gradient(135deg, #E8C060 0%, #D4A843 50%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.18)",
                       border: "none",
-                      color: input.trim() && !isLoading ? "#0A1628" : "rgba(212,168,67,0.38)",
+                      color: (input.trim() || imagePreview) && !isLoading ? "#0A1628" : "rgba(212,168,67,0.38)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      cursor: input.trim() && !isLoading ? "pointer" : "not-allowed",
+                      cursor: (input.trim() || imagePreview) && !isLoading ? "pointer" : "not-allowed",
                       flexShrink: 0,
                       transition: "all 0.2s",
-                      boxShadow: input.trim() && !isLoading ? "0 4px 14px rgba(212,168,67,0.38)" : "none",
+                      boxShadow: (input.trim() || imagePreview) && !isLoading ? "0 4px 14px rgba(212,168,67,0.38)" : "none",
                     }}
                     onMouseEnter={e => {
                       if (input.trim() && !isLoading) {

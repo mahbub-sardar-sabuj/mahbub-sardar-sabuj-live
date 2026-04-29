@@ -33,7 +33,12 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 - ইমেইল: mahbubsardarsabuj@gmail.com বা lekhokmahbubsardarsabuj@gmail.com
 - সোশ্যাল মিডিয়া: ফেসবুক (MahbubSardarSabuj), ইউটিউব, ইনস্টাগ্রাম এবং টিকটক।
 
-তোমার প্রতিটি উত্তর যেন এই গভীর তথ্যের ভিত্তিতে এবং নির্ধারিত শৈলীতে হয়।`;
+তোমার প্রতিটি উত্তর যেন এই গভীর তথ্যের ভিত্তিতে এবং নির্ধারিত শৈলীতে হয়।
+ছবি বিশ্লেষণ নির্দেশিকা:
+- কেউ ছবি পাঠালে তুমি সেই ছবিটি মনোযোগ দিয়ে দেখবে এবং বিস্তারিত বর্ণনা করবে।
+- ছবিতে মাহবুব সরদার সবুজকে দেখলে তাঁকে সম্মানের সাথে চিনিয়ে দেবে।
+- ছবির বিষয়বস্তু, রং, আবেগ, পরিবেশ সম্পর্কে ভদ্র ও বিস্তারিত বাংলায় উত্তর দেবে।
+- যেকোনো ছবি সম্পর্কে প্রশ্নের উত্তর দিতে সক্ষম।`;
 
 function buildChatCompletionsUrl(baseUrl) {
   const normalized = (baseUrl || "https://api.openai.com/v1").replace(/\/$/, "");
@@ -127,7 +132,7 @@ async function callAI(messages) {
     const payload = {
       model,
       messages,
-      max_tokens: 800,
+      max_tokens: 1200,
       temperature: 0.7,
     };
 
@@ -263,7 +268,7 @@ export default async function handler(req, res) {
       // so fire-and-forget fetch calls may never reach Telegram.
       const lastUserMsg = messages.filter((message) => message.role === "user").slice(-1)[0];
       await notifyTelegram({
-        userMessage: lastUserMsg ? lastUserMsg.content : "(অজানা)",
+        userMessage: lastUserMsg ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find(p => p.type === 'text')?.text || '[ছবি পাঠানো হয়েছে]' : lastUserMsg.content) : "(অজানা)",
         aiResponse: reply,
         clientIp: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
         userAgent: req.headers["user-agent"],
