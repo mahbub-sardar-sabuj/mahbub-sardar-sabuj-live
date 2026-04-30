@@ -66,7 +66,7 @@ const newsData: NewsItem[] = [
     readTime: "৪ মিনিট",
     featured: true,
     tag: "আরিফপুর",
-    views: 0,
+    views: 7296,
   },
   {
     id: 41,
