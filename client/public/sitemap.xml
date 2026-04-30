@@ -9502,6 +9502,15 @@
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/43</loc>
+    <lastmod>2026-04-30</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-04-30T00:00:00+06:00</news:publication_date>
+      <news:title>সরল ভাষায় গভীর অনুভূতির কবি সালমান হাবীব</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/42</loc>
     <lastmod>2026-04-30</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
     <news:news>
