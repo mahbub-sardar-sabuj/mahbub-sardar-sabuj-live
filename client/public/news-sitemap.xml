@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/42</loc>
+    <news:news>
+      <news:publication>
+        <news:name>সরদার সংবাদ</news:name>
+        <news:language>bn</news:language>
+      </news:publication>
+      <news:publication_date>2026-04-30T00:00:00+06:00</news:publication_date>
+      <news:title>আরিফপুর ঈদগাহ বিতর্ক: জানাজাকে ঘিরে মতভেদ, উত্তেজনা ও বাস্তবতা</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/41</loc>
+    <news:news>
+      <news:publication>
+        <news:name>সরদার সংবাদ</news:name>
+        <news:language>bn</news:language>
+      </news:publication>
+      <news:publication_date>2026-04-29T00:00:00+06:00</news:publication_date>
+      <news:title>শিক্ষা, সাহিত্য ও কণ্ঠশিল্পে বহুমাত্রিক প্রতিভা হুজাইফা আল মাহমুদ</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/40</loc>
     <news:news>
       <news:publication>
