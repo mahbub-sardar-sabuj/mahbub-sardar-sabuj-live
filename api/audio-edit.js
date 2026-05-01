@@ -113,6 +113,18 @@ OUTPUT FORMAT (JSON only):
   "technicalNote": "technical details (optional)"
 }
 
+NOISE REDUCTION RULES (CRITICAL — voice must be preserved):
+- noise_reduction strength scale: 0.3=হালকা, 0.5=মাঝারি, 0.7=শক্তিশালী, 0.85=মাক্স
+- NEVER use strength > 0.85 for noise_reduction (voice will be damaged)
+- For "নয়েজ কমাও" / "noise remove" → noise_reduction(0.5) FIRST, then check
+- For "আরো নয়েজ কমাও" → increase by 0.15 only (never jump to 1.0)
+- For heavy noise: use denoise_advanced(0.7) NOT noise_reduction(1.0)
+- denoise_advanced strength: 0.5=মাঝারি, 0.7=শক্তিশালী, 0.85=মাক্স (NEVER above 0.9)
+- ALWAYS combine with vocal_enhance after noise reduction to restore voice clarity
+- Pattern: noise_reduction(0.5) + vocal_enhance + loudness_normalize(-16)
+- For "কণ্ঠ ঠিক রেখে নয়েজ সরাও" → noise_reduction(0.45) + vocal_enhance + presence_boost + loudness_normalize(-14)
+- For "স্টুডিও মান" → denoise_advanced(0.7) + de_ess + compress(-22,3) + loudness_normalize(-14)
+
 IMPORTANT: Use proportional values. For iterative requests increase strength by 0.1-0.2 only.
 
 ADDITIONAL SMART RULES:
@@ -150,13 +162,58 @@ function buildFFmpegFilter(operations) {
   for (const op of operations) {
     const { type, params = {} } = op;
     switch (type) {
-      case "noise_reduction":
-        filters.push(`afftdn=nf=${-20 - Math.min(params.strength || 0.5, 0.7) * 30}`);
+      case "noise_reduction": {
+        // Voice-preserving 4-pass noise reduction (Telegram bot algorithm)
+        // Pass 1: Gentle high-pass to remove sub-bass rumble (below 60Hz)
+        const s = Math.min(Math.max(params.strength || 0.5, 0.0), 1.0);
+        // নয়েজ ফ্লোর: -20 থেকে শুরু, সর্বোচ্চ -45 (বেশি গেলে কণ্ঠ নষ্ট হয়)
+        const nf = -(20 + Math.round(s * 25)); // -20 to -45 range (safe)
+        // Pass 1: Sub-bass rumble remove
+        filters.push(`highpass=f=60:poles=2`);
+        // Pass 2: Spectral noise reduction — afftdn (FFmpeg's best NR, like noisereduce library)
+        filters.push(`afftdn=nf=${nf}:nt=w:om=o`);
+        // Pass 3: Soft noise gate — শুধু silence-এ কাজ করে, কণ্ঠে নয়
+        // attack=30ms (slow) release=300ms (slow) — zipper artifact নেই
+        const gateThresh = Math.round(-55 + s * 15); // -55 to -40 dB
+        filters.push(`agate=threshold=${gateThresh}dB:attack=30:release=300:ratio=4:range=0.1`);
+        // Pass 4: Gentle de-hum (50Hz electrical hum)
+        if (s > 0.4) {
+          filters.push(`equalizer=f=50:t=h:width=10:g=-12`);
+          filters.push(`equalizer=f=100:t=h:width=10:g=-8`);
+        }
         break;
-      case "denoise_advanced":
-        filters.push(`afftdn=nf=${-20 - Math.min(params.strength || 0.7, 0.85) * 35}:nt=w`);
-        filters.push(`agate=threshold=${-50 + Math.min(params.strength || 0.7, 0.85) * 15}dB:attack=10:release=150`);
+      }
+      case "denoise_advanced": {
+        // Ultra-clean 10-pass voice-preserving noise reduction
+        const sa = Math.min(Math.max(params.strength || 0.9, 0.0), 1.0);
+        // Pass 1: Sub-bass & hum removal
+        filters.push(`highpass=f=80:poles=2`);
+        filters.push(`equalizer=f=50:t=h:width=10:g=-20`);
+        filters.push(`equalizer=f=100:t=h:width=10:g=-15`);
+        filters.push(`equalizer=f=150:t=h:width=10:g=-10`);
+        // Pass 2: Stationary noise — conservative nf to protect voice
+        const nfA = -(20 + Math.round(sa * 20)); // -20 to -40 (never below -40)
+        filters.push(`afftdn=nf=${nfA}:nt=w:om=o`);
+        // Pass 3: Non-stationary noise (variable environment)
+        filters.push(`afftdn=nf=${nfA - 5}:nt=w`);
+        // Pass 4: Soft gate — very slow attack/release to preserve voice transients
+        const gateA = Math.round(-60 + sa * 20); // -60 to -40 dB
+        filters.push(`agate=threshold=${gateA}dB:attack=50:release=400:ratio=6:range=0.05`);
+        // Pass 5: De-click (removes pops without touching voice)
+        filters.push(`adeclick=w=55:o=25:a=2:m=2`);
+        // Pass 6: Voice frequency protection — boost voice band slightly
+        // কণ্ঠের মূল ফ্রিকোয়েন্সি (300-3000Hz) সামান্য boost করে NR loss compensate
+        if (sa > 0.5) {
+          filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
+          filters.push(`equalizer=f=1000:t=h:width=800:g=1`);
+          filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
+        }
+        // Pass 7: Gentle compression to even out volume after NR
+        filters.push(`acompressor=threshold=-30dB:ratio=2:attack=50:release=400:knee=8dB:makeup=1dB`);
+        // Pass 8: True peak limiter
+        filters.push(`alimiter=limit=-1dB:attack=5:release=50`);
         break;
+      }
       case "normalize":
         filters.push("loudnorm=I=-16:TP=-1.5:LRA=11");
         break;
