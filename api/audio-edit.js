@@ -1,611 +1,527 @@
-/**
- * /api/audio-edit — Manus AI-style Professional Audio Engineering (v5.0)
- *
- * Architecture: AI intent detection → FFmpeg server-side processing
- *
- * FFmpeg filter chain (professional-grade):
- *   - highpass / lowpass
- *   - equalizer (bass, warmth, mid, presence, treble, air)
- *   - afftdn (AI-powered noise reduction)
- *   - agate (expander/noise gate)
- *   - acompressor (dynamics compression)
- *   - alimiter (brick-wall limiter)
- *   - loudnorm (EBU R128 loudness normalization)
- *   - atempo (speed change)
- *   - areverse (reverse)
- *   - afade (fade in/out)
- *   - volume (gain)
- *   - stereotools (stereo width)
- *   - pan (mono mix)
- *   - silenceremove (trim silence)
- */
+import OpenAI from "openai";
+import formidable from "formidable";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { execSync } from "child_process";
 
-import { execFile } from "child_process";
-import { promisify } from "util";
-import { writeFile, readFile, unlink } from "fs/promises";
-import { join } from "path";
-import { createRequire } from "module";
-import { tmpdir } from "os";
+export const config = { api: { bodyParser: false } };
 
-const execFileAsync = promisify(execFile);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ── Resolve ffmpeg binary ──────────────────────────────────────────────────────
-function getFfmpegPath() {
-  try {
-    const require = createRequire(import.meta.url);
-    const p = require("ffmpeg-static");
-    if (p) return p;
-  } catch {}
-  // Vercel includes the binary at this path when includeFiles is set
-  return "/var/task/node_modules/ffmpeg-static/ffmpeg";
-}
+const AUDIO_SYSTEM_PROMPT = `You are a world-class AI audio engineer named "Sardar Audio Studio". You understand ANY instruction in Bengali or English and return correct audio operations as JSON.
 
-// ── Resolve AI config ──────────────────────────────────────────────────────────
-function resolveAiConfig() {
-  const chatbotKey = process.env.CHATBOT_API_KEY?.trim();
-  const openAiKey  = process.env.OPENAI_API_KEY?.trim();
-  const forgeKey   = process.env.BUILT_IN_FORGE_API_KEY?.trim();
-  const forgeUrl   = process.env.BUILT_IN_FORGE_API_URL?.trim();
+RULE: ALWAYS return valid JSON with at least one operation. NEVER return empty operations list.
 
-  if (chatbotKey) {
-    const isOR = chatbotKey.startsWith("sk-or-");
-    return {
-      apiKey:  chatbotKey,
-      baseUrl: process.env.CHATBOT_BASE_URL?.trim() || (isOR ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
-      model:   process.env.CHATBOT_MODEL?.trim()    || (isOR ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
-    };
-  }
-  if (openAiKey) {
-    return {
-      apiKey:  openAiKey,
-      baseUrl: process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
-      model:   process.env.OPENAI_MODEL?.trim()    || "gpt-4.1-mini",
-    };
-  }
-  if (forgeKey && forgeUrl) {
-    return { apiKey: forgeKey, baseUrl: forgeUrl.replace(/\/$/, ""), model: "gemini-2.5-flash" };
-  }
-  return null;
-}
+ALL AVAILABLE OPERATIONS:
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// MANUS AI-STYLE AUDIO ENGINEERING SYSTEM PROMPT v5.0
-// ═══════════════════════════════════════════════════════════════════════════════
-const AUDIO_SYSTEM_PROMPT = `তুমি একজন বিশ্বমানের সাউন্ড ইঞ্জিনিয়ার AI। তোমার কাছে FFmpeg-এর সম্পূর্ণ ক্ষমতা আছে।
+BASIC: noise_reduction{strength:0-1}, normalize{}, volume_change{db:float}, trim{start_ms,end_ms}, fade_in{duration_ms}, fade_out{duration_ms}, reverse{}
 
-ব্যবহারকারীর নির্দেশ বিশ্লেষণ করে একটি JSON রিটার্ন করো। শুধু JSON, কোনো markdown নয়।
+PITCH & SPEED: pitch_shift{semitones}, speed_change{factor}, pitch_without_speed{semitones}
 
+EFFECTS: reverb{room_size,wet_level}, echo{delay_ms,decay,repeats}, chorus{depth,rate}, distortion{gain}, telephone_effect{}, robot_voice{}, deep_voice{}, chipmunk_voice{}, whisper_effect{}, flanger{rate,depth}, phaser{rate,depth}, tremolo{rate,depth}, vibrato{rate,depth}, bitcrusher{bits}, tape_saturation{drive}, vinyl_effect{}, underwater_effect{}, cave_echo{}, stadium_reverb{}, bathroom_reverb{}, alien_voice{}, megaphone_effect{}, radio_effect{}
+
+EQ: bass_boost{db}, treble_boost{db}, mid_boost{db}, bass_cut{db}, treble_cut{db}, equalizer{bass_db,mid_db,treble_db}, low_pass_filter{cutoff_hz}, high_pass_filter{cutoff_hz}, band_pass_filter{low_hz,high_hz}, notch_filter{freq_hz}, presence_boost{}, warmth_boost{}, air_boost{}
+
+DYNAMICS: compress{threshold_db,ratio}, gate{threshold_db}, expander{threshold_db,ratio}, limiter{ceiling_db}, multiband_compress{}, de_ess{}, declick{}, declip{}, dehum{freq}, spectral_repair{}
+
+VOCAL: vocal_enhance{}, stereo_widen{width}, stereo_narrow{}, stereo_to_mono{}, mono_to_stereo{}, stereo_balance{pan}, auto_tune{strength}, formant_shift{shift}, harmonic_exciter{amount}, transient_shaper{attack,sustain}, vocal_isolation{}, music_removal{}
+
+MASTERING: loudness_normalize{target_lufs}, true_peak_limit{ceiling_db}, pitch_correct{scale}
+
+VOICE BEAUTIFY PRESETS:
+- honey_voice{} = মধুময় উষ্ণ মিষ্টি কণ্ঠ
+- silky_voice{} = রেশমি মসৃণ কণ্ঠ
+- broadcast_voice{} = TV/Radio প্রফেশনাল
+- asmr_voice{} = ASMR ঘনিষ্ঠ ফিসফিস
+- cinematic_voice{} = হলিউড সিনেমা ভয়েস
+- angelic_voice{} = স্বর্গীয় উচ্চ স্বর
+- vintage_radio{} = পুরনো রেডিও স্টাইল
+- podcast_pro{} = পডকাস্ট প্রো কোয়ালিটি
+- lofi_voice{} = Lo-Fi ক্যাসেট স্টাইল
+- narrator_voice{} = অডিওবুক ন্যারেটর
+- smooth_jazz_voice{} = স্মুদ্ধ জ্যাজ সিঙার
+- epic_voice{} = শক্তিশালী হিরোইক কণ্ঠ
+- sweet_voice{} = মিষ্টি মেয়েলি স্বর
+- crystal_voice{} = স্ফটিকের মতো পরিষ্কার
+- deep_warm_voice{} = গভীর উষ্ণ পুরুষালি স্বর
+
+SMART INTERPRETATION:
+"এডিটিং করো"/"ভালো করো"/"সুন্দর করো"/"fix it" → noise_reduction(0.5)+normalize+bass_boost(3)+reverb(0.3,0.2)
+"মধুময়"/"honey"/"মিষ্টি কণ্ঠ"/"মধুর" → honey_voice
+"রেশমি"/"silky"/"মসৃণ"/"smooth"/"নরম" → silky_voice
+"ব্রডকাস্ট"/"broadcast"/"TV voice"/"নিউজ ভয়েস" → broadcast_voice
+"ASMR"/"ফিসফিস"/"whisper close" → asmr_voice
+"সিনেমা"/"cinematic"/"হলিউড" → cinematic_voice
+"স্বর্গীয়"/"angelic"/"ফেরেশ্তা" → angelic_voice
+"পুরনো রেডিও"/"vintage"/"retro" → vintage_radio
+"পডকাস্ট প্রো"/"podcast pro" → podcast_pro
+"lofi"/"lo-fi"/"ক্যাসেট" → lofi_voice
+"ন্যারেটর"/"narrator"/"অডিওবুক" → narrator_voice
+"জ্যাজ"/"jazz"/"smooth jazz" → smooth_jazz_voice
+"এপিক"/"epic"/"হিরো"/"powerful" → epic_voice
+"মিষ্টি"/"sweet"/"মেয়েলি" → sweet_voice
+"স্ফটিক"/"crystal"/"পরিষ্কার"/"clear" → crystal_voice
+"গভীর উষ্ণ"/"deep warm"/"পুরুষালি" → deep_warm_voice
+"প্রফেশনাল করো"/"studio quality" → denoise_advanced(0.9)+de_ess+compress(-20,4)+equalizer(3,1,2)+limiter(-1)+loudness_normalize(-14)
+"পডকাস্ট"/"podcast"/"ভয়েসওভার" → noise_reduction(0.8)+gate(-40)+compress(-18,3)+presence_boost+loudness_normalize(-16)
+"নয়েজ কমাও"/"noise remove"/"পরিষ্কার করো" → denoise_advanced(0.8)+noise_reduction(0.6)+gate(-45)+normalize
+"আরো নয়েজ কমাও" → denoise_advanced(0.9)+noise_reduction(0.7)+gate(-40)
+"ভয়েস সুন্দর করো"/"vocal beautify"/"কণ্ঠ সুন্দর করো" → honey_voice+loudness_normalize(-14)
+"কবিতার জন্য"/"আবৃত্তি"/"recitation" → silky_voice+reverb(0.4,0.25)+loudness_normalize(-16)
+"গান"/"song"/"গানের ভয়েস" → vocal_enhance+de_ess+compress(-18,3)+reverb(0.4,0.3)+loudness_normalize(-14)
+"ইন্টারভিউ"/"interview" → broadcast_voice+loudness_normalize(-18)
+"লেকচার"/"lecture"/"ক্লাস" → crystal_voice+loudness_normalize(-18)
+"ভলিউম বাড়াও"/"louder" → volume_change(+6)+normalize
+"ভলিউম কমাও"/"quieter" → volume_change(-6)
+"পিচ বাড়াও"/"higher pitch" → pitch_shift(+2)
+"পিচ কমাও"/"lower pitch" → pitch_shift(-2)
+"দ্রুত করো"/"faster" → speed_change(1.3)
+"ধীর করো"/"slower" → speed_change(0.8)
+"রিভার্ব যোগ করো"/"add reverb" → reverb(0.5,0.3)
+"ইকো যোগ করো"/"add echo" → echo(300,0.5,3)
+"বেস বাড়াও"/"more bass" → bass_boost(5)
+"ট্রেবল বাড়াও"/"more treble" → treble_boost(4)
+"হাম সরাও"/"50hz noise"/"বৈদ্যুতিক শব্দ" → dehum(50)+notch_filter(100)+notch_filter(150)
+"ক্লিক সরাও"/"pop remove" → declick+declip
+"রোবট ভয়েস"/"robot" → robot_voice
+"টেলিফোন"/"phone call" → telephone_effect
+"মেগাফোন"/"megaphone" → megaphone_effect
+"পানির নিচে"/"underwater" → underwater_effect
+"গুহার মধ্যে"/"cave" → cave_echo
+"স্টেডিয়াম"/"stadium" → stadium_reverb
+"বাথরুম"/"bathroom" → bathroom_reverb
+"এলিয়েন ভয়েস"/"alien" → alien_voice
+"ভিনাইল"/"vinyl"/"পুরনো রেকর্ড" → vinyl_effect
+"টেপ"/"tape"/"ক্যাসেট" → tape_saturation(1.0)
+"স্টেরিও চওড়া করো"/"wider" → stereo_widen(1.5)
+"মনো করো"/"narrow" → stereo_narrow
+"লাউডনেস নরমালাইজ"/"LUFS"/"streaming ready" → loudness_normalize(-14)
+"লিমিটার"/"limiter" → limiter(-1)
+"গেট"/"noise gate" → gate(-40)
+"অটো টিউন"/"auto-tune"/"পিচ ঠিক করো" → auto_tune(0.7)
+"প্রেজেন্স বাড়াও"/"presence" → presence_boost
+"উষ্ণতা যোগ করো"/"warmth" → warmth_boost
+"এয়ার বাড়াও"/"air" → air_boost
+
+OUTPUT FORMAT (JSON only):
 {
-  "intent": "<clean|enhance|podcast|studio|broadcast|asmr|music|social|denoise|vocal|eq|volume|speed|trim|custom>",
-  "pipeline": ["<step1>", "<step2>", ...],
-
-  // ── Noise & Cleanup ──────────────────────────────────────────────────────
-  "noiseReduction":    <0.0–1.0, 0=off, 0.3=gentle, 0.7=strong, 1.0=max>,
-  "noiseType":         <"voice"|"music"|"general">,
-  "deHum":             <true/false — 50/60Hz hum removal>,
-  "deClick":           <true/false — click/pop removal>,
-  "deBreath":          <true/false — breath sound reduction>,
-  "trimSilence":       <true/false — remove leading/trailing silence>,
-
-  // ── EQ ───────────────────────────────────────────────────────────────────
-  "highPassFreq":      <20–500 Hz, null=off — remove rumble>,
-  "lowPassFreq":       <2000–20000 Hz, null=off — remove hiss>,
-  "bassBoost":         <-12 to +12 dB, 0=off>,
-  "warmthBoost":       <-8 to +8 dB, 0=off — 300Hz warmth>,
-  "midBoost":          <-8 to +8 dB, 0=off — 2.5kHz presence>,
-  "presenceBoost":     <-8 to +8 dB, 0=off — 4kHz clarity>,
-  "deEss":             <true/false — reduce harsh sibilance>,
-  "trebleBoost":       <-8 to +8 dB, 0=off>,
-  "airBoost":          <-6 to +6 dB, 0=off — 12kHz shimmer>,
-
-  // ── Dynamics ─────────────────────────────────────────────────────────────
-  "dynamicCompression": <true/false>,
-  "compressionRatio":  <1.5–20, default 4>,
-  "compressionThresh": <-40 to -6 dB, default -24>,
-  "limiter":           <true/false>,
-  "expanderGate":      <true/false — gentle noise gate>,
-
-  // ── Loudness ─────────────────────────────────────────────────────────────
-  "normalize":         <true/false — peak normalize>,
-  "loudnorm":          <true/false — EBU R128 integrated loudness>,
-  "lufsTarget":        <-23 to -9, default -16 for podcast, -14 for social>,
-  "volume":            <0.1–4.0, default 1.0>,
-
-  // ── Voice Enhancement ────────────────────────────────────────────────────
-  "voiceEnhancement":  <true/false — full voice clarity chain>,
-  "voiceWarmth":       <true/false — add warmth to thin voice>,
-  "voiceClarity":      <true/false — enhance intelligibility>,
-
-  // ── Stereo ───────────────────────────────────────────────────────────────
-  "stereoWidth":       <0.0–2.0, 1.0=unchanged, 1.5=wider, 0.5=narrower>,
-  "monoMix":           <true/false>,
-
-  // ── Time ─────────────────────────────────────────────────────────────────
-  "speed":             <0.5–2.0, default 1.0>,
-  "trimStart":         <seconds, 0=none>,
-  "trimEnd":           <seconds, 0=none>,
-  "fadeIn":            <seconds, 0=none>,
-  "fadeOut":           <seconds, 0=none>,
-  "reverse":           <true/false>,
-
-  // ── Explanation ──────────────────────────────────────────────────────────
-  "appliedSteps": ["<বাংলায় প্রতিটি পদক্ষেপ>", ...],
-  "description":  "<বাংলায় ২-৩ লাইনের সারসংক্ষেপ>",
-  "technicalNote": "<ঐচ্ছিক>"
+  "operations": [{"type": "OPERATION_NAME", "params": {"key": value}}, ...],
+  "explanation": "বাংলায় বিস্তারিত ব্যাখ্যা",
+  "pipeline": ["ধাপ ১: ...", "ধাপ ২: ...", "ধাপ ৩: ..."],
+  "intent": "detected intent label",
+  "technicalNote": "technical details (optional)"
 }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROFESSIONAL PRESETS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPORTANT: Use proportional values. For iterative requests increase strength by 0.1-0.2 only.`;
 
-"clean" / "পরিষ্কার" / "নয়েজ কমাও":
-→ noiseReduction:0.6, noiseType:"voice", deHum:true, deClick:true, trimSilence:true,
-  normalize:true, dynamicCompression:true, compressionRatio:3, compressionThresh:-20,
-  highPassFreq:80, bassBoost:-1, midBoost:2, trebleBoost:1.5, fadeIn:0.3, fadeOut:0.5
-
-"enhance" / "সুন্দর" / "ভালো" / "মান উন্নত":
-→ noiseReduction:0.5, noiseType:"voice", deHum:true, deClick:true,
-  voiceEnhancement:true, voiceClarity:true, deEss:true,
-  normalize:true, dynamicCompression:true, compressionRatio:4, compressionThresh:-24,
-  highPassFreq:100, bassBoost:1, warmthBoost:2, midBoost:3, presenceBoost:2, trebleBoost:2, airBoost:1,
-  fadeIn:0.2, fadeOut:0.3
-
-"podcast" / "পডকাস্ট" / "radio":
-→ noiseReduction:0.7, noiseType:"voice", deHum:true, deClick:true, deBreath:true, trimSilence:true,
-  voiceEnhancement:true, voiceClarity:true, deEss:true,
-  normalize:false, loudnorm:true, lufsTarget:-16,
-  dynamicCompression:true, compressionRatio:5, compressionThresh:-22, limiter:true,
-  highPassFreq:120, bassBoost:-2, warmthBoost:2, midBoost:4, presenceBoost:3, trebleBoost:1.5,
-  fadeIn:0.5, fadeOut:1.0
-
-"studio" / "স্টুডিও" / "professional" / "recording":
-→ noiseReduction:0.5, noiseType:"voice", deHum:true, deClick:true,
-  voiceEnhancement:true, voiceClarity:true, voiceWarmth:true, deEss:true,
-  normalize:false, loudnorm:true, lufsTarget:-14,
-  dynamicCompression:true, compressionRatio:4, compressionThresh:-20, limiter:true,
-  highPassFreq:80, bassBoost:2, warmthBoost:3, midBoost:3, presenceBoost:3, trebleBoost:2, airBoost:2,
-  fadeIn:0.3, fadeOut:0.5
-
-"broadcast" / "টেলিভিশন" / "news":
-→ noiseReduction:0.6, noiseType:"voice", deHum:true, trimSilence:true,
-  voiceEnhancement:true, voiceClarity:true, deEss:true,
-  normalize:false, loudnorm:true, lufsTarget:-23, limiter:true,
-  dynamicCompression:true, compressionRatio:6, compressionThresh:-18,
-  highPassFreq:150, bassBoost:-3, midBoost:4, presenceBoost:3, trebleBoost:1
-
-"asmr" / "ফিসফিস" / "soft":
-→ noiseReduction:0.3, noiseType:"general",
-  normalize:true, dynamicCompression:false,
-  trebleBoost:3, airBoost:3, bassBoost:-2, highPassFreq:60,
-  stereoWidth:1.5, fadeIn:1.0, fadeOut:2.0
-
-"music" / "গান" / "মিউজিক":
-→ noiseReduction:0.2, noiseType:"music",
-  normalize:false, loudnorm:true, lufsTarget:-14, limiter:true,
-  bassBoost:3, trebleBoost:2, airBoost:1, stereoWidth:1.2,
-  fadeIn:1.0, fadeOut:2.0
-
-"social" / "facebook" / "youtube" / "reels":
-→ noiseReduction:0.5, noiseType:"voice", deHum:true, trimSilence:true,
-  voiceEnhancement:true, voiceClarity:true, deEss:true,
-  normalize:false, loudnorm:true, lufsTarget:-14, limiter:true,
-  dynamicCompression:true, compressionRatio:4, compressionThresh:-22,
-  highPassFreq:100, midBoost:3, presenceBoost:2, trebleBoost:2,
-  fadeIn:0.2, fadeOut:0.5
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INCREMENTAL RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"আরো নয়েজ কমাও"     → noiseReduction:0.85
-"আরো ভলিউম বাড়াও"   → volume:1.5, normalize:true
-"আরো বেস বাড়াও"     → bassBoost:6
-"কণ্ঠ উষ্ণ করো"      → warmthBoost:4, voiceWarmth:true
-"কণ্ঠ পরিষ্কার করো"  → voiceClarity:true, midBoost:4, deEss:true, highPassFreq:100
-"হাম দূর করো"        → deHum:true
-"স্টেরিও প্রশস্ত করো"→ stereoWidth:1.6
-"মনো করো"            → monoMix:true
-"রিভার্স করো"        → reverse:true
-"গতি ১.৫ গুণ"        → speed:1.5
-"ফেড ইন ৩ সেকেন্ড"  → fadeIn:3
-"প্রথম ১০ সেকেন্ড কাটো" → trimStart:10
-"শেষের ৫ সেকেন্ড কাটো"  → trimEnd:5
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EMOTION-AWARE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"কবিতার আবৃত্তি" → enhance + warmthBoost:3 + airBoost:2 + stereoWidth:1.2
-"ইন্টারভিউ"       → podcast + deBreath:true
-"লেকচার / ক্লাস"  → broadcast + voiceClarity:true
-"গজল / নাশিদ"     → music + warmthBoost:3 + stereoWidth:1.3 + fadeIn:1.5
-"ফোন রেকর্ডিং"    → clean + deHum:true + highPassFreq:200 + lowPassFreq:8000
-"ভিডিও ভয়েসওভার" → broadcast + voiceClarity:true + lufsTarget:-16
-
-শুধু valid JSON রিটার্ন করো।`;
-
-// ── AI intent parsing ──────────────────────────────────────────────────────────
-async function parseInstruction(instruction) {
-  const cfg = resolveAiConfig();
-  if (!cfg) throw new Error("AI config not found");
-
-  const url = cfg.baseUrl.endsWith("/chat/completions")
-    ? cfg.baseUrl
-    : `${cfg.baseUrl.replace(/\/$/, "")}/chat/completions`;
-
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
-    body: JSON.stringify({
-      model: cfg.model,
-      messages: [
-        { role: "system", content: AUDIO_SYSTEM_PROMPT },
-        { role: "user",   content: `নির্দেশ: ${instruction}` },
-      ],
-      max_tokens: 800,
-      temperature: 0.1,
-    }),
-  });
-
-  if (!resp.ok) throw new Error(`AI API ${resp.status}: ${await resp.text().catch(() => "")}`);
-  const data = await resp.json();
-  const raw = data.choices?.[0]?.message?.content?.trim() || "{}";
-  const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
-  return JSON.parse(cleaned);
-}
-
-// ── Build FFmpeg filter chain from params ──────────────────────────────────────
-function buildFilterChain(p) {
+function buildFFmpegFilter(operations) {
   const filters = [];
+  let pitchShift = null;
+  let speedFactor = null;
 
-  // 1. Silence removal (trim leading/trailing silence)
-  if (p.trimSilence) {
-    filters.push("silenceremove=start_periods=1:start_silence=0.5:start_threshold=-50dB:stop_periods=-1:stop_silence=1:stop_threshold=-50dB");
+  for (const op of operations) {
+    const { type, params = {} } = op;
+    switch (type) {
+      case "noise_reduction":
+        filters.push(`afftdn=nf=${-20 - Math.min(params.strength || 0.5, 0.7) * 30}`);
+        break;
+      case "denoise_advanced":
+        filters.push(`afftdn=nf=${-20 - Math.min(params.strength || 0.7, 0.85) * 35}:nt=w`);
+        filters.push(`agate=threshold=${-50 + Math.min(params.strength || 0.7, 0.85) * 15}dB:attack=10:release=150`);
+        break;
+      case "normalize":
+        filters.push("loudnorm=I=-16:TP=-1.5:LRA=11");
+        break;
+      case "volume_change":
+        filters.push(`volume=${params.db || 0}dB`);
+        break;
+      case "fade_in":
+        filters.push(`afade=t=in:d=${(params.duration_ms || 500) / 1000}`);
+        break;
+      case "fade_out":
+        filters.push(`afade=t=out:st=0:d=${(params.duration_ms || 500) / 1000}`);
+        break;
+      case "reverse":
+        filters.push("areverse");
+        break;
+      case "trim":
+        filters.push(`atrim=start=${(params.start_ms || 0) / 1000}${params.end_ms ? `:end=${params.end_ms / 1000}` : ""}`);
+        break;
+      case "silence_remove":
+        filters.push(`silenceremove=start_periods=1:start_threshold=${params.threshold_db || -40}dB:stop_periods=-1:stop_threshold=${params.threshold_db || -40}dB`);
+        break;
+      case "pitch_shift":
+        pitchShift = params.semitones || 0;
+        break;
+      case "speed_change":
+        speedFactor = params.factor || 1.0;
+        break;
+      case "pitch_without_speed": {
+        const ratio = Math.pow(2, (params.semitones || 0) / 12);
+        filters.push(`asetrate=r=${Math.round(44100 * ratio)},aresample=44100`);
+        break;
+      }
+      case "bass_boost":
+        filters.push(`equalizer=f=100:t=h:width=200:g=${params.db || 4}`);
+        break;
+      case "bass_cut":
+        filters.push(`equalizer=f=100:t=h:width=200:g=${-(params.db || 4)}`);
+        break;
+      case "treble_boost":
+        filters.push(`equalizer=f=8000:t=h:width=4000:g=${params.db || 4}`);
+        break;
+      case "treble_cut":
+        filters.push(`equalizer=f=8000:t=h:width=4000:g=${-(params.db || 4)}`);
+        break;
+      case "mid_boost":
+        filters.push(`equalizer=f=2500:t=h:width=2000:g=${params.db || 3}`);
+        break;
+      case "equalizer":
+        if (params.bass_db) filters.push(`equalizer=f=100:t=h:width=200:g=${params.bass_db}`);
+        if (params.mid_db) filters.push(`equalizer=f=2500:t=h:width=2000:g=${params.mid_db}`);
+        if (params.treble_db) filters.push(`equalizer=f=8000:t=h:width=4000:g=${params.treble_db}`);
+        break;
+      case "low_pass_filter":
+        filters.push(`lowpass=f=${params.cutoff_hz || 4000}`);
+        break;
+      case "high_pass_filter":
+        filters.push(`highpass=f=${params.cutoff_hz || 80}`);
+        break;
+      case "band_pass_filter":
+        filters.push(`highpass=f=${params.low_hz || 300},lowpass=f=${params.high_hz || 3000}`);
+        break;
+      case "notch_filter":
+        filters.push(`equalizer=f=${params.freq_hz || 60}:t=h:width=30:g=-30`);
+        break;
+      case "presence_boost":
+        filters.push("equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=2000:g=2");
+        break;
+      case "warmth_boost":
+        filters.push("equalizer=f=250:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2");
+        break;
+      case "air_boost":
+        filters.push("equalizer=f=12000:t=h:width=4000:g=3,equalizer=f=16000:t=h:width=4000:g=2");
+        break;
+      case "dehum": {
+        const freq = params.freq || 50;
+        filters.push(`equalizer=f=${freq}:t=h:width=10:g=-30,equalizer=f=${freq*2}:t=h:width=10:g=-20,equalizer=f=${freq*3}:t=h:width=10:g=-15`);
+        break;
+      }
+      case "compress":
+        filters.push(`acompressor=threshold=${params.threshold_db || -20}dB:ratio=${params.ratio || 4}:attack=20:release=250:makeup=2dB:knee=6dB`);
+        break;
+      case "gate":
+        filters.push(`agate=threshold=${params.threshold_db || -40}dB:attack=10:release=200`);
+        break;
+      case "limiter":
+        filters.push(`alimiter=limit=${params.ceiling_db || -1}dB:attack=5:release=50`);
+        break;
+      case "true_peak_limit":
+        filters.push(`alimiter=limit=${params.ceiling_db || -1}dB:attack=1:release=10`);
+        break;
+      case "expander":
+        filters.push(`agate=threshold=${params.threshold_db || -40}dB:ratio=${params.ratio || 2}:attack=5:release=100`);
+        break;
+      case "multiband_compress":
+        filters.push("acompressor=threshold=-30dB:ratio=3:attack=20:release=200:knee=6dB");
+        break;
+      case "vocal_enhance":
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB");
+        break;
+      case "de_ess":
+        filters.push("equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-2");
+        break;
+      case "declick":
+        filters.push("adeclick=w=55:o=25:a=2:m=2");
+        break;
+      case "declip":
+        filters.push("adeclip=w=55:o=25:a=2:m=2");
+        break;
+      case "spectral_repair":
+        filters.push("afftdn=nf=-25:nt=w,adeclick=w=55:o=25");
+        break;
+      case "loudness_normalize":
+        filters.push(`loudnorm=I=${params.target_lufs || -14}:TP=-1:LRA=11`);
+        break;
+      case "stereo_widen":
+        filters.push(`stereotools=mlev=${params.width || 1.5}:slev=1`);
+        break;
+      case "stereo_narrow":
+        filters.push("stereotools=mlev=0.5:slev=1");
+        break;
+      case "stereo_to_mono":
+        filters.push("pan=mono|c0=0.5*c0+0.5*c1");
+        break;
+      case "mono_to_stereo":
+        filters.push("pan=stereo|c0=c0|c1=c0");
+        break;
+      case "stereo_balance": {
+        const pan = params.pan || 0;
+        if (pan < 0) filters.push(`pan=stereo|c0=${1+pan}*c0+${-pan}*c1|c1=c1`);
+        else filters.push(`pan=stereo|c0=c0|c1=${1-pan}*c1+${pan}*c0`);
+        break;
+      }
+      case "harmonic_exciter": {
+        const amt = params.amount || 0.5;
+        filters.push(`equalizer=f=5000:t=h:width=3000:g=${amt*4},equalizer=f=10000:t=h:width=4000:g=${amt*3}`);
+        break;
+      }
+      case "transient_shaper": {
+        const atk = params.attack || 0.5;
+        filters.push(`acompressor=threshold=-20dB:ratio=4:attack=${atk > 0 ? 5 : 20}:release=100:knee=3dB`);
+        break;
+      }
+      case "reverb": {
+        const room = params.room_size || 0.5;
+        const wet = params.wet_level || 0.3;
+        filters.push(`aecho=0.8:${wet}:${Math.round(room*500)}:${room*0.5}`);
+        break;
+      }
+      case "echo": {
+        const delay = params.delay_ms || 300;
+        const decay = params.decay || 0.5;
+        const reps = Math.min(params.repeats || 3, 5);
+        let echoStr = "aecho=0.8:0.7";
+        for (let i = 1; i <= reps; i++) echoStr += `:${delay*i}:${Math.pow(decay,i).toFixed(2)}`;
+        filters.push(echoStr);
+        break;
+      }
+      case "chorus":
+        filters.push(`chorus=0.7:0.9:${Math.round((params.depth||0.5)*50)}:0.4:${params.rate||1.5}:1`);
+        break;
+      case "distortion": {
+        const gain = params.gain || 3;
+        filters.push(`volume=${gain}dB,acompressor=threshold=-10dB:ratio=20:attack=1:release=50,alimiter=limit=-1dB`);
+        break;
+      }
+      case "telephone_effect":
+        filters.push("highpass=f=300,lowpass=f=3000,equalizer=f=1500:t=h:width=1000:g=6,volume=2dB");
+        break;
+      case "robot_voice":
+        filters.push("aecho=0.8:0.5:20:0.5,chorus=0.9:0.9:50:0.5:2:1,equalizer=f=1000:t=h:width=500:g=4");
+        break;
+      case "deep_voice":
+        filters.push("asetrate=r=38000,aresample=44100,equalizer=f=100:t=h:width=200:g=5");
+        break;
+      case "chipmunk_voice":
+        filters.push("asetrate=r=55000,aresample=44100");
+        break;
+      case "whisper_effect":
+        filters.push("highpass=f=2000,volume=0.7dB,aecho=0.5:0.3:50:0.2");
+        break;
+      case "flanger":
+        filters.push(`flanger=delay=5:depth=5:speed=${params.rate||0.5}`);
+        break;
+      case "phaser":
+        filters.push(`aphaser=in_gain=0.4:out_gain=0.74:delay=3:decay=${params.depth||0.7}:speed=${params.rate||1.0}`);
+        break;
+      case "tremolo":
+        filters.push(`tremolo=f=${params.rate||5}:d=${params.depth||0.5}`);
+        break;
+      case "vibrato":
+        filters.push(`vibrato=f=${params.rate||5}:d=${params.depth||0.5}`);
+        break;
+      case "bitcrusher":
+        filters.push(`acrusher=bits=${params.bits||8}:mode=log:aa=1`);
+        break;
+      case "tape_saturation": {
+        const drive = params.drive || 1.0;
+        filters.push(`volume=${drive*6}dB,acompressor=threshold=-10dB:ratio=10:attack=1:release=50,alimiter=limit=-1dB`);
+        break;
+      }
+      case "vinyl_effect":
+        filters.push("aecho=0.8:0.3:20:0.2,equalizer=f=60:t=h:width=30:g=-5,equalizer=f=12000:t=h:width=4000:g=-8");
+        break;
+      case "underwater_effect":
+        filters.push("lowpass=f=500,aecho=0.8:0.5:100:0.4,equalizer=f=200:t=h:width=200:g=4");
+        break;
+      case "cave_echo":
+        filters.push("aecho=0.8:0.6:500:0.6:800:0.4,equalizer=f=500:t=h:width=400:g=3");
+        break;
+      case "stadium_reverb":
+        filters.push("aecho=0.8:0.7:300:0.5:600:0.4:900:0.3,equalizer=f=1000:t=h:width=1000:g=2");
+        break;
+      case "bathroom_reverb":
+        filters.push("aecho=0.8:0.6:80:0.7:160:0.5,equalizer=f=3000:t=h:width=2000:g=4");
+        break;
+      case "alien_voice":
+        filters.push("aecho=0.8:0.5:20:0.5,vibrato=f=8:d=0.8,equalizer=f=2000:t=h:width=1000:g=6");
+        break;
+      case "megaphone_effect":
+        filters.push("highpass=f=500,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=8,volume=4dB,acompressor=threshold=-10dB:ratio=15:attack=1:release=50");
+        break;
+      case "radio_effect":
+        filters.push("highpass=f=400,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=5,volume=2dB");
+        break;
+      // VOICE BEAUTIFY PRESETS
+      case "honey_voice":
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "silky_voice":
+        filters.push("highpass=f=100,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=2000:t=h:width=1500:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB:makeup=1dB,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "broadcast_voice":
+        filters.push("highpass=f=80,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=1500:t=h:width=2000:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
+        break;
+      case "asmr_voice":
+        filters.push("highpass=f=60,lowpass=f=8000,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,aecho=0.8:0.3:80:0.2,volume=-3dB,loudnorm=I=-18:TP=-1:LRA=11");
+        break;
+      case "cinematic_voice":
+        filters.push("highpass=f=60,equalizer=f=100:t=h:width=150:g=4,equalizer=f=3000:t=h:width=2000:g=2,aecho=0.8:0.4:400:0.4:800:0.2,acompressor=threshold=-20dB:ratio=4:attack=20:release=300:knee=6dB:makeup=3dB,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "angelic_voice":
+        filters.push("asetrate=r=46000,aresample=44100,equalizer=f=5000:t=h:width=3000:g=3,equalizer=f=10000:t=h:width=4000:g=2,aecho=0.8:0.35:200:0.35:400:0.2,chorus=0.7:0.9:50:0.4:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "vintage_radio":
+        filters.push("highpass=f=300,lowpass=f=3000,equalizer=f=1500:t=h:width=1000:g=5,volume=2dB,acompressor=threshold=-15dB:ratio=5:attack=10:release=100:knee=3dB");
+        break;
+      case "podcast_pro":
+        filters.push("highpass=f=100,afftdn=nf=-25:nt=w,agate=threshold=-40dB:attack=10:release=200,equalizer=f=200:t=h:width=200:g=2,equalizer=f=2500:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
+        break;
+      case "lofi_voice":
+        filters.push("lowpass=f=8000,equalizer=f=200:t=h:width=200:g=3,acompressor=threshold=-20dB:ratio=3:attack=10:release=100:knee=3dB,volume=1dB");
+        break;
+      case "narrator_voice":
+        filters.push("highpass=f=80,asetrate=r=42000,aresample=44100,equalizer=f=150:t=h:width=150:g=3,equalizer=f=2500:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:60:0.12,loudnorm=I=-16:TP=-1:LRA=11");
+        break;
+      case "smooth_jazz_voice":
+        filters.push("highpass=f=100,equalizer=f=200:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,aecho=0.8:0.25:120:0.2,chorus=0.7:0.9:30:0.3:1.0:1,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "epic_voice":
+        filters.push("highpass=f=60,asetrate=r=40000,aresample=44100,equalizer=f=80:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=3,aecho=0.8:0.5:300:0.4:600:0.2,acompressor=threshold=-18dB:ratio=5:attack=10:release=200:knee=6dB:makeup=4dB,loudnorm=I=-12:TP=-1:LRA=11");
+        break;
+      case "sweet_voice":
+        filters.push("highpass=f=100,asetrate=r=46000,aresample=44100,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=7000:t=h:width=3000:g=2,aecho=0.8:0.2:60:0.15,chorus=0.7:0.9:30:0.3:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "crystal_voice":
+        filters.push("highpass=f=100,afftdn=nf=-30:nt=w,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "deep_warm_voice":
+        filters.push("highpass=f=60,asetrate=r=40000,aresample=44100,equalizer=f=100:t=h:width=150:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=3dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "auto_tune":
+      case "pitch_correct":
+        filters.push("asetrate=r=44100,aresample=44100");
+        break;
+      case "formant_shift": {
+        const shift = params.shift || 1.0;
+        filters.push(`asetrate=r=${Math.round(44100 * shift)},aresample=44100`);
+        break;
+      }
+      default:
+        break;
+    }
   }
 
-  // 2. High-pass filter (remove rumble/sub-bass)
-  if (p.highPassFreq) {
-    filters.push(`highpass=f=${Math.max(20, Math.min(500, p.highPassFreq))}:poles=2`);
+  if (pitchShift !== null) {
+    const ratio = Math.pow(2, pitchShift / 12);
+    filters.push(`asetrate=r=${Math.round(44100 * ratio)},aresample=44100`);
   }
-
-  // 3. Low-pass filter (remove hiss/high noise)
-  if (p.lowPassFreq) {
-    filters.push(`lowpass=f=${Math.max(2000, Math.min(20000, p.lowPassFreq))}:poles=2`);
-  }
-
-  // 4. De-hum (50Hz notch filter + harmonics)
-  if (p.deHum) {
-    filters.push("equalizer=f=50:width_type=o:width=2:g=-20");
-    filters.push("equalizer=f=100:width_type=o:width=2:g=-12");
-    filters.push("equalizer=f=150:width_type=o:width=2:g=-8");
-    filters.push("equalizer=f=60:width_type=o:width=2:g=-15");  // 60Hz for US
-  }
-
-  // 5. AI-powered noise reduction (afftdn — FFmpeg's spectral noise reduction)
-  if (p.noiseReduction && p.noiseReduction > 0) {
-    const nr = Math.max(0.01, Math.min(1.0, p.noiseReduction));
-    const nrLevel = Math.round(nr * 97);  // 0–97 dB
-    const noiseType = p.noiseType === "music" ? "m" : p.noiseType === "voice" ? "v" : "s";
-    // afftdn: AI spectral noise reduction
-    filters.push(`afftdn=nf=-${nrLevel}:nt=${noiseType}:om=o`);
-  }
-
-  // 6. De-click (agate with very short attack for click removal)
-  if (p.deClick) {
-    filters.push("adeclick=w=55:o=75:a=2");
-  }
-
-  // 7. De-breath (gentle gate to reduce breath sounds)
-  if (p.deBreath) {
-    filters.push("agate=threshold=0.015:ratio=8:attack=10:release=200:makeup=1");
-  }
-
-  // 8. Expander/noise gate (gentle expansion for silence)
-  if (p.expanderGate) {
-    filters.push("agate=threshold=0.02:ratio=4:attack=5:release=100");
-  }
-
-  // 9. EQ chain
-  // Bass (low-shelf at 100Hz)
-  if (p.bassBoost && p.bassBoost !== 0) {
-    const g = Math.max(-12, Math.min(12, p.bassBoost));
-    filters.push(`equalizer=f=100:width_type=h:width=200:g=${g}`);
-  }
-
-  // Warmth (peaking at 300Hz)
-  if (p.warmthBoost && p.warmthBoost !== 0) {
-    const g = Math.max(-8, Math.min(8, p.warmthBoost));
-    filters.push(`equalizer=f=300:width_type=o:width=1.5:g=${g}`);
-  }
-
-  // Mid / Voice presence (peaking at 2.5kHz)
-  if (p.midBoost && p.midBoost !== 0) {
-    const g = Math.max(-8, Math.min(8, p.midBoost));
-    filters.push(`equalizer=f=2500:width_type=o:width=1.2:g=${g}`);
-  }
-
-  // Presence / Clarity (peaking at 4kHz)
-  if (p.presenceBoost && p.presenceBoost !== 0) {
-    const g = Math.max(-8, Math.min(8, p.presenceBoost));
-    filters.push(`equalizer=f=4000:width_type=o:width=1.0:g=${g}`);
-  }
-
-  // De-ess (notch at 7kHz to reduce sibilance)
-  if (p.deEss) {
-    filters.push("equalizer=f=7000:width_type=o:width=1.5:g=-4");
-    filters.push("equalizer=f=8500:width_type=o:width=1.0:g=-2");
-  }
-
-  // Treble (high-shelf at 8kHz)
-  if (p.trebleBoost && p.trebleBoost !== 0) {
-    const g = Math.max(-8, Math.min(8, p.trebleBoost));
-    filters.push(`equalizer=f=8000:width_type=h:width=8000:g=${g}`);
-  }
-
-  // Air (high-shelf at 12kHz)
-  if (p.airBoost && p.airBoost !== 0) {
-    const g = Math.max(-6, Math.min(6, p.airBoost));
-    filters.push(`equalizer=f=12000:width_type=h:width=8000:g=${g}`);
-  }
-
-  // 10. Dynamics compression
-  if (p.dynamicCompression) {
-    const ratio = Math.max(1.5, Math.min(20, p.compressionRatio || 4));
-    const thresh = Math.max(-40, Math.min(-6, p.compressionThresh || -24));
-    filters.push(`acompressor=threshold=${Math.pow(10, thresh / 20)}:ratio=${ratio}:attack=3:release=250:makeup=1:knee=0.5`);
-  }
-
-  // 11. Limiter
-  if (p.limiter) {
-    filters.push("alimiter=level_in=1:level_out=0.95:limit=0.95:attack=5:release=50:asc=1");
-  }
-
-  // 12. Volume gain
-  if (p.volume && p.volume !== 1.0) {
-    const vol = Math.max(0.1, Math.min(4.0, p.volume));
-    filters.push(`volume=${vol}`);
-  }
-
-  // 13. Peak normalize
-  if (p.normalize) {
-    filters.push("dynaudnorm=p=0.95:m=100:s=12:g=15");
-  }
-
-  // 14. Stereo width (stereotools)
-  if (p.stereoWidth && Math.abs(p.stereoWidth - 1.0) > 0.05) {
-    const sw = Math.max(0.0, Math.min(2.0, p.stereoWidth));
-    filters.push(`stereotools=mlev=${sw}:slev=${sw}:sbal=0:mbal=0`);
-  }
-
-  // 15. Mono mix
-  if (p.monoMix) {
-    filters.push("pan=mono|c0=0.5*c0+0.5*c1");
-  }
-
-  // 16. Speed change
-  if (p.speed && p.speed !== 1.0) {
-    const spd = Math.max(0.5, Math.min(2.0, p.speed));
-    filters.push(`atempo=${spd}`);
-  }
-
-  // 17. Fade in
-  if (p.fadeIn && p.fadeIn > 0) {
-    const fi = Math.max(0.01, Math.min(30, p.fadeIn));
-    filters.push(`afade=t=in:st=0:d=${fi}:curve=exp`);
-  }
-
-  // 18. Fade out (requires knowing duration — applied at end)
-  if (p.fadeOut && p.fadeOut > 0) {
-    const fo = Math.max(0.01, Math.min(30, p.fadeOut));
-    // We'll add this as a separate step after getting duration
-    filters.push(`__FADEOUT__:${fo}`);
+  if (speedFactor !== null) {
+    filters.push(`atempo=${Math.max(0.5, Math.min(2.0, speedFactor))}`);
   }
 
   return filters;
 }
 
-// ── Run FFmpeg with filter chain ───────────────────────────────────────────────
-async function processWithFFmpeg(inputPath, outputPath, p, duration) {
-  const ffmpegPath = getFfmpegPath();
-
-  // Trim start/end
-  const trimArgs = [];
-  if (p.trimStart && p.trimStart > 0) {
-    trimArgs.push("-ss", String(Math.max(0, p.trimStart)));
-  }
-  if (p.trimEnd && p.trimEnd > 0 && duration) {
-    const endTime = Math.max(0.1, duration - p.trimEnd);
-    trimArgs.push("-to", String(endTime));
-  }
-
-  // Build filter chain
-  let filters = buildFilterChain(p);
-
-  // Handle fade out (needs duration)
-  const fadeOutIdx = filters.findIndex(f => f.startsWith("__FADEOUT__:"));
-  if (fadeOutIdx >= 0) {
-    const fo = parseFloat(filters[fadeOutIdx].split(":")[1]);
-    filters.splice(fadeOutIdx, 1);
-    if (duration) {
-      const effectiveDuration = duration - (p.trimStart || 0) - (p.trimEnd || 0);
-      const fadeStart = Math.max(0, effectiveDuration - fo);
-      filters.push(`afade=t=out:st=${fadeStart.toFixed(2)}:d=${fo}:curve=exp`);
-    }
-  }
-
-  // Reverse (must be done before other filters in separate pass or at start)
-  const reverseFilter = p.reverse ? "areverse," : "";
-
-  // Loudness normalization (EBU R128) — use loudnorm filter
-  if (p.loudnorm) {
-    const target = Math.max(-23, Math.min(-9, p.lufsTarget || -16));
-    filters.push(`loudnorm=I=${target}:TP=-1.5:LRA=11:print_format=none`);
-  }
-
-  const filterStr = reverseFilter + filters.join(",");
-
-  const args = [
-    "-y",
-    ...trimArgs,
-    "-i", inputPath,
-    "-vn",  // no video
-  ];
-
-  if (filterStr) {
-    args.push("-af", filterStr);
-  }
-
-  // Output: high-quality WAV (PCM 16-bit, 44100 Hz)
-  args.push(
-    "-acodec", "pcm_s16le",
-    "-ar", "44100",
-    "-ac", p.monoMix ? "1" : "2",
-    outputPath
-  );
-
-  try {
-    await execFileAsync(ffmpegPath, args, { timeout: 55000 });
-  } catch (err) {
-    // If stereotools fails (mono input), retry without it
-    if (err.message?.includes("stereotools") || err.message?.includes("pan=mono")) {
-      const retryFilters = filters.filter(f => !f.includes("stereotools") && !f.includes("pan=mono"));
-      const retryStr = reverseFilter + retryFilters.join(",");
-      const retryArgs = [...args];
-      const afIdx = retryArgs.indexOf("-af");
-      if (afIdx >= 0) retryArgs[afIdx + 1] = retryStr;
-      await execFileAsync(ffmpegPath, retryArgs, { timeout: 55000 });
-    } else {
-      throw err;
-    }
-  }
-}
-
-// ── Get audio duration using ffprobe ──────────────────────────────────────────
-async function getAudioDuration(inputPath) {
-  const ffmpegPath = getFfmpegPath();
-  const ffprobePath = ffmpegPath.replace(/ffmpeg$/, "ffprobe");
-  try {
-    const { stdout } = await execFileAsync(ffprobePath, [
-      "-v", "quiet",
-      "-print_format", "json",
-      "-show_format",
-      inputPath,
-    ], { timeout: 10000 });
-    const info = JSON.parse(stdout);
-    return parseFloat(info.format?.duration || "0");
-  } catch {
-    return 0;
-  }
-}
-
-// ── Main handler ──────────────────────────────────────────────────────────────
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "25mb",
-    },
-    responseLimit: "25mb",
-  },
-};
-
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Cache-Control", "no-store");
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST")   return res.status(405).json({ error: "Method not allowed" });
-
-  const tmpInput  = join(tmpdir(), `audio_in_${Date.now()}.tmp`);
-  const tmpOutput = join(tmpdir(), `audio_out_${Date.now()}.wav`);
+  const tmpDir = os.tmpdir();
+  let inputPath = null;
+  let outputPath = null;
 
   try {
-    const { instruction, audioData, audioMime } = req.body || {};
-
-    if (!instruction?.trim()) return res.status(400).json({ error: "instruction প্রয়োজন" });
-    if (!audioData)           return res.status(400).json({ error: "audioData প্রয়োজন" });
-
-    // Decode base64 audio
-    const audioBuffer = Buffer.from(audioData, "base64");
-    await writeFile(tmpInput, audioBuffer);
-
-    // Get duration
-    const duration = await getAudioDuration(tmpInput);
-
-    // Parse instruction with AI
-    let aiParams;
-    try {
-      aiParams = await parseInstruction(instruction.trim());
-    } catch (aiErr) {
-      return res.status(500).json({ error: "AI নির্দেশ বিশ্লেষণে সমস্যা", details: aiErr.message });
-    }
-
-    // Clamp values
-    const p = {
-      noiseReduction:    Math.max(0, Math.min(1.0, aiParams.noiseReduction || 0)),
-      noiseType:         aiParams.noiseType || "voice",
-      deHum:             !!aiParams.deHum,
-      deClick:           !!aiParams.deClick,
-      deBreath:          !!aiParams.deBreath,
-      trimSilence:       !!aiParams.trimSilence,
-      highPassFreq:      aiParams.highPassFreq || null,
-      lowPassFreq:       aiParams.lowPassFreq  || null,
-      bassBoost:         Math.max(-12, Math.min(12, aiParams.bassBoost    || 0)),
-      warmthBoost:       Math.max(-8,  Math.min(8,  aiParams.warmthBoost  || 0)),
-      midBoost:          Math.max(-8,  Math.min(8,  aiParams.midBoost     || 0)),
-      presenceBoost:     Math.max(-8,  Math.min(8,  aiParams.presenceBoost|| 0)),
-      deEss:             !!aiParams.deEss,
-      trebleBoost:       Math.max(-8,  Math.min(8,  aiParams.trebleBoost  || 0)),
-      airBoost:          Math.max(-6,  Math.min(6,  aiParams.airBoost     || 0)),
-      dynamicCompression:!!aiParams.dynamicCompression,
-      compressionRatio:  Math.max(1.5, Math.min(20, aiParams.compressionRatio  || 4)),
-      compressionThresh: Math.max(-40, Math.min(-6, aiParams.compressionThresh || -24)),
-      limiter:           !!aiParams.limiter,
-      expanderGate:      !!aiParams.expanderGate,
-      normalize:         !!aiParams.normalize,
-      loudnorm:          !!aiParams.loudnorm,
-      lufsTarget:        Math.max(-23, Math.min(-9, aiParams.lufsTarget || -16)),
-      volume:            Math.max(0.1, Math.min(4.0, aiParams.volume || 1.0)),
-      voiceEnhancement:  !!aiParams.voiceEnhancement,
-      voiceWarmth:       !!aiParams.voiceWarmth,
-      voiceClarity:      !!aiParams.voiceClarity,
-      stereoWidth:       Math.max(0.0, Math.min(2.0, aiParams.stereoWidth || 1.0)),
-      monoMix:           !!aiParams.monoMix,
-      speed:             Math.max(0.5, Math.min(2.0, aiParams.speed || 1.0)),
-      trimStart:         Math.max(0, aiParams.trimStart || 0),
-      trimEnd:           Math.max(0, aiParams.trimEnd   || 0),
-      fadeIn:            Math.max(0, Math.min(30, aiParams.fadeIn  || 0)),
-      fadeOut:           Math.max(0, Math.min(30, aiParams.fadeOut || 0)),
-      reverse:           !!aiParams.reverse,
-    };
-
-    // Process with FFmpeg
-    await processWithFFmpeg(tmpInput, tmpOutput, p, duration);
-
-    // Read output and return as base64
-    const outputBuffer = await readFile(tmpOutput);
-    const outputBase64 = outputBuffer.toString("base64");
-
-    // Cleanup
-    await unlink(tmpInput).catch(() => {});
-    await unlink(tmpOutput).catch(() => {});
-
-    return res.status(200).json({
-      success:      true,
-      intent:       aiParams.intent || "custom",
-      pipeline:     Array.isArray(aiParams.pipeline)      ? aiParams.pipeline      : [],
-      appliedSteps: Array.isArray(aiParams.appliedSteps)  ? aiParams.appliedSteps  : [],
-      description:  aiParams.description  || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
-      technicalNote:aiParams.technicalNote || null,
-      audioData:    outputBase64,
-      audioMime:    "audio/wav",
-      params: p,
+    const form = formidable({ uploadDir: tmpDir, keepExtensions: true, maxFileSize: 50 * 1024 * 1024 });
+    const [fields, files] = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err); else resolve([fields, files]);
+      });
     });
 
-  } catch (err) {
-    console.error("audio-edit handler error:", err);
-    // Cleanup on error
-    await unlink(tmpInput).catch(() => {});
-    await unlink(tmpOutput).catch(() => {});
-    return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে", details: err.message });
+    const audioFile = Array.isArray(files.audio) ? files.audio[0] : files.audio;
+    const instruction = Array.isArray(fields.instruction) ? fields.instruction[0] : fields.instruction;
+
+    if (!audioFile) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
+
+    inputPath = audioFile.filepath;
+    outputPath = path.join(tmpDir, `sardar_edited_${Date.now()}.wav`);
+
+    let parsed;
+    try {
+      const aiResponse = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          { role: "system", content: AUDIO_SYSTEM_PROMPT },
+          { role: "user", content: instruction || "অডিওটি সুন্দর করো" }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+        max_tokens: 1000,
+      });
+      parsed = JSON.parse(aiResponse.choices[0].message.content);
+    } catch (e) {
+      parsed = {
+        operations: [
+          { type: "denoise_advanced", params: { strength: 0.6 } },
+          { type: "vocal_enhance", params: {} },
+          { type: "loudness_normalize", params: { target_lufs: -14 } }
+        ],
+        explanation: "সাধারণ নির্দেশনা বুঝে ডিফল্ট ভয়েস এনহান্সমেন্ট প্রয়োগ করা হয়েছে।",
+        pipeline: ["১. নয়েজ রিডাকশন", "২. ভয়েস এনহান্সমেন্ট", "৩. লাউডনেস নরমালাইজ"],
+        intent: "ডিফল্ট এনহান্সমেন্ট"
+      };
+    }
+
+    const operations = parsed.operations || [];
+    if (operations.length === 0) {
+      operations.push({ type: "denoise_advanced", params: { strength: 0.6 } });
+      operations.push({ type: "vocal_enhance", params: {} });
+      operations.push({ type: "loudness_normalize", params: { target_lufs: -14 } });
+    }
+
+    const filters = buildFFmpegFilter(operations);
+    const filterStr = filters.length > 0 ? filters.join(",") : "anull";
+
+    let ffmpegPath = "ffmpeg";
+    try {
+      const ffmpegStatic = await import("ffmpeg-static");
+      ffmpegPath = ffmpegStatic.default || "ffmpeg";
+    } catch (e) {}
+
+    const ffmpegCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "${filterStr}" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}" 2>&1`;
+
+    try {
+      execSync(ffmpegCmd, { timeout: 120000, stdio: "pipe" });
+    } catch (ffmpegErr) {
+      const fallbackCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "loudnorm=I=-14:TP=-1:LRA=11" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}" 2>&1`;
+      execSync(fallbackCmd, { timeout: 60000, stdio: "pipe" });
+    }
+
+    if (!fs.existsSync(outputPath)) return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে" });
+
+    const outputBuffer = fs.readFileSync(outputPath);
+    const base64Audio = outputBuffer.toString("base64");
+
+    try { fs.unlinkSync(inputPath); } catch (e) {}
+    try { fs.unlinkSync(outputPath); } catch (e) {}
+
+    return res.status(200).json({
+      success: true,
+      audio: base64Audio,
+      mimeType: "audio/wav",
+      explanation: parsed.explanation || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
+      operations: operations.map(op => op.type),
+      pipeline: parsed.pipeline || [],
+      intent: parsed.intent || "অডিও এনহান্সমেন্ট",
+      technicalNote: parsed.technicalNote || "",
+    });
+
+  } catch (error) {
+    if (inputPath) try { fs.unlinkSync(inputPath); } catch (e) {}
+    if (outputPath) try { fs.unlinkSync(outputPath); } catch (e) {}
+    console.error("Audio edit error:", error);
+    return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে: " + error.message });
   }
 }
