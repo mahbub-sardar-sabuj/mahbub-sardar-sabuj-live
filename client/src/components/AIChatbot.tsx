@@ -1896,54 +1896,83 @@ export default function AIChatbot() {
 
               {/* ── Header ── */}
               <div style={{
-                padding: "10px 13px 10px",
+                padding: "9px 11px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                background: "linear-gradient(180deg, rgba(7,13,24,0.99) 0%, rgba(5,10,19,0.96) 100%)",
-                borderBottom: "1px solid rgba(212,168,67,0.12)",
-                boxShadow: "0 1px 0 rgba(212,168,67,0.06), 0 4px 20px rgba(0,0,0,0.3)",
+                gap: 8,
+                background: "radial-gradient(circle at 18% 0%, rgba(212,168,67,0.16), transparent 38%), linear-gradient(180deg, rgba(9,16,29,0.99) 0%, rgba(4,9,18,0.97) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.18)",
+                boxShadow: "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.36)",
                 flexShrink: 0,
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {/* Header avatar with glow */}
+                <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+                  {/* Header avatar with premium glow */}
                   <div style={{
-                    width: 38, height: 38,
-                    borderRadius: "50%",
+                    width: 40, height: 40,
+                    borderRadius: "16px",
                     overflow: "hidden",
                     flexShrink: 0,
-                    border: "1.5px solid rgba(212,168,67,0.7)",
-                    boxShadow: "0 0 0 2px rgba(212,168,67,0.1), 0 0 12px rgba(212,168,67,0.3)",
+                    padding: 2,
+                    background: "linear-gradient(135deg, rgba(244,213,125,0.95), rgba(201,168,76,0.22), rgba(244,213,125,0.7))",
+                    boxShadow: "0 0 0 1px rgba(212,168,67,0.22), 0 10px 24px rgba(212,168,67,0.16)",
                   }}>
-                    <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      onError={(e) => {
-                        const t = e.currentTarget;
-                        t.style.display = "none";
-                        t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:700;font-size:0.75rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#D4A843,#C9A84C);">AI</span>';
-                      }} />
+                    <div style={{ width: "100%", height: "100%", borderRadius: 14, overflow: "hidden", background: "rgba(4,9,18,0.85)" }}>
+                      <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          t.style.display = "none";
+                          t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:800;font-size:0.72rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#F0D080,#C9A84C);">AI</span>';
+                        }} />
+                    </div>
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
                     {/* Shimmer title */}
                     <div style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontWeight: 700,
-                      fontSize: "0.82rem",
+                      fontWeight: 800,
+                      fontSize: "0.86rem",
                       letterSpacing: "0.01em",
-                      background: "linear-gradient(90deg, #C9A84C 0%, #F0D080 35%, #D4A843 65%, #C9A84C 100%)",
-                      backgroundSize: "200% auto",
+                      lineHeight: 1.1,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      background: "linear-gradient(90deg, #F7E4A5 0%, #D4A843 46%, #FFF1B8 68%, #C9A84C 100%)",
+                      backgroundSize: "220% auto",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
                       animation: "chatbot-shimmer 4s linear infinite",
                     }}>
                       মাহবুব সরদার সবুজ
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-                      <div style={{
-                        width: 5, height: 5, borderRadius: "50%",
-                        background: "#4ade80",
-                        animation: "chatbot-glow-pulse 2.5s ease-in-out infinite",
-                      }} />
-                      <span style={{ color: "rgba(74,222,128,0.85)", fontSize: "0.6rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", letterSpacing: "0.02em" }}>AI Agent · সক্রিয়</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "2px 7px",
+                        borderRadius: 999,
+                        color: "rgba(74,222,128,0.95)",
+                        background: "rgba(34,197,94,0.08)",
+                        border: "1px solid rgba(34,197,94,0.18)",
+                        fontSize: "0.58rem",
+                        fontWeight: 700,
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        letterSpacing: "0.02em",
+                        lineHeight: 1.2,
+                      }}>
+                        <span style={{
+                          width: 5, height: 5, borderRadius: "50%",
+                          background: "#4ade80",
+                          boxShadow: "0 0 10px rgba(74,222,128,0.75)",
+                          animation: "chatbot-glow-pulse 2.5s ease-in-out infinite",
+                        }} />
+                        AI Agent
+                      </span>
+                      <span style={{
+                        color: "rgba(245,238,222,0.5)",
+                        fontSize: "0.56rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        lineHeight: 1.2,
+                      }}>সক্রিয় সহকারী</span>
                     </div>
                   </div>
                 </div>
