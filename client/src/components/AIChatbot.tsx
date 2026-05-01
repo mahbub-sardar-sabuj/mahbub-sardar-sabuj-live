@@ -534,55 +534,105 @@ if (!document.getElementById(STYLE_ID)) {
     }
     @keyframes chatbot-ping {
       0% { transform: scale(1); opacity: 0.7; }
-      70% { transform: scale(1.6); opacity: 0; }
-      100% { transform: scale(1.6); opacity: 0; }
+      70% { transform: scale(1.8); opacity: 0; }
+      100% { transform: scale(1.8); opacity: 0; }
     }
     @keyframes chatbot-ping2 {
-      0% { transform: scale(1); opacity: 0.4; }
-      70% { transform: scale(2.1); opacity: 0; }
-      100% { transform: scale(2.1); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.35; }
+      70% { transform: scale(2.4); opacity: 0; }
+      100% { transform: scale(2.4); opacity: 0; }
     }
     @keyframes chatbot-shimmer {
       0% { background-position: -200% center; }
       100% { background-position: 200% center; }
     }
     @keyframes chatbot-glow-pulse {
-      0%, 100% { box-shadow: 0 0 8px rgba(212,168,67,0.5), 0 0 20px rgba(212,168,67,0.2); }
-      50% { box-shadow: 0 0 16px rgba(212,168,67,0.8), 0 0 40px rgba(212,168,67,0.4); }
+      0%, 100% { opacity: 0.7; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); }
     }
     @keyframes chatbot-dot-bounce {
-      0%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-8px); }
+      0%, 60%, 100% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-6px) scale(0.9); }
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    .chatbot-scrollbar::-webkit-scrollbar { width: 3px; }
+    @keyframes chatbot-fade-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes chatbot-border-glow {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(212,168,67,0.25), 0 0 20px rgba(212,168,67,0.06); }
+      50%       { box-shadow: 0 0 0 1px rgba(212,168,67,0.5),  0 0 30px rgba(212,168,67,0.12); }
+    }
+    .chatbot-scrollbar::-webkit-scrollbar { width: 2px; }
     .chatbot-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .chatbot-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 4px; }
-    .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.55); }
+    .chatbot-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.2); border-radius: 4px; }
+    .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.45); }
     .chatbot-input::placeholder {
-      color: rgba(180,160,120,0.45) !important;
+      color: rgba(160,140,100,0.38) !important;
       font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+      font-size: 0.78rem !important;
+    }
+    .chatbot-input:focus {
+      border-color: rgba(212,168,67,0.5) !important;
+      box-shadow: 0 0 0 2px rgba(212,168,67,0.07), inset 0 1px 3px rgba(0,0,0,0.2) !important;
     }
     .chatbot-suggestion-btn {
-      transition: all 0.2s ease;
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
     }
     .chatbot-suggestion-btn:hover {
-      background: rgba(212,168,67,0.14) !important;
-      border-color: rgba(212,168,67,0.55) !important;
-      color: #D4A843 !important;
+      background: rgba(212,168,67,0.1) !important;
+      border-color: rgba(212,168,67,0.45) !important;
+      color: #E8C060 !important;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(212,168,67,0.18);
+      box-shadow: 0 3px 12px rgba(212,168,67,0.12);
     }
     .chatbot-nav-btn {
-      transition: all 0.2s ease;
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
     }
     .chatbot-nav-btn:hover {
-      background: linear-gradient(135deg, rgba(212,168,67,0.28) 0%, rgba(212,168,67,0.18) 100%) !important;
-      border-color: #D4A843 !important;
-      box-shadow: 0 4px 12px rgba(212,168,67,0.25);
+      background: rgba(212,168,67,0.12) !important;
+      border-color: rgba(212,168,67,0.6) !important;
+      color: #E8C060 !important;
+      box-shadow: 0 3px 10px rgba(212,168,67,0.18);
+      transform: translateX(2px);
+    }
+    .chatbot-icon-btn {
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    .chatbot-icon-btn:hover {
+      background: rgba(212,168,67,0.12) !important;
+      border-color: rgba(212,168,67,0.5) !important;
+    }
+    .chatbot-send-btn {
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    .chatbot-send-btn:not(:disabled):hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(212,168,67,0.4);
+    }
+    .chatbot-download-btn {
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    .chatbot-download-btn:hover {
+      background: rgba(212,168,67,0.2) !important;
+      border-color: rgba(212,168,67,0.7) !important;
       transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(212,168,67,0.2);
+    }
+    .chatbot-tab-btn {
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    .chatbot-tab-btn:hover:not(.active) {
+      color: rgba(212,168,67,0.75) !important;
+      background: rgba(212,168,67,0.04) !important;
+    }
+    .chatbot-audio-player {
+      accent-color: #D4A843;
+    }
+    .chatbot-audio-player::-webkit-media-controls-panel {
+      background: rgba(12,22,38,0.95);
     }
   `;
   document.head.appendChild(style);
@@ -595,22 +645,22 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: 20, y: 5 }}
+        initial={{ opacity: 0, x: 14, y: 4 }}
         animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ type: "spring", stiffness: 400, damping: 28 }}
-        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}
+        transition={{ type: "spring", stiffness: 420, damping: 30 }}
+        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}
       >
         <div style={{
-          background: "linear-gradient(135deg, #C9A84C 0%, #D4A843 40%, #E8C060 100%)",
+          background: "linear-gradient(135deg, #C9A84C 0%, #D4A843 50%, #C0983C 100%)",
           color: "#0A1628",
-          borderRadius: "18px 18px 4px 18px",
-          padding: "10px 14px",
-          maxWidth: "80%",
+          borderRadius: "16px 16px 3px 16px",
+          padding: "8px 12px",
+          maxWidth: "78%",
           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-          fontSize: "0.85rem",
-          lineHeight: 1.7,
+          fontSize: "0.78rem",
+          lineHeight: 1.65,
           fontWeight: 600,
-          boxShadow: "0 4px 18px rgba(212,168,67,0.3), 0 2px 8px rgba(0,0,0,0.25)",
+          boxShadow: "0 3px 14px rgba(212,168,67,0.25), 0 1px 4px rgba(0,0,0,0.2)",
           wordBreak: "break-word",
         }}>
           {message.imageUrl && (
@@ -620,16 +670,16 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
               style={{
                 display: "block",
                 maxWidth: "100%",
-                maxHeight: 180,
-                borderRadius: 10,
-                marginBottom: message.content ? 8 : 4,
+                maxHeight: 160,
+                borderRadius: 8,
+                marginBottom: message.content ? 7 : 3,
                 objectFit: "contain",
-                border: "2px solid rgba(10,22,40,0.15)",
+                border: "1.5px solid rgba(10,22,40,0.12)",
               }}
             />
           )}
           {message.content}
-          <div style={{ fontSize: "0.6rem", color: "rgba(10,22,40,0.5)", marginTop: 3, textAlign: "right" }}>
+          <div style={{ fontSize: "0.55rem", color: "rgba(10,22,40,0.45)", marginTop: 3, textAlign: "right", letterSpacing: "0.02em" }}>
             {formatTime(message.timestamp)}
           </div>
         </div>
@@ -641,20 +691,20 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20, y: 5 }}
+      initial={{ opacity: 0, x: -14, y: 4 }}
       animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      style={{ display: "flex", gap: 10, marginBottom: 14 }}
+      transition={{ type: "spring", stiffness: 420, damping: 30 }}
+      style={{ display: "flex", gap: 8, marginBottom: 10 }}
     >
       {/* Small avatar */}
       <div style={{
-        width: 32, height: 32,
+        width: 28, height: 28,
         borderRadius: "50%",
         overflow: "hidden",
         flexShrink: 0,
-        marginTop: 2,
-        border: "1.5px solid rgba(212,168,67,0.65)",
-        boxShadow: "0 0 10px rgba(212,168,67,0.35)",
+        marginTop: 3,
+        border: "1px solid rgba(212,168,67,0.5)",
+        boxShadow: "0 0 8px rgba(212,168,67,0.25)",
       }}>
         <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => {
@@ -734,27 +784,27 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
         {/* ── Audio player & download (for edited audio messages) ── */}
         {message.audioUrl && (
           <div style={{
-            background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
-            borderRadius: "4px 18px 18px 18px",
-            padding: "12px 14px",
-            border: "1px solid rgba(212,168,67,0.28)",
-            borderLeft: "3px solid rgba(212,168,67,0.7)",
-            boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
-            marginBottom: 8,
+            background: "linear-gradient(145deg, rgba(11,19,34,0.98) 0%, rgba(8,15,28,0.98) 100%)",
+            borderRadius: "3px 14px 14px 14px",
+            padding: "10px 12px",
+            border: "1px solid rgba(212,168,67,0.18)",
+            borderLeft: "2px solid rgba(212,168,67,0.6)",
+            boxShadow: "0 3px 14px rgba(0,0,0,0.3)",
+            marginBottom: 7,
           }}>
             {/* Intent badge */}
             {message.audioIntent && (
-              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <div style={{ marginBottom: 7, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                 <span style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 5,
-                  padding: "3px 10px",
-                  background: "rgba(212,168,67,0.15)",
-                  border: "1px solid rgba(212,168,67,0.40)",
+                  gap: 4,
+                  padding: "2px 8px",
+                  background: "rgba(212,168,67,0.1)",
+                  border: "1px solid rgba(212,168,67,0.3)",
                   borderRadius: 20,
-                  color: "#D4A843",
-                  fontSize: "0.68rem",
+                  color: "rgba(212,168,67,0.9)",
+                  fontSize: "0.6rem",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontWeight: 700,
                   letterSpacing: "0.03em",
@@ -778,29 +828,30 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             )}
             {/* Pipeline steps (ordered) */}
             {message.audioPipeline && message.audioPipeline.length > 0 && (
-              <div style={{ marginBottom: 10 }}>
+              <div style={{ marginBottom: 8 }}>
                 <div style={{
-                  color: "rgba(212,168,67,0.55)",
+                  color: "rgba(212,168,67,0.45)",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.62rem",
+                  fontSize: "0.56rem",
                   fontWeight: 700,
-                  marginBottom: 5,
+                  marginBottom: 4,
                   letterSpacing: "0.04em",
-                }}>🔄 প্রসেসিং পাইপলাইন:</div>
+                  textTransform: "uppercase",
+                }}>প্রসেসিং পাইপলাইন</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 3, alignItems: "center" }}>
                   {message.audioPipeline.map((step, i) => (
-                    <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                    <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
                       <span style={{
-                        padding: "2px 7px",
-                        background: "rgba(99,102,241,0.10)",
-                        border: "1px solid rgba(99,102,241,0.25)",
-                        borderRadius: 8,
-                        color: "rgba(165,180,252,0.85)",
-                        fontSize: "0.60rem",
+                        padding: "1px 6px",
+                        background: "rgba(99,102,241,0.08)",
+                        border: "1px solid rgba(99,102,241,0.18)",
+                        borderRadius: 6,
+                        color: "rgba(165,180,252,0.75)",
+                        fontSize: "0.56rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       }}>{i + 1}. {step}</span>
                       {i < (message.audioPipeline?.length ?? 0) - 1 && (
-                        <span style={{ color: "rgba(99,102,241,0.4)", fontSize: "0.55rem" }}>→</span>
+                        <span style={{ color: "rgba(99,102,241,0.3)", fontSize: "0.5rem" }}>→</span>
                       )}
                     </span>
                   ))}
@@ -809,30 +860,31 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             )}
             {/* Applied steps */}
             {message.audioAppliedSteps && message.audioAppliedSteps.length > 0 && (
-              <div style={{ marginBottom: 10 }}>
+              <div style={{ marginBottom: 8 }}>
                 <div style={{
-                  color: "rgba(74,222,128,0.55)",
+                  color: "rgba(74,222,128,0.45)",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.62rem",
+                  fontSize: "0.56rem",
                   fontWeight: 700,
-                  marginBottom: 5,
+                  marginBottom: 4,
                   letterSpacing: "0.04em",
-                }}>✅ সম্পন্ন পদক্ষেপসমূহ:</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  textTransform: "uppercase",
+                }}>সম্পন্ন পদক্ষেপ</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                   {message.audioAppliedSteps.map((step, i) => (
                     <span key={i} style={{
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: 4,
-                      padding: "2px 8px",
-                      background: "rgba(74,222,128,0.08)",
-                      border: "1px solid rgba(74,222,128,0.25)",
-                      borderRadius: 10,
-                      color: "rgba(134,239,172,0.85)",
-                      fontSize: "0.63rem",
+                      gap: 3,
+                      padding: "1px 7px",
+                      background: "rgba(74,222,128,0.06)",
+                      border: "1px solid rgba(74,222,128,0.18)",
+                      borderRadius: 8,
+                      color: "rgba(134,239,172,0.75)",
+                      fontSize: "0.58rem",
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     }}>
-                      <span style={{ color: "#4ade80", fontSize: "0.6rem" }}>✓</span>
+                      <span style={{ color: "rgba(74,222,128,0.8)", fontSize: "0.55rem" }}>✓</span>
                       {step}
                     </span>
                   ))}
@@ -842,13 +894,13 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             {/* Description */}
             {message.audioDescription && (
               <div style={{
-                color: "rgba(245,238,222,0.9)",
+                color: "rgba(235,225,200,0.85)",
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                fontSize: "0.82rem",
+                fontSize: "0.75rem",
                 lineHeight: 1.7,
-                marginBottom: 10,
-                borderTop: "1px solid rgba(212,168,67,0.12)",
-                paddingTop: 8,
+                marginBottom: 8,
+                borderTop: "1px solid rgba(212,168,67,0.08)",
+                paddingTop: 7,
               }}>
                 {message.audioDescription}
               </div>
@@ -856,15 +908,15 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             {/* Technical note */}
             {message.audioTechnicalNote && (
               <div style={{
-                color: "rgba(148,163,184,0.75)",
+                color: "rgba(140,155,175,0.65)",
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                fontSize: "0.68rem",
+                fontSize: "0.6rem",
                 lineHeight: 1.6,
-                marginBottom: 8,
-                padding: "5px 8px",
-                background: "rgba(148,163,184,0.06)",
-                borderRadius: 6,
-                borderLeft: "2px solid rgba(148,163,184,0.2)",
+                marginBottom: 7,
+                padding: "4px 7px",
+                background: "rgba(140,155,175,0.04)",
+                borderRadius: 5,
+                borderLeft: "1.5px solid rgba(140,155,175,0.15)",
               }}>
                 🔬 {message.audioTechnicalNote}
               </div>
@@ -873,35 +925,37 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             <audio
               controls
               src={message.audioUrl}
+              className="chatbot-audio-player"
               style={{
                 width: "100%",
-                borderRadius: 10,
-                height: 36,
-                accentColor: "#D4A843",
-                marginBottom: 8,
+                borderRadius: 8,
+                height: 32,
+                marginBottom: 7,
               }}
             />
             {/* Download button */}
             <a
               href={message.audioUrl}
               download={message.audioFilename || "edited_audio.wav"}
+              className="chatbot-download-btn"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 14px",
-                background: "linear-gradient(135deg, rgba(212,168,67,0.18) 0%, rgba(212,168,67,0.08) 100%)",
-                border: "1px solid rgba(212,168,67,0.45)",
-                borderRadius: 12,
-                color: "#D4A843",
-                fontSize: "0.75rem",
+                gap: 5,
+                padding: "5px 12px",
+                background: "rgba(212,168,67,0.08)",
+                border: "1px solid rgba(212,168,67,0.3)",
+                borderRadius: 10,
+                color: "rgba(212,168,67,0.85)",
+                fontSize: "0.65rem",
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 fontWeight: 600,
                 textDecoration: "none",
                 cursor: "pointer",
+                letterSpacing: "0.02em",
               }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
@@ -912,39 +966,40 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
         )}
         {text && (
           <div style={{
-            background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
-            borderRadius: "4px 18px 18px 18px",
-            padding: "11px 14px",
-            color: "rgba(245,238,222,0.95)",
+            background: "linear-gradient(145deg, rgba(13,22,40,0.97) 0%, rgba(10,18,34,0.97) 100%)",
+            borderRadius: "3px 14px 14px 14px",
+            padding: "9px 12px",
+            color: "rgba(238,230,210,0.92)",
             fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-            fontSize: "0.85rem",
-            lineHeight: 1.8,
+            fontSize: "0.78rem",
+            lineHeight: 1.75,
             whiteSpace: "pre-wrap",
-            border: "1px solid rgba(212,168,67,0.18)",
-            borderLeft: "3px solid rgba(212,168,67,0.7)",
-            boxShadow: "0 4px 18px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)",
+            border: "1px solid rgba(212,168,67,0.13)",
+            borderLeft: "2px solid rgba(212,168,67,0.55)",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.02)",
             wordBreak: "break-word",
           }}>
             {text}
           </div>
         )}
         {buttons.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 9 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 7 }}>
             {buttons.map(btn => (
               <button
                 key={btn.path}
                 onClick={() => onNavigate(btn.path)}
                 className="chatbot-nav-btn"
                 style={{
-                  background: "linear-gradient(135deg, rgba(212,168,67,0.1) 0%, rgba(212,168,67,0.05) 100%)",
-                  border: "1px solid rgba(212,168,67,0.4)",
-                  color: "#D4A843",
-                  borderRadius: 18,
-                  padding: "5px 12px",
-                  fontSize: "0.75rem",
+                  background: "rgba(212,168,67,0.06)",
+                  border: "1px solid rgba(212,168,67,0.3)",
+                  color: "rgba(212,168,67,0.85)",
+                  borderRadius: 20,
+                  padding: "4px 10px",
+                  fontSize: "0.68rem",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   cursor: "pointer",
                   fontWeight: 600,
+                  letterSpacing: "0.01em",
                 }}
               >
                 {btn.label} →
@@ -952,7 +1007,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             ))}
           </div>
         )}
-        <div style={{ color: "rgba(130,148,165,0.5)", fontSize: "0.6rem", marginTop: 4, paddingLeft: 2 }}>
+        <div style={{ color: "rgba(110,130,150,0.4)", fontSize: "0.55rem", marginTop: 3, paddingLeft: 1, letterSpacing: "0.02em" }}>
           {formatTime(message.timestamp)}
         </div>
       </div>
@@ -1627,18 +1682,19 @@ export default function AIChatbot() {
               bottom: 80,
               right: 12,
               zIndex: 60,
-              width: 370,
+              width: 368,
               maxWidth: "calc(100vw - 16px)",
-              height: "min(600px, calc(100vh - 110px))",
-              borderRadius: 22,
+              height: "min(610px, calc(100vh - 108px))",
+              borderRadius: 20,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              background: "rgba(6,12,22,0.97)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(212,168,67,0.28)",
-              boxShadow: "0 24px 70px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,168,67,0.1), 0 0 50px rgba(212,168,67,0.05)",
+              background: "rgba(5,10,19,0.98)",
+              backdropFilter: "blur(32px)",
+              WebkitBackdropFilter: "blur(32px)",
+              border: "1px solid rgba(212,168,67,0.22)",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(212,168,67,0.08), inset 0 1px 0 rgba(212,168,67,0.08)",
+              animation: "chatbot-border-glow 4s ease-in-out infinite",
             }}
           >
             {/* Watermark */}
@@ -1665,24 +1721,24 @@ export default function AIChatbot() {
 
               {/* ── Header ── */}
               <div style={{
-                padding: "12px 14px 11px",
+                padding: "10px 13px 10px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                background: "linear-gradient(135deg, rgba(5,10,20,0.98) 0%, rgba(8,16,30,0.98) 100%)",
-                borderBottom: "1px solid rgba(212,168,67,0.18)",
-                boxShadow: "0 2px 14px rgba(0,0,0,0.4)",
+                background: "linear-gradient(180deg, rgba(7,13,24,0.99) 0%, rgba(5,10,19,0.96) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.12)",
+                boxShadow: "0 1px 0 rgba(212,168,67,0.06), 0 4px 20px rgba(0,0,0,0.3)",
                 flexShrink: 0,
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {/* Header avatar with glow */}
                   <div style={{
-                    width: 42, height: 42,
+                    width: 38, height: 38,
                     borderRadius: "50%",
                     overflow: "hidden",
                     flexShrink: 0,
-                    border: "2px solid #D4A843",
-                    boxShadow: "0 0 0 3px rgba(212,168,67,0.15), 0 0 18px rgba(212,168,67,0.4), 0 0 36px rgba(212,168,67,0.18)",
+                    border: "1.5px solid rgba(212,168,67,0.7)",
+                    boxShadow: "0 0 0 2px rgba(212,168,67,0.1), 0 0 12px rgba(212,168,67,0.3)",
                   }}>
                     <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       onError={(e) => {
@@ -1696,82 +1752,61 @@ export default function AIChatbot() {
                     <div style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontWeight: 700,
-                      fontSize: "0.88rem",
-                      background: "linear-gradient(90deg, #C9A84C 0%, #F0D080 30%, #D4A843 60%, #E8C060 80%, #C9A84C 100%)",
+                      fontSize: "0.82rem",
+                      letterSpacing: "0.01em",
+                      background: "linear-gradient(90deg, #C9A84C 0%, #F0D080 35%, #D4A843 65%, #C9A84C 100%)",
                       backgroundSize: "200% auto",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
-                      animation: "chatbot-shimmer 3s linear infinite",
+                      animation: "chatbot-shimmer 4s linear infinite",
                     }}>
                       মাহবুব সরদার সবুজ
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                       <div style={{
-                        width: 6, height: 6, borderRadius: "50%",
+                        width: 5, height: 5, borderRadius: "50%",
                         background: "#4ade80",
-                        boxShadow: "0 0 5px rgba(74,222,128,0.8)",
-                        animation: "chatbot-glow-pulse 2s ease-in-out infinite",
+                        animation: "chatbot-glow-pulse 2.5s ease-in-out infinite",
                       }} />
-                      <span style={{ color: "#4ade80", fontSize: "0.67rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>AI Agent · সক্রিয়</span>
+                      <span style={{ color: "rgba(74,222,128,0.85)", fontSize: "0.6rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", letterSpacing: "0.02em" }}>AI Agent · সক্রিয়</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Header buttons */}
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <button onClick={clearChat} title="নতুন কথোপকথন"
+                    className="chatbot-icon-btn"
                     style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.68rem",
-                      color: "rgba(212,168,67,0.75)",
-                      background: "rgba(212,168,67,0.07)",
-                      border: "1px solid rgba(212,168,67,0.22)",
-                      borderRadius: 9,
-                      padding: "4px 9px",
+                      fontSize: "0.62rem",
+                      color: "rgba(212,168,67,0.65)",
+                      background: "rgba(212,168,67,0.05)",
+                      border: "1px solid rgba(212,168,67,0.16)",
+                      borderRadius: 8,
+                      padding: "3px 8px",
                       cursor: "pointer",
                       fontWeight: 600,
-                      transition: "all 0.2s",
+                      letterSpacing: "0.02em",
                       whiteSpace: "nowrap",
-                    }}
-                    onMouseEnter={e => {
-                      const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(212,168,67,0.16)";
-                      b.style.borderColor = "rgba(212,168,67,0.55)";
-                    }}
-                    onMouseLeave={e => {
-                      const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(212,168,67,0.07)";
-                      b.style.borderColor = "rgba(212,168,67,0.22)";
                     }}>
                     নতুন
                   </button>
                   <button
                     onClick={() => setIsOpen(false)}
                     title="বন্ধ করুন"
+                    className="chatbot-icon-btn"
                     style={{
-                      width: 28, height: 28,
+                      width: 26, height: 26,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       borderRadius: "50%",
-                      border: "1px solid rgba(255,100,100,0.22)",
-                      color: "rgba(200,120,120,0.65)",
-                      background: "rgba(255,80,80,0.05)",
+                      border: "1px solid rgba(255,90,90,0.18)",
+                      color: "rgba(200,110,110,0.55)",
+                      background: "rgba(255,70,70,0.04)",
                       cursor: "pointer",
-                      fontSize: "0.8rem",
+                      fontSize: "0.72rem",
                       fontWeight: 700,
-                      transition: "all 0.2s",
                       flexShrink: 0,
-                    }}
-                    onMouseEnter={e => {
-                      const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(255,80,80,0.16)";
-                      b.style.borderColor = "rgba(255,100,100,0.55)";
-                      b.style.color = "#ff6464";
-                    }}
-                    onMouseLeave={e => {
-                      const b = e.currentTarget as HTMLButtonElement;
-                      b.style.background = "rgba(255,80,80,0.05)";
-                      b.style.borderColor = "rgba(255,100,100,0.22)";
-                      b.style.color = "rgba(200,120,120,0.65)";
                     }}
                   >
                     ✕
@@ -1782,36 +1817,39 @@ export default function AIChatbot() {
               {/* ── Tabs ── */}
               <div style={{
                 display: "flex",
-                borderBottom: "1px solid rgba(212,168,67,0.15)",
-                background: "rgba(5,10,20,0.7)",
+                borderBottom: "1px solid rgba(212,168,67,0.1)",
+                background: "rgba(4,8,16,0.8)",
                 flexShrink: 0,
+                padding: "0 4px",
               }}>
                 {(["ai", "live"] as const).map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
+                    className={`chatbot-tab-btn${activeTab === tab ? " active" : ""}`}
                     style={{
                       flex: 1,
-                      padding: "9px 8px",
-                      background: activeTab === tab ? "rgba(212,168,67,0.1)" : "transparent",
+                      padding: "7px 8px",
+                      background: activeTab === tab ? "rgba(212,168,67,0.07)" : "transparent",
                       border: "none",
-                      borderBottom: activeTab === tab ? "2px solid #D4A843" : "2px solid transparent",
-                      color: activeTab === tab ? "#D4A843" : "rgba(180,160,120,0.5)",
+                      borderBottom: activeTab === tab ? "1.5px solid rgba(212,168,67,0.8)" : "1.5px solid transparent",
+                      color: activeTab === tab ? "rgba(212,168,67,0.95)" : "rgba(160,140,100,0.4)",
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.78rem",
-                      fontWeight: 700,
+                      fontSize: "0.72rem",
+                      fontWeight: activeTab === tab ? 700 : 500,
+                      letterSpacing: "0.02em",
                       cursor: "pointer",
-                      transition: "all 0.2s",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: 6,
+                      gap: 5,
+                      marginBottom: -1,
                     }}
                   >
                     {tab === "ai" ? (
-                      <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI সহকারী</>
+                      <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI সহকারী</>
                     ) : (
-                      <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> সরাসরি চ্যাট</>
+                      <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> সরাসরি চ্যাট</>
                     )}
                   </button>
                 ))}
@@ -1872,19 +1910,20 @@ export default function AIChatbot() {
               {/* ── Suggestions ── */}
               {messages.length === 1 && (
                 <div style={{
-                  padding: "8px 12px 10px",
-                  borderTop: "1px solid rgba(212,168,67,0.1)",
-                  background: "rgba(5,10,20,0.6)",
+                  padding: "7px 10px 8px",
+                  borderTop: "1px solid rgba(212,168,67,0.07)",
+                  background: "rgba(4,8,16,0.7)",
                   flexShrink: 0,
                 }}>
                   <p style={{
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.65rem",
-                    color: "rgba(212,168,67,0.45)",
-                    marginBottom: 7,
-                    letterSpacing: "0.03em",
-                  }}>জিজ্ঞেস করুন:</p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    fontSize: "0.58rem",
+                    color: "rgba(212,168,67,0.35)",
+                    marginBottom: 6,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                  }}>জিজ্ঞেস করুন</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
                     {SUGGESTIONS.map(s => (
                       <button key={s}
                         className="chatbot-suggestion-btn"
@@ -1898,12 +1937,12 @@ export default function AIChatbot() {
                         }}
                         style={{
                           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.72rem",
-                          color: "rgba(212,168,67,0.8)",
-                          background: "rgba(16,28,48,0.75)",
-                          border: "1px solid rgba(40,56,72,0.95)",
-                          borderRadius: 10,
-                          padding: "7px 8px",
+                          fontSize: "0.65rem",
+                          color: "rgba(212,168,67,0.7)",
+                          background: "rgba(12,20,36,0.8)",
+                          border: "1px solid rgba(35,50,68,0.8)",
+                          borderRadius: 9,
+                          padding: "6px 7px",
                           lineHeight: 1.35,
                           cursor: "pointer",
                           textAlign: "left",
@@ -1922,9 +1961,9 @@ export default function AIChatbot() {
 
               {/* ── Input ── */}
               <div style={{
-                padding: "10px 12px 12px",
-                borderTop: "1px solid rgba(212,168,67,0.13)",
-                background: "linear-gradient(135deg, rgba(5,10,20,0.98) 0%, rgba(8,16,30,0.98) 100%)",
+                padding: "8px 10px 10px",
+                borderTop: "1px solid rgba(212,168,67,0.08)",
+                background: "rgba(4,8,16,0.97)",
                 flexShrink: 0,
               }}>
                 {/* Hidden file inputs */}
@@ -1946,20 +1985,20 @@ export default function AIChatbot() {
                 {/* Audio mode banner — only show when a NEW file is selected, not after editing */}
                 {audioFile && (
                   <div style={{
-                    marginBottom: 8,
+                    marginBottom: 7,
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
-                    padding: "8px 12px",
-                    background: "rgba(212,168,67,0.08)",
-                    borderRadius: 10,
-                    border: "1px solid rgba(212,168,67,0.3)",
+                    gap: 7,
+                    padding: "6px 10px",
+                    background: "rgba(212,168,67,0.05)",
+                    borderRadius: 9,
+                    border: "1px solid rgba(212,168,67,0.2)",
                   }}>
                     {/* Audio icon */}
                     <div style={{
-                      width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-                      background: "rgba(212,168,67,0.15)",
-                      border: "1.5px solid rgba(212,168,67,0.4)",
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                      background: "rgba(212,168,67,0.1)",
+                      border: "1px solid rgba(212,168,67,0.3)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A843" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1970,21 +2009,22 @@ export default function AIChatbot() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
-                        color: "rgba(212,168,67,0.9)",
+                        color: "rgba(212,168,67,0.85)",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.65rem",
+                        fontSize: "0.6rem",
                         fontWeight: 700,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
+                        letterSpacing: "0.01em",
                       }}>{audioFile.name}</div>
                       <div style={{
-                        color: "rgba(212,168,67,0.5)",
+                        color: "rgba(212,168,67,0.4)",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.58rem",
+                        fontSize: "0.54rem",
                         marginTop: 1,
                       }}>
-                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • কি এডিটিং করতে চান তা লিখুন
+                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • নির্দেশ দিন
                       </div>
                     </div>
                     {/* Quick edit button - no instruction needed */}
@@ -1993,17 +2033,18 @@ export default function AIChatbot() {
                       disabled={audioProcessing}
                       title="নির্দেশ ছাড়াই অ্যান্টো এডিট"
                       style={{
-                        padding: "4px 8px",
-                        background: "rgba(212,168,67,0.2)",
-                        border: "1px solid rgba(212,168,67,0.5)",
-                        borderRadius: 8,
-                        color: "#D4A843",
-                        fontSize: "0.62rem",
+                        padding: "3px 7px",
+                        background: "rgba(212,168,67,0.1)",
+                        border: "1px solid rgba(212,168,67,0.3)",
+                        borderRadius: 7,
+                        color: "rgba(212,168,67,0.85)",
+                        fontSize: "0.56rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontWeight: 700,
                         cursor: "pointer",
                         flexShrink: 0,
                         whiteSpace: "nowrap",
+                        letterSpacing: "0.02em",
                       }}
                     >স্বয়ং এডিট</button>
                     <button
@@ -2058,24 +2099,23 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: 6, alignItems: "flex-end" }}>
+                <div style={{ display: "flex", gap: 5, alignItems: "flex-end" }}>
                   {/* Image attach button (hidden in audio mode) */}
                   {!isAudioMode && (
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     title="ছবি যুক্ত করুন"
+                    className="chatbot-icon-btn"
                     style={{
-                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: imagePreview ? "rgba(212,168,67,0.2)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${imagePreview ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.2)"}`,
+                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
+                      background: imagePreview ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${imagePreview ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
                       cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.2s",
-                      boxShadow: imagePreview ? "0 0 0 3px rgba(212,168,67,0.1)" : "none",
                     }}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                      stroke={imagePreview ? "#D4A843" : "rgba(212,168,67,0.45)"}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke={imagePreview ? "#D4A843" : "rgba(212,168,67,0.4)"}
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                       <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -2087,18 +2127,17 @@ export default function AIChatbot() {
                   <button
                     onClick={() => audioFileInputRef.current?.click()}
                     title="অডিও ফাইল যুক্ত করুন"
+                    className="chatbot-icon-btn"
                     style={{
-                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: isAudioMode ? "rgba(212,168,67,0.2)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.2)"}`,
+                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
+                      background: isAudioMode ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
                       cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.2s",
-                      boxShadow: isAudioMode ? "0 0 0 3px rgba(212,168,67,0.1)" : "none",
                     }}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                      stroke={isAudioMode ? "#D4A843" : "rgba(212,168,67,0.45)"}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke={isAudioMode ? "#D4A843" : "rgba(212,168,67,0.4)"}
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 18V5l12-2v13"/>
                       <circle cx="6" cy="18" r="3"/>
@@ -2112,41 +2151,39 @@ export default function AIChatbot() {
                       value={input}
                       onChange={e => {
                         setInput(e.target.value);
-                        // Auto-resize
                         const ta = e.target;
                         ta.style.height = "auto";
-                        ta.style.height = Math.min(ta.scrollHeight, 90) + "px";
+                        ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: নয়েজ কমাও)" : lastAudioBlobRef.current ? "আরো নির্দেশ দিন... (যেমন: আরো নয়েজ কমাও, ভলিউম বাড়াও)" : "জিজ্ঞেস করুন..."}
+                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: নয়েজ কমাও)" : lastAudioBlobRef.current ? "আরো নির্দেশ দিন..." : "জিজ্ঞেস করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
                       style={{
                         width: "100%",
                         boxSizing: "border-box",
-                        background: "rgba(12,22,38,0.92)",
-                        color: "rgba(245,238,222,0.95)",
-                        border: "1px solid rgba(40,56,72,0.95)",
-                        borderRadius: 14,
-                        padding: "9px 12px",
-                        fontSize: "0.82rem",
+                        background: "rgba(10,18,32,0.95)",
+                        color: "rgba(240,232,212,0.92)",
+                        border: "1px solid rgba(35,50,68,0.9)",
+                        borderRadius: 12,
+                        padding: "8px 11px",
+                        fontSize: "0.76rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         resize: "none",
-                        minHeight: 40,
-                        maxHeight: 90,
+                        minHeight: 36,
+                        maxHeight: 88,
                         overflowY: "auto",
                         outline: "none",
-                        transition: "border-color 0.2s, box-shadow 0.2s",
                         lineHeight: 1.55,
                         display: "block",
                       }}
                       onFocus={e => {
-                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.6)";
-                        e.currentTarget.style.boxShadow = "0 0 0 3px rgba(212,168,67,0.08), 0 0 18px rgba(212,168,67,0.07)";
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.45)";
+                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(212,168,67,0.06)";
                       }}
                       onBlur={e => {
-                        e.currentTarget.style.borderColor = "rgba(40,56,72,0.95)";
+                        e.currentTarget.style.borderColor = "rgba(35,50,68,0.9)";
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     />
@@ -2158,37 +2195,35 @@ export default function AIChatbot() {
                       : ((!input.trim() && !imagePreview) || isLoading)
                     }
                     style={{
-                      width: 40, height: 40,
-                      borderRadius: 12,
+                      width: 36, height: 36,
+                      borderRadius: 10,
                       background: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
-                        ? "linear-gradient(135deg, #E8C060 0%, #D4A843 50%, #C9A84C 100%)"
-                        : "rgba(212,168,67,0.18)",
+                        ? "linear-gradient(135deg, #D8B84E 0%, #C9A84C 100%)"
+                        : "rgba(212,168,67,0.1)",
                       border: "none",
-                      color: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.38)",
+                      color: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.3)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
                       flexShrink: 0,
-                      transition: "all 0.2s",
-                      boxShadow: "none",
+                      transition: "all 0.18s",
                     }}
                   >
                     {(isLoading || audioProcessing) ? (
                       <div style={{
-                        width: 15, height: 15,
-                        border: "2px solid rgba(212,168,67,0.35)",
-                        borderTop: "2px solid #D4A843",
+                        width: 13, height: 13,
+                        border: "1.5px solid rgba(212,168,67,0.3)",
+                        borderTop: "1.5px solid #D4A843",
                         borderRadius: "50%",
                         animation: "spin 0.8s linear infinite",
                       }} />
                     ) : (audioFile || lastAudioBlobRef.current) ? (
-                      /* Waveform icon for audio mode */
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                       </svg>
                     ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13" />
                         <polygon points="22 2 15 22 11 13 2 9 22 2" />
                       </svg>
@@ -2196,11 +2231,12 @@ export default function AIChatbot() {
                   </button>
                 </div>
                 <p style={{
-                  color: "rgba(90,110,130,0.45)",
-                  fontSize: "0.6rem",
-                  marginTop: 5,
+                  color: "rgba(80,100,120,0.35)",
+                  fontSize: "0.54rem",
+                  marginTop: 4,
                   textAlign: "center",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  letterSpacing: "0.02em",
                 }}>Shift+Enter = নতুন লাইন</p>
               </div>
               </>
