@@ -525,7 +525,20 @@ export default async function handler(req, res) {
 
     if (contentType.includes("application/json")) {
       // JSON mode: audioData is base64 string
-      const body = req.body || {};
+      // Vercel serverless-এ req.body undefined হয়, তাই raw body manually parse করতে হবে
+      let body = {};
+      try {
+        if (req.body && typeof req.body === "object") {
+          body = req.body;
+        } else {
+          const chunks = [];
+          for await (const chunk of req) chunks.push(chunk);
+          const rawBody = Buffer.concat(chunks).toString("utf8");
+          body = JSON.parse(rawBody);
+        }
+      } catch (parseErr) {
+        return res.status(400).json({ error: "JSON parse error: " + parseErr.message });
+      }
       const audioBase64 = body.audioData;
       instruction = body.instruction || "অডিওটি সুন্দর করো";
 
