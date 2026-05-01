@@ -489,6 +489,47 @@ function createAudioAiClient() {
   };
 }
 
+function parseAiJsonObject(content = "") {
+  const raw = String(content || "").trim();
+  if (!raw) throw new Error("Empty AI JSON response");
+  const withoutFence = raw
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  try {
+    return JSON.parse(withoutFence);
+  } catch (firstError) {
+    const start = withoutFence.indexOf("{");
+    const end = withoutFence.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(withoutFence.slice(start, end + 1));
+    }
+    throw firstError;
+  }
+}
+
+function fallbackAudioPlan(prompt = "") {
+  const text = String(prompt).toLowerCase();
+  const operations = [];
+  if (/noise|নয়েজ|নয়েজ|শব্দ|হিস|hiss|clean|ক্লিন|রিমুভ/.test(text)) {
+    operations.push({ type: "noise_reduction", params: { strength: 0.65 } });
+  }
+  if (/normalize|নরমাল|লেভেল|volume|ভলিউম|loud|জোরে/.test(text)) {
+    operations.push({ type: "normalize", params: {} });
+  }
+  if (/clear|ক্লিয়ার|ক্লিয়ার|স্পষ্ট|voice|ভয়েস|ভয়েস|vocal/.test(text)) {
+    operations.push({ type: "clarity_boost", params: {} });
+  }
+  if (!operations.length) {
+    operations.push({ type: "noise_reduction", params: { strength: 0.55 } }, { type: "normalize", params: {} });
+  }
+  return {
+    intent: "audio_cleanup",
+    operations,
+    explanation: "AI provider error হলে নিরাপদ fallback দিয়ে অডিও ক্লিন/নরমালাইজ করা হয়েছে।",
+  };
+}
+
 // ── AI System Prompt ─────────────────────────────────────────────────────────
 const AUDIO_SYSTEM_PROMPT = `You are a world-class AI audio engineer named "Sardar Audio Studio". You understand ANY instruction in Bengali or English and return correct audio operations as JSON.
 
@@ -1322,21 +1363,28 @@ export default async function handler(req, res) {
     const payload = {
       model,
       messages: [
-        { role: "system", content: AUDIO_SYSTEM_PROMPT + "\nIMPORTANT: You must respond with a valid JSON object only." },
+        { role: "system", content: AUDIO_SYSTEM_PROMPT + "
+IMPORTANT: Return only one valid JSON object. Do not use markdown fences, explanations outside JSON, or comments." },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" }
     };
 
-    // Gemini Forge specific handling
-    if (isGemini) {
-      payload.thinking = { budget_tokens: 128 };
+    // OpenAI/OpenRouter support structured JSON mode. Gemini's OpenAI-compatible
+    // endpoint rejects response_format/thinking in some deployments, so keep the
+    // Gemini request minimal and rely on the strict JSON system instruction.
+    if (!isGemini) {
+      payload.response_format = { type: "json_object" };
     }
 
-    const completion = await openai.chat.completions.create(payload);
-
-    const aiResponse = JSON.parse(completion.choices[0].message.content);
-    const operations = aiResponse.operations || [];
+    let aiResponse;
+    try {
+      const completion = await openai.chat.completions.create(payload);
+      aiResponse = parseAiJsonObject(completion.choices?.[0]?.message?.content);
+    } catch (aiError) {
+      console.error("Audio AI planning error:", aiError?.message || aiError);
+      aiResponse = fallbackAudioPlan(prompt);
+    }
+    const operations = Array.isArray(aiResponse.operations) ? aiResponse.operations : [];
 
     // ── Step 3: Determine vocal context (Phase 3 AI-aware) ───────────────────
     const vocalContext = aiResponse.vocalContext ||
