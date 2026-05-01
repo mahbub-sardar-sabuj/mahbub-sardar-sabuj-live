@@ -6,7 +6,12 @@ import os from "os";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { execFileSync, execSync } from "child_process";
 
-export const config = { api: { bodyParser: false } };
+export const config = {
+  api: {
+    bodyParser: false,
+    sizeLimit: "210mb",
+  },
+};
 
 // ── Resolve FFmpeg path ──────────────────────────────────────────────────────
 function getFFmpegPath() {
@@ -85,7 +90,7 @@ function buildVocalDoubler(ffmpegPath, inputPath, outputPath) {
     "-map", "[out]",
     "-ar", "44100",
     "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 20 * 1024 * 1024 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
 }
 
 // ── Classify vocal context from AI response ──────────────────────────────────
@@ -262,6 +267,7 @@ async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, optio
   ], {
     stdio: ["ignore", "pipe", "pipe"],
     maxBuffer: 50 * 1024 * 1024,
+    timeout: 55000,
   });
 }
 
@@ -297,7 +303,7 @@ async function buildMultiSegmentMix(ffmpegPath, vocalPath, musicPath, outputPath
     "-i", vocalPath, "-i", musicPath,
     "-filter_complex", filterComplex,
     "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
   return { totalDuration, introDuration, vocalDuration, outroDuration };
 }
 
@@ -328,7 +334,7 @@ function buildAdaptiveDucking(ffmpegPath, vocalPath, musicPath, outputPath, opti
       "-i", vocalPath, "-i", musicPath,
       "-filter_complex", filterComplex,
       "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-y", outputPath
-    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024 });
+    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
   } catch (e) {
     // Fallback to standard smart mix if sidechaincompress not available
     buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, {
@@ -359,7 +365,7 @@ function buildSidechainDucking(ffmpegPath, vocalPath, musicPath, outputPath, opt
     "-map", "[out]",
     "-ar", "44100",
     "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
 }
 
 // ── AI Config ────────────────────────────────────────────────────────────────
@@ -1178,8 +1184,8 @@ function buildFFmpegFilter(operations, vocalDuration) {
         break;
       }
       case "noise_profile_learn":
-        // Auto noise reduction using spectral analysis
-        filters.push("anlmdn=s=7:p=0.002:r=0.002:m=15,highpass=f=80,acompressor=threshold=-35dB:ratio=6:attack=5:release=100:knee=5dB");
+        // Auto noise reduction using spectral analysis (afftdn is more widely supported)
+        filters.push("afftdn=nr=15:nf=-25:nt=w,highpass=f=80,acompressor=threshold=-35dB:ratio=6:attack=5:release=100:knee=5dB");
         break;
     }
   }
@@ -1424,7 +1430,8 @@ export default async function handler(req, res) {
     // ── Run FFmpeg with filter ────────────────────────────────────────────────
     execFileSync(ffmpegPath, ["-i", tempFilePath, "-af", filterStr, "-y", outputPath], {
       stdio: ["ignore", "pipe", "pipe"],
-      maxBuffer: 10 * 1024 * 1024,
+      maxBuffer: 50 * 1024 * 1024,
+      timeout: 55000,
     });
 
     const resultBuffer = fs.readFileSync(outputPath);

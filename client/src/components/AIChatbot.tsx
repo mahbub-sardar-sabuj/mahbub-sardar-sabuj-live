@@ -1782,15 +1782,26 @@ export default function AIChatbot() {
         try {
           // ── Unified JSON/base64 path (same as handleAudioEdit) ──
           const audioArrayBuffer = await file.arrayBuffer();
-          const audioBase64 = btoa(
-            new Uint8Array(audioArrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-          );
-          const audioMime = file.type || "audio/wav";
-          const response = await fetch("/api/audio-edit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ instruction: pendingInstruction, audioData: audioBase64, audioMime }),
+          const audioBase64 = await new Promise<string>((resolve) => {
+            const blob = new Blob([audioArrayBuffer]);
+            const reader = new FileReader();
+            reader.onload = () => resolve((reader.result as string).split(",")[1]);
+            reader.readAsDataURL(blob);
           });
+          const audioMime = file.type || "audio/wav";
+          const audioController = new AbortController();
+          const audioTimeout = setTimeout(() => audioController.abort(), 58000);
+          let response: Response;
+          try {
+            response = await fetch("/api/audio-edit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ instruction: pendingInstruction, audioData: audioBase64, audioMime }),
+              signal: audioController.signal,
+            });
+          } finally {
+            clearTimeout(audioTimeout);
+          }
           if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
             throw new Error(errData.error || `HTTP ${response.status}`);
@@ -1933,22 +1944,33 @@ export default function AIChatbot() {
       // Step 1: Read audio file as base64
       setAudioProcessingStage("AI নির্দেশ বিশ্লেষণ করছে...");
       const audioArrayBuffer = await sourceFile.arrayBuffer();
-      const audioBase64 = btoa(
-        new Uint8Array(audioArrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-      );
+      const audioBase64 = await new Promise<string>((resolve) => {
+        const blob = new Blob([audioArrayBuffer]);
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.readAsDataURL(blob);
+      });
       const audioMime = sourceFile.type || "audio/wav";
 
       // Step 2: Send to server — AI intent detection + FFmpeg processing in one call
       setAudioProcessingStage("প্রসেসিং চলছে...");
-      const serverResp = await fetch("/api/audio-edit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          instruction,
-          audioData: audioBase64,
-          audioMime,
-        }),
-      });
+      const editController = new AbortController();
+      const editTimeout = setTimeout(() => editController.abort(), 58000);
+      let serverResp: Response;
+      try {
+        serverResp = await fetch("/api/audio-edit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            instruction,
+            audioData: audioBase64,
+            audioMime,
+          }),
+          signal: editController.signal,
+        });
+      } finally {
+        clearTimeout(editTimeout);
+      }
 
       if (!serverResp.ok) {
         const errData = await serverResp.json().catch(() => ({}));
