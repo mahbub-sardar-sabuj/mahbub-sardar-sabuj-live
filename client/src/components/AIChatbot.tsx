@@ -994,6 +994,8 @@ export default function AIChatbot() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isAudioMode, setIsAudioMode] = useState(false);
   const [audioProcessing, setAudioProcessing] = useState(false);
+  // lastAudioBlob: stores the most recently edited audio so user can iterate
+  const lastAudioBlobRef = useRef<{ blob: Blob; name: string } | null>(null);
   const isDragging = useRef(false);
   const didDrag = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
@@ -1178,7 +1180,13 @@ export default function AIChatbot() {
 
   // ── Audio edit submit ──────────────────────────────────────────────────────
   const handleAudioEdit = useCallback(async (overrideInstruction?: string) => {
-    if (!audioFile || audioProcessing) return;
+    // Allow iterative editing: use lastAudioBlobRef if no new file selected
+    const sourceFile: File | Blob | null = audioFile || (
+      lastAudioBlobRef.current
+        ? new File([lastAudioBlobRef.current.blob], lastAudioBlobRef.current.name, { type: "audio/wav" })
+        : null
+    );
+    if (!sourceFile || audioProcessing) return;
 
     // Smart instruction resolution
     let instruction = overrideInstruction || input.trim();
@@ -1191,10 +1199,11 @@ export default function AIChatbot() {
     }
     if (!instruction) instruction = "অডিওটি স্বয়ংক্রিয়ভাবে মান উন্নত করো, নয়েজ কমাও";
 
+    const sourceName = audioFile?.name || lastAudioBlobRef.current?.name || "audio.wav";
     const userMsg: Message = {
       id: `user-audio-${Date.now()}`,
       role: "user",
-      content: `🎵 ${audioFile.name}\n\nনির্দেশ: ${instruction}`,
+      content: `🎵 ${sourceName}\n\nনির্দেশ: ${instruction}`,
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMsg]);
@@ -1218,7 +1227,7 @@ export default function AIChatbot() {
       const { params, description, appliedSteps = [], intent = "custom" } = await parseResp.json();
 
       // Step 2: Process audio client-side using Web Audio API
-      const audioBuffer = await audioFile.arrayBuffer();
+      const audioBuffer = await sourceFile.arrayBuffer();
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       let decoded: AudioBuffer;
       try {
@@ -1363,6 +1372,9 @@ export default function AIChatbot() {
       const audioUrl = URL.createObjectURL(wavBlob);
       const audioFilename = `edited_${Date.now()}.wav`;
 
+      // Save edited blob for iterative editing (user can say "আরো নয়েজ কমাও" next)
+      lastAudioBlobRef.current = { blob: wavBlob, name: audioFilename };
+
       setMessages(prev => [...prev, {
         id: `ai-audio-${Date.now()}`,
         role: "assistant",
@@ -1374,8 +1386,9 @@ export default function AIChatbot() {
         audioAppliedSteps: appliedSteps,
         audioIntent: intent,
       }]);
+      // Clear the original file (no longer needed) but keep isAudioMode
+      // so user can type next instruction without re-uploading
       setAudioFile(null);
-      setIsAudioMode(false);
     } catch (err: any) {
       setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
     } finally {
@@ -1400,7 +1413,7 @@ export default function AIChatbot() {
     e.target.value = "";
   }, []);
 
-  // ── Send message ────────────────────────────────────────────────
+  // ── Send message ────────────────────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
     // Case 1: Audio file already selected + any text = run edit immediately
     if (audioFile) {
@@ -1410,6 +1423,12 @@ export default function AIChatbot() {
 
     const text = input.trim();
     if (!text && !imagePreview || isLoading) return;
+
+    // Case 1b: No new file, but lastAudioBlobRef exists + instruction = iterative edit
+    if (isAudioEditRequest(text) && !audioFile && lastAudioBlobRef.current) {
+      handleAudioEdit(text);
+      return;
+    }
 
     // Case 2: Text looks like audio edit instruction but no file yet
     // Show a smart prompt asking to upload audio
@@ -1427,7 +1446,7 @@ export default function AIChatbot() {
       const aiPromptMsg: Message = {
         id: `ai-audio-prompt-${Date.now()}`,
         role: "assistant",
-        content: `অডিও এডিটিংয়ের জন্য প্রস্তুত! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি তাৎক্ষণিক “${text}” অনুযায়ী এডিট করে দেব।`,
+        content: `অডিও এডিটিংয়ের জন্য প্রস্তুত! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি তাৎক্ষণিক "${text}" অনুযায়ী এডিট করে দেব।`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiPromptMsg]);
@@ -1552,6 +1571,10 @@ export default function AIChatbot() {
     }]);
     setError(null);
     retryPayloadRef.current = null;
+    // Reset iterative audio editing state
+    lastAudioBlobRef.current = null;
+    setAudioFile(null);
+    setIsAudioMode(false);
   };
 
   return (
@@ -1980,7 +2003,7 @@ export default function AIChatbot() {
                 />
 
                 {/* Audio mode banner */}
-                {audioFile && (
+                {(audioFile || lastAudioBlobRef.current) && (
                   <div style={{
                     marginBottom: 8,
                     display: "flex",
@@ -2013,14 +2036,17 @@ export default function AIChatbot() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                      }}>{audioFile.name}</div>
+                      }}>{audioFile ? audioFile.name : lastAudioBlobRef.current?.name}</div>
                       <div style={{
                         color: "rgba(212,168,67,0.5)",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.58rem",
                         marginTop: 1,
                       }}>
-                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • কি এডিটিং করতে চান তা লিখুন
+                        {audioFile
+                          ? `${(audioFile.size / (1024 * 1024)).toFixed(1)} MB • কি এডিটিং করতে চান তা লিখুন`
+                          : `✨ আগের এডিটেড অডিও স্মার্ট — নতুন নির্দেশ দিন বা নতুন ফাইল আপলোড করুন`
+                        }
                       </div>
                     </div>
                     {/* Quick edit button - no instruction needed */}
@@ -2043,7 +2069,7 @@ export default function AIChatbot() {
                       }}
                     >স্বয়ং এডিট</button>
                     <button
-                      onClick={() => { setAudioFile(null); setIsAudioMode(false); }}
+                      onClick={() => { setAudioFile(null); setIsAudioMode(false); lastAudioBlobRef.current = null; }}
                       style={{
                         width: 20, height: 20, borderRadius: "50%",
                         background: "#ef4444", border: "none",
@@ -2154,7 +2180,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 90) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: নয়েজ কমাও)" : "জিজ্ঞেস করুন..."}
+                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: নয়েজ কমাও)" : lastAudioBlobRef.current ? "আরো নির্দেশ দিন... (যেমন: আরো নয়েজ কমাও, ভলিউম বাড়াও)" : "জিজ্ঞেস করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
@@ -2188,19 +2214,19 @@ export default function AIChatbot() {
                     />
                   </div>
                   <button
-                    onClick={audioFile ? () => handleAudioEdit() : handleSend}
-                    disabled={audioFile
+                    onClick={(audioFile || lastAudioBlobRef.current) ? () => handleAudioEdit() : handleSend}
+                    disabled={(audioFile || lastAudioBlobRef.current)
                       ? audioProcessing
                       : ((!input.trim() && !imagePreview) || isLoading)
                     }
                     style={{
                       width: 40, height: 40,
                       borderRadius: 12,
-                      background: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
+                      background: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
                         ? "linear-gradient(135deg, #E8C060 0%, #D4A843 50%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.18)",
                       border: "none",
-                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.38)",
+                      color: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.38)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -2218,7 +2244,7 @@ export default function AIChatbot() {
                         borderRadius: "50%",
                         animation: "spin 0.8s linear infinite",
                       }} />
-                    ) : audioFile ? (
+                    ) : (audioFile || lastAudioBlobRef.current) ? (
                       /* Waveform icon for audio mode */
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
