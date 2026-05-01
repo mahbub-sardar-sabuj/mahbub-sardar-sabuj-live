@@ -386,7 +386,16 @@ function resolveAudioAiConfig() {
   const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
   const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || "gemini-2.5-flash";
 
-  // 1. Prefer explicit AUDIO_AI key
+  // 1. Prefer Forge (Gemini) for audio tasks (free/reliable)
+  if (forgeApiKey && forgeBaseUrl) {
+    return {
+      apiKey: forgeApiKey,
+      baseURL: forgeBaseUrl,
+      model: forgeModel,
+      source: "BUILT_IN_FORGE_API_KEY",
+    };
+  }
+  // 2. Fallback to explicit AUDIO_AI key
   if (audioApiKey) {
     const isOpenRouterKey = audioApiKey.startsWith("sk-or-");
     return {
@@ -396,7 +405,7 @@ function resolveAudioAiConfig() {
       source: "AUDIO_AI_API_KEY",
     };
   }
-  // 2. Prefer standard OPENAI key (avoids legacy/stale OpenRouter keys in CHATBOT_API_KEY)
+  // 3. Fallback to standard OPENAI key
   if (openAiApiKey) {
     return {
       apiKey: openAiApiKey,
@@ -405,7 +414,7 @@ function resolveAudioAiConfig() {
       source: "OPENAI_API_KEY",
     };
   }
-  // 3. Fallback to CHATBOT key
+  // 4. Fallback to CHATBOT key
   if (chatbotApiKey) {
     const isOpenRouterKey = chatbotApiKey.startsWith("sk-or-");
     return {
@@ -415,21 +424,13 @@ function resolveAudioAiConfig() {
       source: "CHATBOT_API_KEY",
     };
   }
-  // 4. Legacy OpenRouter fallback
+  // 5. Legacy OpenRouter fallback
   if (openRouterApiKey) {
     return {
       apiKey: openRouterApiKey,
       baseURL: openRouterBaseUrl || "https://openrouter.ai/api/v1",
       model: openRouterModel || "openai/gpt-4.1-mini",
       source: "OPENROUTER_API_KEY",
-    };
-  }
-  if (forgeApiKey && forgeBaseUrl) {
-    return {
-      apiKey: forgeApiKey,
-      baseURL: forgeBaseUrl,
-      model: forgeModel,
-      source: "BUILT_IN_FORGE_API_KEY",
     };
   }
   throw new Error("No AI API key configured for audio editing. Set AUDIO_AI_API_KEY, CHATBOT_API_KEY, or OPENAI_API_KEY.");
@@ -1267,14 +1268,24 @@ export default async function handler(req, res) {
 
     // ── Step 2: Get AI instructions ──────────────────────────────────────────
     const { client: openai, model } = createAudioAiClient();
-    const completion = await openai.chat.completions.create({
+    const { source } = resolveAudioAiConfig();
+    const isGemini = source === "BUILT_IN_FORGE_API_KEY" || model.includes("gemini");
+    
+    const payload = {
       model,
       messages: [
-        { role: "system", content: AUDIO_SYSTEM_PROMPT },
+        { role: "system", content: AUDIO_SYSTEM_PROMPT + "\nIMPORTANT: You must respond with a valid JSON object only." },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" }
-    });
+    };
+
+    // Gemini Forge specific handling
+    if (isGemini) {
+      payload.thinking = { budget_tokens: 128 };
+    }
+
+    const completion = await openai.chat.completions.create(payload);
 
     const aiResponse = JSON.parse(completion.choices[0].message.content);
     const operations = aiResponse.operations || [];
