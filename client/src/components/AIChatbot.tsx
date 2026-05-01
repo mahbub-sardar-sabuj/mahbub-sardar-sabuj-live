@@ -406,15 +406,6 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - সবসময় বাংলায় উত্তর দাও (ব্যবহারকারী ইংরেজিতে জিজ্ঞেস করলে ইংরেজিতে দাও)
 - যদি কেউ সরাসরি কথা বলতে চায় বা লাইভ চ্যাট করতে চায়, তাহলে [LIVE_CHAT] ট্যাগ ব্যবহার করো — এটি স্বয়ংক্রিয়ভাবে "সরাসরি চ্যাট" ট্যাবে যাওয়ার বাটন দেখাবে`;
 
-const SUGGESTIONS = [
-  "পরিচয় দাও",
-  "ই-বুক কোথায়?",
-  "ডিজাইন স্টুডিও",
-  "বিখ্যাত লেখা",
-  "কবিতা কোথায়?",
-  "যোগাযোগ করব?",
-];
-
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
@@ -1182,10 +1173,16 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম!
-আমি মাহবুব সরদার সবুজ AI Agent।
+    content: `আস্সালামু আলাইকুম।
+আমি মাহবুব সরদার সবুজের AI সহকারী।
 
-আমি তাঁর সম্পর্কে সব তথ্য দিতে পারি — কবিতা, ই-বুক, যোগাযোগ ও সরদার ডিজাইন স্টুডিও ব্যবহারের গাইডলাইন। পাশাপাশি আপনি চাইলে এখানে সরাসরি অডিও এডিটিং করতে পারবেন, আর এডিটিং শিখতে চাইলে আমি অডিও, ভিডিও, ছবি, লেখা ও ডিজাইনের নিয়ম ধাপে ধাপে বুঝিয়ে দিতে পারি।\n\nআপনার প্রশ্ন লিখুন, অথবা অডিও এডিট করতে নিচের অডিও বাটন ব্যবহার করুন।`,
+আপনাকে স্বাগতম। এখানে আপনি মাহবুব সরদার সবুজ সম্পর্কে জানতে পারবেন—তাঁর কবিতা, ই-বুক, লেখা, যোগাযোগের তথ্য এবং সরদার ডিজাইন স্টুডিও ব্যবহারের নিয়ম সহজভাবে বুঝে নিতে পারবেন।
+
+আপনি চাইলে সরাসরি অডিও এডিট করতে পারেন। অডিও আপলোড করে noise reduction, voice clean, volume balance, loudness normalize বা vocal enhance করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
+
+এডিটিং শিখতেও আমি সাহায্য করি। অডিও, ভিডিও, ছবি, লেখা ও ডিজাইন—যে কোনো বিষয়ে ধাপে ধাপে নিয়ম, workflow, সেটিংস এবং practical tips বুঝিয়ে দিতে পারি।
+
+নিচে আপনার প্রশ্ন লিখুন, অথবা অডিও এডিট করতে অডিও বাটন ব্যবহার করুন।`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2084,58 +2081,6 @@ export default function AIChatbot() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-
-              {/* ── Suggestions ── */}
-              {messages.length === 1 && (
-                <div style={{
-                  padding: "7px 10px 8px",
-                  borderTop: "1px solid rgba(212,168,67,0.07)",
-                  background: "rgba(4,8,16,0.7)",
-                  flexShrink: 0,
-                }}>
-                  <p style={{
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.58rem",
-                    color: "rgba(212,168,67,0.35)",
-                    marginBottom: 6,
-                    letterSpacing: "0.04em",
-                    textTransform: "uppercase",
-                  }}>জিজ্ঞেস করুন</p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
-                    {SUGGESTIONS.map(s => (
-                      <button key={s}
-                        className="chatbot-suggestion-btn"
-                        onClick={() => {
-                          if (s.includes("🎵 অডিও এডিট")) {
-                            audioFileInputRef.current?.click();
-                          } else {
-                            setInput(s);
-                            inputRef.current?.focus();
-                          }
-                        }}
-                        style={{
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.65rem",
-                          color: "rgba(212,168,67,0.7)",
-                          background: "rgba(12,20,36,0.8)",
-                          border: "1px solid rgba(35,50,68,0.8)",
-                          borderRadius: 9,
-                          padding: "6px 7px",
-                          lineHeight: 1.35,
-                          cursor: "pointer",
-                          textAlign: "left",
-                          overflow: "hidden",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical" as any,
-                          wordBreak: "break-word",
-                        }}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* ── Input ── */}
               <div style={{
