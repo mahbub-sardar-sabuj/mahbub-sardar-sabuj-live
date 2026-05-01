@@ -265,6 +265,79 @@ async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, optio
   });
 }
 
+// ── Advanced Multi-Segment Mix — intro/verse/chorus/outro style ─────────────
+async function buildMultiSegmentMix(ffmpegPath, vocalPath, musicPath, outputPath, options = {}) {
+  const {
+    vocalContext = "general",
+    targetLufs = -16,
+    introDb = -14,
+    verseDb = -22,
+    outroDb = -14,
+    introDuration = 3,
+    outroDuration = 4,
+  } = options;
+  const vocalDuration = getAudioDuration(vocalPath, ffmpegPath) || 60;
+  const musicDuration = getAudioDuration(musicPath, ffmpegPath) || 120;
+  const totalDuration = introDuration + vocalDuration + outroDuration;
+  const loopsNeeded = Math.ceil(totalDuration / musicDuration) + 2;
+  const contextFilter = getContextVocalFilter(vocalContext);
+  const fadeDuration = getSmartFadeDuration(vocalDuration);
+  const introVol = Math.pow(10, introDb / 20).toFixed(3);
+  const verseVol = Math.pow(10, verseDb / 20).toFixed(3);
+  const outroVol = Math.pow(10, outroDb / 20).toFixed(3);
+  const vocalEnd = (introDuration + vocalDuration).toFixed(2);
+  const filterComplex = [
+    `[0:a]adelay=${Math.round(introDuration * 1000)}|${Math.round(introDuration * 1000)},${contextFilter},loudnorm=I=${targetLufs}:TP=-1.5:LRA=11[vocal_delayed]`,
+    `[1:a]aloop=loop=${loopsNeeded}:size=2147483647,atrim=duration=${(totalDuration + 2).toFixed(2)}[music_looped]`,
+    `[music_looped]volume=enable='between(t,0,${introDuration})':volume=${introVol},volume=enable='between(t,${introDuration},${vocalEnd})':volume=${verseVol},volume=enable='gt(t,${vocalEnd})':volume=${outroVol},afade=t=out:st=${(totalDuration - fadeDuration).toFixed(2)}:d=${fadeDuration}[music_automated]`,
+    `[vocal_delayed][music_automated]amix=inputs=2:duration=longest[mixed]`,
+    `[mixed]loudnorm=I=${targetLufs}:TP=-1:LRA=11,alimiter=limit=-1dB:attack=5:release=50[out]`,
+  ].join(";");
+  execFileSync(ffmpegPath, [
+    "-i", vocalPath, "-i", musicPath,
+    "-filter_complex", filterComplex,
+    "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-y", outputPath
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024 });
+  return { totalDuration, introDuration, vocalDuration, outroDuration };
+}
+
+// ── Adaptive Ducking — context-aware smart ducking ────────────────────────────
+function buildAdaptiveDucking(ffmpegPath, vocalPath, musicPath, outputPath, options = {}) {
+  const {
+    vocalContext = "general",
+    targetLufs = -16,
+    musicIntensity = "medium",
+  } = options;
+  const musicVolumeMap = { low: -26, medium: -20, high: -14 };
+  const musicVolume = musicVolumeMap[musicIntensity] || -20;
+  const vocalDuration = getAudioDuration(vocalPath, ffmpegPath) || 60;
+  const musicDuration = getAudioDuration(musicPath, ffmpegPath) || 120;
+  const loopsNeeded = Math.ceil(vocalDuration / musicDuration) + 2;
+  const fadeDuration = getSmartFadeDuration(vocalDuration);
+  const fadeStart = Math.max(0, vocalDuration - fadeDuration);
+  const contextFilter = getContextVocalFilter(vocalContext);
+  const filterComplex = [
+    `[0:a]${contextFilter},loudnorm=I=${targetLufs}:TP=-1.5:LRA=11[vocal_clean]`,
+    `[1:a]aloop=loop=${loopsNeeded}:size=2147483647,atrim=duration=${(vocalDuration + fadeDuration + 2).toFixed(2)},volume=${musicVolume}dB,afade=t=out:st=${fadeStart.toFixed(2)}:d=${fadeDuration}[music_prep]`,
+    `[music_prep][vocal_clean]sidechaincompress=threshold=0.02:ratio=4:attack=10:release=200:level_sc=0.8[music_ducked]`,
+    `[vocal_clean][music_ducked]amix=inputs=2:duration=first:weights=1 0.8[mixed]`,
+    `[mixed]loudnorm=I=${targetLufs}:TP=-1:LRA=11,alimiter=limit=-1dB:attack=5:release=50[out]`,
+  ].join(";");
+  try {
+    execFileSync(ffmpegPath, [
+      "-i", vocalPath, "-i", musicPath,
+      "-filter_complex", filterComplex,
+      "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-y", outputPath
+    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024 });
+  } catch (e) {
+    // Fallback to standard smart mix if sidechaincompress not available
+    buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, {
+      vocalContext, targetLufs, musicIntensity,
+      enableDucking: true, enableFade: true, enableVocalEnhance: true,
+    });
+  }
+}
+
 // ── New: De-breath filter — reduces breath sounds ────────────────────────────
 function getDeBreathFilter() {
   return "agate=threshold=-35dB:attack=5:release=80:ratio=8,equalizer=f=200:t=h:width=200:g=-2";
@@ -530,6 +603,24 @@ SMART INTERPRETATION:
 "ডায়নামিক EQ"/"dynamic eq" → dynamic_eq+loudness_normalize(-14)
 "মাল্টিব্যান্ড গেট"/"multiband gate" → multiband_gate+loudness_normalize(-16)
 
+NEW ADVANCED OPERATIONS (v8.0 — Background Music & Advanced Mixing):
+- multi_segment_mix{intro_db:-14, verse_db:-22, outro_db:-14, intro_duration:3, outro_duration:4} = ইন্ট্রো/ভার্স/আউট্রো স্টাইল মাল্টি-সেগমেন্ট মিক্স
+- adaptive_ducking{music_intensity:"low"|"medium"|"high"} = অ্যাডাপ্টিভ সাইডচেইন ডাকিং — ভোকাল শুনলে মিউজিক অটো ডাক হয়
+- vocal_harmony{voices:2, spread:0.3} = ভোকাল হারমোনি যোগ — তৃতীয় লেয়ার যোগ করে রিচনেস বাড়ানো
+- stereo_field_expand{width:1.5} = স্টেরিও ফিল্ড সম্প্রসারিত করা — বিশাল শব্দ মাঠ
+- vintage_warmth{} = পুরনো অ্যানালগ উষ্ণতা — টেপ/ভিনাইল স্টাইল সাচুরেশন
+- spatial_audio{} = স্পেশিয়াল অডিও — ত্রিমাত্রিক শব্দের অনুভূতি
+- dynamic_normalize{} = ডাইনামিক নরমালাইজেশন — লাউড ও কোয়ায়েট অংশ সমান করা
+- voice_clone_preset{style:"honey"|"broadcast"|"asmr"|"epic"|"narrator"} = ভয়েস ক্লোন প্রিসেট — নির্দিষ্ট স্টাইলে ভয়েস রূপান্তর
+- noise_profile_learn{} = নয়েজ প্রফাইল শেখা — স্বয়ংক্রিয় নয়েজ রিডাকশন
+NEW SMART MIX MODES (v8.0):
+- "ইন্ট্রো সহ মিক্স"/ "intro music mix" → multi_segment_mix(intro_db:-14,verse_db:-22,outro_db:-14)
+- "অ্যাডাপ্টিভ ডাকিং"/ "adaptive ducking" → adaptive_ducking(medium)
+- "হার্মোনি যোগ করো"/ "add harmony" → vocal_harmony(voices:2,spread:0.3)
+- "স্টেরিও বড় করো"/ "stereo expand" → stereo_field_expand(width:1.5)
+- "ভিনটেজ উষ্ণতা"/ "vintage warmth" → vintage_warmth
+- "স্পেশ্যাল অডিও"/ "spatial audio"/ "3D sound" → spatial_audio
+- "ডায়নামিক নরমালাইজ"/ "dynamic normalize" → dynamic_normalize
 OUTPUT FORMAT (JSON only):
 {
   "operations": [{"type": "OPERATION_NAME", "params": {"key": value}}, ...],
@@ -539,7 +630,8 @@ OUTPUT FORMAT (JSON only):
   "technicalNote": "technical details (optional)",
   "vocalContext": "general|poetry|narration|deep|soft",
   "hasMusicMix": true/false,
-  "musicIntensity": "low|medium|high"
+  "musicIntensity": "low|medium|high",
+  "mixMode": "standard|multi_segment|adaptive_ducking"
 }
 
 NOISE REDUCTION RULES (CRITICAL — voice must be preserved):
@@ -1039,6 +1131,56 @@ function buildFFmpegFilter(operations, vocalDuration) {
         // Smart noise gate: preserves voice, removes silence
         filters.push("agate=threshold=-40dB:attack=8:release=150:ratio=10:range=-60dB,agate=threshold=-38dB:attack=5:release=100:ratio=8");
         break;
+      // ── v8.0 NEW OPERATIONS ────────────────────────────────────────────────────
+      case "vocal_harmony": {
+        // Vocal harmony: adds 2-3 pitch-shifted layers for richness
+        const voices = op.params?.voices || 2;
+        const spread = op.params?.spread || 0.3;
+        const semitone1 = Math.round(spread * 12);
+        const semitone2 = Math.round(-spread * 12);
+        if (voices >= 3) {
+          filters.push(`asplit=3[h0][h1][h2];[h1]asetrate=r=${Math.round(44100 * Math.pow(2, semitone1/12))},atempo=${(1/Math.pow(2, semitone1/12)).toFixed(3)},aresample=44100,volume=0.4[hv1];[h2]asetrate=r=${Math.round(44100 * Math.pow(2, semitone2/12))},atempo=${(1/Math.pow(2, semitone2/12)).toFixed(3)},aresample=44100,volume=0.35[hv2];[h0][hv1][hv2]amix=inputs=3:weights=1 0.4 0.35`);
+        } else {
+          filters.push(`asplit=2[h0][h1];[h1]asetrate=r=${Math.round(44100 * Math.pow(2, semitone1/12))},atempo=${(1/Math.pow(2, semitone1/12)).toFixed(3)},aresample=44100,volume=0.45[hv1];[h0][hv1]amix=inputs=2:weights=1 0.45`);
+        }
+        break;
+      }
+      case "stereo_field_expand": {
+        // Stereo field expansion using mid-side processing
+        const width = op.params?.width || 1.5;
+        const sideGain = Math.min(width, 2.0).toFixed(2);
+        filters.push(`stereotools=mlev=1:slev=${sideGain}:sbal=0:mbal=0`);
+        break;
+      }
+      case "vintage_warmth":
+        // Analog warmth: tape saturation + gentle low-mid boost
+        filters.push("equalizer=f=120:t=h:width=100:g=3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=8000:t=h:width=3000:g=-1.5,acompressor=threshold=-20dB:ratio=2:attack=20:release=300:knee=10dB");
+        break;
+      case "spatial_audio":
+        // Spatial/3D audio effect using haas effect + stereo widening
+        filters.push("asplit=2[a][b];[b]adelay=20|0[b_delayed];[a][b_delayed]amix=inputs=2:weights=1 0.6,stereotools=mlev=1:slev=1.4:sbal=0:mbal=0");
+        break;
+      case "dynamic_normalize":
+        // Dynamic normalization: levels out loud and quiet sections
+        filters.push("dynaudnorm=p=0.9:m=100:s=12:g=15:b=1");
+        break;
+      case "voice_clone_preset": {
+        // Voice clone preset: applies style-specific processing
+        const style = op.params?.style || "honey";
+        const presetFilters = {
+          honey: "highpass=f=90,equalizer=f=300:t=h:width=200:g=4,equalizer=f=500:t=h:width=200:g=3,equalizer=f=3500:t=h:width=1500:g=2,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,aecho=0.8:0.12:40:0.2",
+          broadcast: "highpass=f=100,equalizer=f=3000:t=h:width=2000:g=4,equalizer=f=5000:t=h:width=2000:g=3,acompressor=threshold=-18dB:ratio=4:attack=10:release=120:knee=4dB,alimiter=limit=-2dB",
+          asmr: "highpass=f=60,equalizer=f=200:t=h:width=200:g=3,equalizer=f=8000:t=h:width=3000:g=2,acompressor=threshold=-30dB:ratio=1.5:attack=40:release=500:knee=12dB,aecho=0.9:0.08:25:0.15",
+          epic: "highpass=f=80,equalizer=f=150:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=4,acompressor=threshold=-16dB:ratio=5:attack=8:release=100:knee=3dB,alimiter=limit=-1dB",
+          narrator: "highpass=f=90,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3500:t=h:width=1500:g=3,equalizer=f=6000:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB",
+        };
+        filters.push(presetFilters[style] || presetFilters.honey);
+        break;
+      }
+      case "noise_profile_learn":
+        // Auto noise reduction using spectral analysis
+        filters.push("anlmdn=s=7:p=0.002:r=0.002:m=15,highpass=f=80,acompressor=threshold=-35dB:ratio=6:attack=5:release=100:knee=5dB");
+        break;
     }
   }
 
@@ -1130,65 +1272,106 @@ export default async function handler(req, res) {
     // ── Step 3: Determine vocal context (Phase 3 AI-aware) ───────────────────
     const vocalContext = aiResponse.vocalContext ||
       classifyVocalContext(aiResponse.intent, operations, prompt);
-
-    // ── Step 4: Check if smart_mix is requested ───────────────────────────────
+    // ── Step 4: Check if smart_mix / multi_segment_mix / adaptive_ducking is requested ──────
     const hasMusicMixOp = operations.some(op =>
-      op.type === "smart_mix" || op.type === "music_extend"
+      op.type === "smart_mix" || op.type === "music_extend" ||
+      op.type === "multi_segment_mix" || op.type === "adaptive_ducking"
     );
     const hasMusicFile = !!musicFilePath;
     const shouldDoSmartMix = (hasMusicMixOp || aiResponse.hasMusicMix) && hasMusicFile;
-
+    const mixMode = aiResponse.mixMode || (operations.some(op => op.type === "multi_segment_mix") ? "multi_segment" : operations.some(op => op.type === "adaptive_ducking") ? "adaptive_ducking" : "standard");
     // ── Step 4b: smart_mix চাওয়া হয়েছে কিন্তু music file নেই → ask করো ──────
     if ((hasMusicMixOp || aiResponse.hasMusicMix) && !hasMusicFile) {
       try { if (tempFilePath) fs.unlinkSync(tempFilePath); } catch (e) {}
       return res.status(200).json({
         intent: "ask_music_file",
         needsMusicFile: true,
-        explanation: "ব্যাকগ্রাউন্ড মিউজিক যোগ করতে আপনার একটি মিউজিক ফাইল আপলোড করতে হবে।",
+        explanation: "ব্যাকগ্রাউন্ড মিউজিক যোগ করতে আপনার একটি মিউজিক ফাইল আপলোড করতে হবে। অথবা মিউজিক লাইব্রেরি থেকে বেছে নিন।",
         pipeline: [
-          "ধাপ ১: নিচের 🎧 বাটনে ক্লিক করে ব্যাকগ্রাউন্ড মিউজিক ফাইল আপলোড করুন",
+          "ধাপ ১: নিচের 🎵 বাটনে ক্লিক করে ব্যাকগ্রাউন্ড মিউজিক ফাইল আপলোড করুন — অথবা 🎵 মিউজিক লাইব্রেরি থেকে বেছে নিন",
           "ধাপ ২: একই নির্দেশ আবার দিন — আমি ভোকাল ও মিউজিক মিক্স করে দেব"
         ],
         operations: [],
       });
     }
-
     const outputFileName = `edited_${Date.now()}.mp3`;
     const outputPath = path.join(os.tmpdir(), outputFileName);
 
     if (shouldDoSmartMix) {
-      // ── Phase 1/2/3: Smart Mix with background music ─────────────────────
-      const smartMixOp = operations.find(op => op.type === "smart_mix");
+      // ── Phase 1/2/3/4: Smart Mix with background music (v8.0 multi-mode) ──────────
+      const smartMixOp = operations.find(op =>
+        op.type === "smart_mix" || op.type === "multi_segment_mix" || op.type === "adaptive_ducking"
+      );
       const musicIntensity = smartMixOp?.params?.music_intensity ||
         aiResponse.musicIntensity || "medium";
       const enableDucking = smartMixOp?.params?.enable_ducking !== false;
-
       // Build extra vocal filter from non-mix operations
       const nonMixOps = operations.filter(op =>
-        !["smart_mix", "music_extend", "smart_fade", "vocal_normalize"].includes(op.type)
+        !["smart_mix", "music_extend", "smart_fade", "vocal_normalize",
+          "multi_segment_mix", "adaptive_ducking"].includes(op.type)
       );
       const extraVocalFilter = buildFFmpegFilter(nonMixOps, vocalDuration);
-
-      await buildSmartMix(ffmpegPath, tempFilePath, musicFilePath, outputPath, {
-        vocalContext,
-        targetLufs: -16,
-        musicIntensity,
-        enableDucking,
-        enableFade: true,
-        enableVocalEnhance: true,
-        extraVocalFilter,
-      });
-
-      // Build response metadata
-      const mixPipeline = [
-        `Vocal duration: ${vocalDuration ? vocalDuration.toFixed(1) + "s" : "unknown"}`,
-        `Context: ${vocalContext}`,
-        `Music intensity: ${musicIntensity}`,
-        enableDucking ? "Music ducking: enabled" : "Music ducking: disabled",
-        `Fade out: ${getSmartFadeDuration(vocalDuration)}s`,
-        "Vocal normalization: -16 LUFS",
-        "Final mastering: limiter -1dB",
-      ];
+      let mixPipeline = [];
+      // Determine mix mode and execute
+      if (mixMode === "multi_segment") {
+        // Multi-segment mix: intro/verse/outro style
+        const multiOp = operations.find(op => op.type === "multi_segment_mix");
+        await buildMultiSegmentMix(ffmpegPath, tempFilePath, musicFilePath, outputPath, {
+          vocalContext,
+          targetLufs: -16,
+          introDb: multiOp?.params?.intro_db || -14,
+          verseDb: multiOp?.params?.verse_db || -22,
+          outroDb: multiOp?.params?.outro_db || -14,
+          introDuration: multiOp?.params?.intro_duration || 3,
+          outroDuration: multiOp?.params?.outro_duration || 4,
+        });
+        mixPipeline = [
+          `Mix mode: Multi-Segment (Intro/Verse/Outro)`,
+          `Vocal duration: ${vocalDuration ? vocalDuration.toFixed(1) + "s" : "unknown"}`,
+          `Context: ${vocalContext}`,
+          `Intro: ${multiOp?.params?.intro_duration || 3}s at ${multiOp?.params?.intro_db || -14}dB`,
+          `Verse: ${multiOp?.params?.verse_db || -22}dB (music ducked during vocal)`,
+          `Outro: ${multiOp?.params?.outro_duration || 4}s at ${multiOp?.params?.outro_db || -14}dB`,
+          "Final mastering: loudnorm + limiter -1dB",
+        ];
+      } else if (mixMode === "adaptive_ducking") {
+        // Adaptive ducking: sidechain compression
+        buildAdaptiveDucking(ffmpegPath, tempFilePath, musicFilePath, outputPath, {
+          vocalContext,
+          targetLufs: -16,
+          musicIntensity,
+        });
+        mixPipeline = [
+          `Mix mode: Adaptive Sidechain Ducking`,
+          `Vocal duration: ${vocalDuration ? vocalDuration.toFixed(1) + "s" : "unknown"}`,
+          `Context: ${vocalContext}`,
+          `Music intensity: ${musicIntensity}`,
+          "Sidechain compression: threshold=0.02, ratio=4:1",
+          "Music auto-ducks when vocal is active",
+          "Final mastering: loudnorm + limiter -1dB",
+        ];
+      } else {
+        // Standard smart mix
+        await buildSmartMix(ffmpegPath, tempFilePath, musicFilePath, outputPath, {
+          vocalContext,
+          targetLufs: -16,
+          musicIntensity,
+          enableDucking,
+          enableFade: true,
+          enableVocalEnhance: true,
+          extraVocalFilter,
+        });
+        mixPipeline = [
+          `Mix mode: Standard Smart Mix`,
+          `Vocal duration: ${vocalDuration ? vocalDuration.toFixed(1) + "s" : "unknown"}`,
+          `Context: ${vocalContext}`,
+          `Music intensity: ${musicIntensity}`,
+          enableDucking ? "Music ducking: enabled" : "Music ducking: disabled",
+          `Fade out: ${getSmartFadeDuration(vocalDuration)}s`,
+          "Vocal normalization: -16 LUFS",
+          "Final mastering: limiter -1dB",
+        ];
+      }
 
       const resultBuffer = fs.readFileSync(outputPath);
       try {

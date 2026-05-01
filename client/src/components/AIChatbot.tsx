@@ -1514,6 +1514,8 @@ export default function AIChatbot() {
   const [audioProcessing, setAudioProcessing] = useState(false);
   const [audioProcessingStage, setAudioProcessingStage] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState(false);
+  const [showMusicLibrary, setShowMusicLibrary] = useState(false);
+  const [musicLibraryCategory, setMusicLibraryCategory] = useState("poetry");
   // lastAudioBlob: stores the most recently edited audio so user can iterate
   const lastAudioBlobRef = useRef<{ blob: Blob; name: string } | null>(null);
   const isDragging = useRef(false);
@@ -2692,6 +2694,21 @@ export default function AIChatbot() {
                           { label: "🌬️ এয়ার এনহ্যান্স", cmd: "হাই ফ্রিকোয়েন্সি ব্রিলিয়ান্স বাড়াও" },
                           { label: "🎯 ভয়েস ফোকাস", cmd: "ভয়েস ফোকাস বাড়াও" },
                           { label: "🔊 লাউডনেস নর্মালাইজ", cmd: "লাউডনেস নর্মালাইজ করো" },
+                          // ── v8.0 New Presets ──
+                          { label: "🎵 মিউজিক মিক্স", cmd: "ব্যাকগ্রাউন্ড মিউজিক মিক্স করো" },
+                          { label: "🎼 মাল্টি-সেগমেন্ট", cmd: "ইন্ট্রো-ভার্স-আউট্রো স্টাইলে মিউজিক মিক্স করো" },
+                          { label: "🔀 অ্যাডাপ্টিভ ডাকিং", cmd: "অ্যাডাপ্টিভ সাইডচেইন ডাকিং দিয়ে মিউজিক মিক্স করো" },
+                          { label: "🎹 হার্মোনি", cmd: "ভোকাল হার্মোনি যোগ করো" },
+                          { label: "🌐 স্টেরিও ওয়াইড", cmd: "স্টেরিও ফিল্ড প্রশস্ত করো" },
+                          { label: "📻 ভিন্টেজ ওয়ার্মথ", cmd: "ভিন্টেজ অ্যানালগ উষ্ণতা যোগ করো" },
+                          { label: "🌌 স্পেশিয়াল 3D", cmd: "স্পেশিয়াল 3D অডিও ইফেক্ট দাও" },
+                          { label: "📊 ডাইনামিক নর্মালাইজ", cmd: "ডাইনামিক নরমালাইজেশন করো" },
+                          { label: "🍯 হানি ভয়েস", cmd: "হানি ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "📡 ব্রডকাস্ট", cmd: "ব্রডকাস্ট ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🎙️ ASMR", cmd: "ASMR ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "⚡ এপিক ভয়েস", cmd: "এপিক ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "📖 ন্যারেটর", cmd: "ন্যারেটর ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🔕 নয়েজ প্রোফাইল", cmd: "নয়েজ প্রোফাইল লার্ন করে নয়েজ রিমুভ করো" },
                         ] : []),
                       ].map(preset => (
                         <button
@@ -2721,6 +2738,154 @@ export default function AIChatbot() {
                   </div>
                 )}
 
+                {/* Music Library Panel — shows when showMusicLibrary is true */}
+                {showMusicLibrary && isAudioMode && (
+                  <div style={{
+                    marginBottom: 7,
+                    padding: "10px",
+                    background: "rgba(16,185,129,0.04)",
+                    borderRadius: 10,
+                    border: "1px solid rgba(16,185,129,0.2)",
+                  }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}>
+                      <span style={{
+                        color: "rgba(52,211,153,0.9)",
+                        fontSize: "0.6rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontWeight: 700,
+                      }}>🎵 মিউজিক লাইব্রেরি</span>
+                      <button onClick={() => setShowMusicLibrary(false)} style={{
+                        background: "none", border: "none", color: "rgba(52,211,153,0.5)",
+                        fontSize: "10px", cursor: "pointer", padding: "0 4px",
+                      }}>✕</button>
+                    </div>
+                    {/* Category tabs */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 8 }}>
+                      {[
+                        { id: "poetry", label: "🎭 কবিতা" },
+                        { id: "meditation", label: "🧘 মেডিটেশন" },
+                        { id: "podcast", label: "🎙️ পডকাস্ট" },
+                        { id: "cinematic", label: "🎬 সিনেমাটিক" },
+                        { id: "social", label: "📱 সোশ্যাল" },
+                        { id: "classical", label: "🎻 ক্লাসিক্যাল" },
+                        { id: "jazz", label: "🎷 জ্যাজ" },
+                        { id: "lofi", label: "☕ লো-ফাই" },
+                      ].map(cat => (
+                        <button key={cat.id}
+                          onClick={() => setMusicLibraryCategory(cat.id)}
+                          style={{
+                            padding: "2px 7px",
+                            background: musicLibraryCategory === cat.id ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${musicLibraryCategory === cat.id ? "rgba(16,185,129,0.5)" : "rgba(16,185,129,0.15)"}`,
+                            borderRadius: 999,
+                            color: musicLibraryCategory === cat.id ? "rgba(52,211,153,0.95)" : "rgba(52,211,153,0.45)",
+                            fontSize: "0.55rem",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >{cat.label}</button>
+                      ))}
+                    </div>
+                    {/* Music tracks per category */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {({
+                        poetry: [
+                          { name: "সফট পিয়ানো", desc: "আবৃত্তির জন্য আদর্শ", cmd: "সফট পিয়ানো মিউজিক দিয়ে মিক্স করো" },
+                          { name: "অ্যাম্বিয়েন্ট স্ট্রিংস", desc: "আবেগময় কবিতার জন্য", cmd: "অ্যাম্বিয়েন্ট স্ট্রিংস মিউজিক দিয়ে মিক্স করো" },
+                          { name: "মৃদু গিটার", desc: "প্রেমের কবিতায় মানানসই", cmd: "মৃদু গিটার মিউজিক দিয়ে মিক্স করো" },
+                          { name: "বাঁশি ও সেতার", desc: "বাংলা ঐতিহ্যবাহী", cmd: "বাঁশি ও সেতার মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        meditation: [
+                          { name: "প্রকৃতির শব্দ", desc: "পাখির ডাক, বৃষ্টি", cmd: "প্রকৃতির শব্দ মিউজিক দিয়ে মিক্স করো" },
+                          { name: "তিব্বতি বাটি", desc: "গভীর শান্তির জন্য", cmd: "তিব্বতি বাটি মিউজিক দিয়ে মিক্স করো" },
+                          { name: "বায়নোরাল বিটস", desc: "মনোযোগ বাড়ায়", cmd: "বায়নোরাল বিটস মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        podcast: [
+                          { name: "লো-ফাই কর্পোরেট", desc: "পডকাস্টের জন্য আদর্শ", cmd: "লো-ফাই কর্পোরেট মিউজিক দিয়ে মিক্স করো" },
+                          { name: "সফট জ্যাজ", desc: "কথোপকথনের পটভূমি", cmd: "সফট জ্যাজ মিউজিক দিয়ে মিক্স করো" },
+                          { name: "মিনিমাল পিয়ানো", desc: "পরিষ্কার ও পেশাদার", cmd: "মিনিমাল পিয়ানো মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        cinematic: [
+                          { name: "এপিক অর্কেস্ট্রা", desc: "নাটকীয় দৃশ্যের জন্য", cmd: "এপিক অর্কেস্ট্রা মিউজিক দিয়ে মিক্স করো" },
+                          { name: "আবেগময় পিয়ানো", desc: "হৃদয়স্পর্শী মুহূর্তে", cmd: "আবেগময় পিয়ানো মিউজিক দিয়ে মিক্স করো" },
+                          { name: "টেনশন বিল্ডআপ", desc: "রহস্যময় পরিবেশ", cmd: "টেনশন বিল্ডআপ মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        social: [
+                          { name: "আপবিট পপ", desc: "TikTok/Reels এর জন্য", cmd: "আপবিট পপ মিউজিক দিয়ে মিক্স করো" },
+                          { name: "চিল ভাইব", desc: "ক্যাজুয়াল কনটেন্টে", cmd: "চিল ভাইব মিউজিক দিয়ে মিক্স করো" },
+                          { name: "ট্রেন্ডি বিটস", desc: "ভাইরাল কনটেন্টে", cmd: "ট্রেন্ডি বিটস মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        classical: [
+                          { name: "বাঁশি", desc: "বাংলা লোকসংগীতের সুর", cmd: "বাঁশি মিউজিক দিয়ে মিক্স করো" },
+                          { name: "সেতার", desc: "ভারতীয় শাস্ত্রীয়", cmd: "সেতার মিউজিক দিয়ে মিক্স করো" },
+                          { name: "তবলা ও সেতার", desc: "ঐতিহ্যবাহী রাগ", cmd: "তবলা ও সেতার মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        jazz: [
+                          { name: "স্মুদ জ্যাজ", desc: "রাতের পরিবেশ", cmd: "স্মুদ জ্যাজ মিউজিক দিয়ে মিক্স করো" },
+                          { name: "ক্যাফে পিয়ানো", desc: "আরামদায়ক পরিবেশ", cmd: "ক্যাফে পিয়ানো মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                        lofi: [
+                          { name: "স্টাডি বিটস", desc: "মনোযোগের জন্য", cmd: "স্টাডি বিটস লো-ফাই মিউজিক দিয়ে মিক্স করো" },
+                          { name: "বৃষ্টির দিন", desc: "বৃষ্টির শব্দসহ", cmd: "বৃষ্টির দিন লো-ফাই মিউজিক দিয়ে মিক্স করো" },
+                          { name: "রাতের ক্যাফে", desc: "শান্ত রাতের পরিবেশ", cmd: "রাতের ক্যাফে লো-ফাই মিউজিক দিয়ে মিক্স করো" },
+                        ],
+                      } as Record<string, {name: string; desc: string; cmd: string}[]>)[musicLibraryCategory]?.map(track => (
+                        <button key={track.name}
+                          onClick={() => {
+                            setInput(track.cmd);
+                            setShowMusicLibrary(false);
+                            setTimeout(() => inputRef.current?.focus(), 50);
+                          }}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 8,
+                            padding: "6px 8px",
+                            background: "rgba(255,255,255,0.02)",
+                            border: "1px solid rgba(16,185,129,0.12)",
+                            borderRadius: 7,
+                            cursor: "pointer",
+                            textAlign: "left",
+                          }}
+                        >
+                          <div style={{
+                            width: 28, height: 28, borderRadius: 6, flexShrink: 0,
+                            background: "rgba(16,185,129,0.1)",
+                            border: "1px solid rgba(16,185,129,0.2)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "12px",
+                          }}>🎵</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                              color: "rgba(52,211,153,0.85)",
+                              fontSize: "0.58rem",
+                              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                              fontWeight: 700,
+                            }}>{track.name}</div>
+                            <div style={{
+                              color: "rgba(52,211,153,0.4)",
+                              fontSize: "0.52rem",
+                              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            }}>{track.desc}</div>
+                          </div>
+                          <span style={{
+                            color: "rgba(52,211,153,0.4)",
+                            fontSize: "9px",
+                          }}>→</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{
+                      marginTop: 6,
+                      color: "rgba(52,211,153,0.3)",
+                      fontSize: "0.5rem",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      textAlign: "center",
+                    }}>💡 নির্দেশ সিলেক্ট করলে ইনপুটে যাবে — তারপর আপনার ভোকাল অডিও আপলোড করুন</div>
+                  </div>
+                )}
                 {/* Music file banner */}
                 {musicFile && (
                   <div style={{
@@ -2889,6 +3054,37 @@ export default function AIChatbot() {
                         border: "1px solid rgba(5,10,19,0.8)",
                       }} />
                     )}
+                  </button>
+                  )}
+                  {/* Music Library button — show in audio mode */}
+                  {isAudioMode && (
+                  <button
+                    onClick={() => setShowMusicLibrary(prev => !prev)}
+                    title="মিউজিক লাইব্রেরি — রয়্যালটি-ফ্রি ব্যাকগ্রাউন্ড মিউজিক"
+                    className="chatbot-icon-btn"
+                    style={{
+                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
+                      background: showMusicLibrary ? "rgba(16,185,129,0.18)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${showMusicLibrary ? "rgba(16,185,129,0.5)" : "rgba(16,185,129,0.2)"}`,
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      position: "relative",
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke={showMusicLibrary ? "rgba(52,211,153,0.95)" : "rgba(16,185,129,0.45)"}
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18V5l12-2v13"/>
+                      <circle cx="6" cy="18" r="3"/>
+                      <circle cx="18" cy="16" r="3"/>
+                      <line x1="9" y1="9" x2="21" y2="7"/>
+                    </svg>
+                    <span style={{
+                      position: "absolute", bottom: -1, right: -1,
+                      fontSize: "6px", background: "rgba(16,185,129,0.8)",
+                      color: "#fff", borderRadius: 3, padding: "0 2px",
+                      fontWeight: 700, lineHeight: "10px",
+                    }}>LIB</span>
                   </button>
                   )}
 
