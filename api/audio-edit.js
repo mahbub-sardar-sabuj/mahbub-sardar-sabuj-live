@@ -1221,11 +1221,19 @@ export default async function handler(req, res) {
 
   if (contentType.includes("application/json")) {
     // Path A: JSON (base64)
-    const body = await new Promise((resolve) => {
-      let data = "";
-      req.on("data", chunk => data += chunk);
-      req.on("end", () => resolve(JSON.parse(data)));
-    });
+    const body = await new Promise((resolve, reject) => {
+      let data = [];
+      req.on("data", chunk => data.push(chunk));
+      req.on("end", () => {
+        try {
+          const raw = Buffer.concat(data).toString();
+          resolve(JSON.parse(raw));
+        } catch (e) {
+          reject(e);
+        }
+      });
+      req.on("error", reject);
+    }).catch(() => ({}));
     prompt = body.instruction || body.prompt;
     audioMime = body.audioMime || "audio/mpeg";
     if (body.audioData) {
