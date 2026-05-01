@@ -518,19 +518,40 @@ export default async function handler(req, res) {
   let outputPath = null;
 
   try {
-    const form = formidable({ uploadDir: tmpDir, keepExtensions: true, maxFileSize: 50 * 1024 * 1024 });
-    const [fields, files] = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err); else resolve([fields, files]);
+    let instruction = "";
+
+    // Support both JSON (base64) and multipart form
+    const contentType = req.headers["content-type"] || "";
+
+    if (contentType.includes("application/json")) {
+      // JSON mode: audioData is base64 string
+      const body = req.body || {};
+      const audioBase64 = body.audioData;
+      instruction = body.instruction || "অডিওটি সুন্দর করো";
+
+      if (!audioBase64) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
+
+      // Decode base64 → temp file
+      const audioBuffer = Buffer.from(audioBase64, "base64");
+      inputPath = path.join(tmpDir, `sardar_input_${Date.now()}.wav`);
+      fs.writeFileSync(inputPath, audioBuffer);
+    } else {
+      // Multipart form mode
+      const form = formidable({ uploadDir: tmpDir, keepExtensions: true, maxFileSize: 50 * 1024 * 1024 });
+      const [fields, files] = await new Promise((resolve, reject) => {
+        form.parse(req, (err, fields, files) => {
+          if (err) reject(err); else resolve([fields, files]);
+        });
       });
-    });
 
-    const audioFile = Array.isArray(files.audio) ? files.audio[0] : files.audio;
-    const instruction = Array.isArray(fields.instruction) ? fields.instruction[0] : fields.instruction;
+      const audioFile = Array.isArray(files.audio) ? files.audio[0] : files.audio;
+      instruction = Array.isArray(fields.instruction) ? fields.instruction[0] : (fields.instruction || "অডিওটি সুন্দর করো");
 
-    if (!audioFile) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
+      if (!audioFile) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
+      inputPath = audioFile.filepath;
+    }
 
-    inputPath = audioFile.filepath;
+    // ── from here, inputPath is set ──
     outputPath = path.join(tmpDir, `sardar_edited_${Date.now()}.wav`);
 
     let parsed;
@@ -594,9 +615,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      audio: base64Audio,
-      mimeType: "audio/wav",
-      explanation: parsed.explanation || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
+      audioData: base64Audio,
+      audioMime: "audio/wav",
+      description: parsed.explanation || parsed.description || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
+      appliedSteps: (parsed.pipeline || []).map(s => s.replace(/^[০-৯\d]+\.\s*/, "")),
       operations: operations.map(op => op.type),
       pipeline: parsed.pipeline || [],
       intent: parsed.intent || "অডিও এনহান্সমেন্ট",
