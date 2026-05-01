@@ -9,6 +9,9 @@ interface Message {
   content: string;
   timestamp: Date;
   imageUrl?: string;
+  audioUrl?: string;        // edited audio download URL
+  audioFilename?: string;   // suggested filename
+  audioDescription?: string; // Bengali description of what was done
 }
 
 interface ActionButton {
@@ -86,7 +89,7 @@ const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/facebook-recitations",         label: "আবৃত্তি সংগ্রহ দেখুন",      keywords: ["recitation", "আবৃত্তি", "facebook"] },
 ];
 
-// ── Photo request detection ───────────────────────────────────────────────────
+// ── Audio edit request detection ───────────────────────────────────────────────
 const PHOTO_KEYWORDS = [
   "ছবি", "photo", "picture", "image", "ফটো", "দেখতে", "চেহারা",
   "মুখ", "face", "look", "দেখাও", "দেখান", "কেমন দেখতে",
@@ -110,7 +113,22 @@ function isLiveChatRequest(text: string): boolean {
   return LIVE_CHAT_KEYWORDS.some(kw => lower.includes(kw));
 }
 
-// ── Contact request detection ─────────────────────────────────────────────────
+// ── Audio edit request detection ─────────────────────────────────────────────
+const AUDIO_EDIT_KEYWORDS = [
+  "অডিও", "audio", "গান", "sound", "ভয়েস", "voice",
+  "mp3", "wav", "ogg", "flac", "aac",
+  "ভলিউম", "volume", "ট্রিম", "trim", "কাটো", "কাট",
+  "ফেড", "fade", "গতি", "speed", "নয়েজ", "noise",
+  "রিভার্ব", "reverb", "বেস", "bass", "ট্রেবল", "treble",
+  "এডিট", "edit", "রূপান্তর", "convert",
+];
+
+function isAudioEditRequest(text: string): boolean {
+  const lower = text.toLowerCase();
+  return AUDIO_EDIT_KEYWORDS.some(kw => lower.includes(kw));
+}
+
+// ── Photo request detection ───────────────────────────────────────────────────
 const CONTACT_KEYWORDS = [
   "মেসেঞ্জ পাঠাও", "মেসেঞ্জ করো", "মেসেঞ্জ করতে চাই", "মেসেঞ্জ দিতে চাই",
   "যোগাযোগ করতে চাই", "যোগাযোগ করব", "যোগাযোগ করবো",
@@ -262,6 +280,8 @@ const SUGGESTIONS = [
   "বিখ্যাত লেখা",
   "কবিতা কোথায়?",
   "যোগাযোগ করব?",
+  "🎵 অডিও এডিট করুন",
+  "ভলিউম বাড়াও",
 ];
 
 function formatTime(date: Date): string {
@@ -632,6 +652,70 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
               }} />
           </div>
         )}
+        {/* ── Audio player & download (for edited audio messages) ── */}
+        {message.audioUrl && (
+          <div style={{
+            background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
+            borderRadius: "4px 18px 18px 18px",
+            padding: "12px 14px",
+            border: "1px solid rgba(212,168,67,0.28)",
+            borderLeft: "3px solid rgba(212,168,67,0.7)",
+            boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
+            marginBottom: 8,
+          }}>
+            {/* Description */}
+            {message.audioDescription && (
+              <div style={{
+                color: "rgba(245,238,222,0.9)",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontSize: "0.82rem",
+                lineHeight: 1.7,
+                marginBottom: 10,
+              }}>
+                {message.audioDescription}
+              </div>
+            )}
+            {/* Audio player */}
+            <audio
+              controls
+              src={message.audioUrl}
+              style={{
+                width: "100%",
+                borderRadius: 10,
+                height: 36,
+                accentColor: "#D4A843",
+                marginBottom: 8,
+              }}
+            />
+            {/* Download button */}
+            <a
+              href={message.audioUrl}
+              download={message.audioFilename || "edited_audio.mp3"}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 14px",
+                background: "linear-gradient(135deg, rgba(212,168,67,0.18) 0%, rgba(212,168,67,0.08) 100%)",
+                border: "1px solid rgba(212,168,67,0.45)",
+                borderRadius: 12,
+                color: "#D4A843",
+                fontSize: "0.75rem",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontWeight: 600,
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              ডাউনলোড করুন
+            </a>
+          </div>
+        )}
         {text && (
           <div style={{
             background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
@@ -766,8 +850,12 @@ export default function AIChatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioFileInputRef = useRef<HTMLInputElement>(null);
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: AIMessageContent }[] | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [isAudioMode, setIsAudioMode] = useState(false);
+  const [audioProcessing, setAudioProcessing] = useState(false);
   const isDragging = useRef(false);
   const didDrag = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, bx: 0, by: 0 });
@@ -858,6 +946,82 @@ export default function AIChatbot() {
     window.addEventListener("touchend", onEnd);
   }, [getAbsPos, clampPos]);
 
+  // ── Audio select handler ──────────────────────────────────────────────
+  const handleAudioSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      setError("অডিও ফাইলের আকার সর্বোচ্চ ৫০ MB হতে পারবে।");
+      return;
+    }
+    const allowedTypes = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/flac", "audio/aac", "audio/mp4", "audio/webm", "audio/x-m4a"];
+    if (!allowedTypes.some(t => file.type.startsWith("audio/")) && !file.name.match(/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i)) {
+      setError("সমর্থিত ফরম্যাট: MP3, WAV, OGG, FLAC, AAC, M4A");
+      return;
+    }
+    setAudioFile(file);
+    setIsAudioMode(true);
+    e.target.value = "";
+  }, []);
+
+  // ── Audio edit submit ──────────────────────────────────────────────────────
+  const handleAudioEdit = useCallback(async () => {
+    const instruction = input.trim();
+    if (!audioFile || !instruction || audioProcessing) return;
+
+    const userMsg: Message = {
+      id: `user-audio-${Date.now()}`,
+      role: "user",
+      content: `🎵 ${audioFile.name}\n\nনির্দেশ: ${instruction}`,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setAudioProcessing(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("audio", audioFile, audioFile.name);
+      formData.append("instruction", instruction);
+
+      const response = await fetch("/api/audio-edit", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      const contentDisposition = response.headers.get("Content-Disposition") || "";
+      const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+      const audioFilename = filenameMatch?.[1] || `edited_audio.mp3`;
+      const descriptionEncoded = response.headers.get("X-Audio-Description") || "";
+      const audioDescription = descriptionEncoded ? decodeURIComponent(descriptionEncoded) : "অডিও এডিটিং সম্পন্ন হয়েছে।";
+
+      const aiMsg: Message = {
+        id: `ai-audio-${Date.now()}`,
+        role: "assistant",
+        content: audioDescription,
+        timestamp: new Date(),
+        audioUrl,
+        audioFilename,
+        audioDescription,
+      };
+      setMessages(prev => [...prev, aiMsg]);
+      setAudioFile(null);
+      setIsAudioMode(false);
+    } catch (err: any) {
+      setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
+    } finally {
+      setAudioProcessing(false);
+    }
+  }, [audioFile, input, audioProcessing]);
+
   // ── Image select handler ──────────────────────────────────────────────
   const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -877,6 +1041,11 @@ export default function AIChatbot() {
 
   // ── Send message ────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
+    // If in audio mode, delegate to audio handler
+    if (isAudioMode && audioFile) {
+      handleAudioEdit();
+      return;
+    }
     const text = input.trim();
     if (!text && !imagePreview || isLoading) return;
 
@@ -1309,9 +1478,9 @@ export default function AIChatbot() {
                 {messages.map(msg => (
                   <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} onSwitchToLive={() => setActiveTab("live")} />
                 ))}
-                {isLoading && <TypingIndicator />}
+                {(isLoading || audioProcessing) && <TypingIndicator />}
 
-                {error && !isLoading && (
+                {error && !isLoading && !audioProcessing && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "6px 0" }}>
                     <div style={{
                       textAlign: "center",
@@ -1368,7 +1537,14 @@ export default function AIChatbot() {
                     {SUGGESTIONS.map(s => (
                       <button key={s}
                         className="chatbot-suggestion-btn"
-                        onClick={() => { setInput(s); inputRef.current?.focus(); }}
+                        onClick={() => {
+                          if (s.includes("🎵 অডিও এডিট")) {
+                            audioFileInputRef.current?.click();
+                          } else {
+                            setInput(s);
+                            inputRef.current?.focus();
+                          }
+                        }}
                         style={{
                           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                           fontSize: "0.72rem",
@@ -1400,7 +1576,7 @@ export default function AIChatbot() {
                 background: "linear-gradient(135deg, rgba(5,10,20,0.98) 0%, rgba(8,16,30,0.98) 100%)",
                 flexShrink: 0,
               }}>
-                {/* Hidden file input */}
+                {/* Hidden file inputs */}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1408,6 +1584,70 @@ export default function AIChatbot() {
                   onChange={handleImageSelect}
                   style={{ display: "none" }}
                 />
+                <input
+                  ref={audioFileInputRef}
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.ogg,.flac,.aac,.m4a,.webm,.opus"
+                  onChange={handleAudioSelect}
+                  style={{ display: "none" }}
+                />
+
+                {/* Audio mode banner */}
+                {isAudioMode && audioFile && (
+                  <div style={{
+                    marginBottom: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    background: "rgba(212,168,67,0.08)",
+                    borderRadius: 10,
+                    border: "1px solid rgba(212,168,67,0.3)",
+                  }}>
+                    {/* Audio icon */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+                      background: "rgba(212,168,67,0.15)",
+                      border: "1.5px solid rgba(212,168,67,0.4)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A843" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18V5l12-2v13"/>
+                        <circle cx="6" cy="18" r="3"/>
+                        <circle cx="18" cy="16" r="3"/>
+                      </svg>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        color: "rgba(212,168,67,0.9)",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}>{audioFile.name}</div>
+                      <div style={{
+                        color: "rgba(212,168,67,0.5)",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.65rem",
+                        marginTop: 1,
+                      }}>
+                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • নির্দেশ লিখুন নিচে
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setAudioFile(null); setIsAudioMode(false); }}
+                      style={{
+                        width: 20, height: 20, borderRadius: "50%",
+                        background: "#ef4444", border: "none",
+                        color: "#fff", fontSize: "9px", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0, fontWeight: 700,
+                      }}
+                    >✕</button>
+                  </div>
+                )}
 
                 {/* Image preview strip */}
                 {imagePreview && (
@@ -1448,13 +1688,14 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
-                  {/* Image attach button */}
+                <div style={{ display: "flex", gap: 6, alignItems: "flex-end" }}>
+                  {/* Image attach button (hidden in audio mode) */}
+                  {!isAudioMode && (
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     title="ছবি যুক্ত করুন"
                     style={{
-                      width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                       background: imagePreview ? "rgba(212,168,67,0.2)" : "rgba(255,255,255,0.04)",
                       border: `1px solid ${imagePreview ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.2)"}`,
                       cursor: "pointer",
@@ -1463,12 +1704,35 @@ export default function AIChatbot() {
                       boxShadow: imagePreview ? "0 0 0 3px rgba(212,168,67,0.1)" : "none",
                     }}
                   >
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                       stroke={imagePreview ? "#D4A843" : "rgba(212,168,67,0.45)"}
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                       <circle cx="8.5" cy="8.5" r="1.5"/>
                       <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </button>
+                  )}
+                  {/* Audio attach button */}
+                  <button
+                    onClick={() => audioFileInputRef.current?.click()}
+                    title="অডিও ফাইল যুক্ত করুন"
+                    style={{
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                      background: isAudioMode ? "rgba(212,168,67,0.2)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.2)"}`,
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.2s",
+                      boxShadow: isAudioMode ? "0 0 0 3px rgba(212,168,67,0.1)" : "none",
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke={isAudioMode ? "#D4A843" : "rgba(212,168,67,0.45)"}
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18V5l12-2v13"/>
+                      <circle cx="6" cy="18" r="3"/>
+                      <circle cx="18" cy="16" r="3"/>
                     </svg>
                   </button>
 
@@ -1484,7 +1748,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 90) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder="জিজ্ঞেস করুন..."
+                      placeholder={isAudioMode ? "নির্দেশ দিন... (যেমন: ভলিউম ২ গুণ বাড়াও)" : "জিজ্ঞেস করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
@@ -1518,36 +1782,29 @@ export default function AIChatbot() {
                     />
                   </div>
                   <button
-                    onClick={handleSend}
-                    disabled={(!input.trim() && !imagePreview) || isLoading}
+                    onClick={isAudioMode ? handleAudioEdit : handleSend}
+                    disabled={isAudioMode
+                      ? (!audioFile || !input.trim() || audioProcessing)
+                      : ((!input.trim() && !imagePreview) || isLoading)
+                    }
                     style={{
                       width: 40, height: 40,
                       borderRadius: 12,
-                      background: (input.trim() || imagePreview) && !isLoading
+                      background: (isAudioMode ? (audioFile && input.trim() && !audioProcessing) : ((input.trim() || imagePreview) && !isLoading))
                         ? "linear-gradient(135deg, #E8C060 0%, #D4A843 50%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.18)",
                       border: "none",
-                      color: (input.trim() || imagePreview) && !isLoading ? "#0A1628" : "rgba(212,168,67,0.38)",
+                      color: (isAudioMode ? (audioFile && input.trim() && !audioProcessing) : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.38)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      cursor: (input.trim() || imagePreview) && !isLoading ? "pointer" : "not-allowed",
+                      cursor: "pointer",
                       flexShrink: 0,
                       transition: "all 0.2s",
-                      boxShadow: (input.trim() || imagePreview) && !isLoading ? "0 4px 14px rgba(212,168,67,0.38)" : "none",
-                    }}
-                    onMouseEnter={e => {
-                      if (input.trim() && !isLoading) {
-                        (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 22px rgba(212,168,67,0.55)";
-                        (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.boxShadow = input.trim() && !isLoading ? "0 4px 14px rgba(212,168,67,0.38)" : "none";
-                      (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+                      boxShadow: "none",
                     }}
                   >
-                    {isLoading ? (
+                    {(isLoading || audioProcessing) ? (
                       <div style={{
                         width: 15, height: 15,
                         border: "2px solid rgba(212,168,67,0.35)",
@@ -1555,6 +1812,11 @@ export default function AIChatbot() {
                         borderRadius: "50%",
                         animation: "spin 0.8s linear infinite",
                       }} />
+                    ) : isAudioMode ? (
+                      /* Waveform icon for audio mode */
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                      </svg>
                     ) : (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13" />
