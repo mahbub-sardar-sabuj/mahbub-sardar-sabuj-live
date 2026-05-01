@@ -1150,13 +1150,11 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                    message.audioIntent === "eq"        ? "🎛️ EQ প্রসেসিং" :
                    message.audioIntent === "denoise"   ? "🔇 নয়েজ রিমুভাল" :
                    message.audioIntent === "vocal"        ? "🎤 ভোকাল প্রসেসিং" :
-                   message.audioIntent === "smart_mix"     ? "🎼 স্মার্ট মিক্স" :
                    message.audioIntent === "natural_clean" ? "✨ ন্যাচারাল ক্লিন" :
                    message.audioIntent === "warm_voice"    ? "🌡️ ওয়ার্ম ভয়েস" :
                    message.audioIntent === "studio_clear"  ? "🎚️ স্টুডিও ক্লিয়ার" :
                    message.audioIntent === "soft_poetry"   ? "🌸 সফট পোয়েট্রি" :
                    message.audioIntent === "deep_recitation" ? "🎧 ডিপ রিসাইটেশন" :
-                   message.audioIntent === "ask_music_file"    ? "🎧 মিউজিক ফাইল দরকার" :
                    message.audioIntent === "youtube_voice"     ? "🎥 YouTube ভয়েস" :
                    message.audioIntent === "tiktok_voice"      ? "🎤 TikTok ভয়েস" :
                    message.audioIntent === "audiobook_voice"   ? "🎧 অডিওবুক ভয়েস" :
@@ -1488,7 +1486,7 @@ export default function AIChatbot() {
 
 আপনাকে স্বাগতম। এখানে আপনি মাহবুব সরদার সবুজ সম্পর্কে জানতে পারবেন—তাঁর কবিতা, ই-বুক, লেখা, যোগাযোগের তথ্য এবং সরদার ডিজাইন স্টুডিও ব্যবহারের নিয়ম সহজভাবে বুঝে নিতে পারবেন।
 
-আপনি চাইলে সরাসরি অডিও এডিট করতে পারেন। অডিও আপলোড করে noise reduction, voice clean, vocal enhancement preset, smart mix (background music সহ), loudness normalize বা context-aware processing করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
+আপনি চাইলে সরাসরি অডিও এডিট করতে পারেন। অডিও আপলোড করে noise reduction, voice clean, vocal enhancement preset, loudness normalize বা context-aware processing করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
 
 এডিটিং শিখতেও আমি সাহায্য করি। অডিও, ভিডিও, ছবি, লেখা ও ডিজাইন—যে কোনো বিষয়ে ধাপে ধাপে নিয়ম, workflow, সেটিংস এবং practical tips বুঝিয়ে দিতে পারি।
 
@@ -1505,17 +1503,13 @@ export default function AIChatbot() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioFileInputRef = useRef<HTMLInputElement>(null);
-  const musicFileInputRef = useRef<HTMLInputElement>(null);
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: AIMessageContent }[] | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [musicFile, setMusicFile] = useState<File | null>(null);
   const [isAudioMode, setIsAudioMode] = useState(false);
   const [audioProcessing, setAudioProcessing] = useState(false);
   const [audioProcessingStage, setAudioProcessingStage] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState(false);
-  const [showMusicLibrary, setShowMusicLibrary] = useState(false);
-  const [musicLibraryCategory, setMusicLibraryCategory] = useState("poetry");
   // lastAudioBlob: stores the most recently edited audio so user can iterate
   const lastAudioBlobRef = useRef<{ blob: Blob; name: string } | null>(null);
   const isDragging = useRef(false);
@@ -1648,37 +1642,6 @@ export default function AIChatbot() {
     }
 
     if (pendingInstruction) {
-      // Check if instruction is a music mix request — if so, need music file first
-      const isMusicMixInstruction = /ব্যাকগ্রাউন্ড|মিউজিক.*মিক্স|মিক্স.*মিউজিক|background.*music|music.*mix|smart.?mix/i.test(pendingInstruction);
-
-      if (isMusicMixInstruction && !musicFile) {
-        // Don't auto-run — ask for music file first
-        setAudioFile(file);
-        setIsAudioMode(true);
-        setInput("");
-        const fileSizeMB2 = (file.size / (1024 * 1024)).toFixed(1);
-        setMessages(prev => [...prev,
-          {
-            id: `user-audio-upload-${Date.now()}`,
-            role: "user" as const,
-            content: `🎧 ${file.name}`,
-            timestamp: new Date(),
-            userAudioName: file.name,
-            userAudioSize: file.size,
-            userAudioMime: file.type || "audio/mpeg",
-            userAudioUrl: URL.createObjectURL(file),
-            userAudioInstruction: "",
-          },
-          {
-            id: `ai-ask-music-${Date.now()}`,
-            role: "assistant" as const,
-            content: `ফাইলটি (${fileSizeMB2} MB) পেয়েছি! ব্যাকগ্রাউন্ড মিউজিক যোগ করতে হলে আপনার মিউজিক ফাইলটি দরকার।\n\nনিচের **🎧 বাটনে** ক্লিক করে আপনার পছন্দের ব্যাকগ্রাউন্ড মিউজিক ফাইলটি আপলোড করুন, তারপর আমি ভোকাল ও মিউজিক একসাথে মিক্স করে দেব।`,
-            timestamp: new Date(),
-            audioIntent: "ask_music_file",
-          }
-        ]);
-        return;
-      }
 
       // Auto-run immediately with the found instruction
       setAudioFile(file);
@@ -1719,18 +1682,6 @@ export default function AIChatbot() {
             throw new Error(errData.error || `HTTP ${response.status}`);
           }
           const respJson2 = await response.json();
-          // Handle needsMusicFile response
-          if (respJson2.needsMusicFile || respJson2.intent === "ask_music_file") {
-            setMessages(prev => [...prev, {
-              id: `ai-ask-music-${Date.now()}`,
-              role: "assistant",
-              content: `ব্যাকগ্রাউন্ড মিউজিক যোগ করতে হলে আপনার মিউজিক ফাইলটি দরকার।\n\nনিচের **🎧 বাটনে** ক্লিক করে আপনার পছন্দের ব্যাকগ্রাউন্ড মিউজিক ফাইলটি আপলোড করুন, তারপর আমি মিক্স করে দেব।`,
-              timestamp: new Date(),
-              audioIntent: "ask_music_file",
-            }]);
-            setAudioProcessing(false);
-            return;
-          }
           const {
             audioData: resultBase64,
             audioMime: resultMime = "audio/wav",
@@ -1805,7 +1756,7 @@ export default function AIChatbot() {
         {
           id: `ai-ask-instruction-${Date.now()}`,
           role: "assistant" as const,
-          content: `ফাইলটি (${fileSizeMB} MB) পেয়েছি। আপনি কী করতে চান?\n\nযেমন বলতে পারেন:\n• ভোকাল ক্লিন করো\n• নয়েজ কমাও\n• ব্যাকগ্রাউন্ড মিউজিক যোগ করো\n• কবিতার জন্য উপযুক্ত করো\n• অথবা আপনার মতো নির্দেশ দিন`,
+          content: `ফাইলটি (${fileSizeMB} MB) পেয়েছি। আপনি কী করতে চান?\n\nযেমন বলতে পারেন:\n• ভোকাল ক্লিন করো\n• নয়েজ কমাও\n• কবিতার জন্য উপযুক্ত করো\n• অথবা আপনার মতো নির্দেশ দিন`,
           timestamp: new Date(),
         }
       ]);
@@ -1871,17 +1822,6 @@ export default function AIChatbot() {
       );
       const audioMime = sourceFile.type || "audio/wav";
 
-      // Step 1b: Read music file as base64 (if provided — for smart mix)
-      let musicBase64: string | undefined;
-      let musicMime: string | undefined;
-      if (musicFile) {
-        const musicArrayBuffer = await musicFile.arrayBuffer();
-        musicBase64 = btoa(
-          new Uint8Array(musicArrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-        );
-        musicMime = musicFile.type || "audio/mpeg";
-      }
-
       // Step 2: Send to server — AI intent detection + FFmpeg processing in one call
       setAudioProcessingStage("প্রসেসিং চলছে...");
       const serverResp = await fetch("/api/audio-edit", {
@@ -1891,7 +1831,6 @@ export default function AIChatbot() {
           instruction,
           audioData: audioBase64,
           audioMime,
-          ...(musicBase64 ? { musicData: musicBase64, musicMime } : {}),
         }),
       });
 
@@ -1901,20 +1840,6 @@ export default function AIChatbot() {
       }
 
       const respJson = await serverResp.json();
-
-      // ── Step 3a: AI asked for music file — show friendly message ────────────
-      if (respJson.needsMusicFile || respJson.intent === "ask_music_file") {
-        setMessages(prev => [...prev, {
-          id: `ai-ask-music-${Date.now()}`,
-          role: "assistant",
-          content: `অবশ্যই ব্যাকগ্রাউন্ড মিউজিক যোগ করা যাবে! এর জন্য আপনার একটি মিউজিক ফাইল দরকার।\n\nনিচের **🎧 বাটনে** ক্লিক করে আপনার পছন্দের ব্যাকগ্রাউন্ড মিউজিক ফাইলটি আপলোড করুন, তারপর আবার "ব্যাকগ্রাউন্ড যোগ করো" বলুন — আমি ভোকাল ও মিউজিক একসাথে মিক্স করে দেব।`,
-          timestamp: new Date(),
-          audioIntent: "ask_music_file",
-          audioPipeline: respJson.pipeline || [],
-        }]);
-        setAudioProcessing(false);
-        return;
-      }
 
       const {
         audioData: resultBase64,
@@ -1936,9 +1861,6 @@ export default function AIChatbot() {
 
       // Save edited blob for iterative editing
       lastAudioBlobRef.current = { blob: wavBlob, name: audioFilename };
-      // Clear music file after use (one-time mix)
-      setMusicFile(null);
-
       setMessages(prev => [...prev, {
         id: `ai-audio-${Date.now()}`,
         role: "assistant",
@@ -2178,7 +2100,6 @@ export default function AIChatbot() {
     // Reset iterative audio editing state
     lastAudioBlobRef.current = null;
     setAudioFile(null);
-    setMusicFile(null);
     setIsAudioMode(false);
   };
 
@@ -2567,19 +2488,7 @@ export default function AIChatbot() {
                   onChange={handleAudioSelect}
                   style={{ display: "none" }}
                 />
-                <input
-                  ref={musicFileInputRef}
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.ogg,.flac,.aac,.m4a"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-                    if (f.size > 10 * 1024 * 1024) { setError("ব্যাকগ্রাউন্ড মিউজিক ফাইল সর্বোচ্চ ১০ MB হতে পারবে।"); return; }
-                    setMusicFile(f);
-                    e.target.value = "";
-                  }}
-                  style={{ display: "none" }}
-                />
+
 
                 {/* Audio mode banner — only show when a NEW file is selected, not after editing */}
                 {audioFile && (
@@ -2738,209 +2647,6 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                {/* Music Library Panel — shows when showMusicLibrary is true */}
-                {showMusicLibrary && isAudioMode && (
-                  <div style={{
-                    marginBottom: 7,
-                    padding: "10px",
-                    background: "rgba(16,185,129,0.04)",
-                    borderRadius: 10,
-                    border: "1px solid rgba(16,185,129,0.2)",
-                  }}>
-                    <div style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      marginBottom: 8,
-                    }}>
-                      <span style={{
-                        color: "rgba(52,211,153,0.9)",
-                        fontSize: "0.6rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontWeight: 700,
-                      }}>🎵 মিউজিক লাইব্রেরি</span>
-                      <button onClick={() => setShowMusicLibrary(false)} style={{
-                        background: "none", border: "none", color: "rgba(52,211,153,0.5)",
-                        fontSize: "10px", cursor: "pointer", padding: "0 4px",
-                      }}>✕</button>
-                    </div>
-                    {/* Category tabs */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 8 }}>
-                      {[
-                        { id: "poetry", label: "🎭 কবিতা" },
-                        { id: "meditation", label: "🧘 মেডিটেশন" },
-                        { id: "podcast", label: "🎙️ পডকাস্ট" },
-                        { id: "cinematic", label: "🎬 সিনেমাটিক" },
-                        { id: "social", label: "📱 সোশ্যাল" },
-                        { id: "classical", label: "🎻 ক্লাসিক্যাল" },
-                        { id: "jazz", label: "🎷 জ্যাজ" },
-                        { id: "lofi", label: "☕ লো-ফাই" },
-                      ].map(cat => (
-                        <button key={cat.id}
-                          onClick={() => setMusicLibraryCategory(cat.id)}
-                          style={{
-                            padding: "2px 7px",
-                            background: musicLibraryCategory === cat.id ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.03)",
-                            border: `1px solid ${musicLibraryCategory === cat.id ? "rgba(16,185,129,0.5)" : "rgba(16,185,129,0.15)"}`,
-                            borderRadius: 999,
-                            color: musicLibraryCategory === cat.id ? "rgba(52,211,153,0.95)" : "rgba(52,211,153,0.45)",
-                            fontSize: "0.55rem",
-                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                            cursor: "pointer",
-                            fontWeight: 600,
-                          }}
-                        >{cat.label}</button>
-                      ))}
-                    </div>
-                    {/* Music tracks per category */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {({
-                        poetry: [
-                          { name: "সফট পিয়ানো", desc: "আবৃত্তির জন্য আদর্শ", cmd: "সফট পিয়ানো মিউজিক দিয়ে মিক্স করো" },
-                          { name: "অ্যাম্বিয়েন্ট স্ট্রিংস", desc: "আবেগময় কবিতার জন্য", cmd: "অ্যাম্বিয়েন্ট স্ট্রিংস মিউজিক দিয়ে মিক্স করো" },
-                          { name: "মৃদু গিটার", desc: "প্রেমের কবিতায় মানানসই", cmd: "মৃদু গিটার মিউজিক দিয়ে মিক্স করো" },
-                          { name: "বাঁশি ও সেতার", desc: "বাংলা ঐতিহ্যবাহী", cmd: "বাঁশি ও সেতার মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        meditation: [
-                          { name: "প্রকৃতির শব্দ", desc: "পাখির ডাক, বৃষ্টি", cmd: "প্রকৃতির শব্দ মিউজিক দিয়ে মিক্স করো" },
-                          { name: "তিব্বতি বাটি", desc: "গভীর শান্তির জন্য", cmd: "তিব্বতি বাটি মিউজিক দিয়ে মিক্স করো" },
-                          { name: "বায়নোরাল বিটস", desc: "মনোযোগ বাড়ায়", cmd: "বায়নোরাল বিটস মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        podcast: [
-                          { name: "লো-ফাই কর্পোরেট", desc: "পডকাস্টের জন্য আদর্শ", cmd: "লো-ফাই কর্পোরেট মিউজিক দিয়ে মিক্স করো" },
-                          { name: "সফট জ্যাজ", desc: "কথোপকথনের পটভূমি", cmd: "সফট জ্যাজ মিউজিক দিয়ে মিক্স করো" },
-                          { name: "মিনিমাল পিয়ানো", desc: "পরিষ্কার ও পেশাদার", cmd: "মিনিমাল পিয়ানো মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        cinematic: [
-                          { name: "এপিক অর্কেস্ট্রা", desc: "নাটকীয় দৃশ্যের জন্য", cmd: "এপিক অর্কেস্ট্রা মিউজিক দিয়ে মিক্স করো" },
-                          { name: "আবেগময় পিয়ানো", desc: "হৃদয়স্পর্শী মুহূর্তে", cmd: "আবেগময় পিয়ানো মিউজিক দিয়ে মিক্স করো" },
-                          { name: "টেনশন বিল্ডআপ", desc: "রহস্যময় পরিবেশ", cmd: "টেনশন বিল্ডআপ মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        social: [
-                          { name: "আপবিট পপ", desc: "TikTok/Reels এর জন্য", cmd: "আপবিট পপ মিউজিক দিয়ে মিক্স করো" },
-                          { name: "চিল ভাইব", desc: "ক্যাজুয়াল কনটেন্টে", cmd: "চিল ভাইব মিউজিক দিয়ে মিক্স করো" },
-                          { name: "ট্রেন্ডি বিটস", desc: "ভাইরাল কনটেন্টে", cmd: "ট্রেন্ডি বিটস মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        classical: [
-                          { name: "বাঁশি", desc: "বাংলা লোকসংগীতের সুর", cmd: "বাঁশি মিউজিক দিয়ে মিক্স করো" },
-                          { name: "সেতার", desc: "ভারতীয় শাস্ত্রীয়", cmd: "সেতার মিউজিক দিয়ে মিক্স করো" },
-                          { name: "তবলা ও সেতার", desc: "ঐতিহ্যবাহী রাগ", cmd: "তবলা ও সেতার মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        jazz: [
-                          { name: "স্মুদ জ্যাজ", desc: "রাতের পরিবেশ", cmd: "স্মুদ জ্যাজ মিউজিক দিয়ে মিক্স করো" },
-                          { name: "ক্যাফে পিয়ানো", desc: "আরামদায়ক পরিবেশ", cmd: "ক্যাফে পিয়ানো মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                        lofi: [
-                          { name: "স্টাডি বিটস", desc: "মনোযোগের জন্য", cmd: "স্টাডি বিটস লো-ফাই মিউজিক দিয়ে মিক্স করো" },
-                          { name: "বৃষ্টির দিন", desc: "বৃষ্টির শব্দসহ", cmd: "বৃষ্টির দিন লো-ফাই মিউজিক দিয়ে মিক্স করো" },
-                          { name: "রাতের ক্যাফে", desc: "শান্ত রাতের পরিবেশ", cmd: "রাতের ক্যাফে লো-ফাই মিউজিক দিয়ে মিক্স করো" },
-                        ],
-                      } as Record<string, {name: string; desc: string; cmd: string}[]>)[musicLibraryCategory]?.map(track => (
-                        <button key={track.name}
-                          onClick={() => {
-                            setInput(track.cmd);
-                            setShowMusicLibrary(false);
-                            setTimeout(() => inputRef.current?.focus(), 50);
-                          }}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 8,
-                            padding: "6px 8px",
-                            background: "rgba(255,255,255,0.02)",
-                            border: "1px solid rgba(16,185,129,0.12)",
-                            borderRadius: 7,
-                            cursor: "pointer",
-                            textAlign: "left",
-                          }}
-                        >
-                          <div style={{
-                            width: 28, height: 28, borderRadius: 6, flexShrink: 0,
-                            background: "rgba(16,185,129,0.1)",
-                            border: "1px solid rgba(16,185,129,0.2)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "12px",
-                          }}>🎵</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{
-                              color: "rgba(52,211,153,0.85)",
-                              fontSize: "0.58rem",
-                              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                              fontWeight: 700,
-                            }}>{track.name}</div>
-                            <div style={{
-                              color: "rgba(52,211,153,0.4)",
-                              fontSize: "0.52rem",
-                              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                            }}>{track.desc}</div>
-                          </div>
-                          <span style={{
-                            color: "rgba(52,211,153,0.4)",
-                            fontSize: "9px",
-                          }}>→</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{
-                      marginTop: 6,
-                      color: "rgba(52,211,153,0.3)",
-                      fontSize: "0.5rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      textAlign: "center",
-                    }}>💡 নির্দেশ সিলেক্ট করলে ইনপুটে যাবে — তারপর আপনার ভোকাল অডিও আপলোড করুন</div>
-                  </div>
-                )}
-                {/* Music file banner */}
-                {musicFile && (
-                  <div style={{
-                    marginBottom: 7,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 7,
-                    padding: "6px 10px",
-                    background: "rgba(99,102,241,0.06)",
-                    borderRadius: 9,
-                    border: "1px solid rgba(99,102,241,0.25)",
-                  }}>
-                    <div style={{
-                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-                      background: "rgba(99,102,241,0.12)",
-                      border: "1px solid rgba(99,102,241,0.3)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(165,180,252,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-                      </svg>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        color: "rgba(165,180,252,0.9)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.6rem",
-                        fontWeight: 700,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}>{musicFile.name}</div>
-                      <div style={{
-                        color: "rgba(165,180,252,0.45)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.54rem",
-                        marginTop: 1,
-                      }}>
-                        {(musicFile.size / (1024 * 1024)).toFixed(1)} MB • ব্যাকগ্রাউন্ড মিউজিক সেট
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setMusicFile(null)}
-                      style={{
-                        width: 20, height: 20, borderRadius: "50%",
-                        background: "rgba(239,68,68,0.7)", border: "none",
-                        color: "#fff", fontSize: "9px", cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0, fontWeight: 700,
-                      }}
-                    >✕</button>
-                  </div>
-                )}
-
                 {/* Image preview strip */}
                 {imagePreview && (
                   <div style={{
@@ -3025,68 +2731,7 @@ export default function AIChatbot() {
                       <circle cx="18" cy="16" r="3"/>
                     </svg>
                   </button>
-                  {/* Music (background) attach button — only show in audio mode */}
-                  {isAudioMode && (
-                  <button
-                    onClick={() => musicFileInputRef.current?.click()}
-                    title="ব্যাকগ্রাউন্ড মিউজিক যুক্ত করুন (স্মার্ট মিক্স)"
-                    className="chatbot-icon-btn"
-                    style={{
-                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
-                      background: musicFile ? "rgba(99,102,241,0.18)" : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${musicFile ? "rgba(99,102,241,0.5)" : "rgba(99,102,241,0.2)"}`,
-                      cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      position: "relative",
-                    }}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                      stroke={musicFile ? "rgba(165,180,252,0.95)" : "rgba(99,102,241,0.45)"}
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-                      <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-                    </svg>
-                    {musicFile && (
-                      <span style={{
-                        position: "absolute", top: -3, right: -3,
-                        width: 8, height: 8, borderRadius: "50%",
-                        background: "rgba(99,102,241,0.9)",
-                        border: "1px solid rgba(5,10,19,0.8)",
-                      }} />
-                    )}
-                  </button>
-                  )}
-                  {/* Music Library button — show in audio mode */}
-                  {isAudioMode && (
-                  <button
-                    onClick={() => setShowMusicLibrary(prev => !prev)}
-                    title="মিউজিক লাইব্রেরি — রয়্যালটি-ফ্রি ব্যাকগ্রাউন্ড মিউজিক"
-                    className="chatbot-icon-btn"
-                    style={{
-                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
-                      background: showMusicLibrary ? "rgba(16,185,129,0.18)" : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${showMusicLibrary ? "rgba(16,185,129,0.5)" : "rgba(16,185,129,0.2)"}`,
-                      cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      position: "relative",
-                    }}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                      stroke={showMusicLibrary ? "rgba(52,211,153,0.95)" : "rgba(16,185,129,0.45)"}
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18V5l12-2v13"/>
-                      <circle cx="6" cy="18" r="3"/>
-                      <circle cx="18" cy="16" r="3"/>
-                      <line x1="9" y1="9" x2="21" y2="7"/>
-                    </svg>
-                    <span style={{
-                      position: "absolute", bottom: -1, right: -1,
-                      fontSize: "6px", background: "rgba(16,185,129,0.8)",
-                      color: "#fff", borderRadius: 3, padding: "0 2px",
-                      fontWeight: 700, lineHeight: "10px",
-                    }}>LIB</span>
-                  </button>
-                  )}
+
 
                   <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
                     <textarea
