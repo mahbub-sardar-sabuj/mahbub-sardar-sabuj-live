@@ -453,49 +453,49 @@ function buildFFmpegFilter(operations) {
         break;
       // VOICE BEAUTIFY PRESETS
       case "honey_voice":
-        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=80,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,equalizer=f=200:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "silky_voice":
-        filters.push("highpass=f=100,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=2000:t=h:width=1500:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB:makeup=1dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=2000:t=h:width=1500:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB:makeup=1dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "broadcast_voice":
-        filters.push("highpass=f=80,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=1500:t=h:width=2000:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
+        filters.push("highpass=f=80,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=45:nf=-35:nt=w,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=1500:t=h:width=2000:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
         break;
       case "asmr_voice":
-        filters.push("highpass=f=60,lowpass=f=8000,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,aecho=0.8:0.3:80:0.2,volume=-3dB,loudnorm=I=-18:TP=-1:LRA=11");
+        filters.push("highpass=f=60,anlmdn=s=5.0:p=0.002:r=0.002:m=15,afftdn=nr=50:nf=-35:nt=w,lowpass=f=8000,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,aecho=0.8:0.3:80:0.2,volume=-3dB,loudnorm=I=-18:TP=-1:LRA=11");
         break;
       case "cinematic_voice":
-        filters.push("highpass=f=60,equalizer=f=100:t=h:width=150:g=4,equalizer=f=3000:t=h:width=2000:g=2,aecho=0.8:0.4:400:0.4:800:0.2,acompressor=threshold=-20dB:ratio=4:attack=20:release=300:knee=6dB:makeup=3dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=60,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,equalizer=f=100:t=h:width=150:g=4,equalizer=f=3000:t=h:width=2000:g=2,aecho=0.8:0.4:400:0.4:800:0.2,acompressor=threshold=-20dB:ratio=4:attack=20:release=300:knee=6dB:makeup=3dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "angelic_voice":
-        filters.push("asetrate=r=46000,aresample=44100,equalizer=f=5000:t=h:width=3000:g=3,equalizer=f=10000:t=h:width=4000:g=2,aecho=0.8:0.35:200:0.35:400:0.2,chorus=0.7:0.9:50:0.4:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,asetrate=r=46000,aresample=44100,equalizer=f=5000:t=h:width=3000:g=3,equalizer=f=10000:t=h:width=4000:g=2,aecho=0.8:0.35:200:0.35:400:0.2,chorus=0.7:0.9:50:0.4:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "vintage_radio":
         filters.push("highpass=f=300,lowpass=f=3000,equalizer=f=1500:t=h:width=1000:g=5,volume=2dB,acompressor=threshold=-15dB:ratio=5:attack=10:release=100:knee=3dB");
         break;
       case "podcast_pro":
-        filters.push("highpass=f=100,afftdn=nf=-25:nt=w,agate=threshold=-40dB:attack=10:release=200,equalizer=f=200:t=h:width=200:g=2,equalizer=f=2500:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
+        filters.push("highpass=f=100,anlmdn=s=4.5:p=0.002:r=0.002:m=15,afftdn=nr=51:nf=-35:nt=w,agate=threshold=-40dB:attack=10:release=200,equalizer=f=200:t=h:width=200:g=2,equalizer=f=2500:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
         break;
       case "lofi_voice":
         filters.push("lowpass=f=8000,equalizer=f=200:t=h:width=200:g=3,acompressor=threshold=-20dB:ratio=3:attack=10:release=100:knee=3dB,volume=1dB");
         break;
       case "narrator_voice":
-        filters.push("highpass=f=80,asetrate=r=42000,aresample=44100,equalizer=f=150:t=h:width=150:g=3,equalizer=f=2500:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:60:0.12,loudnorm=I=-16:TP=-1:LRA=11");
+        filters.push("highpass=f=80,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,asetrate=r=42000,aresample=44100,equalizer=f=150:t=h:width=150:g=3,equalizer=f=2500:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:60:0.12,loudnorm=I=-16:TP=-1:LRA=11");
         break;
       case "smooth_jazz_voice":
-        filters.push("highpass=f=100,equalizer=f=200:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,aecho=0.8:0.25:120:0.2,chorus=0.7:0.9:30:0.3:1.0:1,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,equalizer=f=200:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,aecho=0.8:0.25:120:0.2,chorus=0.7:0.9:30:0.3:1.0:1,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "epic_voice":
-        filters.push("highpass=f=60,asetrate=r=40000,aresample=44100,equalizer=f=80:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=3,aecho=0.8:0.5:300:0.4:600:0.2,acompressor=threshold=-18dB:ratio=5:attack=10:release=200:knee=6dB:makeup=4dB,loudnorm=I=-12:TP=-1:LRA=11");
+        filters.push("highpass=f=60,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,asetrate=r=40000,aresample=44100,equalizer=f=80:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=3,aecho=0.8:0.5:300:0.4:600:0.2,acompressor=threshold=-18dB:ratio=5:attack=10:release=200:knee=6dB:makeup=4dB,loudnorm=I=-12:TP=-1:LRA=11");
         break;
       case "sweet_voice":
-        filters.push("highpass=f=100,asetrate=r=46000,aresample=44100,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=7000:t=h:width=3000:g=2,aecho=0.8:0.2:60:0.15,chorus=0.7:0.9:30:0.3:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,asetrate=r=46000,aresample=44100,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=7000:t=h:width=3000:g=2,aecho=0.8:0.2:60:0.15,chorus=0.7:0.9:30:0.3:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "crystal_voice":
-        filters.push("highpass=f=100,afftdn=nf=-30:nt=w,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=45:nf=-35:nt=w,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "deep_warm_voice":
-        filters.push("highpass=f=60,asetrate=r=40000,aresample=44100,equalizer=f=100:t=h:width=150:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=3dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=60,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,asetrate=r=40000,aresample=44100,equalizer=f=100:t=h:width=150:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=3dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "auto_tune":
       case "pitch_correct":
