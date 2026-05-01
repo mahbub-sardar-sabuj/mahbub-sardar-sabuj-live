@@ -2156,7 +2156,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: নয়েজ কমাও)" : lastAudioBlobRef.current ? "আরো নির্দেশ দিন..." : "জিজ্ঞেস করুন..."}
+                      placeholder={audioFile ? "এখানে আপনার প্রত্যাশা লিখুন" : lastAudioBlobRef.current ? "এখানে আপনার প্রত্যাশা লিখুন" : "এখানে আপনার প্রত্যাশা লিখুন"}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
