@@ -22,36 +22,56 @@ function getFFmpegPath() {
 
 // ── Get audio duration in seconds using ffprobe ──────────────────────────────
 function getAudioDuration(filePath, ffmpegPath) {
+  // Helper to parse Duration string from ffmpeg/ffprobe output
+  function parseDuration(str) {
+    const m = str.match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
+    if (m) return parseInt(m[1]) * 3600 + parseInt(m[2]) * 60 + parseFloat(m[3]);
+    return null;
+  }
+
+  // Method 1: ffprobe JSON (most reliable)
   try {
     const ffprobePath = ffmpegPath.replace(/ffmpeg$/, "ffprobe");
-    const hasFfprobe = fs.existsSync(ffprobePath);
-    if (hasFfprobe) {
+    if (fs.existsSync(ffprobePath)) {
       const out = execFileSync(ffprobePath, [
         "-v", "quiet", "-print_format", "json",
         "-show_streams", filePath
       ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 2 * 1024 * 1024 });
       const info = JSON.parse(out.toString());
       const audioStream = info.streams?.find(s => s.codec_type === "audio");
-      if (audioStream?.duration) return parseFloat(audioStream.duration);
+      const dur = parseFloat(audioStream?.duration);
+      if (!isNaN(dur) && dur > 0) return dur;
     }
-    // Fallback: use ffmpeg itself
-    const out2 = execFileSync(ffmpegPath, [
-      "-i", filePath, "-f", "null", "-"
-    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 2 * 1024 * 1024 }).toString();
-    const match = out2.match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
-    if (match) {
-      return parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseFloat(match[3]);
-    }
+  } catch (e) {}
+
+  // Method 2: ffmpeg -i (outputs to stderr, so we catch the error)
+  try {
+    execFileSync(ffmpegPath, ["-i", filePath, "-f", "null", "-"],
+      { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 2 * 1024 * 1024 });
   } catch (e) {
-    // Try stderr
-    try {
-      const result = execSync(`${ffmpegPath} -i "${filePath}" -f null - 2>&1 || true`, {
-        maxBuffer: 2 * 1024 * 1024
-      }).toString();
-      const match = result.match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
-      if (match) return parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseFloat(match[3]);
-    } catch (e2) {}
+    // ffmpeg always exits with error for -f null, but stderr has duration
+    const stderr = e.stderr?.toString() || "";
+    const dur = parseDuration(stderr);
+    if (dur !== null && dur > 0) return dur;
+    // Also try stdout
+    const stdout = e.stdout?.toString() || "";
+    const dur2 = parseDuration(stdout);
+    if (dur2 !== null && dur2 > 0) return dur2;
   }
+
+  // Method 3: ffprobe simple format
+  try {
+    const ffprobePath = ffmpegPath.replace(/ffmpeg$/, "ffprobe");
+    if (fs.existsSync(ffprobePath)) {
+      const out = execFileSync(ffprobePath, [
+        "-v", "error", "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1", filePath
+      ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 1024 * 1024 });
+      const dur = parseFloat(out.toString().trim());
+      if (!isNaN(dur) && dur > 0) return dur;
+    }
+  } catch (e) {}
+
   return null;
 }
 
@@ -138,10 +158,20 @@ async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, optio
   } = options;
 
   // 1. Get durations
-  const vocalDuration = getAudioDuration(vocalPath, ffmpegPath);
+  let vocalDuration = getAudioDuration(vocalPath, ffmpegPath);
   const musicDuration = getAudioDuration(musicPath, ffmpegPath);
 
-  if (!vocalDuration) throw new Error("Vocal duration could not be determined");
+  // Fallback: if duration detection failed, use a safe default
+  if (!vocalDuration || vocalDuration <= 0) {
+    // Try one more time with a different approach — read file size estimate
+    try {
+      const stat = fs.statSync(vocalPath);
+      // Rough estimate: ~16KB/s for 128kbps mp3
+      vocalDuration = Math.max(10, stat.size / 16000);
+    } catch (e) {
+      vocalDuration = 60; // safe default: 60 seconds
+    }
+  }
 
   const fadeDuration = getSmartFadeDuration(vocalDuration);
   const duckLevels = getMusicDuckingLevel(vocalContext);
@@ -154,33 +184,33 @@ async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, optio
   let vocalFilterParts = [];
   if (enableVocalEnhance) {
     const contextFilter = getContextVocalFilter(vocalContext);
-    vocalFilterParts.push(contextFilter);
+    if (contextFilter) vocalFilterParts.push(contextFilter);
   }
   if (extraVocalFilter) {
     vocalFilterParts.push(extraVocalFilter);
   }
   // Vocal normalization (loudnorm)
   vocalFilterParts.push(`loudnorm=I=${targetLufs}:TP=-1.5:LRA=11`);
-  const vocalFilter = vocalFilterParts.join(",");
+  const vocalFilter = vocalFilterParts.filter(Boolean).join(",");
 
   // 3. Build music filter chain
-  // If music is shorter than vocal, loop it with crossfade
+  // If music is shorter than vocal, loop it; always loop to be safe
   let musicInputArgs = ["-i", musicPath];
   let musicFilterComplex = "";
 
-  if (musicDuration && musicDuration < vocalDuration) {
-    // Calculate how many loops needed
-    const loopsNeeded = Math.ceil(vocalDuration / musicDuration) + 1;
-    // Use aloop to repeat music
-    musicFilterComplex = `[1:a]aloop=loop=${loopsNeeded}:size=2147483647,atrim=duration=${vocalDuration + fadeDuration + 1}`;
-  } else {
-    musicFilterComplex = `[1:a]atrim=duration=${vocalDuration + fadeDuration + 1}`;
-  }
+  const loopsNeeded = (musicDuration && musicDuration > 0)
+    ? Math.ceil(vocalDuration / musicDuration) + 2
+    : 10;
+  // Always use aloop to ensure music is long enough
+  const musicTrimDuration = vocalDuration + fadeDuration + 2;
+  musicFilterComplex = `[1:a]aloop=loop=${loopsNeeded}:size=2147483647,atrim=duration=${musicTrimDuration.toFixed(3)}`;
 
   // Music volume + fade out
   musicFilterComplex += `,volume=${musicVolume}dB`;
   if (enableFade) {
-    musicFilterComplex += `,afade=t=out:st=${vocalDuration - fadeDuration}:d=${fadeDuration}`;
+    // Ensure fade start is always positive
+    const fadeStart = Math.max(0, vocalDuration - fadeDuration);
+    musicFilterComplex += `,afade=t=out:st=${fadeStart.toFixed(3)}:d=${fadeDuration}`;
   }
   musicFilterComplex += `[music_processed]`;
 
