@@ -1266,6 +1266,11 @@ export default function AIChatbot() {
       setError("অডিও ফাইলের আকার সর্বোচ্চ ৫০ MB হতে পারবে।");
       return;
     }
+    // Vercel 4.5MB payload limit warning for large files
+    if (file.size > 3.5 * 1024 * 1024) {
+      setError(`সতর্কতা: ফাইলটি বড় (~${(file.size / 1024 / 1024).toFixed(1)} MB)। Vercel-এর সীমার কারণে প্রসেসিং ব্যর্থ হতে পারে। MP3 বা ছোট ফাইল ব্যবহার করুন।`);
+      // Don't return — still allow the user to try
+    }
     if (!file.type.startsWith("audio/") && !file.name.match(/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i)) {
       setError("সমর্থিত ফরম্যাট: MP3, WAV, OGG, FLAC, AAC, M4A");
       return;
@@ -1311,29 +1316,48 @@ export default function AIChatbot() {
         };
         setMessages(prev => [...prev, userMsg]);
         try {
-          const formData = new FormData();
-          formData.append("audio", file, file.name);
-          formData.append("instruction", pendingInstruction);
-          const response = await fetch("/api/audio-edit", { method: "POST", body: formData });
+          // ── Unified JSON/base64 path (same as handleAudioEdit) ──
+          const audioArrayBuffer = await file.arrayBuffer();
+          const audioBase64 = btoa(
+            new Uint8Array(audioArrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+          );
+          const audioMime = file.type || "audio/wav";
+          const response = await fetch("/api/audio-edit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ instruction: pendingInstruction, audioData: audioBase64, audioMime }),
+          });
           if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
             throw new Error(errData.error || `HTTP ${response.status}`);
           }
-          const blob = await response.blob();
-          const audioUrl = URL.createObjectURL(blob);
-          const contentDisposition = response.headers.get("Content-Disposition") || "";
-          const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
-          const audioFilename = filenameMatch?.[1] || `edited_audio.mp3`;
-          const descriptionEncoded = response.headers.get("X-Audio-Description") || "";
-          const audioDescription = descriptionEncoded ? decodeURIComponent(descriptionEncoded) : "অডিও এডিটিং সম্পন্ন হয়েছে।";
+          const {
+            audioData: resultBase64,
+            audioMime: resultMime = "audio/wav",
+            description,
+            appliedSteps = [],
+            intent = "custom",
+            pipeline = [],
+            technicalNote = null,
+          } = await response.json();
+          const resultBytes = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+          const wavBlob = new Blob([resultBytes], { type: resultMime });
+          const audioUrl = URL.createObjectURL(wavBlob);
+          const audioFilename = `edited_${Date.now()}.wav`;
+          // Save for iterative editing
+          lastAudioBlobRef.current = { blob: wavBlob, name: audioFilename };
           setMessages(prev => [...prev, {
             id: `ai-audio-${Date.now()}`,
             role: "assistant",
-            content: audioDescription,
+            content: description || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
             timestamp: new Date(),
             audioUrl,
             audioFilename,
-            audioDescription,
+            audioDescription: description,
+            audioAppliedSteps: appliedSteps,
+            audioIntent: intent,
+            audioPipeline: pipeline,
+            audioTechnicalNote: technicalNote,
           }]);
           setAudioFile(null);
           setIsAudioMode(false);
@@ -1359,6 +1383,11 @@ export default function AIChatbot() {
         : null
     );
     if (!sourceFile || audioProcessing) return;
+
+    // Warn user if file is too large for Vercel
+    if (sourceFile.size > 3.5 * 1024 * 1024) {
+      setError(`সতর্কতা: ফাইলটি বড় (~${(sourceFile.size / 1024 / 1024).toFixed(1)} MB) — Vercel সীমার কারণে ব্যর্থ হতে পারে। MP3 ব্যবহার করুন।`);
+    }
 
     // Smart instruction resolution
     let instruction = overrideInstruction || input.trim();

@@ -556,6 +556,13 @@ export default async function handler(req, res) {
 
       if (!audioBase64) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
 
+      // Vercel payload limit check: base64 is ~33% larger than binary
+      // 4.5MB limit → ~3.3MB binary max. Warn but still try to process.
+      const estimatedBytes = Math.round(audioBase64.length * 0.75);
+      if (estimatedBytes > 4 * 1024 * 1024) {
+        console.warn(`Large audio file detected: ~${(estimatedBytes / 1024 / 1024).toFixed(1)}MB — may hit Vercel 4.5MB limit`);
+      }
+
       // Decode base64 → temp file
       const audioBuffer = Buffer.from(audioBase64, "base64");
       inputPath = path.join(tmpDir, `sardar_input_${Date.now()}.wav`);
@@ -621,16 +628,28 @@ export default async function handler(req, res) {
       ffmpegPath = ffmpegStatic.default || "ffmpeg";
     } catch (e) {}
 
-    const ffmpegCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "${filterStr}" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}" 2>&1`;
+    const ffmpegCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "${filterStr}" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
 
     try {
       execSync(ffmpegCmd, { timeout: 120000, stdio: "pipe" });
     } catch (ffmpegErr) {
-      const fallbackCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "loudnorm=I=-14:TP=-1:LRA=11" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}" 2>&1`;
-      execSync(fallbackCmd, { timeout: 60000, stdio: "pipe" });
+      // Primary filter chain failed — log and try safe fallback
+      console.error("FFmpeg primary filter failed:", ffmpegErr?.stderr?.toString?.() || ffmpegErr.message);
+      try {
+        const fallbackCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "highpass=f=80,anlmdn=s=3:p=0.002:r=0.006:m=11,afftdn=nr=35:nf=-32:nt=w:tn=1,loudnorm=I=-14:TP=-1:LRA=11" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
+        execSync(fallbackCmd, { timeout: 60000, stdio: "pipe" });
+        // Mark that we used fallback so description reflects it
+        parsed.explanation = (parsed.explanation || "") + " (ডিফল্ট ফিল্টার ব্যবহার করা হয়েছে)";
+      } catch (fallbackErr) {
+        console.error("FFmpeg fallback also failed:", fallbackErr?.stderr?.toString?.() || fallbackErr.message);
+        // Last resort: copy input to output without any filter
+        const copyCmd = `"${ffmpegPath}" -y -i "${inputPath}" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
+        execSync(copyCmd, { timeout: 30000, stdio: "pipe" });
+        parsed.explanation = "ফিল্টার প্রয়োগ করা সম্ভব হয়নি — মূল অডিও রিটার্ন করা হয়েছে।";
+      }
     }
 
-    if (!fs.existsSync(outputPath)) return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে" });
+    if (!fs.existsSync(outputPath)) return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে — আউটপুট ফাইল তৈরি হয়নি" });
 
     const outputBuffer = fs.readFileSync(outputPath);
     const base64Audio = outputBuffer.toString("base64");
