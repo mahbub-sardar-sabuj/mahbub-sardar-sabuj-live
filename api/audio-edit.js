@@ -934,6 +934,21 @@ export default async function handler(req, res) {
     const hasMusicFile = !!musicFilePath;
     const shouldDoSmartMix = (hasMusicMixOp || aiResponse.hasMusicMix) && hasMusicFile;
 
+    // ── Step 4b: smart_mix চাওয়া হয়েছে কিন্তু music file নেই → ask করো ──────
+    if ((hasMusicMixOp || aiResponse.hasMusicMix) && !hasMusicFile) {
+      try { if (tempFilePath) fs.unlinkSync(tempFilePath); } catch (e) {}
+      return res.status(200).json({
+        intent: "ask_music_file",
+        needsMusicFile: true,
+        explanation: "ব্যাকগ্রাউন্ড মিউজিক যোগ করতে আপনার একটি মিউজিক ফাইল আপলোড করতে হবে।",
+        pipeline: [
+          "ধাপ ১: নিচের 🎧 বাটনে ক্লিক করে ব্যাকগ্রাউন্ড মিউজিক ফাইল আপলোড করুন",
+          "ধাপ ২: একই নির্দেশ আবার দিন — আমি ভোকাল ও মিউজিক মিক্স করে দেব"
+        ],
+        operations: [],
+      });
+    }
+
     const outputFileName = `edited_${Date.now()}.mp3`;
     const outputPath = path.join(os.tmpdir(), outputFileName);
 

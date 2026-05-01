@@ -1074,8 +1074,9 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                    message.audioIntent === "warm_voice"    ? "🌡️ ওয়ার্ম ভয়েস" :
                    message.audioIntent === "studio_clear"  ? "🎚️ স্টুডিও ক্লিয়ার" :
                    message.audioIntent === "soft_poetry"   ? "🌸 সফট পোয়েট্রি" :
-                   message.audioIntent === "deep_recitation" ? "🎙️ ডিপ রিসাইটেশন" :
-                                                         "⚙️ কাস্টম প্রসেসিং"}
+                   message.audioIntent === "deep_recitation" ? "🎧 ডিপ রিসাইটেশন" :
+                   message.audioIntent === "ask_music_file"    ? "🎧 মিউজিক ফাইল দরকার" :
+                                                          "⚙️ কাস্টম প্রসেসিং"
                 </span>
               </div>
             )}
@@ -1702,6 +1703,22 @@ export default function AIChatbot() {
         throw new Error(errData.error || `HTTP ${serverResp.status}: সার্ভার প্রসেসিং ব্যর্থ`);
       }
 
+      const respJson = await serverResp.json();
+
+      // ── Step 3a: AI asked for music file — show friendly message ────────────
+      if (respJson.needsMusicFile || respJson.intent === "ask_music_file") {
+        setMessages(prev => [...prev, {
+          id: `ai-ask-music-${Date.now()}`,
+          role: "assistant",
+          content: `অবশ্যই ব্যাকগ্রাউন্ড মিউজিক যোগ করা যাবে! এর জন্য আপনার একটি মিউজিক ফাইল দরকার।\n\nনিচের **🎧 বাটনে** ক্লিক করে আপনার পছন্দের ব্যাকগ্রাউন্ড মিউজিক ফাইলটি আপলোড করুন, তারপর আবার "ব্যাকগ্রাউন্ড যোগ করো" বলুন — আমি ভোকাল ও মিউজিক একসাথে মিক্স করে দেব।`,
+          timestamp: new Date(),
+          audioIntent: "ask_music_file",
+          audioPipeline: respJson.pipeline || [],
+        }]);
+        setAudioProcessing(false);
+        return;
+      }
+
       const {
         audioData: resultBase64,
         audioMime: resultMime = "audio/wav",
@@ -1711,7 +1728,7 @@ export default function AIChatbot() {
         pipeline = [],
         technicalNote = null,
         vocalContext = null,
-      } = await serverResp.json();
+      } = respJson;
 
       // Step 3: Decode result base64 → Blob → URL
       const resultBytes = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
