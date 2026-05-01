@@ -1363,8 +1363,7 @@ export default async function handler(req, res) {
     const payload = {
       model,
       messages: [
-        { role: "system", content: AUDIO_SYSTEM_PROMPT + "
-IMPORTANT: Return only one valid JSON object. Do not use markdown fences, explanations outside JSON, or comments." },
+        { role: "system", content: AUDIO_SYSTEM_PROMPT + "\nIMPORTANT: Return only one valid JSON object. Do not use markdown fences, explanations outside JSON, or comments." },
         { role: "user", content: prompt }
       ],
     };
