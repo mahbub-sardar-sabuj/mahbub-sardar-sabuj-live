@@ -1228,140 +1228,173 @@ export default function AIChatbot() {
 
       const { params, description, appliedSteps = [], intent = "custom" } = await parseResp.json();
 
-      // Step 2: Process audio client-side using Web Audio API
+      // Step 2: Decode audio
       const audioBuffer = await sourceFile.arrayBuffer();
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       let decoded: AudioBuffer;
       try {
         decoded = await audioCtx.decodeAudioData(audioBuffer);
       } catch {
-        throw new Error("অডিও ফাইল ডিকোড হয়নি — সমর্থিত ফরম্যাট: MP3, WAV, OGG, M4A");
+        await audioCtx.close();
+        throw new Error("অডিও ফাইল ডিকোড হয়নি — সমর্থিত ফর্ম্যাট: MP3, WAV, OGG, M4A");
       }
 
-      // Apply edits using OfflineAudioContext
-      const sampleRate = audioCtx.sampleRate;
+      const sampleRate = decoded.sampleRate;
       const numChannels = decoded.numberOfChannels;
       const origDuration = decoded.duration;
 
-      // Calculate trim
-      const trimStartSec = Math.min(params.trimStart || 0, origDuration - 0.1);
-      const trimEndSec = Math.max(0, params.trimEnd || 0);
-      const startSample = Math.floor(trimStartSec * sampleRate);
-      const endSample = Math.max(
-        startSample + 1000,
-        decoded.length - Math.floor(trimEndSec * sampleRate)
-      );
-      const outputLength = endSample - startSample;
+      // ── Trim ──────────────────────────────────────────────────────────────
+      const trimStartSec = Math.max(0, Math.min(params.trimStart || 0, origDuration - 0.5));
+      const trimEndSec   = Math.max(0, Math.min(params.trimEnd   || 0, origDuration - trimStartSec - 0.1));
+      const startSample  = Math.floor(trimStartSec * sampleRate);
+      const endSample    = decoded.length - Math.floor(trimEndSec * sampleRate);
+      const outputLength = Math.max(endSample - startSample, sampleRate); // min 1 second
 
-      // Apply speed
+      // ── Speed ─────────────────────────────────────────────────────────────
       const speed = Math.max(0.5, Math.min(2.0, params.speed || 1.0));
       const finalLength = Math.ceil(outputLength / speed);
 
-      const offlineCtx = new OfflineAudioContext(numChannels, Math.max(finalLength, 1), sampleRate);
-
-      // Create trimmed buffer with per-channel processing
-      const trimmedBuffer = offlineCtx.createBuffer(numChannels, outputLength, sampleRate);
+      // ── Per-channel DSP (noise reduction only — artifact-free) ────────────
+      const processedBuffer = audioCtx.createBuffer(numChannels, outputLength, sampleRate);
       for (let ch = 0; ch < numChannels; ch++) {
         const src = decoded.getChannelData(ch);
-        const dst = trimmedBuffer.getChannelData(ch);
-        let data = src.slice(startSample, endSample);
-        // Reverse if needed
-        if (params.reverse) data = data.slice().reverse();
-        // Noise reduction simulation: gentle high-pass + spectral smoothing
+        const raw = new Float32Array(outputLength);
+        for (let i = 0; i < outputLength; i++) raw[i] = src[startSample + i];
+
+        // Reverse
+        if (params.reverse) raw.reverse();
+
+        // ── Noise Reduction: RMS-based soft gate (NO zipper noise) ──────────
+        // Uses a slow-attack/slow-release envelope follower to smoothly
+        // attenuate low-level noise without cutting signal abruptly.
         if (params.noiseReduction && params.noiseReduction > 0) {
-          const nr = Math.min(1.0, params.noiseReduction);
-          // Simple noise gate + smoothing
-          const threshold = nr * 0.015;
-          const smoothed = new Float32Array(data.length);
-          smoothed[0] = data[0];
-          const smoothFactor = 1 - nr * 0.3;
-          for (let i = 1; i < data.length; i++) {
-            smoothed[i] = smoothFactor * smoothed[i - 1] + (1 - smoothFactor) * data[i];
-            if (Math.abs(data[i]) < threshold) data[i] *= (1 - nr * 0.7);
+          const nr = Math.min(0.95, params.noiseReduction); // cap at 0.95
+          const frameSize = Math.floor(sampleRate * 0.02); // 20ms frames
+          const attackCoef  = Math.exp(-1 / (sampleRate * 0.010)); // 10ms attack
+          const releaseCoef = Math.exp(-1 / (sampleRate * 0.150)); // 150ms release
+
+          // Estimate noise floor from quietest 5% of frames
+          const frameRMS: number[] = [];
+          for (let f = 0; f < raw.length; f += frameSize) {
+            let sum = 0;
+            const end = Math.min(f + frameSize, raw.length);
+            for (let i = f; i < end; i++) sum += raw[i] * raw[i];
+            frameRMS.push(Math.sqrt(sum / (end - f)));
           }
-          // Blend original with smoothed
-          for (let i = 0; i < data.length; i++) data[i] = data[i] * (1 - nr * 0.15) + smoothed[i] * (nr * 0.15);
-        }
-        // Dynamic compression simulation
-        if (params.dynamicCompression) {
-          const threshold = 0.5;
-          const ratio = 4.0;
-          const knee = 0.1;
-          for (let i = 0; i < data.length; i++) {
-            const abs = Math.abs(data[i]);
-            if (abs > threshold - knee) {
-              const excess = abs - (threshold - knee);
-              const compressed = (threshold - knee) + excess / ratio;
-              data[i] = data[i] > 0 ? compressed : -compressed;
-            }
+          const sorted = [...frameRMS].sort((a, b) => a - b);
+          const noiseFloor = sorted[Math.floor(sorted.length * 0.05)] * (1 + nr * 3);
+
+          // Smooth envelope follower
+          let envelope = 0;
+          for (let i = 0; i < raw.length; i++) {
+            const level = Math.abs(raw[i]);
+            envelope = level > envelope
+              ? 1 - (1 - level) * attackCoef
+              : envelope * releaseCoef;
+            // Soft-knee gate: smoothly reduce gain below noise floor
+            const ratio = Math.min(1, envelope / (noiseFloor + 1e-9));
+            const gate = ratio < 1 ? ratio * ratio * (3 - 2 * ratio) : 1; // smoothstep
+            raw[i] *= gate;
           }
         }
-        // Normalize
+
+        // ── Soft Normalize (peak limiting, not hard clip) ──────────────────
         if (params.normalize) {
-          let max = 0;
-          for (let i = 0; i < data.length; i++) max = Math.max(max, Math.abs(data[i]));
-          if (max > 0.001) { const gain = 0.95 / max; for (let i = 0; i < data.length; i++) data[i] *= gain; }
+          let peak = 0;
+          for (let i = 0; i < raw.length; i++) peak = Math.max(peak, Math.abs(raw[i]));
+          if (peak > 0.001) {
+            const targetPeak = 0.92;
+            const gain = targetPeak / peak;
+            for (let i = 0; i < raw.length; i++) raw[i] *= gain;
+          }
         }
-        dst.set(data);
+
+        processedBuffer.getChannelData(ch).set(raw);
       }
 
+      // ── OfflineAudioContext for EQ + Dynamics chain ───────────────────────
+      const offlineCtx = new OfflineAudioContext(numChannels, finalLength, sampleRate);
       const source = offlineCtx.createBufferSource();
-      source.buffer = trimmedBuffer;
+      source.buffer = processedBuffer;
       source.playbackRate.value = speed;
 
-      // Volume
-      const gainNode = offlineCtx.createGain();
-      gainNode.gain.value = Math.max(0.01, Math.min(3.0, params.volume || 1.0));
+      // ── High-pass: remove sub-bass rumble (always on, very gentle) ────────
+      const hpFilter = offlineCtx.createBiquadFilter();
+      hpFilter.type = "highpass";
+      hpFilter.frequency.value = params.voiceEnhancement ? 100 : 40;
+      hpFilter.Q.value = 0.5; // gentle slope, no resonance
 
-      // Bass EQ
+      // ── Low-shelf: bass control ────────────────────────────────────────────
       const bassFilter = offlineCtx.createBiquadFilter();
       bassFilter.type = "lowshelf";
-      bassFilter.frequency.value = 200;
-      bassFilter.gain.value = Math.max(-15, Math.min(15, params.bassBoost || 0));
+      bassFilter.frequency.value = 180;
+      bassFilter.gain.value = Math.max(-12, Math.min(12, params.bassBoost || 0));
 
-      // Mid EQ (voice presence — 1kHz-4kHz range)
+      // ── Peaking EQ: voice presence (2kHz-3kHz) ────────────────────────────
       const midFilter = offlineCtx.createBiquadFilter();
       midFilter.type = "peaking";
       midFilter.frequency.value = 2500;
-      midFilter.Q.value = 1.0;
-      midFilter.gain.value = Math.max(-10, Math.min(10, params.midBoost || 0));
+      midFilter.Q.value = 0.8; // wider Q = smoother
+      midFilter.gain.value = Math.max(-8, Math.min(8, params.midBoost || 0));
 
-      // Treble EQ
+      // ── High-shelf: air / brightness ──────────────────────────────────────
       const trebleFilter = offlineCtx.createBiquadFilter();
       trebleFilter.type = "highshelf";
-      trebleFilter.frequency.value = 4000;
-      trebleFilter.gain.value = Math.max(-15, Math.min(15, params.trebleBoost || 0));
+      trebleFilter.frequency.value = 8000;
+      trebleFilter.gain.value = Math.max(-10, Math.min(10, params.trebleBoost || 0));
 
-      // Voice enhancement: high-pass filter to remove rumble + presence boost
-      let voiceHighPass: BiquadFilterNode | null = null;
-      if (params.voiceEnhancement) {
-        voiceHighPass = offlineCtx.createBiquadFilter();
-        voiceHighPass.type = "highpass";
-        voiceHighPass.frequency.value = 80;
-        voiceHighPass.Q.value = 0.7;
+      // ── Voice de-ess: notch at 6-8kHz to tame sibilance ──────────────────
+      const deessFilter = offlineCtx.createBiquadFilter();
+      deessFilter.type = "peaking";
+      deessFilter.frequency.value = 7000;
+      deessFilter.Q.value = 2.0;
+      deessFilter.gain.value = params.voiceEnhancement ? -3 : 0;
+
+      // ── DynamicsCompressorNode (Web Audio native — smooth, no artifacts) ──
+      const compressor = offlineCtx.createDynamicsCompressor();
+      if (params.dynamicCompression) {
+        compressor.threshold.value = -24;  // dB
+        compressor.knee.value      = 12;   // soft knee
+        compressor.ratio.value     = 4;    // 4:1
+        compressor.attack.value    = 0.003; // 3ms
+        compressor.release.value   = 0.25;  // 250ms
+      } else {
+        // Transparent limiter only
+        compressor.threshold.value = -3;
+        compressor.knee.value      = 3;
+        compressor.ratio.value     = 20;
+        compressor.attack.value    = 0.001;
+        compressor.release.value   = 0.1;
       }
 
-      // Fade in/out via gain automation
+      // ── Master gain ───────────────────────────────────────────────────────
+      const gainNode = offlineCtx.createGain();
+      gainNode.gain.value = Math.max(0.05, Math.min(3.0, params.volume || 1.0));
+
+      // ── Fade in / out (exponential — sounds more natural than linear) ─────
       const fadeGain = offlineCtx.createGain();
-      const fadeInDur = Math.min(params.fadeIn || 0, finalLength / sampleRate * 0.5);
-      const fadeOutDur = Math.min(params.fadeOut || 0, finalLength / sampleRate * 0.5);
       const totalDur = finalLength / sampleRate;
+      const fadeInDur  = Math.min(Math.max(params.fadeIn  || 0, 0), totalDur * 0.4);
+      const fadeOutDur = Math.min(Math.max(params.fadeOut || 0, 0), totalDur * 0.4);
       if (fadeInDur > 0) {
-        fadeGain.gain.setValueAtTime(0, 0);
-        fadeGain.gain.linearRampToValueAtTime(1, fadeInDur);
+        fadeGain.gain.setValueAtTime(0.0001, 0);
+        fadeGain.gain.exponentialRampToValueAtTime(1.0, fadeInDur);
       }
       if (fadeOutDur > 0) {
-        fadeGain.gain.setValueAtTime(1, Math.max(0, totalDur - fadeOutDur));
-        fadeGain.gain.linearRampToValueAtTime(0, totalDur);
+        const fadeOutStart = Math.max(fadeInDur + 0.01, totalDur - fadeOutDur);
+        fadeGain.gain.setValueAtTime(1.0, fadeOutStart);
+        fadeGain.gain.exponentialRampToValueAtTime(0.0001, totalDur - 0.001);
       }
 
-      // Connect chain: source → [highpass] → bass → mid → treble → gain → fade → dest
-      let lastNode: AudioNode = source;
-      if (voiceHighPass) { lastNode.connect(voiceHighPass); lastNode = voiceHighPass; }
-      lastNode.connect(bassFilter);
+      // ── Connect chain ─────────────────────────────────────────────────────
+      // source → hp → bass → mid → treble → deess → compressor → gain → fade → dest
+      source.connect(hpFilter);
+      hpFilter.connect(bassFilter);
       bassFilter.connect(midFilter);
       midFilter.connect(trebleFilter);
-      trebleFilter.connect(gainNode);
+      trebleFilter.connect(deessFilter);
+      deessFilter.connect(compressor);
+      compressor.connect(gainNode);
       gainNode.connect(fadeGain);
       fadeGain.connect(offlineCtx.destination);
       source.start(0);
