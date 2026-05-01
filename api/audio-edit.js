@@ -163,52 +163,28 @@ function buildFFmpegFilter(operations) {
     const { type, params = {} } = op;
     switch (type) {
       case "noise_reduction": {
-        // Voice-preserving NR — arnndn (RNN-based) + afftdn (FFT-based)
-        // This combination is much more effective than simple afftdn
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
-        
-        // Pass 1: Sub-bass rumble removal
         filters.push(`highpass=f=80:poles=2`);
-        
-        // Pass 2: arnndn — RNN-based noise reduction (very effective for speech)
-        // We use a moderate mix to avoid artifacts
         filters.push(`arnndn=m=bd.rnnn`);
-        
-        // Pass 3: afftdn — FFT-based stationary noise reduction for remaining hiss
         const nrVal1 = Math.round(10 + s * 25); 
         const nfVal1 = Math.round(-25 - s * 5);  
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
-        
-        // Pass 4: agate — silences noise floor between words
         const gateThresh = Math.round(-50 + s * 15); 
         filters.push(`agate=threshold=${gateThresh}dB:attack=20:release=300:ratio=10`);
-        
-        // Pass 5: Voice frequency restoration
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
         filters.push(`equalizer=f=3000:t=h:width=1500:g=2.0`);
         break;
       }
       case "denoise_advanced": {
-        // Ultra-clean voice-preserving NR — dual arnndn + afftdn + agate
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
-        
-        // Pass 1: Sub-bass & hum removal
         filters.push(`highpass=f=80:poles=2`);
         filters.push(`equalizer=f=50:t=h:width=5:g=-20`);
-        
-        // Pass 2: arnndn — Primary RNN denoiser
         filters.push(`arnndn=m=bd.rnnn`);
-        
-        // Pass 3: afftdn — Stationary noise removal
         const nrValA = Math.round(15 + sa * 20); 
         const nfValA = Math.round(-26 - sa * 6);  
         filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
-        
-        // Pass 4: agate — Noise floor silencing
         const gateA = Math.round(-45 + sa * 10); 
         filters.push(`agate=threshold=${gateA}dB:attack=20:release=300:ratio=10`);
-        
-        // Pass 5: Voice frequency restoration & clarity
         filters.push(`equalizer=f=300:t=h:width=200:g=2.0`);
         filters.push(`equalizer=f=3500:t=h:width=1500:g=2.5`);
         break;
@@ -499,18 +475,13 @@ function buildFFmpegFilter(operations) {
   }
 
   let filterStr = filters.join(",");
-  
-  // Handle pitch and speed together for better quality
   if (pitchShift !== null || speedFactor !== null) {
     const p = pitchShift || 0;
     const s = speedFactor || 1.0;
     const pitchRatio = Math.pow(2, p / 12);
-    
     if (filterStr) filterStr += ",";
-    // rubberband is better but not always available, use atempo + asetrate
     filterStr += `asetrate=r=${Math.round(44100 * pitchRatio)},atempo=${(s / pitchRatio).toFixed(2)},aresample=44100`;
   }
-
   return filterStr;
 }
 
@@ -518,21 +489,45 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const form = formidable({
-    uploadDir: os.tmpdir(),
-    keepExtensions: true,
-    maxFileSize: 50 * 1024 * 1024, // 50MB
-  });
+  // ── Unified Handler for JSON and Multipart ──
+  let prompt = "";
+  let audioBuffer = null;
+  let audioMime = "audio/mpeg";
+  let tempFilePath = null;
+
+  const contentType = req.headers["content-type"] || "";
+
+  if (contentType.includes("application/json")) {
+    // Path A: JSON (base64)
+    const body = await new Promise((resolve) => {
+      let data = "";
+      req.on("data", chunk => data += chunk);
+      req.on("end", () => resolve(JSON.parse(data)));
+    });
+    prompt = body.instruction || body.prompt;
+    audioMime = body.audioMime || "audio/mpeg";
+    if (body.audioData) {
+      audioBuffer = Buffer.from(body.audioData, "base64");
+      tempFilePath = path.join(os.tmpdir(), `upload_${Date.now()}.tmp`);
+      fs.writeFileSync(tempFilePath, audioBuffer);
+    }
+  } else {
+    // Path B: Multipart (form-data)
+    const form = formidable({ uploadDir: os.tmpdir(), keepExtensions: true });
+    const [fields, files] = await form.parse(req);
+    prompt = fields.prompt?.[0] || fields.instruction?.[0];
+    const audioFile = files.audio?.[0];
+    if (audioFile) {
+      tempFilePath = audioFile.filepath;
+      audioMime = audioFile.mimetype || "audio/mpeg";
+    }
+  }
+
+  if (!tempFilePath || !prompt) {
+    return res.status(400).json({ error: "Missing audio file or prompt" });
+  }
 
   try {
-    const [fields, files] = await form.parse(req);
-    const audioFile = files.audio?.[0];
-    const prompt = fields.prompt?.[0];
-
-    if (!audioFile || !prompt) {
-      return res.status(400).json({ error: "Missing audio file or prompt" });
-    }
-
     // 1. Get AI instructions
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -547,55 +542,48 @@ export default async function handler(req, res) {
     const filterStr = buildFFmpegFilter(aiResponse.operations);
 
     if (!filterStr) {
-      return res.status(200).json({
-        ...aiResponse,
-        message: "No changes needed for this request."
-      });
+      if (contentType.includes("application/json")) {
+        return res.status(200).json({ ...aiResponse, audioData: Buffer.from(fs.readFileSync(tempFilePath)).toString("base64"), audioMime });
+      }
+      return res.send(fs.readFileSync(tempFilePath));
     }
 
     const outputFileName = `edited_${Date.now()}.mp3`;
     const outputPath = path.join(os.tmpdir(), outputFileName);
 
     // 2. Run FFmpeg
-    // Use ffmpeg-static path if available, otherwise fallback to system ffmpeg
     let ffmpegPath = "ffmpeg";
     try {
       const staticPath = path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
       if (fs.existsSync(staticPath)) {
         ffmpegPath = staticPath;
-        // Ensure executable
         fs.chmodSync(ffmpegPath, 0o755);
       }
-    } catch (e) {
-      console.error("FFmpeg static path error:", e);
-    }
+    } catch (e) {}
 
-    const command = `${ffmpegPath} -i "${audioFile.filepath}" -af "${filterStr}" -y "${outputPath}"`;
-    console.log("Executing FFmpeg:", command);
-    
+    const command = `${ffmpegPath} -i "${tempFilePath}" -af "${filterStr}" -y "${outputPath}"`;
     execSync(command);
 
-    // 3. Read output and cleanup
-    const audioBuffer = fs.readFileSync(outputPath);
+    // 3. Return Result
+    const resultBuffer = fs.readFileSync(outputPath);
     
     // Cleanup
-    try {
-      fs.unlinkSync(audioFile.filepath);
-      fs.unlinkSync(outputPath);
-    } catch (e) {}
+    try { fs.unlinkSync(tempFilePath); fs.unlinkSync(outputPath); } catch (e) {}
+
+    if (contentType.includes("application/json")) {
+      return res.status(200).json({
+        ...aiResponse,
+        audioData: resultBuffer.toString("base64"),
+        audioMime: "audio/mpeg"
+      });
+    }
 
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation));
-    res.setHeader("X-AI-Pipeline", encodeURIComponent(JSON.stringify(aiResponse.pipeline)));
-    
-    return res.send(audioBuffer);
+    return res.send(resultBuffer);
 
   } catch (error) {
     console.error("Audio processing error:", error);
-    return res.status(500).json({ 
-      error: "Failed to process audio", 
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    return res.status(500).json({ error: "Failed to process audio", details: error.message });
   }
 }
