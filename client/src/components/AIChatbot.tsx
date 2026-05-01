@@ -14,6 +14,8 @@ interface Message {
   audioDescription?: string;  // Bengali description of what was done
   audioAppliedSteps?: string[]; // list of applied processing steps
   audioIntent?: string;       // detected intent (clean/enhance/podcast/etc)
+  audioPipeline?: string[];   // ordered pipeline steps
+  audioTechnicalNote?: string; // technical explanation
 }
 
 interface ActionButton {
@@ -741,15 +743,15 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             marginBottom: 8,
           }}>
             {/* Intent badge */}
-            {message.audioIntent && message.audioIntent !== "custom" && (
-              <div style={{ marginBottom: 8 }}>
+            {message.audioIntent && (
+              <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                 <span style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 5,
                   padding: "3px 10px",
-                  background: "rgba(212,168,67,0.12)",
-                  border: "1px solid rgba(212,168,67,0.35)",
+                  background: "rgba(212,168,67,0.15)",
+                  border: "1px solid rgba(212,168,67,0.40)",
                   borderRadius: 20,
                   color: "#D4A843",
                   fontSize: "0.68rem",
@@ -757,27 +759,65 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                   fontWeight: 700,
                   letterSpacing: "0.03em",
                 }}>
-                  ✨ {message.audioIntent === "clean" ? "পরিষ্কার প্রসেসিং" :
-                     message.audioIntent === "enhance" ? "ভয়েস এনহ্যান্সমেন্ট" :
-                     message.audioIntent === "podcast" ? "পডকাস্ট প্রিসেট" :
-                     message.audioIntent === "music" ? "মিউজিক প্রসেসিং" :
-                     message.audioIntent === "social" ? "সোশ্যাল মিডিয়া অপ্টিমাইজ" :
-                     message.audioIntent === "trim" ? "ট্রিম ও কাটাকাটি" :
-                     message.audioIntent === "convert" ? "ফরম্যাট কনভার্ট" : "কাস্টম প্রসেসিং"}
+                  {message.audioIntent === "clean"     ? "🧹 পরিষ্কার প্রসেসিং" :
+                   message.audioIntent === "enhance"   ? "✨ ভয়েস এনহ্যান্সমেন্ট" :
+                   message.audioIntent === "podcast"   ? "🎙️ পডকাস্ট প্রিসেট" :
+                   message.audioIntent === "studio"    ? "🎚️ স্টুডিও মাস্টার" :
+                   message.audioIntent === "broadcast" ? "📡 ব্রডকাস্ট রেডি" :
+                   message.audioIntent === "asmr"      ? "🌙 ASMR প্রসেসিং" :
+                   message.audioIntent === "music"     ? "🎵 মিউজিক প্রসেসিং" :
+                   message.audioIntent === "social"    ? "📱 সোশ্যাল মিডিয়া অপ্টিমাইজ" :
+                   message.audioIntent === "trim"      ? "✂️ ট্রিম ও কাটাকাটি" :
+                   message.audioIntent === "volume"    ? "🔊 ভলিউম অ্যাডজাস্ট" :
+                   message.audioIntent === "eq"        ? "🎛️ EQ প্রসেসিং" :
+                   message.audioIntent === "denoise"   ? "🔇 নয়েজ রিমুভাল" :
+                   message.audioIntent === "vocal"     ? "🎤 ভোকাল প্রসেসিং" :
+                                                         "⚙️ কাস্টম প্রসেসিং"}
                 </span>
+              </div>
+            )}
+            {/* Pipeline steps (ordered) */}
+            {message.audioPipeline && message.audioPipeline.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{
+                  color: "rgba(212,168,67,0.55)",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.62rem",
+                  fontWeight: 700,
+                  marginBottom: 5,
+                  letterSpacing: "0.04em",
+                }}>🔄 প্রসেসিং পাইপলাইন:</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 3, alignItems: "center" }}>
+                  {message.audioPipeline.map((step, i) => (
+                    <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                      <span style={{
+                        padding: "2px 7px",
+                        background: "rgba(99,102,241,0.10)",
+                        border: "1px solid rgba(99,102,241,0.25)",
+                        borderRadius: 8,
+                        color: "rgba(165,180,252,0.85)",
+                        fontSize: "0.60rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      }}>{i + 1}. {step}</span>
+                      {i < (message.audioPipeline?.length ?? 0) - 1 && (
+                        <span style={{ color: "rgba(99,102,241,0.4)", fontSize: "0.55rem" }}>→</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
             {/* Applied steps */}
             {message.audioAppliedSteps && message.audioAppliedSteps.length > 0 && (
               <div style={{ marginBottom: 10 }}>
                 <div style={{
-                  color: "rgba(212,168,67,0.6)",
+                  color: "rgba(74,222,128,0.55)",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.65rem",
+                  fontSize: "0.62rem",
                   fontWeight: 700,
                   marginBottom: 5,
                   letterSpacing: "0.04em",
-                }}>⚙️ প্রয়োগ করা পদক্ষেপসমূহ:</div>
+                }}>✅ সম্পন্ন পদক্ষেপসমূহ:</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                   {message.audioAppliedSteps.map((step, i) => (
                     <span key={i} style={{
@@ -789,7 +829,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                       border: "1px solid rgba(74,222,128,0.25)",
                       borderRadius: 10,
                       color: "rgba(134,239,172,0.85)",
-                      fontSize: "0.65rem",
+                      fontSize: "0.63rem",
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     }}>
                       <span style={{ color: "#4ade80", fontSize: "0.6rem" }}>✓</span>
@@ -807,10 +847,26 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                 fontSize: "0.82rem",
                 lineHeight: 1.7,
                 marginBottom: 10,
-                borderTop: (message.audioAppliedSteps && message.audioAppliedSteps.length > 0) ? "1px solid rgba(212,168,67,0.12)" : "none",
-                paddingTop: (message.audioAppliedSteps && message.audioAppliedSteps.length > 0) ? 8 : 0,
+                borderTop: "1px solid rgba(212,168,67,0.12)",
+                paddingTop: 8,
               }}>
                 {message.audioDescription}
+              </div>
+            )}
+            {/* Technical note */}
+            {message.audioTechnicalNote && (
+              <div style={{
+                color: "rgba(148,163,184,0.75)",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontSize: "0.68rem",
+                lineHeight: 1.6,
+                marginBottom: 8,
+                padding: "5px 8px",
+                background: "rgba(148,163,184,0.06)",
+                borderRadius: 6,
+                borderLeft: "2px solid rgba(148,163,184,0.2)",
+              }}>
+                🔬 {message.audioTechnicalNote}
               </div>
             )}
             {/* Audio player */}
@@ -1226,8 +1282,11 @@ export default function AIChatbot() {
         throw new Error(errData.error || `HTTP ${parseResp.status}`);
       }
 
-      const { params, description, appliedSteps = [], intent = "custom" } = await parseResp.json();
+      const { params, description, appliedSteps = [], intent = "custom", pipeline = [], technicalNote = null } = await parseResp.json();
 
+      // ═══════════════════════════════════════════════════════════════════════════════
+      // MANUS AI-STYLE AUDIO PROCESSING ENGINE v4.0
+      // ═══════════════════════════════════════════════════════════════════════════════
       // Step 2: Decode audio
       const audioBuffer = await sourceFile.arrayBuffer();
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -1239,39 +1298,70 @@ export default function AIChatbot() {
         throw new Error("অডিও ফাইল ডিকোড হয়নি — সমর্থিত ফর্ম্যাট: MP3, WAV, OGG, M4A");
       }
 
-      const sampleRate = decoded.sampleRate;
-      const numChannels = decoded.numberOfChannels;
-      const origDuration = decoded.duration;
+      const sampleRate    = decoded.sampleRate;
+      const numChannels   = decoded.numberOfChannels;
+      const origDuration  = decoded.duration;
 
-      // ── Trim ──────────────────────────────────────────────────────────────
+      // ── Trim ─────────────────────────────────────────────────────────────
       const trimStartSec = Math.max(0, Math.min(params.trimStart || 0, origDuration - 0.5));
       const trimEndSec   = Math.max(0, Math.min(params.trimEnd   || 0, origDuration - trimStartSec - 0.1));
       const startSample  = Math.floor(trimStartSec * sampleRate);
       const endSample    = decoded.length - Math.floor(trimEndSec * sampleRate);
-      const outputLength = Math.max(endSample - startSample, sampleRate); // min 1 second
+      const outputLength = Math.max(endSample - startSample, sampleRate);
 
       // ── Speed ─────────────────────────────────────────────────────────────
-      const speed = Math.max(0.5, Math.min(2.0, params.speed || 1.0));
+      const speed       = Math.max(0.5, Math.min(2.0, params.speed || 1.0));
       const finalLength = Math.ceil(outputLength / speed);
 
-      // ── Per-channel DSP (noise reduction only — artifact-free) ────────────
+      // ─────────────────────────────────────────────────────────────
+      // PHASE 1: Per-channel time-domain DSP
+      // (Noise reduction, deClick, deHum, deBreath, reverse, normalize)
+      // ─────────────────────────────────────────────────────────────
       const processedBuffer = audioCtx.createBuffer(numChannels, outputLength, sampleRate);
       for (let ch = 0; ch < numChannels; ch++) {
         const src = decoded.getChannelData(ch);
         const raw = new Float32Array(outputLength);
         for (let i = 0; i < outputLength; i++) raw[i] = src[startSample + i];
 
-        // Reverse
+        // ── Reverse ──────────────────────────────────────────────────────────
         if (params.reverse) raw.reverse();
 
+        // ── De-Click: remove transient spikes (clicks/pops) ───────────────────
+        // Detects samples that deviate >3x from local RMS and interpolates
+        if (params.deClick) {
+          const windowSize = Math.floor(sampleRate * 0.005); // 5ms window
+          for (let i = windowSize; i < raw.length - windowSize; i++) {
+            let localRMS = 0;
+            for (let j = i - windowSize; j < i + windowSize; j++) localRMS += raw[j] * raw[j];
+            localRMS = Math.sqrt(localRMS / (2 * windowSize));
+            if (Math.abs(raw[i]) > localRMS * 3.5 && localRMS > 0.001) {
+              // Interpolate between neighbors
+              raw[i] = (raw[i - 1] + raw[i + 1]) * 0.5;
+            }
+          }
+        }
+
+        // ── De-Hum: notch filter simulation (50Hz electrical hum) ────────────
+        // Simple comb filter to attenuate 50Hz and harmonics
+        if (params.deHum) {
+          const humFreq = 50; // Hz (50Hz for most countries, 60Hz for US)
+          const humPeriod = Math.round(sampleRate / humFreq);
+          const humGain = 0.85; // attenuate by 15%
+          const filtered = new Float32Array(raw.length);
+          for (let i = 0; i < raw.length; i++) {
+            filtered[i] = i >= humPeriod
+              ? raw[i] - humGain * raw[i - humPeriod]
+              : raw[i];
+          }
+          raw.set(filtered);
+        }
+
         // ── Noise Reduction: RMS-based soft gate (NO zipper noise) ──────────
-        // Uses a slow-attack/slow-release envelope follower to smoothly
-        // attenuate low-level noise without cutting signal abruptly.
         if (params.noiseReduction && params.noiseReduction > 0) {
-          const nr = Math.min(0.95, params.noiseReduction); // cap at 0.95
-          const frameSize = Math.floor(sampleRate * 0.02); // 20ms frames
-          const attackCoef  = Math.exp(-1 / (sampleRate * 0.010)); // 10ms attack
-          const releaseCoef = Math.exp(-1 / (sampleRate * 0.150)); // 150ms release
+          const nr = Math.min(0.60, params.noiseReduction);
+          const frameSize   = Math.floor(sampleRate * 0.02); // 20ms
+          const attackCoef  = Math.exp(-1 / (sampleRate * 0.010)); // 10ms
+          const releaseCoef = Math.exp(-1 / (sampleRate * 0.150)); // 150ms
 
           // Estimate noise floor from quietest 5% of frames
           const frameRMS: number[] = [];
@@ -1282,28 +1372,45 @@ export default function AIChatbot() {
             frameRMS.push(Math.sqrt(sum / (end - f)));
           }
           const sorted = [...frameRMS].sort((a, b) => a - b);
-          const noiseFloor = sorted[Math.floor(sorted.length * 0.05)] * (1 + nr * 3);
+          const noiseFloor = sorted[Math.floor(sorted.length * 0.05)] * (1 + nr * 2.5);
 
-          // Smooth envelope follower
+          // Smooth envelope follower with smoothstep gate
           let envelope = 0;
           for (let i = 0; i < raw.length; i++) {
             const level = Math.abs(raw[i]);
             envelope = level > envelope
               ? 1 - (1 - level) * attackCoef
               : envelope * releaseCoef;
-            // Soft-knee gate: smoothly reduce gain below noise floor
             const ratio = Math.min(1, envelope / (noiseFloor + 1e-9));
-            const gate = ratio < 1 ? ratio * ratio * (3 - 2 * ratio) : 1; // smoothstep
+            const gate  = ratio < 1 ? ratio * ratio * (3 - 2 * ratio) : 1;
             raw[i] *= gate;
           }
         }
 
-        // ── Soft Normalize (peak limiting, not hard clip) ──────────────────
+        // ── De-Breath: attenuate breath bursts between phrases ────────────────
+        // Detects short bursts of mid-level noise (breaths) and reduces them
+        if (params.deBreath) {
+          const frameSize = Math.floor(sampleRate * 0.03); // 30ms frames
+          const breathThreshLow  = 0.005;
+          const breathThreshHigh = 0.08;
+          for (let f = 0; f < raw.length; f += frameSize) {
+            const end = Math.min(f + frameSize, raw.length);
+            let frameMax = 0;
+            for (let i = f; i < end; i++) frameMax = Math.max(frameMax, Math.abs(raw[i]));
+            // Breath: mid-level, not speech (speech is louder)
+            if (frameMax > breathThreshLow && frameMax < breathThreshHigh) {
+              const reduction = 0.35;
+              for (let i = f; i < end; i++) raw[i] *= reduction;
+            }
+          }
+        }
+
+        // ── Soft Normalize (peak limiting to -1dBFS) ───────────────────────
         if (params.normalize) {
           let peak = 0;
           for (let i = 0; i < raw.length; i++) peak = Math.max(peak, Math.abs(raw[i]));
           if (peak > 0.001) {
-            const targetPeak = 0.92;
+            const targetPeak = 0.92; // -1dBFS
             const gain = targetPeak / peak;
             for (let i = 0; i < raw.length; i++) raw[i] *= gain;
           }
@@ -1312,68 +1419,116 @@ export default function AIChatbot() {
         processedBuffer.getChannelData(ch).set(raw);
       }
 
-      // ── OfflineAudioContext for EQ + Dynamics chain ───────────────────────
+      // ─────────────────────────────────────────────────────────────
+      // PHASE 2: OfflineAudioContext — EQ + Dynamics + Effects chain
+      // ─────────────────────────────────────────────────────────────
       const offlineCtx = new OfflineAudioContext(numChannels, finalLength, sampleRate);
       const source = offlineCtx.createBufferSource();
       source.buffer = processedBuffer;
       source.playbackRate.value = speed;
 
-      // ── High-pass: remove sub-bass rumble (always on, very gentle) ────────
+      // ── High-pass filter (configurable or default gentle) ──────────────────
       const hpFilter = offlineCtx.createBiquadFilter();
       hpFilter.type = "highpass";
-      hpFilter.frequency.value = params.voiceEnhancement ? 100 : 40;
-      hpFilter.Q.value = 0.5; // gentle slope, no resonance
+      hpFilter.frequency.value = params.highPassFreq || (params.voiceEnhancement ? 100 : 40);
+      hpFilter.Q.value = 0.5;
 
-      // ── Low-shelf: bass control ────────────────────────────────────────────
+      // ── Low-pass filter (optional, e.g. for phone recording) ───────────────
+      const lpFilter = offlineCtx.createBiquadFilter();
+      lpFilter.type = "lowpass";
+      lpFilter.frequency.value = params.lowPassFreq || (sampleRate / 2 * 0.95);
+      lpFilter.Q.value = 0.5;
+
+      // ── Warmth EQ (200-400Hz) ─────────────────────────────────────────
+      const warmthFilter = offlineCtx.createBiquadFilter();
+      warmthFilter.type = "peaking";
+      warmthFilter.frequency.value = 300;
+      warmthFilter.Q.value = 0.8;
+      warmthFilter.gain.value = Math.max(-4, Math.min(4, params.warmthBoost || 0));
+
+      // ── Bass EQ (low-shelf at 180Hz) ──────────────────────────────────
       const bassFilter = offlineCtx.createBiquadFilter();
       bassFilter.type = "lowshelf";
       bassFilter.frequency.value = 180;
-      bassFilter.gain.value = Math.max(-12, Math.min(12, params.bassBoost || 0));
+      bassFilter.gain.value = Math.max(-8, Math.min(8, params.bassBoost || 0));
 
-      // ── Peaking EQ: voice presence (2kHz-3kHz) ────────────────────────────
+      // ── Mid / Voice Presence EQ (2.5kHz) ─────────────────────────────
       const midFilter = offlineCtx.createBiquadFilter();
       midFilter.type = "peaking";
       midFilter.frequency.value = 2500;
-      midFilter.Q.value = 0.8; // wider Q = smoother
-      midFilter.gain.value = Math.max(-8, Math.min(8, params.midBoost || 0));
+      midFilter.Q.value = 0.8;
+      midFilter.gain.value = Math.max(-5, Math.min(5, params.midBoost || 0));
 
-      // ── High-shelf: air / brightness ──────────────────────────────────────
-      const trebleFilter = offlineCtx.createBiquadFilter();
-      trebleFilter.type = "highshelf";
-      trebleFilter.frequency.value = 8000;
-      trebleFilter.gain.value = Math.max(-10, Math.min(10, params.trebleBoost || 0));
+      // ── Presence EQ (3-6kHz clarity) ─────────────────────────────────
+      const presenceFilter = offlineCtx.createBiquadFilter();
+      presenceFilter.type = "peaking";
+      presenceFilter.frequency.value = 4000;
+      presenceFilter.Q.value = 1.0;
+      presenceFilter.gain.value = Math.max(-4, Math.min(4, params.presenceBoost || 0));
 
-      // ── Voice de-ess: notch at 6-8kHz to tame sibilance ──────────────────
+      // ── De-Ess: notch at 7kHz to tame sibilance (s/sh sounds) ────────────
       const deessFilter = offlineCtx.createBiquadFilter();
       deessFilter.type = "peaking";
       deessFilter.frequency.value = 7000;
-      deessFilter.Q.value = 2.0;
-      deessFilter.gain.value = params.voiceEnhancement ? -3 : 0;
+      deessFilter.Q.value = 2.5;
+      deessFilter.gain.value = (params.deEss || params.voiceEnhancement) ? -3.5 : 0;
 
-      // ── DynamicsCompressorNode (Web Audio native — smooth, no artifacts) ──
+      // ── Treble / Air EQ (high-shelf at 8kHz) ──────────────────────────
+      const trebleFilter = offlineCtx.createBiquadFilter();
+      trebleFilter.type = "highshelf";
+      trebleFilter.frequency.value = 8000;
+      trebleFilter.gain.value = Math.max(-6, Math.min(6, params.trebleBoost || 0));
+
+      // ── Air EQ (10-16kHz shimmer) ────────────────────────────────────
+      const airFilter = offlineCtx.createBiquadFilter();
+      airFilter.type = "highshelf";
+      airFilter.frequency.value = 12000;
+      airFilter.gain.value = Math.max(-4, Math.min(4, params.airBoost || 0));
+
+      // ── Dynamics Compressor (native Web Audio — smooth, no artifacts) ─────
       const compressor = offlineCtx.createDynamicsCompressor();
       if (params.dynamicCompression) {
-        compressor.threshold.value = -24;  // dB
+        compressor.threshold.value = -24;
         compressor.knee.value      = 12;   // soft knee
         compressor.ratio.value     = 4;    // 4:1
-        compressor.attack.value    = 0.003; // 3ms
-        compressor.release.value   = 0.25;  // 250ms
-      } else {
-        // Transparent limiter only
+        compressor.attack.value    = 0.003;
+        compressor.release.value   = 0.25;
+      } else if (params.limiter) {
         compressor.threshold.value = -3;
-        compressor.knee.value      = 3;
+        compressor.knee.value      = 2;
         compressor.ratio.value     = 20;
         compressor.attack.value    = 0.001;
         compressor.release.value   = 0.1;
+      } else {
+        // Transparent pass-through (very gentle ceiling)
+        compressor.threshold.value = -1;
+        compressor.knee.value      = 1;
+        compressor.ratio.value     = 40;
+        compressor.attack.value    = 0.001;
+        compressor.release.value   = 0.05;
       }
 
-      // ── Master gain ───────────────────────────────────────────────────────
-      const gainNode = offlineCtx.createGain();
-      gainNode.gain.value = Math.max(0.05, Math.min(3.0, params.volume || 1.0));
+      // ── Saturation (subtle analog warmth via soft-clip waveshaper) ────────
+      const saturationNode = offlineCtx.createWaveShaper();
+      if (params.saturation && params.saturation > 0) {
+        const sat = Math.min(0.40, params.saturation);
+        const curve = new Float32Array(256);
+        for (let i = 0; i < 256; i++) {
+          const x = (i * 2) / 256 - 1;
+          // Soft-clip: tanh-based, gentle
+          curve[i] = Math.tanh(x * (1 + sat * 4)) / Math.tanh(1 + sat * 4);
+        }
+        saturationNode.curve = curve;
+        saturationNode.oversample = "2x";
+      }
 
-      // ── Fade in / out (exponential — sounds more natural than linear) ─────
+      // ── Master gain ─────────────────────────────────────────────────────
+      const gainNode = offlineCtx.createGain();
+      gainNode.gain.value = Math.max(0.05, Math.min(2.0, params.volume || 1.0));
+
+      // ── Fade in / out (exponential — sounds natural) ─────────────────────
       const fadeGain = offlineCtx.createGain();
-      const totalDur = finalLength / sampleRate;
+      const totalDur  = finalLength / sampleRate;
       const fadeInDur  = Math.min(Math.max(params.fadeIn  || 0, 0), totalDur * 0.4);
       const fadeOutDur = Math.min(Math.max(params.fadeOut || 0, 0), totalDur * 0.4);
       if (fadeInDur > 0) {
@@ -1386,20 +1541,79 @@ export default function AIChatbot() {
         fadeGain.gain.exponentialRampToValueAtTime(0.0001, totalDur - 0.001);
       }
 
-      // ── Connect chain ─────────────────────────────────────────────────────
-      // source → hp → bass → mid → treble → deess → compressor → gain → fade → dest
+      // ── Connect full DSP chain ────────────────────────────────────────────
+      // source → hp → lp → warmth → bass → mid → presence → deess → treble → air
+      //       → compressor → saturation → gain → fade → dest
       source.connect(hpFilter);
-      hpFilter.connect(bassFilter);
+      hpFilter.connect(lpFilter);
+      lpFilter.connect(warmthFilter);
+      warmthFilter.connect(bassFilter);
       bassFilter.connect(midFilter);
-      midFilter.connect(trebleFilter);
-      trebleFilter.connect(deessFilter);
-      deessFilter.connect(compressor);
-      compressor.connect(gainNode);
+      midFilter.connect(presenceFilter);
+      presenceFilter.connect(deessFilter);
+      deessFilter.connect(trebleFilter);
+      trebleFilter.connect(airFilter);
+      airFilter.connect(compressor);
+      compressor.connect(saturationNode);
+      saturationNode.connect(gainNode);
       gainNode.connect(fadeGain);
       fadeGain.connect(offlineCtx.destination);
       source.start(0);
 
-      const renderedBuffer = await offlineCtx.startRendering();
+      let renderedBuffer = await offlineCtx.startRendering();
+
+      // ── PHASE 3: Stereo Width Processing (post-render) ───────────────────
+      // Mid-Side processing: M = (L+R)/2, S = (L-R)/2
+      // Widen: boost S channel; Narrow: reduce S channel
+      const stereoWidth = params.stereoWidth || 1.0;
+      if (renderedBuffer.numberOfChannels >= 2 && Math.abs(stereoWidth - 1.0) > 0.05) {
+        const L = renderedBuffer.getChannelData(0);
+        const R = renderedBuffer.getChannelData(1);
+        const sw = Math.max(0.5, Math.min(2.0, stereoWidth));
+        for (let i = 0; i < renderedBuffer.length; i++) {
+          const mid  = (L[i] + R[i]) * 0.5;
+          const side = (L[i] - R[i]) * 0.5 * sw;
+          L[i] = mid + side;
+          R[i] = mid - side;
+        }
+      }
+
+      // ── PHASE 3b: Mono Mix ───────────────────────────────────────────────
+      if (params.monoMix && renderedBuffer.numberOfChannels >= 2) {
+        const L = renderedBuffer.getChannelData(0);
+        const R = renderedBuffer.getChannelData(1);
+        for (let i = 0; i < renderedBuffer.length; i++) {
+          const mono = (L[i] + R[i]) * 0.5;
+          L[i] = mono;
+          R[i] = mono;
+        }
+      }
+
+      // ── PHASE 3c: LUFS-based loudness normalization ──────────────────────
+      // Approximate integrated loudness using RMS as proxy
+      if (params.lufsTarget) {
+        const targetLUFS = Math.max(-23, Math.min(-9, params.lufsTarget));
+        // Measure current RMS
+        let totalRMS = 0;
+        let totalSamples = 0;
+        for (let ch = 0; ch < renderedBuffer.numberOfChannels; ch++) {
+          const data = renderedBuffer.getChannelData(ch);
+          for (let i = 0; i < data.length; i++) totalRMS += data[i] * data[i];
+          totalSamples += data.length;
+        }
+        const rms = Math.sqrt(totalRMS / totalSamples);
+        const currentLUFS = 20 * Math.log10(rms + 1e-9) - 0.691;
+        const gainDB = targetLUFS - currentLUFS;
+        const gainLinear = Math.pow(10, gainDB / 20);
+        const safeGain = Math.max(0.1, Math.min(4.0, gainLinear));
+        for (let ch = 0; ch < renderedBuffer.numberOfChannels; ch++) {
+          const data = renderedBuffer.getChannelData(ch);
+          for (let i = 0; i < data.length; i++) {
+            data[i] = Math.max(-0.98, Math.min(0.98, data[i] * safeGain));
+          }
+        }
+      }
+
       await audioCtx.close();
 
       // Convert to WAV blob (universal support)
@@ -1420,6 +1634,8 @@ export default function AIChatbot() {
         audioDescription: description,
         audioAppliedSteps: appliedSteps,
         audioIntent: intent,
+        audioPipeline: pipeline,
+        audioTechnicalNote: technicalNote,
       }]);
       // Clear the original file (no longer needed) but keep isAudioMode
       // so user can type next instruction without re-uploading
