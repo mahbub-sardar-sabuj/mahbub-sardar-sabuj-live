@@ -75,6 +75,19 @@ function getAudioDuration(filePath, ffmpegPath) {
   return null;
 }
 
+// ── New: Vocal Doubler — adds a subtle doubled layer for richness ────────────
+function buildVocalDoubler(ffmpegPath, inputPath, outputPath) {
+  // Creates a subtle pitch-shifted copy and mixes with original for thickness
+  execFileSync(ffmpegPath, [
+    "-i", inputPath,
+    "-filter_complex",
+    "[0:a]asplit=2[a][b];[a]aecho=0.8:0.88:12:0.4[a1];[b]aecho=0.8:0.88:25:0.3[b1];[a1][b1]amix=inputs=2:weights=1 0.4[out]",
+    "-map", "[out]",
+    "-ar", "44100",
+    "-y", outputPath
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 20 * 1024 * 1024 });
+}
+
 // ── Classify vocal context from AI response ──────────────────────────────────
 function classifyVocalContext(intent, operations, prompt) {
   const lowerPrompt = (prompt || "").toLowerCase();
@@ -252,6 +265,30 @@ async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, optio
   });
 }
 
+// ── New: De-breath filter — reduces breath sounds ────────────────────────────
+function getDeBreathFilter() {
+  return "agate=threshold=-35dB:attack=5:release=80:ratio=8,equalizer=f=200:t=h:width=200:g=-2";
+}
+
+// ── New: De-reverb filter — reduces room reverb ───────────────────────────────
+function getDeReverbFilter() {
+  return "highpass=f=100,afftdn=nr=15:nf=-25:nt=w,equalizer=f=400:t=h:width=300:g=-1";
+}
+
+// ── New: Sidechain ducking — proper sidechain compression ─────────────────────
+function buildSidechainDucking(ffmpegPath, vocalPath, musicPath, outputPath, options = {}) {
+  const { duckLevel = -20, attackMs = 10, releaseMs = 200 } = options;
+  execFileSync(ffmpegPath, [
+    "-i", vocalPath,
+    "-i", musicPath,
+    "-filter_complex",
+    `[1:a]acompressor=threshold=${duckLevel}dB:ratio=8:attack=${attackMs}:release=${releaseMs}:makeup=0dB:knee=6dB:sidechain=1[ducked];[0:a][ducked]amix=inputs=2:duration=first:weights=1 0.6[out]`,
+    "-map", "[out]",
+    "-ar", "44100",
+    "-y", outputPath
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024 });
+}
+
 // ── AI Config ────────────────────────────────────────────────────────────────
 function resolveAudioAiConfig() {
   const audioApiKey = process.env.AUDIO_AI_API_KEY?.trim();
@@ -347,9 +384,25 @@ DYNAMICS: compress{threshold_db,ratio}, gate{threshold_db}, expander{threshold_d
 
 VOCAL: vocal_enhance{}, stereo_widen{width}, stereo_narrow{}, stereo_to_mono{}, mono_to_stereo{}, stereo_balance{pan}, auto_tune{strength}, formant_shift{shift}, harmonic_exciter{amount}, transient_shaper{attack,sustain}, vocal_isolation{}, music_removal{}
 
+NEW ADVANCED OPERATIONS (v7.0):
+- de_breath{} = শ্বাস-প্রশ্বাসের শব্দ কমানো — voice gate + EQ
+- de_reverb{} = রুমের রিভার্ব কমানো — spectral processing
+- vocal_doubler{} = ভোকালে ডাবল লেয়ার যোগ — রিচনেস বাড়ানো
+- stereo_enhancer{width:0-2} = স্টেরিও ইমেজ উন্নত করা
+- dynamic_eq{} = ডায়নামিক EQ — ফ্রিকোয়েন্সি অনুযায়ী কম্প্রেশন
+- multiband_gate{} = মাল্টিব্যান্ড নয়েজ গেট
+- harmonic_saturation{drive:0-2} = হার্মোনিক স্যাচুরেশন — ওয়ার্মথ যোগ
+- room_correction{} = রুম কারেকশন — অ্যাকুস্টিক সমস্যা ঠিক
+- clarity_boost{} = ভয়েস ক্লারিটি বাড়ানো — মিড-হাই ফ্রিকোয়েন্সি
+- punch_boost{} = পাঞ্চ ও ইমপ্যাক্ট বাড়ানো — ট্রান্সিয়েন্ট শেপিং
+- warmth_enhance{} = উষ্ণতা বাড়ানো — লো-মিড হার্মোনিক্স
+- air_enhance{} = এয়ার ও ব্রিলিয়ান্স বাড়ানো — হাই ফ্রিকোয়েন্সি
+- voice_focus{} = ভয়েস ফোকাস — মিড ফ্রিকোয়েন্সি ক্লারিটি
+- noise_gate_smart{} = স্মার্ট নয়েজ গেট — ভয়েস সংরক্ষণ করে
+
 MASTERING: loudness_normalize{target_lufs}, true_peak_limit{ceiling_db}, pitch_correct{scale}
 
-SMART MIX (NEW — Phase 1/2/3):
+SMART MIX (Phase 1/2/3):
 - smart_mix{music_intensity:"low"|"medium"|"high", enable_ducking:bool, vocal_context:"general"|"poetry"|"narration"|"deep"|"soft"}
   → Mixes vocal with uploaded background music. Handles duration matching, fade out, vocal normalization, music ducking automatically.
 - vocal_normalize{target_lufs:-16} → Smart vocal loudness normalization
@@ -373,6 +426,16 @@ VOICE BEAUTIFY PRESETS:
 - sweet_voice{} = মিষ্টি মেয়েলি স্বর
 - crystal_voice{} = স্ফটিকের মতো পরিষ্কার
 - deep_warm_voice{} = গভীর উষ্ণ পুরুষালি স্বর
+
+NEW VOICE PRESETS (v7.0):
+- youtube_voice{} = YouTube ভিডিও ভয়েসওভার — crisp, clear, engaging
+- tiktok_voice{} = TikTok/Reels ভয়েস — punchy, bright, modern
+- audiobook_voice{} = অডিওবুক ভয়েস — warm, smooth, fatigue-free
+- meditation_voice{} = মেডিটেশন গাইড ভয়েস — calm, soft, spacious
+- news_anchor{} = নিউজ অ্যাঙ্কর ভয়েস — authoritative, clear, professional
+- bangla_recitation_pro{} = বাংলা আবৃত্তি প্রো — warm reverb, emotional depth
+- voice_message_clean{} = ভয়েস মেসেজ ক্লিন — WhatsApp/Telegram quality
+- conference_voice{} = কনফারেন্স কল ভয়েস — clear, noise-free, intelligible
 
 VOCAL ENHANCEMENT PRESETS (Phase 2):
 - natural_clean{} = হালকা normalization ও clarity — সাধারণ voiceover
@@ -445,6 +508,27 @@ SMART INTERPRETATION:
 "studio clear"/"স্টুডিও ক্লিয়ার" → studio_clear
 "soft poetry"/"নরম কবিতা" → soft_poetry
 "deep recitation"/"গভীর আবৃত্তি" → deep_recitation
+"শ্বাস কমাও"/"breath remove"/"breathing noise" → de_breath+noise_gate_smart+loudness_normalize(-16)
+"রুম রিভার্ব কমাও"/"de-reverb"/"রুমের শব্দ" → de_reverb+noise_reduction(0.4)+loudness_normalize(-16)
+"ডাবল করো"/"vocal doubler"/"ডাবল লেয়ার" → vocal_doubler+loudness_normalize(-14)
+"YouTube ভয়েস"/"youtube voice"/"ভিডিও ভয়েস" → youtube_voice
+"TikTok ভয়েস"/"tiktok"/"reels voice" → tiktok_voice
+"অডিওবুক"/"audiobook"/"বই পড়া" → audiobook_voice
+"মেডিটেশন"/"meditation"/"শান্ত কণ্ঠ" → meditation_voice
+"নিউজ অ্যাঙ্কর"/"news anchor"/"সংবাদ পাঠক" → news_anchor
+"বাংলা আবৃত্তি প্রো"/"recitation pro" → bangla_recitation_pro
+"ভয়েস মেসেজ"/"voice message"/"WhatsApp ভয়েস" → voice_message_clean
+"কনফারেন্স"/"conference"/"মিটিং ভয়েস" → conference_voice
+"ক্লারিটি বাড়াও"/"clarity boost"/"পরিষ্কার করো" → clarity_boost+loudness_normalize(-14)
+"পাঞ্চ বাড়াও"/"punch"/"ইমপ্যাক্ট" → punch_boost+loudness_normalize(-14)
+"উষ্ণতা বাড়াও"/"warmth enhance" → warmth_enhance+loudness_normalize(-16)
+"এয়ার বাড়াও"/"air enhance"/"ব্রিলিয়ান্স" → air_enhance+loudness_normalize(-14)
+"ভয়েস ফোকাস"/"voice focus"/"মিড ক্লারিটি" → voice_focus+loudness_normalize(-14)
+"স্মার্ট গেট"/"smart gate"/"নয়েজ গেট" → noise_gate_smart+loudness_normalize(-16)
+"হার্মোনিক"/"saturation"/"উষ্ণ স্যাচুরেশন" → harmonic_saturation(0.5)+loudness_normalize(-14)
+"রুম কারেকশন"/"room correction"/"অ্যাকুস্টিক" → room_correction+loudness_normalize(-16)
+"ডায়নামিক EQ"/"dynamic eq" → dynamic_eq+loudness_normalize(-14)
+"মাল্টিব্যান্ড গেট"/"multiband gate" → multiband_gate+loudness_normalize(-16)
 
 OUTPUT FORMAT (JSON only):
 {
@@ -864,6 +948,96 @@ function buildFFmpegFilter(operations, vocalDuration) {
         break;
       case "deep_warm_voice":
         filters.push("highpass=f=60,equalizer=f=150:t=h:width=100:g=6,equalizer=f=300:t=h:width=150:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=200:knee=4dB,loudnorm=I=-14");
+        break;
+
+      // ── NEW VOICE PRESETS v7.0 ────────────────────────────────────────────────
+      case "youtube_voice":
+        // YouTube: crisp, clear, engaging — mid-high clarity + gentle compression
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=150:g=-2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-20dB:ratio=3:attack=15:release=150:knee=5dB,alimiter=limit=-1dB,loudnorm=I=-14");
+        break;
+      case "tiktok_voice":
+        // TikTok/Reels: punchy, bright, modern — enhanced presence + tight compression
+        filters.push("highpass=f=100,equalizer=f=250:t=h:width=200:g=-3,equalizer=f=3500:t=h:width=2000:g=4,equalizer=f=9000:t=h:width=4000:g=3,acompressor=threshold=-18dB:ratio=4:attack=8:release=80:knee=3dB,alimiter=limit=-0.5dB,loudnorm=I=-12");
+        break;
+      case "audiobook_voice":
+        // Audiobook: warm, smooth, fatigue-free — long listening optimized
+        filters.push("highpass=f=70,equalizer=f=150:t=h:width=100:g=3,equalizer=f=400:t=h:width=300:g=1,equalizer=f=5000:t=h:width=3000:g=-1,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,loudnorm=I=-18");
+        break;
+      case "meditation_voice":
+        // Meditation: calm, soft, spacious — gentle reverb + soft compression
+        filters.push("highpass=f=60,equalizer=f=300:t=h:width=200:g=2,equalizer=f=6000:t=h:width=4000:g=2,acompressor=threshold=-28dB:ratio=2:attack=40:release=400:knee=12dB,aecho=0.8:0.3:80:0.4,loudnorm=I=-20");
+        break;
+      case "news_anchor":
+        // News anchor: authoritative, clear, professional — broadcast standard
+        filters.push("highpass=f=80,equalizer=f=150:t=h:width=100:g=4,equalizer=f=400:t=h:width=200:g=-1,equalizer=f=3000:t=h:width=1500:g=4,equalizer=f=6000:t=h:width=2000:g=2,acompressor=threshold=-16dB:ratio=5:attack=10:release=100:knee=3dB,alimiter=limit=-1dB,loudnorm=I=-14");
+        break;
+      case "bangla_recitation_pro":
+        // Bengali recitation: warm reverb, emotional depth, natural resonance
+        filters.push("highpass=f=70,equalizer=f=200:t=h:width=150:g=4,equalizer=f=500:t=h:width=300:g=2,equalizer=f=3000:t=h:width=2000:g=2,acompressor=threshold=-22dB:ratio=3:attack=25:release=250:knee=7dB,aecho=0.8:0.35:120:0.45,loudnorm=I=-16");
+        break;
+      case "voice_message_clean":
+        // WhatsApp/Telegram voice message: clean, intelligible, compact
+        filters.push("highpass=f=100,lowpass=f=8000,afftdn=nr=12:nf=-25:nt=w,acompressor=threshold=-20dB:ratio=3:attack=15:release=150:knee=5dB,loudnorm=I=-16");
+        break;
+      case "conference_voice":
+        // Conference call: clear, noise-free, intelligible — online meeting optimized
+        filters.push("highpass=f=120,lowpass=f=7500,afftdn=nr=15:nf=-30:nt=w,agate=threshold=-38dB:attack=10:release=100,acompressor=threshold=-18dB:ratio=3.5:attack=12:release=120:knee=4dB,loudnorm=I=-16");
+        break;
+
+      // ── NEW ADVANCED OPERATIONS v7.0 ─────────────────────────────────────────
+      case "de_breath":
+        // De-breath: voice gate to reduce breath sounds
+        filters.push("agate=threshold=-35dB:attack=5:release=80:ratio=8,equalizer=f=200:t=h:width=200:g=-2");
+        break;
+      case "de_reverb":
+        // De-reverb: reduce room reverb via spectral processing
+        filters.push("highpass=f=100,afftdn=nr=15:nf=-25:nt=w,equalizer=f=400:t=h:width=300:g=-1");
+        break;
+      case "stereo_enhancer": {
+        const width = Math.min(2.0, Math.max(0.5, params.width || 1.4));
+        filters.push(`stereotools=mlev=${width}:slev=${width}:sbal=0:phase=0`);
+        break;
+      }
+      case "dynamic_eq":
+        // Dynamic EQ: frequency-dependent compression
+        filters.push("equalizer=f=200:t=h:width=200:g=2,acompressor=threshold=-22dB:ratio=3:attack=20:release=200:knee=6dB,equalizer=f=5000:t=h:width=3000:g=2,acompressor=threshold=-18dB:ratio=2.5:attack=15:release=150:knee=4dB");
+        break;
+      case "multiband_gate":
+        // Multiband noise gate
+        filters.push("agate=threshold=-40dB:attack=5:release=100:ratio=10,highpass=f=80,agate=threshold=-38dB:attack=8:release=120:ratio=8");
+        break;
+      case "harmonic_saturation": {
+        const drive = Math.min(2.0, Math.max(0.1, params.drive || 0.5));
+        filters.push(`volume=${drive * 4}dB,acompressor=threshold=-12dB:ratio=8:attack=2:release=30:knee=3dB,alimiter=limit=-1dB,equalizer=f=3000:t=h:width=2000:g=${drive * 2}`);
+        break;
+      }
+      case "room_correction":
+        // Room correction: fix acoustic problems
+        filters.push("highpass=f=80,equalizer=f=250:t=h:width=200:g=-3,equalizer=f=500:t=h:width=300:g=-2,equalizer=f=1000:t=h:width=400:g=-1,afftdn=nr=10:nf=-20:nt=w");
+        break;
+      case "clarity_boost":
+        // Clarity boost: mid-high frequency enhancement
+        filters.push("equalizer=f=2500:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=3000:g=4,equalizer=f=10000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=2.5:attack=20:release=200:knee=6dB");
+        break;
+      case "punch_boost":
+        // Punch boost: transient shaping for impact
+        filters.push("acompressor=threshold=-20dB:ratio=4:attack=3:release=50:knee=3dB,equalizer=f=100:t=h:width=80:g=4,equalizer=f=3000:t=h:width=1500:g=3,alimiter=limit=-1dB");
+        break;
+      case "warmth_enhance":
+        // Warmth enhance: low-mid harmonics
+        filters.push("equalizer=f=150:t=h:width=100:g=4,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=250:knee=8dB");
+        break;
+      case "air_enhance":
+        // Air enhance: high frequency brilliance
+        filters.push("equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=5000:g=4,equalizer=f=16000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=2:attack=20:release=200:knee=6dB");
+        break;
+      case "voice_focus":
+        // Voice focus: mid frequency clarity
+        filters.push("equalizer=f=1000:t=h:width=500:g=2,equalizer=f=2000:t=h:width=1000:g=3,equalizer=f=4000:t=h:width=2000:g=3,equalizer=f=200:t=h:width=150:g=-2,acompressor=threshold=-20dB:ratio=3:attack=15:release=150:knee=5dB");
+        break;
+      case "noise_gate_smart":
+        // Smart noise gate: preserves voice, removes silence
+        filters.push("agate=threshold=-40dB:attack=8:release=150:ratio=10:range=-60dB,agate=threshold=-38dB:attack=5:release=100:ratio=8");
         break;
     }
   }

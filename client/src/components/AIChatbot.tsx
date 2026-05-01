@@ -179,6 +179,16 @@ const AUDIO_EDIT_KEYWORDS = [
   "কবিতা", "আবৃত্তি", "recitation",
   "সুন্দর করো", "ভালো করো", "উন্নত করো",
   "কণ্ঠ", "কণ্ঠস্বর",
+  // New v7.0 keywords
+  "youtube", "tiktok", "reels", "audiobook", "meditation",
+  "news anchor", "নিউজ", "সংবাদ", "conference", "মিটিং",
+  "শ্বাস", "breath", "de-reverb", "রুম",
+  "ডাবল", "doubler", "স্যাচুরেশন", "saturation",
+  "ক্লারিটি", "clarity", "পাঞ্চ", "punch",
+  "উষ্ণতা", "warmth", "এয়ার", "air", "ব্রিলিয়ান্স",
+  "ফোকাস", "focus", "ডায়নামিক", "dynamic",
+  "মাল্টিব্যান্ড", "multiband", "রুম কারেকশন",
+  "whatsapp", "telegram", "ভয়েস মেসেজ",
 ];
 
 function isAudioEditRequest(text: string): boolean {
@@ -299,8 +309,30 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - ভিনাইল, টেপ স্যাচুরেশন, বিটক্রাশার
 - ট্রেমোলো, ভাইব্রেটো, এলিয়েন ভয়েস
 
-সমর্থিত ফরম্যাট: MP3, WAV, OGG, M4A, FLAC
+🌟 নতুন v7.0 ফিচার:
+- YouTube ভয়েস — ভিডিও কন্টেন্ট ক্রিস্প, স্পষ্ট, আকর্ষণীয়
+- TikTok/Reels ভয়েস — পাঞ্চি, ব্রাইট, মডার্ন
+- অডিওবুক ভয়েস — উষ্ণ, মসৃণ, দীর্ঘশ্রবণ বান্ধব
+- মেডিটেশন ভয়েস — শান্ত, নরম, প্রশান্ত
+- নিউজ অ্যাঙ্কর ভয়েস — কর্তৃত্বপূর্ণ, স্পষ্ট, প্রফেশনাল
+- বাংলা আবৃত্তি প্রো — উষ্ণ রিভার্ব, আবেগের গভীরতা
+- ভয়েস মেসেজ ক্লিন — WhatsApp/Telegram মান
+- কনফারেন্স ভয়েস — মিটিং কল অপ্টিমাইজড
+- ডি-ব্রিদ — শ্বাস-প্রশ্বাসের শব্দ দূর করা
+- ডি-রিভার্ব — রুমের প্রতিধ্বনি কমানো
+- ভোকাল ডাবলার — ডাবল লেয়ার, রিচনেস বাড়ানো
+- ক্লারিটি বুস্ট — ভয়েস স্পষ্টতা বাড়ানো
+- পাঞ্চ বুস্ট — ইমপ্যাক্ট বাড়ানো
+- ওয়ার্মথ এনহ্যান্স — উষ্ণতা যোগ
+- এয়ার এনহ্যান্স — হাই ফ্রিকোয়েন্সি ব্রিলিয়ান্স
+- ভয়েস ফোকাস — মিড ফ্রিকোয়েন্সি ক্লারিটি
+- স্মার্ট নয়েজ গেট — ভয়েস সংরক্ষণ করে নয়েজ সরানো
+- হার্মোনিক স্যাচুরেশন — উষ্ণতা ও রিচনেস যোগ
+- রুম কারেকশন — অ্যাকুস্টিক সমস্যা ঠিক করা
+- ডায়নামিক EQ — ফ্রিকোয়েন্সি অনুযায়ী কম্প্রেশন
+- মাল্টিব্যান্ড গেট — ব্যান্ডওয়াইজ নয়েজ গেট
 
+সমর্থিত ফর্ম্যাট: MP3, WAV, OGG, M4A, FLAC
 গুরুত্বপূর্ণ: কেউ যদি বলে "অডিও এডিট করতে পারবে না" বা সফটওয়্যার সাজেস্ট করার দরকার নেই — এই ওয়েবসাইটেই সরাসরি প্রফেশনাল মানের অডিও এডিট করা যায়।
 
 ## এডিটিং শেখানোর গাইডলাইন (অত্যন্ত গুরুত্বপূর্ণ)
@@ -1125,7 +1157,14 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                    message.audioIntent === "soft_poetry"   ? "🌸 সফট পোয়েট্রি" :
                    message.audioIntent === "deep_recitation" ? "🎧 ডিপ রিসাইটেশন" :
                    message.audioIntent === "ask_music_file"    ? "🎧 মিউজিক ফাইল দরকার" :
+                   message.audioIntent === "youtube_voice"     ? "🎥 YouTube ভয়েস" :
+                   message.audioIntent === "tiktok_voice"      ? "🎤 TikTok ভয়েস" :
+                   message.audioIntent === "audiobook_voice"   ? "🎧 অডিওবুক ভয়েস" :
+                   message.audioIntent === "meditation_voice"  ? "🧘 মেডিটেশন ভয়েস" :
+                   message.audioIntent === "news_anchor"       ? "🎤 নিউজ অ্যাঙ্কর" :
+                   message.audioIntent === "bangla_recitation_pro" ? "🎬 আবৃত্তি প্রো" :
                                                           "⚙️ কাস্টম প্রসেসিং"
+                  }
                 </span>
               </div>
             )}
@@ -1343,8 +1382,8 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
   );
 }
 
-// ── Typing indicator ──────────────────────────────────────────────────────────
-function TypingIndicator() {
+// ── Typing indicator ────────────────────────────────────────────
+function TypingIndicator({ stage }: { stage?: string | null }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -1363,21 +1402,53 @@ function TypingIndicator() {
         border: "1px solid rgba(212,168,67,0.18)",
         borderLeft: "3px solid rgba(212,168,67,0.7)",
         borderRadius: "4px 18px 18px 18px",
-        padding: "13px 16px",
+        padding: stage ? "10px 14px" : "13px 16px",
         display: "flex",
-        gap: 5,
-        alignItems: "center",
+        flexDirection: stage ? "column" : "row",
+        gap: stage ? 6 : 5,
+        alignItems: stage ? "flex-start" : "center",
         boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
+        minWidth: stage ? 140 : "auto",
       }}>
-        {[0, 1, 2].map(i => (
-          <div key={i} style={{
-            width: 7, height: 7, borderRadius: "50%",
-            background: "linear-gradient(135deg, #E8C060, #D4A843)",
-            boxShadow: "0 0 5px rgba(212,168,67,0.45)",
-            animation: `chatbot-dot-bounce 1.2s ease-in-out infinite`,
-            animationDelay: `${i * 0.2}s`,
-          }} />
-        ))}
+        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 7, height: 7, borderRadius: "50%",
+              background: "linear-gradient(135deg, #E8C060, #D4A843)",
+              boxShadow: "0 0 5px rgba(212,168,67,0.45)",
+              animation: `chatbot-dot-bounce 1.2s ease-in-out infinite`,
+              animationDelay: `${i * 0.2}s`,
+            }} />
+          ))}
+          {stage && (
+            <span style={{
+              color: "rgba(212,168,67,0.7)",
+              fontSize: "0.62rem",
+              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontWeight: 600,
+              marginLeft: 4,
+              letterSpacing: "0.01em",
+            }}>{stage}</span>
+          )}
+        </div>
+        {stage && (
+          <div style={{
+            width: "100%",
+            height: 2,
+            background: "rgba(212,168,67,0.12)",
+            borderRadius: 2,
+            overflow: "hidden",
+          }}>
+            <div style={{
+              height: "100%",
+              background: "linear-gradient(90deg, #D4A843, #E8C060, #D4A843)",
+              backgroundSize: "200% 100%",
+              animation: "chatbot-shimmer 1.5s linear infinite",
+              borderRadius: 2,
+              width: "60%",
+            }} />
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -1441,6 +1512,8 @@ export default function AIChatbot() {
   const [musicFile, setMusicFile] = useState<File | null>(null);
   const [isAudioMode, setIsAudioMode] = useState(false);
   const [audioProcessing, setAudioProcessing] = useState(false);
+  const [audioProcessingStage, setAudioProcessingStage] = useState<string | null>(null);
+  const [showPresets, setShowPresets] = useState(false);
   // lastAudioBlob: stores the most recently edited audio so user can iterate
   const lastAudioBlobRef = useRef<{ blob: Blob; name: string } | null>(null);
   const isDragging = useRef(false);
@@ -1778,16 +1851,18 @@ export default function AIChatbot() {
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setAudioProcessing(true);
+    setAudioProcessingStage("অডিও ফাইল পড়া হচ্ছে...");
     setError(null);
     // Clear audioFile immediately so the banner disappears right away
     setAudioFile(null);
 
     try {
       // ═══════════════════════════════════════════════════════════════════════════════
-      // MANUS AI-STYLE AUDIO PROCESSING ENGINE v5.0 — FFmpeg Server-Side
+      // MANUS AI-STYLE AUDIO PROCESSING ENGINE v7.0 — FFmpeg Server-Side
       // ═══════════════════════════════════════════════════════════════════════════════
 
       // Step 1: Read audio file as base64
+      setAudioProcessingStage("AI নির্দেশ বিশ্লেষণ করছে...");
       const audioArrayBuffer = await sourceFile.arrayBuffer();
       const audioBase64 = btoa(
         new Uint8Array(audioArrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
@@ -1806,6 +1881,7 @@ export default function AIChatbot() {
       }
 
       // Step 2: Send to server — AI intent detection + FFmpeg processing in one call
+      setAudioProcessingStage("FFmpeg প্রসেসিং চলছে...");
       const serverResp = await fetch("/api/audio-edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1850,6 +1926,7 @@ export default function AIChatbot() {
       } = respJson;
 
       // Step 3: Decode result base64 → Blob → URL
+      setAudioProcessingStage("অডিও প্রস্তুত হচ্ছে...");
       const resultBytes = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
       const wavBlob = new Blob([resultBytes], { type: resultMime });
       const audioUrl = URL.createObjectURL(wavBlob);
@@ -1892,6 +1969,7 @@ export default function AIChatbot() {
       setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
     } finally {
       setAudioProcessing(false);
+      setAudioProcessingStage(null);
     }
   }, [audioFile, input, audioProcessing, messages, isAudioEditRequest]);
 
@@ -2425,7 +2503,7 @@ export default function AIChatbot() {
                 {messages.map(msg => (
                   <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} onSwitchToLive={() => setActiveTab("live")} />
                 ))}
-                {(isLoading || audioProcessing) && <TypingIndicator />}
+                {(isLoading || audioProcessing) && <TypingIndicator stage={audioProcessing ? audioProcessingStage : null} />}
 
                 {error && !isLoading && !audioProcessing && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "6px 0" }}>
@@ -2557,6 +2635,89 @@ export default function AIChatbot() {
                         flexShrink: 0, fontWeight: 700,
                       }}
                     >✕</button>
+                  </div>
+                )}
+
+                {/* ── Quick Preset Chips — show when audio file is ready ── */}
+                {(audioFile || lastAudioBlobRef.current) && !audioProcessing && (
+                  <div style={{ marginBottom: 7 }}>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 5,
+                    }}>
+                      <span style={{
+                        color: "rgba(212,168,67,0.5)",
+                        fontSize: "0.54rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontWeight: 600,
+                        letterSpacing: "0.02em",
+                      }}>⚡ দ্রুত প্রিসেট</span>
+                      <button
+                        onClick={() => setShowPresets(p => !p)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "rgba(212,168,67,0.4)",
+                          fontSize: "0.54rem",
+                          cursor: "pointer",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          padding: "1px 4px",
+                        }}
+                      >{showPresets ? "▲ কম" : "▼ আরো"}</button>
+                    </div>
+                    <div style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 4,
+                    }}>
+                      {[
+                        { label: "🧹 ভয়েস ক্লিন", cmd: "ভয়েস ক্লিন করো, নয়েজ রিমুভ করো" },
+                        { label: "🎙️ পডকাস্ট", cmd: "পডকাস্ট প্রো প্রিসেট দিয়ে প্রসেস করো" },
+                        { label: "🎬 আবৃত্তি", cmd: "বাংলা আবৃত্তি প্রো প্রিসেট দিয়ে প্রসেস করো" },
+                        { label: "🎥 YouTube", cmd: "YouTube ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                        { label: "🎙️ TikTok", cmd: "TikTok ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                        ...(showPresets ? [
+                          { label: "🎧 অডিওবুক", cmd: "অডিওবুক ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🎤 নিউজ অ্যাঙ্কর", cmd: "নিউজ অ্যাঙ্কর ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🧘 মেডিটেশন", cmd: "মেডিটেশন ভয়েস প্রিসেস করো" },
+                          { label: "🎙️ WhatsApp", cmd: "ভয়েস মেসেজ ক্লিন প্রিসেস করো" },
+                          { label: "📞 কনফারেন্স", cmd: "কনফারেন্স ভয়েস প্রিসেস করো" },
+                          { label: "🔇 ডি-ব্রিদ", cmd: "শ্বাস-প্রশ্বাসের শব্দ দূর করো" },
+                          { label: "🎵 ডি-রিভার্ব", cmd: "রুমের প্রতিধ্বনি কমানো" },
+                          { label: "✨ ক্লারিটি বুস্ট", cmd: "ভয়েস ক্লারিটি বাড়াও" },
+                          { label: "💥 পাঞ্চ বুস্ট", cmd: "ভয়েসে পাঞ্চ বাড়াও" },
+                          { label: "🌞 ওয়ার্মথ", cmd: "কণ্ঠে উষ্ণতা যোগ করো" },
+                          { label: "🌬️ এয়ার এনহ্যান্স", cmd: "হাই ফ্রিকোয়েন্সি ব্রিলিয়ান্স বাড়াও" },
+                          { label: "🎯 ভয়েস ফোকাস", cmd: "ভয়েস ফোকাস বাড়াও" },
+                          { label: "🔊 লাউডনেস নর্মালাইজ", cmd: "লাউডনেস নর্মালাইজ করো" },
+                        ] : []),
+                      ].map(preset => (
+                        <button
+                          key={preset.label}
+                          onClick={() => {
+                            setInput(preset.cmd);
+                            setTimeout(() => inputRef.current?.focus(), 50);
+                          }}
+                          className="chatbot-suggestion-btn"
+                          style={{
+                            padding: "3px 8px",
+                            background: "rgba(212,168,67,0.05)",
+                            border: "1px solid rgba(212,168,67,0.2)",
+                            borderRadius: 999,
+                            color: "rgba(212,168,67,0.7)",
+                            fontSize: "0.58rem",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
