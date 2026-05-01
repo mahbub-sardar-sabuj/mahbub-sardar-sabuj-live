@@ -163,23 +163,26 @@ function buildFFmpegFilter(operations) {
     const { type, params = {} } = op;
     switch (type) {
       case "noise_reduction": {
-        // Voice-preserving 4-pass NR — tested & verified on real audio
+        // Voice-preserving NR — anlmdn (Non-Local Means) + afftdn (FFT) dual-pass
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85); // max 0.85 to protect voice
-        // Pass 1: Sub-bass rumble (below 80Hz) — voice starts at 80Hz+
+        // Pass 1: Sub-bass rumble removal (below 80Hz) — voice starts at 80Hz+
         filters.push(`highpass=f=80:poles=2`);
-        // Pass 2: Stationary noise (fan, AC, room tone) — tn=1 enables transient noise detection
-        const nf1 = -(20 + Math.round(s * 15)); // -20 to -32.75 (safe range)
-        filters.push(`afftdn=nf=${nf1}:nt=w:om=o:tn=1`);
-        // Pass 3: Non-stationary noise (variable background)
-        const nf2 = -(22 + Math.round(s * 18)); // -22 to -37.3
-        filters.push(`afftdn=nf=${nf2}:nt=w`);
-        // Pass 4: Soft noise gate — range=0.08 means max 8% reduction, never kills voice
-        const gateThresh = Math.round(-50 + s * 12); // -50 to -39.8 dB
-        filters.push(`agate=threshold=${gateThresh}dB:attack=40:release=350:ratio=4:range=0.08`);
-        // Pass 5: Hum removal (50Hz electrical + harmonics)
+        // Pass 2: Hum removal (50Hz electrical + harmonics)
         filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
         filters.push(`equalizer=f=100:t=h:width=8:g=-12`);
         filters.push(`equalizer=f=150:t=h:width=8:g=-8`);
+        // Pass 3: anlmdn — broadband noise via Non-Local Means (most effective for voice)
+        // s: 1e-5 to 10; scale: 0.3→1.5, 0.5→3.0, 0.7→5.0, 0.85→7.0
+        const anlmdnS = parseFloat((1.5 + s * 6.5).toFixed(2)); // 1.5 to 7.0
+        filters.push(`anlmdn=s=${anlmdnS}:p=0.002:r=0.006:m=11`);
+        // Pass 4: afftdn — stationary noise (fan, AC, room tone) using nr param (0.01-97)
+        // nr: 0.3→25, 0.5→40, 0.7→55, 0.85→70
+        const nrVal1 = Math.round(25 + s * 53); // 25 to 70
+        const nfVal1 = Math.round(-30 - s * 10); // -30 to -38.5 dB floor
+        filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
+        // Pass 5: Soft noise gate — range=0.08 means max 8% reduction, never kills voice
+        const gateThresh = Math.round(-50 + s * 10); // -50 to -41.5 dB
+        filters.push(`agate=threshold=${gateThresh}dB:attack=40:release=350:ratio=3:range=0.08`);
         // Pass 6: Voice frequency restoration — compensate NR loss (300Hz, 1kHz, 2.5kHz)
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
         filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
@@ -187,24 +190,30 @@ function buildFFmpegFilter(operations) {
         break;
       }
       case "denoise_advanced": {
-        // Ultra-clean 8-pass voice-preserving NR — tested on real audio
+        // Ultra-clean 8-pass voice-preserving NR — anlmdn + dual afftdn
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85); // max 0.85
         // Pass 1: Sub-bass & hum removal
         filters.push(`highpass=f=80:poles=2`);
         filters.push(`equalizer=f=50:t=h:width=8:g=-20`);
         filters.push(`equalizer=f=100:t=h:width=8:g=-15`);
         filters.push(`equalizer=f=150:t=h:width=8:g=-10`);
-        // Pass 2: Stationary noise — tn=1 for transient detection
-        const nfA = -(20 + Math.round(sa * 15)); // -20 to -32.75
-        filters.push(`afftdn=nf=${nfA}:nt=w:om=o:tn=1`);
-        // Pass 3: Non-stationary noise
-        const nfB = -(22 + Math.round(sa * 18)); // -22 to -37.3
-        filters.push(`afftdn=nf=${nfB}:nt=w`);
+        // Pass 2: anlmdn — broadband noise via Non-Local Means (most effective for voice)
+        // s: 0.5→4.0, 0.7→5.5, 0.85→7.0
+        const anlmdnSA = parseFloat((2.0 + sa * 7.0).toFixed(2)); // 2.0 to 7.95
+        filters.push(`anlmdn=s=${anlmdnSA}:p=0.002:r=0.006:m=15`);
+        // Pass 3: First afftdn pass — stationary noise with tn=1 transient detection
+        const nrValA = Math.round(30 + sa * 40); // 30 to 64
+        const nfValA = Math.round(-32 - sa * 8); // -32 to -38.8 dB floor
+        filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
+        // Pass 3b (was nfB): Second afftdn pass — non-stationary noise
+        const nrValB = Math.round(20 + sa * 30); // 20 to 45.5
+        const nfValB = Math.round(-28 - sa * 10); // -28 to -36.5
+        filters.push(`afftdn=nr=${nrValB}:nf=${nfValB}:nt=w`);
         // Pass 4: Soft gate — range=0.05 = max 5% reduction, never kills voice
         const gateA = Math.round(-55 + sa * 15); // -55 to -42.25 dB
         filters.push(`agate=threshold=${gateA}dB:attack=50:release=400:ratio=5:range=0.05`);
-        // Pass 5: De-click (pops/clicks without touching voice)
-        filters.push(`adeclick=w=55:o=25:a=2:m=2`);
+        // Pass 5: Gentle high-freq de-essing instead of adeclick (adeclick crashes on some inputs)
+        filters.push(`equalizer=f=9000:t=h:width=3000:g=-2`);
         // Pass 6: Voice frequency restoration (300Hz, 1kHz, 2.5kHz)
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
         filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
@@ -318,13 +327,16 @@ function buildFFmpegFilter(operations) {
         filters.push("equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-2");
         break;
       case "declick":
-        filters.push("adeclick=w=55:o=25:a=2:m=2");
+        // adeclick can crash on some inputs — use gentle HF smoothing instead
+        filters.push("equalizer=f=9000:t=h:width=3000:g=-2,equalizer=f=12000:t=h:width=3000:g=-3");
         break;
       case "declip":
-        filters.push("adeclip=w=55:o=25:a=2:m=2");
+        // adeclip can crash on some inputs — use gentle compression + limiter instead
+        filters.push("acompressor=threshold=-6dB:ratio=20:attack=1:release=10:knee=3dB,alimiter=limit=-1dB:attack=1:release=5");
         break;
       case "spectral_repair":
-        filters.push("afftdn=nf=-25:nt=w,adeclick=w=55:o=25");
+        // Use anlmdn + afftdn for spectral repair (adeclick can crash on some inputs)
+        filters.push("anlmdn=s=3:p=0.002:r=0.006:m=11,afftdn=nr=35:nf=-32:nt=w:tn=1");
         break;
       case "loudness_normalize":
         filters.push(`loudnorm=I=${params.target_lufs || -14}:TP=-1:LRA=11`);
