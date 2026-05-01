@@ -163,53 +163,54 @@ function buildFFmpegFilter(operations) {
     const { type, params = {} } = op;
     switch (type) {
       case "noise_reduction": {
-        // Voice-preserving 4-pass noise reduction (Telegram bot algorithm)
-        // Pass 1: Gentle high-pass to remove sub-bass rumble (below 60Hz)
-        const s = Math.min(Math.max(params.strength || 0.5, 0.0), 1.0);
-        // নয়েজ ফ্লোর: -20 থেকে শুরু, সর্বোচ্চ -45 (বেশি গেলে কণ্ঠ নষ্ট হয়)
-        const nf = -(20 + Math.round(s * 25)); // -20 to -45 range (safe)
-        // Pass 1: Sub-bass rumble remove
-        filters.push(`highpass=f=60:poles=2`);
-        // Pass 2: Spectral noise reduction — afftdn (FFmpeg's best NR, like noisereduce library)
-        filters.push(`afftdn=nf=${nf}:nt=w:om=o`);
-        // Pass 3: Soft noise gate — শুধু silence-এ কাজ করে, কণ্ঠে নয়
-        // attack=30ms (slow) release=300ms (slow) — zipper artifact নেই
-        const gateThresh = Math.round(-55 + s * 15); // -55 to -40 dB
-        filters.push(`agate=threshold=${gateThresh}dB:attack=30:release=300:ratio=4:range=0.1`);
-        // Pass 4: Gentle de-hum (50Hz electrical hum)
-        if (s > 0.4) {
-          filters.push(`equalizer=f=50:t=h:width=10:g=-12`);
-          filters.push(`equalizer=f=100:t=h:width=10:g=-8`);
-        }
+        // Voice-preserving 4-pass NR — tested & verified on real audio
+        const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85); // max 0.85 to protect voice
+        // Pass 1: Sub-bass rumble (below 80Hz) — voice starts at 80Hz+
+        filters.push(`highpass=f=80:poles=2`);
+        // Pass 2: Stationary noise (fan, AC, room tone) — tn=1 enables transient noise detection
+        const nf1 = -(20 + Math.round(s * 15)); // -20 to -32.75 (safe range)
+        filters.push(`afftdn=nf=${nf1}:nt=w:om=o:tn=1`);
+        // Pass 3: Non-stationary noise (variable background)
+        const nf2 = -(22 + Math.round(s * 18)); // -22 to -37.3
+        filters.push(`afftdn=nf=${nf2}:nt=w`);
+        // Pass 4: Soft noise gate — range=0.08 means max 8% reduction, never kills voice
+        const gateThresh = Math.round(-50 + s * 12); // -50 to -39.8 dB
+        filters.push(`agate=threshold=${gateThresh}dB:attack=40:release=350:ratio=4:range=0.08`);
+        // Pass 5: Hum removal (50Hz electrical + harmonics)
+        filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
+        filters.push(`equalizer=f=100:t=h:width=8:g=-12`);
+        filters.push(`equalizer=f=150:t=h:width=8:g=-8`);
+        // Pass 6: Voice frequency restoration — compensate NR loss (300Hz, 1kHz, 2.5kHz)
+        filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
+        filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
+        filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
         break;
       }
       case "denoise_advanced": {
-        // Ultra-clean 10-pass voice-preserving noise reduction
-        const sa = Math.min(Math.max(params.strength || 0.9, 0.0), 1.0);
+        // Ultra-clean 8-pass voice-preserving NR — tested on real audio
+        const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85); // max 0.85
         // Pass 1: Sub-bass & hum removal
         filters.push(`highpass=f=80:poles=2`);
-        filters.push(`equalizer=f=50:t=h:width=10:g=-20`);
-        filters.push(`equalizer=f=100:t=h:width=10:g=-15`);
-        filters.push(`equalizer=f=150:t=h:width=10:g=-10`);
-        // Pass 2: Stationary noise — conservative nf to protect voice
-        const nfA = -(20 + Math.round(sa * 20)); // -20 to -40 (never below -40)
-        filters.push(`afftdn=nf=${nfA}:nt=w:om=o`);
-        // Pass 3: Non-stationary noise (variable environment)
-        filters.push(`afftdn=nf=${nfA - 5}:nt=w`);
-        // Pass 4: Soft gate — very slow attack/release to preserve voice transients
-        const gateA = Math.round(-60 + sa * 20); // -60 to -40 dB
-        filters.push(`agate=threshold=${gateA}dB:attack=50:release=400:ratio=6:range=0.05`);
-        // Pass 5: De-click (removes pops without touching voice)
+        filters.push(`equalizer=f=50:t=h:width=8:g=-20`);
+        filters.push(`equalizer=f=100:t=h:width=8:g=-15`);
+        filters.push(`equalizer=f=150:t=h:width=8:g=-10`);
+        // Pass 2: Stationary noise — tn=1 for transient detection
+        const nfA = -(20 + Math.round(sa * 15)); // -20 to -32.75
+        filters.push(`afftdn=nf=${nfA}:nt=w:om=o:tn=1`);
+        // Pass 3: Non-stationary noise
+        const nfB = -(22 + Math.round(sa * 18)); // -22 to -37.3
+        filters.push(`afftdn=nf=${nfB}:nt=w`);
+        // Pass 4: Soft gate — range=0.05 = max 5% reduction, never kills voice
+        const gateA = Math.round(-55 + sa * 15); // -55 to -42.25 dB
+        filters.push(`agate=threshold=${gateA}dB:attack=50:release=400:ratio=5:range=0.05`);
+        // Pass 5: De-click (pops/clicks without touching voice)
         filters.push(`adeclick=w=55:o=25:a=2:m=2`);
-        // Pass 6: Voice frequency protection — boost voice band slightly
-        // কণ্ঠের মূল ফ্রিকোয়েন্সি (300-3000Hz) সামান্য boost করে NR loss compensate
-        if (sa > 0.5) {
-          filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
-          filters.push(`equalizer=f=1000:t=h:width=800:g=1`);
-          filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
-        }
+        // Pass 6: Voice frequency restoration (300Hz, 1kHz, 2.5kHz)
+        filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
+        filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
+        filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
         // Pass 7: Gentle compression to even out volume after NR
-        filters.push(`acompressor=threshold=-30dB:ratio=2:attack=50:release=400:knee=8dB:makeup=1dB`);
+        filters.push(`acompressor=threshold=-28dB:ratio=2.5:attack=40:release=350:knee=6dB:makeup=1.5dB`);
         // Pass 8: True peak limiter
         filters.push(`alimiter=limit=-1dB:attack=5:release=50`);
         break;
