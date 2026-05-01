@@ -163,55 +163,54 @@ function buildFFmpegFilter(operations) {
     const { type, params = {} } = op;
     switch (type) {
       case "noise_reduction": {
-        // Voice-preserving NR — afftdn + agate (NO loudnorm)
-        // ROOT CAUSE 1: anlmdn s=1.5-7.0 caused metallic artifacts (fixed: removed anlmdn)
-        // ROOT CAUSE 2: loudnorm boosted quiet audio by ~9dB, amplifying background noise
-        //               (fixed: replaced with agate which silences noise floor between words)
+        // Voice-preserving NR — arnndn (RNN-based) + afftdn (FFT-based)
+        // This combination is much more effective than simple afftdn
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
+        
         // Pass 1: Sub-bass rumble removal
         filters.push(`highpass=f=80:poles=2`);
-        // Pass 2: Hum removal (50Hz electrical + harmonics)
-        filters.push(`equalizer=f=50:t=h:width=8:g=-15`);
-        filters.push(`equalizer=f=100:t=h:width=8:g=-10`);
-        // Pass 3: afftdn — FFT-based stationary noise reduction
-        // nr: 0.3→12, 0.5→20, 0.7→30, 0.85→38 (conservative range to protect voice)
-        const nrVal1 = Math.round(12 + s * 30); // 12 to 37.5
-        const nfVal1 = Math.round(-25 - s * 8);  // -25 to -31.8 dB floor
+        
+        // Pass 2: arnndn — RNN-based noise reduction (very effective for speech)
+        // We use a moderate mix to avoid artifacts
+        filters.push(`arnndn=m=bd.rnnn`);
+        
+        // Pass 3: afftdn — FFT-based stationary noise reduction for remaining hiss
+        const nrVal1 = Math.round(10 + s * 25); 
+        const nfVal1 = Math.round(-25 - s * 5);  
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
-        // Pass 4: agate — silences noise floor between words (does NOT boost quiet sections)
-        // threshold scales with strength: 0.3→-50dB, 0.5→-45dB, 0.7→-40dB, 0.85→-36dB
-        const gateThresh = Math.round(-50 + s * 16); // -50 to -36.4 dB
+        
+        // Pass 4: agate — silences noise floor between words
+        const gateThresh = Math.round(-50 + s * 15); 
         filters.push(`agate=threshold=${gateThresh}dB:attack=20:release=300:ratio=10`);
+        
         // Pass 5: Voice frequency restoration
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
-        filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
-        filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
+        filters.push(`equalizer=f=3000:t=h:width=1500:g=2.0`);
         break;
       }
       case "denoise_advanced": {
-        // Ultra-clean voice-preserving NR — dual afftdn + agate (NO loudnorm, NO makeup gain)
-        // ROOT CAUSE 1: anlmdn s=2.0-7.95 caused metallic artifacts (fixed: removed anlmdn)
-        // ROOT CAUSE 2: loudnorm + makeup gain boosted noise floor (fixed: use agate instead)
+        // Ultra-clean voice-preserving NR — dual arnndn + afftdn + agate
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
+        
         // Pass 1: Sub-bass & hum removal
         filters.push(`highpass=f=80:poles=2`);
-        filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
-        filters.push(`equalizer=f=100:t=h:width=8:g=-12`);
-        // Pass 2: First afftdn — stationary noise with transient detection
-        const nrValA = Math.round(15 + sa * 26); // 15 to 37.1
-        const nfValA = Math.round(-26 - sa * 8);  // -26 to -32.8 dB floor
+        filters.push(`equalizer=f=50:t=h:width=5:g=-20`);
+        
+        // Pass 2: arnndn — Primary RNN denoiser
+        filters.push(`arnndn=m=bd.rnnn`);
+        
+        // Pass 3: afftdn — Stationary noise removal
+        const nrValA = Math.round(15 + sa * 20); 
+        const nfValA = Math.round(-26 - sa * 6);  
         filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
-        // Pass 3: Second afftdn — non-stationary / broadband noise
-        const nrValB = Math.round(10 + sa * 18); // 10 to 25.3
-        const nfValB = Math.round(-22 - sa * 8);  // -22 to -28.8 dB floor
-        filters.push(`afftdn=nr=${nrValB}:nf=${nfValB}:nt=w`);
-        // Pass 4: agate — silences noise floor between words (does NOT boost quiet sections)
-        const gateA = Math.round(-50 + sa * 16); // -50 to -36.4 dB
+        
+        // Pass 4: agate — Noise floor silencing
+        const gateA = Math.round(-45 + sa * 10); 
         filters.push(`agate=threshold=${gateA}dB:attack=20:release=300:ratio=10`);
-        // Pass 5: Voice frequency restoration
+        
+        // Pass 5: Voice frequency restoration & clarity
         filters.push(`equalizer=f=300:t=h:width=200:g=2.0`);
-        filters.push(`equalizer=f=1000:t=h:width=800:g=1.5`);
-        filters.push(`equalizer=f=2500:t=h:width=1500:g=2.0`);
+        filters.push(`equalizer=f=3500:t=h:width=1500:g=2.5`);
         break;
       }
       case "normalize":
@@ -311,24 +310,19 @@ function buildFFmpegFilter(operations) {
         filters.push("acompressor=threshold=-30dB:ratio=3:attack=20:release=200:knee=6dB");
         break;
       case "vocal_enhance":
-        // Reduced EQ gains to avoid amplifying background noise
-        // +2dB at 3kHz and +1.5dB at 5kHz (was +3/+2) — still enhances presence without noise boost
         filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1.5,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB");
         break;
       case "de_ess":
         filters.push("equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-2");
         break;
       case "declick":
-        // adeclick can crash on some inputs — use gentle HF smoothing instead
         filters.push("equalizer=f=9000:t=h:width=3000:g=-2,equalizer=f=12000:t=h:width=3000:g=-3");
         break;
       case "declip":
-        // adeclip can crash on some inputs — use gentle compression + limiter instead
         filters.push("acompressor=threshold=-6dB:ratio=20:attack=1:release=10:knee=3dB,alimiter=limit=-1dB:attack=1:release=5");
         break;
       case "spectral_repair":
-        // Use dual afftdn for spectral repair (anlmdn with high s causes metallic artifacts)
-        filters.push("afftdn=nr=30:nf=-28:nt=w:tn=1,afftdn=nr=20:nf=-25:nt=w");
+        filters.push("arnndn=m=bd.rnnn,afftdn=nr=25:nf=-28:nt=w:tn=1");
         break;
       case "loudness_normalize":
         filters.push(`loudnorm=I=${params.target_lufs || -14}:TP=-1:LRA=11`);
@@ -435,236 +429,173 @@ function buildFFmpegFilter(operations) {
         filters.push("aecho=0.8:0.6:80:0.7:160:0.5,equalizer=f=3000:t=h:width=2000:g=4");
         break;
       case "alien_voice":
-        filters.push("aecho=0.8:0.5:20:0.5,vibrato=f=8:d=0.8,equalizer=f=2000:t=h:width=1000:g=6");
+        filters.push("aecho=0.8:0.5:50:0.5,aphaser=speed=2:decay=0.6,vibrato=f=10:d=0.5");
         break;
       case "megaphone_effect":
-        filters.push("highpass=f=500,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=8,volume=4dB,acompressor=threshold=-10dB:ratio=15:attack=1:release=50");
+        filters.push("highpass=f=400,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=10,distortion=gain=5");
         break;
       case "radio_effect":
-        filters.push("highpass=f=400,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=5,volume=2dB");
+        filters.push("highpass=f=500,lowpass=f=3500,equalizer=f=2000:t=h:width=1000:g=5,aecho=0.8:0.3:20:0.2");
         break;
-      // VOICE BEAUTIFY PRESETS
-      case "honey_voice":
-        filters.push("highpass=f=80,afftdn=nr=25:nf=-28:nt=w:tn=1,equalizer=f=200:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+      case "vocal_isolation":
+        filters.push("pan=mono|c0=c0-c1,highpass=f=100,lowpass=f=8000");
         break;
-      case "silky_voice":
-        filters.push("highpass=f=100,afftdn=nr=22:nf=-26:nt=w:tn=1,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=2000:t=h:width=1500:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB:makeup=1dB,loudnorm=I=-14:TP=-1:LRA=11");
+      case "music_removal":
+        filters.push("pan=mono|c0=c0+c1,highpass=f=100,lowpass=f=8000");
         break;
-      case "broadcast_voice":
-        filters.push("highpass=f=80,afftdn=nr=28:nf=-28:nt=w:tn=1,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=1500:t=h:width=2000:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
-        break;
-      case "asmr_voice":
-        filters.push("highpass=f=60,afftdn=nr=30:nf=-28:nt=w:tn=1,lowpass=f=8000,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,aecho=0.8:0.3:80:0.2,volume=-3dB,loudnorm=I=-18:TP=-1:LRA=11");
-        break;
-      case "cinematic_voice":
-        filters.push("highpass=f=60,afftdn=nr=25:nf=-26:nt=w:tn=1,equalizer=f=100:t=h:width=150:g=4,equalizer=f=3000:t=h:width=2000:g=2,aecho=0.8:0.4:400:0.4:800:0.2,acompressor=threshold=-20dB:ratio=4:attack=20:release=300:knee=6dB:makeup=3dB,loudnorm=I=-14:TP=-1:LRA=11");
-        break;
-      case "angelic_voice":
-        filters.push("afftdn=nr=22:nf=-26:nt=w:tn=1,asetrate=r=46000,aresample=44100,equalizer=f=5000:t=h:width=3000:g=3,equalizer=f=10000:t=h:width=4000:g=2,aecho=0.8:0.35:200:0.35:400:0.2,chorus=0.7:0.9:50:0.4:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
-        break;
-      case "vintage_radio":
-        filters.push("highpass=f=300,lowpass=f=3000,equalizer=f=1500:t=h:width=1000:g=5,volume=2dB,acompressor=threshold=-15dB:ratio=5:attack=10:release=100:knee=3dB");
-        break;
-      case "podcast_pro":
-        filters.push("highpass=f=100,afftdn=nr=30:nf=-28:nt=w:tn=1,agate=threshold=-40dB:attack=10:release=200,equalizer=f=200:t=h:width=200:g=2,equalizer=f=2500:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
-        break;
-      case "lofi_voice":
-        filters.push("lowpass=f=8000,equalizer=f=200:t=h:width=200:g=3,acompressor=threshold=-20dB:ratio=3:attack=10:release=100:knee=3dB,volume=1dB");
-        break;
-      case "narrator_voice":
-        filters.push("highpass=f=80,afftdn=nr=25:nf=-26:nt=w:tn=1,asetrate=r=42000,aresample=44100,equalizer=f=150:t=h:width=150:g=3,equalizer=f=2500:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:60:0.12,loudnorm=I=-16:TP=-1:LRA=11");
-        break;
-      case "smooth_jazz_voice":
-        filters.push("highpass=f=100,afftdn=nr=22:nf=-26:nt=w:tn=1,equalizer=f=200:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,aecho=0.8:0.25:120:0.2,chorus=0.7:0.9:30:0.3:1.0:1,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
-        break;
-      case "epic_voice":
-        filters.push("highpass=f=60,afftdn=nr=25:nf=-26:nt=w:tn=1,asetrate=r=40000,aresample=44100,equalizer=f=80:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=3,aecho=0.8:0.5:300:0.4:600:0.2,acompressor=threshold=-18dB:ratio=5:attack=10:release=200:knee=6dB:makeup=4dB,loudnorm=I=-12:TP=-1:LRA=11");
-        break;
-      case "sweet_voice":
-        filters.push("highpass=f=100,afftdn=nr=22:nf=-26:nt=w:tn=1,asetrate=r=46000,aresample=44100,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=7000:t=h:width=3000:g=2,aecho=0.8:0.2:60:0.15,chorus=0.7:0.9:30:0.3:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
-        break;
-      case "crystal_voice":
-        filters.push("highpass=f=100,afftdn=nr=28:nf=-28:nt=w:tn=1,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
-        break;
-      case "deep_warm_voice":
-        filters.push("highpass=f=60,afftdn=nr=25:nf=-26:nt=w:tn=1,asetrate=r=40000,aresample=44100,equalizer=f=100:t=h:width=150:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=3dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
-        break;
-      case "auto_tune":
-      case "pitch_correct":
-        filters.push("asetrate=r=44100,aresample=44100");
-        break;
-      case "formant_shift": {
-        const shift = params.shift || 1.0;
-        filters.push(`asetrate=r=${Math.round(44100 * shift)},aresample=44100`);
+      case "auto_tune": {
+        const str = params.strength || 0.5;
+        filters.push(`aecho=0.8:0.3:20:0.5,chorus=0.7:0.9:20:0.5:2:1,equalizer=f=3000:t=h:width=2000:g=${str*4}`);
         break;
       }
-      default:
+      case "formant_shift": {
+        const shift = params.shift || 1.0;
+        filters.push(`asetrate=r=${Math.round(44100 * shift)},aresample=44100,atempo=${(1/shift).toFixed(2)}`);
+        break;
+      }
+      case "honey_voice":
+        filters.push("highpass=f=80,equalizer=f=250:t=h:width=200:g=4,equalizer=f=3500:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB,loudnorm=I=-14");
+        break;
+      case "silky_voice":
+        filters.push("highpass=f=100,equalizer=f=400:t=h:width=300:g=2,equalizer=f=5000:t=h:width=3000:g=3,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=250:knee=8dB,loudnorm=I=-16");
+        break;
+      case "broadcast_voice":
+        filters.push("highpass=f=70,equalizer=f=150:t=h:width=100:g=5,equalizer=f=3000:t=h:width=1500:g=3,equalizer=f=6000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=15:release=150:knee=4dB,alimiter=limit=-1dB,loudnorm=I=-14");
+        break;
+      case "asmr_voice":
+        filters.push("highpass=f=150,equalizer=f=6000:t=h:width=4000:g=6,equalizer=f=12000:t=h:width=4000:g=4,acompressor=threshold=-30dB:ratio=5:attack=10:release=100:knee=2dB,volume=6dB");
+        break;
+      case "cinematic_voice":
+        filters.push("highpass=f=60,equalizer=f=100:t=h:width=80:g=6,equalizer=f=400:t=h:width=200:g=-2,equalizer=f=3500:t=h:width=2000:g=4,acompressor=threshold=-20dB:ratio=4:attack=20:release=200:knee=4dB,aecho=0.8:0.2:40:0.3,loudnorm=I=-14");
+        break;
+      case "angelic_voice":
+        filters.push("highpass=f=200,equalizer=f=5000:t=h:width=3000:g=5,equalizer=f=10000:t=h:width=4000:g=4,aecho=0.8:0.4:100:0.5:200:0.3,loudnorm=I=-16");
+        break;
+      case "podcast_pro":
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=150:g=3,equalizer=f=3000:t=h:width=2000:g=3,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=200:knee=5dB,agate=threshold=-40dB,loudnorm=I=-16");
+        break;
+      case "lofi_voice":
+        filters.push("highpass=f=400,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=4,acrusher=bits=12:mode=log,aecho=0.8:0.2:20:0.3");
+        break;
+      case "narrator_voice":
+        filters.push("highpass=f=90,equalizer=f=300:t=h:width=200:g=2,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=250:knee=6dB,loudnorm=I=-18");
+        break;
+      case "smooth_jazz_voice":
+        filters.push("highpass=f=100,equalizer=f=300:t=h:width=200:g=3,equalizer=f=2500:t=h:width=1500:g=2,aecho=0.8:0.25:50:0.4,loudnorm=I=-16");
+        break;
+      case "epic_voice":
+        filters.push("highpass=f=70,equalizer=f=150:t=h:width=100:g=6,equalizer=f=3000:t=h:width=2000:g=4,acompressor=threshold=-15dB:ratio=5:attack=10:release=100:knee=3dB,volume=2dB,loudnorm=I=-12");
+        break;
+      case "sweet_voice":
+        filters.push("highpass=f=150,equalizer=f=4000:t=h:width=2000:g=4,equalizer=f=8000:t=h:width=3000:g=3,acompressor=threshold=-25dB:ratio=2.5:attack=30:release=300:knee=10dB,loudnorm=I=-16");
+        break;
+      case "crystal_voice":
+        filters.push("highpass=f=120,equalizer=f=5000:t=h:width=3000:g=5,equalizer=f=10000:t=h:width=4000:g=4,acompressor=threshold=-20dB:ratio=2:attack=20:release=200:knee=6dB,loudnorm=I=-14");
+        break;
+      case "deep_warm_voice":
+        filters.push("highpass=f=60,equalizer=f=150:t=h:width=100:g=6,equalizer=f=300:t=h:width=150:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=200:knee=4dB,loudnorm=I=-14");
         break;
     }
   }
 
-  if (pitchShift !== null) {
-    const ratio = Math.pow(2, pitchShift / 12);
-    filters.push(`asetrate=r=${Math.round(44100 * ratio)},aresample=44100`);
-  }
-  if (speedFactor !== null) {
-    filters.push(`atempo=${Math.max(0.5, Math.min(2.0, speedFactor))}`);
+  let filterStr = filters.join(",");
+  
+  // Handle pitch and speed together for better quality
+  if (pitchShift !== null || speedFactor !== null) {
+    const p = pitchShift || 0;
+    const s = speedFactor || 1.0;
+    const pitchRatio = Math.pow(2, p / 12);
+    
+    if (filterStr) filterStr += ",";
+    // rubberband is better but not always available, use atempo + asetrate
+    filterStr += `asetrate=r=${Math.round(44100 * pitchRatio)},atempo=${(s / pitchRatio).toFixed(2)},aresample=44100`;
   }
 
-  return filters;
+  return filterStr;
 }
 
 export default async function handler(req, res) {
+  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const tmpDir = os.tmpdir();
-  let inputPath = null;
-  let outputPath = null;
+  const form = formidable({
+    uploadDir: os.tmpdir(),
+    keepExtensions: true,
+    maxFileSize: 50 * 1024 * 1024, // 50MB
+  });
 
   try {
-    let instruction = "";
+    const [fields, files] = await form.parse(req);
+    const audioFile = files.audio?.[0];
+    const prompt = fields.prompt?.[0];
 
-    // Support both JSON (base64) and multipart form
-    const contentType = req.headers["content-type"] || "";
-
-    if (contentType.includes("application/json")) {
-      // JSON mode: audioData is base64 string
-      // Vercel serverless-এ req.body undefined হয়, তাই raw body manually parse করতে হবে
-      let body = {};
-      try {
-        if (req.body && typeof req.body === "object") {
-          body = req.body;
-        } else {
-          const chunks = [];
-          for await (const chunk of req) chunks.push(chunk);
-          const rawBody = Buffer.concat(chunks).toString("utf8");
-          body = JSON.parse(rawBody);
-        }
-      } catch (parseErr) {
-        return res.status(400).json({ error: "JSON parse error: " + parseErr.message });
-      }
-      const audioBase64 = body.audioData;
-      instruction = body.instruction || "অডিওটি সুন্দর করো";
-
-      if (!audioBase64) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
-
-      // Vercel payload limit check: base64 is ~33% larger than binary
-      // 4.5MB limit → ~3.3MB binary max. Warn but still try to process.
-      const estimatedBytes = Math.round(audioBase64.length * 0.75);
-      if (estimatedBytes > 4 * 1024 * 1024) {
-        console.warn(`Large audio file detected: ~${(estimatedBytes / 1024 / 1024).toFixed(1)}MB — may hit Vercel 4.5MB limit`);
-      }
-
-      // Decode base64 → temp file
-      const audioBuffer = Buffer.from(audioBase64, "base64");
-      inputPath = path.join(tmpDir, `sardar_input_${Date.now()}.wav`);
-      fs.writeFileSync(inputPath, audioBuffer);
-    } else {
-      // Multipart form mode
-      const form = formidable({ uploadDir: tmpDir, keepExtensions: true, maxFileSize: 50 * 1024 * 1024 });
-      const [fields, files] = await new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) reject(err); else resolve([fields, files]);
-        });
-      });
-
-      const audioFile = Array.isArray(files.audio) ? files.audio[0] : files.audio;
-      instruction = Array.isArray(fields.instruction) ? fields.instruction[0] : (fields.instruction || "অডিওটি সুন্দর করো");
-
-      if (!audioFile) return res.status(400).json({ error: "অডিও ফাইল পাওয়া যায়নি" });
-      inputPath = audioFile.filepath;
+    if (!audioFile || !prompt) {
+      return res.status(400).json({ error: "Missing audio file or prompt" });
     }
 
-    // ── from here, inputPath is set ──
-    outputPath = path.join(tmpDir, `sardar_edited_${Date.now()}.wav`);
-
-    let parsed;
-    try {
-      const aiResponse = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: AUDIO_SYSTEM_PROMPT },
-          { role: "user", content: instruction || "অডিওটি সুন্দর করো" }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.2,
-        max_tokens: 1000,
-      });
-      parsed = JSON.parse(aiResponse.choices[0].message.content);
-    } catch (e) {
-      parsed = {
-        operations: [
-          { type: "denoise_advanced", params: { strength: 0.6 } },
-          { type: "vocal_enhance", params: {} },
-          { type: "loudness_normalize", params: { target_lufs: -14 } }
-        ],
-        explanation: "সাধারণ নির্দেশনা বুঝে ডিফল্ট ভয়েস এনহান্সমেন্ট প্রয়োগ করা হয়েছে।",
-        pipeline: ["১. নয়েজ রিডাকশন", "২. ভয়েস এনহান্সমেন্ট", "৩. লাউডনেস নরমালাইজ"],
-        intent: "ডিফল্ট এনহান্সমেন্ট"
-      };
-    }
-
-    const operations = parsed.operations || [];
-    if (operations.length === 0) {
-      operations.push({ type: "denoise_advanced", params: { strength: 0.6 } });
-      operations.push({ type: "vocal_enhance", params: {} });
-      operations.push({ type: "loudness_normalize", params: { target_lufs: -14 } });
-    }
-
-    const filters = buildFFmpegFilter(operations);
-    const filterStr = filters.length > 0 ? filters.join(",") : "anull";
-
-    let ffmpegPath = "ffmpeg";
-    try {
-      const ffmpegStatic = await import("ffmpeg-static");
-      ffmpegPath = ffmpegStatic.default || "ffmpeg";
-    } catch (e) {}
-
-    const ffmpegCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "${filterStr}" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
-
-    try {
-      execSync(ffmpegCmd, { timeout: 120000, stdio: "pipe" });
-    } catch (ffmpegErr) {
-      // Primary filter chain failed — log and try safe fallback
-      console.error("FFmpeg primary filter failed:", ffmpegErr?.stderr?.toString?.() || ffmpegErr.message);
-      try {
-        const fallbackCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "highpass=f=80,afftdn=nr=20:nf=-25:nt=w:tn=1,loudnorm=I=-14:TP=-1:LRA=11" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
-        execSync(fallbackCmd, { timeout: 60000, stdio: "pipe" });
-        // Mark that we used fallback so description reflects it
-        parsed.explanation = (parsed.explanation || "") + " (ডিফল্ট ফিল্টার ব্যবহার করা হয়েছে)";
-      } catch (fallbackErr) {
-        console.error("FFmpeg fallback also failed:", fallbackErr?.stderr?.toString?.() || fallbackErr.message);
-        // Last resort: copy input to output without any filter
-        const copyCmd = `"${ffmpegPath}" -y -i "${inputPath}" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
-        execSync(copyCmd, { timeout: 30000, stdio: "pipe" });
-        parsed.explanation = "ফিল্টার প্রয়োগ করা সম্ভব হয়নি — মূল অডিও রিটার্ন করা হয়েছে।";
-      }
-    }
-
-    if (!fs.existsSync(outputPath)) return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে — আউটপুট ফাইল তৈরি হয়নি" });
-
-    const outputBuffer = fs.readFileSync(outputPath);
-    const base64Audio = outputBuffer.toString("base64");
-
-    try { fs.unlinkSync(inputPath); } catch (e) {}
-    try { fs.unlinkSync(outputPath); } catch (e) {}
-
-    return res.status(200).json({
-      success: true,
-      audioData: base64Audio,
-      audioMime: "audio/wav",
-      description: parsed.explanation || parsed.description || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
-      appliedSteps: (parsed.pipeline || []).map(s => s.replace(/^[০-৯\d]+\.\s*/, "")),
-      operations: operations.map(op => op.type),
-      pipeline: parsed.pipeline || [],
-      intent: parsed.intent || "অডিও এনহান্সমেন্ট",
-      technicalNote: parsed.technicalNote || "",
+    // 1. Get AI instructions
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: AUDIO_SYSTEM_PROMPT },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" }
     });
 
+    const aiResponse = JSON.parse(completion.choices[0].message.content);
+    const filterStr = buildFFmpegFilter(aiResponse.operations);
+
+    if (!filterStr) {
+      return res.status(200).json({
+        ...aiResponse,
+        message: "No changes needed for this request."
+      });
+    }
+
+    const outputFileName = `edited_${Date.now()}.mp3`;
+    const outputPath = path.join(os.tmpdir(), outputFileName);
+
+    // 2. Run FFmpeg
+    // Use ffmpeg-static path if available, otherwise fallback to system ffmpeg
+    let ffmpegPath = "ffmpeg";
+    try {
+      const staticPath = path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
+      if (fs.existsSync(staticPath)) {
+        ffmpegPath = staticPath;
+        // Ensure executable
+        fs.chmodSync(ffmpegPath, 0o755);
+      }
+    } catch (e) {
+      console.error("FFmpeg static path error:", e);
+    }
+
+    const command = `${ffmpegPath} -i "${audioFile.filepath}" -af "${filterStr}" -y "${outputPath}"`;
+    console.log("Executing FFmpeg:", command);
+    
+    execSync(command);
+
+    // 3. Read output and cleanup
+    const audioBuffer = fs.readFileSync(outputPath);
+    
+    // Cleanup
+    try {
+      fs.unlinkSync(audioFile.filepath);
+      fs.unlinkSync(outputPath);
+    } catch (e) {}
+
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation));
+    res.setHeader("X-AI-Pipeline", encodeURIComponent(JSON.stringify(aiResponse.pipeline)));
+    
+    return res.send(audioBuffer);
+
   } catch (error) {
-    if (inputPath) try { fs.unlinkSync(inputPath); } catch (e) {}
-    if (outputPath) try { fs.unlinkSync(outputPath); } catch (e) {}
-    console.error("Audio edit error:", error);
-    return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে: " + error.message });
+    console.error("Audio processing error:", error);
+    return res.status(500).json({ 
+      error: "Failed to process audio", 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }
