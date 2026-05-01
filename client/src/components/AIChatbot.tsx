@@ -288,6 +288,52 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
+// ── AudioBuffer → WAV Blob converter ────────────────────────────────────────────────────
+function audioBufferToWav(buffer: AudioBuffer): Blob {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const numSamples = buffer.length;
+  const bytesPerSample = 2; // 16-bit
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numSamples * blockAlign;
+  const headerSize = 44;
+  const totalSize = headerSize + dataSize;
+
+  const arrayBuffer = new ArrayBuffer(totalSize);
+  const view = new DataView(arrayBuffer);
+
+  function writeStr(offset: number, str: string) {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  }
+
+  writeStr(0, "RIFF");
+  view.setUint32(4, totalSize - 8, true);
+  writeStr(8, "WAVE");
+  writeStr(12, "fmt ");
+  view.setUint32(16, 16, true);        // chunk size
+  view.setUint16(20, 1, true);         // PCM
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);        // bits per sample
+  writeStr(36, "data");
+  view.setUint32(40, dataSize, true);
+
+  // Interleave channels
+  let offset = 44;
+  for (let i = 0; i < numSamples; i++) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      const sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: "audio/wav" });
+}
+
 // ── Contact Card ─────────────────────────────────────────────────────────────
 function ContactCard() {
   return (
@@ -1042,33 +1088,16 @@ export default function AIChatbot() {
   const handleAudioEdit = useCallback(async (overrideInstruction?: string) => {
     if (!audioFile || audioProcessing) return;
 
-    // Smart instruction resolution:
-    // 1. Use override (from normal chat flow)
-    // 2. Use current input box text
-    // 3. Look at last user message in chat history for audio-related instruction
-    // 4. Default to smart auto-detect
+    // Smart instruction resolution
     let instruction = overrideInstruction || input.trim();
-
     if (!instruction) {
-      // Search recent messages for an audio instruction
-      const recentUserMsgs = messages
-        .filter(m => m.role === "user")
-        .slice(-5)
-        .map(m => m.content)
-        .reverse();
+      const recentUserMsgs = messages.filter(m => m.role === "user").slice(-5).map(m => m.content).reverse();
       for (const msg of recentUserMsgs) {
         const clean = msg.replace(/🎵.*?\n.*?\n?/g, "").trim();
-        if (clean && !clean.startsWith("🎵")) {
-          instruction = clean;
-          break;
-        }
+        if (clean && !clean.startsWith("🎵") && isAudioEditRequest(clean)) { instruction = clean; break; }
       }
     }
-
-    // If still no instruction, use a default that tells AI to auto-detect what to do
-    if (!instruction) {
-      instruction = "অডিওটি বিশ্লেষণ করে স্বয়ংক্রিয়ভাবে মান উন্নত করো এবং নয়েজ কমাও";
-    }
+    if (!instruction) instruction = "অডিওটি স্বয়ংক্রিয়ভাবে মান উন্নত করো, নয়েজ কমাও";
 
     const userMsg: Message = {
       id: `user-audio-${Date.now()}`,
@@ -1082,38 +1111,126 @@ export default function AIChatbot() {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("audio", audioFile, audioFile.name);
-      formData.append("instruction", instruction);
-
-      const response = await fetch("/api/audio-edit", {
+      // Step 1: Ask AI to parse instruction into structured params
+      const parseResp = await fetch("/api/audio-edit", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instruction }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${response.status}`);
+      if (!parseResp.ok) {
+        const errData = await parseResp.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${parseResp.status}`);
       }
 
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
-      const contentDisposition = response.headers.get("Content-Disposition") || "";
-      const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
-      const audioFilename = filenameMatch?.[1] || `edited_audio.mp3`;
-      const descriptionEncoded = response.headers.get("X-Audio-Description") || "";
-      const audioDescription = descriptionEncoded ? decodeURIComponent(descriptionEncoded) : "অডিও এডিটিং সম্পন্ন হয়েছে।";
+      const { params, description } = await parseResp.json();
 
-      const aiMsg: Message = {
+      // Step 2: Process audio client-side using Web Audio API
+      const audioBuffer = await audioFile.arrayBuffer();
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      let decoded: AudioBuffer;
+      try {
+        decoded = await audioCtx.decodeAudioData(audioBuffer);
+      } catch {
+        throw new Error("অডিও ফাইল ডিকোড হয়নি — সমর্থিত ফরম্যাট: MP3, WAV, OGG, M4A");
+      }
+
+      // Apply edits using OfflineAudioContext
+      const sampleRate = audioCtx.sampleRate;
+      const numChannels = decoded.numberOfChannels;
+      const origDuration = decoded.duration;
+
+      // Calculate trim
+      const trimStartSec = Math.min(params.trimStart || 0, origDuration - 0.1);
+      const trimEndSec = Math.max(0, params.trimEnd || 0);
+      const startSample = Math.floor(trimStartSec * sampleRate);
+      const endSample = Math.max(
+        startSample + 1000,
+        decoded.length - Math.floor(trimEndSec * sampleRate)
+      );
+      const outputLength = endSample - startSample;
+
+      // Apply speed
+      const speed = Math.max(0.25, Math.min(4.0, params.speed || 1.0));
+      const finalLength = Math.ceil(outputLength / speed);
+
+      const offlineCtx = new OfflineAudioContext(numChannels, Math.max(finalLength, 1), sampleRate);
+
+      // Create trimmed buffer
+      const trimmedBuffer = offlineCtx.createBuffer(numChannels, outputLength, sampleRate);
+      for (let ch = 0; ch < numChannels; ch++) {
+        const src = decoded.getChannelData(ch);
+        const dst = trimmedBuffer.getChannelData(ch);
+        let data = src.slice(startSample, endSample);
+        // Reverse if needed
+        if (params.reverse) data = data.slice().reverse();
+        // Normalize
+        if (params.normalize) {
+          let max = 0;
+          for (let i = 0; i < data.length; i++) max = Math.max(max, Math.abs(data[i]));
+          if (max > 0.001) { const gain = 0.95 / max; for (let i = 0; i < data.length; i++) data[i] *= gain; }
+        }
+        dst.set(data);
+      }
+
+      const source = offlineCtx.createBufferSource();
+      source.buffer = trimmedBuffer;
+      source.playbackRate.value = speed;
+
+      // Volume
+      const gainNode = offlineCtx.createGain();
+      gainNode.gain.value = Math.max(0.01, Math.min(10, params.volume || 1.0));
+
+      // Bass/Treble EQ
+      const bassFilter = offlineCtx.createBiquadFilter();
+      bassFilter.type = "lowshelf";
+      bassFilter.frequency.value = 200;
+      bassFilter.gain.value = Math.max(-20, Math.min(20, params.bassBoost || 0));
+
+      const trebleFilter = offlineCtx.createBiquadFilter();
+      trebleFilter.type = "highshelf";
+      trebleFilter.frequency.value = 4000;
+      trebleFilter.gain.value = Math.max(-20, Math.min(20, params.trebleBoost || 0));
+
+      // Fade in/out via gain automation
+      const fadeGain = offlineCtx.createGain();
+      const fadeInDur = Math.min(params.fadeIn || 0, finalLength / sampleRate * 0.5);
+      const fadeOutDur = Math.min(params.fadeOut || 0, finalLength / sampleRate * 0.5);
+      const totalDur = finalLength / sampleRate;
+      if (fadeInDur > 0) {
+        fadeGain.gain.setValueAtTime(0, 0);
+        fadeGain.gain.linearRampToValueAtTime(1, fadeInDur);
+      }
+      if (fadeOutDur > 0) {
+        fadeGain.gain.setValueAtTime(1, Math.max(0, totalDur - fadeOutDur));
+        fadeGain.gain.linearRampToValueAtTime(0, totalDur);
+      }
+
+      // Connect chain
+      source.connect(bassFilter);
+      bassFilter.connect(trebleFilter);
+      trebleFilter.connect(gainNode);
+      gainNode.connect(fadeGain);
+      fadeGain.connect(offlineCtx.destination);
+      source.start(0);
+
+      const renderedBuffer = await offlineCtx.startRendering();
+      await audioCtx.close();
+
+      // Convert to WAV blob (universal support)
+      const wavBlob = audioBufferToWav(renderedBuffer);
+      const audioUrl = URL.createObjectURL(wavBlob);
+      const audioFilename = `edited_${Date.now()}.wav`;
+
+      setMessages(prev => [...prev, {
         id: `ai-audio-${Date.now()}`,
         role: "assistant",
-        content: audioDescription,
+        content: description || "অডিও এডিটিং সম্পন্ন হয়েছে।",
         timestamp: new Date(),
         audioUrl,
         audioFilename,
-        audioDescription,
-      };
-      setMessages(prev => [...prev, aiMsg]);
+        audioDescription: description,
+      }]);
       setAudioFile(null);
       setIsAudioMode(false);
     } catch (err: any) {
@@ -1121,7 +1238,7 @@ export default function AIChatbot() {
     } finally {
       setAudioProcessing(false);
     }
-  }, [audioFile, input, audioProcessing]);
+  }, [audioFile, input, audioProcessing, messages, isAudioEditRequest]);
 
   // ── Image select handler ──────────────────────────────────────────────
   const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
