@@ -113,7 +113,34 @@ OUTPUT FORMAT (JSON only):
   "technicalNote": "technical details (optional)"
 }
 
-IMPORTANT: Use proportional values. For iterative requests increase strength by 0.1-0.2 only.`;
+IMPORTANT: Use proportional values. For iterative requests increase strength by 0.1-0.2 only.
+
+ADDITIONAL SMART RULES:
+- "silence_remove" / "নীরবতা সরাও" / "শুরুর চুপ কাটো" → silence_remove(-40)
+- "loop" / "লুপ করো" / "বারবার বাজাও" → loop(times:3)
+- "add_silence" / "শুরুতে বিরতি যোগ করো" → add_silence(1000, start)
+- "crossfade" / "smooth transition" → crossfade(2000)
+- "ডাকিং" / "ducking" → ducking(-20, 10)
+- "ব্যাকগ্রাউন্ড মিউজিক মিক্স করো" → mix_with_music(0.3, 1.0)
+- "মাল্টিব্যান্ড কম্প্রেস" / "multiband" → multiband_compress
+- "স্পেকট্রাল রিপেয়ার" / "spectral repair" → spectral_repair
+- "ট্রু পিক" / "true peak" → true_peak_limit(-1)
+- "ফর্মান্ট" / "formant" → formant_shift(1.0)
+- "ট্রান্সিয়েন্ট" / "transient" / "পাঞ্চ বাড়াও" → transient_shaper(0.5, -0.3)
+- "হার্মোনিক" / "exciter" / "উজ্জ্বল করো" → harmonic_exciter(0.5)
+- "ব্যালেন্স বাম" / "pan left" → stereo_balance(-0.5)
+- "ব্যালেন্স ডান" / "pan right" → stereo_balance(0.5)
+- "ফ্ল্যাঞ্জার" / "flanger" → flanger(0.5, 5)
+- "ফেজার" / "phaser" → phaser(1.0, 0.7)
+- "ট্রেমোলো" / "tremolo" → tremolo(5, 0.5)
+- "ভাইব্রেটো" / "vibrato" → vibrato(5, 0.5)
+- "বিটক্রাশার" / "bitcrusher" / "8-bit" → bitcrusher(8)
+- "ক্লিপিং ঠিক করো" / "distorted fix" → declip
+- "ক্লিক সরাও" / "pop remove" → declick
+- "ব্যান্ড পাস" / "band pass" → band_pass_filter(300, 3000)
+- "নচ ফিল্টার" / "notch" → notch_filter(60)
+- "স্টেরিও মনো" / "mono" → stereo_to_mono
+- "মনো স্টেরিও" / "stereo" → mono_to_stereo`;
 
 function buildFFmpegFilter(operations) {
   const filters = [];
