@@ -9,9 +9,11 @@ interface Message {
   content: string;
   timestamp: Date;
   imageUrl?: string;
-  audioUrl?: string;        // edited audio download URL
-  audioFilename?: string;   // suggested filename
-  audioDescription?: string; // Bengali description of what was done
+  audioUrl?: string;          // edited audio download URL
+  audioFilename?: string;     // suggested filename
+  audioDescription?: string;  // Bengali description of what was done
+  audioAppliedSteps?: string[]; // list of applied processing steps
+  audioIntent?: string;       // detected intent (clean/enhance/podcast/etc)
 }
 
 interface ActionButton {
@@ -165,25 +167,35 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 ৫. ডিজাইন বা এডিটিং সংক্রান্ত প্রশ্নে বিস্তারিত গাইডলাইন দেবে।
 
 ## অডিও এডিটিং ফিচার (অত্যন্ত গুরুত্বপূর্ণ)
-তুমি সরাসরি অডিও ফাইল এডিট করতে পারো — এটি এই ওয়েবসাইটের বিল্ট-ইন ফিচার।
+তুমি একজন দক্ষ সাউন্ড ইঞ্জিনিয়ারের মতো অডিও ফাইল এডিট করতে পারো — এটি এই ওয়েবসাইটের বিল্ট-ইন ফিচার।
+
+তোমার অডিও বোঝার ক্ষমতা:
+- ব্যবহারকারী অস্পষ্টভাবে বললেও তুমি উদ্দেশ্য বুঝে সম্পূর্ণ প্রসেসিং করো
+- "পরিষ্কার করো" = নয়েজ রিমুভাল + ভয়েস ক্লারিটি + ভলিউম লেভেলিং
+- "সুন্দর শোনাতে হবে" = ভয়েস এনহ্যান্সমেন্ট + EQ + কম্প্রেশন + নরমালাইজেশন
+- "পডকাস্টের জন্য তৈরি করো" = পডকাস্ট প্রিসেট সব কিছু একসাথে
+- "ভয়েস উন্নত করো" = মিড বুস্ট + ট্রেবল + কম্প্রেশন + নয়েজ রিডাকশন
 
 ব্যবহারকারী যখন অডিও এডিটিং সম্পর্কে বলবে, তুমি বলবে:
-"অবশ্যই! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন, তারপর আমাকে বলুন কী করতে চান।"
+"অবশ্যই! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — আমি একজন সাউন্ড ইঞ্জিনিয়ারের মতো সম্পূর্ণ প্রফেশনাল মানে প্রসেস করে দেব।"
 
 সমর্থিত অডিও অপারেশন:
-- ভলিউম বাড়ানো / কমানো
-- নয়েজ রিমুভ / কমানো
+- ভলিউম বাড়ানো / কমানো / লেভেলিং
+- নয়েজ রিমুভাল / ব্যাকগ্রাউন্ড শব্দ দূর করা
+- ভয়েস এনহ্যান্সমেন্ট (কণ্ঠ পরিষ্কার, উজ্জ্বল, ভারসাম্যপূর্ণ)
+- ডায়নামিক কম্প্রেশন (ভলিউম সমান করা)
 - ফেড ইন / ফেড আউট
-- গতি বাড়ানো / কমানো
-- বেস বাড়ানো / ট্রেবল বাড়ানো
-- ট্রিম / কাটাকাটি
+- গতি বাড়ানো / কমানো
+- বেস / মিড / ট্রেবল EQ
+- ট্রিম / কাটাকাটি / সাইলেন্স রিমুভ
 - রিভার্স / উল্টো করা
 - নর্মালাইজ
+- স্মার্ট প্রিসেট: পডকাস্ট, মিউজিক, সোশ্যাল মিডিয়া, ভয়েস
 - ফরম্যাট কনভার্ট (WAV, MP3, OGG)
 
 সমর্থিত ফরম্যাট: MP3, WAV, OGG, M4A, FLAC
 
-গুরুত্বপূর্ণ: কেউ যদি বলে "অডিও এডিট করতে পারবে না" বা সফটওয়্যার সাজেস্ট করার দরকার নেই — এই ওয়েবসাইটেই সরাসরি অডিও এডিট করা যায়।
+গুরুত্বপূর্ণ: কেউ যদি বলে "অডিও এডিট করতে পারবে না" বা সফটওয়্যার সাজেস্ট করার দরকার নেই — এই ওয়েবসাইটেই সরাসরি প্রফেশনাল মানের অডিও এডিট করা যায়।
 
 ## মাহবুব সরদার সবুজ — সম্পূর্ণ তথ্য
 
@@ -728,6 +740,65 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
             marginBottom: 8,
           }}>
+            {/* Intent badge */}
+            {message.audioIntent && message.audioIntent !== "custom" && (
+              <div style={{ marginBottom: 8 }}>
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "3px 10px",
+                  background: "rgba(212,168,67,0.12)",
+                  border: "1px solid rgba(212,168,67,0.35)",
+                  borderRadius: 20,
+                  color: "#D4A843",
+                  fontSize: "0.68rem",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontWeight: 700,
+                  letterSpacing: "0.03em",
+                }}>
+                  ✨ {message.audioIntent === "clean" ? "পরিষ্কার প্রসেসিং" :
+                     message.audioIntent === "enhance" ? "ভয়েস এনহ্যান্সমেন্ট" :
+                     message.audioIntent === "podcast" ? "পডকাস্ট প্রিসেট" :
+                     message.audioIntent === "music" ? "মিউজিক প্রসেসিং" :
+                     message.audioIntent === "social" ? "সোশ্যাল মিডিয়া অপ্টিমাইজ" :
+                     message.audioIntent === "trim" ? "ট্রিম ও কাটাকাটি" :
+                     message.audioIntent === "convert" ? "ফরম্যাট কনভার্ট" : "কাস্টম প্রসেসিং"}
+                </span>
+              </div>
+            )}
+            {/* Applied steps */}
+            {message.audioAppliedSteps && message.audioAppliedSteps.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{
+                  color: "rgba(212,168,67,0.6)",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  marginBottom: 5,
+                  letterSpacing: "0.04em",
+                }}>⚙️ প্রয়োগ করা পদক্ষেপসমূহ:</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {message.audioAppliedSteps.map((step, i) => (
+                    <span key={i} style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "2px 8px",
+                      background: "rgba(74,222,128,0.08)",
+                      border: "1px solid rgba(74,222,128,0.25)",
+                      borderRadius: 10,
+                      color: "rgba(134,239,172,0.85)",
+                      fontSize: "0.65rem",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    }}>
+                      <span style={{ color: "#4ade80", fontSize: "0.6rem" }}>✓</span>
+                      {step}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Description */}
             {message.audioDescription && (
               <div style={{
@@ -736,6 +807,8 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                 fontSize: "0.82rem",
                 lineHeight: 1.7,
                 marginBottom: 10,
+                borderTop: (message.audioAppliedSteps && message.audioAppliedSteps.length > 0) ? "1px solid rgba(212,168,67,0.12)" : "none",
+                paddingTop: (message.audioAppliedSteps && message.audioAppliedSteps.length > 0) ? 8 : 0,
               }}>
                 {message.audioDescription}
               </div>
@@ -755,7 +828,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             {/* Download button */}
             <a
               href={message.audioUrl}
-              download={message.audioFilename || "edited_audio.mp3"}
+              download={message.audioFilename || "edited_audio.wav"}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -1142,7 +1215,7 @@ export default function AIChatbot() {
         throw new Error(errData.error || `HTTP ${parseResp.status}`);
       }
 
-      const { params, description } = await parseResp.json();
+      const { params, description, appliedSteps = [], intent = "custom" } = await parseResp.json();
 
       // Step 2: Process audio client-side using Web Audio API
       const audioBuffer = await audioFile.arrayBuffer();
@@ -1170,12 +1243,12 @@ export default function AIChatbot() {
       const outputLength = endSample - startSample;
 
       // Apply speed
-      const speed = Math.max(0.25, Math.min(4.0, params.speed || 1.0));
+      const speed = Math.max(0.5, Math.min(2.0, params.speed || 1.0));
       const finalLength = Math.ceil(outputLength / speed);
 
       const offlineCtx = new OfflineAudioContext(numChannels, Math.max(finalLength, 1), sampleRate);
 
-      // Create trimmed buffer
+      // Create trimmed buffer with per-channel processing
       const trimmedBuffer = offlineCtx.createBuffer(numChannels, outputLength, sampleRate);
       for (let ch = 0; ch < numChannels; ch++) {
         const src = decoded.getChannelData(ch);
@@ -1183,6 +1256,35 @@ export default function AIChatbot() {
         let data = src.slice(startSample, endSample);
         // Reverse if needed
         if (params.reverse) data = data.slice().reverse();
+        // Noise reduction simulation: gentle high-pass + spectral smoothing
+        if (params.noiseReduction && params.noiseReduction > 0) {
+          const nr = Math.min(1.0, params.noiseReduction);
+          // Simple noise gate + smoothing
+          const threshold = nr * 0.015;
+          const smoothed = new Float32Array(data.length);
+          smoothed[0] = data[0];
+          const smoothFactor = 1 - nr * 0.3;
+          for (let i = 1; i < data.length; i++) {
+            smoothed[i] = smoothFactor * smoothed[i - 1] + (1 - smoothFactor) * data[i];
+            if (Math.abs(data[i]) < threshold) data[i] *= (1 - nr * 0.7);
+          }
+          // Blend original with smoothed
+          for (let i = 0; i < data.length; i++) data[i] = data[i] * (1 - nr * 0.15) + smoothed[i] * (nr * 0.15);
+        }
+        // Dynamic compression simulation
+        if (params.dynamicCompression) {
+          const threshold = 0.5;
+          const ratio = 4.0;
+          const knee = 0.1;
+          for (let i = 0; i < data.length; i++) {
+            const abs = Math.abs(data[i]);
+            if (abs > threshold - knee) {
+              const excess = abs - (threshold - knee);
+              const compressed = (threshold - knee) + excess / ratio;
+              data[i] = data[i] > 0 ? compressed : -compressed;
+            }
+          }
+        }
         // Normalize
         if (params.normalize) {
           let max = 0;
@@ -1198,18 +1300,35 @@ export default function AIChatbot() {
 
       // Volume
       const gainNode = offlineCtx.createGain();
-      gainNode.gain.value = Math.max(0.01, Math.min(10, params.volume || 1.0));
+      gainNode.gain.value = Math.max(0.01, Math.min(3.0, params.volume || 1.0));
 
-      // Bass/Treble EQ
+      // Bass EQ
       const bassFilter = offlineCtx.createBiquadFilter();
       bassFilter.type = "lowshelf";
       bassFilter.frequency.value = 200;
-      bassFilter.gain.value = Math.max(-20, Math.min(20, params.bassBoost || 0));
+      bassFilter.gain.value = Math.max(-15, Math.min(15, params.bassBoost || 0));
 
+      // Mid EQ (voice presence — 1kHz-4kHz range)
+      const midFilter = offlineCtx.createBiquadFilter();
+      midFilter.type = "peaking";
+      midFilter.frequency.value = 2500;
+      midFilter.Q.value = 1.0;
+      midFilter.gain.value = Math.max(-10, Math.min(10, params.midBoost || 0));
+
+      // Treble EQ
       const trebleFilter = offlineCtx.createBiquadFilter();
       trebleFilter.type = "highshelf";
       trebleFilter.frequency.value = 4000;
-      trebleFilter.gain.value = Math.max(-20, Math.min(20, params.trebleBoost || 0));
+      trebleFilter.gain.value = Math.max(-15, Math.min(15, params.trebleBoost || 0));
+
+      // Voice enhancement: high-pass filter to remove rumble + presence boost
+      let voiceHighPass: BiquadFilterNode | null = null;
+      if (params.voiceEnhancement) {
+        voiceHighPass = offlineCtx.createBiquadFilter();
+        voiceHighPass.type = "highpass";
+        voiceHighPass.frequency.value = 80;
+        voiceHighPass.Q.value = 0.7;
+      }
 
       // Fade in/out via gain automation
       const fadeGain = offlineCtx.createGain();
@@ -1225,9 +1344,12 @@ export default function AIChatbot() {
         fadeGain.gain.linearRampToValueAtTime(0, totalDur);
       }
 
-      // Connect chain
-      source.connect(bassFilter);
-      bassFilter.connect(trebleFilter);
+      // Connect chain: source → [highpass] → bass → mid → treble → gain → fade → dest
+      let lastNode: AudioNode = source;
+      if (voiceHighPass) { lastNode.connect(voiceHighPass); lastNode = voiceHighPass; }
+      lastNode.connect(bassFilter);
+      bassFilter.connect(midFilter);
+      midFilter.connect(trebleFilter);
       trebleFilter.connect(gainNode);
       gainNode.connect(fadeGain);
       fadeGain.connect(offlineCtx.destination);
@@ -1244,11 +1366,13 @@ export default function AIChatbot() {
       setMessages(prev => [...prev, {
         id: `ai-audio-${Date.now()}`,
         role: "assistant",
-        content: description || "অডিও এডিটিং সম্পন্ন হয়েছে।",
+        content: description || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
         timestamp: new Date(),
         audioUrl,
         audioFilename,
         audioDescription: description,
+        audioAppliedSteps: appliedSteps,
+        audioIntent: intent,
       }]);
       setAudioFile(null);
       setIsAudioMode(false);
