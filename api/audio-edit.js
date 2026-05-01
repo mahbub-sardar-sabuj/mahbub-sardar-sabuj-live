@@ -3,11 +3,84 @@ import formidable from "formidable";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 export const config = { api: { bodyParser: false } };
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function resolveAudioAiConfig() {
+  const audioApiKey = process.env.AUDIO_AI_API_KEY?.trim();
+  const audioBaseUrl = process.env.AUDIO_AI_BASE_URL?.trim();
+  const audioModel = process.env.AUDIO_AI_MODEL?.trim();
+  const chatbotApiKey = process.env.CHATBOT_API_KEY?.trim();
+  const chatbotBaseUrl = process.env.CHATBOT_BASE_URL?.trim();
+  const chatbotModel = process.env.CHATBOT_MODEL?.trim();
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
+  const openRouterBaseUrl = process.env.OPENROUTER_BASE_URL?.trim();
+  const openRouterModel = process.env.OPENROUTER_MODEL?.trim();
+  const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
+  const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim();
+  const openAiModel = process.env.OPENAI_MODEL?.trim();
+  const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
+  const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+  const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || "gemini-2.5-flash";
+
+  if (audioApiKey) {
+    const isOpenRouterKey = audioApiKey.startsWith("sk-or-");
+    return {
+      apiKey: audioApiKey,
+      baseURL: audioBaseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
+      model: audioModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
+      source: "AUDIO_AI_API_KEY",
+    };
+  }
+  if (chatbotApiKey) {
+    const isOpenRouterKey = chatbotApiKey.startsWith("sk-or-");
+    return {
+      apiKey: chatbotApiKey,
+      baseURL: chatbotBaseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
+      model: chatbotModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
+      source: "CHATBOT_API_KEY",
+    };
+  }
+  if (openRouterApiKey) {
+    return {
+      apiKey: openRouterApiKey,
+      baseURL: openRouterBaseUrl || "https://openrouter.ai/api/v1",
+      model: openRouterModel || "openai/gpt-4.1-mini",
+      source: "OPENROUTER_API_KEY",
+    };
+  }
+  if (openAiApiKey) {
+    return {
+      apiKey: openAiApiKey,
+      baseURL: openAiBaseUrl || "https://api.openai.com/v1",
+      model: openAiModel || "gpt-4.1-mini",
+      source: "OPENAI_API_KEY",
+    };
+  }
+  if (forgeApiKey && forgeBaseUrl) {
+    return {
+      apiKey: forgeApiKey,
+      baseURL: forgeBaseUrl,
+      model: forgeModel,
+      source: "BUILT_IN_FORGE_API_KEY",
+    };
+  }
+  throw new Error("No AI API key configured for audio editing. Set AUDIO_AI_API_KEY, CHATBOT_API_KEY, or OPENAI_API_KEY.");
+}
+
+function createAudioAiClient() {
+  const config = resolveAudioAiConfig();
+  const defaultHeaders = {};
+  if (config.source === "OPENROUTER_API_KEY" || config.baseURL.includes("openrouter.ai")) {
+    defaultHeaders["HTTP-Referer"] = process.env.SITE_URL || process.env.VERCEL_URL || "https://mahbub-sardar-sabuj-live.vercel.app";
+    defaultHeaders["X-Title"] = "Mahbub Sardar Sabuj Live";
+  }
+  return {
+    client: new OpenAI({ apiKey: config.apiKey, baseURL: config.baseURL, defaultHeaders }),
+    model: config.model,
+  };
+}
 
 const AUDIO_SYSTEM_PROMPT = `You are a world-class AI audio engineer named "Sardar Audio Studio". You understand ANY instruction in Bengali or English and return correct audio operations as JSON.
 
@@ -165,7 +238,6 @@ function buildFFmpegFilter(operations) {
       case "noise_reduction": {
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
         filters.push(`highpass=f=80:poles=2`);
-        filters.push(`arnndn=m=bd.rnnn`);
         const nrVal1 = Math.round(10 + s * 25); 
         const nfVal1 = Math.round(-25 - s * 5);  
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
@@ -179,7 +251,6 @@ function buildFFmpegFilter(operations) {
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
         filters.push(`highpass=f=80:poles=2`);
         filters.push(`equalizer=f=50:t=h:width=5:g=-20`);
-        filters.push(`arnndn=m=bd.rnnn`);
         const nrValA = Math.round(15 + sa * 20); 
         const nfValA = Math.round(-26 - sa * 6);  
         filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
@@ -298,7 +369,7 @@ function buildFFmpegFilter(operations) {
         filters.push("acompressor=threshold=-6dB:ratio=20:attack=1:release=10:knee=3dB,alimiter=limit=-1dB:attack=1:release=5");
         break;
       case "spectral_repair":
-        filters.push("arnndn=m=bd.rnnn,afftdn=nr=25:nf=-28:nt=w:tn=1");
+        filters.push("highpass=f=80,afftdn=nr=25:nf=-28:nt=w:tn=1,equalizer=f=3000:t=h:width=1500:g=2");
         break;
       case "loudness_normalize":
         filters.push(`loudnorm=I=${params.target_lufs || -14}:TP=-1:LRA=11`);
@@ -529,8 +600,9 @@ export default async function handler(req, res) {
 
   try {
     // 1. Get AI instructions
+    const { client: openai, model } = createAudioAiClient();
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model,
       messages: [
         { role: "system", content: AUDIO_SYSTEM_PROMPT },
         { role: "user", content: prompt }
@@ -561,8 +633,10 @@ export default async function handler(req, res) {
       }
     } catch (e) {}
 
-    const command = `${ffmpegPath} -i "${tempFilePath}" -af "${filterStr}" -y "${outputPath}"`;
-    execSync(command);
+    execFileSync(ffmpegPath, ["-i", tempFilePath, "-af", filterStr, "-y", outputPath], {
+      stdio: ["ignore", "pipe", "pipe"],
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
     // 3. Return Result
     const resultBuffer = fs.readFileSync(outputPath);
