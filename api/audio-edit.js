@@ -1538,7 +1538,8 @@ export default async function handler(req, res) {
     }
 
     // ── Run FFmpeg with filter ────────────────────────────────────────────────
-    execFileSync(ffmpegPath, ["-i", tempFilePath, "-af", filterStr, "-y", outputPath], {
+    const safeFilterStr = `aresample=44100,${filterStr}`;
+    execFileSync(ffmpegPath, ["-i", tempFilePath, "-af", safeFilterStr, "-ar", "44100", "-y", outputPath], {
       stdio: ["ignore", "pipe", "pipe"],
       maxBuffer: 50 * 1024 * 1024,
       timeout: 55000,
