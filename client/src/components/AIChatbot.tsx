@@ -2002,8 +2002,8 @@ export default function AIChatbot() {
                   style={{ display: "none" }}
                 />
 
-                {/* Audio mode banner */}
-                {(audioFile || lastAudioBlobRef.current) && (
+                {/* Audio mode banner — only show when a NEW file is selected, not after editing */}
+                {audioFile && (
                   <div style={{
                     marginBottom: 8,
                     display: "flex",
@@ -2036,17 +2036,14 @@ export default function AIChatbot() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                      }}>{audioFile ? audioFile.name : lastAudioBlobRef.current?.name}</div>
+                      }}>{audioFile.name}</div>
                       <div style={{
                         color: "rgba(212,168,67,0.5)",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.58rem",
                         marginTop: 1,
                       }}>
-                        {audioFile
-                          ? `${(audioFile.size / (1024 * 1024)).toFixed(1)} MB • কি এডিটিং করতে চান তা লিখুন`
-                          : `✨ আগের এডিটেড অডিও স্মার্ট — নতুন নির্দেশ দিন বা নতুন ফাইল আপলোড করুন`
-                        }
+                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • কি এডিটিং করতে চান তা লিখুন
                       </div>
                     </div>
                     {/* Quick edit button - no instruction needed */}
