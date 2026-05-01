@@ -2427,26 +2427,7 @@ export default function AIChatbot() {
                         {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • নির্দেশ দিন
                       </div>
                     </div>
-                    {/* Quick edit button - no instruction needed */}
-                    <button
-                      onClick={() => handleAudioEdit("অডিওটি বিশ্লেষণ করে স্বয়ংক্রিয়ভাবে মান উন্নত করো, নয়েজ কমাও")}
-                      disabled={audioProcessing}
-                      title="নির্দেশ ছাড়াই অ্যান্টো এডিট"
-                      style={{
-                        padding: "3px 7px",
-                        background: "rgba(212,168,67,0.1)",
-                        border: "1px solid rgba(212,168,67,0.3)",
-                        borderRadius: 7,
-                        color: "rgba(212,168,67,0.85)",
-                        fontSize: "0.56rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        flexShrink: 0,
-                        whiteSpace: "nowrap",
-                        letterSpacing: "0.02em",
-                      }}
-                    >স্বয়ং এডিট</button>
+
                     <button
                       onClick={() => { setAudioFile(null); setIsAudioMode(false); lastAudioBlobRef.current = null; }}
                       style={{
