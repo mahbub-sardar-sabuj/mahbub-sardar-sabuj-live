@@ -1884,7 +1884,7 @@ export default function AIChatbot() {
                       <div style={{
                         color: "rgba(212,168,67,0.9)",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.75rem",
+                        fontSize: "0.65rem",
                         fontWeight: 700,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -1893,10 +1893,10 @@ export default function AIChatbot() {
                       <div style={{
                         color: "rgba(212,168,67,0.5)",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.65rem",
+                        fontSize: "0.58rem",
                         marginTop: 1,
                       }}>
-                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • নির্দেশ লিখুন নিচে
+                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • কি এডিটিং করতে চান তা লিখুন
                       </div>
                     </div>
                     {/* Quick edit button - no instruction needed */}
