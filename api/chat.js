@@ -63,54 +63,85 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 - ছবির বিষয়বস্তু, রং, আবেগ, পরিবেশ সম্পর্কে ভদ্র ও বিস্তারিত বাংলায় উত্তর দেবে।
 - যেকোনো ছবি সম্পর্কে প্রশ্নের উত্তর দিতে সক্ষম।`;
 
+const GEMINI_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+
+function isGeminiApiKey(apiKey = "") {
+  return apiKey.startsWith("AIza");
+}
+
+function isGeminiBaseUrl(baseUrl = "") {
+  return baseUrl.includes("generativelanguage.googleapis.com");
+}
+
 function buildChatCompletionsUrl(baseUrl) {
   const normalized = (baseUrl || "https://api.openai.com/v1").replace(/\/$/, "");
-
   if (normalized.endsWith("/chat/completions")) {
     return normalized;
   }
-
-  if (normalized.endsWith("/v1")) {
+  if (normalized.endsWith("/v1") || normalized.endsWith("/openai")) {
     return `${normalized}/chat/completions`;
   }
-
   return `${normalized}/v1/chat/completions`;
+}
+
+function resolveProviderConfig({ apiKey, baseUrl, model, source, defaultModel = "gpt-4.1-mini" }) {
+  const isOpenRouterKey = apiKey.startsWith("sk-or-");
+  if (isGeminiApiKey(apiKey) || isGeminiBaseUrl(baseUrl)) {
+    return {
+      apiKey,
+      baseUrl: baseUrl || GEMINI_OPENAI_BASE_URL,
+      model: model || process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL,
+      useForge: false,
+      source: `${source}_GEMINI`,
+    };
+  }
+  return {
+    apiKey,
+    baseUrl: baseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
+    model: model || (isOpenRouterKey ? "openai/gpt-4.1-mini" : defaultModel),
+    useForge: false,
+    source,
+  };
 }
 
 function resolveAiConfig() {
   const chatbotApiKey = process.env.CHATBOT_API_KEY?.trim();
   const chatbotBaseUrl = process.env.CHATBOT_BASE_URL?.trim();
   const chatbotModel = process.env.CHATBOT_MODEL?.trim();
-
   const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
   const openRouterBaseUrl = process.env.OPENROUTER_BASE_URL?.trim();
   const openRouterModel = process.env.OPENROUTER_MODEL?.trim();
-
   const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
   const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim();
   const openAiModel = process.env.OPENAI_MODEL?.trim();
-
+  const geminiApiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  const geminiBaseUrl = process.env.GEMINI_BASE_URL?.trim();
+  const geminiModel = process.env.GEMINI_MODEL?.trim();
   const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
-  const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || "gemini-2.5-flash";
-
+  const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
   // Easiest long-term setup:
-  // 1) Put your active provider key in CHATBOT_API_KEY.
-  // 2) Or set OPENROUTER_API_KEY directly for OpenRouter.
-  // 3) Leave *_BASE_URL and *_MODEL empty unless you need a custom provider.
-  // 4) CHATBOT_API_KEY auto-detects OpenRouter keys (sk-or-...) and otherwise defaults to OpenAI.
-  if (chatbotApiKey) {
-    const isOpenRouterKey = chatbotApiKey.startsWith("sk-or-");
-
-    return {
-      apiKey: chatbotApiKey,
-      baseUrl: chatbotBaseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
-      model: chatbotModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
-      useForge: false,
-      source: "CHATBOT_API_KEY",
-    };
+  // 1) Put your active Google AI key in GEMINI_API_KEY.
+  // 2) Or put any supported provider key in CHATBOT_API_KEY / OPENAI_API_KEY.
+  // 3) Google AI keys (AIza...) are automatically routed to Gemini's OpenAI-compatible endpoint.
+  if (geminiApiKey) {
+    return resolveProviderConfig({
+      apiKey: geminiApiKey,
+      baseUrl: geminiBaseUrl,
+      model: geminiModel,
+      source: "GEMINI_API_KEY",
+      defaultModel: DEFAULT_GEMINI_MODEL,
+    });
   }
-
+  if (chatbotApiKey) {
+    return resolveProviderConfig({
+      apiKey: chatbotApiKey,
+      baseUrl: chatbotBaseUrl,
+      model: chatbotModel,
+      source: "CHATBOT_API_KEY",
+    });
+  }
   if (openRouterApiKey) {
     return {
       apiKey: openRouterApiKey,
@@ -120,17 +151,14 @@ function resolveAiConfig() {
       source: "OPENROUTER_API_KEY",
     };
   }
-
   if (openAiApiKey) {
-    return {
+    return resolveProviderConfig({
       apiKey: openAiApiKey,
-      baseUrl: openAiBaseUrl || "https://api.openai.com/v1",
-      model: openAiModel || "gpt-4.1-mini",
-      useForge: false,
+      baseUrl: openAiBaseUrl,
+      model: openAiModel,
       source: "OPENAI_API_KEY",
-    };
+    });
   }
-
   if (forgeApiKey && forgeBaseUrl) {
     return {
       apiKey: forgeApiKey,
@@ -140,8 +168,7 @@ function resolveAiConfig() {
       source: "BUILT_IN_FORGE_API_KEY",
     };
   }
-
-  throw new Error("No AI API key configured. Set CHATBOT_API_KEY for the simplest production setup.");
+  throw new Error("No AI API key configured. Set GEMINI_API_KEY for the simplest production setup.");
 }
 
 // Call AI API

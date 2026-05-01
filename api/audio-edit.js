@@ -369,6 +369,35 @@ function buildSidechainDucking(ffmpegPath, vocalPath, musicPath, outputPath, opt
 }
 
 // ── AI Config ────────────────────────────────────────────────────────────────
+const GEMINI_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+
+function isGeminiApiKey(apiKey = "") {
+  return apiKey.startsWith("AIza");
+}
+
+function isGeminiBaseUrl(baseUrl = "") {
+  return baseUrl.includes("generativelanguage.googleapis.com");
+}
+
+function resolveProviderConfig({ apiKey, baseURL, model, source, defaultModel = "gpt-4.1-mini" }) {
+  const isOpenRouterKey = apiKey.startsWith("sk-or-");
+  if (isGeminiApiKey(apiKey) || isGeminiBaseUrl(baseURL)) {
+    return {
+      apiKey,
+      baseURL: baseURL || GEMINI_OPENAI_BASE_URL,
+      model: model || process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL,
+      source: `${source}_GEMINI`,
+    };
+  }
+  return {
+    apiKey,
+    baseURL: baseURL || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
+    model: model || (isOpenRouterKey ? "openai/gpt-4.1-mini" : defaultModel),
+    source,
+  };
+}
+
 function resolveAudioAiConfig() {
   const audioApiKey = process.env.AUDIO_AI_API_KEY?.trim();
   const audioBaseUrl = process.env.AUDIO_AI_BASE_URL?.trim();
@@ -382,11 +411,24 @@ function resolveAudioAiConfig() {
   const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
   const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim();
   const openAiModel = process.env.OPENAI_MODEL?.trim();
+  const geminiApiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  const geminiBaseUrl = process.env.GEMINI_BASE_URL?.trim();
+  const geminiModel = process.env.GEMINI_MODEL?.trim();
   const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
-  const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || "gemini-2.5-flash";
+  const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
 
-  // 1. Prefer Forge (Gemini) for audio tasks (free/reliable)
+  // 1. Explicit Gemini key from Vercel environment.
+  if (geminiApiKey) {
+    return resolveProviderConfig({
+      apiKey: geminiApiKey,
+      baseURL: geminiBaseUrl,
+      model: geminiModel,
+      source: "GEMINI_API_KEY",
+      defaultModel: DEFAULT_GEMINI_MODEL,
+    });
+  }
+  // 2. Prefer Forge (Gemini) for audio tasks when available.
   if (forgeApiKey && forgeBaseUrl) {
     return {
       apiKey: forgeApiKey,
@@ -395,36 +437,34 @@ function resolveAudioAiConfig() {
       source: "BUILT_IN_FORGE_API_KEY",
     };
   }
-  // 2. Fallback to explicit AUDIO_AI key
+  // 3. Fallback to explicit AUDIO_AI key; Google AI keys are routed to Gemini.
   if (audioApiKey) {
-    const isOpenRouterKey = audioApiKey.startsWith("sk-or-");
-    return {
+    return resolveProviderConfig({
       apiKey: audioApiKey,
-      baseURL: audioBaseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
-      model: audioModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
+      baseURL: audioBaseUrl,
+      model: audioModel,
       source: "AUDIO_AI_API_KEY",
-    };
+    });
   }
-  // 3. Fallback to standard OPENAI key
+  // 4. Fallback to OPENAI_API_KEY; if it contains a Gemini key, use Gemini endpoint.
   if (openAiApiKey) {
-    return {
+    return resolveProviderConfig({
       apiKey: openAiApiKey,
-      baseURL: openAiBaseUrl || "https://api.openai.com/v1",
-      model: openAiModel || "gpt-4.1-mini",
+      baseURL: openAiBaseUrl,
+      model: openAiModel,
       source: "OPENAI_API_KEY",
-    };
+    });
   }
-  // 4. Fallback to CHATBOT key
+  // 5. Fallback to CHATBOT key; Google AI keys are routed to Gemini.
   if (chatbotApiKey) {
-    const isOpenRouterKey = chatbotApiKey.startsWith("sk-or-");
-    return {
+    return resolveProviderConfig({
       apiKey: chatbotApiKey,
-      baseURL: chatbotBaseUrl || (isOpenRouterKey ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
-      model: chatbotModel || (isOpenRouterKey ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
+      baseURL: chatbotBaseUrl,
+      model: chatbotModel,
       source: "CHATBOT_API_KEY",
-    };
+    });
   }
-  // 5. Legacy OpenRouter fallback
+  // 6. Legacy OpenRouter fallback.
   if (openRouterApiKey) {
     return {
       apiKey: openRouterApiKey,
@@ -433,7 +473,7 @@ function resolveAudioAiConfig() {
       source: "OPENROUTER_API_KEY",
     };
   }
-  throw new Error("No AI API key configured for audio editing. Set AUDIO_AI_API_KEY, CHATBOT_API_KEY, or OPENAI_API_KEY.");
+  throw new Error("No AI API key configured for audio editing. Set GEMINI_API_KEY or AUDIO_AI_API_KEY for the simplest production setup.");
 }
 
 function createAudioAiClient() {
