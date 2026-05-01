@@ -1,12 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "pnpm approve-builds ffmpeg-static && pnpm install --no-frozen-lockfile",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
   "functions": {
     "api/audio-edit.js": {
-      "includeFiles": "node_modules/.pnpm/ffmpeg-static@*/node_modules/ffmpeg-static/ffmpeg"
+      "maxDuration": 60,
+      "memory": 1024,
+      "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     }
   },
   "redirects": [
@@ -129,12 +131,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "api/audio-edit.js": {
-      "maxDuration": 60,
-      "memory": 1024,
-      "includeFiles": "node_modules/ffmpeg-static/ffmpeg"
-    }
-  }
+  ]
 }

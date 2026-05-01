@@ -3,7 +3,7 @@ import formidable from "formidable";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import ffmpegStatic from "ffmpeg-static";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { execFileSync } from "child_process";
 
 export const config = { api: { bodyParser: false } };
@@ -627,8 +627,8 @@ export default async function handler(req, res) {
     // 2. Run FFmpeg
     let ffmpegPath = "ffmpeg";
     try {
-      if (ffmpegStatic && fs.existsSync(ffmpegStatic)) {
-        ffmpegPath = ffmpegStatic;
+      if (ffmpegInstaller?.path && fs.existsSync(ffmpegInstaller.path)) {
+        ffmpegPath = ffmpegInstaller.path;
         fs.chmodSync(ffmpegPath, 0o755);
       }
     } catch (e) {}
