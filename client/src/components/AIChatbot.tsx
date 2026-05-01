@@ -301,8 +301,6 @@ const SUGGESTIONS = [
   "বিখ্যাত লেখা",
   "কবিতা কোথায়?",
   "যোগাযোগ করব?",
-  "🎵 অডিও এডিট করুন",
-  "ভলিউম বাড়াও",
 ];
 
 function formatTime(date: Date): string {
