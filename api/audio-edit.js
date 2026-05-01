@@ -550,7 +550,7 @@ function deterministicAudioPlan(prompt = "") {
   if (has(/vocal doubler|ডাবল|ডাবল লেয়ার|ডাবল লেয়ার/)) addOpOnce(operations, "vocal_doubler");
   if (has(/harmony|হার্মোনি/)) addOpOnce(operations, "vocal_harmony", { voices: 2, spread: 0.25 });
   if (has(/stereo expand|স্টেরিও বড়|স্টেরিও বড়/)) addOpOnce(operations, "stereo_field_expand", { width: 1.5 });
-  if (has(/spatial|3d sound|স্পেশিয়াল|স্পেশাল/)) addOpOnce(operations, "spatial_audio");
+  if (has(/spatial|3d sound|3d|স্পেশিয়াল|স্পেশিয়াল|স্পেশাল|স্পেশ্যাল/)) addOpOnce(operations, "spatial_audio");
   if (has(/dynamic normalize|ডাইনামিক নরমালাইজ|ডায়নামিক নরমালাইজ/)) addOpOnce(operations, "dynamic_normalize");
   if (has(/vintage|ভিনটেজ|পুরনো রেডিও|রেট্রো/)) addOpOnce(operations, "vintage_radio");
   if (has(/telephone|টেলিফোন|phone call/)) addOpOnce(operations, "telephone_effect");
