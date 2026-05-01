@@ -1524,6 +1524,38 @@ export default function AIChatbot() {
     }
 
     if (pendingInstruction) {
+      // Check if instruction is a music mix request — if so, need music file first
+      const isMusicMixInstruction = /ব্যাকগ্রাউন্ড|মিউজিক.*মিক্স|মিক্স.*মিউজিক|background.*music|music.*mix|smart.?mix/i.test(pendingInstruction);
+
+      if (isMusicMixInstruction && !musicFile) {
+        // Don't auto-run — ask for music file first
+        setAudioFile(file);
+        setIsAudioMode(true);
+        setInput("");
+        const fileSizeMB2 = (file.size / (1024 * 1024)).toFixed(1);
+        setMessages(prev => [...prev,
+          {
+            id: `user-audio-upload-${Date.now()}`,
+            role: "user" as const,
+            content: `🎧 ${file.name}`,
+            timestamp: new Date(),
+            userAudioName: file.name,
+            userAudioSize: file.size,
+            userAudioMime: file.type || "audio/mpeg",
+            userAudioUrl: URL.createObjectURL(file),
+            userAudioInstruction: "",
+          },
+          {
+            id: `ai-ask-music-${Date.now()}`,
+            role: "assistant" as const,
+            content: `ফাইলটি (${fileSizeMB2} MB) পেয়েছি! ব্যাকগ্রাউন্ড মিউজিক যোগ করতে হলে আপনার মিউজিক ফাইলটি দরকার।\n\nনিচের **🎧 বাটনে** ক্লিক করে আপনার পছন্দের ব্যাকগ্রাউন্ড মিউজিক ফাইলটি আপলোড করুন, তারপর আমি ভোকাল ও মিউজিক একসাথে মিক্স করে দেব।`,
+            timestamp: new Date(),
+            audioIntent: "ask_music_file",
+          }
+        ]);
+        return;
+      }
+
       // Auto-run immediately with the found instruction
       setAudioFile(file);
       setIsAudioMode(true);
@@ -1537,7 +1569,7 @@ export default function AIChatbot() {
         const userMsg: Message = {
           id: `user-audio-${Date.now()}`,
           role: "user",
-          content: `🎵 ${file.name}\n\nনির্দেশ: ${pendingInstruction}`,
+          content: `🎧 ${file.name}\n\nনির্দেশ: ${pendingInstruction}`,
           timestamp: new Date(),
           userAudioName: file.name,
           userAudioSize: file.size,
@@ -1562,6 +1594,19 @@ export default function AIChatbot() {
             const errData = await response.json().catch(() => ({}));
             throw new Error(errData.error || `HTTP ${response.status}`);
           }
+          const respJson2 = await response.json();
+          // Handle needsMusicFile response
+          if (respJson2.needsMusicFile || respJson2.intent === "ask_music_file") {
+            setMessages(prev => [...prev, {
+              id: `ai-ask-music-${Date.now()}`,
+              role: "assistant",
+              content: `ব্যাকগ্রাউন্ড মিউজিক যোগ করতে হলে আপনার মিউজিক ফাইলটি দরকার।\n\nনিচের **🎧 বাটনে** ক্লিক করে আপনার পছন্দের ব্যাকগ্রাউন্ড মিউজিক ফাইলটি আপলোড করুন, তারপর আমি মিক্স করে দেব।`,
+              timestamp: new Date(),
+              audioIntent: "ask_music_file",
+            }]);
+            setAudioProcessing(false);
+            return;
+          }
           const {
             audioData: resultBase64,
             audioMime: resultMime = "audio/wav",
@@ -1570,11 +1615,11 @@ export default function AIChatbot() {
             intent = "custom",
             pipeline = [],
             technicalNote = null,
-          } = await response.json();
+          } = respJson2;
           const resultBytes = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
           const wavBlob = new Blob([resultBytes], { type: resultMime });
           const audioUrl = URL.createObjectURL(wavBlob);
-          const audioFilename = `edited_${Date.now()}.wav`;
+          const audioFilename = `edited_${Date.now()}.mp3`;
           // Save for iterative editing
           lastAudioBlobRef.current = { blob: wavBlob, name: audioFilename };
           setMessages(prev => [...prev, {
