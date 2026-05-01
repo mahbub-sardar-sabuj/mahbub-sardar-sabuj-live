@@ -954,20 +954,121 @@ export default function AIChatbot() {
       setError("অডিও ফাইলের আকার সর্বোচ্চ ৫০ MB হতে পারবে।");
       return;
     }
-    const allowedTypes = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/flac", "audio/aac", "audio/mp4", "audio/webm", "audio/x-m4a"];
-    if (!allowedTypes.some(t => file.type.startsWith("audio/")) && !file.name.match(/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i)) {
+    if (!file.type.startsWith("audio/") && !file.name.match(/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i)) {
       setError("সমর্থিত ফরম্যাট: MP3, WAV, OGG, FLAC, AAC, M4A");
       return;
     }
-    setAudioFile(file);
-    setIsAudioMode(true);
     e.target.value = "";
-  }, []);
+
+    // Smart auto-run: if there's already a pending instruction in input or recent chat, run immediately
+    const currentInput = input.trim();
+
+    // Find instruction from recent chat messages (last user message that's an audio edit request)
+    let pendingInstruction = currentInput;
+    if (!pendingInstruction) {
+      const recentUserMsgs = messages
+        .filter(m => m.role === "user")
+        .slice(-5)
+        .map(m => m.content)
+        .reverse();
+      for (const msg of recentUserMsgs) {
+        const clean = msg.replace(/🎵.*?\n.*?\n?/g, "").trim();
+        if (clean && !clean.startsWith("🎵") && isAudioEditRequest(clean)) {
+          pendingInstruction = clean;
+          break;
+        }
+      }
+    }
+
+    if (pendingInstruction) {
+      // Auto-run immediately with the found instruction
+      setAudioFile(file);
+      setIsAudioMode(true);
+      setInput("");
+      // Use setTimeout to ensure state updates before calling
+      setTimeout(async () => {
+        // Directly call the API without waiting for state
+        if (audioProcessing) return;
+        setAudioProcessing(true);
+        setError(null);
+        const userMsg: Message = {
+          id: `user-audio-${Date.now()}`,
+          role: "user",
+          content: `🎵 ${file.name}\n\nনির্দেশ: ${pendingInstruction}`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, userMsg]);
+        try {
+          const formData = new FormData();
+          formData.append("audio", file, file.name);
+          formData.append("instruction", pendingInstruction);
+          const response = await fetch("/api/audio-edit", { method: "POST", body: formData });
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${response.status}`);
+          }
+          const blob = await response.blob();
+          const audioUrl = URL.createObjectURL(blob);
+          const contentDisposition = response.headers.get("Content-Disposition") || "";
+          const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+          const audioFilename = filenameMatch?.[1] || `edited_audio.mp3`;
+          const descriptionEncoded = response.headers.get("X-Audio-Description") || "";
+          const audioDescription = descriptionEncoded ? decodeURIComponent(descriptionEncoded) : "অডিও এডিটিং সম্পন্ন হয়েছে।";
+          setMessages(prev => [...prev, {
+            id: `ai-audio-${Date.now()}`,
+            role: "assistant",
+            content: audioDescription,
+            timestamp: new Date(),
+            audioUrl,
+            audioFilename,
+            audioDescription,
+          }]);
+          setAudioFile(null);
+          setIsAudioMode(false);
+        } catch (err: any) {
+          setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
+        } finally {
+          setAudioProcessing(false);
+        }
+      }, 100);
+    } else {
+      // No pending instruction — just set file and wait for user to type
+      setAudioFile(file);
+      setIsAudioMode(true);
+    }
+  }, [input, messages, audioProcessing]);
 
   // ── Audio edit submit ──────────────────────────────────────────────────────
-  const handleAudioEdit = useCallback(async () => {
-    const instruction = input.trim();
-    if (!audioFile || !instruction || audioProcessing) return;
+  const handleAudioEdit = useCallback(async (overrideInstruction?: string) => {
+    if (!audioFile || audioProcessing) return;
+
+    // Smart instruction resolution:
+    // 1. Use override (from normal chat flow)
+    // 2. Use current input box text
+    // 3. Look at last user message in chat history for audio-related instruction
+    // 4. Default to smart auto-detect
+    let instruction = overrideInstruction || input.trim();
+
+    if (!instruction) {
+      // Search recent messages for an audio instruction
+      const recentUserMsgs = messages
+        .filter(m => m.role === "user")
+        .slice(-5)
+        .map(m => m.content)
+        .reverse();
+      for (const msg of recentUserMsgs) {
+        const clean = msg.replace(/🎵.*?\n.*?\n?/g, "").trim();
+        if (clean && !clean.startsWith("🎵")) {
+          instruction = clean;
+          break;
+        }
+      }
+    }
+
+    // If still no instruction, use a default that tells AI to auto-detect what to do
+    if (!instruction) {
+      instruction = "অডিওটি বিশ্লেষণ করে স্বয়ংক্রিয়ভাবে মান উন্নত করো এবং নয়েজ কমাও";
+    }
 
     const userMsg: Message = {
       id: `user-audio-${Date.now()}`,
@@ -1041,13 +1142,39 @@ export default function AIChatbot() {
 
   // ── Send message ────────────────────────────────────────────────
   const handleSend = useCallback(async () => {
-    // If in audio mode, delegate to audio handler
-    if (isAudioMode && audioFile) {
+    // Case 1: Audio file already selected + any text = run edit immediately
+    if (audioFile) {
       handleAudioEdit();
       return;
     }
+
     const text = input.trim();
     if (!text && !imagePreview || isLoading) return;
+
+    // Case 2: Text looks like audio edit instruction but no file yet
+    // Show a smart prompt asking to upload audio
+    if (isAudioEditRequest(text) && !audioFile) {
+      const userMsg: Message = {
+        id: `user-${Date.now()}`,
+        role: "user",
+        content: text,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, userMsg]);
+      setInput("");
+      setIsLoading(false);
+      // Show AI response asking for audio file
+      const aiPromptMsg: Message = {
+        id: `ai-audio-prompt-${Date.now()}`,
+        role: "assistant",
+        content: `অডিও এডিটিংয়ের জন্য প্রস্তুত! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি তাৎক্ষণিক “${text}” অনুযায়ী এডিট করে দেব।`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiPromptMsg]);
+      // Auto-open audio file picker
+      setTimeout(() => audioFileInputRef.current?.click(), 400);
+      return;
+    }
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -1128,7 +1255,7 @@ export default function AIChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, imagePreview]);
+  }, [input, isLoading, messages, imagePreview, audioFile, isAudioMode, handleAudioEdit, isAudioEditRequest]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -1593,7 +1720,7 @@ export default function AIChatbot() {
                 />
 
                 {/* Audio mode banner */}
-                {isAudioMode && audioFile && (
+                {audioFile && (
                   <div style={{
                     marginBottom: 8,
                     display: "flex",
@@ -1636,6 +1763,25 @@ export default function AIChatbot() {
                         {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • নির্দেশ লিখুন নিচে
                       </div>
                     </div>
+                    {/* Quick edit button - no instruction needed */}
+                    <button
+                      onClick={() => handleAudioEdit("অডিওটি বিশ্লেষণ করে স্বয়ংক্রিয়ভাবে মান উন্নত করো, নয়েজ কমাও")}
+                      disabled={audioProcessing}
+                      title="নির্দেশ ছাড়াই অ্যান্টো এডিট"
+                      style={{
+                        padding: "4px 8px",
+                        background: "rgba(212,168,67,0.2)",
+                        border: "1px solid rgba(212,168,67,0.5)",
+                        borderRadius: 8,
+                        color: "#D4A843",
+                        fontSize: "0.62rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        flexShrink: 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >স্বয়ং এডিট</button>
                     <button
                       onClick={() => { setAudioFile(null); setIsAudioMode(false); }}
                       style={{
@@ -1748,7 +1894,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 90) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={isAudioMode ? "নির্দেশ দিন... (যেমন: ভলিউম ২ গুণ বাড়াও)" : "জিজ্ঞেস করুন..."}
+                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: ভলিউম ২ গুণ বাড়াও, নয়েজ কমাও) বা স্বয়ং এডিট বাটন চাপুন" : "জিজ্ঞেস করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
@@ -1782,19 +1928,19 @@ export default function AIChatbot() {
                     />
                   </div>
                   <button
-                    onClick={isAudioMode ? handleAudioEdit : handleSend}
-                    disabled={isAudioMode
-                      ? (!audioFile || !input.trim() || audioProcessing)
+                    onClick={audioFile ? () => handleAudioEdit() : handleSend}
+                    disabled={audioFile
+                      ? audioProcessing
                       : ((!input.trim() && !imagePreview) || isLoading)
                     }
                     style={{
                       width: 40, height: 40,
                       borderRadius: 12,
-                      background: (isAudioMode ? (audioFile && input.trim() && !audioProcessing) : ((input.trim() || imagePreview) && !isLoading))
+                      background: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
                         ? "linear-gradient(135deg, #E8C060 0%, #D4A843 50%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.18)",
                       border: "none",
-                      color: (isAudioMode ? (audioFile && input.trim() && !audioProcessing) : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.38)",
+                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.38)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1812,7 +1958,7 @@ export default function AIChatbot() {
                         borderRadius: "50%",
                         animation: "spin 0.8s linear infinite",
                       }} />
-                    ) : isAudioMode ? (
+                    ) : audioFile ? (
                       /* Waveform icon for audio mode */
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
