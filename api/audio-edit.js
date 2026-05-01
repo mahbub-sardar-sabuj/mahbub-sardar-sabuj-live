@@ -508,26 +508,91 @@ function parseAiJsonObject(content = "") {
   }
 }
 
-function fallbackAudioPlan(prompt = "") {
-  const text = String(prompt).toLowerCase();
+function addOpOnce(operations, type, params = {}) {
+  if (!operations.some(op => op.type === type)) operations.push({ type, params });
+}
+
+function deterministicAudioPlan(prompt = "") {
+  const text = String(prompt || "").toLowerCase();
   const operations = [];
-  if (/noise|নয়েজ|নয়েজ|শব্দ|হিস|hiss|clean|ক্লিন|রিমুভ/.test(text)) {
-    operations.push({ type: "noise_reduction", params: { strength: 0.65 } });
+  let intent = "audio_cleanup";
+  const has = (...patterns) => patterns.some(pattern => pattern.test(text));
+
+  if (has(/youtube|ইউটিউব|ভিডিও ভয়েস|ভিডিও ভয়েস/)) { addOpOnce(operations, "youtube_voice"); intent = "youtube_voice"; }
+  if (has(/tiktok|tik tok|reels|রিলস|টিকটক/)) { addOpOnce(operations, "tiktok_voice"); intent = "tiktok_voice"; }
+  if (has(/audiobook|অডিওবুক|বই পড়া|বই পড়া/)) { addOpOnce(operations, "audiobook_voice"); intent = "audiobook_voice"; }
+  if (has(/meditation|মেডিটেশন|শান্ত কণ্ঠ|শান্ত ভয়েস/)) { addOpOnce(operations, "meditation_voice"); intent = "meditation_voice"; }
+  if (has(/news anchor|নিউজ অ্যাঙ্কর|সংবাদ পাঠক|ব্রডকাস্ট/)) { addOpOnce(operations, "news_anchor"); intent = "news_anchor"; }
+  if (has(/recitation pro|বাংলা আবৃত্তি|আবৃত্তি প্রো|কবিতা/)) { addOpOnce(operations, "bangla_recitation_pro"); intent = "bangla_recitation_pro"; }
+  if (has(/voice message|whatsapp|telegram|ভয়েস মেসেজ|ভয়েস মেসেজ/)) { addOpOnce(operations, "voice_message_clean"); intent = "voice_message_clean"; }
+  if (has(/conference|meeting|কনফারেন্স|মিটিং/)) { addOpOnce(operations, "conference_voice"); intent = "conference_voice"; }
+
+  if (has(/honey|মধুময়|মধুময়|মধুর|মিষ্টি কণ্ঠ/)) { addOpOnce(operations, "voice_clone_preset", { style: "honey" }); intent = "honey_voice"; }
+  if (has(/broadcast|ব্রডকাস্ট/)) { addOpOnce(operations, "voice_clone_preset", { style: "broadcast" }); intent = "broadcast_voice"; }
+  if (has(/asmr|ফিসফিস/)) { addOpOnce(operations, "voice_clone_preset", { style: "asmr" }); intent = "asmr_voice"; }
+  if (has(/epic|এপিক|হিরো/)) { addOpOnce(operations, "voice_clone_preset", { style: "epic" }); intent = "epic_voice"; }
+  if (has(/narrator|ন্যারেটর/)) { addOpOnce(operations, "voice_clone_preset", { style: "narrator" }); intent = "narrator_voice"; }
+
+  if (has(/noise profile|নয়েজ প্রোফাইল|নয়েজ প্রোফাইল/)) addOpOnce(operations, "noise_profile_learn");
+  if (has(/noise|নয়েজ|নয়েজ|শব্দ|হিস|hiss|clean|ক্লিন|রিমুভ/)) addOpOnce(operations, "noise_reduction", { strength: 0.55 });
+  if (has(/clarity|ক্লারিটি|ক্লিয়ার|ক্লিয়ার|স্পষ্ট|পরিষ্কার/)) addOpOnce(operations, "clarity_boost");
+  if (has(/punch|পাঞ্চ|ইমপ্যাক্ট/)) addOpOnce(operations, "punch_boost");
+  if (has(/warmth|warm|উষ্ণতা|ওয়ার্ম|ওয়ার্ম/)) addOpOnce(operations, "warmth_enhance");
+  if (has(/air|ব্রিলিয়ান্স|brilliance/)) addOpOnce(operations, "air_enhance");
+  if (has(/voice focus|ভয়েস ফোকাস|ভয়েস ফোকাস/)) addOpOnce(operations, "voice_focus");
+  if (has(/smart gate|noise gate|স্মার্ট গেট|নয়েজ গেট|নয়েজ গেট/)) addOpOnce(operations, "noise_gate_smart");
+  if (has(/breath|শ্বাস/)) addOpOnce(operations, "de_breath");
+  if (has(/de-?reverb|রুম রিভার্ব|রুমের শব্দ/)) addOpOnce(operations, "de_reverb");
+  if (has(/room correction|রুম কারেকশন|অ্যাকুস্টিক/)) addOpOnce(operations, "room_correction");
+  if (has(/dynamic eq|ডায়নামিক eq|ডাইনামিক eq/)) addOpOnce(operations, "dynamic_eq");
+  if (has(/multiband gate|মাল্টিব্যান্ড গেট/)) addOpOnce(operations, "multiband_gate");
+  if (has(/saturation|হার্মোনিক|স্যাচুরেশন/)) addOpOnce(operations, "harmonic_saturation", { drive: 0.6 });
+  if (has(/vocal doubler|ডাবল|ডাবল লেয়ার|ডাবল লেয়ার/)) addOpOnce(operations, "vocal_doubler");
+  if (has(/harmony|হার্মোনি/)) addOpOnce(operations, "vocal_harmony", { voices: 2, spread: 0.25 });
+  if (has(/stereo expand|স্টেরিও বড়|স্টেরিও বড়/)) addOpOnce(operations, "stereo_field_expand", { width: 1.5 });
+  if (has(/spatial|3d sound|স্পেশিয়াল|স্পেশাল/)) addOpOnce(operations, "spatial_audio");
+  if (has(/dynamic normalize|ডাইনামিক নরমালাইজ|ডায়নামিক নরমালাইজ/)) addOpOnce(operations, "dynamic_normalize");
+  if (has(/vintage|ভিনটেজ|পুরনো রেডিও|রেট্রো/)) addOpOnce(operations, "vintage_radio");
+  if (has(/telephone|টেলিফোন|phone call/)) addOpOnce(operations, "telephone_effect");
+  if (has(/megaphone|মেগাফোন/)) addOpOnce(operations, "megaphone_effect");
+  if (has(/underwater|পানির নিচে/)) addOpOnce(operations, "underwater_effect");
+  if (has(/cave|গুহা/)) addOpOnce(operations, "cave_echo");
+  if (has(/stadium|স্টেডিয়াম|স্টেডিয়াম/)) addOpOnce(operations, "stadium_reverb");
+  if (has(/bathroom|বাথরুম/)) addOpOnce(operations, "bathroom_reverb");
+  if (has(/alien|এলিয়েন|এলিয়েন/)) addOpOnce(operations, "alien_voice");
+  if (has(/vinyl|ভিনাইল|পুরনো রেকর্ড/)) addOpOnce(operations, "vinyl_effect");
+  if (has(/tape|cassette|ক্যাসেট/)) addOpOnce(operations, "tape_saturation", { drive: 0.8 });
+  if (has(/reverse|রিভার্স|উল্টো/)) addOpOnce(operations, "reverse");
+  if (has(/normalize|নরমাল|লেভেল|volume|ভলিউম|loud|জোরে/)) addOpOnce(operations, "loudness_normalize", { target_lufs: -16 });
+
+  if (operations.length && !operations.some(op => ["loudness_normalize", "normalize", "limiter", "true_peak_limit"].includes(op.type))) {
+    addOpOnce(operations, "loudness_normalize", { target_lufs: -16 });
   }
-  if (/normalize|নরমাল|লেভেল|volume|ভলিউম|loud|জোরে/.test(text)) {
-    operations.push({ type: "normalize", params: {} });
-  }
-  if (/clear|ক্লিয়ার|ক্লিয়ার|স্পষ্ট|voice|ভয়েস|ভয়েস|vocal/.test(text)) {
-    operations.push({ type: "clarity_boost", params: {} });
-  }
-  if (!operations.length) {
-    operations.push({ type: "noise_reduction", params: { strength: 0.55 } }, { type: "normalize", params: {} });
-  }
+
   return {
-    intent: "audio_cleanup",
+    intent,
     operations,
-    explanation: "AI provider error হলে নিরাপদ fallback দিয়ে অডিও ক্লিন/নরমালাইজ করা হয়েছে।",
+    explanation: operations.length
+      ? "নির্বাচিত অডিও টুলের জন্য নির্ভরযোগ্য preset/filter pipeline প্রয়োগ করা হয়েছে।"
+      : "সাধারণ অডিও ক্লিনআপ pipeline প্রয়োগ করা হয়েছে।",
   };
+}
+
+function mergeAudioPlan(aiResponse = {}, prompt = "") {
+  const deterministic = deterministicAudioPlan(prompt);
+  const merged = Array.isArray(aiResponse.operations) ? [...aiResponse.operations] : [];
+  for (const op of deterministic.operations) addOpOnce(merged, op.type, op.params || {});
+  if (!merged.length) merged.push({ type: "noise_reduction", params: { strength: 0.5 } }, { type: "vocal_enhance", params: {} }, { type: "loudness_normalize", params: { target_lufs: -16 } });
+  return {
+    ...aiResponse,
+    operations: merged,
+    intent: deterministic.operations.length ? deterministic.intent : (aiResponse.intent || "audio_cleanup"),
+    explanation: aiResponse.explanation || deterministic.explanation,
+  };
+}
+
+function fallbackAudioPlan(prompt = "") {
+  return mergeAudioPlan({}, prompt);
 }
 
 // ── AI System Prompt ─────────────────────────────────────────────────────────
@@ -1223,6 +1288,35 @@ function buildFFmpegFilter(operations, vocalDuration) {
         // Smart noise gate: preserves voice, removes silence
         filters.push("agate=threshold=-40dB:attack=8:release=150:ratio=10:range=-60dB,agate=threshold=-38dB:attack=5:release=100:ratio=8");
         break;
+      case "pitch_correct":
+        // Lightweight pitch correction style enhancement; true scale-aware correction is approximated safely.
+        filters.push("chorus=0.7:0.9:20:0.4:1.5:0.8,equalizer=f=3000:t=h:width=2000:g=1.5");
+        break;
+      case "vintage_radio":
+        filters.push("highpass=f=300,lowpass=f=3400,equalizer=f=1200:t=h:width=800:g=4,aecho=0.8:0.18:35:0.22,acrusher=bits=13:mode=log:aa=1");
+        break;
+      case "vocal_doubler":
+        filters.push("asplit=2[d0][d1];[d1]adelay=24|24,volume=0.45[d1d];[d0][d1d]amix=inputs=2:weights=1 0.45");
+        break;
+      case "multi_segment_mix":
+      case "adaptive_ducking":
+        // These are handled in the smart-mix path when a music file exists.
+        break;
+      case "loop": {
+        const times = Math.min(Math.max(params.times || 2, 1), 5);
+        filters.push(`aloop=loop=${times - 1}:size=2e+09`);
+        break;
+      }
+      case "add_silence": {
+        const ms = Math.min(Math.max(params.duration_ms || 1000, 100), 5000);
+        const pos = params.position || "start";
+        if (pos === "end") filters.push(`apad=pad_dur=${ms / 1000}`);
+        else filters.push(`adelay=${ms}|${ms}`);
+        break;
+      }
+      case "ducking":
+        filters.push(`volume=${params.level_db || -3}dB,acompressor=threshold=-24dB:ratio=3:attack=15:release=200:knee=6dB`);
+        break;
       // ── v8.0 NEW OPERATIONS ────────────────────────────────────────────────────
       case "vocal_harmony": {
         // Vocal harmony: adds 2-3 pitch-shifted layers for richness
@@ -1241,7 +1335,7 @@ function buildFFmpegFilter(operations, vocalDuration) {
         // Stereo field expansion using mid-side processing
         const width = op.params?.width || 1.5;
         const sideGain = Math.min(width, 2.0).toFixed(2);
-        filters.push(`stereotools=mlev=1:slev=${sideGain}:sbal=0:mbal=0`);
+        filters.push(`stereotools=mlev=1:slev=${sideGain}:sbal=0`);
         break;
       }
       case "vintage_warmth":
@@ -1250,7 +1344,7 @@ function buildFFmpegFilter(operations, vocalDuration) {
         break;
       case "spatial_audio":
         // Spatial/3D audio effect using haas effect + stereo widening
-        filters.push("asplit=2[a][b];[b]adelay=20|0[b_delayed];[a][b_delayed]amix=inputs=2:weights=1 0.6,stereotools=mlev=1:slev=1.4:sbal=0:mbal=0");
+        filters.push("asplit=2[a][b];[b]adelay=20|0[b_delayed];[a][b_delayed]amix=inputs=2:weights=1 0.6,stereotools=mlev=1:slev=1.4:sbal=0");
         break;
       case "dynamic_normalize":
         // Dynamic normalization: levels out loud and quiet sections
@@ -1378,7 +1472,7 @@ export default async function handler(req, res) {
     let aiResponse;
     try {
       const completion = await openai.chat.completions.create(payload);
-      aiResponse = parseAiJsonObject(completion.choices?.[0]?.message?.content);
+      aiResponse = mergeAudioPlan(parseAiJsonObject(completion.choices?.[0]?.message?.content), prompt);
     } catch (aiError) {
       console.error("Audio AI planning error:", aiError?.message || aiError);
       aiResponse = fallbackAudioPlan(prompt);
