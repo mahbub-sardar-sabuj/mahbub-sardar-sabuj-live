@@ -1881,7 +1881,7 @@ export default function AIChatbot() {
       }
 
       // Step 2: Send to server — AI intent detection + FFmpeg processing in one call
-      setAudioProcessingStage("FFmpeg প্রসেসিং চলছে...");
+      setAudioProcessingStage("প্রসেসিং চলছে...");
       const serverResp = await fetch("/api/audio-edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
