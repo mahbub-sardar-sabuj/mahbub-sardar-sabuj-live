@@ -1612,9 +1612,34 @@ export default function AIChatbot() {
         }
       }, 100);
     } else {
-      // No pending instruction — just set file and wait for user to type
+      // No pending instruction — set file and AI asks what to do
       setAudioFile(file);
       setIsAudioMode(true);
+      setInput("");
+      // AI greets with a question
+      const fileName = file.name;
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      setMessages(prev => [...prev,
+        // User message showing the uploaded file
+        {
+          id: `user-audio-upload-${Date.now()}`,
+          role: "user" as const,
+          content: `🎧 ${fileName}`,
+          timestamp: new Date(),
+          userAudioName: fileName,
+          userAudioSize: file.size,
+          userAudioMime: file.type || "audio/mpeg",
+          userAudioUrl: URL.createObjectURL(file),
+          userAudioInstruction: "",
+        },
+        // AI asks what to do
+        {
+          id: `ai-ask-instruction-${Date.now()}`,
+          role: "assistant" as const,
+          content: `ফাইলটি (${fileSizeMB} MB) পেয়েছি। আপনি কী করতে চান?\n\nযেমন বলতে পারেন:\n• ভোকাল ক্লিন করো\n• নয়েজ কমাও\n• ব্যাকগ্রাউন্ড মিউজিক যোগ করো\n• কবিতার জন্য উপযুক্ত করো\n• অথবা আপনার মতো নির্দেশ দিন`,
+          timestamp: new Date(),
+        }
+      ]);
     }
   }, [input, messages, audioProcessing]);
 
