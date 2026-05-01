@@ -2030,7 +2030,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 90) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: ভলিউম ২ গুণ বাড়াও, নয়েজ কমাও) বা স্বয়ং এডিট বাটন চাপুন" : "জিজ্ঞেস করুন..."}
+                      placeholder={audioFile ? "নির্দেশ দিন... (যেমন: নয়েজ কমাও)" : "জিজ্ঞেস করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
