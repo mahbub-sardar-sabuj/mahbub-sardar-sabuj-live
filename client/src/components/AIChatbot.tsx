@@ -1210,6 +1210,8 @@ export default function AIChatbot() {
     setInput("");
     setAudioProcessing(true);
     setError(null);
+    // Clear audioFile immediately so the banner disappears right away
+    setAudioFile(null);
 
     try {
       // Step 1: Ask AI to parse instruction into structured params
