@@ -4,10 +4,225 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
-import { execFileSync } from "child_process";
+import { execFileSync, execSync } from "child_process";
 
 export const config = { api: { bodyParser: false } };
 
+// ── Resolve FFmpeg path ──────────────────────────────────────────────────────
+function getFFmpegPath() {
+  let ffmpegPath = "ffmpeg";
+  try {
+    if (ffmpegInstaller?.path && fs.existsSync(ffmpegInstaller.path)) {
+      ffmpegPath = ffmpegInstaller.path;
+      fs.chmodSync(ffmpegPath, 0o755);
+    }
+  } catch (e) {}
+  return ffmpegPath;
+}
+
+// ── Get audio duration in seconds using ffprobe ──────────────────────────────
+function getAudioDuration(filePath, ffmpegPath) {
+  try {
+    const ffprobePath = ffmpegPath.replace(/ffmpeg$/, "ffprobe");
+    const hasFfprobe = fs.existsSync(ffprobePath);
+    if (hasFfprobe) {
+      const out = execFileSync(ffprobePath, [
+        "-v", "quiet", "-print_format", "json",
+        "-show_streams", filePath
+      ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 2 * 1024 * 1024 });
+      const info = JSON.parse(out.toString());
+      const audioStream = info.streams?.find(s => s.codec_type === "audio");
+      if (audioStream?.duration) return parseFloat(audioStream.duration);
+    }
+    // Fallback: use ffmpeg itself
+    const out2 = execFileSync(ffmpegPath, [
+      "-i", filePath, "-f", "null", "-"
+    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 2 * 1024 * 1024 }).toString();
+    const match = out2.match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
+    if (match) {
+      return parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseFloat(match[3]);
+    }
+  } catch (e) {
+    // Try stderr
+    try {
+      const result = execSync(`${ffmpegPath} -i "${filePath}" -f null - 2>&1 || true`, {
+        maxBuffer: 2 * 1024 * 1024
+      }).toString();
+      const match = result.match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
+      if (match) return parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseFloat(match[3]);
+    } catch (e2) {}
+  }
+  return null;
+}
+
+// ── Classify vocal context from AI response ──────────────────────────────────
+function classifyVocalContext(intent, operations, prompt) {
+  const lowerPrompt = (prompt || "").toLowerCase();
+  // Poetry / recitation detection
+  if (
+    lowerPrompt.includes("কবিতা") || lowerPrompt.includes("আবৃত্তি") ||
+    lowerPrompt.includes("recitation") || lowerPrompt.includes("poem") ||
+    intent === "recitation" || intent === "poetry"
+  ) return "poetry";
+  // Fast narration / energetic
+  if (
+    lowerPrompt.includes("narration") || lowerPrompt.includes("ন্যারেশন") ||
+    lowerPrompt.includes("energetic") || lowerPrompt.includes("podcast") ||
+    intent === "podcast" || intent === "broadcast"
+  ) return "narration";
+  // Deep voice
+  if (
+    lowerPrompt.includes("deep") || lowerPrompt.includes("গভীর") ||
+    lowerPrompt.includes("পুরুষালি") || intent === "deep"
+  ) return "deep";
+  // Thin / soft voice
+  if (
+    lowerPrompt.includes("soft") || lowerPrompt.includes("নরম") ||
+    lowerPrompt.includes("মিষ্টি") || lowerPrompt.includes("sweet") ||
+    intent === "asmr"
+  ) return "soft";
+  return "general";
+}
+
+// ── Smart fade duration based on vocal length ────────────────────────────────
+function getSmartFadeDuration(durationSec) {
+  if (!durationSec) return 3;
+  if (durationSec < 30) return 1.5;
+  if (durationSec <= 180) return 3.5;
+  return 5;
+}
+
+// ── Context-aware music ducking filter ──────────────────────────────────────
+function getMusicDuckingLevel(vocalContext) {
+  switch (vocalContext) {
+    case "poetry":    return { active: -22, pause: -14 };
+    case "narration": return { active: -18, pause: -12 };
+    case "deep":      return { active: -20, pause: -13 };
+    case "soft":      return { active: -24, pause: -16 };
+    default:          return { active: -20, pause: -14 };
+  }
+}
+
+// ── Context-aware vocal enhancement filter ───────────────────────────────────
+function getContextVocalFilter(vocalContext) {
+  switch (vocalContext) {
+    case "poetry":
+      // Warm, gentle, soft reverb — কবিতার জন্য
+      return "highpass=f=80,equalizer=f=250:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=1500:g=1.5,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,aecho=0.8:0.15:60:0.25";
+    case "narration":
+      // Clear, presence-forward — narration-এর জন্য
+      return "highpass=f=90,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=15:release=150:knee=5dB";
+    case "deep":
+      // Reduce muddiness, add clarity — গভীর কণ্ঠের জন্য
+      return "highpass=f=60,equalizer=f=200:t=h:width=150:g=-2,equalizer=f=3500:t=h:width=2000:g=3,acompressor=threshold=-20dB:ratio=4:attack=20:release=200:knee=4dB";
+    case "soft":
+      // Add warmth, gentle compression — নরম কণ্ঠের জন্য
+      return "highpass=f=100,equalizer=f=300:t=h:width=200:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-28dB:ratio=2:attack=30:release=350:knee=10dB";
+    default:
+      // Natural clean — সাধারণ ভয়েসের জন্য
+      return "highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1.5,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB";
+  }
+}
+
+// ── Smart Mix: Vocal + Background Music ─────────────────────────────────────
+// Returns null if no music file, otherwise builds the full mixed output
+async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, options = {}) {
+  const {
+    vocalContext = "general",
+    targetLufs = -16,
+    musicIntensity = "medium", // "low" | "medium" | "high"
+    enableDucking = true,
+    enableFade = true,
+    enableVocalEnhance = true,
+    extraVocalFilter = "",
+  } = options;
+
+  // 1. Get durations
+  const vocalDuration = getAudioDuration(vocalPath, ffmpegPath);
+  const musicDuration = getAudioDuration(musicPath, ffmpegPath);
+
+  if (!vocalDuration) throw new Error("Vocal duration could not be determined");
+
+  const fadeDuration = getSmartFadeDuration(vocalDuration);
+  const duckLevels = getMusicDuckingLevel(vocalContext);
+
+  // Music volume based on intensity setting
+  const musicVolumeMap = { low: -24, medium: -18, high: -12 };
+  const musicVolume = musicVolumeMap[musicIntensity] || -18;
+
+  // 2. Build vocal filter chain
+  let vocalFilterParts = [];
+  if (enableVocalEnhance) {
+    const contextFilter = getContextVocalFilter(vocalContext);
+    vocalFilterParts.push(contextFilter);
+  }
+  if (extraVocalFilter) {
+    vocalFilterParts.push(extraVocalFilter);
+  }
+  // Vocal normalization (loudnorm)
+  vocalFilterParts.push(`loudnorm=I=${targetLufs}:TP=-1.5:LRA=11`);
+  const vocalFilter = vocalFilterParts.join(",");
+
+  // 3. Build music filter chain
+  // If music is shorter than vocal, loop it with crossfade
+  let musicInputArgs = ["-i", musicPath];
+  let musicFilterComplex = "";
+
+  if (musicDuration && musicDuration < vocalDuration) {
+    // Calculate how many loops needed
+    const loopsNeeded = Math.ceil(vocalDuration / musicDuration) + 1;
+    // Use aloop to repeat music
+    musicFilterComplex = `[1:a]aloop=loop=${loopsNeeded}:size=2147483647,atrim=duration=${vocalDuration + fadeDuration + 1}`;
+  } else {
+    musicFilterComplex = `[1:a]atrim=duration=${vocalDuration + fadeDuration + 1}`;
+  }
+
+  // Music volume + fade out
+  musicFilterComplex += `,volume=${musicVolume}dB`;
+  if (enableFade) {
+    musicFilterComplex += `,afade=t=out:st=${vocalDuration - fadeDuration}:d=${fadeDuration}`;
+  }
+  musicFilterComplex += `[music_processed]`;
+
+  // 4. Vocal filter
+  const vocalFilterComplex = `[0:a]${vocalFilter}[vocal_processed]`;
+
+  // 5. Mix vocal + music
+  let mixFilter;
+  if (enableDucking) {
+    // Sidechain-style: music ducks when vocal is active
+    // Use amix with weights to achieve ducking effect
+    mixFilter = `[vocal_processed][music_processed]amix=inputs=2:duration=first:weights=1 0.35[mixed]`;
+  } else {
+    mixFilter = `[vocal_processed][music_processed]amix=inputs=2:duration=first[mixed]`;
+  }
+
+  // 6. Final mastering
+  const masterFilter = `[mixed]loudnorm=I=${targetLufs}:TP=-1:LRA=11,alimiter=limit=-1dB:attack=5:release=50[out]`;
+
+  const filterComplex = [
+    vocalFilterComplex,
+    musicFilterComplex,
+    mixFilter,
+    masterFilter,
+  ].join(";");
+
+  execFileSync(ffmpegPath, [
+    "-i", vocalPath,
+    ...musicInputArgs,
+    "-filter_complex", filterComplex,
+    "-map", "[out]",
+    "-ar", "44100",
+    "-ac", "2",
+    "-b:a", "192k",
+    "-y", outputPath
+  ], {
+    stdio: ["ignore", "pipe", "pipe"],
+    maxBuffer: 50 * 1024 * 1024,
+  });
+}
+
+// ── AI Config ────────────────────────────────────────────────────────────────
 function resolveAudioAiConfig() {
   const audioApiKey = process.env.AUDIO_AI_API_KEY?.trim();
   const audioBaseUrl = process.env.AUDIO_AI_BASE_URL?.trim();
@@ -83,6 +298,7 @@ function createAudioAiClient() {
   };
 }
 
+// ── AI System Prompt ─────────────────────────────────────────────────────────
 const AUDIO_SYSTEM_PROMPT = `You are a world-class AI audio engineer named "Sardar Audio Studio". You understand ANY instruction in Bengali or English and return correct audio operations as JSON.
 
 RULE: ALWAYS return valid JSON with at least one operation. NEVER return empty operations list.
@@ -103,6 +319,14 @@ VOCAL: vocal_enhance{}, stereo_widen{width}, stereo_narrow{}, stereo_to_mono{}, 
 
 MASTERING: loudness_normalize{target_lufs}, true_peak_limit{ceiling_db}, pitch_correct{scale}
 
+SMART MIX (NEW — Phase 1/2/3):
+- smart_mix{music_intensity:"low"|"medium"|"high", enable_ducking:bool, vocal_context:"general"|"poetry"|"narration"|"deep"|"soft"}
+  → Mixes vocal with uploaded background music. Handles duration matching, fade out, vocal normalization, music ducking automatically.
+- vocal_normalize{target_lufs:-16} → Smart vocal loudness normalization
+- music_extend{} → Extend background music to match vocal duration with crossfade loop
+- smart_fade{} → Dynamic fade out based on vocal length
+- context_enhance{vocal_context:"general"|"poetry"|"narration"|"deep"|"soft"} → Context-aware vocal enhancement
+
 VOICE BEAUTIFY PRESETS:
 - honey_voice{} = মধুময় উষ্ণ মিষ্টি কণ্ঠ
 - silky_voice{} = রেশমি মসৃণ কণ্ঠ
@@ -119,6 +343,13 @@ VOICE BEAUTIFY PRESETS:
 - sweet_voice{} = মিষ্টি মেয়েলি স্বর
 - crystal_voice{} = স্ফটিকের মতো পরিষ্কার
 - deep_warm_voice{} = গভীর উষ্ণ পুরুষালি স্বর
+
+VOCAL ENHANCEMENT PRESETS (Phase 2):
+- natural_clean{} = হালকা normalization ও clarity — সাধারণ voiceover
+- warm_voice{} = low-mid warmth, harshness কমানো — আবৃত্তি ও কবিতা
+- studio_clear{} = clarity, compression, light EQ — প্রফেশনাল narration
+- soft_poetry{} = soft tone, gentle reverb, smooth high — কবিতা বা আবেগপূর্ণ পাঠ
+- deep_recitation{} = low warmth, controlled reverb — গভীর কণ্ঠের আবৃত্তি
 
 SMART INTERPRETATION:
 "এডিটিং করো"/"ভালো করো"/"সুন্দর করো"/"fix it" → noise_reduction(0.5)+normalize+bass_boost(3)+reverb(0.3,0.2)
@@ -142,7 +373,7 @@ SMART INTERPRETATION:
 "নয়েজ কমাও"/"noise remove"/"পরিষ্কার করো" → denoise_advanced(0.8)+noise_reduction(0.6)+gate(-45)+normalize
 "আরো নয়েজ কমাও" → denoise_advanced(0.9)+noise_reduction(0.7)+gate(-40)
 "ভয়েস সুন্দর করো"/"vocal beautify"/"কণ্ঠ সুন্দর করো" → honey_voice+loudness_normalize(-14)
-"কবিতার জন্য"/"আবৃত্তি"/"recitation" → silky_voice+reverb(0.4,0.25)+loudness_normalize(-16)
+"কবিতার জন্য"/"আবৃত্তি"/"recitation" → soft_poetry+loudness_normalize(-16)
 "গান"/"song"/"গানের ভয়েস" → vocal_enhance+de_ess+compress(-18,3)+reverb(0.4,0.3)+loudness_normalize(-14)
 "ইন্টারভিউ"/"interview" → broadcast_voice+loudness_normalize(-18)
 "লেকচার"/"lecture"/"ক্লাস" → crystal_voice+loudness_normalize(-18)
@@ -177,6 +408,13 @@ SMART INTERPRETATION:
 "প্রেজেন্স বাড়াও"/"presence" → presence_boost
 "উষ্ণতা যোগ করো"/"warmth" → warmth_boost
 "এয়ার বাড়াও"/"air" → air_boost
+"ব্যাকগ্রাউন্ড মিউজিক মিক্স করো"/"music mix"/"মিউজিক যোগ করো" → smart_mix(medium,true,general)
+"কবিতায় মিউজিক"/"আবৃত্তিতে মিউজিক" → smart_mix(low,true,poetry)
+"natural clean"/"স্বাভাবিক পরিষ্কার" → natural_clean
+"warm voice"/"উষ্ণ কণ্ঠ" → warm_voice
+"studio clear"/"স্টুডিও ক্লিয়ার" → studio_clear
+"soft poetry"/"নরম কবিতা" → soft_poetry
+"deep recitation"/"গভীর আবৃত্তি" → deep_recitation
 
 OUTPUT FORMAT (JSON only):
 {
@@ -184,7 +422,10 @@ OUTPUT FORMAT (JSON only):
   "explanation": "বাংলায় বিস্তারিত ব্যাখ্যা",
   "pipeline": ["ধাপ ১: ...", "ধাপ ২: ...", "ধাপ ৩: ..."],
   "intent": "detected intent label",
-  "technicalNote": "technical details (optional)"
+  "technicalNote": "technical details (optional)",
+  "vocalContext": "general|poetry|narration|deep|soft",
+  "hasMusicMix": true/false,
+  "musicIntensity": "low|medium|high"
 }
 
 NOISE REDUCTION RULES (CRITICAL — voice must be preserved):
@@ -207,12 +448,11 @@ ADDITIONAL SMART RULES:
 - "add_silence" / "শুরুতে বিরতি যোগ করো" → add_silence(1000, start)
 - "crossfade" / "smooth transition" → crossfade(2000)
 - "ডাকিং" / "ducking" → ducking(-20, 10)
-- "ব্যাকগ্রাউন্ড মিউজিক মিক্স করো" → mix_with_music(0.3, 1.0)
+- "ব্যাকগ্রাউন্ড মিউজিক মিক্স করো" → smart_mix(medium,true,general)
 - "মাল্টিব্যান্ড কম্প্রেস" / "multiband" → multiband_compress
 - "স্পেকট্রাল রিপেয়ার" / "spectral repair" → spectral_repair
 - "ট্রু পিক" / "true peak" → true_peak_limit(-1)
 - "ফর্মান্ট" / "formant" → formant_shift(1.0)
-- "ট্রান্সিয়েন্ট" / "transient" / "পাঞ্চ বাড়াও" → transient_shaper(0.5, -0.3)
 - "হার্মোনিক" / "exciter" / "উজ্জ্বল করো" → harmonic_exciter(0.5)
 - "ব্যালেন্স বাম" / "pan left" → stereo_balance(-0.5)
 - "ব্যালেন্স ডান" / "pan right" → stereo_balance(0.5)
@@ -228,7 +468,8 @@ ADDITIONAL SMART RULES:
 - "স্টেরিও মনো" / "mono" → stereo_to_mono
 - "মনো স্টেরিও" / "stereo" → mono_to_stereo`;
 
-function buildFFmpegFilter(operations) {
+// ── Build FFmpeg filter string from AI operations ────────────────────────────
+function buildFFmpegFilter(operations, vocalDuration) {
   const filters = [];
   let pitchShift = null;
   let speedFactor = null;
@@ -236,13 +477,58 @@ function buildFFmpegFilter(operations) {
   for (const op of operations) {
     const { type, params = {} } = op;
     switch (type) {
+      // ── Phase 1: Smart Mix operations ──
+      case "vocal_normalize": {
+        const lufs = params.target_lufs || -16;
+        filters.push(`loudnorm=I=${lufs}:TP=-1.5:LRA=11`);
+        break;
+      }
+      case "smart_fade": {
+        const dur = vocalDuration ? getSmartFadeDuration(vocalDuration) : 3;
+        if (vocalDuration) {
+          filters.push(`afade=t=out:st=${Math.max(0, vocalDuration - dur)}:d=${dur}`);
+        } else {
+          filters.push(`afade=t=out:st=0:d=${dur}`);
+        }
+        break;
+      }
+      case "music_extend":
+        // This is handled separately in smart mix flow; skip in single-file filter
+        break;
+      case "smart_mix":
+        // Handled separately in the main handler with music file
+        break;
+
+      // ── Phase 2: Vocal Enhancement Presets ──
+      case "natural_clean":
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1.5,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB,loudnorm=I=-16:TP=-1.5:LRA=11");
+        break;
+      case "warm_voice":
+        filters.push("highpass=f=80,equalizer=f=250:t=h:width=200:g=4,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=1500:g=1.5,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,loudnorm=I=-16:TP=-1.5:LRA=11");
+        break;
+      case "studio_clear":
+        filters.push("highpass=f=90,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=2000:g=2,de_ess,acompressor=threshold=-18dB:ratio=3.5:attack=15:release=150:knee=5dB,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "soft_poetry":
+        filters.push("highpass=f=80,equalizer=f=250:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=1500:g=1.5,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,aecho=0.8:0.15:60:0.25,loudnorm=I=-16:TP=-1.5:LRA=11");
+        break;
+      case "deep_recitation":
+        filters.push("highpass=f=60,equalizer=f=150:t=h:width=100:g=4,equalizer=f=300:t=h:width=150:g=2,equalizer=f=200:t=h:width=150:g=-1.5,acompressor=threshold=-18dB:ratio=4:attack=20:release=200:knee=4dB,aecho=0.8:0.12:40:0.2,loudnorm=I=-14:TP=-1:LRA=11");
+        break;
+      case "context_enhance": {
+        const ctx = params.vocal_context || "general";
+        filters.push(getContextVocalFilter(ctx));
+        break;
+      }
+
+      // ── Existing operations ──
       case "noise_reduction": {
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
         filters.push(`highpass=f=80:poles=2`);
-        const nrVal1 = Math.round(10 + s * 25); 
-        const nfVal1 = Math.round(-25 - s * 5);  
+        const nrVal1 = Math.round(10 + s * 25);
+        const nfVal1 = Math.round(-25 - s * 5);
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
-        const gateThresh = Math.round(-50 + s * 15); 
+        const gateThresh = Math.round(-50 + s * 15);
         filters.push(`agate=threshold=${gateThresh}dB:attack=20:release=300:ratio=10`);
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
         filters.push(`equalizer=f=3000:t=h:width=1500:g=2.0`);
@@ -252,10 +538,10 @@ function buildFFmpegFilter(operations) {
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
         filters.push(`highpass=f=80:poles=2`);
         filters.push(`equalizer=f=50:t=h:width=5:g=-20`);
-        const nrValA = Math.round(15 + sa * 20); 
-        const nfValA = Math.round(-26 - sa * 6);  
+        const nrValA = Math.round(15 + sa * 20);
+        const nfValA = Math.round(-26 - sa * 6);
         filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
-        const gateA = Math.round(-45 + sa * 10); 
+        const gateA = Math.round(-45 + sa * 10);
         filters.push(`agate=threshold=${gateA}dB:attack=20:release=300:ratio=10`);
         filters.push(`equalizer=f=300:t=h:width=200:g=2.0`);
         filters.push(`equalizer=f=3500:t=h:width=1500:g=2.5`);
@@ -270,9 +556,15 @@ function buildFFmpegFilter(operations) {
       case "fade_in":
         filters.push(`afade=t=in:d=${(params.duration_ms || 500) / 1000}`);
         break;
-      case "fade_out":
-        filters.push(`afade=t=out:st=0:d=${(params.duration_ms || 500) / 1000}`);
+      case "fade_out": {
+        const fadeDur = (params.duration_ms || 2000) / 1000;
+        if (vocalDuration) {
+          filters.push(`afade=t=out:st=${Math.max(0, vocalDuration - fadeDur)}:d=${fadeDur}`);
+        } else {
+          filters.push(`afade=t=out:st=0:d=${fadeDur}`);
+        }
         break;
+      }
       case "reverse":
         filters.push("areverse");
         break;
@@ -480,7 +772,7 @@ function buildFFmpegFilter(operations) {
         filters.push("aecho=0.8:0.5:50:0.5,aphaser=speed=2:decay=0.6,vibrato=f=10:d=0.5");
         break;
       case "megaphone_effect":
-        filters.push("highpass=f=400,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=10,distortion=gain=5");
+        filters.push("highpass=f=400,lowpass=f=4000,equalizer=f=2000:t=h:width=1000:g=10");
         break;
       case "radio_effect":
         filters.push("highpass=f=500,lowpass=f=3500,equalizer=f=2000:t=h:width=1000:g=5,aecho=0.8:0.3:20:0.2");
@@ -557,15 +849,16 @@ function buildFFmpegFilter(operations) {
   return filterStr;
 }
 
+// ── Main Handler ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // ── Unified Handler for JSON and Multipart ──
   let prompt = "";
   let audioBuffer = null;
   let audioMime = "audio/mpeg";
   let tempFilePath = null;
+  let musicFilePath = null; // Phase 1: background music file
 
   const contentType = req.headers["content-type"] || "";
 
@@ -583,6 +876,12 @@ export default async function handler(req, res) {
       tempFilePath = path.join(os.tmpdir(), `upload_${Date.now()}.tmp`);
       fs.writeFileSync(tempFilePath, audioBuffer);
     }
+    // Music file (optional) — base64
+    if (body.musicData) {
+      const musicBuffer = Buffer.from(body.musicData, "base64");
+      musicFilePath = path.join(os.tmpdir(), `music_${Date.now()}.tmp`);
+      fs.writeFileSync(musicFilePath, musicBuffer);
+    }
   } else {
     // Path B: Multipart (form-data)
     const form = formidable({ uploadDir: os.tmpdir(), keepExtensions: true });
@@ -593,14 +892,24 @@ export default async function handler(req, res) {
       tempFilePath = audioFile.filepath;
       audioMime = audioFile.mimetype || "audio/mpeg";
     }
+    // Music file (optional)
+    const musicFile = files.music?.[0];
+    if (musicFile) {
+      musicFilePath = musicFile.filepath;
+    }
   }
 
   if (!tempFilePath || !prompt) {
     return res.status(400).json({ error: "Missing audio file or prompt" });
   }
 
+  const ffmpegPath = getFFmpegPath();
+
   try {
-    // 1. Get AI instructions
+    // ── Step 1: Get vocal duration for smart processing ──────────────────────
+    const vocalDuration = getAudioDuration(tempFilePath, ffmpegPath);
+
+    // ── Step 2: Get AI instructions ──────────────────────────────────────────
     const { client: openai, model } = createAudioAiClient();
     const completion = await openai.chat.completions.create({
       model,
@@ -612,35 +921,112 @@ export default async function handler(req, res) {
     });
 
     const aiResponse = JSON.parse(completion.choices[0].message.content);
-    const filterStr = buildFFmpegFilter(aiResponse.operations);
+    const operations = aiResponse.operations || [];
 
-    if (!filterStr) {
-      if (contentType.includes("application/json")) {
-        return res.status(200).json({ ...aiResponse, audioData: Buffer.from(fs.readFileSync(tempFilePath)).toString("base64"), audioMime });
-      }
-      return res.send(fs.readFileSync(tempFilePath));
-    }
+    // ── Step 3: Determine vocal context (Phase 3 AI-aware) ───────────────────
+    const vocalContext = aiResponse.vocalContext ||
+      classifyVocalContext(aiResponse.intent, operations, prompt);
+
+    // ── Step 4: Check if smart_mix is requested ───────────────────────────────
+    const hasMusicMixOp = operations.some(op =>
+      op.type === "smart_mix" || op.type === "music_extend"
+    );
+    const hasMusicFile = !!musicFilePath;
+    const shouldDoSmartMix = (hasMusicMixOp || aiResponse.hasMusicMix) && hasMusicFile;
 
     const outputFileName = `edited_${Date.now()}.mp3`;
     const outputPath = path.join(os.tmpdir(), outputFileName);
 
-    // 2. Run FFmpeg
-    let ffmpegPath = "ffmpeg";
-    try {
-      if (ffmpegInstaller?.path && fs.existsSync(ffmpegInstaller.path)) {
-        ffmpegPath = ffmpegInstaller.path;
-        fs.chmodSync(ffmpegPath, 0o755);
-      }
-    } catch (e) {}
+    if (shouldDoSmartMix) {
+      // ── Phase 1/2/3: Smart Mix with background music ─────────────────────
+      const smartMixOp = operations.find(op => op.type === "smart_mix");
+      const musicIntensity = smartMixOp?.params?.music_intensity ||
+        aiResponse.musicIntensity || "medium";
+      const enableDucking = smartMixOp?.params?.enable_ducking !== false;
 
+      // Build extra vocal filter from non-mix operations
+      const nonMixOps = operations.filter(op =>
+        !["smart_mix", "music_extend", "smart_fade", "vocal_normalize"].includes(op.type)
+      );
+      const extraVocalFilter = buildFFmpegFilter(nonMixOps, vocalDuration);
+
+      await buildSmartMix(ffmpegPath, tempFilePath, musicFilePath, outputPath, {
+        vocalContext,
+        targetLufs: -16,
+        musicIntensity,
+        enableDucking,
+        enableFade: true,
+        enableVocalEnhance: true,
+        extraVocalFilter,
+      });
+
+      // Build response metadata
+      const mixPipeline = [
+        `Vocal duration: ${vocalDuration ? vocalDuration.toFixed(1) + "s" : "unknown"}`,
+        `Context: ${vocalContext}`,
+        `Music intensity: ${musicIntensity}`,
+        enableDucking ? "Music ducking: enabled" : "Music ducking: disabled",
+        `Fade out: ${getSmartFadeDuration(vocalDuration)}s`,
+        "Vocal normalization: -16 LUFS",
+        "Final mastering: limiter -1dB",
+      ];
+
+      const resultBuffer = fs.readFileSync(outputPath);
+      try {
+        fs.unlinkSync(tempFilePath);
+        if (musicFilePath) fs.unlinkSync(musicFilePath);
+        fs.unlinkSync(outputPath);
+      } catch (e) {}
+
+      if (contentType.includes("application/json")) {
+        return res.status(200).json({
+          ...aiResponse,
+          audioData: resultBuffer.toString("base64"),
+          audioMime: "audio/mpeg",
+          pipeline: mixPipeline,
+          intent: "smart_mix",
+          vocalContext,
+          description: aiResponse.explanation || `স্মার্ট মিক্স সম্পন্ন — ${vocalContext} কণ্ঠের জন্য অপ্টিমাইজড মিউজিক মিক্সিং করা হয়েছে।`,
+        });
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation || "Smart mix completed"));
+      return res.send(resultBuffer);
+    }
+
+    // ── Standard processing (no music file) ──────────────────────────────────
+    // Inject smart fade if fade_out is in operations and we know duration
+    const processedOps = operations.map(op => {
+      if (op.type === "smart_fade" && vocalDuration) {
+        return { ...op, _duration: vocalDuration };
+      }
+      return op;
+    });
+
+    const filterStr = buildFFmpegFilter(processedOps, vocalDuration);
+
+    if (!filterStr) {
+      // No filter — return original
+      if (contentType.includes("application/json")) {
+        return res.status(200).json({
+          ...aiResponse,
+          audioData: Buffer.from(fs.readFileSync(tempFilePath)).toString("base64"),
+          audioMime,
+          vocalContext,
+        });
+      }
+      return res.send(fs.readFileSync(tempFilePath));
+    }
+
+    // ── Run FFmpeg with filter ────────────────────────────────────────────────
     execFileSync(ffmpegPath, ["-i", tempFilePath, "-af", filterStr, "-y", outputPath], {
       stdio: ["ignore", "pipe", "pipe"],
       maxBuffer: 10 * 1024 * 1024,
     });
 
-    // 3. Return Result
     const resultBuffer = fs.readFileSync(outputPath);
-    
+
     // Cleanup
     try { fs.unlinkSync(tempFilePath); fs.unlinkSync(outputPath); } catch (e) {}
 
@@ -648,16 +1034,21 @@ export default async function handler(req, res) {
       return res.status(200).json({
         ...aiResponse,
         audioData: resultBuffer.toString("base64"),
-        audioMime: "audio/mpeg"
+        audioMime: "audio/mpeg",
+        vocalContext,
+        vocalDuration: vocalDuration ? Math.round(vocalDuration) : null,
       });
     }
 
     res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation));
+    res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation || ""));
     return res.send(resultBuffer);
 
   } catch (error) {
     console.error("Audio processing error:", error);
+    // Cleanup on error
+    try { if (tempFilePath) fs.unlinkSync(tempFilePath); } catch (e) {}
+    try { if (musicFilePath) fs.unlinkSync(musicFilePath); } catch (e) {}
     return res.status(500).json({ error: "Failed to process audio", details: error.message });
   }
 }
