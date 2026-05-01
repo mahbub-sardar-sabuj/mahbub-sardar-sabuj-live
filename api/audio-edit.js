@@ -1470,12 +1470,17 @@ export default async function handler(req, res) {
     }
 
     let aiResponse;
-    try {
-      const completion = await openai.chat.completions.create(payload);
-      aiResponse = mergeAudioPlan(parseAiJsonObject(completion.choices?.[0]?.message?.content), prompt);
-    } catch (aiError) {
-      console.error("Audio AI planning error:", aiError?.message || aiError);
-      aiResponse = fallbackAudioPlan(prompt);
+    const deterministicPlan = deterministicAudioPlan(prompt);
+    if (deterministicPlan.operations.length) {
+      aiResponse = deterministicPlan;
+    } else {
+      try {
+        const completion = await openai.chat.completions.create(payload);
+        aiResponse = mergeAudioPlan(parseAiJsonObject(completion.choices?.[0]?.message?.content), prompt);
+      } catch (aiError) {
+        console.warn("Audio AI planning fallback:", aiError?.message || aiError);
+        aiResponse = fallbackAudioPlan(prompt);
+      }
     }
     const operations = Array.isArray(aiResponse.operations) ? aiResponse.operations : [];
 
