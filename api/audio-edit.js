@@ -1,354 +1,350 @@
 /**
  * /api/audio-edit — AI-powered audio editing serverless function
  *
- * Flow:
- * 1. Receive multipart form: audioFile + instruction (Bengali/English text)
- * 2. Use GPT to parse the instruction into structured ffmpeg commands
- * 3. Run ffmpeg to apply edits
- * 4. Return the edited audio file as a downloadable response
+ * IMPORTANT: Vercel config exports `config = { api: { bodyParser: false } }`
+ * so we read the raw stream ourselves and parse multipart manually.
  *
- * Supported operations (বাংলায় নির্দেশ দিন):
- * - ভলিউম বাড়াও / কমাও  → volume adjustment
- * - ট্রিম করো / কাটো      → trim start/end
- * - ফেড ইন / ফেড আউট     → fade in/out
- * - গতি বাড়াও / কমাও     → speed change
- * - নয়েজ কমাও            → noise reduction (highpass/lowpass)
- * - রিভার্ব যোগ করো       → reverb effect
- * - MP3/WAV/OGG তে রূপান্তর → format conversion
- * - নীরবতা কাটো           → silence removal
- * - বেস বাড়াও / কমাও     → bass boost/cut
- * - ট্রেবল বাড়াও / কমাও  → treble boost/cut
+ * Flow:
+ * 1. Read raw multipart body from stream
+ * 2. Parse: audioFile (binary) + instruction (text)
+ * 3. Ask GPT to convert Bengali instruction → ffmpeg filter args
+ * 4. Write audio to /tmp, run ffmpeg, return edited file
  */
 
-import { execSync, spawnSync } from "child_process";
+import { execFileSync } from "child_process";
 import { writeFileSync, readFileSync, unlinkSync, existsSync } from "fs";
 import { tmpdir } from "os";
 import { join, extname } from "path";
 import { randomBytes } from "crypto";
+import { createRequire } from "module";
 
-// ── AI config (same pattern as chat.js) ─────────────────────────────────────
-function resolveAiConfig() {
-  const chatbotApiKey = process.env.CHATBOT_API_KEY?.trim();
-  const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
-  const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
-  const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+// Use ffmpeg-static binary (bundled, works on Vercel)
+const require = createRequire(import.meta.url);
+let FFMPEG_PATH = "ffmpeg"; // fallback to system ffmpeg
+try {
+  FFMPEG_PATH = require("ffmpeg-static");
+} catch (_) {
+  // ffmpeg-static not available, use system ffmpeg
+}
 
-  if (chatbotApiKey) {
-    const isOpenRouter = chatbotApiKey.startsWith("sk-or-");
-    return {
-      apiKey: chatbotApiKey,
-      baseUrl: process.env.CHATBOT_BASE_URL?.trim() || (isOpenRouter ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
-      model: process.env.CHATBOT_MODEL?.trim() || (isOpenRouter ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
-    };
+// ── Vercel: disable built-in body parser so we can read raw stream ───────────
+export const config = {
+  api: {
+    bodyParser: false,
+    responseLimit: "50mb",
+  },
+};
+
+// ── Read full request body as Buffer ─────────────────────────────────────────
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
+// ── Multipart parser ──────────────────────────────────────────────────────────
+function parseMultipart(buffer, boundary) {
+  const sep = Buffer.from(`--${boundary}`);
+  const CRLF = Buffer.from("\r\n");
+  const parts = [];
+  let pos = 0;
+
+  while (pos < buffer.length) {
+    // Find next boundary
+    const boundaryIdx = indexOf(buffer, sep, pos);
+    if (boundaryIdx === -1) break;
+
+    const afterBoundary = boundaryIdx + sep.length;
+
+    // Check for terminal --
+    if (
+      afterBoundary + 2 <= buffer.length &&
+      buffer[afterBoundary] === 0x2d &&
+      buffer[afterBoundary + 1] === 0x2d
+    ) break;
+
+    // Skip \r\n after boundary
+    const headerStart = afterBoundary + 2;
+
+    // Find \r\n\r\n (end of headers)
+    const headerEnd = indexOf(buffer, Buffer.from("\r\n\r\n"), headerStart);
+    if (headerEnd === -1) break;
+
+    const headerStr = buffer.slice(headerStart, headerEnd).toString("utf8");
+    const bodyStart = headerEnd + 4;
+
+    // Find next boundary to determine body end
+    const nextBoundary = indexOf(buffer, sep, bodyStart);
+    const bodyEnd = nextBoundary === -1 ? buffer.length : nextBoundary - 2; // -2 for \r\n
+
+    parts.push({ headers: headerStr, body: buffer.slice(bodyStart, bodyEnd) });
+    pos = nextBoundary === -1 ? buffer.length : nextBoundary;
   }
-  if (openAiApiKey) {
-    return {
-      apiKey: openAiApiKey,
-      baseUrl: process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
-      model: process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini",
-    };
+
+  return parts;
+}
+
+// Buffer.indexOf helper
+function indexOf(buf, search, start = 0) {
+  for (let i = start; i <= buf.length - search.length; i++) {
+    let found = true;
+    for (let j = 0; j < search.length; j++) {
+      if (buf[i + j] !== search[j]) { found = false; break; }
+    }
+    if (found) return i;
   }
-  if (forgeApiKey && forgeBaseUrl) {
-    return {
-      apiKey: forgeApiKey,
-      baseUrl: forgeBaseUrl.replace(/\/$/, ""),
-      model: process.env.BUILT_IN_FORGE_MODEL?.trim() || "gemini-2.5-flash",
-    };
+  return -1;
+}
+
+function getField(parts, name) {
+  for (const part of parts) {
+    // Use a more precise regex: match name= that is NOT preceded by file
+    // Pattern: look for ; name="value" or start with name="value"
+    const cdLine = part.headers.split(/\r?\n/)[0]; // first header line only
+    const nameMatch = cdLine.match(/(?:^|;)\s*name="([^"]+)"/i);
+    if (!nameMatch || nameMatch[1] !== name) continue;
+    const filenameMatch = cdLine.match(/(?:^|;)\s*filename="([^"]+)"/i);
+    if (filenameMatch) return { filename: filenameMatch[1], data: part.body };
+    return { value: part.body.toString("utf8") };
   }
   return null;
 }
 
-// ── Parse instruction → ffmpeg filter string via AI ─────────────────────────
+// ── AI config ─────────────────────────────────────────────────────────────────
+function resolveAiConfig() {
+  const chatbotKey = process.env.CHATBOT_API_KEY?.trim();
+  const openAiKey = process.env.OPENAI_API_KEY?.trim();
+  const forgeKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
+  const forgeUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+
+  if (chatbotKey) {
+    const isOR = chatbotKey.startsWith("sk-or-");
+    return {
+      apiKey: chatbotKey,
+      baseUrl: process.env.CHATBOT_BASE_URL?.trim() || (isOR ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1"),
+      model: process.env.CHATBOT_MODEL?.trim() || (isOR ? "openai/gpt-4.1-mini" : "gpt-4.1-mini"),
+    };
+  }
+  if (openAiKey) {
+    return {
+      apiKey: openAiKey,
+      baseUrl: process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
+      model: process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini",
+    };
+  }
+  if (forgeKey && forgeUrl) {
+    return { apiKey: forgeKey, baseUrl: forgeUrl.replace(/\/$/, ""), model: "gemini-2.5-flash" };
+  }
+  return null;
+}
+
+// ── Parse Bengali/English instruction → ffmpeg params via AI ─────────────────
 const AUDIO_SYSTEM_PROMPT = `তুমি একটি অডিও এডিটিং AI। ব্যবহারকারী বাংলায় বা ইংরেজিতে অডিও এডিটিং নির্দেশ দেবে।
-তোমাকে শুধুমাত্র একটি JSON অবজেক্ট রিটার্ন করতে হবে — অন্য কোনো টেক্সট নয়।
+শুধুমাত্র একটি JSON অবজেক্ট রিটার্ন করো — অন্য কোনো টেক্সট নয়।
 
 JSON ফরম্যাট:
 {
-  "filters": "<ffmpeg -af filter string>",
-  "outputFormat": "mp3" | "wav" | "ogg" | "flac" | "aac",
+  "filters": "<ffmpeg -af filter string or null>",
+  "outputFormat": "mp3",
   "trimStart": <seconds or null>,
   "trimEnd": <seconds or null>,
   "speed": <0.5-2.0 or null>,
   "description": "<বাংলায় সংক্ষিপ্ত বর্ণনা>"
 }
 
-ffmpeg filter উদাহরণ:
-- ভলিউম ২ গুণ বাড়াও → "volume=2.0"
-- ভলিউম অর্ধেক করো → "volume=0.5"
-- ভলিউম ৬ dB বাড়াও → "volume=6dB"
-- ফেড ইন ৩ সেকেন্ড → "afade=t=in:st=0:d=3"
-- ফেড আউট ৩ সেকেন্ড → "afade=t=out:st=0:d=3"
-- নয়েজ কমাও → "highpass=f=200,lowpass=f=3000"
-- বেস বাড়াও → "equalizer=f=100:width_type=o:width=2:g=6"
-- ট্রেবল বাড়াও → "equalizer=f=8000:width_type=o:width=2:g=6"
-- রিভার্ব → "aecho=0.8:0.88:60:0.4"
-- একাধিক ফিল্টার → "volume=1.5,afade=t=in:st=0:d=2"
+উদাহরণ:
+- ভলিউম ২ গুণ বাড়াও → filters: "volume=2.0"
+- ভলিউম কমাও → filters: "volume=0.5"
+- নয়েজ রিমুভ / নয়েজ কমাও → filters: "highpass=f=80,lowpass=f=8000,afftdn=nf=-25"
+- ফেড ইন ৩ সেকেন্ড → filters: "afade=t=in:st=0:d=3"
+- ফেড আউট → filters: "afade=t=out:st=0:d=3"
+- বেস বাড়াও → filters: "equalizer=f=100:width_type=o:width=2:g=8"
+- ট্রেবল বাড়াও → filters: "equalizer=f=8000:width_type=o:width=2:g=6"
+- রিভার্ব → filters: "aecho=0.8:0.88:60:0.4"
+- গতি বাড়াও ১.৫ → speed: 1.5, filters: null
+- ১০ সেকেন্ড থেকে শুরু → trimStart: 10
+- প্রথম ৩০ সেকেন্ড → trimEnd: 30
+- WAV তে রূপান্তর → outputFormat: "wav"
+- স্বয়ংক্রিয় মান উন্নত → filters: "highpass=f=80,lowpass=f=8000,afftdn=nf=-25,volume=1.2"
+- একাধিক → filters: "volume=1.5,afade=t=in:st=0:d=2"
 
-নিয়ম:
-- শুধুমাত্র valid JSON রিটার্ন করবে, কোনো markdown বা ব্যাখ্যা নয়
-- যদি কোনো ফিল্টার প্রযোজ্য না হয় তাহলে filters: null দাও
-- trimStart/trimEnd শুধু সেকেন্ড সংখ্যা, যেমন 5 মানে ৫ সেকেন্ড থেকে শুরু
-- speed পরিবর্তন করলে filters এ atempo ব্যবহার করো না, speed ফিল্ড ব্যবহার করো
-- outputFormat ডিফল্ট হবে ইনপুটের মতো, যদি রূপান্তরের নির্দেশ না থাকে`;
+নিয়ম: শুধু valid JSON, কোনো markdown নয়। outputFormat ডিফল্ট "mp3"।`;
 
 async function parseInstruction(instruction, inputFormat) {
-  const config = resolveAiConfig();
-  if (!config) throw new Error("AI config not found");
+  const cfg = resolveAiConfig();
+  if (!cfg) throw new Error("AI config not found");
 
-  const url = config.baseUrl.endsWith("/chat/completions")
-    ? config.baseUrl
-    : config.baseUrl.endsWith("/v1")
-    ? `${config.baseUrl}/chat/completions`
-    : `${config.baseUrl}/v1/chat/completions`;
+  const url = cfg.baseUrl.endsWith("/chat/completions")
+    ? cfg.baseUrl
+    : cfg.baseUrl.endsWith("/v1")
+    ? `${cfg.baseUrl}/chat/completions`
+    : `${cfg.baseUrl}/v1/chat/completions`;
 
-  const response = await fetch(url, {
+  const resp = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
     body: JSON.stringify({
-      model: config.model,
+      model: cfg.model,
       messages: [
         { role: "system", content: AUDIO_SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `ইনপুট ফরম্যাট: ${inputFormat}\nনির্দেশ: ${instruction}`,
-        },
+        { role: "user", content: `ইনপুট ফরম্যাট: ${inputFormat}\nনির্দেশ: ${instruction}` },
       ],
-      max_tokens: 500,
+      max_tokens: 400,
       temperature: 0.1,
     }),
   });
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`AI API error ${response.status}: ${err}`);
-  }
-
-  const data = await response.json();
+  if (!resp.ok) throw new Error(`AI API ${resp.status}`);
+  const data = await resp.json();
   const raw = data.choices?.[0]?.message?.content?.trim() || "{}";
-
-  // Strip markdown code blocks if present
   const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
   return JSON.parse(cleaned);
 }
 
-// ── Build ffmpeg command ──────────────────────────────────────────────────────
+// ── Build ffmpeg args ─────────────────────────────────────────────────────────
 function buildFfmpegArgs(inputPath, outputPath, parsed) {
   const args = ["-y", "-i", inputPath];
 
-  // Trim: -ss start -to end
-  if (parsed.trimStart != null) {
-    args.push("-ss", String(parsed.trimStart));
-  }
-  if (parsed.trimEnd != null) {
-    args.push("-to", String(parsed.trimEnd));
-  }
+  if (parsed.trimStart != null && parsed.trimStart > 0) args.push("-ss", String(parsed.trimStart));
+  if (parsed.trimEnd != null && parsed.trimEnd > 0) args.push("-to", String(parsed.trimEnd));
 
-  // Speed via atempo (supports 0.5–2.0; chain for extreme values)
-  const speed = parsed.speed;
+  // Speed via atempo
   let speedFilter = null;
-  if (speed && speed !== 1.0) {
+  const speed = parsed.speed;
+  if (speed && speed !== 1.0 && speed > 0) {
     if (speed >= 0.5 && speed <= 2.0) {
       speedFilter = `atempo=${speed}`;
     } else if (speed > 2.0) {
-      // Chain: max 2.0 per atempo
-      const n = Math.ceil(Math.log2(speed));
-      const perStep = Math.pow(speed, 1 / n);
-      speedFilter = Array(n).fill(`atempo=${perStep.toFixed(4)}`).join(",");
-    } else if (speed < 0.5) {
+      const steps = Math.ceil(Math.log2(speed));
+      const s = Math.pow(speed, 1 / steps).toFixed(4);
+      speedFilter = Array(steps).fill(`atempo=${s}`).join(",");
+    } else {
       speedFilter = `atempo=0.5,atempo=${(speed / 0.5).toFixed(4)}`;
     }
   }
 
-  // Combine filters
   const filterParts = [];
   if (parsed.filters) filterParts.push(parsed.filters);
   if (speedFilter) filterParts.push(speedFilter);
+  if (filterParts.length > 0) args.push("-af", filterParts.join(","));
 
-  if (filterParts.length > 0) {
-    args.push("-af", filterParts.join(","));
-  }
-
-  // Output format codec
   const fmt = (parsed.outputFormat || "mp3").toLowerCase();
-  if (fmt === "mp3") {
-    args.push("-codec:a", "libmp3lame", "-q:a", "2");
-  } else if (fmt === "wav") {
-    args.push("-codec:a", "pcm_s16le");
-  } else if (fmt === "ogg") {
-    args.push("-codec:a", "libvorbis", "-q:a", "5");
-  } else if (fmt === "flac") {
-    args.push("-codec:a", "flac");
-  } else if (fmt === "aac") {
-    args.push("-codec:a", "aac", "-b:a", "192k");
-  }
+  if (fmt === "mp3") args.push("-codec:a", "libmp3lame", "-q:a", "2");
+  else if (fmt === "wav") args.push("-codec:a", "pcm_s16le");
+  else if (fmt === "ogg") args.push("-codec:a", "libvorbis", "-q:a", "5");
+  else if (fmt === "flac") args.push("-codec:a", "flac");
+  else if (fmt === "aac") args.push("-codec:a", "aac", "-b:a", "192k");
+  else args.push("-codec:a", "libmp3lame", "-q:a", "2");
 
   args.push(outputPath);
   return args;
 }
 
-// ── Multipart form parser (no external deps) ─────────────────────────────────
-function parseMultipart(buffer, boundary) {
-  const sep = Buffer.from(`--${boundary}`);
-  const parts = [];
-  let start = 0;
-
-  while (start < buffer.length) {
-    const sepIdx = buffer.indexOf(sep, start);
-    if (sepIdx === -1) break;
-    const afterSep = sepIdx + sep.length;
-    // Check for final boundary --boundary--
-    if (buffer.slice(afterSep, afterSep + 2).toString() === "--") break;
-    // Skip \r\n after boundary
-    const headerStart = afterSep + 2;
-    const headerEnd = buffer.indexOf(Buffer.from("\r\n\r\n"), headerStart);
-    if (headerEnd === -1) break;
-    const headers = buffer.slice(headerStart, headerEnd).toString();
-    const bodyStart = headerEnd + 4;
-    const nextSep = buffer.indexOf(sep, bodyStart);
-    const bodyEnd = nextSep === -1 ? buffer.length : nextSep - 2; // -2 for \r\n
-    const body = buffer.slice(bodyStart, bodyEnd);
-    parts.push({ headers, body });
-    start = nextSep === -1 ? buffer.length : nextSep;
-  }
-
-  return parts;
-}
-
-function getFormField(parts, name) {
-  for (const part of parts) {
-    const cdMatch = part.headers.match(/Content-Disposition:[^\r\n]*name="([^"]+)"/i);
-    if (cdMatch && cdMatch[1] === name) {
-      // Check if it's a file
-      const filenameMatch = part.headers.match(/filename="([^"]+)"/i);
-      if (filenameMatch) {
-        return { filename: filenameMatch[1], data: part.body };
-      }
-      return { value: part.body.toString("utf8") };
-    }
-  }
-  return null;
-}
-
-// ── Main handler ─────────────────────────────────────────────────────────────
+// ── Main handler ──────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Cache-Control", "no-store");
+
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const tmpId = randomBytes(8).toString("hex");
-  const tmpIn = join(tmpdir(), `audio_in_${tmpId}`);
-  let tmpOut = null;
+  let tmpInPath = null;
+  let tmpOutPath = null;
 
   try {
-    // ── Parse multipart body ──────────────────────────────────────────────
-    const contentType = req.headers["content-type"] || "";
-    const boundaryMatch = contentType.match(/boundary=([^\s;]+)/);
-    if (!boundaryMatch) {
-      return res.status(400).json({ error: "multipart/form-data boundary not found" });
-    }
-    const boundary = boundaryMatch[1];
+    // ── 1. Read raw body ────────────────────────────────────────────────────
+    const rawBody = await readBody(req);
 
-    // Collect raw body
-    const chunks = [];
-    for await (const chunk of req) chunks.push(chunk);
-    const rawBody = Buffer.concat(chunks);
+    // ── 2. Parse multipart ──────────────────────────────────────────────────
+    const contentType = req.headers["content-type"] || "";
+    const boundaryMatch = contentType.match(/boundary=([^\s;,]+)/);
+    if (!boundaryMatch) {
+      return res.status(400).json({ error: "multipart boundary not found in Content-Type" });
+    }
+    const boundary = boundaryMatch[1].replace(/^"(.*)"$/, "$1"); // strip quotes if any
 
     const parts = parseMultipart(rawBody, boundary);
-    const audioField = getFormField(parts, "audio");
-    const instructionField = getFormField(parts, "instruction");
 
-    if (!audioField?.data || !instructionField?.value) {
-      return res.status(400).json({ error: "audio ফাইল এবং instruction উভয়ই প্রয়োজন" });
+    const audioField = getField(parts, "audio");
+    const instructionField = getField(parts, "instruction");
+
+    if (!audioField?.data || audioField.data.length === 0) {
+      return res.status(400).json({ error: "audio ফাইল পাওয়া যায়নি" });
     }
 
-    const instruction = instructionField.value.trim();
+    // instruction can be empty — default to auto-enhance
+    const instruction = instructionField?.value?.trim() ||
+      "অডিওটি বিশ্লেষণ করে স্বয়ংক্রিয়ভাবে মান উন্নত করো, নয়েজ কমাও";
+
     const originalFilename = audioField.filename || "audio.mp3";
-    const inputExt = extname(originalFilename).replace(".", "").toLowerCase() || "mp3";
+    const inputExt = (extname(originalFilename).replace(".", "").toLowerCase()) || "mp3";
 
-    // Validate file size (max 50MB)
+    // Validate size (50MB)
     if (audioField.data.length > 50 * 1024 * 1024) {
-      return res.status(400).json({ error: "ফাইলের আকার সর্বোচ্চ ৫০ MB হতে পারবে" });
+      return res.status(400).json({ error: "ফাইলের আকার সর্বোচ্চ ৫০ MB" });
     }
 
-    // Validate audio format
-    const allowedFormats = ["mp3", "wav", "ogg", "flac", "aac", "m4a", "webm", "opus"];
-    if (!allowedFormats.includes(inputExt)) {
-      return res.status(400).json({ error: `সমর্থিত ফরম্যাট: ${allowedFormats.join(", ")}` });
-    }
-
-    // Write input to temp file
-    const tmpInPath = `${tmpIn}.${inputExt}`;
+    // ── 3. Write input to /tmp ──────────────────────────────────────────────
+    tmpInPath = join(tmpdir(), `audio_in_${tmpId}.${inputExt}`);
     writeFileSync(tmpInPath, audioField.data);
 
-    // ── Parse instruction via AI ──────────────────────────────────────────
+    // ── 4. Parse instruction via AI ─────────────────────────────────────────
     let parsed;
     try {
       parsed = await parseInstruction(instruction, inputExt);
     } catch (aiErr) {
-      // Cleanup
       if (existsSync(tmpInPath)) unlinkSync(tmpInPath);
-      return res.status(500).json({
-        error: "AI নির্দেশ বিশ্লেষণে সমস্যা হয়েছে",
-        details: aiErr.message,
-      });
+      return res.status(500).json({ error: "AI নির্দেশ বিশ্লেষণে সমস্যা", details: aiErr.message });
     }
 
-    const outputFmt = (parsed.outputFormat || inputExt).toLowerCase();
-    const tmpOutPath = `${tmpIn}_out.${outputFmt}`;
-    tmpOut = tmpOutPath;
+    const outputFmt = (parsed.outputFormat || "mp3").toLowerCase();
+    tmpOutPath = join(tmpdir(), `audio_out_${tmpId}.${outputFmt}`);
 
-    // ── Run ffmpeg ────────────────────────────────────────────────────────
+    // ── 5. Run ffmpeg ───────────────────────────────────────────────────────
     const ffmpegArgs = buildFfmpegArgs(tmpInPath, tmpOutPath, parsed);
-    const result = spawnSync("ffmpeg", ffmpegArgs, {
-      timeout: 60000, // 60s max
-      maxBuffer: 100 * 1024 * 1024,
-    });
 
-    // Cleanup input
+    try {
+      execFileSync(FFMPEG_PATH, ffmpegArgs, { timeout: 60000, maxBuffer: 100 * 1024 * 1024 });
+    } catch (ffErr) {
+      if (existsSync(tmpInPath)) unlinkSync(tmpInPath);
+      if (existsSync(tmpOutPath)) unlinkSync(tmpOutPath);
+      const errMsg = ffErr.stderr?.toString() || ffErr.message || "ffmpeg error";
+      console.error("ffmpeg error:", errMsg.slice(-500));
+      return res.status(500).json({ error: "অডিও প্রসেসিং ব্যর্থ হয়েছে", details: errMsg.slice(-300) });
+    }
+
     if (existsSync(tmpInPath)) unlinkSync(tmpInPath);
 
-    if (result.status !== 0) {
-      const errMsg = result.stderr?.toString() || "ffmpeg error";
-      console.error("ffmpeg failed:", errMsg.slice(-500));
-      if (existsSync(tmpOutPath)) unlinkSync(tmpOutPath);
-      return res.status(500).json({
-        error: "অডিও প্রসেসিং ব্যর্থ হয়েছে",
-        details: errMsg.slice(-300),
-      });
+    // ── 6. Read output and respond ──────────────────────────────────────────
+    if (!existsSync(tmpOutPath)) {
+      return res.status(500).json({ error: "এডিটেড ফাইল তৈরি হয়নি" });
     }
 
-    // ── Read output and send ──────────────────────────────────────────────
     const outputBuffer = readFileSync(tmpOutPath);
     if (existsSync(tmpOutPath)) unlinkSync(tmpOutPath);
 
-    const mimeMap = {
-      mp3: "audio/mpeg",
-      wav: "audio/wav",
-      ogg: "audio/ogg",
-      flac: "audio/flac",
-      aac: "audio/aac",
-    };
+    const mimeMap = { mp3: "audio/mpeg", wav: "audio/wav", ogg: "audio/ogg", flac: "audio/flac", aac: "audio/aac" };
     const mime = mimeMap[outputFmt] || "audio/mpeg";
     const outputFilename = `edited_${Date.now()}.${outputFmt}`;
+    const description = parsed.description || "অডিও এডিটিং সম্পন্ন হয়েছে।";
 
     res.setHeader("Content-Type", mime);
     res.setHeader("Content-Disposition", `attachment; filename="${outputFilename}"`);
-    res.setHeader("X-Audio-Description", encodeURIComponent(parsed.description || ""));
+    res.setHeader("X-Audio-Description", encodeURIComponent(description));
     res.setHeader("X-Output-Format", outputFmt);
     res.setHeader("Content-Length", outputBuffer.length);
     return res.status(200).send(outputBuffer);
 
   } catch (err) {
     console.error("audio-edit handler error:", err);
-    // Cleanup any temp files
-    try {
-      if (tmpOut && existsSync(tmpOut)) unlinkSync(tmpOut);
-    } catch (_) {}
+    try { if (tmpInPath && existsSync(tmpInPath)) unlinkSync(tmpInPath); } catch (_) {}
+    try { if (tmpOutPath && existsSync(tmpOutPath)) unlinkSync(tmpOutPath); } catch (_) {}
     return res.status(500).json({ error: "Internal server error", details: err.message });
   }
 }
