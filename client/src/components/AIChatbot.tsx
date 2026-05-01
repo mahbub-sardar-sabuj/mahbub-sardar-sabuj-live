@@ -1486,7 +1486,7 @@ export default function AIChatbot() {
 
 আপনাকে স্বাগতম। এখানে আপনি মাহবুব সরদার সবুজ সম্পর্কে জানতে পারবেন—তাঁর কবিতা, ই-বুক, লেখা, যোগাযোগের তথ্য এবং সরদার ডিজাইন স্টুডিও ব্যবহারের নিয়ম সহজভাবে বুঝে নিতে পারবেন।
 
-আপনি চাইলে সরাসরি অডিও এডিট করতে পারেন। অডিও আপলোড করে noise reduction, voice clean, vocal enhancement preset, loudness normalize বা context-aware processing করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
+আপনি চাইলে সরাসরি অডিও এডিট করতে পারেন। অডিও বা ভিডিও আপলোড করুন — ভিডিও থেকে স্বয়ংক্রিয়ভাবে অডিও এক্সট্রাক্ট হবে। তারপর noise reduction, voice clean, vocal enhancement preset, loudness normalize বা context-aware processing করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
 
 এডিটিং শিখতেও আমি সাহায্য করি। অডিও, ভিডিও, ছবি, লেখা ও ডিজাইন—যে কোনো বিষয়ে ধাপে ধাপে নিয়ম, workflow, সেটিংস এবং practical tips বুঝিয়ে দিতে পারি।
 
@@ -1503,10 +1503,13 @@ export default function AIChatbot() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioFileInputRef = useRef<HTMLInputElement>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
   const retryPayloadRef = useRef<{ role: "user" | "assistant" | "system"; content: AIMessageContent }[] | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isAudioMode, setIsAudioMode] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoConverting, setVideoConverting] = useState(false);
   const [audioProcessing, setAudioProcessing] = useState(false);
   const [audioProcessingStage, setAudioProcessingStage] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState(false);
@@ -1601,6 +1604,117 @@ export default function AIChatbot() {
     window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("touchend", onEnd);
   }, [getAbsPos, clampPos]);
+
+
+  // ── Video select handler ──────────────────────────────────────────────
+  const handleVideoSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    // Validate video file
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|3gp|ts|mts)$/i.test(file.name);
+    if (!isVideo) {
+      setError("সমর্থিত ভিডিও ফর্ম্যাট: MP4, MOV, AVI, MKV, WebM, FLV, WMV, M4V");
+      return;
+    }
+    if (file.size > 200 * 1024 * 1024) {
+      setError("ভিডিও ফাইলের আকার সর্বোচ্চ ২০০ MB হতে পারবে।");
+      return;
+    }
+
+    setVideoFile(file);
+    setVideoConverting(true);
+    setError(null);
+
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    const convertingMsgId = `ai-video-converting-${Date.now()}`;
+    setMessages(prev => [...prev,
+      {
+        id: `user-video-upload-${Date.now()}`,
+        role: "user" as const,
+        content: `🎥 ${file.name} (${fileSizeMB} MB)`,
+        timestamp: new Date(),
+      },
+      {
+        id: convertingMsgId,
+        role: "assistant" as const,
+        content: `ভিডিও ফাইলটি (${fileSizeMB} MB) পেয়েছি! ভিডিও থেকে অডিও এক্সট্রাক্ট করছি...`,
+        timestamp: new Date(),
+      }
+    ]);
+
+    try {
+      const videoArrayBuffer = await file.arrayBuffer();
+      const videoBase64 = btoa(
+        new Uint8Array(videoArrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+      );
+
+      const response = await fetch("/api/video-to-audio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoData: videoBase64,
+          videoMime: file.type || "video/mp4",
+          videoName: file.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${response.status}: অডিও এক্সট্রাক্শন ব্যর্থ`);
+      }
+
+      const result = await response.json();
+      const { audioData, audioMime = "audio/mpeg", duration, audioFilename: extractedName } = result;
+
+      // Convert base64 → File
+      const audioBytes = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
+      const audioBlob = new Blob([audioBytes], { type: audioMime });
+      const audioFileName = extractedName || file.name.replace(/\.[^.]+$/, "") + "_audio.mp3";
+      const extractedAudioFile = new File([audioBlob], audioFileName, { type: audioMime });
+
+      setVideoConverting(false);
+      setVideoFile(null);
+
+      const durationStr = duration
+        ? ` (দৈর্ঘ্য: ${Math.floor(duration / 60)}মি ${Math.round(duration % 60)}সে)`
+        : "";
+
+      // Update the converting message to success
+      setMessages(prev => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (updated[lastIdx]?.role === "assistant") {
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            content: `✅ অডিও এক্সট্রাক্শন সফল${durationStr}!\n\nএখন আপনি অডিওটি এডিট করতে পারেন। যেমন বলতে পারেন:\n• ভোকাল ক্লিন করো\n• নয়েজ কমাও\n• কবিতার জন্য উপযুক্ত করো\n• অথবা আপনার মতো নির্দেশ দিন`,
+          };
+        }
+        return updated;
+      });
+
+      // Treat extracted audio as regular audio file
+      setAudioFile(extractedAudioFile);
+      setIsAudioMode(true);
+
+    } catch (err: any) {
+      setVideoConverting(false);
+      setVideoFile(null);
+      setMessages(prev => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (updated[lastIdx]?.role === "assistant") {
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            content: `❌ ভিডিও থেকে অডিও এক্সট্রাক্শন ব্যর্থ: ${err.message}`,
+          };
+        }
+        return updated;
+      });
+      setError(`ভিডিও থেকে অডিও এক্সট্রাক্শন ব্যর্থ: ${err.message}`);
+    }
+  }, [messages]);
 
   // ── Audio select handler ──────────────────────────────────────────────
   const handleAudioSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1725,6 +1839,8 @@ export default function AIChatbot() {
           });
           setAudioFile(null);
           setIsAudioMode(false);
+    setVideoFile(null);
+    setVideoConverting(false);
         } catch (err: any) {
           setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
         } finally {
@@ -2101,6 +2217,8 @@ export default function AIChatbot() {
     lastAudioBlobRef.current = null;
     setAudioFile(null);
     setIsAudioMode(false);
+    setVideoFile(null);
+    setVideoConverting(false);
   };
 
   return (
@@ -2488,8 +2606,62 @@ export default function AIChatbot() {
                   onChange={handleAudioSelect}
                   style={{ display: "none" }}
                 />
+                <input
+                  ref={videoFileInputRef}
+                  type="file"
+                  accept="video/*,.mp4,.mov,.avi,.mkv,.webm,.flv,.wmv,.m4v,.3gp"
+                  onChange={handleVideoSelect}
+                  style={{ display: "none" }}
+                />
 
 
+                {/* Video converting banner */}
+                {videoConverting && videoFile && (
+                  <div style={{
+                    marginBottom: 7,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "6px 10px",
+                    background: "rgba(99,102,241,0.07)",
+                    borderRadius: 9,
+                    border: "1px solid rgba(99,102,241,0.25)",
+                  }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                      background: "rgba(99,102,241,0.12)",
+                      border: "1px solid rgba(99,102,241,0.3)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="23 7 16 12 23 17 23 7"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                      </svg>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        color: "rgba(99,102,241,0.9)",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.6rem",
+                        fontWeight: 700,
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>{videoFile.name}</div>
+                      <div style={{
+                        color: "rgba(99,102,241,0.55)",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.54rem", marginTop: 1,
+                        display: "flex", alignItems: "center", gap: 4,
+                      }}>
+                        <span style={{
+                          display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+                          background: "#6366f1",
+                          animation: "pulse 1.2s ease-in-out infinite",
+                        }}/>
+                        অডিও এক্সট্রাক্ট হচ্ছে...
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Audio mode banner — only show when a NEW file is selected, not after editing */}
                 {audioFile && (
                   <div style={{
@@ -2731,6 +2903,29 @@ export default function AIChatbot() {
                       <circle cx="18" cy="16" r="3"/>
                     </svg>
                   </button>
+
+                  {/* Video upload button */}
+                  <button
+                    title="ভিডিও আপলোড করুন (অডিও এক্সট্রাক্ট হবে)"
+                    onClick={() => videoFileInputRef.current?.click()}
+                    disabled={audioProcessing || videoConverting}
+                    style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      background: "rgba(99,102,241,0.07)",
+                      border: "1px solid rgba(99,102,241,0.2)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: audioProcessing || videoConverting ? "not-allowed" : "pointer",
+                      flexShrink: 0,
+                      transition: "all 0.2s",
+                      opacity: audioProcessing || videoConverting ? 0.5 : 1,
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="23 7 16 12 23 17 23 7"/>
+                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                  </button>
+
 
 
                   <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
