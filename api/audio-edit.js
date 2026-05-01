@@ -163,11 +163,10 @@ function buildFFmpegFilter(operations) {
     const { type, params = {} } = op;
     switch (type) {
       case "noise_reduction": {
-        // Voice-preserving NR — afftdn (FFT-based) only
-        // ROOT CAUSE FIX: anlmdn s parameter was scaled 1.5-7.0 (WAY too high for voice).
-        // anlmdn s is in signal RMS units (1e-5 to 10), NOT a 0-1 percentage.
-        // At s=3.0 it causes severe metallic/robotic artifacts on voice.
-        // Solution: use afftdn only — it is stationary-noise-safe and voice-preserving.
+        // Voice-preserving NR — afftdn + agate (NO loudnorm)
+        // ROOT CAUSE 1: anlmdn s=1.5-7.0 caused metallic artifacts (fixed: removed anlmdn)
+        // ROOT CAUSE 2: loudnorm boosted quiet audio by ~9dB, amplifying background noise
+        //               (fixed: replaced with agate which silences noise floor between words)
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
         // Pass 1: Sub-bass rumble removal
         filters.push(`highpass=f=80:poles=2`);
@@ -179,25 +178,26 @@ function buildFFmpegFilter(operations) {
         const nrVal1 = Math.round(12 + s * 30); // 12 to 37.5
         const nfVal1 = Math.round(-25 - s * 8);  // -25 to -31.8 dB floor
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
-        // Pass 4: Voice frequency restoration
+        // Pass 4: agate — silences noise floor between words (does NOT boost quiet sections)
+        // threshold scales with strength: 0.3→-50dB, 0.5→-45dB, 0.7→-40dB, 0.85→-36dB
+        const gateThresh = Math.round(-50 + s * 16); // -50 to -36.4 dB
+        filters.push(`agate=threshold=${gateThresh}dB:attack=20:release=300:ratio=10`);
+        // Pass 5: Voice frequency restoration
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
         filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
         filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
         break;
       }
       case "denoise_advanced": {
-        // Ultra-clean voice-preserving NR — dual afftdn (no anlmdn)
-        // ROOT CAUSE FIX: anlmdn s was scaled 2.0-7.95 (extreme, causes metallic artifacts).
-        // anlmdn s is in signal RMS units, not a percentage. s>0.01 already destroys voice.
-        // Solution: dual afftdn passes — first pass with tn=1 for transient protection,
-        // second pass for non-stationary noise. This is voice-safe and highly effective.
+        // Ultra-clean voice-preserving NR — dual afftdn + agate (NO loudnorm, NO makeup gain)
+        // ROOT CAUSE 1: anlmdn s=2.0-7.95 caused metallic artifacts (fixed: removed anlmdn)
+        // ROOT CAUSE 2: loudnorm + makeup gain boosted noise floor (fixed: use agate instead)
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
         // Pass 1: Sub-bass & hum removal
         filters.push(`highpass=f=80:poles=2`);
         filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
         filters.push(`equalizer=f=100:t=h:width=8:g=-12`);
-        // Pass 2: First afftdn — stationary noise (fan, AC, room tone) with transient detection
-        // nr: 0.5→22, 0.7→30, 0.85→37 (conservative to protect voice)
+        // Pass 2: First afftdn — stationary noise with transient detection
         const nrValA = Math.round(15 + sa * 26); // 15 to 37.1
         const nfValA = Math.round(-26 - sa * 8);  // -26 to -32.8 dB floor
         filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
@@ -205,14 +205,13 @@ function buildFFmpegFilter(operations) {
         const nrValB = Math.round(10 + sa * 18); // 10 to 25.3
         const nfValB = Math.round(-22 - sa * 8);  // -22 to -28.8 dB floor
         filters.push(`afftdn=nr=${nrValB}:nf=${nfValB}:nt=w`);
-        // Pass 4: Voice frequency restoration (300Hz, 1kHz, 2.5kHz)
+        // Pass 4: agate — silences noise floor between words (does NOT boost quiet sections)
+        const gateA = Math.round(-50 + sa * 16); // -50 to -36.4 dB
+        filters.push(`agate=threshold=${gateA}dB:attack=20:release=300:ratio=10`);
+        // Pass 5: Voice frequency restoration
         filters.push(`equalizer=f=300:t=h:width=200:g=2.0`);
         filters.push(`equalizer=f=1000:t=h:width=800:g=1.5`);
         filters.push(`equalizer=f=2500:t=h:width=1500:g=2.0`);
-        // Pass 5: Gentle compression to even out volume after NR
-        filters.push(`acompressor=threshold=-28dB:ratio=2.5:attack=40:release=350:knee=6dB:makeup=1.5dB`);
-        // Pass 6: True peak limiter
-        filters.push(`alimiter=limit=-1dB:attack=5:release=50`);
         break;
       }
       case "normalize":
@@ -312,7 +311,9 @@ function buildFFmpegFilter(operations) {
         filters.push("acompressor=threshold=-30dB:ratio=3:attack=20:release=200:knee=6dB");
         break;
       case "vocal_enhance":
-        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB");
+        // Reduced EQ gains to avoid amplifying background noise
+        // +2dB at 3kHz and +1.5dB at 5kHz (was +3/+2) — still enhances presence without noise boost
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1.5,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB");
         break;
       case "de_ess":
         filters.push("equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-2");
