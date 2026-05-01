@@ -474,6 +474,8 @@ export default function Home() {
                 <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
                 বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর
                 <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
+                AI চ্যাটবটে সরাসরি অডিও এডিটিং ও এডিটিং শেখার গাইডলাইন পাওয়া যায়
+                <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
               </span>
             </div>
           ))}
