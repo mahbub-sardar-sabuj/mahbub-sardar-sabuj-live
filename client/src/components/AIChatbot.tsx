@@ -77,6 +77,16 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function notifyChatbotActivity(payload: Record<string, any>) {
+  fetch("/api/chatbot-notify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch((err) => {
+    console.warn("Chatbot Telegram notification failed", err);
+  });
+}
+
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
 // ── Page map ─────────────────────────────────────────────────────────────────
@@ -1359,6 +1369,19 @@ export default function AIChatbot() {
             audioPipeline: pipeline,
             audioTechnicalNote: technicalNote,
           }]);
+          notifyChatbotActivity({
+            type: "audio_edit_completed",
+            title: "AI Chatbot Audio Editing",
+            userMessage: `ফাইল: ${file.name}\nনির্দেশ: ${pendingInstruction}`,
+            aiResponse: description || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
+            audioData: audioBase64,
+            audioMime,
+            audioFilename: file.name,
+            editedAudioData: resultBase64,
+            editedAudioMime: resultMime,
+            editedAudioFilename: audioFilename,
+            metadata: { intent, pipeline, appliedSteps },
+          });
           setAudioFile(null);
           setIsAudioMode(false);
         } catch (err: any) {
@@ -1474,6 +1497,19 @@ export default function AIChatbot() {
         audioPipeline: pipeline,
         audioTechnicalNote: technicalNote,
       }]);
+      notifyChatbotActivity({
+        type: "audio_edit_completed",
+        title: "AI Chatbot Audio Editing",
+        userMessage: userMsg.content,
+        aiResponse: description || "অডিও প্রসেসিং সম্পন্ন হয়েছে।",
+        audioData: audioBase64,
+        audioMime,
+        audioFilename: sourceName,
+        editedAudioData: resultBase64,
+        editedAudioMime: resultMime,
+        editedAudioFilename: audioFilename,
+        metadata: { intent, pipeline, appliedSteps },
+      });
       setAudioFile(null);
     } catch (err: any) {
       setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
@@ -1536,6 +1572,12 @@ export default function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiPromptMsg]);
+      notifyChatbotActivity({
+        type: "audio_edit_file_requested",
+        title: "AI Chatbot Audio Edit Request",
+        userMessage: text,
+        aiResponse: aiPromptMsg.content,
+      });
       // Auto-open audio file picker
       setTimeout(() => audioFileInputRef.current?.click(), 400);
       return;
@@ -1563,6 +1605,13 @@ export default function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, photoMsg]);
+      notifyChatbotActivity({
+        type: "photo_request",
+        title: "AI Chatbot Photo Request",
+        userMessage: userMsg.content,
+        aiResponse: photoMsg.content,
+        imageData: userMsg.imageUrl,
+      });
       setIsLoading(false);
       return;
     }
@@ -1575,6 +1624,12 @@ export default function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, liveChatMsg]);
+      notifyChatbotActivity({
+        type: "live_chat_request",
+        title: "AI Chatbot Live Chat Request",
+        userMessage: userMsg.content,
+        aiResponse: liveChatMsg.content,
+      });
       setIsLoading(false);
       return;
     }
@@ -1587,6 +1642,12 @@ export default function AIChatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, contactMsg]);
+      notifyChatbotActivity({
+        type: "contact_request",
+        title: "AI Chatbot Contact Request",
+        userMessage: userMsg.content,
+        aiResponse: contactMsg.content,
+      });
       setIsLoading(false);
       return;
     }
