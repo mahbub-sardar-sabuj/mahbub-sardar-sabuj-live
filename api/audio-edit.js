@@ -163,64 +163,55 @@ function buildFFmpegFilter(operations) {
     const { type, params = {} } = op;
     switch (type) {
       case "noise_reduction": {
-        // Voice-preserving NR — anlmdn (Non-Local Means) + afftdn (FFT) dual-pass
-        const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85); // max 0.85 to protect voice
-        // Pass 1: Sub-bass rumble removal (below 80Hz) — voice starts at 80Hz+
+        // Voice-preserving NR — afftdn (FFT-based) only
+        // ROOT CAUSE FIX: anlmdn s parameter was scaled 1.5-7.0 (WAY too high for voice).
+        // anlmdn s is in signal RMS units (1e-5 to 10), NOT a 0-1 percentage.
+        // At s=3.0 it causes severe metallic/robotic artifacts on voice.
+        // Solution: use afftdn only — it is stationary-noise-safe and voice-preserving.
+        const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
+        // Pass 1: Sub-bass rumble removal
         filters.push(`highpass=f=80:poles=2`);
         // Pass 2: Hum removal (50Hz electrical + harmonics)
-        filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
-        filters.push(`equalizer=f=100:t=h:width=8:g=-12`);
-        filters.push(`equalizer=f=150:t=h:width=8:g=-8`);
-        // Pass 3: anlmdn — broadband noise via Non-Local Means (most effective for voice)
-        // s: 1e-5 to 10; scale: 0.3→1.5, 0.5→3.0, 0.7→5.0, 0.85→7.0
-        const anlmdnS = parseFloat((1.5 + s * 6.5).toFixed(2)); // 1.5 to 7.0
-        filters.push(`anlmdn=s=${anlmdnS}:p=0.002:r=0.006:m=11`);
-        // Pass 4: afftdn — stationary noise (fan, AC, room tone) using nr param (0.01-97)
-        // nr: 0.3→25, 0.5→40, 0.7→55, 0.85→70
-        const nrVal1 = Math.round(25 + s * 53); // 25 to 70
-        const nfVal1 = Math.round(-30 - s * 10); // -30 to -38.5 dB floor
+        filters.push(`equalizer=f=50:t=h:width=8:g=-15`);
+        filters.push(`equalizer=f=100:t=h:width=8:g=-10`);
+        // Pass 3: afftdn — FFT-based stationary noise reduction
+        // nr: 0.3→12, 0.5→20, 0.7→30, 0.85→38 (conservative range to protect voice)
+        const nrVal1 = Math.round(12 + s * 30); // 12 to 37.5
+        const nfVal1 = Math.round(-25 - s * 8);  // -25 to -31.8 dB floor
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
-        // Pass 5: Soft noise gate — range=0.08 means max 8% reduction, never kills voice
-        const gateThresh = Math.round(-50 + s * 10); // -50 to -41.5 dB
-        filters.push(`agate=threshold=${gateThresh}dB:attack=40:release=350:ratio=3:range=0.08`);
-        // Pass 6: Voice frequency restoration — compensate NR loss (300Hz, 1kHz, 2.5kHz)
+        // Pass 4: Voice frequency restoration
         filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
         filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
         filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
         break;
       }
       case "denoise_advanced": {
-        // Ultra-clean 8-pass voice-preserving NR — anlmdn + dual afftdn
-        const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85); // max 0.85
+        // Ultra-clean voice-preserving NR — dual afftdn (no anlmdn)
+        // ROOT CAUSE FIX: anlmdn s was scaled 2.0-7.95 (extreme, causes metallic artifacts).
+        // anlmdn s is in signal RMS units, not a percentage. s>0.01 already destroys voice.
+        // Solution: dual afftdn passes — first pass with tn=1 for transient protection,
+        // second pass for non-stationary noise. This is voice-safe and highly effective.
+        const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
         // Pass 1: Sub-bass & hum removal
         filters.push(`highpass=f=80:poles=2`);
-        filters.push(`equalizer=f=50:t=h:width=8:g=-20`);
-        filters.push(`equalizer=f=100:t=h:width=8:g=-15`);
-        filters.push(`equalizer=f=150:t=h:width=8:g=-10`);
-        // Pass 2: anlmdn — broadband noise via Non-Local Means (most effective for voice)
-        // s: 0.5→4.0, 0.7→5.5, 0.85→7.0
-        const anlmdnSA = parseFloat((2.0 + sa * 7.0).toFixed(2)); // 2.0 to 7.95
-        filters.push(`anlmdn=s=${anlmdnSA}:p=0.002:r=0.006:m=15`);
-        // Pass 3: First afftdn pass — stationary noise with tn=1 transient detection
-        const nrValA = Math.round(30 + sa * 40); // 30 to 64
-        const nfValA = Math.round(-32 - sa * 8); // -32 to -38.8 dB floor
+        filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
+        filters.push(`equalizer=f=100:t=h:width=8:g=-12`);
+        // Pass 2: First afftdn — stationary noise (fan, AC, room tone) with transient detection
+        // nr: 0.5→22, 0.7→30, 0.85→37 (conservative to protect voice)
+        const nrValA = Math.round(15 + sa * 26); // 15 to 37.1
+        const nfValA = Math.round(-26 - sa * 8);  // -26 to -32.8 dB floor
         filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
-        // Pass 3b (was nfB): Second afftdn pass — non-stationary noise
-        const nrValB = Math.round(20 + sa * 30); // 20 to 45.5
-        const nfValB = Math.round(-28 - sa * 10); // -28 to -36.5
+        // Pass 3: Second afftdn — non-stationary / broadband noise
+        const nrValB = Math.round(10 + sa * 18); // 10 to 25.3
+        const nfValB = Math.round(-22 - sa * 8);  // -22 to -28.8 dB floor
         filters.push(`afftdn=nr=${nrValB}:nf=${nfValB}:nt=w`);
-        // Pass 4: Soft gate — range=0.05 = max 5% reduction, never kills voice
-        const gateA = Math.round(-55 + sa * 15); // -55 to -42.25 dB
-        filters.push(`agate=threshold=${gateA}dB:attack=50:release=400:ratio=5:range=0.05`);
-        // Pass 5: Gentle high-freq de-essing instead of adeclick (adeclick crashes on some inputs)
-        filters.push(`equalizer=f=9000:t=h:width=3000:g=-2`);
-        // Pass 6: Voice frequency restoration (300Hz, 1kHz, 2.5kHz)
-        filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
-        filters.push(`equalizer=f=1000:t=h:width=800:g=1.0`);
-        filters.push(`equalizer=f=2500:t=h:width=1500:g=1.5`);
-        // Pass 7: Gentle compression to even out volume after NR
+        // Pass 4: Voice frequency restoration (300Hz, 1kHz, 2.5kHz)
+        filters.push(`equalizer=f=300:t=h:width=200:g=2.0`);
+        filters.push(`equalizer=f=1000:t=h:width=800:g=1.5`);
+        filters.push(`equalizer=f=2500:t=h:width=1500:g=2.0`);
+        // Pass 5: Gentle compression to even out volume after NR
         filters.push(`acompressor=threshold=-28dB:ratio=2.5:attack=40:release=350:knee=6dB:makeup=1.5dB`);
-        // Pass 8: True peak limiter
+        // Pass 6: True peak limiter
         filters.push(`alimiter=limit=-1dB:attack=5:release=50`);
         break;
       }
@@ -335,8 +326,8 @@ function buildFFmpegFilter(operations) {
         filters.push("acompressor=threshold=-6dB:ratio=20:attack=1:release=10:knee=3dB,alimiter=limit=-1dB:attack=1:release=5");
         break;
       case "spectral_repair":
-        // Use anlmdn + afftdn for spectral repair (adeclick can crash on some inputs)
-        filters.push("anlmdn=s=3:p=0.002:r=0.006:m=11,afftdn=nr=35:nf=-32:nt=w:tn=1");
+        // Use dual afftdn for spectral repair (anlmdn with high s causes metallic artifacts)
+        filters.push("afftdn=nr=30:nf=-28:nt=w:tn=1,afftdn=nr=20:nf=-25:nt=w");
         break;
       case "loudness_normalize":
         filters.push(`loudnorm=I=${params.target_lufs || -14}:TP=-1:LRA=11`);
@@ -453,49 +444,49 @@ function buildFFmpegFilter(operations) {
         break;
       // VOICE BEAUTIFY PRESETS
       case "honey_voice":
-        filters.push("highpass=f=80,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,equalizer=f=200:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=80,afftdn=nr=25:nf=-28:nt=w:tn=1,equalizer=f=200:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-3,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "silky_voice":
-        filters.push("highpass=f=100,anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=2000:t=h:width=1500:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB:makeup=1dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,afftdn=nr=22:nf=-26:nt=w:tn=1,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=2000:t=h:width=1500:g=2,acompressor=threshold=-20dB:ratio=3:attack=15:release=200:knee=6dB:makeup=1dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "broadcast_voice":
-        filters.push("highpass=f=80,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=45:nf=-35:nt=w,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=1500:t=h:width=2000:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
+        filters.push("highpass=f=80,afftdn=nr=28:nf=-28:nt=w:tn=1,equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=1500:t=h:width=2000:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
         break;
       case "asmr_voice":
-        filters.push("highpass=f=60,anlmdn=s=5.0:p=0.002:r=0.002:m=15,afftdn=nr=50:nf=-35:nt=w,lowpass=f=8000,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,aecho=0.8:0.3:80:0.2,volume=-3dB,loudnorm=I=-18:TP=-1:LRA=11");
+        filters.push("highpass=f=60,afftdn=nr=30:nf=-28:nt=w:tn=1,lowpass=f=8000,equalizer=f=300:t=h:width=200:g=3,equalizer=f=600:t=h:width=300:g=2,aecho=0.8:0.3:80:0.2,volume=-3dB,loudnorm=I=-18:TP=-1:LRA=11");
         break;
       case "cinematic_voice":
-        filters.push("highpass=f=60,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,equalizer=f=100:t=h:width=150:g=4,equalizer=f=3000:t=h:width=2000:g=2,aecho=0.8:0.4:400:0.4:800:0.2,acompressor=threshold=-20dB:ratio=4:attack=20:release=300:knee=6dB:makeup=3dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=60,afftdn=nr=25:nf=-26:nt=w:tn=1,equalizer=f=100:t=h:width=150:g=4,equalizer=f=3000:t=h:width=2000:g=2,aecho=0.8:0.4:400:0.4:800:0.2,acompressor=threshold=-20dB:ratio=4:attack=20:release=300:knee=6dB:makeup=3dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "angelic_voice":
-        filters.push("anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,asetrate=r=46000,aresample=44100,equalizer=f=5000:t=h:width=3000:g=3,equalizer=f=10000:t=h:width=4000:g=2,aecho=0.8:0.35:200:0.35:400:0.2,chorus=0.7:0.9:50:0.4:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("afftdn=nr=22:nf=-26:nt=w:tn=1,asetrate=r=46000,aresample=44100,equalizer=f=5000:t=h:width=3000:g=3,equalizer=f=10000:t=h:width=4000:g=2,aecho=0.8:0.35:200:0.35:400:0.2,chorus=0.7:0.9:50:0.4:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "vintage_radio":
         filters.push("highpass=f=300,lowpass=f=3000,equalizer=f=1500:t=h:width=1000:g=5,volume=2dB,acompressor=threshold=-15dB:ratio=5:attack=10:release=100:knee=3dB");
         break;
       case "podcast_pro":
-        filters.push("highpass=f=100,anlmdn=s=4.5:p=0.002:r=0.002:m=15,afftdn=nr=51:nf=-35:nt=w,agate=threshold=-40dB:attack=10:release=200,equalizer=f=200:t=h:width=200:g=2,equalizer=f=2500:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
+        filters.push("highpass=f=100,afftdn=nr=30:nf=-28:nt=w:tn=1,agate=threshold=-40dB:attack=10:release=200,equalizer=f=200:t=h:width=200:g=2,equalizer=f=2500:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=4:attack=20:release=250:knee=6dB:makeup=2dB,alimiter=limit=-1dB:attack=5:release=50,loudnorm=I=-16:TP=-1:LRA=11");
         break;
       case "lofi_voice":
         filters.push("lowpass=f=8000,equalizer=f=200:t=h:width=200:g=3,acompressor=threshold=-20dB:ratio=3:attack=10:release=100:knee=3dB,volume=1dB");
         break;
       case "narrator_voice":
-        filters.push("highpass=f=80,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,asetrate=r=42000,aresample=44100,equalizer=f=150:t=h:width=150:g=3,equalizer=f=2500:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:60:0.12,loudnorm=I=-16:TP=-1:LRA=11");
+        filters.push("highpass=f=80,afftdn=nr=25:nf=-26:nt=w:tn=1,asetrate=r=42000,aresample=44100,equalizer=f=150:t=h:width=150:g=3,equalizer=f=2500:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,aecho=0.8:0.2:60:0.12,loudnorm=I=-16:TP=-1:LRA=11");
         break;
       case "smooth_jazz_voice":
-        filters.push("highpass=f=100,anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,equalizer=f=200:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,aecho=0.8:0.25:120:0.2,chorus=0.7:0.9:30:0.3:1.0:1,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,afftdn=nr=22:nf=-26:nt=w:tn=1,equalizer=f=200:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,aecho=0.8:0.25:120:0.2,chorus=0.7:0.9:30:0.3:1.0:1,acompressor=threshold=-22dB:ratio=3:attack=20:release=300:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "epic_voice":
-        filters.push("highpass=f=60,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,asetrate=r=40000,aresample=44100,equalizer=f=80:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=3,aecho=0.8:0.5:300:0.4:600:0.2,acompressor=threshold=-18dB:ratio=5:attack=10:release=200:knee=6dB:makeup=4dB,loudnorm=I=-12:TP=-1:LRA=11");
+        filters.push("highpass=f=60,afftdn=nr=25:nf=-26:nt=w:tn=1,asetrate=r=40000,aresample=44100,equalizer=f=80:t=h:width=100:g=5,equalizer=f=3000:t=h:width=2000:g=3,aecho=0.8:0.5:300:0.4:600:0.2,acompressor=threshold=-18dB:ratio=5:attack=10:release=200:knee=6dB:makeup=4dB,loudnorm=I=-12:TP=-1:LRA=11");
         break;
       case "sweet_voice":
-        filters.push("highpass=f=100,anlmdn=s=3.5:p=0.002:r=0.002:m=15,afftdn=nr=35:nf=-35:nt=w,asetrate=r=46000,aresample=44100,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=7000:t=h:width=3000:g=2,aecho=0.8:0.2:60:0.15,chorus=0.7:0.9:30:0.3:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,afftdn=nr=22:nf=-26:nt=w:tn=1,asetrate=r=46000,aresample=44100,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=7000:t=h:width=3000:g=2,aecho=0.8:0.2:60:0.15,chorus=0.7:0.9:30:0.3:1.5:1,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "crystal_voice":
-        filters.push("highpass=f=100,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=45:nf=-35:nt=w,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=100,afftdn=nr=28:nf=-28:nt=w:tn=1,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=4000:g=3,equalizer=f=12000:t=h:width=4000:g=2,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB:makeup=2dB,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "deep_warm_voice":
-        filters.push("highpass=f=60,anlmdn=s=4.0:p=0.002:r=0.002:m=15,afftdn=nr=40:nf=-35:nt=w,asetrate=r=40000,aresample=44100,equalizer=f=100:t=h:width=150:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=3dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
+        filters.push("highpass=f=60,afftdn=nr=25:nf=-26:nt=w:tn=1,asetrate=r=40000,aresample=44100,equalizer=f=100:t=h:width=150:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=7000:t=h:width=3000:g=-2,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=6dB:makeup=3dB,aecho=0.8:0.2:80:0.15,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "auto_tune":
       case "pitch_correct":
@@ -636,7 +627,7 @@ export default async function handler(req, res) {
       // Primary filter chain failed — log and try safe fallback
       console.error("FFmpeg primary filter failed:", ffmpegErr?.stderr?.toString?.() || ffmpegErr.message);
       try {
-        const fallbackCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "highpass=f=80,anlmdn=s=3:p=0.002:r=0.006:m=11,afftdn=nr=35:nf=-32:nt=w:tn=1,loudnorm=I=-14:TP=-1:LRA=11" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
+        const fallbackCmd = `"${ffmpegPath}" -y -i "${inputPath}" -af "highpass=f=80,afftdn=nr=20:nf=-25:nt=w:tn=1,loudnorm=I=-14:TP=-1:LRA=11" -ar 44100 -ac 1 -acodec pcm_s16le "${outputPath}"`;
         execSync(fallbackCmd, { timeout: 60000, stdio: "pipe" });
         // Mark that we used fallback so description reflects it
         parsed.explanation = (parsed.explanation || "") + " (ডিফল্ট ফিল্টার ব্যবহার করা হয়েছে)";
