@@ -9,6 +9,11 @@ interface Message {
   content: string;
   timestamp: Date;
   imageUrl?: string;
+  userAudioName?: string;     // uploaded audio display name
+  userAudioSize?: number;     // uploaded audio file size in bytes
+  userAudioMime?: string;     // uploaded audio mime/type
+  userAudioUrl?: string;      // temporary local preview URL for uploaded audio
+  userAudioInstruction?: string; // user instruction for the uploaded audio
   audioUrl?: string;          // edited audio download URL
   audioFilename?: string;     // suggested filename
   audioDescription?: string;  // Bengali description of what was done
@@ -410,6 +415,126 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
+function formatAudioFileSize(bytes?: number): string {
+  if (!bytes || bytes <= 0) return "অডিও ফাইল";
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getAudioFormatLabel(name?: string, mime?: string): string {
+  const ext = name?.split(".").pop()?.toUpperCase();
+  if (ext && ext.length <= 5) return ext;
+  if (mime?.includes("mpeg")) return "MP3";
+  if (mime?.includes("wav")) return "WAV";
+  if (mime?.includes("ogg")) return "OGG";
+  if (mime?.includes("mp4") || mime?.includes("m4a")) return "M4A";
+  return "AUDIO";
+}
+
+function extractAudioInstruction(content: string): string {
+  const marker = "নির্দেশ:";
+  const index = content.indexOf(marker);
+  return index >= 0 ? content.slice(index + marker.length).trim() : content.trim();
+}
+
+function UserAudioAttachmentCard({ message, instruction }: { message: Message; instruction: string }) {
+  return (
+    <div style={{
+      background: "linear-gradient(145deg, rgba(10,22,40,0.92) 0%, rgba(4,10,22,0.98) 100%)",
+      border: "1px solid rgba(10,22,40,0.18)",
+      borderRadius: 14,
+      padding: "9px 10px",
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px rgba(10,22,40,0.16)",
+      color: "#F8E9B6",
+      minWidth: 0,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+        <div style={{
+          width: 34,
+          height: 34,
+          borderRadius: 12,
+          background: "linear-gradient(135deg, rgba(212,168,67,0.95), rgba(232,192,96,0.9))",
+          color: "#071121",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          boxShadow: "0 5px 14px rgba(212,168,67,0.24)",
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: "0.72rem",
+            fontWeight: 800,
+            color: "#F7E7B0",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            letterSpacing: "0.01em",
+          }}>
+            {message.userAudioName || "অডিও ফাইল"}
+          </div>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            flexWrap: "wrap",
+            marginTop: 3,
+            color: "rgba(248,233,182,0.66)",
+            fontSize: "0.55rem",
+            fontWeight: 600,
+          }}>
+            <span style={{
+              padding: "1px 6px",
+              borderRadius: 999,
+              background: "rgba(212,168,67,0.14)",
+              border: "1px solid rgba(212,168,67,0.2)",
+              color: "rgba(248,233,182,0.86)",
+            }}>{getAudioFormatLabel(message.userAudioName, message.userAudioMime)}</span>
+            <span>{formatAudioFileSize(message.userAudioSize)}</span>
+            <span>প্রসেসিংয়ের জন্য যুক্ত</span>
+          </div>
+        </div>
+      </div>
+
+      {message.userAudioUrl && (
+        <audio
+          controls
+          src={message.userAudioUrl}
+          className="chatbot-audio-player"
+          style={{
+            width: "100%",
+            height: 30,
+            borderRadius: 8,
+            marginTop: 8,
+          }}
+        />
+      )}
+
+      {instruction && (
+        <div style={{
+          marginTop: 8,
+          padding: "7px 8px",
+          borderRadius: 10,
+          background: "rgba(255,255,255,0.07)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          color: "rgba(255,250,230,0.9)",
+          fontSize: "0.65rem",
+          lineHeight: 1.55,
+          fontWeight: 650,
+        }}>
+          <span style={{ color: "rgba(212,168,67,0.86)", fontWeight: 800 }}>নির্দেশ:</span> {instruction}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── AudioBuffer → WAV Blob converter ────────────────────────────────────────────────────
 function audioBufferToWav(buffer: AudioBuffer): Blob {
   const numChannels = buffer.numberOfChannels;
@@ -730,6 +855,7 @@ if (!document.getElementById(STYLE_ID)) {
 // ── Message Bubble ────────────────────────────────────────────────────────────
 function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Message; onNavigate: (path: string) => void; onSwitchToLive: () => void }) {
   const isUser = message.role === "user";
+  const userAudioInstruction = message.userAudioInstruction || (message.userAudioName ? extractAudioInstruction(message.content) : "");
 
   if (isUser) {
     return (
@@ -761,13 +887,17 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
                 maxWidth: "100%",
                 maxHeight: 160,
                 borderRadius: 8,
-                marginBottom: message.content ? 7 : 3,
+                marginBottom: message.content || message.userAudioName ? 7 : 3,
                 objectFit: "contain",
                 border: "1.5px solid rgba(10,22,40,0.12)",
               }}
             />
           )}
-          {message.content}
+          {message.userAudioName ? (
+            <UserAudioAttachmentCard message={message} instruction={userAudioInstruction} />
+          ) : (
+            message.content
+          )}
           <div style={{ fontSize: "0.55rem", color: "rgba(10,22,40,0.45)", marginTop: 3, textAlign: "right", letterSpacing: "0.02em" }}>
             {formatTime(message.timestamp)}
           </div>
@@ -1347,6 +1477,11 @@ export default function AIChatbot() {
           role: "user",
           content: `🎵 ${file.name}\n\nনির্দেশ: ${pendingInstruction}`,
           timestamp: new Date(),
+          userAudioName: file.name,
+          userAudioSize: file.size,
+          userAudioMime: file.type || "audio/wav",
+          userAudioUrl: URL.createObjectURL(file),
+          userAudioInstruction: pendingInstruction,
         };
         setMessages(prev => [...prev, userMsg]);
         try {
@@ -1453,6 +1588,11 @@ export default function AIChatbot() {
       role: "user",
       content: `🎵 ${sourceName}\n\nনির্দেশ: ${instruction}`,
       timestamp: new Date(),
+      userAudioName: sourceName,
+      userAudioSize: sourceFile.size,
+      userAudioMime: sourceFile.type || "audio/wav",
+      userAudioUrl: URL.createObjectURL(sourceFile),
+      userAudioInstruction: instruction,
     };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
