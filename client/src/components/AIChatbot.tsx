@@ -22,6 +22,10 @@ interface Message {
   audioPipeline?: string[];   // ordered pipeline steps
   audioTechnicalNote?: string; // technical explanation
   audioVocalContext?: string;  // detected vocal context (poetry/narration/deep/soft/general)
+  processingVersion?: string;  // processing engine version (v9.0)
+  operationsApplied?: string[]; // list of applied operation names
+  outputSizeKB?: number;       // output file size in KB
+  isCopied?: boolean;          // message copy state
 }
 
 interface ActionButton {
@@ -1327,6 +1331,54 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
               </svg>
               ডাউনলোড করুন
             </a>
+            {/* v9.0 Processing info badge */}
+            {(message.processingVersion || message.outputSizeKB) && (
+              <div style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 4,
+                marginTop: 6,
+                alignItems: "center",
+              }}>
+                {message.processingVersion && (
+                  <span style={{
+                    padding: "1px 6px",
+                    background: "rgba(212,168,67,0.08)",
+                    border: "1px solid rgba(212,168,67,0.2)",
+                    borderRadius: 6,
+                    color: "rgba(212,168,67,0.6)",
+                    fontSize: "0.52rem",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontWeight: 700,
+                    letterSpacing: "0.04em",
+                  }}>⚙️ {message.processingVersion}</span>
+                )}
+                {message.outputSizeKB && (
+                  <span style={{
+                    padding: "1px 6px",
+                    background: "rgba(74,222,128,0.05)",
+                    border: "1px solid rgba(74,222,128,0.15)",
+                    borderRadius: 6,
+                    color: "rgba(74,222,128,0.55)",
+                    fontSize: "0.52rem",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontWeight: 600,
+                  }}>📦 {message.outputSizeKB} KB</span>
+                )}
+                {message.operationsApplied && message.operationsApplied.length > 0 && (
+                  <span style={{
+                    padding: "1px 6px",
+                    background: "rgba(99,102,241,0.06)",
+                    border: "1px solid rgba(99,102,241,0.15)",
+                    borderRadius: 6,
+                    color: "rgba(165,180,252,0.55)",
+                    fontSize: "0.52rem",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontWeight: 600,
+                  }}>🔧 {message.operationsApplied.length} অপারেশন</span>
+                )}
+              </div>
+            )}
           </div>
         )}
         {text && (
@@ -1372,8 +1424,36 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             ))}
           </div>
         )}
-        <div style={{ color: "rgba(110,130,150,0.4)", fontSize: "0.55rem", marginTop: 3, paddingLeft: 1, letterSpacing: "0.02em" }}>
-          {formatTime(message.timestamp)}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+          <div style={{ color: "rgba(110,130,150,0.4)", fontSize: "0.55rem", paddingLeft: 1, letterSpacing: "0.02em" }}>
+            {formatTime(message.timestamp)}
+          </div>
+          {text && (
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(text).then(() => {
+                  const btn = document.getElementById(`copy-btn-${message.id}`);
+                  if (btn) { btn.textContent = "✓ কপি"; setTimeout(() => { btn.textContent = "⎘ কপি"; }, 1500); }
+                }).catch(() => {});
+              }}
+              id={`copy-btn-${message.id}`}
+              title="কপি করুন"
+              style={{
+                background: "none",
+                border: "none",
+                color: "rgba(212,168,67,0.35)",
+                fontSize: "0.55rem",
+                cursor: "pointer",
+                padding: "1px 4px",
+                borderRadius: 4,
+                lineHeight: 1,
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = "rgba(212,168,67,0.7)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(212,168,67,0.35)")}
+            >⎘ কপি</button>
+          )}
         </div>
       </div>
     </motion.div>
@@ -1482,11 +1562,12 @@ export default function AIChatbot() {
     id: "welcome",
     role: "assistant",
     content: `আস্সালামু আলাইকুম।
-আমি মাহবুব সরদার সবুজের AI সহকারী।
+আমি মাহবুব সরদার সবুজের AI সহকারী — v9.0।
 
 আপনাকে স্বাগতম। এখানে আপনি মাহবুব সরদার সবুজ সম্পর্কে জানতে পারবেন—তাঁর কবিতা, ই-বুক, লেখা, যোগাযোগের তথ্য এবং সরদার ডিজাইন স্টুডিও ব্যবহারের নিয়ম সহজভাবে বুঝে নিতে পারবেন।
 
-আপনি চাইলে সরাসরি অডিও এডিট করতে পারেন। অডিও বা ভিডিও আপলোড করুন — ভিডিও থেকে স্বয়ংক্রিয়ভাবে অডিও এক্সট্রাক্ট হবে। তারপর noise reduction, voice clean, vocal enhancement preset, loudness normalize বা context-aware processing করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
+অডিও এডিটিং: অডিও বা ভিডিও আপলোড করুন — ভিডিও থেকে স্বয়ংক্রিয়ভাবে অডিও এক্সট্রাক্ট হবে। তারপর noise reduction, voice clean, vocal enhancement preset, loudness normalize বা context-aware processing করার নির্দেশনা দিন; আমি প্রসেস করে edited audio ফিরিয়ে দেব।
+v9.0 নতুন প্রিসেট: সিনেমাটিক বাংলা, রেডিও জকি, সুফি ভয়েস, শিশু কণ্ঠ, বয়স্ক কণ্ঠ, লো-ফাই চিল, নেচার অ্যাম্বিয়েন্ট, ড্রামা ভয়েস, স্পেকট্রাল ডিনয়েজ, AI নয়েজ গেট, ভয়েস এনহ্যান্সার প্রো।
 
 এডিটিং শিখতেও আমি সাহায্য করি। অডিও, ভিডিও, ছবি, লেখা ও ডিজাইন—যে কোনো বিষয়ে ধাপে ধাপে নিয়ম, workflow, সেটিংস এবং practical tips বুঝিয়ে দিতে পারি।
 
@@ -1988,6 +2069,9 @@ export default function AIChatbot() {
         pipeline = [],
         technicalNote = null,
         vocalContext = null,
+        processingVersion = "v9.0",
+        operationsApplied = [],
+        outputSizeKB = null,
       } = respJson;
 
       // Step 3: Decode result base64 → Blob → URL
@@ -2012,6 +2096,9 @@ export default function AIChatbot() {
         audioPipeline: pipeline,
         audioTechnicalNote: technicalNote,
         audioVocalContext: vocalContext,
+        processingVersion,
+        operationsApplied,
+        outputSizeKB,
       }]);
       notifyChatbotActivity({
         type: "audio_edit_completed",
@@ -2812,6 +2899,18 @@ export default function AIChatbot() {
                           { label: "⚡ এপিক ভয়েস", cmd: "এপিক ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
                           { label: "📖 ন্যারেটর", cmd: "ন্যারেটর ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
                           { label: "🔕 নয়েজ প্রোফাইল", cmd: "নয়েজ প্রোফাইল লার্ন করে নয়েজ রিমুভ করো" },
+                          // ── v9.0 New Presets ──
+                          { label: "🎬 সিনেমাটিক বাংলা", cmd: "সিনেমাটিক বাংলা ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "📻 রেডিও জকি", cmd: "রেডিও জকি ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🕌 সুফি ভয়েস", cmd: "সুফি ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "👶 শিশু কণ্ঠ", cmd: "শিশু কণ্ঠ প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "👴 বয়স্ক কণ্ঠ", cmd: "বয়স্ক কণ্ঠ প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🎵 লো-ফাই চিল", cmd: "লো-ফাই চিল প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🌿 নেচার অ্যাম্বিয়েন্ট", cmd: "নেচার অ্যাম্বিয়েন্ট প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🎭 ড্রামা ভয়েস", cmd: "ড্রামা ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
+                          { label: "🔬 স্পেকট্রাল ডিনয়েজ", cmd: "স্পেকট্রাল ডিনয়েজ দিয়ে গভীর নয়েজ রিমুভ করো" },
+                          { label: "🤖 AI নয়েজ গেট", cmd: "AI নয়েজ গেট দিয়ে স্মার্ট সাইলেন্স ডিটেকশন করো" },
+                          { label: "⭐ ভয়েস এনহ্যান্সার প্রো", cmd: "ভয়েস এনহ্যান্সার প্রো দিয়ে সম্পূর্ণ প্রসেসিং করো" },
                         ] : []),
                       ].map(preset => (
                         <button
@@ -2961,7 +3060,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "এখানে আপনার প্রত্যাশা লিখুন" : lastAudioBlobRef.current ? "এখানে আপনার প্রত্যাশা লিখুন" : "এখানে আপনার প্রত্যাশা লিখুন"}
+                      placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "মাহবুব সরদার সবুজ সম্পর্কে জিজ্ঞেস করুন বা অডিও এডিট করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"

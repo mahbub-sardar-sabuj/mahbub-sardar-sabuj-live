@@ -533,6 +533,18 @@ function deterministicAudioPlan(prompt = "") {
   if (has(/epic|এপিক|হিরো/)) { addOpOnce(operations, "voice_clone_preset", { style: "epic" }); intent = "epic_voice"; }
   if (has(/narrator|ন্যারেটর/)) { addOpOnce(operations, "voice_clone_preset", { style: "narrator" }); intent = "narrator_voice"; }
 
+  // ── v9.0 New Presets ──────────────────────────────────────────────────────
+  if (has(/cinematic bangla|সিনেমাটিক বাংলা|সিনেমাটিক ভয়েস|cinematic voice/)) { addOpOnce(operations, "cinematic_bangla"); intent = "cinematic_bangla"; }
+  if (has(/radio jockey|rj voice|রেডিও জকি|আরজে ভয়েস|radio dj/)) { addOpOnce(operations, "radio_jockey"); intent = "radio_jockey"; }
+  if (has(/sufi|সুফি|আধ্যাত্মিক|spiritual voice|mystical/)) { addOpOnce(operations, "sufi_voice"); intent = "sufi_voice"; }
+  if (has(/children voice|শিশু কণ্ঠ|বাচ্চার ভয়েস|kids voice/)) { addOpOnce(operations, "children_voice"); intent = "children_voice"; }
+  if (has(/elderly voice|বয়স্ক কণ্ঠ|বয়স্ক ভয়েস|senior voice/)) { addOpOnce(operations, "elderly_voice"); intent = "elderly_voice"; }
+  if (has(/lofi chill|lo-fi chill|লো-ফাই চিল|lofi voice/)) { addOpOnce(operations, "lofi_chill"); intent = "lofi_chill"; }
+  if (has(/nature ambient|প্রকৃতির শব্দ|ambient sound|ambient voice/)) { addOpOnce(operations, "nature_ambient"); intent = "nature_ambient"; }
+  if (has(/drama voice|নাটকীয় কণ্ঠ|theater voice|নাট্য ভয়েস/)) { addOpOnce(operations, "drama_voice"); intent = "drama_voice"; }
+  if (has(/spectral denoise|স্পেকট্রাল ডিনয়েজ|advanced denoise|গভীর নয়েজ/)) { addOpOnce(operations, "spectral_denoise"); intent = "spectral_denoise"; }
+  if (has(/ai gate|ai noise gate|এআই গেট|smart noise gate/)) { addOpOnce(operations, "ai_noise_gate"); intent = "ai_noise_gate"; }
+  if (has(/voice enhancer pro|ভয়েস এনহ্যান্সার প্রো|pro enhance|প্রো এনহ্যান্স/)) { addOpOnce(operations, "voice_enhancer_pro"); intent = "voice_enhancer_pro"; }
   if (has(/noise profile|নয়েজ প্রোফাইল|নয়েজ প্রোফাইল/)) addOpOnce(operations, "noise_profile_learn");
   if (has(/noise|নয়েজ|নয়েজ|শব্দ|হিস|hiss|clean|ক্লিন|রিমুভ/)) addOpOnce(operations, "noise_reduction", { strength: 0.55 });
   if (has(/clarity|ক্লারিটি|ক্লিয়ার|ক্লিয়ার|স্পষ্ট|পরিষ্কার/)) addOpOnce(operations, "clarity_boost");
@@ -778,6 +790,30 @@ NEW SMART MIX MODES (v8.0):
 - "ভিনটেজ উষ্ণতা"/ "vintage warmth" → vintage_warmth
 - "স্পেশ্যাল অডিও"/ "spatial audio"/ "3D sound" → spatial_audio
 - "ডায়নামিক নরমালাইজ"/ "dynamic normalize" → dynamic_normalize
+NEW VOICE PRESETS (v9.0 — Specialized Character Voices):
+- cinematic_bangla{} = সিনেমাটিক বাংলা ভয়েস — গভীর উষ্ণতা, নাটকীয় রিভার্ব, সিনেমাটিক প্রেজেন্স বুস্ট
+- radio_jockey{} = রেডিও জকি ভয়েস — পাঞ্চি কম্প্রেশন, এনার্জেটিক EQ, ব্রাইট প্রেজেন্স
+- sufi_voice{} = সুফি ভয়েস — রহস্যময় গভীরতা, হল রিভার্ব, মেডিটেটিভ উষ্ণতা
+- children_voice{} = শিশু কণ্ঠ — উজ্জ্বল হাই-ফ্রিকোয়েন্সি, স্পষ্ট ক্লারিটি, মৃদু কম্প্রেশন
+- elderly_voice{} = বয়স্ক কণ্ঠ — উষ্ণ লো-মিড, মৃদু উপস্থিতি, স্বাভাবিক টেক্সচার
+- lofi_chill{} = লো-ফাই চিল — ভিন্টেজ উষ্ণতা, মৃদু ডিস্টর্শন, রিল্যাক্সড ফিল
+- nature_ambient{} = নেচার অ্যাম্বিয়েন্ট — বিস্তৃত স্টেরিও, বায়বীয় রিভার্ব, প্রাকৃতিক টেক্সচার
+- drama_voice{} = ড্রামা ভয়েস — শক্তিশালী প্রজেকশন, নাটকীয় ডাইনামিক্স, থিয়েটার-স্টাইল
+- spectral_denoise{} = স্পেকট্রাল ডিনয়েজ — মাল্টি-পাস নয়েজ রিডাকশন, ফ্রিকোয়েন্সি-ডোমেইন ক্লিনিং
+- ai_noise_gate{} = AI নয়েজ গেট — স্মার্ট সাইলেন্স ডিটেকশন, ভয়েস-অ্যাক্টিভিটি-ডিটেকশন
+- voice_enhancer_pro{} = ভয়েস এনহ্যান্সার প্রো — সম্পূর্ণ প্রসেসিং চেইন: ডিনয়েজ+EQ+কম্প্রেশন+লিমিটার
+NEW v9.0 SMART RULES:
+- "সিনেমাটিক বাংলা"/ "cinematic bangla"/ "সিনেমাটিক ভয়েস" → cinematic_bangla
+- "রেডিও জকি"/ "radio jockey"/ "rj voice"/ "আরজে ভয়েস" → radio_jockey
+- "সুফি ভয়েস"/ "sufi"/ "আধ্যাত্মিক"/ "spiritual voice" → sufi_voice
+- "শিশু কণ্ঠ"/ "children voice"/ "বাচ্চার ভয়েস" → children_voice
+- "বয়স্ক কণ্ঠ"/ "elderly voice"/ "senior voice" → elderly_voice
+- "লো-ফাই চিল"/ "lofi chill"/ "lo-fi" → lofi_chill
+- "নেচার অ্যাম্বিয়েন্ট"/ "nature ambient"/ "প্রকৃতির শব্দ" → nature_ambient
+- "ড্রামা ভয়েস"/ "drama voice"/ "নাটকীয় কণ্ঠ" → drama_voice
+- "স্পেকট্রাল ডিনয়েজ"/ "spectral denoise"/ "গভীর নয়েজ" → spectral_denoise
+- "AI নয়েজ গেট"/ "ai noise gate"/ "smart noise gate" → ai_noise_gate
+- "ভয়েস এনহ্যান্সার প্রো"/ "voice enhancer pro"/ "প্রো এনহ্যান্স" → voice_enhancer_pro
 OUTPUT FORMAT (JSON only):
 {
   "operations": [{"type": "OPERATION_NAME", "params": {"key": value}}, ...],
@@ -1367,6 +1403,51 @@ function buildFFmpegFilter(operations, vocalDuration) {
         // Auto noise reduction using spectral analysis (afftdn is more widely supported)
         filters.push("afftdn=nr=15:nf=-25:nt=w,highpass=f=80,acompressor=threshold=-35dB:ratio=6:attack=5:release=100:knee=5dB");
         break;
+      // ── v9.0 NEW OPERATIONS ────────────────────────────────────────────────────
+      case "cinematic_bangla":
+        // Cinematic Bangla: deep warmth + dramatic reverb + wide stereo
+        filters.push("highpass=f=70,equalizer=f=100:t=h:width=100:g=4,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=2,acompressor=threshold=-18dB:ratio=4:attack=10:release=150:knee=6dB,aecho=0.85:0.18:60:0.25,stereotools=mlev=1:slev=1.3:sbal=0");
+        break;
+      case "radio_jockey":
+        // Radio Jockey: punchy, energetic, bright presence
+        filters.push("highpass=f=100,equalizer=f=200:t=h:width=150:g=-2,equalizer=f=2500:t=h:width=1500:g=5,equalizer=f=5000:t=h:width=2000:g=4,equalizer=f=10000:t=h:width=3000:g=2,acompressor=threshold=-15dB:ratio=6:attack=5:release=80:knee=3dB,alimiter=limit=-1dB");
+        break;
+      case "sufi_voice":
+        // Sufi/spiritual: warm, reverberant, mystical depth
+        filters.push("highpass=f=60,equalizer=f=150:t=h:width=100:g=5,equalizer=f=400:t=h:width=300:g=3,equalizer=f=6000:t=h:width=2000:g=-2,acompressor=threshold=-24dB:ratio=2:attack=30:release=400:knee=10dB,aecho=0.9:0.25:80:0.4,aecho=0.7:0.15:150:0.2");
+        break;
+      case "children_voice":
+        // Children's voice: bright, clear, gentle enhancement
+        filters.push("highpass=f=120,equalizer=f=500:t=h:width=300:g=2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=4,acompressor=threshold=-25dB:ratio=2:attack=20:release=300:knee=8dB");
+        break;
+      case "elderly_voice":
+        // Elderly voice: warm low-mids, reduced harshness, gentle compression
+        filters.push("highpass=f=80,equalizer=f=200:t=h:width=150:g=4,equalizer=f=500:t=h:width=300:g=3,equalizer=f=4000:t=h:width=2000:g=-3,equalizer=f=8000:t=h:width=3000:g=-4,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=350:knee=10dB");
+        break;
+      case "lofi_chill":
+        // Lo-fi chill: vintage warmth + gentle noise + soft compression
+        filters.push("equalizer=f=100:t=h:width=100:g=3,equalizer=f=300:t=h:width=200:g=2,equalizer=f=8000:t=h:width=4000:g=-6,equalizer=f=12000:t=h:width=4000:g=-10,acompressor=threshold=-20dB:ratio=3:attack=20:release=300:knee=8dB,aecho=0.85:0.1:30:0.15");
+        break;
+      case "nature_ambient":
+        // Nature ambient: spacious, airy, open sound
+        filters.push("highpass=f=50,equalizer=f=6000:t=h:width=3000:g=3,equalizer=f=12000:t=h:width=4000:g=4,aecho=0.95:0.3:200:0.5,stereotools=mlev=1:slev=1.6:sbal=0");
+        break;
+      case "drama_voice":
+        // Drama/theater: powerful projection, rich resonance
+        filters.push("highpass=f=80,equalizer=f=120:t=h:width=100:g=5,equalizer=f=300:t=h:width=200:g=4,equalizer=f=2000:t=h:width=1500:g=3,equalizer=f=5000:t=h:width=2000:g=3,acompressor=threshold=-16dB:ratio=5:attack=8:release=100:knee=4dB,aecho=0.8:0.15:45:0.22,alimiter=limit=-1dB");
+        break;
+      case "spectral_denoise":
+        // Advanced spectral denoising: multi-pass noise reduction
+        filters.push("afftdn=nr=25:nf=-35:nt=w,afftdn=nr=15:nf=-25:nt=w,highpass=f=80,acompressor=threshold=-35dB:ratio=8:attack=3:release=80:knee=4dB");
+        break;
+      case "ai_noise_gate":
+        // AI-powered adaptive noise gate: smart silence detection
+        filters.push("agate=threshold=-40dB:ratio=8:attack=10:release=200:makeup=1,afftdn=nr=12:nf=-20:nt=w");
+        break;
+      case "voice_enhancer_pro":
+        // Professional voice enhancer: complete processing chain
+        filters.push("highpass=f=80,afftdn=nr=15:nf=-25:nt=w,equalizer=f=200:t=h:width=150:g=-2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=6000:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=12:release=180:knee=6dB,alimiter=limit=-1dB");
+        break;
     }
   }
 
@@ -1656,6 +1737,9 @@ export default async function handler(req, res) {
         audioMime: "audio/mpeg",
         vocalContext,
         vocalDuration: vocalDuration ? Math.round(vocalDuration) : null,
+        processingVersion: "v9.0",
+        operationsApplied: operations.map(op => op.type),
+        outputSizeKB: Math.round(resultBuffer.length / 1024),
       });
     }
 
