@@ -2,6 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/45</loc>
+    <news:news>
+      <news:publication>
+        <news:name>সরদার সংবাদ</news:name>
+        <news:language>bn</news:language>
+      </news:publication>
+      <news:publication_date>2026-05-02T00:00:00+06:00</news:publication_date>
+      <news:title>নতুন ভ্রমণ ভ্লগার &apos;Adventure with Rony&apos; মিরিঞ্জা ভ্যালির ভিডিওতেই দারুণ সাড়া</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/44</loc>
     <news:news>
       <news:publication>
@@ -9,7 +20,7 @@
         <news:language>bn</news:language>
       </news:publication>
       <news:publication_date>2026-05-02T00:00:00+06:00</news:publication_date>
-      <news:title>নতুনদের নিয়েই বড় স্বপ্ন, আসছে শর্টফিল্ম "ইতিকথা"</news:title>
+      <news:title>নতুনদের নিয়েই বড় স্বপ্ন, আসছে শর্টফিল্ম &quot;ইতিকথা&quot;</news:title>
     </news:news>
   </url>
   <url>
