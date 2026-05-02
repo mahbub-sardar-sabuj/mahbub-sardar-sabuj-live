@@ -284,6 +284,68 @@ async function callAI(messages) {
   }
 }
 
+
+function extractUserText(messages = []) {
+  const lastUserMsg = [...messages].reverse().find((message) => message?.role === "user");
+  if (!lastUserMsg) return "";
+  if (Array.isArray(lastUserMsg.content)) {
+    return lastUserMsg.content
+      .map((part) => part?.type === "text" ? part.text : "")
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+  }
+  return String(lastUserMsg.content || "").trim();
+}
+
+function buildFallbackReply(messages = [], aiError = null) {
+  const userText = extractUserText(messages);
+  const q = userText.toLowerCase();
+  const intro = "দুঃখিত, এই মুহূর্তে মূল AI provider quota/rate-limit সমস্যায় আছে। তবে আমি আপনার জন্য ওয়েবসাইটের built-in guide থেকে সহায়ক উত্তর দিচ্ছি।";
+
+  const websiteSummary = "এই ওয়েবসাইটে মাহবুব সরদার সবুজ সম্পর্কে পরিচিতি, তাঁর লেখা ও সাহিত্যকর্ম, বই, আবৃত্তি/অডিও, ভিডিও, সংবাদ, গ্যালারি, ডিজাইন স্টুডিও/কনটেন্ট সার্ভিস এবং যোগাযোগের তথ্য পাওয়া যায়। আপনি কোনো নির্দিষ্ট বিভাগ—যেমন বই, লেখা, আবৃত্তি, নিউজ, গ্যালারি বা যোগাযোগ—জানতে চাইলে আমি বিভাগভিত্তিকভাবে বুঝিয়ে দিতে পারি।";
+
+  const editingCore = "এডিটিং শেখার সাধারণ নিয়ম হলো: প্রথমে উদ্দেশ্য ঠিক করুন, তারপর audience বুঝুন, raw material সাজান, অপ্রয়োজনীয় অংশ বাদ দিন, rhythm/flow ঠিক করুন, colour বা sound balance ঠিক করুন, text/title পরিষ্কার রাখুন, copyright-safe asset ব্যবহার করুন, শেষে export-এর আগে quality check করুন। কাজের ধরন অনুযায়ী নিয়ম বদলাবে—ভিডিওতে কাট, pacing, colour ও audio sync বেশি গুরুত্বপূর্ণ; অডিওতে noise reduction, EQ, volume leveling; ছবিতে crop, exposure, colour, retouch; লেখায় spelling, clarity, structure ও tone; social media content-এ hook, size, caption, thumbnail ও platform rule গুরুত্বপূর্ণ।";
+
+  const videoGuide = "ভিডিও এডিটিং শুরু করতে ধাপে ধাপে এগোন: ১) ভিডিওর উদ্দেশ্য ঠিক করুন—news, reel, documentary, promo না tutorial। ২) footage import করে ভালো clip বাছুন। ৩) প্রথম ৩–৫ সেকেন্ডে strong hook রাখুন। ৪) অপ্রয়োজনীয় pause ও ভুল অংশ কাটুন। ৫) voice/music balance করুন, যেন কথা স্পষ্ট শোনা যায়। ৬) subtitle/title readable রাখুন। ৭) colour correction দিয়ে exposure ও skin tone ঠিক করুন। ৮) export করুন platform অনুযায়ী—Facebook/YouTube landscape হলে 1920×1080, Reels/Shorts হলে 1080×1920।";
+
+  const audioGuide = "অডিও এডিটিংয়ের নিয়ম: quiet জায়গায় clean recording নিন, noise reduction অল্প ব্যবহার করুন, EQ দিয়ে voice পরিষ্কার করুন, compressor দিয়ে volume স্থির করুন, peak যেন clipping না করে সাধারণত -1 dB এর নিচে রাখুন, background music থাকলে voice-এর নিচে রাখুন, শেষে headphones ও speaker—দুই জায়গায় শুনে quality check করুন।";
+
+  const imageGuide = "ছবি/গ্রাফিক এডিটিংয়ের নিয়ম: subject স্পষ্ট রাখুন, crop করে focus ঠিক করুন, exposure ও white balance ঠিক করুন, অতিরিক্ত filter ব্যবহার করবেন না, text থাকলে contrast ও readability বজায় রাখুন, brand colour/font consistent রাখুন, social preview-এর জন্য সাধারণত 1200×630 এবং square post-এর জন্য 1080×1080 ভালো।";
+
+  const writingGuide = "লেখা এডিটিংয়ের নিয়ম: প্রথমে মূল বার্তা ঠিক করুন, অপ্রয়োজনীয় বাক্য বাদ দিন, paragraph ছোট ও পরিষ্কার রাখুন, বানান-ব্যাকরণ ঠিক করুন, tone ভদ্র ও পাঠকবান্ধব রাখুন, headline আকর্ষণীয় কিন্তু বিভ্রান্তিকর নয়—এভাবে লিখুন।";
+
+  if (/হ্যালো|সালাম|আসসালাম|hello|hi|hey/.test(q)) {
+    return "ওয়ালাইকুম আসসালাম। আমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI সহকারী। আপনি ওয়েবসাইটের তথ্য, লেখা-বই-আবৃত্তি, সংবাদ, গ্যালারি, যোগাযোগ অথবা অডিও/ভিডিও/ছবি/লেখা এডিটিং সম্পর্কে জানতে চাইলে আমি সাহায্য করতে পারি।";
+  }
+
+  if (/ওয়েবসাইট|website|তথ্য|সব তথ্য|কি কি|কী কী|about|পরিচিতি/.test(q)) {
+    return `${intro}\n\n${websiteSummary}\n\nআপনি চাইলে আমি “ওয়েবসাইটের সব বিভাগ”, “বই সম্পর্কে”, “লেখা সম্পর্কে”, “আবৃত্তি সম্পর্কে”, “ডিজাইন স্টুডিও”, বা “যোগাযোগের নিয়ম”—যে কোনো একটি বিষয় আলাদা করে বিস্তারিত বলতে পারি।`;
+  }
+
+  if (/video|ভিডিও|reel|রিল|shorts|youtube|ফেসবুক ভিডিও/.test(q)) {
+    return `${intro}\n\n${videoGuide}\n\nপ্রফেশনাল টিপস: কাট যেন কথার meaning নষ্ট না করে, background music যেন voice ঢেকে না দেয়, thumbnail/title যেন পরিষ্কার হয়, এবং publish-এর আগে mobile screen-এ preview দেখে নিন।`;
+  }
+
+  if (/audio|অডিও|sound|সাউন্ড|voice|ভয়েস|recitation|আবৃত্তি/.test(q)) {
+    return `${intro}\n\n${audioGuide}\n\nআবৃত্তি বা voice content হলে উচ্চারণ, pause, emotion এবং শব্দের clarity সবচেয়ে গুরুত্বপূর্ণ।`;
+  }
+
+  if (/photo|image|ছবি|গ্রাফিক|graphic|design|ডিজাইন|thumbnail|poster|পোস্টার/.test(q)) {
+    return `${intro}\n\n${imageGuide}\n\nডিজাইনে সবচেয়ে গুরুত্বপূর্ণ হলো hierarchy: কোন তথ্য আগে চোখে পড়বে, কোনটা পরে—এটা ঠিক রাখতে হবে।`;
+  }
+
+  if (/লেখা|copy|caption|script|স্ক্রিপ্ট|content|কনটেন্ট|বানান|প্রুফ/.test(q)) {
+    return `${intro}\n\n${writingGuide}\n\nভালো content editing-এর লক্ষ্য হলো: কম কথায় পরিষ্কার বার্তা, সঠিক তথ্য, সুন্দর flow এবং পাঠকের প্রতি সম্মান।`;
+  }
+
+  if (/পারবেন না|সীমাবদ্ধতা|limitation|কি পারেন|কী পারেন/.test(q)) {
+    return "আমি ওয়েবসাইটের তথ্য ব্যাখ্যা করতে, editing শেখাতে, content idea দিতে, লেখা সাজাতে এবং সাধারণ নির্দেশনা দিতে পারি। তবে আমি সরাসরি আপনার ডিভাইসের ফাইল edit করতে পারি না, admin/private তথ্য দেখতে পারি না, payment বা password নিতে পারি না, এবং নিশ্চিত তথ্য না থাকলে অনুমান করে বলব না। প্রয়োজন হলে যোগাযোগ পেজ দিয়ে সরাসরি কর্তৃপক্ষের সঙ্গে কথা বলার পরামর্শ দেব।";
+  }
+
+  return `${intro}\n\nআপনার প্রশ্নটি আমি বুঝেছি। সংক্ষেপে বললে, আমি ওয়েবসাইটের তথ্য দিতে এবং এডিটিং শেখাতে সাহায্য করি। ${websiteSummary}\n\nএডিটিংয়ের জন্য মূল নিয়ম: ${editingCore}\n\nআপনি চাইলে প্রশ্নটি একটু নির্দিষ্ট করুন—ভিডিও, অডিও, ছবি/ডিজাইন, লেখা, সোশ্যাল মিডিয়া পোস্ট, নাকি ওয়েবসাইটের কোনো নির্দিষ্ট তথ্য?`;
+}
+
 function escapeTelegramHtml(value = "") {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -420,11 +482,22 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ reply });
     } catch (err) {
-      console.error("AI API failed:", err.message);
-      return res.status(500).json({
-        error: "AI service temporarily unavailable. Please try again.",
-        details: err.message,
-      });
+      console.error("AI API failed; returning built-in fallback reply:", err.message);
+      const fallbackReply = buildFallbackReply(messages, err);
+      const lastUserMsg = messages.filter((message) => message.role === "user").slice(-1)[0];
+      const lastUserImgPart = Array.isArray(lastUserMsg?.content)
+        ? lastUserMsg.content.find(p => p.type === "image_url")?.image_url?.url
+        : null;
+      await notifyTelegram({
+        userMessage: lastUserMsg ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find(p => p.type === 'text')?.text || '[ছবি পাঠানো হয়েছে]' : lastUserMsg.content) : "(অজানা)",
+        aiResponse: `${fallbackReply}
+
+[Fallback used because AI provider failed: ${err.message}]`,
+        clientIp: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
+        userAgent: req.headers["user-agent"],
+        imageData: lastUserImgPart || null,
+      }).catch((notifyError) => console.error("Telegram fallback notification failed:", notifyError.message));
+      return res.status(200).json({ reply: fallbackReply, fallback: true });
     }
   } catch (err) {
     console.error("Chat handler error:", err);
