@@ -161,7 +161,8 @@ function resolveProviderConfig({ apiKey, baseUrl, model, source, defaultModel = 
   };
 }
 
-function resolveAiConfig() {
+function resolveAiConfigs() {
+  const configs = [];
   const chatbotApiKey = process.env.CHATBOT_API_KEY?.trim();
   const chatbotBaseUrl = process.env.CHATBOT_BASE_URL?.trim();
   const chatbotModel = process.env.CHATBOT_MODEL?.trim();
@@ -177,63 +178,72 @@ function resolveAiConfig() {
   const forgeApiKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeBaseUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
   const forgeModel = process.env.BUILT_IN_FORGE_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
+
   // Easiest long-term setup:
   // 1) Put your active Google AI key in GEMINI_API_KEY.
   // 2) Or put any supported provider key in CHATBOT_API_KEY / OPENAI_API_KEY.
-  // 3) Google AI keys (AIza...) are automatically routed to Gemini's OpenAI-compatible endpoint.
+  // 3) If the first provider is rate-limited, the API tries the next configured provider.
   if (geminiApiKey) {
-    return resolveProviderConfig({
+    configs.push(resolveProviderConfig({
       apiKey: geminiApiKey,
       baseUrl: geminiBaseUrl,
       model: geminiModel,
       source: "GEMINI_API_KEY",
       defaultModel: DEFAULT_GEMINI_MODEL,
-    });
+    }));
   }
   if (chatbotApiKey) {
-    return resolveProviderConfig({
+    configs.push(resolveProviderConfig({
       apiKey: chatbotApiKey,
       baseUrl: chatbotBaseUrl,
       model: chatbotModel,
       source: "CHATBOT_API_KEY",
-    });
+    }));
   }
   if (openRouterApiKey) {
-    return {
+    configs.push({
       apiKey: openRouterApiKey,
       baseUrl: openRouterBaseUrl || "https://openrouter.ai/api/v1",
       model: openRouterModel || "openai/gpt-4.1-mini",
       useForge: false,
       source: "OPENROUTER_API_KEY",
-    };
+    });
   }
   if (openAiApiKey) {
-    return resolveProviderConfig({
+    configs.push(resolveProviderConfig({
       apiKey: openAiApiKey,
       baseUrl: openAiBaseUrl,
       model: openAiModel,
       source: "OPENAI_API_KEY",
-    });
+    }));
   }
   if (forgeApiKey && forgeBaseUrl) {
-    return {
+    configs.push({
       apiKey: forgeApiKey,
       baseUrl: forgeBaseUrl,
       model: forgeModel,
       useForge: true,
       source: "BUILT_IN_FORGE_API_KEY",
-    };
+    });
   }
+
+  const seen = new Set();
+  return configs.filter((config) => {
+    const key = `${config.source}:${config.baseUrl}:${config.model}:${config.apiKey.slice(0, 12)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+function resolveAiConfig() {
+  const configs = resolveAiConfigs();
+  if (configs.length > 0) return configs[0];
   throw new Error("No AI API key configured. Set GEMINI_API_KEY for the simplest production setup.");
 }
-
-// Call AI API
-async function callAI(messages) {
-  const { apiKey, baseUrl, model, useForge, source } = resolveAiConfig();
-
+async function callAIWithConfig(messages, config) {
+  const { apiKey, baseUrl, model, useForge, source } = config;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 28000);
-
   try {
     const payload = {
       model,
@@ -241,49 +251,56 @@ async function callAI(messages) {
       max_tokens: 1200,
       temperature: 0.7,
     };
-
     if (useForge && model.includes("gemini")) {
       payload.thinking = { budget_tokens: 128 };
     }
-
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
     };
-
     if (source === "OPENROUTER_API_KEY" || baseUrl.includes("openrouter.ai")) {
       headers["HTTP-Referer"] = process.env.SITE_URL || process.env.VERCEL_URL || "https://mahbub-sardar-sabuj-live.vercel.app";
       headers["X-Title"] = "Mahbub Sardar Sabuj Live";
     }
-
     const response = await fetch(buildChatCompletionsUrl(baseUrl), {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
-
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status}: ${errText.slice(0, 300)}`);
     }
-
     const data = await response.json();
     const content = data?.choices?.[0]?.message?.content;
-
     if (!content || content.trim() === "") {
       throw new Error("Empty response from AI");
     }
-
     return content.trim();
   } catch (err) {
     clearTimeout(timeoutId);
     throw err;
   }
 }
-
+// Call AI API. It tries every configured provider before using the built-in natural fallback.
+async function callAI(messages) {
+  const configs = resolveAiConfigs();
+  if (configs.length === 0) {
+    throw new Error("No AI API key configured. Set GEMINI_API_KEY for the simplest production setup.");
+  }
+  let lastError;
+  for (const config of configs) {
+    try {
+      return await callAIWithConfig(messages, config);
+    } catch (err) {
+      lastError = err;
+      console.error(`AI provider ${config.source} failed; trying next provider if available:`, err.message);
+    }
+  }
+  throw lastError || new Error("All AI providers failed");
+}
 
 function extractUserText(messages = []) {
   const lastUserMsg = [...messages].reverse().find((message) => message?.role === "user");
@@ -301,8 +318,6 @@ function extractUserText(messages = []) {
 function buildFallbackReply(messages = [], aiError = null) {
   const userText = extractUserText(messages);
   const q = userText.toLowerCase();
-  const intro = "এই মুহূর্তে উন্নত AI অংশটি সাময়িকভাবে ব্যস্ত আছে। তবে আমি আপনার জন্য ওয়েবসাইটের প্রস্তুত সহায়ক নির্দেশিকা থেকে ভদ্র ও দরকারি উত্তর দিচ্ছি।";
-
   const websiteSummary = "এই ওয়েবসাইটে মাহবুব সরদার সবুজ সম্পর্কে পরিচিতি, তাঁর লেখা ও সাহিত্যকর্ম, বই, আবৃত্তি/অডিও, ভিডিও, সংবাদ, গ্যালারি, ডিজাইন স্টুডিও/কনটেন্ট সার্ভিস এবং যোগাযোগের তথ্য পাওয়া যায়। আপনি কোনো নির্দিষ্ট বিভাগ—যেমন বই, লেখা, আবৃত্তি, নিউজ, গ্যালারি বা যোগাযোগ—জানতে চাইলে আমি বিভাগভিত্তিকভাবে বুঝিয়ে দিতে পারি।";
 
   const editingCore = "এডিটিং শেখার সাধারণ নিয়ম হলো: প্রথমে উদ্দেশ্য ঠিক করুন, তারপর audience বুঝুন, raw material সাজান, অপ্রয়োজনীয় অংশ বাদ দিন, rhythm/flow ঠিক করুন, colour বা sound balance ঠিক করুন, text/title পরিষ্কার রাখুন, copyright-safe asset ব্যবহার করুন, শেষে export-এর আগে quality check করুন। কাজের ধরন অনুযায়ী নিয়ম বদলাবে—ভিডিওতে কাট, pacing, colour ও audio sync বেশি গুরুত্বপূর্ণ; অডিওতে noise reduction, EQ, volume leveling; ছবিতে crop, exposure, colour, retouch; লেখায় spelling, clarity, structure ও tone; social media content-এ hook, size, caption, thumbnail ও platform rule গুরুত্বপূর্ণ।";
@@ -320,30 +335,30 @@ function buildFallbackReply(messages = [], aiError = null) {
   }
 
   if (/ওয়েবসাইট|website|তথ্য|সব তথ্য|কি কি|কী কী|about|পরিচিতি/.test(q)) {
-    return `${intro}\n\n${websiteSummary}\n\nআপনি চাইলে আমি “ওয়েবসাইটের সব বিভাগ”, “বই সম্পর্কে”, “লেখা সম্পর্কে”, “আবৃত্তি সম্পর্কে”, “ডিজাইন স্টুডিও”, বা “যোগাযোগের নিয়ম”—যে কোনো একটি বিষয় আলাদা করে বিস্তারিত বলতে পারি।`;
+    return `${websiteSummary}\n\nআপনি চাইলে আমি “ওয়েবসাইটের সব বিভাগ”, “বই সম্পর্কে”, “লেখা সম্পর্কে”, “আবৃত্তি সম্পর্কে”, “ডিজাইন স্টুডিও”, বা “যোগাযোগের নিয়ম”—যে কোনো একটি বিষয় আলাদা করে বিস্তারিত বলতে পারি।`;
   }
 
   if (/video|ভিডিও|reel|রিল|shorts|youtube|ফেসবুক ভিডিও/.test(q)) {
-    return `${intro}\n\n${videoGuide}\n\nপ্রফেশনাল টিপস: কাট যেন কথার meaning নষ্ট না করে, background music যেন voice ঢেকে না দেয়, thumbnail/title যেন পরিষ্কার হয়, এবং publish-এর আগে mobile screen-এ preview দেখে নিন।`;
+    return `${videoGuide}\n\nপ্রফেশনাল টিপস: কাট যেন কথার meaning নষ্ট না করে, background music যেন voice ঢেকে না দেয়, thumbnail/title যেন পরিষ্কার হয়, এবং publish-এর আগে mobile screen-এ preview দেখে নিন।`;
   }
 
   if (/audio|অডিও|sound|সাউন্ড|voice|ভয়েস|recitation|আবৃত্তি/.test(q)) {
-    return `${intro}\n\n${audioGuide}\n\nআবৃত্তি বা voice content হলে উচ্চারণ, pause, emotion এবং শব্দের clarity সবচেয়ে গুরুত্বপূর্ণ।`;
+    return `${audioGuide}\n\nআবৃত্তি বা voice content হলে উচ্চারণ, pause, emotion এবং শব্দের clarity সবচেয়ে গুরুত্বপূর্ণ।`;
   }
 
   if (/photo|image|ছবি|গ্রাফিক|graphic|design|ডিজাইন|thumbnail|poster|পোস্টার/.test(q)) {
-    return `${intro}\n\n${imageGuide}\n\nডিজাইনে সবচেয়ে গুরুত্বপূর্ণ হলো hierarchy: কোন তথ্য আগে চোখে পড়বে, কোনটা পরে—এটা ঠিক রাখতে হবে।`;
+    return `${imageGuide}\n\nডিজাইনে সবচেয়ে গুরুত্বপূর্ণ হলো hierarchy: কোন তথ্য আগে চোখে পড়বে, কোনটা পরে—এটা ঠিক রাখতে হবে।`;
   }
 
   if (/লেখা|copy|caption|script|স্ক্রিপ্ট|content|কনটেন্ট|বানান|প্রুফ/.test(q)) {
-    return `${intro}\n\n${writingGuide}\n\nভালো content editing-এর লক্ষ্য হলো: কম কথায় পরিষ্কার বার্তা, সঠিক তথ্য, সুন্দর flow এবং পাঠকের প্রতি সম্মান।`;
+    return `${writingGuide}\n\nভালো content editing-এর লক্ষ্য হলো: কম কথায় পরিষ্কার বার্তা, সঠিক তথ্য, সুন্দর flow এবং পাঠকের প্রতি সম্মান।`;
   }
 
   if (/পারবেন না|সীমাবদ্ধতা|limitation|কি পারেন|কী পারেন/.test(q)) {
     return "আমি ওয়েবসাইটের তথ্য ব্যাখ্যা করতে, editing শেখাতে, content idea দিতে, লেখা সাজাতে এবং সাধারণ নির্দেশনা দিতে পারি। তবে আমি সরাসরি আপনার ডিভাইসের ফাইল edit করতে পারি না, admin/private তথ্য দেখতে পারি না, payment বা password নিতে পারি না, এবং নিশ্চিত তথ্য না থাকলে অনুমান করে বলব না। প্রয়োজন হলে যোগাযোগ পেজ দিয়ে সরাসরি কর্তৃপক্ষের সঙ্গে কথা বলার পরামর্শ দেব।";
   }
 
-  return `${intro}\n\nআপনার প্রশ্নটি আমি বুঝেছি। সংক্ষেপে বললে, আমি ওয়েবসাইটের তথ্য দিতে এবং এডিটিং শেখাতে সাহায্য করি। ${websiteSummary}\n\nএডিটিংয়ের জন্য মূল নিয়ম: ${editingCore}\n\nআপনি চাইলে প্রশ্নটি একটু নির্দিষ্ট করুন—ভিডিও, অডিও, ছবি/ডিজাইন, লেখা, সোশ্যাল মিডিয়া পোস্ট, নাকি ওয়েবসাইটের কোনো নির্দিষ্ট তথ্য?`;
+  return `আপনার প্রশ্নটি আমি বুঝেছি। সংক্ষেপে বললে, আমি ওয়েবসাইটের তথ্য দিতে, এডিটিং শেখাতে, লেখা সাজাতে, কনটেন্ট আইডিয়া দিতে এবং সাধারণ জ্ঞানভিত্তিক সহায়ক পরামর্শ দিতে পারি।\n\nওয়েবসাইট-সংক্রান্ত তথ্যের ক্ষেত্রে আমি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের তথ্যের ভিত্তিতে উত্তর দেব: ${websiteSummary}\n\nএডিটিংয়ের জন্য মূল নিয়ম: ${editingCore}\n\nআপনি চাইলে প্রশ্নটি নির্দিষ্ট করুন—ভিডিও, অডিও, ছবি/ডিজাইন, লেখা, সোশ্যাল মিডিয়া পোস্ট, নাকি ওয়েবসাইটের কোনো নির্দিষ্ট তথ্য?`;
 }
 
 function escapeTelegramHtml(value = "") {
