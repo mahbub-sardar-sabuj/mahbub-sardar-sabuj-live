@@ -1604,6 +1604,12 @@ export default function AIChatbot() {
   }, [navigate]);
 
   useEffect(() => {
+    const handleExternalOpen = () => setIsOpen(true);
+    window.addEventListener("open-chatbot", handleExternalOpen);
+    return () => window.removeEventListener("open-chatbot", handleExternalOpen);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
@@ -2342,10 +2348,24 @@ export default function AIChatbot() {
             }}
             onMouseDown={handleBtnMouseDown}
             onTouchStart={handleBtnTouchStart}
+            onMouseUp={(e) => {
+              if (!didDrag.current) {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOpen(o => !o);
+              }
+            }}
+            onTouchEnd={(e) => {
+              if (!didDrag.current) {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOpen(o => !o);
+              }
+            }}
           >
             {/* Avatar circle */}
             <motion.div
-              onClick={() => { if (!didDrag.current) setIsOpen(o => !o); }}
+              onClick={(e) => e.preventDefault()}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.92 }}
               style={{
