@@ -29,11 +29,17 @@
       "permanent": true
     },
     {
-      "source": "/(?!ads.txt|robots.txt)(.*)",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "mahbub-sardar-sabuj-live.vercel.app"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "_bypass"
         }
       ],
       "destination": "https://www.mahbubsardarsabuj.com/$1",
