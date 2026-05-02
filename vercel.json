@@ -29,7 +29,7 @@
       "permanent": true
     },
     {
-      "source": "/(?!ads.txt|robots.txt|sitemap.xml|manifest.json)(.*)",
+      "source": "/:path((?!ads\.txt|robots\.txt|sitemap\.xml|manifest\.json).*)",
       "has": [
         {
           "type": "host",
@@ -42,7 +42,7 @@
           "key": "_bypass"
         }
       ],
-      "destination": "https://www.mahbubsardarsabuj.com/$1",
+      "destination": "https://www.mahbubsardarsabuj.com/:path",
       "permanent": true
     }
   ],
