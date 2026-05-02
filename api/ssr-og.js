@@ -5326,7 +5326,7 @@ export default async function handler(req) {
       <meta property="twitter:image" content="${image}">
 
       <!-- Redirect human users to main site, keep bots here -->
-      <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>
+      <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|facebookexternalhit|facebot|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot|discordbot|pinterest|applebot/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>
     </head>
     <body>
       <header><a href="${SITE_URL}">মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj</a></header>
