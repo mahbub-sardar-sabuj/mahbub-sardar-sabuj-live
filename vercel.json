@@ -29,7 +29,7 @@
       "permanent": true
     },
     {
-      "source": "/:path((?!ads\.txt|robots\.txt|sitemap\.xml|manifest\.json).*)",
+      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|manifest.json).*)",
       "has": [
         {
           "type": "host",
