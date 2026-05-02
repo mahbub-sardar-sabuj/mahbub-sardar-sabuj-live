@@ -101,6 +101,11 @@ jspm_packages/
 tmp/
 temp/
 
+# Recovered and temporary source files
+*.recovered
+*_to_insert.ts
+*_to_insert.js
+
 # Database
 *.db
 *.sqlite
