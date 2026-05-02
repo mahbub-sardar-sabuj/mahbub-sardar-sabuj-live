@@ -60,7 +60,7 @@ const newsData: NewsItem[] = [
     readTime: "৩ মিনিট",
     featured: true,
     tag: "শর্টফিল্ম",
-    views: 0,
+    views: 6286,
   },
   {
     id: 43,
