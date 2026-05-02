@@ -29,7 +29,7 @@
       "permanent": true
     },
     {
-      "source": "/(?!ads\.txt|robots\.txt)(.*)",
+      "source": "/(?!ads.txt|robots.txt)(.*)",
       "has": [
         {
           "type": "host",
