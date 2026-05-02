@@ -141,28 +141,70 @@ function getMusicDuckingLevel(vocalContext) {
   }
 }
 
-// ── Context-aware vocal enhancement filter ───────────────────────────────────
+// ── Context-aware vocal enhancement filter ────────────────────────────────────────────
 function getContextVocalFilter(vocalContext) {
+  // সব ধরনের কণ্ঠে মধুময় উষ্ণতা + স্পষ্টতা নিশ্চিত করা
   switch (vocalContext) {
     case "poetry":
-      // Warm, gentle, soft reverb — কবিতার জন্য
-      return "highpass=f=80,equalizer=f=250:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=1500:g=1.5,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,aecho=0.8:0.15:60:0.25";
+      // কবিতা/আবৃত্তি: উষ্ণ ও মধুর কণ্ঠ, মৃদু রিভার্ব, স্বাভাবিক গতি
+      return (
+        "highpass=f=75," +
+        "equalizer=f=160:t=h:width=120:g=2.5," +   // warmth
+        "equalizer=f=320:t=h:width=200:g=2.0," +   // body
+        "equalizer=f=700:t=h:width=300:g=-1.0," +  // mud cut
+        "equalizer=f=2500:t=h:width=1500:g=2.0," + // presence
+        "equalizer=f=5000:t=h:width=2000:g=1.5," + // clarity
+        "acompressor=threshold=-24dB:ratio=2.2:attack=25:release=350:knee=10dB:makeup=1dB," +
+        "aecho=0.8:0.12:55:0.18"                   // subtle room
+      );
     case "narration":
-      // Clear, presence-forward — narration-এর জন্য
-      return "highpass=f=90,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=5000:t=h:width=2000:g=2,acompressor=threshold=-18dB:ratio=3.5:attack=15:release=150:knee=5dB";
+      // ন্যারেশন/পডকাস্ট: স্পষ্ট, উপস্থিতিপূর্ণ, প্রফেশনাল
+      return (
+        "highpass=f=80," +
+        "equalizer=f=160:t=h:width=120:g=1.5," +   // warmth
+        "equalizer=f=700:t=h:width=300:g=-1.5," +  // mud cut
+        "equalizer=f=2500:t=h:width=1500:g=3.0," + // presence
+        "equalizer=f=5000:t=h:width=2000:g=2.5," + // clarity
+        "equalizer=f=9000:t=h:width=3000:g=1.0," + // air
+        "acompressor=threshold=-20dB:ratio=3.0:attack=12:release=180:knee=6dB:makeup=1.5dB"
+      );
     case "deep":
-      // Reduce muddiness, add clarity — গভীর কণ্ঠের জন্য
-      return "highpass=f=60,equalizer=f=200:t=h:width=150:g=-2,equalizer=f=3500:t=h:width=2000:g=3,acompressor=threshold=-20dB:ratio=4:attack=20:release=200:knee=4dB";
+      // গভীর কণ্ঠ: মাদ্দা কাটা, স্পষ্টতা যোগ, শক্তিশালী উপস্থিতি
+      return (
+        "highpass=f=60," +
+        "equalizer=f=200:t=h:width=150:g=-2.0," +  // mud cut
+        "equalizer=f=320:t=h:width=200:g=1.5," +   // body
+        "equalizer=f=2500:t=h:width=1500:g=2.5," + // presence
+        "equalizer=f=4500:t=h:width=2000:g=2.0," + // clarity
+        "acompressor=threshold=-20dB:ratio=3.5:attack=18:release=200:knee=5dB:makeup=1dB"
+      );
     case "soft":
-      // Add warmth, gentle compression — নরম কণ্ঠের জন্য
-      return "highpass=f=100,equalizer=f=300:t=h:width=200:g=3,equalizer=f=4000:t=h:width=2000:g=2,acompressor=threshold=-28dB:ratio=2:attack=30:release=350:knee=10dB";
+      // নরম/মিষ্টি কণ্ঠ: উষ্ণ মধুরতা, মৃদু কম্প্রেশন
+      return (
+        "highpass=f=85," +
+        "equalizer=f=160:t=h:width=120:g=3.0," +   // warmth
+        "equalizer=f=320:t=h:width=200:g=2.0," +   // body
+        "equalizer=f=700:t=h:width=300:g=-1.0," +  // mud cut
+        "equalizer=f=3500:t=h:width=1500:g=2.0," + // presence
+        "equalizer=f=6000:t=h:width=2000:g=1.5," + // clarity
+        "acompressor=threshold=-28dB:ratio=2.0:attack=28:release=380:knee=12dB:makeup=1dB"
+      );
     default:
-      // Natural clean — সাধারণ ভয়েসের জন্য
-      return "highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1.5,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB";
+      // সাধারণ ভয়েস: স্বাভাবিক, মধুময়, স্পষ্ট
+      return (
+        "highpass=f=75," +
+        "equalizer=f=160:t=h:width=120:g=2.0," +   // warmth
+        "equalizer=f=320:t=h:width=200:g=1.5," +   // body
+        "equalizer=f=700:t=h:width=300:g=-1.5," +  // mud cut
+        "equalizer=f=2500:t=h:width=1500:g=2.5," + // presence
+        "equalizer=f=5000:t=h:width=2000:g=2.0," + // clarity
+        "equalizer=f=9000:t=h:width=3000:g=1.0," + // air
+        "acompressor=threshold=-22dB:ratio=2.8:attack=18:release=250:knee=8dB:makeup=1.5dB"
+      );
   }
 }
 
-// ── Smart Mix: Vocal + Background Music ─────────────────────────────────────
+// ── Smart Mix: Vocal + Background Music ─────────────────────────────────────────────────
 // Returns null if no music file, otherwise builds the full mixed output
 async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, options = {}) {
   const {
@@ -827,19 +869,21 @@ OUTPUT FORMAT (JSON only):
   "mixMode": "standard|multi_segment|adaptive_ducking"
 }
 
-NOISE REDUCTION RULES (CRITICAL — voice must be preserved):
-- noise_reduction strength scale: 0.3=হালকা, 0.5=মাঝারি, 0.7=শক্তিশালী, 0.85=মাক্স
-- NEVER use strength > 0.85 for noise_reduction (voice will be damaged)
-- For "নয়েজ কমাও" / "noise remove" → noise_reduction(0.5) FIRST, then check
-- For "আরো নয়েজ কমাও" → increase by 0.15 only (never jump to 1.0)
-- For heavy noise: use denoise_advanced(0.7) NOT noise_reduction(1.0)
-- denoise_advanced strength: 0.5=মাঝারি, 0.7=শক্তিশালী, 0.85=মাক্স (NEVER above 0.9)
-- ALWAYS combine with vocal_enhance after noise reduction to restore voice clarity
-- Pattern: noise_reduction(0.5) + vocal_enhance + loudness_normalize(-16)
-- For "কণ্ঠ ঠিক রেখে নয়েজ সরাও" → noise_reduction(0.45) + vocal_enhance + presence_boost + loudness_normalize(-14)
-- For "স্টুডিও মান" → denoise_advanced(0.7) + de_ess + compress(-22,3) + loudness_normalize(-14)
+NOISE REDUCTION RULES (CRITICAL — voice tone must ALWAYS be preserved):
+- noise_reduction strength scale: 0.3=হালকা, 0.5=মাঝারি, 0.65=শক্তিশালী, 0.8=মাক্স
+- NEVER use strength > 0.80 for noise_reduction (কণ্ঠের টোন নষ্ট হবে)
+- NEVER use denoise_advanced strength > 0.82
+- For "নয়েজ রিমুভ" / "noise remove" / "ভয়েস ক্লিন" → noise_reduction(0.5) + vocal_enhance + loudness_normalize(-14)
+- For "উচ্চ ভলিউম নয়েজ" / "heavy noise" → denoise_advanced(0.72) + de_ess + vocal_enhance + loudness_normalize(-14)
+- For "স্টুডিও মান" / "studio quality" → denoise_advanced(0.72) + de_ess + vocal_enhance + loudness_normalize(-14) + true_peak_limit(-1)
+- For "মধুময়" / "honey voice" / "মিষ্টি কণ্ঠ" → denoise_advanced(0.6) + vocal_enhance + warmth_boost + loudness_normalize(-14)
+- For "কণ্ঠ ঠিক রেখে নয়েজ সরাও" → noise_reduction(0.45) + vocal_enhance + loudness_normalize(-14)
+- For "আরো নয়েজ কমাও" → increase strength by 0.12 only (never jump)
+- ALWAYS add vocal_enhance AFTER noise reduction to restore warmth & presence
+- ALWAYS end chain with loudness_normalize(-14) for studio-level output
+- GOLDEN RULE: নয়েজ সরানোর পর কণ্ঠের মধুরতা ফিরিয়ে আনা সবসময় বাধ্যতামূলক
 
-IMPORTANT: Use proportional values. For iterative requests increase strength by 0.1-0.2 only.
+IMPORTANT: Use proportional values. For iterative requests increase strength by 0.1 only.
 
 ADDITIONAL SMART RULES:
 - "silence_remove" / "নীরবতা সরাও" / "শুরুর চুপ কাটো" → silence_remove(-40)
@@ -922,28 +966,50 @@ function buildFFmpegFilter(operations, vocalDuration) {
 
       // ── Existing operations ──
       case "noise_reduction": {
+        // ── Studio-grade noise reduction — tone-preserving, voice-safe ──
         const s = Math.min(Math.max(params.strength || 0.5, 0.0), 0.85);
-        filters.push(`highpass=f=80:poles=2`);
-        const nrVal1 = Math.round(10 + s * 25);
-        const nfVal1 = Math.round(-25 - s * 5);
+        // Stage 1: Remove subsonic rumble & DC offset (below 60Hz)
+        filters.push(`highpass=f=60:poles=2`);
+        // Stage 2: Targeted hum removal (50Hz powerline)
+        filters.push(`equalizer=f=50:t=h:width=8:g=-18`);
+        // Stage 3: Spectral noise reduction (voice-safe range: nr max 30)
+        const nrVal1 = Math.round(10 + s * 20);
+        const nfVal1 = Math.round(-22 - s * 8);
         filters.push(`afftdn=nr=${nrVal1}:nf=${nfVal1}:nt=w:tn=1`);
-        const gateThresh = Math.round(-50 + s * 15);
-        filters.push(`agate=threshold=${gateThresh}dB:attack=20:release=300:ratio=10`);
-        filters.push(`equalizer=f=300:t=h:width=200:g=1.5`);
-        filters.push(`equalizer=f=3000:t=h:width=1500:g=2.0`);
+        // Stage 4: Soft noise gate (slow attack to preserve consonants)
+        const gateThresh = Math.round(-48 + s * 12);
+        filters.push(`agate=threshold=${gateThresh}dB:attack=30:release=450:ratio=5:makeup=1`);
+        // Stage 5: Restore voice warmth & presence after noise reduction
+        filters.push(`equalizer=f=180:t=h:width=150:g=1.5`);
+        filters.push(`equalizer=f=2800:t=h:width=1800:g=2.0`);
+        filters.push(`equalizer=f=5000:t=h:width=2000:g=1.0`);
         break;
       }
       case "denoise_advanced": {
+        // ── Advanced studio denoise — 5-stage professional chain ──
+        // উচ্চ ভলিউম নয়েজ রিমুভ + মধুময় কণ্ঠ তৈরি
         const sa = Math.min(Math.max(params.strength || 0.7, 0.0), 0.85);
-        filters.push(`highpass=f=80:poles=2`);
-        filters.push(`equalizer=f=50:t=h:width=5:g=-20`);
-        const nrValA = Math.round(15 + sa * 20);
-        const nfValA = Math.round(-26 - sa * 6);
-        filters.push(`afftdn=nr=${nrValA}:nf=${nfValA}:nt=w:tn=1`);
-        const gateA = Math.round(-45 + sa * 10);
-        filters.push(`agate=threshold=${gateA}dB:attack=20:release=300:ratio=10`);
-        filters.push(`equalizer=f=300:t=h:width=200:g=2.0`);
-        filters.push(`equalizer=f=3500:t=h:width=1500:g=2.5`);
+        // Stage 1: Deep subsonic + powerline hum removal
+        filters.push(`highpass=f=65:poles=2`);
+        filters.push(`equalizer=f=50:t=h:width=6:g=-24`);
+        filters.push(`equalizer=f=100:t=h:width=6:g=-10`);
+        // Stage 2: First-pass spectral denoising (moderate, voice-safe)
+        const nrValA1 = Math.round(12 + sa * 18);
+        const nfValA1 = Math.round(-24 - sa * 7);
+        filters.push(`afftdn=nr=${nrValA1}:nf=${nfValA1}:nt=w:tn=1`);
+        // Stage 3: Second-pass lighter sweep to catch residual noise
+        const nrValA2 = Math.round(8 + sa * 10);
+        filters.push(`afftdn=nr=${nrValA2}:nf=${Math.round(-20 - sa * 5)}:nt=w`);
+        // Stage 4: Intelligent noise gate with slow release
+        const gateA = Math.round(-44 + sa * 10);
+        filters.push(`agate=threshold=${gateA}dB:attack=25:release=500:ratio=5:makeup=1`);
+        // Stage 5: Honey-voice EQ restoration — মধুময় কণ্ঠ তৈরির EQ chain
+        filters.push(`equalizer=f=160:t=h:width=120:g=2.5`);  // warmth
+        filters.push(`equalizer=f=320:t=h:width=200:g=1.5`);  // body
+        filters.push(`equalizer=f=700:t=h:width=300:g=-1.0`); // mud cut
+        filters.push(`equalizer=f=2500:t=h:width=1500:g=2.5`); // presence
+        filters.push(`equalizer=f=4500:t=h:width=2000:g=2.0`); // clarity
+        filters.push(`equalizer=f=8000:t=h:width=3000:g=1.0`); // air
         break;
       }
       case "normalize":
@@ -1049,10 +1115,26 @@ function buildFFmpegFilter(operations, vocalDuration) {
         filters.push("acompressor=threshold=-30dB:ratio=3:attack=20:release=200:knee=6dB");
         break;
       case "vocal_enhance":
-        filters.push("highpass=f=80,equalizer=f=200:t=h:width=200:g=2,equalizer=f=3000:t=h:width=2000:g=2,equalizer=f=5000:t=h:width=2000:g=1.5,acompressor=threshold=-20dB:ratio=3:attack=20:release=200:knee=6dB");
+        // ── Studio vocal enhance — honey-warm, presence-forward, tone-safe ──
+        // কণ্ঠের মধুময় উষ্ণতা + স্পষ্টতা + নিয়ন্ত্রিত কম্প্রেশন
+        filters.push(
+          "highpass=f=75," +
+          "equalizer=f=160:t=h:width=120:g=2.0," +   // warmth
+          "equalizer=f=320:t=h:width=200:g=1.5," +   // body
+          "equalizer=f=700:t=h:width=300:g=-1.5," +  // mud cut
+          "equalizer=f=2500:t=h:width=1500:g=2.5," + // presence
+          "equalizer=f=5000:t=h:width=2000:g=2.0," + // clarity
+          "equalizer=f=9000:t=h:width=3000:g=1.0," + // air
+          "acompressor=threshold=-22dB:ratio=2.8:attack=18:release=250:knee=8dB:makeup=1.5dB"
+        );
         break;
       case "de_ess":
-        filters.push("equalizer=f=7000:t=h:width=3000:g=-4,equalizer=f=9000:t=h:width=2000:g=-2");
+        // ── Surgical de-esser — removes harshness without dulling the voice ──
+        filters.push(
+          "equalizer=f=6500:t=h:width=1500:g=-3," +
+          "equalizer=f=8000:t=h:width=2000:g=-4," +
+          "equalizer=f=10000:t=h:width=2000:g=-2"
+        );
         break;
       case "declick":
         filters.push("equalizer=f=9000:t=h:width=3000:g=-2,equalizer=f=12000:t=h:width=3000:g=-3");
@@ -1437,16 +1519,48 @@ function buildFFmpegFilter(operations, vocalDuration) {
         filters.push("highpass=f=80,equalizer=f=120:t=h:width=100:g=5,equalizer=f=300:t=h:width=200:g=4,equalizer=f=2000:t=h:width=1500:g=3,equalizer=f=5000:t=h:width=2000:g=3,acompressor=threshold=-16dB:ratio=5:attack=8:release=100:knee=4dB,aecho=0.8:0.15:45:0.22,alimiter=limit=-1dB");
         break;
       case "spectral_denoise":
-        // Advanced spectral denoising: multi-pass noise reduction
-        filters.push("afftdn=nr=25:nf=-35:nt=w,afftdn=nr=15:nf=-25:nt=w,highpass=f=80,acompressor=threshold=-35dB:ratio=8:attack=3:release=80:knee=4dB");
+        // ── Deep spectral denoise — high-noise environment, voice preserved ──
+        filters.push(
+          "highpass=f=65:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-24," +
+          "equalizer=f=100:t=h:width=6:g=-12," +
+          "afftdn=nr=25:nf=-32:nt=w:tn=1," +  // strong first pass
+          "afftdn=nr=12:nf=-22:nt=w," +         // gentle second pass
+          "agate=threshold=-44dB:attack=25:release=500:ratio=5:makeup=1," +
+          "equalizer=f=180:t=h:width=150:g=2.0," +
+          "equalizer=f=2800:t=h:width=1800:g=2.5," +
+          "equalizer=f=5000:t=h:width=2000:g=1.5"
+        );
         break;
       case "ai_noise_gate":
         // AI-powered adaptive noise gate: smart silence detection
         filters.push("agate=threshold=-40dB:ratio=8:attack=10:release=200:makeup=1,afftdn=nr=12:nf=-20:nt=w");
         break;
       case "voice_enhancer_pro":
-        // Professional voice enhancer: complete processing chain
-        filters.push("highpass=f=80,afftdn=nr=15:nf=-25:nt=w,equalizer=f=200:t=h:width=150:g=-2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=6000:t=h:width=2000:g=2,acompressor=threshold=-20dB:ratio=3:attack=12:release=180:knee=6dB,alimiter=limit=-1dB");
+        // ── Professional studio voice enhancer — complete 7-stage chain ──
+        // স্টুডিও প্রফেশনাল মানের সম্পূর্ণ প্রসেসিং তৈরি নিখুঁত কণ্ঠ সহ
+        filters.push(
+          // Stage 1: Subsonic removal
+          "highpass=f=65:poles=2," +
+          "equalizer=f=50:t=h:width=8:g=-20," +
+          // Stage 2: Gentle noise reduction (voice-safe)
+          "afftdn=nr=18:nf=-26:nt=w:tn=1," +
+          // Stage 3: De-ess (sibilance control)
+          "equalizer=f=7500:t=h:width=2500:g=-3," +
+          // Stage 4: Honey-warm EQ
+          "equalizer=f=160:t=h:width=120:g=2.5," +   // warmth
+          "equalizer=f=320:t=h:width=200:g=1.5," +   // body
+          "equalizer=f=700:t=h:width=300:g=-1.5," +  // mud cut
+          "equalizer=f=2500:t=h:width=1500:g=3.0," + // presence
+          "equalizer=f=5000:t=h:width=2000:g=2.5," + // clarity
+          "equalizer=f=9000:t=h:width=3000:g=1.5," + // air
+          // Stage 5: Transparent compression
+          "acompressor=threshold=-22dB:ratio=2.5:attack=15:release=200:knee=8dB:makeup=1.5dB," +
+          // Stage 6: Loudness normalization
+          "loudnorm=I=-14:TP=-1:LRA=9," +
+          // Stage 7: True-peak limiter
+          "alimiter=limit=-1dB:attack=3:release=30"
+        );
         break;
     }
   }
