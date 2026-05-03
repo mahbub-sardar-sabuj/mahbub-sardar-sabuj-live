@@ -40,7 +40,7 @@ async function callAI(
   attempt = 0
 ): Promise<string> {
   const MAX_RETRIES = 3;
-  const TIMEOUT_MS = 30000;
+  const TIMEOUT_MS = 32000;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -81,6 +81,45 @@ async function callAI(
 
     throw new Error("connection_failed");
   }
+}
+
+// ── Typing animation hook ────────────────────────────────────────────────────
+function useTypingText(fullText: string, speed = 12): { displayText: string; isDone: boolean } {
+  const [displayText, setDisplayText] = useState("");
+  const [isDone, setIsDone] = useState(false);
+  const indexRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setDisplayText("");
+    setIsDone(false);
+    indexRef.current = 0;
+
+    // For short texts, show immediately
+    if (fullText.length <= 80) {
+      setDisplayText(fullText);
+      setIsDone(true);
+      return;
+    }
+
+    const tick = () => {
+      if (indexRef.current < fullText.length) {
+        // Add chars in chunks for faster animation on long texts
+        const chunkSize = fullText.length > 400 ? 4 : 2;
+        const end = Math.min(indexRef.current + chunkSize, fullText.length);
+        setDisplayText(fullText.slice(0, end));
+        indexRef.current = end;
+        timerRef.current = setTimeout(tick, speed);
+      } else {
+        setIsDone(true);
+      }
+    };
+
+    timerRef.current = setTimeout(tick, speed);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [fullText, speed]);
+
+  return { displayText, isDone };
 }
 
 function delay(ms: number): Promise<void> {
@@ -961,12 +1000,28 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-audio-player::-webkit-media-controls-panel {
       background: rgba(12,22,38,0.95);
     }
+    @keyframes chatbot-cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    @keyframes chatbot-slide-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .chatbot-drag-over {
+      border-color: rgba(212,168,67,0.7) !important;
+      background: rgba(212,168,67,0.06) !important;
+      box-shadow: 0 0 0 2px rgba(212,168,67,0.2), 0 32px 80px rgba(0,0,0,0.85) !important;
+    }
+    .chatbot-msg-animate {
+      animation: chatbot-slide-up 0.3s ease-out;
+    }
   `;
   document.head.appendChild(style);
 }
 
-// ── Message Bubble ────────────────────────────────────────────────────────────
-function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Message; onNavigate: (path: string) => void; onSwitchToLive: () => void }) {
+// ── Message Bubble ────────────────────────────────────────────
+function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { message: Message; onNavigate: (path: string) => void; onSwitchToLive: () => void; isLatest?: boolean }) {
   const isUser = message.role === "user";
   const userAudioInstruction = message.userAudioInstruction || (message.userAudioName ? extractAudioInstruction(message.content) : "");
 
@@ -1020,6 +1075,9 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
   }
 
   const { text, buttons, showPhoto, showContact, showLiveChat } = parseContent(message.content);
+  // Typing animation for latest assistant message
+  const { displayText, isDone: typingDone } = useTypingText(isLatest ? text : "", 10);
+  const renderedText = isLatest ? displayText : text;
 
   return (
     <motion.div
@@ -1381,7 +1439,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             )}
           </div>
         )}
-        {text && (
+        {renderedText && (
           <div style={{
             background: "linear-gradient(145deg, rgba(13,22,40,0.97) 0%, rgba(10,18,34,0.97) 100%)",
             borderRadius: "3px 14px 14px 14px",
@@ -1396,7 +1454,18 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
             boxShadow: "0 2px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.02)",
             wordBreak: "break-word",
           }}>
-            {text}
+            {renderedText}
+            {isLatest && !typingDone && (
+              <span style={{
+                display: "inline-block",
+                width: 2,
+                height: "0.85em",
+                background: "rgba(212,168,67,0.8)",
+                marginLeft: 2,
+                verticalAlign: "text-bottom",
+                animation: "chatbot-cursor-blink 0.7s ease-in-out infinite",
+              }} />
+            )}
           </div>
         )}
         {buttons.length > 0 && (
@@ -1428,7 +1497,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive }: { message: Messa
           <div style={{ color: "rgba(110,130,150,0.4)", fontSize: "0.55rem", paddingLeft: 1, letterSpacing: "0.02em" }}>
             {formatTime(message.timestamp)}
           </div>
-          {text && (
+          {renderedText && (
             <button
               onClick={() => {
                 navigator.clipboard?.writeText(text).then(() => {
@@ -1602,6 +1671,7 @@ export default function AIChatbot() {
 
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"ai" | "live">("ai");
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleNavigate = useCallback((path: string) => {
     setIsOpen(false);
@@ -2454,11 +2524,32 @@ export default function AIChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="chatbot-adorsho"
+            className={`chatbot-adorsho${isDragOver ? " chatbot-drag-over" : ""}`}
             initial={{ opacity: 0, scale: 0.88, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 20 }}
             transition={{ type: "spring", stiffness: 340, damping: 28 }}
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragOver(false);
+              const files = Array.from(e.dataTransfer.files);
+              const audioFile = files.find(f => f.type.startsWith("audio/") || /\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i.test(f.name));
+              const videoFile = files.find(f => f.type.startsWith("video/") || /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|3gp)$/i.test(f.name));
+              const imgFile = files.find(f => f.type.startsWith("image/"));
+              if (audioFile) {
+                const fakeEvent = { target: { files: [audioFile], value: "" } } as any;
+                handleAudioSelect(fakeEvent);
+              } else if (videoFile) {
+                const fakeEvent = { target: { files: [videoFile], value: "" } } as any;
+                handleVideoSelect(fakeEvent);
+              } else if (imgFile) {
+                const reader = new FileReader();
+                reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+                reader.readAsDataURL(imgFile);
+              }
+            }}
             style={{
               position: "fixed",
               bottom: 80,
@@ -2477,8 +2568,42 @@ export default function AIChatbot() {
               border: "1px solid rgba(212,168,67,0.22)",
               boxShadow: "0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(212,168,67,0.08), inset 0 1px 0 rgba(212,168,67,0.08)",
               animation: "chatbot-border-glow 4s ease-in-out infinite",
+              transition: "border-color 0.2s, box-shadow 0.2s",
             }}
           >
+            {/* Drag-and-drop overlay */}
+            {isDragOver && (
+              <div style={{
+                position: "absolute", inset: 0, zIndex: 100,
+                background: "rgba(5,10,19,0.92)",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                gap: 12,
+                borderRadius: "inherit",
+                border: "2px dashed rgba(212,168,67,0.7)",
+                pointerEvents: "none",
+              }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <div style={{
+                  color: "rgba(212,168,67,0.9)",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  textAlign: "center",
+                }}>ফাইলটি এখানে ছেড়ে দিন</div>
+                <div style={{
+                  color: "rgba(212,168,67,0.5)",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.65rem",
+                  textAlign: "center",
+                }}>অডিও, ভিডিও বা ছবি</div>
+              </div>
+            )}
+
             {/* Watermark */}
             <div aria-hidden="true" style={{
               position: "absolute", inset: 0,
@@ -2586,6 +2711,18 @@ export default function AIChatbot() {
 
                 {/* Header buttons */}
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {messages.length > 1 && (
+                    <span style={{
+                      padding: "1px 6px",
+                      background: "rgba(212,168,67,0.08)",
+                      border: "1px solid rgba(212,168,67,0.2)",
+                      borderRadius: 999,
+                      color: "rgba(212,168,67,0.5)",
+                      fontSize: "0.52rem",
+                      fontFamily: "monospace",
+                      fontWeight: 700,
+                    }}>{messages.length - 1}</span>
+                  )}
                   <button onClick={clearChat} title="নতুন কথোপকথন"
                     className="chatbot-icon-btn"
                     style={{
@@ -2676,22 +2813,27 @@ export default function AIChatbot() {
               {/* ── Quick suggestion chips (shown only when no messages beyond welcome) ── */}
               {messages.length <= 1 && !audioFile && !lastAudioBlobRef.current && (
                 <div style={{
-                  padding: "6px 10px 4px",
-                  borderBottom: "1px solid rgba(212,168,67,0.06)",
-                  background: "rgba(4,8,16,0.6)",
+                  padding: "6px 10px 5px",
+                  borderBottom: "1px solid rgba(212,168,67,0.07)",
+                  background: "rgba(4,8,16,0.7)",
                   flexShrink: 0,
                 }}>
                   <div style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 4,
-                  }}>
+                    color: "rgba(212,168,67,0.35)",
+                    fontSize: "0.52rem",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    marginBottom: 5,
+                  }}>দ্রুত শুরু করুন</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                     {[
-                      { label: "📚 বই সম্পর্কে জানুন", cmd: "লেখকের বই সম্পর্কে বলুন" },
-                      { label: "✍️ লেখক পরিচয়", cmd: "মাহবুব সরদার সবুজ কে?" },
+                      { label: "📚 বই সম্পর্কে", cmd: "লেখকের বই সম্পর্কে বলুন" },
+                      { label: "✍️ লেখক কে?", cmd: "মাহবুব সরদার সবুজ কে?" },
                       { label: "🎵 অডিও এডিট", cmd: "অডিও এডিট কীভাবে করব?" },
                       { label: "🎨 ডিজাইন স্টুডিও", cmd: "ডিজাইন স্টুডিও সম্পর্কে বলুন" },
                       { label: "📞 যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
+                      { label: "📖 ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
                     ].map(chip => (
                       <button
                         key={chip.label}
@@ -2722,8 +2864,14 @@ export default function AIChatbot() {
 
               {/* ── Messages ── */}
               <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
-                {messages.map(msg => (
-                  <MessageBubble key={msg.id} message={msg} onNavigate={handleNavigate} onSwitchToLive={() => setActiveTab("live")} />
+                {messages.map((msg, idx) => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    onNavigate={handleNavigate}
+                    onSwitchToLive={() => setActiveTab("live")}
+                    isLatest={msg.role === "assistant" && idx === messages.length - 1 && !isLoading && !audioProcessing}
+                  />
                 ))}
                 {(isLoading || audioProcessing) && <TypingIndicator stage={audioProcessing ? audioProcessingStage : null} />}
 
@@ -3192,14 +3340,28 @@ export default function AIChatbot() {
                     )}
                   </button>
                 </div>
-                <p style={{
-                  color: "rgba(80,100,120,0.35)",
-                  fontSize: "0.54rem",
+                <div style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
                   marginTop: 4,
-                  textAlign: "center",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  letterSpacing: "0.02em",
-                }}>Enter = পাঠান তারপর Shift+Enter = নতুন লাইন</p>
+                  padding: "0 2px",
+                }}>
+                  <p style={{
+                    color: "rgba(80,100,120,0.3)",
+                    fontSize: "0.52rem",
+                    margin: 0,
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    letterSpacing: "0.02em",
+                  }}>Enter = পাঠান তারপর Shift+Enter = নতুন লাইন</p>
+                  {input.length > 0 && (
+                    <span style={{
+                      color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
+                      fontSize: "0.5rem",
+                      fontFamily: "monospace",
+                    }}>{input.length}</span>
+                  )}
+                </div>
               </div>
               </>
               )}
