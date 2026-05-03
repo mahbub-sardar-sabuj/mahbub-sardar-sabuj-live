@@ -40,7 +40,7 @@ async function callAI(
   attempt = 0
 ): Promise<string> {
   const MAX_RETRIES = 3;
-  const TIMEOUT_MS = 32000;
+  const TIMEOUT_MS = 45000;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -105,7 +105,7 @@ function useTypingText(fullText: string, speed = 12): { displayText: string; isD
     const tick = () => {
       if (indexRef.current < fullText.length) {
         // Add chars in chunks for faster animation on long texts
-        const chunkSize = fullText.length > 400 ? 4 : 2;
+        const chunkSize = fullText.length > 600 ? 8 : fullText.length > 300 ? 5 : 3;
         const end = Math.min(indexRef.current + chunkSize, fullText.length);
         setDisplayText(fullText.slice(0, end));
         indexRef.current = end;
@@ -412,7 +412,8 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - পেশা: লেখক ও কবি (বাংলা সাহিত্য)
 - জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি
 - পিতা: ফানাউল্লাহ সরদার
-- মাতা: আহামালী বিনতে মাসুরা। তিনি অবিবাহিত।
+- মাতা: আহামালী বিনতে মাসুরা
+- বৈবাহিক অবস্থা: অবিবাহিত
 - বর্তমান অবস্থান: সৌদি আরব
 - কর্মক্ষেত্র: সৌদি আরবে একটি ফার্নিচার কোম্পানিতে ম্যানেজার এবং একটি স্টুডিওতে প্রোগ্রামার
 - ইমেইল: lekhokmahbubsardarsabuj@gmail.com
@@ -2340,9 +2341,21 @@ export default function AIChatbot() {
         ]
       : text;
 
+    // Build clean payload: only user/assistant messages, skip internal-only messages
+    // (photo, contact, live_chat, audio messages that are UI-only artifacts)
+    const cleanHistory = messages
+      .filter(m => m.role === "user" || m.role === "assistant")
+      .filter(m => {
+        const c = typeof m.content === "string" ? m.content : "";
+        // Skip UI-only special messages that would confuse the AI
+        if (c.startsWith("[PHOTO]") || c === "[CONTACT]" || c.startsWith("[LIVE_CHAT]")) return false;
+        if (m.audioUrl) return false; // skip audio result messages
+        return true;
+      })
+      .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
     const payload = [
       { role: "system" as const, content: SYSTEM_PROMPT },
-      ...messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ...cleanHistory,
       { role: "user" as const, content: userContent },
     ];
 
@@ -2356,8 +2369,16 @@ export default function AIChatbot() {
         content: reply,
         timestamp: new Date(),
       }]);
-    } catch {
-      setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+    } catch (err: any) {
+      const isTimeout = err?.name === "AbortError" || err?.message?.includes("timeout");
+      const isNetwork = err?.message?.includes("fetch") || err?.message?.includes("network");
+      if (isTimeout) {
+        setError("উত্তর পেতে বেশি সময় লাগছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      } else if (isNetwork) {
+        setError("ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।");
+      } else {
+        setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -2382,8 +2403,16 @@ export default function AIChatbot() {
         content: reply,
         timestamp: new Date(),
       }]);
-    } catch {
-      setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+    } catch (err: any) {
+      const isTimeout = err?.name === "AbortError" || err?.message?.includes("timeout");
+      const isNetwork = err?.message?.includes("fetch") || err?.message?.includes("network");
+      if (isTimeout) {
+        setError("উত্তর পেতে বেশি সময় লাগছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      } else if (isNetwork) {
+        setError("ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।");
+      } else {
+        setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -2839,7 +2868,8 @@ export default function AIChatbot() {
                         key={chip.label}
                         onClick={() => {
                           setInput(chip.cmd);
-                          setTimeout(() => inputRef.current?.focus(), 50);
+                          // Auto-send the chip command
+                          setTimeout(() => handleSend(), 120);
                         }}
                         className="chatbot-suggestion-btn"
                         style={{
@@ -3123,7 +3153,7 @@ export default function AIChatbot() {
                           key={preset.label}
                           onClick={() => {
                             setInput(preset.cmd);
-                            setTimeout(() => inputRef.current?.focus(), 50);
+                            setTimeout(() => handleSend(), 120);
                           }}
                           className="chatbot-suggestion-btn"
                           style={{

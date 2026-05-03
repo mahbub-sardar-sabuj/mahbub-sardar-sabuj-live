@@ -273,8 +273,8 @@ async function callAIWithConfig(messages, config) {
     const payload = {
       model,
       messages,
-      max_tokens: 1600,
-      temperature: 0.72,
+      max_tokens: 2048,
+      temperature: 0.7,
     };
     if (useForge && model.includes("gemini")) {
       payload.thinking = { budget_tokens: 128 };
@@ -394,7 +394,7 @@ function buildFallbackReply(messages = [], aiError = null) {
 
 বিখ্যাত উক্তি: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি।"
 
-বিস্তারিত জানতে: mahbubsardarsabuj.com/about`;
+বিস্তারিত জানতে [BUTTON:/about]`;
   }
 
   // ৪. বই / ই-বুক
@@ -406,11 +406,11 @@ function buildFallbackReply(messages = [], aiError = null) {
 রকমারি থেকে কিনুন বা ওয়েবসাইটে পড়ুন।
 
 📚 বিনামূল্যে ই-বুক:
-• স্মৃতির বসন্তে তুমি — mahbubsardarsabuj.com/ebooks/read/smritir-boshonte
-• চাঁদফুল — mahbubsardarsabuj.com/ebooks/read/chand-phool
-• সময়ের গহ্বরে — mahbubsardarsabuj.com/ebooks/read/shomoyer-gohvore
+• স্মৃতির বসন্তে তুমি [BUTTON:/ebooks/read/smritir-boshonte]
+• চাঁদফুল [BUTTON:/ebooks/read/chand-phool]
+• সময়ের গহ্বরে [BUTTON:/ebooks/read/shomoyer-gohvore]
 
-সব বই দেখুন: mahbubsardarsabuj.com/ebooks
+সব বই দেখুন [BUTTON:/ebooks]
 
 আপনি কি কোনো নির্দিষ্ট বই সম্পর্কে আরও জানতে চান?`;
   }
@@ -425,7 +425,7 @@ function buildFallbackReply(messages = [], aiError = null) {
 • বিচ্ছেদ: দূরত্বের কৌশল, কারো হতে পারিনি
 • ছোট লেখা: নারীর মূল্য, মনের যত্ন নিন
 
-সব লেখা পড়ুন: mahbubsardarsabuj.com/writings
+সব লেখা পড়ুন [BUTTON:/writings]
 
 কবিতা লিখতে চাইলে পরামর্শ:
 ১. নিজের অনুভূতি থেকে শুরু করুন
@@ -439,7 +439,7 @@ function buildFallbackReply(messages = [], aiError = null) {
 
 আবৃত্তি শুনলে কবিতার আবেগ ও অনুভূতি আরও গভীরভাবে অনুভব করা যায়।
 
-আবৃত্তি দেখুন: mahbubsardarsabuj.com/facebook-recitations`;
+আবৃত্তি দেখুন [BUTTON:/facebook-recitations]`;
   }
 
   // ৭. অডিও এডিটিং
@@ -471,7 +471,7 @@ function buildFallbackReply(messages = [], aiError = null) {
 • ছবি আপলোড ও ড্রইং টুল
 • PNG/JPG ডাউনলোড
 
-ডিজাইন স্টুডিও খুলুন: mahbubsardarsabuj.com/editor`;
+ডিজাইন স্টুডিও খুলুন [BUTTON:/editor]`;
   }
 
   // ৯. যোগাযোগ
@@ -482,7 +482,7 @@ function buildFallbackReply(messages = [], aiError = null) {
 Facebook: Lekhok.MahbubSardarSabuj
 Messenger: m.me/Lekhok.MahbubSardarSabuj
 
-সব সোশ্যাল মিডিয়া লিংক: mahbubsardarsabuj.com/contact
+সব সোশ্যাল মিডিয়া লিংক [BUTTON:/contact]
 
 অথবা "সরাসরি চ্যাট" ট্যাবে ক্লিক করে লাইভ চ্যাটে কথা বলুন।`;
   }
@@ -491,14 +491,14 @@ Messenger: m.me/Lekhok.MahbubSardarSabuj
   if (/সংবাদ|সরদার সংবাদ|news|আপডেট|update|নতুন|খবর/.test(q)) {
     return `সরদার সংবাদ সেকশনে লেখকের সাম্প্রতিক কার্যক্রম, নতুন লেখা এবং বিভিন্ন আপডেট পাওয়া যায়।
 
-সরদার সংবাদ: mahbubsardarsabuj.com/news`;
+সরদার সংবাদ [BUTTON:/news]`;
   }
 
   // ১১. গ্যালারি / ছবি
   if (/গ্যালারি|gallery|ছবি|photo|image|ফটো/.test(q)) {
     return `গ্যালারি সেকশনে লেখকের বিভিন্ন মুহূর্তের ছবির সংগ্রহ পাওয়া যায়।
 
-গ্যালারি দেখুন: mahbubsardarsabuj.com/gallery`;
+গ্যালারি দেখুন [BUTTON:/gallery]`;
   }
 
   // ১২. ধন্যবাদ / বিদায়
@@ -543,8 +543,8 @@ AI অডিও এডিটিং: চ্যাটবটের নিচের 
   return `আমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI সহকারী।
 
 এই ওয়েবসাইটে আপনি পাবেন:
-• কবিতা ও সাহিত্য — ৭,০০০+ লেখা (mahbubsardarsabuj.com/writings)
-• ই-বুক — "আমি বিচ্ছেদকে বলি দুঃখবিলাস" সহ ৪টি বই (mahbubsardarsabuj.com/ebooks)
+• কবিতা ও সাহিত্য — ৭,০০০+ লেখা [BUTTON:/writings]
+• ই-বুক — "আমি বিচ্ছেদকে বলি দুঃখবিলাস" সহ ৪টি বই [BUTTON:/ebooks]
 • আবৃত্তি — কবিতার ভিডিও সংগ্রহ
 • AI অডিও এডিটিং — বিনামূল্যে ভয়েস প্রসেসিং
 • সরদার ডিজাইন স্টুডিও — কার্ড তৈরির টুল
@@ -664,9 +664,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid messages" });
     }
 
+    // Filter out any system messages sent from the frontend (to avoid duplication)
+    // and keep only the last 12 user/assistant messages for context
+    const filteredMessages = messages
+      .filter((m) => m.role !== "system")
+      .slice(-12);
     const allMessages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages.slice(-12),
+      ...filteredMessages,
     ];
 
     try {
