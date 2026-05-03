@@ -1,5 +1,24 @@
 // Uses OPENAI_API_KEY and optional OPENAI_BASE_URL / OPENAI_MODEL environment variables
 
+// AI response থেকে raw URL গুলো [BUTTON] ট্যাগে রূপান্তর করা
+function sanitizeReply(reply) {
+  if (!reply || typeof reply !== "string") return reply;
+  // Markdown লিংক [text](https://mahbubsardarsabuj.com/path) → [BUTTON:/path]
+  reply = reply.replace(/\[([^\]]+)\]\(https?:\/\/(?:www\.)?mahbubsardarsabuj\.com(\/[^\)]*)?\)/g, (_, text, path) => {
+    return path ? `[BUTTON:${path}]` : `[BUTTON:/]`;
+  });
+  // Raw URL https://mahbubsardarsabuj.com/path → [BUTTON:/path]
+  reply = reply.replace(/https?:\/\/(?:www\.)?mahbubsardarsabuj\.com(\/[^\s\)\"\']+)?/g, (_, path) => {
+    return path ? `[BUTTON:${path}]` : `[BUTTON:/]`;
+  });
+  // Typo URL https://mahmubsardarsabuj.com/path → [BUTTON:/path]
+  reply = reply.replace(/https?:\/\/(?:www\.)?mahmubsardarsabuj\.com(\/[^\s\)\"\']+)?/g, (_, path) => {
+    return path ? `[BUTTON:${path}]` : `[BUTTON:/]`;
+  });
+  return reply;
+}
+
+
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত, বুদ্ধিমান AI সহকারী। তুমি শুধু একটি chatbot নও — তুমি একজন দক্ষ সহকারী যে সত্যিকার অর্থে সাহায্য করতে পারে।
 
 ## তোমার পরিচয় ও ব্যক্তিত্ব
@@ -133,6 +152,8 @@ Facebook, Instagram, YouTube — সব সোশ্যাল মিডিয়
 ৩. সবসময় বিকল্প দেবে: কোনো কাজ করতে না পারলে শুধু "না" বলবে না।
 ৪. ব্যবহারকারীর সময় সম্মান করবে: অপ্রাসঙ্গিক তথ্য দিয়ে উত্তর ভারী করবে না।
 ৫. কবিতা বা লেখা চাইলে: ওয়েবসাইটের বিদ্যমান লেখা থেকে দেখাবে এবং /writings পেজে যেতে বলবে।
+৮. কখনো সরাসরি URL (https://... বা http://...) টেক্সটে লিখবে না — শুধু [BUTTON:/path] ট্যাগ ব্যবহার করবে। উদাহরণ: [BUTTON:/ebooks] বা [BUTTON:/contact]।
+৯. বইয়ের সম্পূর্ণ নাম হলো "আমি বিচ্ছেদকে বলি দুঃখবিলাস" — এটি সংক্ষেপে "দুঃখবিলাস" নামেও পরিচিত। উভয় নামই সঠিক।
 ৬. ছবি বিশ্লেষণ করতে পারবে: ব্যবহারকারী ছবি পাঠালে সেটি বিশ্লেষণ করে বাংলায় বলবে।
 ৭. ChatGPT বা Gemini পরিচয় প্রশ্নে: বলবে "আমি মাহবুব সরদার সবুজের ওয়েবসাইটের বিশেষ AI সহকারী।"
 
@@ -544,7 +565,7 @@ AI অডিও এডিটিং: চ্যাটবটের নিচের 
 
 এই ওয়েবসাইটে আপনি পাবেন:
 • কবিতা ও সাহিত্য — ৭,০০০+ লেখা [BUTTON:/writings]
-• ই-বুক — "আমি বিচ্ছেদকে বলি দুঃখবিলাস" সহ ৪টি বই [BUTTON:/ebooks]
+• ই-বুক — "আমি বিচ্ছেদকে বলি দুঃখবিলাস" (ফিজিক্যাল) + ৩টি ই-বুক [BUTTON:/ebooks]
 • আবৃত্তি — কবিতার ভিডিও সংগ্রহ
 • AI অডিও এডিটিং — বিনামূল্যে ভয়েস প্রসেসিং
 • সরদার ডিজাইন স্টুডিও — কার্ড তৈরির টুল
@@ -689,7 +710,7 @@ export default async function handler(req, res) {
         imageData: lastUserImgPart || null,
       });
 
-      return res.status(200).json({ reply });
+      return res.status(200).json({ reply: sanitizeReply(reply) });
     } catch (err) {
       console.error("AI API failed; returning built-in fallback reply:", err.message);
       const fallbackReply = buildFallbackReply(messages, err);
