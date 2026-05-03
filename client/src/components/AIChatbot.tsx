@@ -2030,7 +2030,9 @@ export default function AIChatbot() {
           } catch (e) {
             throw new Error("অডিও ডিকোডিং ব্যার্থ। আবার চেষ্টা করুন।");
           }
-          const wavBlob = new Blob([resultBytes], { type: resultMime });
+          const resultArrayBuffer = new ArrayBuffer(resultBytes.byteLength);
+          new Uint8Array(resultArrayBuffer).set(resultBytes);
+          const wavBlob = new Blob([resultArrayBuffer], { type: resultMime });
           const audioUrl = URL.createObjectURL(wavBlob);
           const audioFilename = `edited_${Date.now()}.mp3`;
           // Save for iterative editing
@@ -2237,7 +2239,9 @@ export default function AIChatbot() {
       } catch (decodeErr) {
         throw new Error(`অডিও ডিকোডিং ব্যার্থ: সার্ভার থেকে অডিও ফর্ম্যাট সঠিক নয়। আবার চেষ্টা করুন।`);
       }
-      const wavBlob = new Blob([resultBytes], { type: resultMime });
+      const resultArrayBuffer = new ArrayBuffer(resultBytes.byteLength);
+      new Uint8Array(resultArrayBuffer).set(resultBytes);
+      const wavBlob = new Blob([resultArrayBuffer], { type: resultMime });
       const audioUrl = URL.createObjectURL(wavBlob);
       const audioFilename = `edited_${Date.now()}.mp3`;
 
