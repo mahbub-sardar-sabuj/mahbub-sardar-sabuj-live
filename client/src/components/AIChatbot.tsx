@@ -387,7 +387,7 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - বিখ্যাত উক্তি: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"
 
 ### প্রকাশিত বই ও ই-বুক
-১. আমি বিচ্ছেদকে বলি দুঃখবিলাস — প্রথম ফিজিক্যাল বই (২০২৬), রকমারিতে পাওয়া যায়
+১. আমি বিচ্ছেদকে বলি দুঃখবিলাস — প্রথম ফিজিক্যাল বই (২০২৬), রকমারিতে পাওয়া যায় (সঠিক নাম: দুঃখবিলাস, দুঃখাবলাস নয়)
 ২. স্মৃতির বসন্তে তুমি — ই-বুক [BUTTON:/ebooks/read/smritir-boshonte]
 ৩. চাঁদফুল — ই-বুক [BUTTON:/ebooks/read/chand-phool]
 ৪. সময়ের গহ্বরে — ই-বুক [BUTTON:/ebooks/read/shomoyer-gohvore]
@@ -1561,10 +1561,17 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম।
+    content: `আস্সালামু আলাইকুম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ।
 আমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI সহকারী।
 
-লেখক সম্পর্কে জানুন, কবিতা ও ই-বুক পড়ুন, যেকোনো প্রশ্ন করুন — আমি সাহায্য করতে প্রস্তুত।`,
+আপনাকে যেভাবে সাহায্য করতে পারি:
+• লেখক সম্পর্কে যেকোনো প্রশ্ন
+• কবিতা, লেখা ও ই-বুক সম্পর্কে তথ্য
+• অডিও এডিট ও ভয়েস বিউটিফাই ফিচার
+• ডিজাইন স্টুডিও ব্যবহারের গাইড
+• সরাসরি লাইভ চ্যাটে যোগাযোগ
+
+আপনার কী জানার আছে?`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2316,7 +2323,12 @@ export default function AIChatbot() {
     setMessages([{
       id: "welcome-new",
       role: "assistant",
-      content: "নতুন কথোপকথন শুরু হয়েছে। আপনাকে কীভাবে সাহায্য করতে পারি?",
+      content: `নতুন কথোপকথন শুরু হয়েছে।
+
+আপনাকে কীভাবে সাহায্য করতে পারি?
+• লেখক সম্পর্কে জানতে চাইলে বলুন
+• ই-বুক বা বই সম্পর্কে জানতে চাইলে বলুন
+• অডিও এডিট করতে চাইলে নিচের বাটন থেকে অডিও আপলোড করুন`,
       timestamp: new Date(),
     }]);
     setError(null);
@@ -2567,7 +2579,7 @@ export default function AIChatbot() {
                         fontSize: "0.56rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         lineHeight: 1.2,
-                      }}>সক্রিয় সহকারী</span>
+                      }}>সাহিত্য ও অডিও AI</span>
                     </div>
                   </div>
                 </div>
@@ -2661,6 +2673,53 @@ export default function AIChatbot() {
                 </div>
               ) : (
               <>
+              {/* ── Quick suggestion chips (shown only when no messages beyond welcome) ── */}
+              {messages.length <= 1 && !audioFile && !lastAudioBlobRef.current && (
+                <div style={{
+                  padding: "6px 10px 4px",
+                  borderBottom: "1px solid rgba(212,168,67,0.06)",
+                  background: "rgba(4,8,16,0.6)",
+                  flexShrink: 0,
+                }}>
+                  <div style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 4,
+                  }}>
+                    {[
+                      { label: "📚 বই সম্পর্কে জানুন", cmd: "লেখকের বই সম্পর্কে বলুন" },
+                      { label: "✍️ লেখক পরিচয়", cmd: "মাহবুব সরদার সবুজ কে?" },
+                      { label: "🎵 অডিও এডিট", cmd: "অডিও এডিট কীভাবে করব?" },
+                      { label: "🎨 ডিজাইন স্টুডিও", cmd: "ডিজাইন স্টুডিও সম্পর্কে বলুন" },
+                      { label: "📞 যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
+                    ].map(chip => (
+                      <button
+                        key={chip.label}
+                        onClick={() => {
+                          setInput(chip.cmd);
+                          setTimeout(() => inputRef.current?.focus(), 50);
+                        }}
+                        className="chatbot-suggestion-btn"
+                        style={{
+                          padding: "3px 9px",
+                          background: "rgba(212,168,67,0.05)",
+                          border: "1px solid rgba(212,168,67,0.18)",
+                          borderRadius: 999,
+                          color: "rgba(212,168,67,0.65)",
+                          fontSize: "0.58rem",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* ── Messages ── */}
               <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
                 {messages.map(msg => (
@@ -3059,7 +3118,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "মাহবুব সরদার সবুজ সম্পর্কে জিজ্ঞেস করুন বা অডিও এডিট করুন..."}
+                      placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "লেখক, কবিতা, বই বা অডিও সম্পর্কে জিজ্ঞেস করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
@@ -3140,7 +3199,7 @@ export default function AIChatbot() {
                   textAlign: "center",
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   letterSpacing: "0.02em",
-                }}>Shift+Enter = নতুন লাইন</p>
+                }}>Enter = পাঠান তারপর Shift+Enter = নতুন লাইন</p>
               </div>
               </>
               )}
