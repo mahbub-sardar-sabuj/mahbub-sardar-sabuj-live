@@ -1,4 +1,3 @@
-import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
@@ -150,7 +149,7 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const plugins = [react(), tailwindcss(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
 export default defineConfig({
   plugins,
@@ -172,20 +171,6 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 1000,
     minify: "esbuild",
-    rollupOptions: {
-      output: {
-        manualChunks(id: string) {
-          if (id.includes("node_modules")) {
-            if (id.includes("react-dom") || id.includes("/react/")) return "vendor-react";
-            if (id.includes("framer-motion")) return "vendor-motion";
-            if (id.includes("wouter")) return "vendor-router";
-            if (id.includes("lucide-react")) return "vendor-icons";
-            if (id.includes("@radix-ui")) return "vendor-ui";
-            if (id.includes("@tanstack")) return "vendor-query";
-          }
-        },
-      },
-    },
   },
   server: {
     host: true,
