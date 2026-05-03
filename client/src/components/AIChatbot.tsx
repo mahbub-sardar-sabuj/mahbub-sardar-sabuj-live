@@ -1998,6 +1998,19 @@ export default function AIChatbot() {
             throw new Error(errData.error || `HTTP ${response.status}`);
           }
           const respJson2 = await response.json();
+          // needsMusicFile হ্যান্ডলিং
+          if (respJson2.needsMusicFile || respJson2.intent === "ask_music_file") {
+            const helpMsg = respJson2.explanation || "ব্যাকগ্রাউন্ড মিউজিক যোগ করতে মিউজিক ফাইল দরকার।";
+            setMessages(prev => [...prev, {
+              id: `ai-music-req-${Date.now()}`,
+              role: "assistant" as const,
+              content: `🎵 **মিউজিক ফাইল দরকার**\n\n${helpMsg}\n\nনিচের 🎵 বাটনে ক্লিক করে মিউজিক ফাইল আপলোড করুন (MP3/WAV/OGG) — তারপর আমি ভোকালের সাথে মিক্স করে দেব।`,
+              timestamp: new Date(),
+              audioIntent: "ask_music_file",
+            }]);
+            setTimeout(() => audioFileInputRef.current?.click(), 400);
+            return;
+          }
           const {
             audioData: resultBase64,
             audioMime: resultMime = "audio/wav",
@@ -2007,7 +2020,16 @@ export default function AIChatbot() {
             pipeline = [],
             technicalNote = null,
           } = respJson2;
-          const resultBytes = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+          if (!resultBase64 || typeof resultBase64 !== "string") {
+            throw new Error("সার্ভার থেকে অডিও ডেটা পাওয়া যায়নি।");
+          }
+          const cleanBase64_2 = resultBase64.replace(/^data:[^;]+;base64,/, "").replace(/\s/g, "");
+          let resultBytes: Uint8Array;
+          try {
+            resultBytes = Uint8Array.from(atob(cleanBase64_2), c => c.charCodeAt(0));
+          } catch (e) {
+            throw new Error("অডিও ডিকোডিং ব্যার্থ। আবার চেষ্টা করুন।");
+          }
           const wavBlob = new Blob([resultBytes], { type: resultMime });
           const audioUrl = URL.createObjectURL(wavBlob);
           const audioFilename = `edited_${Date.now()}.mp3`;
@@ -2170,6 +2192,22 @@ export default function AIChatbot() {
 
       const respJson = await serverResp.json();
 
+      // সমস্যা ১: needsMusicFile হ্যান্ডলিং — মিউজিক ফাইল দরকার হলে বার্তা দেখানো
+      if (respJson.needsMusicFile || respJson.intent === "ask_music_file") {
+        const pipelineText = Array.isArray(respJson.pipeline) ? respJson.pipeline.join("\n") : "";
+        const helpMsg = respJson.explanation || "ব্যাকগ্রাউন্ড মিউজিক যোগ করতে মিউজিক ফাইল দরকার।";
+        setMessages(prev => [...prev, {
+          id: `ai-music-req-${Date.now()}`,
+          role: "assistant",
+          content: `🎵 **মিউজিক ফাইল দরকার**\n\n${helpMsg}\n\n${pipelineText}\n\nনিচের 🎵 বাটনে ক্লিক করে মিউজিক ফাইল আপলোড করুন (MP3/WAV/OGG) — তারপর আমি ভোকালের সাথে মিক্স করে দেব।`,
+          timestamp: new Date(),
+          audioIntent: "ask_music_file",
+        }]);
+        // অডিও ফাইল পিকার অটো-ওপেন করা
+        setTimeout(() => audioFileInputRef.current?.click(), 400);
+        return;
+      }
+
       const {
         audioData: resultBase64,
         audioMime: resultMime = "audio/wav",
@@ -2184,9 +2222,21 @@ export default function AIChatbot() {
         outputSizeKB = null,
       } = respJson;
 
+      // সমস্যা ২: resultBase64 না থাকলে স্পষ্ট এরর দেখানো
+      if (!resultBase64 || typeof resultBase64 !== "string" || resultBase64.trim() === "") {
+        throw new Error("সার্ভার থেকে অডিও ডেটা পাওয়া যায়নি। আবার চেষ্টা করুন।");
+      }
+
       // Step 3: Decode result base64 → Blob → URL
       setAudioProcessingStage("অডিও প্রস্তুত হচ্ছে...");
-      const resultBytes = Uint8Array.from(atob(resultBase64), c => c.charCodeAt(0));
+      // সমস্যা ৩: base64 ডিকোডিং স্যানিটাইজ করা
+      const cleanBase64 = resultBase64.replace(/^data:[^;]+;base64,/, "").replace(/\s/g, "");
+      let resultBytes: Uint8Array;
+      try {
+        resultBytes = Uint8Array.from(atob(cleanBase64), c => c.charCodeAt(0));
+      } catch (decodeErr) {
+        throw new Error(`অডিও ডিকোডিং ব্যার্থ: সার্ভার থেকে অডিও ফর্ম্যাট সঠিক নয়। আবার চেষ্টা করুন।`);
+      }
       const wavBlob = new Blob([resultBytes], { type: resultMime });
       const audioUrl = URL.createObjectURL(wavBlob);
       const audioFilename = `edited_${Date.now()}.mp3`;
