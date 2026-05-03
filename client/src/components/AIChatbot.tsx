@@ -219,7 +219,8 @@ const AUDIO_EDIT_KEYWORDS = [
   "অটো টিউন", "auto-tune", "auto tune",
   "প্রফেশনাল", "professional", "স্টুডিও", "studio",
   "পডকাস্ট", "podcast", "ভয়েসওভার", "voiceover",
-  "কবিতা", "আবৃত্তি", "recitation",
+  // NOTE: "কবিতা", "আবৃত্তি", "recitation" intentionally removed to prevent false positives
+  // These are handled by audio-edit.js backend when actual audio file is present
   "সুন্দর করো", "ভালো করো", "উন্নত করো",
   "কণ্ঠ", "কণ্ঠস্বর",
   // New v7.0 keywords
@@ -234,8 +235,28 @@ const AUDIO_EDIT_KEYWORDS = [
   "whatsapp", "telegram", "ভয়েস মেসেজ",
 ];
 
+// Keywords that indicate the user is asking about poetry/recitation as CONTENT (not audio editing)
+const POETRY_CONTENT_KEYWORDS = [
+  "কবিতা পড়তে", "কবিতা পড়ব", "কবিতা দেখতে", "কবিতা লিখে", "কবিতা লিখে দিন",
+  "কবিতা শুনতে", "কবিতা শুনব", "কবিতা বলুন", "কবিতা বলো",
+  "কবিতা আছে", "কবিতা কোথায়", "কবিতা দেখান",
+  "আবৃত্তি দেখতে", "আবৃত্তি শুনতে", "আবৃত্তি শুনব", "আবৃত্তি ভিডিও",
+  "আবৃত্তি সংগ্রহ", "আবৃত্তি কোথায়", "আবৃত্তি দেখান",
+  "লেখকের কবিতা", "লেখকের আবৃত্তি", "ধর্মীয় কবিতা",
+  "poem", "poetry", "recitation video", "recitation collection",
+];
+
 function isAudioEditRequest(text: string): boolean {
   const lower = text.toLowerCase();
+  
+  // First check: if the text is clearly about poetry/recitation as CONTENT, not audio editing
+  const isPoetryContentQuery = POETRY_CONTENT_KEYWORDS.some(kw => lower.includes(kw));
+  if (isPoetryContentQuery) return false;
+  
+  // Also check for patterns like "কবিতা + question words" which indicate content queries
+  const poetryQuestionPattern = /কবিতা.{0,20}(কোথা|কী|কি|কেন|কিভাবে|কিভাব|পাব|পায়|দেখান|লিখেদিন|লিখে দিন)|আবৃত্তি.{0,20}(কোথা|কী|কি|ভিডিও|পাব|দেখতে)/;
+  if (poetryQuestionPattern.test(lower)) return false;
+  
   return AUDIO_EDIT_KEYWORDS.some(kw => lower.includes(kw));
 }
 
@@ -411,6 +432,9 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - পুরো নাম: মাহবুব সরদার সবুজ (Mahbub Sardar Sabuj)
 - পেশা: লেখক ও কবি (বাংলা সাহিত্য)
 - জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি
+- জন্মসাল ও বয়স: সঠিক জন্মতারিখ প্রকাশিত নয়। বয়স জিজ্ঞেস করলে বলবে: "লেখকের সঠিক জন্মতারিখ প্রকাশিত নয়। বিস্তারিত জানতে [BUTTON:/about] পেজ দেখুন।"
+- শিক্ষাগত যোগ্যতা: প্রকাশিত নয়। জিজ্ঞেস করলে বলবে: "লেখকের শিক্ষাগত যোগ্যতার বিস্তারিত তথ্য প্রকাশিত নয়। বিস্তারিত জানতে [BUTTON:/about] পেজ দেখুন।"
+- পুরস্কার ও স্বীকৃতি: বিস্তারিত তথ্য প্রকাশিত নয়। জিজ্ঞেস করলে বলবে: "লেখকের পুরস্কার সম্পর্কে বিস্তারিত তথ্য আমার কাছে নেই। বিস্তারিত জানতে [BUTTON:/about] পেজ দেখুন বা [BUTTON:/contact] পেজে যোগাযোগ করুন।"
 - পিতা: ফানাউল্লাহ সরদার (বাবার নাম জিজ্ঞেস করলে সরাসরি বলবে: "লেখকের বাবার নাম ফানাউল্লাহ সরদার।")
 - মাতা: আহামালী বিনতে মাসুরা (মায়ের নাম জিজ্ঞেস করলে সরাসরি বলবে: "লেখকের মায়ের নাম আহামালী বিনতে মাসুরা।")
 - বৈবাহিক অবস্থা: অবিবাহিত

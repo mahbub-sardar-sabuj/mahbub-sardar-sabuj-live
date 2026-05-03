@@ -45,6 +45,9 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 - পুরো নাম: মাহবুব সরদার সবুজ (Mahbub Sardar Sabuj)
 - পেশা: লেখক ও কবি (বাংলা সাহিত্য)
 - জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি
+- জন্মসাল ও বয়স: সঠিক জন্মতারিখ প্রকাশিত নয়। বয়স জিজ্ঞেস করলে বলবে: "লেখকের সঠিক জন্মতারিখ প্রকাশিত নয়। বিস্তারিত জানতে [BUTTON:/about] পেজ দেখুন।"
+- শিক্ষাগত যোগ্যতা: প্রকাশিত নয়। জিজ্ঞেস করলে বলবে: "লেখকের শিক্ষাগত যোগ্যতার বিস্তারিত তথ্য প্রকাশিত নয়। বিস্তারিত জানতে [BUTTON:/about] পেজ দেখুন।"
+- পুরস্কার ও স্বীকৃতি: বিস্তারিত তথ্য প্রকাশিত নয়। জিজ্ঞেস করলে বলবে: "লেখকের পুরস্কার সম্পর্কে বিস্তারিত তথ্য আমার কাছে নেই। বিস্তারিত জানতে [BUTTON:/about] পেজ দেখুন বা [BUTTON:/contact] পেজে যোগাযোগ করুন।"
 - পিতা: ফানাউল্লাহ সরদার (বাবার নাম জিজ্ঞেস করলে সরাসরি বলবে: "লেখকের বাবার নাম ফানাউল্লাহ সরদার।")
 - মাতা: আহামালী বিনতে মাসুরা (মায়ের নাম জিজ্ঞেস করলে সরাসরি বলবে: "লেখকের মায়ের নাম আহামালী বিনতে মাসুরা।")
 - বৈবাহিক অবস্থা: অবিবাহিত
@@ -371,9 +374,18 @@ function extractUserText(messages = []) {
   return String(lastUserMsg.content || "").trim();
 }
 
+function isEnglishQuery(text) {
+  // Check if the query is primarily in English (more than 60% ASCII letters)
+  const letters = text.replace(/[^a-zA-Z\u0980-\u09FF]/g, '');
+  const englishLetters = text.replace(/[^a-zA-Z]/g, '');
+  if (letters.length === 0) return false;
+  return (englishLetters.length / letters.length) > 0.6;
+}
+
 function buildFallbackReply(messages = [], aiError = null) {
   const userText = extractUserText(messages);
   const q = userText.toLowerCase().trim();
+  const isEnglish = isEnglishQuery(userText);
 
   // ১. সালাম / হ্যালো / শুভেচ্ছা
   if (/আসসালামু|আস সালামু|assalamu|আদাব|নমস্কার|সালাম|হ্যালো|হেলো|hello|hi\b|hey\b|হাই\b/.test(q)) {
@@ -408,17 +420,37 @@ function buildFallbackReply(messages = [], aiError = null) {
 
   // ৩. লেখক পরিচয়
   if (/মাহবুব|সরদার|সবুজ|mahbub|sabuj|লেখক|কবি|author|poet|পরিচয়|পরিচিতি|about|জীবনী/.test(q)) {
+    if (isEnglish) {
+      return `Mahbub Sardar Sabuj is a Bangladeshi writer and poet.
+
+Personal Information:
+• Birthplace: Arifpur village, Barura Upazila, Comilla District, Bangladesh
+• Current Location: Saudi Arabia
+• Profession: Manager at a furniture company and Programmer at a studio
+• Marital Status: Unmarried
+
+Literary Works:
+• 7,000+ poems, prose and essays
+• First physical book: "Ami Bicchedhke Boli Dukhobilas" (2026) - available on Rokomari
+• 3 free e-books available on the website
+
+His writing focuses on: love, life's realities, self-respect, and human relationships.
+
+Famous quote: "With the touch of my pen, I am a rebel, always running joyfully for justice."
+
+Learn more [BUTTON:/about]`;
+    }
     return `মাহবুব সরদার সবুজ একজন বাংলাদেশি লেখক ও কবি।
 
 ব্যক্তিগত তথ্য:
-• জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার আরিফপুর গ্রাম
+• জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার আরিফপুর গ্রাম
 • বর্তমান অবস্থান: সৌদি আরব
 • পেশা: ফার্নিচার কোম্পানিতে ম্যানেজার ও স্টুডিওতে প্রোগ্রামার
 
 সাহিত্যকর্ম:
 • ৭,০০০+ কবিতা, গদ্য ও প্রবন্ধ
 • প্রথম ফিজিক্যাল বই "আমি বিচ্ছেদকে বলি দুঃখবিলাস" (২০২৬)
-• ৩টি ই-বুক বিনামূল্যে পড়া যায়
+• ৩টি ই-বুক বিনামূল্যে পড়া যায়
 
 তাঁর লেখার বিশেষত্ব: ভালোবাসা, জীবনের বাস্তবতা, আত্মসম্মান ও মানবিক সম্পর্ক।
 
@@ -428,7 +460,23 @@ function buildFallbackReply(messages = [], aiError = null) {
   }
 
   // ৪. বই / ই-বুক
-  if (/বই|book|ই-বুক|ebook|e-book|দুঃখবিলাস|দুঃখাবলাস|বিচ্ছেদ|কিনতে|রকমারি|কিনব|পড়ব|পড়তে|স্মৃতির|চাঁদফুল|সময়ের/.test(q)) {
+  if (/বই|book|ই-বুক|ebook|e-book|দুঃখবিলাস|দুঃখাবলাস|বিচ্ছেদ|কিনতে|রকমারি|কিনব|পড়ব|পড়তে|স্মৃতির|চাঁদফুল|সময়ের/.test(q)) {
+    if (isEnglish) {
+      return `Mahbub Sardar Sabuj's published books and e-books:
+
+📖 "Ami Bicchedhke Boli Dukhobilas" (2026)
+First physical book — about separation, pain and deep emotions of life.
+Available on Rokomari (Bangladesh's largest online bookstore).
+
+📚 Free E-books:
+• Smritir Boshonte Tumi (You in the Spring of Memories) [BUTTON:/ebooks/read/smritir-boshonte]
+• Chandfool (Moon Flower) [BUTTON:/ebooks/read/chand-phool]
+• Shomoyer Gohvore (In the Depths of Time) [BUTTON:/ebooks/read/shomoyer-gohvore]
+
+View all books [BUTTON:/ebooks]
+
+Would you like to know more about any specific book?`;
+    }
     return `লেখকের প্রকাশিত বই ও ই-বুক:
 
 📖 "আমি বিচ্ছেদকে বলি দুঃখবিলাস" (২০২৬)
@@ -447,6 +495,19 @@ function buildFallbackReply(messages = [], aiError = null) {
 
   // ৫. কবিতা / লেখালেখি
   if (/কবিতা|poem|poetry|লিখতে|লিখব|ছন্দ|অনুভূতি|আবেগ|লেখালেখি|লেখা|writing|প্রবন্ধ|গদ্য/.test(q)) {
+    if (isEnglish) {
+      return `Mahbub Sardar Sabuj has 7,000+ writings available on the website.
+
+Topics covered:
+• Life philosophy: Character is the true identity, value comes with need
+• Love: The throne of love, the person of the heart
+• Separation: The strategy of distance, couldn't belong to anyone
+• Short writings: The value of women, take care of your mind
+
+Read all writings [BUTTON:/writings]
+
+Note: The AI assistant does not write new poems. It can show you the author's existing works.`;
+    }
     return `মাহবুব সরদার সবুজের ৭,০০০+ লেখা ওয়েবসাইটে পাওয়া যায়।
 
 লেখার বিষয়বস্তু:
@@ -455,16 +516,20 @@ function buildFallbackReply(messages = [], aiError = null) {
 • বিচ্ছেদ: দূরত্বের কৌশল, কারো হতে পারিনি
 • ছোট লেখা: নারীর মূল্য, মনের যত্ন নিন
 
-সব লেখা পড়ুন [BUTTON:/writings]
+সব লেখা পড়ুন [BUTTON:/writings]
 
-কবিতা লিখতে চাইলে পরামর্শ:
-১. নিজের অনুভূতি থেকে শুরু করুন
-২. সহজ ভাষা ব্যবহার করুন
-৩. প্রতিটি লাইনে একটি ছবি আঁকার চেষ্টা করুন`;
+নোট: AI সহকারী নিজে নতুন কবিতা লেখে দেয় না। লেখকের বিদ্যমান লেখা থেকে দেখাতে পারি।`;
   }
 
   // ৬. আবৃত্তি / ভিডিও
   if (/আবৃত্তি|recitation|ভিডিও|video|শুনতে|দেখতে|youtube|facebook/.test(q)) {
+    if (isEnglish) {
+      return `The recitation section of the website contains a collection of poetry recitation videos by Mahbub Sardar Sabuj.
+
+Listening to recitations allows you to experience the emotion and feeling of poetry more deeply.
+
+Watch recitations [BUTTON:/facebook-recitations]`;
+    }
     return `ওয়েবসাইটের আবৃত্তি সেকশনে মাহবুব সরদার সবুজের কবিতার আবৃত্তির ভিডিও সংগ্রহ পাওয়া যায়।
 
 আবৃত্তি শুনলে কবিতার আবেগ ও অনুভূতি আরও গভীরভাবে অনুভব করা যায়।
