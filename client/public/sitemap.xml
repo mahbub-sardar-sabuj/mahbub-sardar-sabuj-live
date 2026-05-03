@@ -9502,6 +9502,15 @@
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/47</loc>
+    <lastmod>2026-05-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-05-03T00:00:00+06:00</news:publication_date>
+      <news:title>“প্রবাস জীবন”—সিয়াম ভাইয়ের প্রযোজনায় নতুন গান ঘিরে আলোচনা</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/46</loc>
     <lastmod>2026-05-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
     <news:news>
