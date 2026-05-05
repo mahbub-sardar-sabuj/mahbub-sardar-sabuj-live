@@ -210,8 +210,8 @@ export default function EBooks() {
         "description": book.description,
         "genre": "Bengali Literature",
         "bookFormat": "EBook",
-        "isAccessibleForFree": book.isFree ? "True" : "False",
-        ...(book.coverImage ? { "image": book.coverImage } : {}),
+        "isAccessibleForFree": (book as any).isFree ? "True" : "False",
+        ...((book as any).coverImage ? { "image": (book as any).coverImage } : {}),
       })),
     ],
   };
