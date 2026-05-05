@@ -9502,6 +9502,15 @@
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/48</loc>
+    <lastmod>2026-05-05</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-05-05T00:00:00+06:00</news:publication_date>
+      <news:title>সৃজনশীল প্রকাশনার নতুন দিগন্ত: পুনশ্চ পাবলিকেশনের গল্প</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/47</loc>
     <lastmod>2026-05-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
     <news:news>
