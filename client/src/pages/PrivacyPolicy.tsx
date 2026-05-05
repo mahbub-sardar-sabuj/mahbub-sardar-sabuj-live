@@ -91,7 +91,7 @@ export default function PrivacyPolicy() {
               </h3>
               <p style={pStyle}><strong>নাম:</strong> মাহবুব সরদার সবুজ</p>
               <p style={pStyle}><strong>ইমেইল:</strong> lekhokmahbubsardarsabuj@gmail.com</p>
-              <p style={{ ...pStyle, marginBottom: 0 }}><strong>ওয়েবসাইট:</strong> https://mahbub-sardar-sabuj-live.vercel.app/</p>
+              <p style={{ ...pStyle, marginBottom: 0 }}><strong>ওয়েবসাইট:</strong> https://www.mahbubsardarsabuj.com/</p>
             </div>
           </article>
         </section>

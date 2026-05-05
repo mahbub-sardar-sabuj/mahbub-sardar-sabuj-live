@@ -150,6 +150,9 @@ const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/ebooks/read/chand-phool",      label: "চাঁদফুল পড়ুন",              keywords: ["chand-phool", "চাঁদফুল"] },
   { path: "/ebooks/read/shomoyer-gohvore", label: "সময়ের গহ্বরে পড়ুন",        keywords: ["shomoyer", "সময়ের গহ্বরে"] },
   { path: "/facebook-recitations",         label: "আবৃত্তি সংগ্রহ দেখুন",      keywords: ["recitation", "আবৃত্তি", "facebook"] },
+  { path: "/ebooks/read/dukkhovilash",    label: "দুঃখবিলাস বই পড়ুন",           keywords: ["dukkhovilash", "দুঃখবিলাস", "বিচ্ছেদ"] },
+  { path: "/gallery",                     label: "গ্যালারি দেখুন",               keywords: ["gallery", "গ্যালারি", "ছবি", "ফটো"] },
+  { path: "/news",                        label: "সরদার সংবাদ দেখুন",            keywords: ["news", "সংবাদ", "নিউজ", "সরদার সংবাদ"] },
 ];
 
 // ── Audio edit request detection ───────────────────────────────────────────────
@@ -899,8 +902,10 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
     return "";
   });
 
+  // Replace both vercel and production domain URLs with navigation buttons
+  const urlPattern = new RegExp(`https?://(?:mahbub-sardar-sabuj-live\\.vercel\\.app|(?:www\\.)?mahbubsardarsabuj\\.com)(/[^\\s)>"]*)`, "g");
   text = text.replace(
-    new RegExp(`https?://mahbub-sardar-sabuj-live\\.vercel\\.app(/[^\\s)>"]*)`, "g"),
+    urlPattern,
     (_, path) => {
       const cleanPath = path || "/";
       if (!seen.has(cleanPath)) {

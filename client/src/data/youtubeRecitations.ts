@@ -314,4 +314,4 @@ export const youtubeRecitations: RecitationVideo[] = [
   },
 ];
 
-export const youtubeChannelUrl = "https://youtube.com/@mahbubsardarsabuj";
+export const youtubeChannelUrl = "https://youtube.com/@MahbubSardarSabuj";

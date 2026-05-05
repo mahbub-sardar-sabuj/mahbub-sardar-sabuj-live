@@ -31,8 +31,8 @@ const socialLinks = [
   },
   {
     name: "YouTube",
-    handle: "@mahbubsardarsabuj",
-    url: "https://youtube.com/@mahbubsardarsabuj",
+    handle: "@MahbubSardarSabuj",
+    url: "https://youtube.com/@MahbubSardarSabuj",
     icon: "▶",
     color: "#FF4444",
     bg: "rgba(255,68,68,0.08)",

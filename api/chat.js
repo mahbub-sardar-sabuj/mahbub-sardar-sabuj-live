@@ -317,7 +317,7 @@ async function callAIWithConfig(messages, config) {
       "Authorization": `Bearer ${apiKey}`,
     };
     if (source === "OPENROUTER_API_KEY" || baseUrl.includes("openrouter.ai")) {
-      headers["HTTP-Referer"] = process.env.SITE_URL || process.env.VERCEL_URL || "https://mahbub-sardar-sabuj-live.vercel.app";
+      headers["HTTP-Referer"] = process.env.SITE_URL || "https://www.mahbubsardarsabuj.com";
       headers["X-Title"] = "Mahbub Sardar Sabuj Live";
     }
     const response = await fetch(buildChatCompletionsUrl(baseUrl), {

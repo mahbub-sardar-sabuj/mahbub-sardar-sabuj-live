@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 const socialLinks = [
   { icon: Facebook, href: "https://facebook.com/MahbubSardarSabuj", label: "Facebook", color: "#1877F2" },
   { icon: Instagram, href: "https://www.instagram.com/mahbub_sardar_sabuj", label: "Instagram", color: "#E1306C" },
-  { icon: Youtube, href: "https://youtube.com/@mahbubsardarsabuj", label: "YouTube", color: "#FF0000" },
+  { icon: Youtube, href: "https://youtube.com/@MahbubSardarSabuj", label: "YouTube", color: "#FF0000" },
   { icon: Mail, href: "mailto:lekhokmahbubsardarsabuj@gmail.com", label: "Email", color: "#C9A84C" },
 ];
 

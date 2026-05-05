@@ -21,6 +21,10 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("[ErrorBoundary] Caught error:", error, errorInfo);
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -31,11 +35,12 @@ class ErrorBoundary extends Component<Props, State> {
               className="text-destructive mb-6 flex-shrink-0"
             />
 
-            <h2 className="text-xl mb-4">An unexpected error occurred.</h2>
+            <h2 className="text-xl mb-2">একটি অপ্রত্যাশিত সমস্যা হয়েছে।</h2>
+            <p className="text-sm text-muted-foreground mb-4">An unexpected error occurred.</p>
 
             <div className="p-4 w-full rounded bg-muted overflow-auto mb-6">
               <pre className="text-sm text-muted-foreground whitespace-break-spaces">
-                {this.state.error?.stack}
+                {this.state.error?.message}
               </pre>
             </div>
 
@@ -48,7 +53,7 @@ class ErrorBoundary extends Component<Props, State> {
               )}
             >
               <RotateCcw size={16} />
-              Reload Page
+              পেজ রিলোড করুন
             </button>
           </div>
         </div>

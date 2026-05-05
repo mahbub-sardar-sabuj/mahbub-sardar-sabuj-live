@@ -522,7 +522,7 @@ function createAudioAiClient() {
   const config = resolveAudioAiConfig();
   const defaultHeaders = {};
   if (config.source === "OPENROUTER_API_KEY" || config.baseURL.includes("openrouter.ai")) {
-    defaultHeaders["HTTP-Referer"] = process.env.SITE_URL || process.env.VERCEL_URL || "https://mahbub-sardar-sabuj-live.vercel.app";
+    defaultHeaders["HTTP-Referer"] = process.env.SITE_URL || "https://www.mahbubsardarsabuj.com";
     defaultHeaders["X-Title"] = "Mahbub Sardar Sabuj Live";
   }
   return {

@@ -73,7 +73,7 @@ export default function Home() {
       "sameAs": [
         "https://facebook.com/MahbubSardarSabuj",
         "https://www.instagram.com/mahbub_sardar_sabuj",
-        "https://youtube.com/@mahbubsardarsabuj"
+        "https://youtube.com/@MahbubSardarSabuj"
       ],
     }]
   };

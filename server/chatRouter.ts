@@ -30,6 +30,7 @@ const CHAT_SYSTEM_PROMPT = `তুমি "সরদার AI" — বাংল�
 - বর্তমান অবস্থান: সৌদি আরব
 - কর্মক্ষেত্র: সৌদি আরবে একটি ফার্নিচার কোম্পানিতে ম্যানেজার এবং একটি স্টুডিওতে প্রোগ্রামার
 - Facebook: https://www.facebook.com/MahbubSardarSabuj (১১০,০০০+ ফলোয়ার)
+- YouTube: https://youtube.com/@MahbubSardarSabuj
 - Email: lekhokmahbubsardarsabuj@gmail.com
 - বিখ্যাত উক্তি: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।"
 
