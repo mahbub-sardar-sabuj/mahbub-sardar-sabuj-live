@@ -183,13 +183,14 @@ export function monitorWebVitals(callback: (vitals: WebVitals) => void): void {
 export function logPerformanceMetrics(): void {
   if (typeof window === "undefined") return;
   
-  monitorWebVitals((vitals) => {
-    console.log("📊 Web Vitals:", {
-      LCP: vitals.lcp ? `${vitals.lcp.toFixed(2)}ms` : "N/A",
-      FID: vitals.fid ? `${vitals.fid.toFixed(2)}ms` : "N/A",
-      CLS: vitals.cls ? vitals.cls.toFixed(3) : "N/A",
-      TTFB: vitals.ttfb ? `${vitals.ttfb.toFixed(2)}ms` : "N/A",
-    });
+  monitorWebVitals((_vitals) => {
+    // Development only — remove in production
+    // console.log("📊 Web Vitals:", {
+    //   LCP: _vitals.lcp ? `${_vitals.lcp.toFixed(2)}ms` : "N/A",
+    //   FID: _vitals.fid ? `${_vitals.fid.toFixed(2)}ms` : "N/A",
+    //   CLS: _vitals.cls ? _vitals.cls.toFixed(3) : "N/A",
+    //   TTFB: _vitals.ttfb ? `${_vitals.ttfb.toFixed(2)}ms` : "N/A",
+    // });
   });
 }
 

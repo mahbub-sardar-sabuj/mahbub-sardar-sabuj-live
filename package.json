@@ -137,6 +137,12 @@
       "tar": "7.5.13",
       "undici": "6.24.0",
       "uuid": "14.0.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@ffmpeg-installer/linux-x64",
+      "sharp",
+      "better-sqlite3"
+    ]
   }
 }
