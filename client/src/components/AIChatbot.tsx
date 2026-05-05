@@ -181,13 +181,13 @@ function isLiveChatRequest(text: string): boolean {
 
 // ── Audio edit request detection ─────────────────────────────────────────────
 const AUDIO_EDIT_KEYWORDS = [
-  // Basic
+  // Basic — NOTE: "এডিট"/"edit" removed to prevent false positives with image/video editing
   "অডিও", "audio", "গান", "song", "sound", "ভয়েস", "voice",
   "mp3", "wav", "ogg", "flac", "aac", "m4a",
   "ভলিউম", "volume", "ট্রিম", "trim", "কাটো", "কাট",
   "ফেড", "fade", "গতি", "speed", "নয়েজ", "noise",
   "রিভার্ব", "reverb", "বেস", "bass", "ট্রেবল", "treble",
-  "এডিট", "edit", "রূপান্তর", "convert",
+  "রূপান্তর", "convert",
   // Voice Beautify
   "মধুময়", "honey", "মিষ্টি কণ্ঠ", "মধুর",
   "রেশমি", "silky", "মসৃণ", "smooth", "নরম",
@@ -249,17 +249,45 @@ const POETRY_CONTENT_KEYWORDS = [
   "poem", "poetry", "recitation video", "recitation collection",
 ];
 
+// Keywords that indicate image/photo/video editing — NOT audio editing
+const IMAGE_EDIT_EXCLUSION_KEYWORDS = [
+  "ছবি এডিট", "ছবি এডিটিং", "ছবি সম্পাদনা",
+  "ফটো এডিট", "ফটো এডিটিং",
+  "image edit", "photo edit", "picture edit",
+  "ছবি ঠিক", "ছবি সুন্দর", "ছবি ক্রপ", "ছবি কাটো",
+  "ছবি রিটাচ", "ছবি রিসাইজ", "ছবি কম্প্রেস",
+  "ভিডিও এডিট", "ভিডিও এডিটিং", "video edit", "video editing",
+  "ডিজাইন এডিট", "design edit",
+  "ছবি বানাও", "ছবি তৈরি",
+  "ছবি এডিট করবো", "ছবি এডিট করব", "ছবি এডিট করতে",
+  "ছবি এডিট করুন", "ছবি এডিট করো",
+  "ফটো এডিট করবো", "ফটো এডিট করব",
+  "image editor", "photo editor",
+];
+
 function isAudioEditRequest(text: string): boolean {
   const lower = text.toLowerCase();
-  
-  // First check: if the text is clearly about poetry/recitation as CONTENT, not audio editing
+
+  // First check: if the text is clearly about image/photo/video editing, NOT audio
+  const isImageEditQuery = IMAGE_EDIT_EXCLUSION_KEYWORDS.some(kw => lower.includes(kw));
+  if (isImageEditQuery) return false;
+
+  // Also check for "ছবি" or "photo"/"image" combined with edit-like words
+  const imageEditPattern = /(ছবি|ফটো|photo|image|picture|pic).{0,15}(এডিট|edit|সম্পাদন|ঠিক|সুন্দর|ক্রপ|crop|রিটাচ|retouch|রিসাইজ|resize|ফিল্টার|filter)|(এডিট|edit).{0,15}(ছবি|ফটো|photo|image|picture)/i;
+  if (imageEditPattern.test(lower)) return false;
+
+  // Check for video editing
+  const videoEditPattern = /(ভিডিও|video).{0,15}(এডিট|edit|সম্পাদন|কাটো|trim|ক্লিপ|clip)/i;
+  if (videoEditPattern.test(lower)) return false;
+
+  // Second check: if the text is clearly about poetry/recitation as CONTENT, not audio editing
   const isPoetryContentQuery = POETRY_CONTENT_KEYWORDS.some(kw => lower.includes(kw));
   if (isPoetryContentQuery) return false;
-  
+
   // Also check for patterns like "কবিতা + question words" which indicate content queries
-  const poetryQuestionPattern = /কবিতা.{0,20}(কোথা|কী|কি|কেন|কিভাবে|কিভাব|পাব|পায়|দেখান|লিখেদিন|লিখে দিন)|আবৃত্তি.{0,20}(কোথা|কী|কি|ভিডিও|পাব|দেখতে)/;
+  const poetryQuestionPattern = /কবিতা.{0,20}(কোথা|কী|কি|কেন|কিভাবে|কিভাব|পাব|পায়|দেখান|লিখেদিন|লিখে দিন)|আবৃত্তি.{0,20}(কোথা|কী|কি|ভিডিও|পাব|দেখতে)/;
   if (poetryQuestionPattern.test(lower)) return false;
-  
+
   return AUDIO_EDIT_KEYWORDS.some(kw => lower.includes(kw));
 }
 
@@ -596,6 +624,16 @@ const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সব�
 
 ব্যবহারকারী: "অডিও এডিট করতে হবে" (ফাইল দেওয়া হয়নি)
 সঠিক উত্তর: "অডিও এডিটিংয়ে সাহায্য করতে পারি! নিচের 🎧 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি জিজ্ঞেস করব কী করতে চান।"
+
+ব্যবহারকারী: "ছবি এডিট করবো" বা "ছবি এডিটিং করতে চাই"
+ভুল উত্তর: অডিও আপলোড করতে বলা
+সঠিক উত্তর: "ছবি এডিটিংয়ের জন্য এই ওয়েবসাইটে 'সরদার ডিজাইন স্টুডিও' আছে! [BUTTON:/editor] পেজে গিয়ে ছবি আপলোড করুন — ক্রপ, ফিল্টার, টেক্সট, স্টিকার সহ অনেক ফিচার আছে।"
+
+ব্যবহারকারী: "ভিডিও এডিট করতে চাই"
+ভুল উত্তর: অডিও আপলোড করতে বলা
+সঠিক উত্তর: ভিডিও এডিটিং সম্পর্কে গাইড দেওয়া এবং বাইরের টুলস (CapCut, DaVinci Resolve) সাজেস্ট করা।
+
+গুরুত্বপূর্ণ: "এডিট" বা "edit" শব্দ মানেই অডিও এডিট নয়। ছবি/ভিডিও/ডিজাইন এডিটিং সম্পূর্ণ আলাদা বিষয়। সঠিক context বুঝে উত্তর দাও।
 
 ## সারসংক্ষেপ
 তুমি একজন বুদ্ধিমান, সত্যিকারের সহকারী। তুমি সব পারো না — তা স্বীকার করো। তুমি যা পারো — তা সর্বোচ্চ মানে করো। তুমি ব্যবহারকারীকে কখনো হতাশ করো না — সবসময় সমাধানের পথ দেখাও।`
@@ -2370,6 +2408,22 @@ export default function AIChatbot() {
     setIsLoading(true);
     setError(null);
 
+    // Check for image editing request — redirect to Editor page
+    const imageEditPattern = /(ছবি|ফটো|photo|image|picture).{0,15}(এডিট|edit|সম্পাদন|ঠিক|সুন্দর|ক্রপ|crop|রিটাচ|retouch|রিসাইজ|resize|ফিল্টার|filter)|(এডিট|edit).{0,15}(ছবি|ফটো|photo|image|picture)/i;
+    const imageEditKeywords = ["ছবি এডিট", "ফটো এডিট", "ছবি এডিটিং", "ফটো এডিটিং", "image edit", "photo edit", "ছবি এডিট করবো", "ছবি এডিট করব", "ছবি এডিট করতে", "ছবি এডিট করুন", "ছবি এডিট করো", "ছবি সম্পাদনা"];
+    const isImageEditRequest = !imagePreview && (imageEditPattern.test(text) || imageEditKeywords.some(kw => text.toLowerCase().includes(kw)));
+    if (isImageEditRequest) {
+      const imageEditMsg: Message = {
+        id: `img-edit-${Date.now()}`,
+        role: "assistant",
+        content: "ছবি এডিটিংয়ের জন্য এই ওয়েবসাইটে **সরদার ডিজাইন স্টুডিও** আছে! [BUTTON:/editor] পেজে গিয়ে ছবি আপলোড করুন — ক্রপ, ফিল্টার, টেক্সট, স্টিকার, ব্যাকগ্রাউন্ড পরিবর্তন সহ অনেক প্রফেশনাল ফিচার আছে।",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, imageEditMsg]);
+      setIsLoading(false);
+      return;
+    }
+
     if (isPhotoRequest(text)) {
       const photoMsg: Message = {
         id: `photo-${Date.now()}`,
@@ -2968,6 +3022,7 @@ export default function AIChatbot() {
                   { label: "📚 বই সম্পর্কে", cmd: "লেখকের বই সম্পর্কে বলুন" },
                   { label: "✍️ লেখক কে?", cmd: "মাহবুব সরদার সবুজ কে?" },
                   { label: "🎵 অডিও এডিট", cmd: "অডিও এডিট কীভাবে করব?" },
+                  { label: "🖼️ ছবি এডিট", cmd: "ছবি এডিটিং কীভাবে করব?" },
                   { label: "🎨 ডিজাইন স্টুডিও", cmd: "ডিজাইন স্টুডিও সম্পর্কে বলুন" },
                   { label: "📞 যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
                   { label: "📖 ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
