@@ -212,7 +212,7 @@ const newsData: NewsItem[] = [
     tag: "নতুন গান",
     author: "বিনোদন ডেস্ক",
     location: "ঢাকা",
-    views: 6937,
+    views: 16387,
   },
   {
     id: 46,
