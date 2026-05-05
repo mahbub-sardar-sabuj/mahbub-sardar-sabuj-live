@@ -10034,6 +10034,7 @@ function WritingModal({
   const [copied, setCopied] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [fontSize, setFontSize] = useState(1.1);
+  const [readingTheme, setReadingTheme] = useState<"light" | "sepia" | "dark">("light");
   const slug = makeSlug(writing.title, writing.id);
   // Update URL when modal opens/navigates
   useEffect(() => {
@@ -10264,38 +10265,73 @@ function WritingModal({
           </div>
         </div>
 
-        {/* Font size controls */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "flex-end",
-          padding: "8px 20px",
-          background: "#F5F3EE",
-          borderBottom: "1px solid rgba(13,27,42,0.06)",
-          gap: 6,
-        }}>
-          <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: "#aaa", marginRight: 4 }}>ফন্ট সাইজ:</span>
-          <button
-            onClick={() => setFontSize(s => Math.max(0.85, s - 0.1))}
-            style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#555" }}
-          >
-            <AArrowDown size={13} />
-          </button>
-          <button
-            onClick={() => setFontSize(s => Math.min(1.5, s + 0.1))}
-            style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#555" }}
-          >
-            <AArrowUp size={13} />
-          </button>
-        </div>
+        {/* Font size & Reading Theme controls */}
+        {(() => {
+          const themeBg = readingTheme === "dark" ? "#1a1a2e" : readingTheme === "sepia" ? "#F5EDD8" : "#F5F3EE";
+          const themeFg = readingTheme === "dark" ? "#d0cfc8" : "#555";
+          const themeLabelColor = readingTheme === "dark" ? "#888" : "#aaa";
+          return (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "8px 20px",
+              background: themeBg,
+              borderBottom: "1px solid rgba(13,27,42,0.06)",
+              gap: 6,
+            }}>
+              {/* Theme switcher */}
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: themeLabelColor, marginRight: 4 }}>থিম:</span>
+                {([
+                  { id: "light", label: "সাদা", bg: "#fff", border: "#ccc" },
+                  { id: "sepia", label: "সেপিয়া", bg: "#F5EDD8", border: "#c8a96e" },
+                  { id: "dark", label: "ডার্ক", bg: "#1a1a2e", border: "#555" },
+                ] as const).map((t) => (
+                  <button
+                    key={t.id}
+                    title={t.label}
+                    onClick={() => setReadingTheme(t.id)}
+                    style={{
+                      width: 20, height: 20, borderRadius: "50%",
+                      background: t.bg,
+                      border: readingTheme === t.id ? "2px solid #D4A843" : `1.5px solid ${t.border}`,
+                      cursor: "pointer",
+                      outline: "none",
+                      boxShadow: readingTheme === t.id ? "0 0 0 2px rgba(212,168,67,0.3)" : "none",
+                      transition: "box-shadow 0.2s",
+                    }}
+                  />
+                ))}
+              </div>
+              {/* Font size */}
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: themeLabelColor, marginRight: 4 }}>ফন্ট সাইজ:</span>
+                <button
+                  onClick={() => setFontSize(s => Math.max(0.85, s - 0.1))}
+                  style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: themeFg }}
+                >
+                  <AArrowDown size={13} />
+                </button>
+                <button
+                  onClick={() => setFontSize(s => Math.min(1.5, s + 0.1))}
+                  style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: themeFg }}
+                >
+                  <AArrowUp size={13} />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Body */}
-        <div style={{ padding: "28px 28px 24px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "28px 28px 24px", overflowY: "auto", flex: 1, background: readingTheme === "dark" ? "#1a1a2e" : readingTheme === "sepia" ? "#FDF6E3" : "#fff", transition: "background 0.3s" }}>
           <div style={{
             fontFamily: "'Tiro Bangla', serif",
             fontSize: `${fontSize}rem`,
-            color: "#1a1a2e",
+            color: readingTheme === "dark" ? "#d0cfc8" : "#1a1a2e",
             lineHeight: 2.3,
             whiteSpace: "pre-line",
             letterSpacing: "0.01em",
+            transition: "color 0.3s",
           }}>
             {writing.content}
           </div>
@@ -10422,10 +10458,32 @@ export default function Writings() {
       },
       {
         "@type": "Person",
+        "@id": "https://www.mahbubsardarsabuj.com/#author",
         "name": "Mahbub Sardar Sabuj",
         "alternateName": "মাহবুব সরদার সবুজ",
         "url": "https://www.mahbubsardarsabuj.com/"
-      }
+      },
+      ...writings.slice(0, 20).map((w) => ({
+        "@type": w.category === "কবিতা" ? "Poem" : "Article",
+        "@id": `https://www.mahbubsardarsabuj.com/writings/${makeSlug(w.title, w.id)}`,
+        "headline": w.title,
+        "name": w.title,
+        "inLanguage": "bn-BD",
+        "author": {
+          "@type": "Person",
+          "@id": "https://www.mahbubsardarsabuj.com/#author",
+          "name": "মাহবুব সরদার সবুজ",
+        },
+        "datePublished": w.date,
+        "articleSection": w.category,
+        "url": `https://www.mahbubsardarsabuj.com/writings/${makeSlug(w.title, w.id)}`,
+        "description": w.content.slice(0, 160).replace(/
+/g, " "),
+        "isPartOf": {
+          "@type": "CollectionPage",
+          "url": "https://www.mahbubsardarsabuj.com/writings",
+        },
+      })),
     ]
   };
 

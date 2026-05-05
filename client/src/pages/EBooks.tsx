@@ -195,6 +195,24 @@ export default function EBooks() {
         "inLanguage": "bn-BD",
         "description": "মাহবুব সরদার সবুজের প্রকাশিত ই-বুক ও ফিজিক্যাল বইয়ের সম্পূর্ণ সংগ্রহ।",
       },
+      ...ebooks.map((book) => ({
+        "@type": "Book",
+        "@id": `https://www.mahbubsardarsabuj.com/ebooks#${book.slug}`,
+        "name": book.title,
+        "inLanguage": "bn-BD",
+        "author": {
+          "@type": "Person",
+          "name": "মাহবুব সরদার সবুজ",
+          "alternateName": "Mahbub Sardar Sabuj",
+          "url": "https://www.mahbubsardarsabuj.com/about",
+        },
+        "url": `https://www.mahbubsardarsabuj.com/ebooks/read/${book.slug}`,
+        "description": book.description,
+        "genre": "Bengali Literature",
+        "bookFormat": "EBook",
+        "isAccessibleForFree": book.isFree ? "True" : "False",
+        ...(book.coverImage ? { "image": book.coverImage } : {}),
+      })),
     ],
   };
 

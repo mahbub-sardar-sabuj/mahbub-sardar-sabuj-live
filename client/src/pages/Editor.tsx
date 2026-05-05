@@ -940,6 +940,13 @@ export default function Editor() {
   const photoRef    = useRef<HTMLInputElement>(null);
   const bgFileRef   = useRef<HTMLInputElement>(null);
   const previewRef  = useRef<HTMLDivElement>(null);
+  // ── Mobile detection ──────────────────────────────────────────────────────
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const theme  = THEMES[themeIdx];
@@ -980,9 +987,10 @@ export default function Editor() {
       if (!previewRef.current) return;
       const cw = previewRef.current.clientWidth - 24; // 12px padding each side
       // Available height: viewport - navbar(70) - topbar(~70) - toolbar(~72) - some margin
-      const availH = window.innerHeight - 70 - 70 - 72 - 20;
-      const maxH = Math.max(180, Math.min(availH, 380));
-      setScale(Math.min(cw / cardW, maxH / cardH, 0.85));
+      const mobileBreak = window.innerWidth < 640;
+      const availH = window.innerHeight - 70 - 70 - 72 - (mobileBreak ? 10 : 20);
+      const maxH = Math.max(160, Math.min(availH, mobileBreak ? 320 : 380));
+      setScale(Math.min(cw / cardW, maxH / cardH, mobileBreak ? 0.9 : 0.85));
     };
     update();
     window.addEventListener("resize", update);
@@ -1892,6 +1900,9 @@ export default function Editor() {
             overflow: "hidden",
             boxShadow: "0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(212,168,67,0.15)",
             cursor: activeTool === "draw" ? "crosshair" : activeTool === "inlinetext" ? "text" : dragging ? "grabbing" : "default",
+            touchAction: activeTool === "draw" || dragging ? "none" : "manipulation",
+            userSelect: "none",
+            WebkitUserSelect: "none",
           }}
           onClick={(e) => {
             if (activeTool === "draw") return;
@@ -2443,10 +2454,11 @@ export default function Editor() {
             style={{
               background: "#0d1420",
               borderTop: "1px solid #1e3050",
-              maxHeight: "45vh",
+              maxHeight: isMobile ? "55vh" : "45vh",
               overflowY: "auto",
               flexShrink: 0,
               overscrollBehavior: "contain",
+              WebkitOverflowScrolling: "touch",
             }}
           >
             {/* ── CANVAS PANEL ── */}

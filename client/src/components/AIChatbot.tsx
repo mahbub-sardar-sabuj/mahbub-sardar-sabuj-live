@@ -2931,8 +2931,48 @@ export default function AIChatbot() {
                 </div>
               ) : (
               <>
-              {/* ── Quick suggestion chips (shown only when no messages beyond welcome) ── */}
-              {messages.length <= 1 && !audioFile && !lastAudioBlobRef.current && (
+              {/* ── Quick suggestion chips (context-aware) ── */}
+              {!audioFile && !lastAudioBlobRef.current && (() => {
+                // Context-aware: detect last assistant message topic
+                const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+                const lastText = lastAssistant?.content?.toString().toLowerCase() ?? "";
+                let contextChips: { label: string; cmd: string }[] = [];
+                if (messages.length > 1) {
+                  if (lastText.includes("বই") || lastText.includes("ebook") || lastText.includes("ই-বুক")) {
+                    contextChips = [
+                      { label: "📖 বিনামূল্যে পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
+                      { label: "🛒 কিনতে চাই", cmd: "দুঃখবিলাস বই কোথায় পাওয়া যায়?" },
+                      { label: "✍️ অন্য বই", cmd: "আর কোন বই আছে?" },
+                    ];
+                  } else if (lastText.includes("কবিতা") || lastText.includes("লেখা") || lastText.includes("writings")) {
+                    contextChips = [
+                      { label: "📝 লেখা পড়ুন", cmd: "লেখালেখি পেজে যেতে চাই" },
+                      { label: "❤️ ভালোবাসার কবিতা", cmd: "ভালোবাসার কবিতা দেখাও" },
+                      { label: "💔 বিচ্ছেদের লেখা", cmd: "বিচ্ছেদের লেখা দেখাও" },
+                    ];
+                  } else if (lastText.includes("যোগাযোগ") || lastText.includes("contact")) {
+                    contextChips = [
+                      { label: "📞 যোগাযোগ পেজ", cmd: "যোগাযোগ পেজে যেতে চাই" },
+                      { label: "📘 ফেসবুক", cmd: "ফেসবুক পেজের লিংক দাও" },
+                    ];
+                  } else if (lastText.includes("অডিও") || lastText.includes("audio")) {
+                    contextChips = [
+                      { label: "🧹 নয়েজ রিমুভ", cmd: "নয়েজ রিমুভ করো" },
+                      { label: "⭐ স্টুডিও প্রো", cmd: "স্টুডিও মানের প্রসেসিং করো" },
+                    ];
+                  }
+                }
+                const showChips = messages.length <= 1 ? true : contextChips.length > 0;
+                if (!showChips) return null;
+                const chips = messages.length <= 1 ? [
+                  { label: "📚 বই সম্পর্কে", cmd: "লেখকের বই সম্পর্কে বলুন" },
+                  { label: "✍️ লেখক কে?", cmd: "মাহবুব সরদার সবুজ কে?" },
+                  { label: "🎵 অডিও এডিট", cmd: "অডিও এডিট কীভাবে করব?" },
+                  { label: "🎨 ডিজাইন স্টুডিও", cmd: "ডিজাইন স্টুডিও সম্পর্কে বলুন" },
+                  { label: "📞 যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
+                  { label: "📖 ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
+                ] : contextChips;
+                return (
                 <div style={{
                   padding: "6px 10px 5px",
                   borderBottom: "1px solid rgba(212,168,67,0.07)",
@@ -2946,21 +2986,13 @@ export default function AIChatbot() {
                     fontWeight: 600,
                     letterSpacing: "0.04em",
                     marginBottom: 5,
-                  }}>দ্রুত শুরু করুন</div>
+                  }}>{messages.length <= 1 ? "দ্রুত শুরু করুন" : "সম্পর্কিত প্রশ্ন"}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {[
-                      { label: "📚 বই সম্পর্কে", cmd: "লেখকের বই সম্পর্কে বলুন" },
-                      { label: "✍️ লেখক কে?", cmd: "মাহবুব সরদার সবুজ কে?" },
-                      { label: "🎵 অডিও এডিট", cmd: "অডিও এডিট কীভাবে করব?" },
-                      { label: "🎨 ডিজাইন স্টুডিও", cmd: "ডিজাইন স্টুডিও সম্পর্কে বলুন" },
-                      { label: "📞 যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
-                      { label: "📖 ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
-                    ].map(chip => (
+                    {chips.map(chip => (
                       <button
                         key={chip.label}
                         onClick={() => {
                           setInput(chip.cmd);
-                          // Auto-send the chip command
                           setTimeout(() => handleSend(), 120);
                         }}
                         className="chatbot-suggestion-btn"
@@ -2982,7 +3014,8 @@ export default function AIChatbot() {
                     ))}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* ── Messages ── */}
               <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
