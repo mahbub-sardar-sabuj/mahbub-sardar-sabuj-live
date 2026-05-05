@@ -186,7 +186,7 @@ const newsData = [
 [3]: https://www.rokomari.com/book/510178/ami-bicchedke-boli-dokkhubilash \"রকমারি ডটকম: আমি বিচ্ছেদকে বলি দুঃখবিলাস\"
 [4]: https://www.rokomari.com/book/author/134242/mahbub-sardar-sabuj \"রকমারি ডটকম: মাহবুব সরদার সবুজ এর বই\"
 `,
-    image: `${SITE_URL}/images/news/punoscho-publication.png`,
+    image: `${SITE_URL}/images/news/punoscho-publication.jpg`,
     date: "2026-05-05",
     category: "সাহিত্য",
     keywords: "পুনশ্চ পাবলিকেশন, মাহবুব সরদার সবুজ, সাহিত্য, প্রকাশনা",
