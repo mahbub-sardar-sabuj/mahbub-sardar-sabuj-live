@@ -1,8 +1,13 @@
 import { router, publicProcedure } from "./_core/trpc";
 import { z } from "zod";
-import { getOpenAIClient } from "./_core/openai";
-import { generateImage } from "./_core/generateImage";
+import { generateImage } from "./_core/imageGeneration";
 import { validateAndSanitizeInput, createSecureSystemPrompt } from "./_core/promptSecurity";
+import OpenAI from "openai";
+const getOpenAIClient = () =>
+  new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+  });
 
 // সিস্টেম প্রম্পট (নিরাপদ সংস্করণ)
 const CHAT_SYSTEM_PROMPT = createSecureSystemPrompt(`তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলাদেশের লেখক ও কবি মাহবুব সরদার সবুজের ব্যক্তিগত, বুদ্ধিমান AI সহকারী।

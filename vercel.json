@@ -64,7 +64,7 @@
       "dest": "/robots.txt"
     },
     {
-      "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map))$",
+      "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|PNG|JPG|JPEG|GIF|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map))$",
       "dest": "/$1"
     },
     {
@@ -134,7 +134,7 @@
       ]
     },
     {
-      "source": "/(.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico))$",
+      "source": "/(.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|PNG|JPG|JPEG|GIF))$",
       "headers": [
         {
           "key": "Cache-Control",

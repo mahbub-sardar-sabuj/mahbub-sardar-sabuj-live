@@ -5,6 +5,7 @@
  * ✅ স্ক্রিন রিডার অপ্টিমাইজেশন
  * ✅ এসইও মেটা ট্যাগ ম্যানেজমেন্ট
  */
+import React from "react";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ♿ অ্যাক্সেসিবিলিটি ইউটিলিটি
@@ -73,7 +74,7 @@ export function announceToScreenReader(
   if (typeof document === "undefined") return;
   
   // বিদ্যমান লাইভ রিজিয়ন খুঁজুন বা তৈরি করুন
-  let liveRegion = document.querySelector(`[aria-live="${priority}"]`);
+  let liveRegion = document.querySelector<HTMLDivElement>(`[aria-live="${priority}"]`);
   
   if (!liveRegion) {
     liveRegion = document.createElement("div");
@@ -95,7 +96,7 @@ export function announceToScreenReader(
  * @param targetId - টার্গেট এলিমেন্ট ID
  * @returns স্কিপ লিংক এলিমেন্ট
  */
-export function createSkipLink(targetId: string): JSX.Element {
+export function createSkipLink(targetId: string): React.ReactElement {
   return (
     <a
       href={`#${targetId}`}
@@ -323,7 +324,7 @@ export function createMetaTags(metadata: SEOMetadata) {
 export function setCanonicalUrl(url: string): void {
   if (typeof document === "undefined") return;
   
-  let canonicalLink = document.querySelector("link[rel='canonical']");
+  let canonicalLink = document.querySelector<HTMLLinkElement>("link[rel='canonical']");
   
   if (!canonicalLink) {
     canonicalLink = document.createElement("link");

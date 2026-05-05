@@ -49,45 +49,73 @@ export default async function handler(req, res) {
     const FROM = process.env.CONTACT_EMAIL_FROM;
     const PASS = process.env.GMAIL_APP_PASSWORD;
 
+    // Telegram notification (primary fallback)
+    const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+
+    // Try Telegram first (always available if configured)
+    if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
+      try {
+        const telegramText = `📩 <b>নতুন বার্তা — mahbubsardarsabuj.com</b>\n\n👤 <b>নাম:</b> ${safeName}\n📧 <b>ইমেইল:</b> ${safeEmail}\n📌 <b>বিষয়:</b> ${safeSubject}\n\n💬 <b>বার্তা:</b>\n${safeMessage.slice(0, 3000)}`;
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_ADMIN_CHAT_ID,
+            text: telegramText,
+            parse_mode: "HTML",
+          }),
+        });
+      } catch (telegramErr) {
+        console.warn("[CONTACT FORM] Telegram notification failed:", telegramErr.message);
+      }
+    }
+
     if (FROM && PASS) {
       // Send via Nodemailer + Gmail SMTP
-      const nodemailer = await import("nodemailer");
-      const transporter = nodemailer.default.createTransport({
-        service: "gmail",
-        auth: { user: FROM, pass: PASS },
-      });
+      try {
+        const nodemailer = await import("nodemailer");
+        const transporter = nodemailer.default.createTransport({
+          service: "gmail",
+          auth: { user: FROM, pass: PASS },
+        });
 
-      await transporter.sendMail({
-        from: `"${safeName}" <${FROM}>`,
-        to: TO,
-        replyTo: safeEmail,
-        subject: `[mahbubsardarsabuj.com] ${safeSubject}`,
-        text: `নাম: ${safeName}\nইমেইল: ${safeEmail}\nবিষয়: ${safeSubject}\n\n${safeMessage}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 10px;">
-            <h2 style="color: #C9A84C; border-bottom: 2px solid #C9A84C; padding-bottom: 10px;">নতুন বার্তা — mahbubsardarsabuj.com</h2>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px; font-weight: bold; color: #333; width: 100px;">নাম:</td><td style="padding: 8px; color: #555;">${safeName}</td></tr>
-              <tr style="background: #fff;"><td style="padding: 8px; font-weight: bold; color: #333;">ইমেইল:</td><td style="padding: 8px;"><a href="mailto:${safeEmail}" style="color: #C9A84C;">${safeEmail}</a></td></tr>
-              <tr><td style="padding: 8px; font-weight: bold; color: #333;">বিষয়:</td><td style="padding: 8px; color: #555;">${safeSubject}</td></tr>
-            </table>
-            <div style="margin-top: 20px; padding: 15px; background: #fff; border-left: 4px solid #C9A84C; border-radius: 5px;">
-              <p style="color: #333; line-height: 1.8; margin: 0; white-space: pre-wrap;">${safeMessage}</p>
+        await transporter.sendMail({
+          from: `"${safeName}" <${FROM}>`,
+          to: TO,
+          replyTo: safeEmail,
+          subject: `[mahbubsardarsabuj.com] ${safeSubject}`,
+          text: `নাম: ${safeName}\nইমেইল: ${safeEmail}\nবিষয়: ${safeSubject}\n\n${safeMessage}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 10px;">
+              <h2 style="color: #C9A84C; border-bottom: 2px solid #C9A84C; padding-bottom: 10px;">নতুন বার্তা — mahbubsardarsabuj.com</h2>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; font-weight: bold; color: #333; width: 100px;">নাম:</td><td style="padding: 8px; color: #555;">${safeName}</td></tr>
+                <tr style="background: #fff;"><td style="padding: 8px; font-weight: bold; color: #333;">ইমেইল:</td><td style="padding: 8px;"><a href="mailto:${safeEmail}" style="color: #C9A84C;">${safeEmail}</a></td></tr>
+                <tr><td style="padding: 8px; font-weight: bold; color: #333;">বিষয়:</td><td style="padding: 8px; color: #555;">${safeSubject}</td></tr>
+              </table>
+              <div style="margin-top: 20px; padding: 15px; background: #fff; border-left: 4px solid #C9A84C; border-radius: 5px;">
+                <p style="color: #333; line-height: 1.8; margin: 0; white-space: pre-wrap;">${safeMessage}</p>
+              </div>
+              <p style="color: #999; font-size: 12px; margin-top: 20px;">এই বার্তাটি mahbubsardarsabuj.com এর যোগাযোগ ফর্ম থেকে পাঠানো হয়েছে।</p>
             </div>
-            <p style="color: #999; font-size: 12px; margin-top: 20px;">এই বার্তাটি mahbubsardarsabuj.com এর যোগাযোগ ফর্ম থেকে পাঠানো হয়েছে।</p>
-          </div>
-        `,
-      });
-
-      return res.status(200).json({ success: true, message: "বার্তা সফলভাবে পাঠানো হয়েছে।" });
-    } else {
-      // Fallback: Log to console (Vercel logs) when email is not configured
-      console.log(`[CONTACT FORM] From: ${safeName} <${safeEmail}> | Subject: ${safeSubject} | Message: ${safeMessage}`);
-      return res.status(200).json({
-        success: true,
-        message: "বার্তা গ্রহণ করা হয়েছে। শীঘ্রই উত্তর দেওয়া হবে।",
-      });
+          `,
+        });
+      } catch (emailErr) {
+        console.error("[CONTACT FORM] Email send failed:", emailErr.message);
+        // Email failed but Telegram may have succeeded — still return success
+        if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) {
+          throw emailErr;
+        }
+      }
     }
+
+    // Log to Vercel logs always
+    console.log(`[CONTACT FORM] From: ${safeName} <${safeEmail}> | Subject: ${safeSubject}`);
+    return res.status(200).json({
+      success: true,
+      message: "বার্তা সফলভাবে পাঠানো হয়েছে। শীঘ্রই উত্তর দেওয়া হবে।",
+    });
   } catch (err) {
     console.error("[CONTACT FORM ERROR]", err);
     return res.status(500).json({ success: false, error: "বার্তা পাঠাতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।" });

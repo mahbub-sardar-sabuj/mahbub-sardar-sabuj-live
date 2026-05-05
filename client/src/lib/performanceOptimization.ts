@@ -119,7 +119,7 @@ export function monitorWebVitals(callback: (vitals: WebVitals) => void): void {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        vitals.lcp = lastEntry.renderTime || lastEntry.loadTime;
+        vitals.lcp = (lastEntry as PerformancePaintTiming & { renderTime?: number; loadTime?: number }).renderTime || (lastEntry as PerformancePaintTiming & { renderTime?: number; loadTime?: number }).loadTime || 0;
         callback(vitals);
       });
       lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
