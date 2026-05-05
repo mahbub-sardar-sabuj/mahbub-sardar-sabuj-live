@@ -10477,8 +10477,7 @@ export default function Writings() {
         "datePublished": w.date,
         "articleSection": w.category,
         "url": `https://www.mahbubsardarsabuj.com/writings/${makeSlug(w.title, w.id)}`,
-        "description": w.content.slice(0, 160).replace(/
-/g, " "),
+        "description": w.content.slice(0, 160).replace(/\n/g, " "),
         "isPartOf": {
           "@type": "CollectionPage",
           "url": "https://www.mahbubsardarsabuj.com/writings",
