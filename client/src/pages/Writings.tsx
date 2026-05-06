@@ -10505,6 +10505,94 @@ function WritingModal({
 // ── Main Writings Page ────────────────────────────────────────────────────────
 
 // ── Book Modal ─────────────────────────────────────────────────────────────────────────────
+
+// ── Responsive CSS Injection ─────────────────────────────────────────────────
+const RESPONSIVE_CSS = `
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(212,168,67,0); }
+  }
+  .writings-hero-bg {
+    background: linear-gradient(135deg, #060E1A 0%, #0D1B2A 40%, #112236 70%, #060E1A 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .writings-hero-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(212,168,67,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(41,128,185,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .tab-btn-active {
+    color: #D4A843 !important;
+    border-bottom-color: #D4A843 !important;
+  }
+  .tab-btn-active .tab-pill {
+    background: rgba(212,168,67,0.15) !important;
+    color: #D4A843 !important;
+  }
+  .writing-card:hover .writing-card-read {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+  }
+  .book-card:hover {
+    transform: translateY(-10px) !important;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5) !important;
+  }
+  .book-card:hover img {
+    transform: scale(1.06) !important;
+  }
+  .featured-book-card {
+    background: linear-gradient(135deg, #0D1B2A 0%, #112236 50%, #0D1B2A 100%);
+    border: 1px solid rgba(212,168,67,0.2);
+  }
+  .search-input::placeholder {
+    color: rgba(253,246,236,0.3);
+  }
+  .search-input:focus {
+    border-color: rgba(212,168,67,0.4) !important;
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.08) !important;
+  }
+  @media (max-width: 768px) {
+    .hero-title { font-size: 2rem !important; }
+    .hero-desc { font-size: 0.9rem !important; }
+    .hero-stats { gap: 20px !important; }
+    .tab-bar { overflow-x: auto; scrollbar-width: none; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn { padding: 12px 16px !important; font-size: 0.88rem !important; }
+    .category-scroll { overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .category-scroll::-webkit-scrollbar { display: none; }
+    .writings-grid { grid-template-columns: 1fr !important; }
+    .ebooks-grid { grid-template-columns: 1fr !important; }
+    .featured-book-inner { flex-direction: column !important; }
+    .featured-book-cover { width: 100% !important; max-height: 280px !important; object-fit: cover !important; }
+    .featured-book-content { padding: 1.5rem !important; }
+    .book-modal-inner { flex-direction: column !important; }
+    .book-modal-img { width: 100% !important; max-height: 260px !important; object-fit: cover !important; }
+    .stat-value { font-size: 1rem !important; }
+  }
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .writings-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  @media (min-width: 1025px) {
+    .writings-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .ebooks-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+`;
+
+// ── Book Modal ─────────────────────────────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
   return (
     <AnimatePresence>
@@ -10515,100 +10603,148 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 1000,
-          background: "rgba(13,27,42,0.88)",
-          backdropFilter: "blur(12px)",
+          background: "rgba(6,14,26,0.92)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "1rem",
         }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 30 }}
+          initial={{ opacity: 0, scale: 0.88, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 30 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          exit={{ opacity: 0, scale: 0.88, y: 40 }}
+          transition={{ type: "spring", stiffness: 280, damping: 28 }}
           onClick={(e) => e.stopPropagation()}
           style={{
-            background: "#FDF6EC",
+            background: "#0D1B2A",
             borderRadius: 24,
             overflow: "hidden",
-            maxWidth: 640,
+            maxWidth: 660,
             width: "100%",
             maxHeight: "90vh",
             overflowY: "auto",
-            boxShadow: "0 40px 80px rgba(13,27,42,0.5)",
+            boxShadow: "0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,168,67,0.15)",
           }}
         >
-          <div style={{ background: "#0D1B2A", padding: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {/* Header */}
+          <div style={{
+            background: "linear-gradient(135deg, #112236 0%, #0D1B2A 100%)",
+            padding: "1.5rem 1.5rem 1.25rem",
+            borderBottom: "1px solid rgba(212,168,67,0.12)",
+            display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+          }}>
             <div>
-              <span style={{ color: "#D4A843", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>{book.badge}</span>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.5rem", marginTop: 4, lineHeight: 1.3 }}>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 5,
+                background: `${book.accentColor}22`, color: book.accentColor,
+                fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em",
+                textTransform: "uppercase", padding: "4px 12px", borderRadius: 999,
+                border: `1px solid ${book.accentColor}44`,
+              }}>
+                <BookMarked size={11} /> {book.badge}
+              </span>
+              <h2 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#FDF6EC", fontSize: "clamp(1.2rem, 3vw, 1.6rem)",
+                marginTop: 10, lineHeight: 1.4,
+              }}>
                 {book.title}
               </h2>
-              <p style={{ color: "#D4A843", fontSize: "0.875rem", marginTop: 4 }}>মাহবুব সরদার সবুজ</p>
+              <p style={{ color: "#D4A843", fontSize: "0.85rem", marginTop: 4, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                মাহবুব সরদার সবুজ
+              </p>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1, background: "rgba(255,255,255,0.15)" }}
+              whileTap={{ scale: 0.95 }}
               onClick={onClose}
               style={{
-                width: 40, height: 40, borderRadius: "50%",
+                width: 38, height: 38, borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer",
-                color: "#FDF6EC", flexShrink: 0, marginLeft: 16,
+                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
+                cursor: "pointer", color: "#FDF6EC", flexShrink: 0, marginLeft: 16,
               }}
             >
-              <X size={20} />
-            </button>
+              <X size={18} />
+            </motion.button>
           </div>
-          <div style={{ display: "flex", gap: "1.5rem", padding: "1.5rem", flexWrap: "wrap" }}>
-            <img
-              src={book.cover}
-              alt={book.title}
-              style={{ width: 176, borderRadius: 12, boxShadow: `0 20px 40px ${book.accentColor}40`, flexShrink: 0 }}
-            />
-            <div style={{ flex: 1, minWidth: 192 }}>
+
+          {/* Body */}
+          <div className="book-modal-inner" style={{ display: "flex", gap: 0 }}>
+            {/* Cover */}
+            <div style={{ width: 200, flexShrink: 0, overflow: "hidden", background: "#060E1A" }}>
+              <img
+                className="book-modal-img"
+                src={book.cover}
+                alt={book.title}
+                style={{ width: "100%", height: "100%", minHeight: 260, objectFit: "cover", display: "block" }}
+              />
+            </div>
+            {/* Info */}
+            <div style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column" }}>
+              {/* Meta tags */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
                 {[
-                  { label: "ধরন", value: book.genre },
-                  { label: "পৃষ্ঠা", value: book.pages },
-                  { label: "প্রকাশ", value: book.year },
+                  { label: "ধরন", value: book.genre, icon: "📚" },
+                  { label: "পৃষ্ঠা", value: book.pages, icon: "📄" },
+                  { label: "প্রকাশ", value: book.year, icon: "📅" },
                 ].map((item) => (
-                  <div key={item.label} style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(13,27,42,0.06)", border: "1px solid rgba(13,27,42,0.1)" }}>
-                    <div style={{ color: "#D4A843", fontSize: "0.72rem", marginBottom: 2 }}>{item.label}</div>
-                    <div style={{ color: "#0D1B2A", fontSize: "0.875rem", fontWeight: 600 }}>{item.value}</div>
+                  <div key={item.label} style={{
+                    padding: "8px 14px", borderRadius: 10,
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}>
+                    <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.65rem", marginBottom: 3, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                      {item.label}
+                    </div>
+                    <div style={{ color: "#FDF6EC", fontSize: "0.85rem", fontWeight: 600, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                      {item.value}
+                    </div>
                   </div>
                 ))}
               </div>
-              <p style={{ color: "#0D1B2A", fontSize: "0.875rem", lineHeight: 1.7, marginBottom: 20 }}>{book.description}</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              <p style={{
+                color: "rgba(253,246,236,0.65)", fontSize: "0.9rem",
+                lineHeight: 1.85, flex: 1, marginBottom: 20,
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+              }}>
+                {book.description}
+              </p>
+              {/* Buttons */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {book.canRead && (
                   <Link href={`/ebooks/read/${book.slug}`}>
                     <motion.button
-                      whileHover={{ scale: 1.03, boxShadow: "0 8px 25px rgba(212,168,67,0.4)" }}
+                      whileHover={{ scale: 1.04, boxShadow: "0 8px 28px rgba(212,168,67,0.4)" }}
                       whileTap={{ scale: 0.97 }}
                       style={{
                         display: "flex", alignItems: "center", gap: 8,
                         background: "linear-gradient(135deg, #D4A843, #f0c060)",
-                        color: "#0D1B2A", padding: "12px 24px", borderRadius: 999,
-                        fontWeight: 700, fontSize: "0.875rem", border: "none", cursor: "pointer",
+                        color: "#0D1B2A", padding: "11px 22px", borderRadius: 999,
+                        fontWeight: 700, fontSize: "0.875rem", border: "none",
+                        cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
                       }}
                     >
-                      <BookOpen size={18} /> এখনই পড়ুন
+                      <BookOpen size={16} /> এখনই পড়ুন
                     </motion.button>
                   </Link>
                 )}
                 {book.buyLink && (
                   <a href={book.buyLink} target="_blank" rel="noopener noreferrer">
                     <motion.button
-                      whileHover={{ scale: 1.03 }}
+                      whileHover={{ scale: 1.04, boxShadow: "0 8px 28px rgba(212,168,67,0.2)" }}
                       whileTap={{ scale: 0.97 }}
                       style={{
                         display: "flex", alignItems: "center", gap: 8,
                         background: "transparent", color: "#D4A843",
-                        padding: "12px 24px", borderRadius: 999,
+                        padding: "11px 22px", borderRadius: 999,
                         fontWeight: 700, fontSize: "0.875rem",
-                        border: "2px solid #D4A843", cursor: "pointer",
+                        border: "1.5px solid rgba(212,168,67,0.5)",
+                        cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
                       }}
                     >
-                      <ShoppingCart size={18} /> রকমারিতে কিনুন
+                      <ShoppingCart size={16} /> রকমারিতে কিনুন
                     </motion.button>
                   </a>
                 )}
@@ -10629,148 +10765,377 @@ function EBooksSection() {
 
   return (
     <div>
-      <div style={{ marginBottom: "3rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.5rem" }}>
-          <Star size={16} fill="#D4A843" color="#D4A843" />
-          <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Featured</span>
-          <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
+      {/* Featured Book */}
+      <div style={{ marginBottom: "3.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.75rem" }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "rgba(212,168,67,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Star size={15} fill="#D4A843" color="#D4A843" />
+          </div>
+          <div>
+            <span style={{
+              color: "#D4A843", fontSize: "0.72rem", fontWeight: 700,
+              letterSpacing: "0.18em", textTransform: "uppercase",
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+            }}>
+              FEATURED BOOK
+            </span>
+          </div>
+          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(212,168,67,0.3), transparent)" }} />
         </div>
-        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.4rem, 3vw, 1.8rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
-          প্রধান বই
-        </h2>
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
+          className="featured-book-card"
           style={{
-            background: "#0D1B2A", borderRadius: 24, overflow: "hidden",
-            boxShadow: "0 30px 80px rgba(13,27,42,0.25)",
-            display: "flex", flexWrap: "wrap",
+            borderRadius: 24, overflow: "hidden",
+            boxShadow: "0 30px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,168,67,0.15)",
           }}
         >
-          <div style={{ position: "relative", minWidth: 220, flex: "0 0 260px", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(212,168,67,0.15) 0%, transparent 60%)" }} />
-            <img src={featuredBook.cover} alt={featuredBook.title}
-              style={{ width: "100%", height: "100%", minHeight: 320, objectFit: "cover", display: "block" }} />
-            <div style={{ position: "absolute", top: 16, left: 16 }}>
-              <span style={{ background: "#D4A843", color: "#0D1B2A", fontSize: "0.72rem", fontWeight: 700, padding: "6px 14px", borderRadius: 999, display: "flex", alignItems: "center", gap: 5 }}>
-                <Star size={11} fill="currentColor" /> ফিজিক্যাল বই
-              </span>
-            </div>
-          </div>
-          <div style={{ flex: 1, padding: "clamp(1.5rem, 4vw, 3rem)", display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 240 }}>
-            <p style={{ color: "#D4A843", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.75rem" }}>মাহবুব সরদার সবুজ</p>
-            <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 400, lineHeight: 1.3, marginBottom: "1rem" }}>
-              {featuredBook.title}
-            </h3>
-            <p style={{ color: "rgba(253,246,236,0.75)", fontSize: "0.95rem", lineHeight: 1.85, marginBottom: "1.5rem" }}>
-              {featuredBook.description}
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: "1.5rem" }}>
-              {[featuredBook.genre, featuredBook.pages + " পৃষ্ঠা", featuredBook.year, "রকমারিতে পাওয়া যাচ্ছে"].map((tag, i) => (
-                <span key={tag} style={{ fontSize: "0.78rem", padding: "6px 14px", borderRadius: 999, background: i === 3 ? "rgba(39,174,96,0.2)" : "rgba(255,255,255,0.1)", color: i === 3 ? "#2ecc71" : "rgba(253,246,236,0.75)" }}>
-                  {tag}
+          <div className="featured-book-inner" style={{ display: "flex" }}>
+            {/* Cover */}
+            <div style={{
+              position: "relative", width: 280, flexShrink: 0,
+              overflow: "hidden", background: "#060E1A",
+            }}>
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, transparent 50%)",
+                zIndex: 1,
+              }} />
+              <img
+                className="featured-book-cover"
+                src={featuredBook.cover}
+                alt={featuredBook.title}
+                style={{
+                  width: "100%", height: "100%", minHeight: 380,
+                  objectFit: "cover", display: "block",
+                  transition: "transform 0.5s ease",
+                }}
+              />
+              {/* Badge */}
+              <div style={{
+                position: "absolute", top: 20, left: 20, zIndex: 2,
+              }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  background: "linear-gradient(135deg, #D4A843, #f0c060)",
+                  color: "#0D1B2A", fontSize: "0.72rem", fontWeight: 800,
+                  padding: "6px 14px", borderRadius: 999,
+                  boxShadow: "0 4px 12px rgba(212,168,67,0.4)",
+                }}>
+                  <Star size={11} fill="currentColor" /> ফিজিক্যাল বই
                 </span>
-              ))}
+              </div>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-              <Link href={`/ebooks/read/${featuredBook.slug}`}>
-                <motion.button
-                  whileHover={{ scale: 1.04, boxShadow: "0 0 35px rgba(212,168,67,0.45)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg, #D4A843, #f0c060)", color: "#0D1B2A", padding: "13px 26px", borderRadius: 999, fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", boxShadow: "0 8px 25px rgba(212,168,67,0.3)" }}
-                >
-                  <BookOpen size={18} /> এখনই পড়ুন
-                </motion.button>
-              </Link>
-              <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
-                <motion.button
-                  whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(212,168,67,0.3)" }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", color: "#D4A843", padding: "13px 26px", borderRadius: 999, fontWeight: 700, fontSize: "0.95rem", border: "2px solid #D4A843", cursor: "pointer" }}
-                >
-                  <ShoppingCart size={18} /> রকমারি থেকে অর্ডার করুন
-                </motion.button>
-              </a>
+
+            {/* Content */}
+            <div
+              className="featured-book-content"
+              style={{
+                flex: 1, padding: "clamp(1.5rem, 4vw, 3rem)",
+                display: "flex", flexDirection: "column", justifyContent: "center",
+              }}
+            >
+              <div style={{ marginBottom: "0.75rem" }}>
+                <span style={{
+                  color: "#D4A843", fontSize: "0.8rem", fontWeight: 600,
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}>
+                  <Feather size={14} /> মাহবুব সরদার সবুজ
+                </span>
+              </div>
+
+              <h3 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "#FDF6EC",
+                fontSize: "clamp(1.5rem, 3.5vw, 2.4rem)",
+                fontWeight: 400, lineHeight: 1.35,
+                marginBottom: "1rem",
+              }}>
+                {featuredBook.title}
+              </h3>
+
+              <p style={{
+                color: "rgba(253,246,236,0.7)", fontSize: "0.95rem",
+                lineHeight: 1.9, marginBottom: "1.5rem",
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+              }}>
+                {featuredBook.description}
+              </p>
+
+              {/* Tags */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: "1.75rem" }}>
+                {[
+                  { label: featuredBook.genre, color: "rgba(255,255,255,0.08)", text: "rgba(253,246,236,0.65)" },
+                  { label: featuredBook.pages + " পৃষ্ঠা", color: "rgba(255,255,255,0.08)", text: "rgba(253,246,236,0.65)" },
+                  { label: featuredBook.year, color: "rgba(255,255,255,0.08)", text: "rgba(253,246,236,0.65)" },
+                  { label: "রকমারিতে পাওয়া যাচ্ছে ✓", color: "rgba(39,174,96,0.15)", text: "#2ecc71" },
+                ].map((tag) => (
+                  <span key={tag.label} style={{
+                    fontSize: "0.78rem", padding: "6px 14px", borderRadius: 999,
+                    background: tag.color, color: tag.text,
+                    fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 500,
+                  }}>
+                    {tag.label}
+                  </span>
+                ))}
+              </div>
+
+              {/* CTA Buttons */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                <Link href={`/ebooks/read/${featuredBook.slug}`}>
+                  <motion.button
+                    whileHover={{ scale: 1.04, boxShadow: "0 0 40px rgba(212,168,67,0.5)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      background: "linear-gradient(135deg, #D4A843, #f0c060)",
+                      color: "#0D1B2A", padding: "13px 26px", borderRadius: 999,
+                      fontWeight: 800, fontSize: "0.95rem", border: "none",
+                      cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
+                      boxShadow: "0 8px 28px rgba(212,168,67,0.35)",
+                    }}
+                  >
+                    <BookOpen size={18} /> এখনই পড়ুন
+                  </motion.button>
+                </Link>
+                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
+                  <motion.button
+                    whileHover={{ scale: 1.04, borderColor: "#D4A843", boxShadow: "0 8px 28px rgba(212,168,67,0.2)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      background: "transparent", color: "#D4A843",
+                      padding: "13px 26px", borderRadius: 999,
+                      fontWeight: 700, fontSize: "0.95rem",
+                      border: "1.5px solid rgba(212,168,67,0.4)",
+                      cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
+                      transition: "all 0.25s",
+                    }}
+                  >
+                    <ShoppingCart size={18} /> রকমারি থেকে অর্ডার করুন
+                  </motion.button>
+                </a>
+              </div>
             </div>
           </div>
         </motion.div>
       </div>
 
+      {/* E-Books Grid */}
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.5rem" }}>
-          <BookMarked size={16} color="#D4A843" />
-          <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>E-Books</span>
-          <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.75rem" }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "rgba(74,144,217,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <BookMarked size={15} color="#4A90D9" />
+          </div>
+          <span style={{
+            color: "#4A90D9", fontSize: "0.72rem", fontWeight: 700,
+            letterSpacing: "0.18em", textTransform: "uppercase",
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+          }}>
+            E-BOOKS COLLECTION
+          </span>
+          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(74,144,217,0.3), transparent)" }} />
         </div>
-        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.4rem, 3vw, 1.8rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
+
+        <h2 style={{
+          fontFamily: "'Tiro Bangla', serif",
+          color: "#FDF6EC",
+          fontSize: "clamp(1.3rem, 2.5vw, 1.7rem)",
+          fontWeight: 400, marginBottom: "1.5rem",
+        }}>
           ই-বুক সংগ্রহ
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1.5rem" }}>
+
+        <div
+          className="ebooks-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+            gap: "1.5rem",
+          }}
+        >
           {otherBooks.map((book, index) => (
             <motion.div
               key={book.id}
+              className="book-card"
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-              style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 20, overflow: "hidden", boxShadow: "0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.12)", display: "flex", flexDirection: "column" }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                borderRadius: 20, overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                display: "flex", flexDirection: "column",
+                transition: "transform 0.35s ease, box-shadow 0.35s ease",
+              }}
             >
-              <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", background: "#0D1B2A", cursor: "pointer" }} onClick={() => setSelectedBook(book)}>
-                <img src={book.cover} alt={book.title}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.4s" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.transform = "scale(1.05)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.transform = "scale(1)"; }}
+              {/* Cover */}
+              <div style={{
+                position: "relative",
+                aspectRatio: "3/4",
+                overflow: "hidden",
+                background: "#060E1A",
+                cursor: "pointer",
+              }}
+                onClick={() => setSelectedBook(book)}
+              >
+                <img
+                  src={book.cover}
+                  alt={book.title}
+                  style={{
+                    width: "100%", height: "100%",
+                    objectFit: "cover", display: "block",
+                    transition: "transform 0.4s ease",
+                  }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(13,27,42,0.7) 100%)" }} />
-                <span style={{ position: "absolute", top: 12, left: 12, background: book.badgeColor, color: "#FFF", fontSize: "0.72rem", fontWeight: 700, padding: "5px 12px", borderRadius: 999 }}>
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(180deg, transparent 55%, rgba(6,14,26,0.85) 100%)",
+                }} />
+                {/* Badge */}
+                <span style={{
+                  position: "absolute", top: 12, left: 12,
+                  background: book.badgeColor,
+                  color: "#fff", fontSize: "0.7rem", fontWeight: 700,
+                  padding: "5px 12px", borderRadius: 999,
+                  boxShadow: `0 4px 12px ${book.badgeColor}66`,
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                }}>
                   {book.badge}
                 </span>
+                {/* Hover overlay */}
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: "rgba(13,27,42,0.5)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  opacity: 0, transition: "opacity 0.3s",
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
+                >
+                  <span style={{
+                    background: "rgba(212,168,67,0.9)", color: "#0D1B2A",
+                    padding: "8px 18px", borderRadius: 999,
+                    fontSize: "0.8rem", fontWeight: 700,
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    <Eye size={14} /> বিস্তারিত দেখুন
+                  </span>
+                </div>
               </div>
+
+              {/* Info */}
               <div style={{ padding: "1.25rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.1rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
+                <h3 style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  color: "#FDF6EC", fontSize: "1.05rem",
+                  fontWeight: 400, lineHeight: 1.5,
+                  marginBottom: "0.4rem",
+                }}>
                   {book.title}
                 </h3>
-                <p style={{ color: "rgba(201,168,76,0.6)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{book.genre} • {book.year}</p>
-                <p style={{ color: "rgba(253,246,236,0.55)", fontSize: "0.875rem", lineHeight: 1.7, flex: 1, marginBottom: "1.25rem" }}>
-                  {book.description.slice(0, 100)}...
+                <p style={{
+                  color: "rgba(212,168,67,0.55)", fontSize: "0.78rem",
+                  marginBottom: "0.75rem",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                }}>
+                  {book.genre} · {book.year}
                 </p>
+                <p style={{
+                  color: "rgba(253,246,236,0.5)", fontSize: "0.85rem",
+                  lineHeight: 1.75, flex: 1, marginBottom: "1.25rem",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                }}>
+                  {book.description.slice(0, 90)}...
+                </p>
+
+                {/* Action Buttons */}
                 <div style={{ display: "flex", gap: 8 }}>
-                  <Link href={`/ebooks/read/${book.slug}`}>
+                  <Link href={`/ebooks/read/${book.slug}`} style={{ flex: 1 }}>
                     <motion.button
                       whileHover={{ scale: 1.04, boxShadow: "0 6px 20px rgba(212,168,67,0.35)" }}
                       whileTap={{ scale: 0.97 }}
-                      style={{ display: "flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #D4A843, #f0c060)", color: "#0D1B2A", padding: "9px 18px", borderRadius: 999, fontWeight: 700, fontSize: "0.875rem", border: "none", cursor: "pointer" }}
+                      style={{
+                        width: "100%",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        background: "linear-gradient(135deg, #D4A843, #f0c060)",
+                        color: "#0D1B2A", padding: "10px 0", borderRadius: 999,
+                        fontWeight: 700, fontSize: "0.85rem", border: "none",
+                        cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
+                      }}
                     >
                       <BookOpen size={15} /> পড়ুন
                     </motion.button>
                   </Link>
                   <motion.button
-                    whileHover={{ scale: 1.04 }}
+                    whileHover={{ scale: 1.04, borderColor: "rgba(212,168,67,0.4)" }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setSelectedBook(book)}
-                    style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", color: "rgba(253,246,236,0.7)", padding: "9px 18px", borderRadius: 999, fontWeight: 600, fontSize: "0.875rem", border: "1.5px solid rgba(201,168,76,0.2)", cursor: "pointer" }}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      background: "transparent",
+                      color: "rgba(253,246,236,0.6)", padding: "10px 16px", borderRadius: 999,
+                      fontWeight: 600, fontSize: "0.85rem",
+                      border: "1.5px solid rgba(255,255,255,0.1)",
+                      cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
+                      transition: "all 0.25s",
+                    }}
                   >
-                    <Eye size={15} /> বিস্তারিত
+                    <Eye size={15} />
                   </motion.button>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Coming soon notice */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          style={{ marginTop: "2.5rem", padding: "1.5rem 2rem", background: "rgba(201,168,76,0.04)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 16, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: "wrap" }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          style={{
+            marginTop: "2.5rem",
+            padding: "1.5rem 2rem",
+            background: "rgba(212,168,67,0.04)",
+            border: "1px solid rgba(212,168,67,0.12)",
+            borderRadius: 16,
+            textAlign: "center",
+            display: "flex", alignItems: "center",
+            justifyContent: "center", gap: 10, flexWrap: "wrap",
+          }}
         >
           <Sparkles size={18} color="#D4A843" />
-          <p style={{ color: "rgba(253,246,236,0.6)", fontSize: "0.95rem", lineHeight: 1.8, margin: 0 }}>
+          <p style={{
+            color: "rgba(253,246,236,0.6)", fontSize: "0.95rem",
+            lineHeight: 1.8, margin: 0,
+            fontFamily: "'Noto Sans Bengali', sans-serif",
+          }}>
             আরও <strong style={{ color: "#D4A843" }}>৪টি ই-বুক</strong> শীঘ্রই প্রকাশিত হবে।
-            নতুন বই সম্পর্কে আপডেট পেতে{" "}
-            <a href="https://facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer" style={{ color: "#D4A843", fontWeight: 700 }}>
+            আপডেট পেতে{" "}
+            <a
+              href="https://facebook.com/MahbubSardarSabuj"
+              target="_blank" rel="noopener noreferrer"
+              style={{ color: "#D4A843", fontWeight: 700, textDecoration: "none" }}
+            >
               ফেসবুক পেইজ
             </a>{" "}
             ফলো করুন।
@@ -10792,8 +11157,8 @@ export default function Writings() {
   const [selectedWriting, setSelectedWriting] = useState<typeof writings[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [location] = useLocation();
-
   const [matchSlug, params] = useRoute("/writings/:slug");
+
   useEffect(() => {
     if (matchSlug && params?.slug) {
       const found = writings.find(w => makeSlug(w.title, w.id) === params.slug);
@@ -10819,19 +11184,20 @@ export default function Writings() {
 
   const combinedJsonLd = {
     "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        "name": "লেখালেখি ও বই | মাহবুব সরদার সবুজ",
-        "url": "https://www.mahbubsardarsabuj.com/writings",
-        "inLanguage": "bn-BD",
-        "description": "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ই-বুক ও প্রকাশিত বইয়ের সম্পূর্ণ সংগ্রহ।"
-      },
-    ]
+    "@graph": [{
+      "@type": "CollectionPage",
+      "name": "লেখালেখি ও বই | মাহবুব সরদার সবুজ",
+      "url": "https://www.mahbubsardarsabuj.com/writings",
+      "inLanguage": "bn-BD",
+      "description": "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ই-বুক ও প্রকাশিত বইয়ের সম্পূর্ণ সংগ্রহ।"
+    }]
   };
 
   return (
     <div style={{ minHeight: "100vh", background: "#060E1A" }}>
+      {/* Inject responsive CSS */}
+      <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS }} />
+
       <Seo
         title="লেখালেখি ও বই | মাহবুব সরদার সবুজ"
         description="মাহবুব সরদার সবুজের বাংলা কবিতা, লেখা ও ই-বুক সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের লেখা, জীবনদর্শন এবং প্রকাশিত বই — সবই এক জায়গায়।"
@@ -10841,209 +11207,547 @@ export default function Writings() {
       />
       <Navbar />
 
-      {/* ── Page Hero ── */}
-      <div style={{
-        background: "linear-gradient(135deg, #0D1B2A 0%, #1a2f45 60%, #0D1B2A 100%)",
-        paddingTop: 100, paddingBottom: 50,
-        position: "relative", overflow: "hidden",
-      }}>
+      {/* ══════════════════════════════════════════════════════════════
+          HERO SECTION
+      ══════════════════════════════════════════════════════════════ */}
+      <div className="writings-hero-bg" style={{ paddingTop: "clamp(80px, 12vw, 120px)", paddingBottom: "clamp(40px, 6vw, 70px)" }}>
+        {/* Decorative orbs */}
         <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A843' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          position: "absolute", top: "10%", right: "5%",
+          width: "clamp(200px, 30vw, 400px)", height: "clamp(200px, 30vw, 400px)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
+          pointerEvents: "none",
         }} />
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1.5rem", position: "relative" }}>
+        <div style={{
+          position: "absolute", bottom: "5%", left: "2%",
+          width: "clamp(150px, 20vw, 300px)", height: "clamp(150px, 20vw, 300px)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(41,128,185,0.05) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(1rem, 4vw, 2rem)", position: "relative" }}>
+          {/* Breadcrumb */}
           <Link href="/">
             <motion.span
               whileHover={{ x: -4 }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "rgba(253,246,236,0.5)", fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif", cursor: "pointer", marginBottom: 24, textDecoration: "none" }}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                color: "rgba(253,246,236,0.4)", fontSize: "0.82rem",
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                cursor: "pointer", marginBottom: "clamp(16px, 3vw, 28px)",
+                textDecoration: "none", transition: "color 0.2s",
+              }}
             >
-              <ArrowLeft size={15} /> হোমে ফিরুন
+              <ArrowLeft size={14} /> হোমে ফিরুন
             </motion.span>
           </Link>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <Feather size={28} color="#D4A843" />
-              <span style={{ color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                WRITINGS & BOOKS
-              </span>
-            </div>
-            <h1 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", color: "#FDF6EC", lineHeight: 1.3, marginBottom: 16 }}>
-              লেখালেখি ও বই
-            </h1>
-            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(253,246,236,0.65)", fontSize: "1rem", maxWidth: 500, lineHeight: 1.8 }}>
-              কবিতা, গদ্য ও প্রকাশিত বই — মাহবুব সরদার সবুজের সম্পূর্ণ সাহিত্যকর্ম এক জায়গায়।
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ display: "flex", gap: "clamp(16px, 4vw, 32px)", marginTop: 32, flexWrap: "wrap", rowGap: 16 }}
-          >
-            {[
-              { icon: <BookOpen size={16} />, label: "মোট লেখা", value: `${writings.length}+` },
-              { icon: <Star size={16} />, label: "প্রকাশিত বই", value: "৪টি" },
-              { icon: <Heart size={16} />, label: "পাঠক", value: "লক্ষাধিক" },
-            ].map((stat, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ color: "#D4A843" }}>{stat.icon}</span>
-                <div>
-                  <div style={{ color: "#FDF6EC", fontFamily: "'Tiro Bangla', serif", fontSize: "1.1rem", fontWeight: 700 }}>{stat.value}</div>
-                  <div style={{ color: "rgba(253,246,236,0.5)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.72rem" }}>{stat.label}</div>
+
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "2rem" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              style={{ flex: 1, minWidth: 280 }}
+            >
+              {/* Label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "rgba(212,168,67,0.12)",
+                  border: "1px solid rgba(212,168,67,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  animation: "float 4s ease-in-out infinite",
+                }}>
+                  <Feather size={18} color="#D4A843" />
                 </div>
+                <span style={{
+                  color: "#D4A843",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.75rem", letterSpacing: "0.2em",
+                  textTransform: "uppercase", fontWeight: 700,
+                }}>
+                  WRITINGS & BOOKS
+                </span>
               </div>
-            ))}
-          </motion.div>
+
+              {/* Title */}
+              <h1
+                className="hero-title"
+                style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
+                  color: "#FDF6EC",
+                  lineHeight: 1.25,
+                  marginBottom: "1rem",
+                  fontWeight: 400,
+                }}
+              >
+                লেখালেখি ও বই
+              </h1>
+
+              {/* Description */}
+              <p
+                className="hero-desc"
+                style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  color: "rgba(253,246,236,0.6)",
+                  fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
+                  maxWidth: 480, lineHeight: 1.85,
+                  marginBottom: "clamp(1.5rem, 3vw, 2.5rem)",
+                }}
+              >
+                কবিতা, গদ্য ও প্রকাশিত বই — মাহবুব সরদার সবুজের সম্পূর্ণ সাহিত্যকর্ম এক জায়গায়।
+              </p>
+
+              {/* Stats row */}
+              <div
+                className="hero-stats"
+                style={{
+                  display: "flex", gap: "clamp(20px, 5vw, 48px)",
+                  flexWrap: "wrap", rowGap: 16,
+                }}
+              >
+                {[
+                  { icon: <BookOpen size={18} />, value: `${writings.length}+`, label: "মোট লেখা", color: "#D4A843" },
+                  { icon: <Star size={18} />, value: "৪টি", label: "প্রকাশিত বই", color: "#4A90D9" },
+                  { icon: <Heart size={18} />, value: "লক্ষাধিক", label: "পাঠক", color: "#e74c3c" },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 12,
+                      background: `${stat.color}15`,
+                      border: `1px solid ${stat.color}30`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: stat.color,
+                    }}>
+                      {stat.icon}
+                    </div>
+                    <div>
+                      <div
+                        className="stat-value"
+                        style={{
+                          fontFamily: "'Tiro Bangla', serif",
+                          color: "#FDF6EC", fontSize: "1.2rem", fontWeight: 700,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {stat.value}
+                      </div>
+                      <div style={{
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        color: "rgba(253,246,236,0.45)", fontSize: "0.72rem",
+                      }}>
+                        {stat.label}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Decorative quote card (hidden on small screens) */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              style={{
+                display: "none",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(212,168,67,0.12)",
+                borderRadius: 20, padding: "1.5rem",
+                maxWidth: 280, backdropFilter: "blur(12px)",
+              }}
+              className="hero-quote-card"
+            >
+              <div style={{ color: "#D4A843", fontSize: "2.5rem", fontFamily: "serif", lineHeight: 1, marginBottom: 8, opacity: 0.6 }}>"</div>
+              <p style={{
+                fontFamily: "'Tiro Bangla', serif",
+                color: "rgba(253,246,236,0.75)", fontSize: "0.95rem",
+                lineHeight: 2, fontStyle: "italic",
+              }}>
+                লেখা মানে নিজেকে খোঁজা, নিজেকে চেনা।
+              </p>
+              <div style={{ marginTop: 12, color: "#D4A843", fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                — মাহবুব সরদার সবুজ
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* ── Tab Switcher (Sticky) ── */}
+      {/* ══════════════════════════════════════════════════════════════
+          STICKY TAB BAR
+      ══════════════════════════════════════════════════════════════ */}
       <div style={{
-        background: "rgba(6,14,26,0.92)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(201,168,76,0.12)",
-        position: "sticky", top: 70, zIndex: 40,
+        background: "rgba(6,14,26,0.95)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        position: "sticky", top: 68, zIndex: 40,
+        boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
       }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1.5rem" }}>
-          <div style={{ display: "flex", gap: 0, paddingTop: 12, paddingBottom: 0 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(1rem, 4vw, 2rem)" }}>
+          {/* Main Tabs */}
+          <div
+            className="tab-bar"
+            style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+          >
             {[
-              { id: "writings" as const, label: "লেখালেখি", icon: <PenLine size={16} />, desc: `${writings.length}+ লেখা` },
-              { id: "ebooks" as const, label: "ই-বুক ও বই", icon: <BookOpen size={16} />, desc: "৪টি প্রকাশিত" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "14px 24px",
-                  background: "transparent", border: "none",
-                  borderBottom: activeTab === tab.id ? "2.5px solid #D4A843" : "2.5px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.95rem",
-                  fontWeight: activeTab === tab.id ? 700 : 500,
-                  color: activeTab === tab.id ? "#D4A843" : "rgba(253,246,236,0.5)",
-                  transition: "all 0.25s ease",
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{ color: activeTab === tab.id ? "#D4A843" : "rgba(253,246,236,0.4)" }}>{tab.icon}</span>
-                {tab.label}
-                <span style={{
-                  fontSize: "0.68rem", padding: "2px 8px", borderRadius: 999,
-                  background: activeTab === tab.id ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.05)",
-                  color: activeTab === tab.id ? "#D4A843" : "rgba(253,246,236,0.3)",
-                  fontWeight: 600,
-                }}>
-                  {tab.desc}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {activeTab === "writings" && (
-            <div>
-              <div style={{ paddingTop: 10, paddingBottom: 4 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "8px 14px", maxWidth: 320, border: "1px solid rgba(201,168,76,0.15)" }}>
-                  <Search size={14} color="#C9A84C" />
-                  <input
-                    type="text"
-                    placeholder="লেখা খুঁজুন..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ border: "none", background: "transparent", outline: "none", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "#FDF6EC", width: "100%" }}
-                  />
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 4, overflowX: "auto", padding: "8px 0 12px", scrollbarWidth: "none" }}>
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
+              {
+                id: "writings" as const,
+                label: "লেখালেখি",
+                icon: <PenLine size={16} />,
+                count: `${writings.length}+`,
+                desc: "লেখা",
+                activeColor: "#D4A843",
+              },
+              {
+                id: "ebooks" as const,
+                label: "ই-বুক ও বই",
+                icon: <BookOpen size={16} />,
+                count: "৪টি",
+                desc: "প্রকাশিত",
+                activeColor: "#4A90D9",
+              },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  className={`tab-btn ${isActive ? "tab-btn-active" : ""}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "clamp(10px, 2vw, 16px) clamp(14px, 3vw, 28px)",
+                    background: "transparent", border: "none",
+                    borderBottom: isActive ? `2.5px solid ${tab.activeColor}` : "2.5px solid transparent",
+                    cursor: "pointer",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: "clamp(0.85rem, 2vw, 0.98rem)",
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? tab.activeColor : "rgba(253,246,236,0.45)",
+                    transition: "all 0.25s ease",
+                    flexShrink: 0,
+                    whiteSpace: "nowrap",
+                    marginBottom: -1,
+                  }}
+                >
+                  <span style={{ color: isActive ? tab.activeColor : "rgba(253,246,236,0.3)", display: "flex" }}>
+                    {tab.icon}
+                  </span>
+                  {tab.label}
+                  <span
+                    className="tab-pill"
                     style={{
-                      padding: "7px 16px", borderRadius: 50, border: "none", cursor: "pointer",
-                      fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", whiteSpace: "nowrap",
-                      transition: "all 0.3s",
-                      background: activeCategory === cat.id ? "rgba(201,168,76,0.15)" : "transparent",
-                      color: activeCategory === cat.id ? "#D4A843" : "rgba(253,246,236,0.45)",
-                      fontWeight: activeCategory === cat.id ? 700 : 400,
+                      fontSize: "0.68rem", padding: "2px 9px", borderRadius: 999,
+                      background: isActive ? `${tab.activeColor}20` : "rgba(255,255,255,0.05)",
+                      color: isActive ? tab.activeColor : "rgba(253,246,236,0.3)",
+                      fontWeight: 700, transition: "all 0.25s",
                     }}
                   >
-                    {cat.icon} {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+                    {tab.count} {tab.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Writings sub-controls */}
+          <AnimatePresence>
+            {activeTab === "writings" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                style={{ overflow: "hidden" }}
+              >
+                <div style={{
+                  display: "flex", alignItems: "center",
+                  gap: "clamp(8px, 2vw, 16px)",
+                  padding: "10px 0 0",
+                  flexWrap: "wrap",
+                }}>
+                  {/* Search */}
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: 10, padding: "8px 14px",
+                    border: "1px solid rgba(212,168,67,0.12)",
+                    minWidth: 180, maxWidth: 280, flex: "0 0 auto",
+                    transition: "border-color 0.2s, box-shadow 0.2s",
+                  }}>
+                    <Search size={14} color="#C9A84C" />
+                    <input
+                      className="search-input"
+                      type="text"
+                      placeholder="লেখা খুঁজুন..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{
+                        border: "none", background: "transparent", outline: "none",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.85rem", color: "#FDF6EC", width: "100%",
+                      }}
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(253,246,236,0.4)", display: "flex", padding: 0 }}
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Category pills */}
+                  <div
+                    className="category-scroll"
+                    style={{ display: "flex", gap: 6, flex: 1, overflowX: "auto" }}
+                  >
+                    {CATEGORIES.map((cat) => {
+                      const isActive = activeCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => setActiveCategory(cat.id)}
+                          style={{
+                            padding: "7px 16px", borderRadius: 50,
+                            cursor: "pointer",
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            fontSize: "0.82rem", whiteSpace: "nowrap",
+                            transition: "all 0.25s",
+                            background: isActive ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.04)",
+                            color: isActive ? "#D4A843" : "rgba(253,246,236,0.4)",
+                            fontWeight: isActive ? 700 : 400,
+                            border: isActive ? "1px solid rgba(212,168,67,0.25)" : "1px solid rgba(255,255,255,0.06)",
+                          }}
+                        >
+                          {cat.icon} {cat.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div style={{ height: 12 }} />
+              </motion.div>
+            )}
+          </AnimatePresence>
           {activeTab === "ebooks" && <div style={{ height: 12 }} />}
         </div>
       </div>
 
-      {/* ── Tab Content ── */}
+      {/* ══════════════════════════════════════════════════════════════
+          TAB CONTENT
+      ══════════════════════════════════════════════════════════════ */}
       <AnimatePresence mode="wait">
         {activeTab === "writings" ? (
-          <motion.div key="writings" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.3 }}>
-            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.5rem 1.5rem 4rem" }}>
+          <motion.div
+            key="writings"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem)" }}>
+
+              {/* Featured Writing Banner */}
               {activeCategory === "all" && !searchQuery && featured && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.6 }}
                   onClick={() => setSelectedWriting(featured)}
+                  whileHover={{ y: -4, boxShadow: "0 24px 64px rgba(13,27,42,0.5)" }}
                   style={{
-                    background: "linear-gradient(135deg, #0D1B2A 0%, #1a2f45 100%)",
-                    borderRadius: 16, padding: "clamp(24px, 4vw, 44px)",
-                    marginBottom: 40, cursor: "pointer", position: "relative", overflow: "hidden",
+                    background: "linear-gradient(135deg, #0D1B2A 0%, #112236 50%, #0D1B2A 100%)",
+                    borderRadius: 20,
+                    padding: "clamp(1.5rem, 4vw, 2.75rem)",
+                    marginBottom: "clamp(1.5rem, 3vw, 2.5rem)",
+                    cursor: "pointer",
+                    position: "relative", overflow: "hidden",
+                    border: "1px solid rgba(212,168,67,0.15)",
+                    boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
+                    transition: "box-shadow 0.3s, transform 0.3s",
                   }}
-                  whileHover={{ scale: 1.005, boxShadow: "0 20px 60px rgba(13,27,42,0.3)" }}
                 >
-                  <div style={{ position: "absolute", top: -30, right: -30, width: 200, height: 200, borderRadius: "50%", background: "rgba(212,168,67,0.06)" }} />
+                  {/* Decorative elements */}
+                  <div style={{
+                    position: "absolute", top: -40, right: -40,
+                    width: 200, height: 200, borderRadius: "50%",
+                    background: "rgba(212,168,67,0.05)",
+                    pointerEvents: "none",
+                  }} />
+                  <div style={{
+                    position: "absolute", bottom: -20, left: "30%",
+                    width: 120, height: 120, borderRadius: "50%",
+                    background: "rgba(41,128,185,0.04)",
+                    pointerEvents: "none",
+                  }} />
+
                   <div style={{ position: "relative" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1rem" }}>
                       <Star size={14} color="#D4A843" fill="#D4A843" />
-                      <span style={{ color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", letterSpacing: "0.1em" }}>বিশেষ লেখা</span>
+                      <span style={{
+                        color: "#D4A843",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.72rem", letterSpacing: "0.15em",
+                        textTransform: "uppercase", fontWeight: 700,
+                      }}>
+                        বিশেষ লেখা
+                      </span>
+                      <span style={{
+                        padding: "2px 10px", borderRadius: 999,
+                        background: "rgba(212,168,67,0.1)",
+                        color: "rgba(212,168,67,0.7)",
+                        fontSize: "0.68rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                      }}>
+                        {featured.category}
+                      </span>
                     </div>
-                    <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", color: "#FDF6EC", lineHeight: 1.4, marginBottom: 16 }}>
+
+                    <h2 style={{
+                      fontFamily: "'Tiro Bangla', serif",
+                      fontSize: "clamp(1.4rem, 3.5vw, 2.1rem)",
+                      color: "#FDF6EC", lineHeight: 1.4,
+                      marginBottom: "1rem",
+                    }}>
                       {featured.title}
                     </h2>
-                    <p style={{ fontFamily: "'Tiro Bangla', serif", color: "rgba(253,246,236,0.7)", fontSize: "1rem", lineHeight: 2, maxWidth: 600, whiteSpace: "pre-line" }}>
-                      {featured.content.slice(0, 200)}...
+
+                    <p style={{
+                      fontFamily: "'Tiro Bangla', serif",
+                      color: "rgba(253,246,236,0.65)", fontSize: "clamp(0.9rem, 2vw, 1rem)",
+                      lineHeight: 2, maxWidth: 600, whiteSpace: "pre-line",
+                    }}>
+                      {featured.content.slice(0, 220)}...
                     </p>
-                    <div style={{ marginTop: 20 }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", fontWeight: 600 }}>
-                        পুরো লেখা পড়ুন →
+
+                    <div style={{ marginTop: "1.25rem", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        color: "#D4A843",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.88rem", fontWeight: 700,
+                      }}>
+                        পুরো লেখা পড়ুন
+                        <motion.span
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          →
+                        </motion.span>
                       </span>
                     </div>
                   </div>
                 </motion.div>
               )}
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", color: "#888", marginBottom: 20 }}>
-                <span style={{ color: "rgba(201,168,76,0.6)" }}>{filtered.length}টি লেখা পাওয়া গেছে</span>
+
+              {/* Results count */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                marginBottom: "clamp(1rem, 2vw, 1.5rem)", flexWrap: "wrap", gap: 8,
+              }}>
+                <span style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.82rem",
+                  color: "rgba(212,168,67,0.55)",
+                }}>
+                  {filtered.length}টি লেখা পাওয়া গেছে
+                  {activeCategory !== "all" && (
+                    <span style={{ color: "rgba(253,246,236,0.3)", marginLeft: 8 }}>
+                      · {CATEGORIES.find(c => c.id === activeCategory)?.label}
+                    </span>
+                  )}
+                </span>
+                {(activeCategory !== "all" || searchQuery) && (
+                  <button
+                    onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
+                    style={{
+                      background: "rgba(212,168,67,0.1)", border: "1px solid rgba(212,168,67,0.2)",
+                      color: "#D4A843", padding: "4px 12px", borderRadius: 999,
+                      fontSize: "0.75rem", cursor: "pointer",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      display: "flex", alignItems: "center", gap: 5,
+                    }}
+                  >
+                    <X size={11} /> ফিল্টার সরান
+                  </button>
+                )}
               </div>
+
+              {/* Writings Grid */}
               {filtered.length > 0 ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                <div
+                  className="writings-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                    gap: "clamp(12px, 2vw, 20px)",
+                  }}
+                >
                   {filtered.map((writing, i) => (
-                    <WritingCard key={writing.id} writing={writing} index={i} onClick={() => setSelectedWriting(writing)} />
+                    <WritingCard
+                      key={writing.id}
+                      writing={writing}
+                      index={i}
+                      onClick={() => setSelectedWriting(writing)}
+                    />
                   ))}
                 </div>
               ) : (
-                <div style={{ textAlign: "center", padding: "60px 20px", color: "rgba(253,246,236,0.4)", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-                  <Feather size={40} color="rgba(201,168,76,0.3)" style={{ marginBottom: 16 }} />
-                  <p>কোনো লেখা পাওয়া যায়নি।</p>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{
+                    textAlign: "center", padding: "clamp(40px, 8vw, 80px) 20px",
+                    color: "rgba(253,246,236,0.35)",
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                  }}
+                >
+                  <Feather size={40} color="rgba(212,168,67,0.25)" style={{ marginBottom: 16 }} />
+                  <p style={{ fontSize: "1rem" }}>কোনো লেখা পাওয়া যায়নি।</p>
+                  <button
+                    onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
+                    style={{
+                      marginTop: 12, background: "rgba(212,168,67,0.1)",
+                      border: "1px solid rgba(212,168,67,0.2)",
+                      color: "#D4A843", padding: "8px 20px", borderRadius: 999,
+                      fontSize: "0.85rem", cursor: "pointer",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                    }}
+                  >
+                    সব লেখা দেখুন
+                  </button>
+                </motion.div>
               )}
             </div>
           </motion.div>
         ) : (
-          <motion.div key="ebooks" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.3 }}>
-            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.5rem 1.5rem 4rem" }}>
+          <motion.div
+            key="ebooks"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem)" }}>
               <EBooksSection />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Writing Modal */}
       <AnimatePresence>
         {selectedWriting && (
           <WritingModal
@@ -11059,3 +11763,4 @@ export default function Writings() {
     </div>
   );
 }
+
