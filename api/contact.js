@@ -1,3 +1,12 @@
+import {
+  checkRateLimit,
+  hasHoneypotValue,
+  isDisposableOrSuspiciousEmail,
+  isProbablySpamText,
+  limitJsonBodySize,
+  normalizeText,
+} from "./_utils/security.js";
+
 /**
  * Contact Form API — Vercel Serverless Function
  * POST /api/contact
@@ -24,7 +33,24 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: "Method Not Allowed" });
   }
 
+  if (limitJsonBodySize(req, res, 128 * 1024)) return;
+
+  const rate = checkRateLimit(req, res, {
+    keyPrefix: "contact",
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+  });
+  if (rate.limited) return;
+
   try {
+    if (hasHoneypotValue(req.body, ["website", "company", "url", "homepage"])) {
+      console.warn(`[CONTACT FORM] Honeypot blocked request from ${rate.clientIp}`);
+      return res.status(200).json({
+        success: true,
+        message: "বার্তা সফলভাবে পাঠানো হয়েছে। শীঘ্রই উত্তর দেওয়া হবে।",
+      });
+    }
+
     const { name, email, subject, message } = req.body || {};
 
     // Basic validation
@@ -34,16 +60,24 @@ export default async function handler(req, res) {
 
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email) || isDisposableOrSuspiciousEmail(email)) {
       return res.status(400).json({ success: false, error: "সঠিক ইমেইল ঠিকানা দিন।" });
     }
 
     // Sanitize inputs (basic XSS prevention)
-    const sanitize = (str) => String(str).replace(/[<>]/g, "").trim().slice(0, 2000);
-    const safeName = sanitize(name);
-    const safeEmail = sanitize(email);
-    const safeSubject = sanitize(subject || "ওয়েবসাইট থেকে বার্তা");
-    const safeMessage = sanitize(message);
+    const safeName = normalizeText(name, 120);
+    const safeEmail = normalizeText(email, 254);
+    const safeSubject = normalizeText(subject || "ওয়েবসাইট থেকে বার্তা", 180);
+    const safeMessage = normalizeText(message, 3000);
+
+    if (safeName.length < 2 || safeMessage.length < 10) {
+      return res.status(400).json({ success: false, error: "নাম এবং বার্তা আরও বিস্তারিতভাবে লিখুন।" });
+    }
+
+    if (isProbablySpamText(`${safeSubject}\n${safeMessage}`)) {
+      console.warn(`[CONTACT FORM] Spam-like message blocked from ${rate.clientIp}`);
+      return res.status(400).json({ success: false, error: "বার্তাটি গ্রহণ করা যায়নি। অনুগ্রহ করে স্বাভাবিক বার্তা লিখুন।" });
+    }
 
     const TO = process.env.CONTACT_EMAIL_TO || "lekhokmahbubsardarsabuj@gmail.com";
     const FROM = process.env.CONTACT_EMAIL_FROM;
@@ -111,7 +145,7 @@ export default async function handler(req, res) {
     }
 
     // Log to Vercel logs always
-    console.log(`[CONTACT FORM] From: ${safeName} <${safeEmail}> | Subject: ${safeSubject}`);
+    console.log(`[CONTACT FORM] From: ${safeName} <${safeEmail}> | Subject: ${safeSubject} | IP: ${rate.clientIp}`);
     return res.status(200).json({
       success: true,
       message: "বার্তা সফলভাবে পাঠানো হয়েছে। শীঘ্রই উত্তর দেওয়া হবে।",

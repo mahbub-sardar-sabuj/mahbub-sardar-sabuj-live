@@ -56,7 +56,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [focused, setFocused] = useState<string | null>(null);
 
@@ -78,7 +78,7 @@ export default function Contact() {
         setStatus("sent");
         setTimeout(() => {
           setStatus("idle");
-          setForm({ name: "", email: "", subject: "", message: "" });
+              setForm({ name: "", email: "", subject: "", message: "", website: "" });
         }, 5000);
       } else {
         setErrorMsg(data.error || "বার্তা পাঠাতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
@@ -381,6 +381,16 @@ export default function Contact() {
                       </p>
 
                       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+                        <input
+                          type="text"
+                          name="website"
+                          value={form.website}
+                          onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+                          tabIndex={-1}
+                          autoComplete="off"
+                          aria-hidden="true"
+                          style={{ position: "absolute", left: "-9999px", opacity: 0, pointerEvents: "none" }}
+                        />
 
                         {/* Name + Email */}
                         <div

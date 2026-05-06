@@ -1,3 +1,9 @@
+import {
+  checkRateLimit,
+  getClientIp,
+  limitJsonBodySize,
+} from "./_utils/security.js";
+
 function escapeTelegramHtml(value = "") {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -137,7 +143,7 @@ function buildActivityText(payload, req) {
     }
   }
 
-  const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown";
+  const clientIp = getClientIp(req);
   lines.push(
     "",
     `<b>IP:</b> ${escapeTelegramHtml(clientIp)}`,
@@ -153,6 +159,15 @@ export default async function handler(req, res) {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
+
+  if (limitJsonBodySize(req, res, 7 * 1024 * 1024)) return;
+
+  const rate = checkRateLimit(req, res, {
+    keyPrefix: "chatbot-notify",
+    windowMs: 60 * 1000,
+    max: 20,
+  });
+  if (rate.limited) return;
 
   const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();

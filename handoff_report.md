@@ -18,7 +18,7 @@ The AI Chatbot was failing due to incorrect API credentials and an unreachable B
 
 ### Applied Fixes:
 1.  **Environment Variables (Vercel):**
-    - `OPENAI_API_KEY`: Updated to the valid Manus sandbox key (`sk-eddh7ss5jufUyqUiWzK8yW`).
+    - `OPENAI_API_KEY`: Must be configured only as a Vercel/GitHub secret. A previously documented key value has been removed from the repository; rotate any exposed key immediately and never commit real secret values.
     - `OPENAI_BASE_URL`: Corrected from `https://api1.manus.im/api/llm-proxy/v1` to `https://api.manus.im/api/llm-proxy/v1`.
 2.  **API Implementation (`/api/chat.js`):**
     - The code uses standard `fetch` to call `${baseUrl}/chat/completions`.

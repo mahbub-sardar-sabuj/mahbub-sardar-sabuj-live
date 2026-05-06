@@ -1,4 +1,10 @@
 // Uses OPENAI_API_KEY and optional OPENAI_BASE_URL / OPENAI_MODEL environment variables
+import {
+  checkRateLimit,
+  isProbablySpamText,
+  limitJsonBodySize,
+  normalizeText,
+} from "./_utils/security.js";
 
 // AI response থেকে raw URL গুলো [BUTTON] ট্যাগে রূপান্তর করা
 function sanitizeReply(reply) {
@@ -752,6 +758,15 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  if (limitJsonBodySize(req, res, 2 * 1024 * 1024)) return;
+
+  const rate = checkRateLimit(req, res, {
+    keyPrefix: "chat",
+    windowMs: 60 * 1000,
+    max: 20,
+  });
+  if (rate.limited) return;
+
   try {
     const { messages } = req.body || {};
 
@@ -759,10 +774,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid messages" });
     }
 
+    const lastUserContent = messages
+      .filter((message) => message?.role === "user")
+      .slice(-1)[0]?.content;
+    const lastUserText = Array.isArray(lastUserContent)
+      ? lastUserContent.find((part) => part?.type === "text")?.text || ""
+      : lastUserContent || "";
+
+    if (normalizeText(lastUserText, 5000).length > 4000 || isProbablySpamText(lastUserText)) {
+      return res.status(400).json({ error: "আপনার বার্তাটি খুব বড় বা সন্দেহজনক। অনুগ্রহ করে সংক্ষিপ্ত ও স্বাভাবিক বার্তা পাঠান।" });
+    }
+
     // Filter out any system messages sent from the frontend (to avoid duplication)
     // and keep only the last 12 user/assistant messages for context
     const filteredMessages = messages
-      .filter((m) => m.role !== "system")
+      .filter((m) => m.role !== "system" && ["user", "assistant"].includes(m.role))
       .slice(-12);
     const allMessages = [
       { role: "system", content: SYSTEM_PROMPT },
@@ -779,7 +805,7 @@ export default async function handler(req, res) {
       await notifyTelegram({
         userMessage: lastUserMsg ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find(p => p.type === 'text')?.text || '[ছবি পাঠানো হয়েছে]' : lastUserMsg.content) : "(অজানা)",
         aiResponse: reply,
-        clientIp: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
+        clientIp: rate.clientIp,
         userAgent: req.headers["user-agent"],
         imageData: lastUserImgPart || null,
       });
@@ -795,7 +821,7 @@ export default async function handler(req, res) {
       await notifyTelegram({
         userMessage: lastUserMsg ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find(p => p.type === 'text')?.text || '[ছবি পাঠানো হয়েছে]' : lastUserMsg.content) : "(অজানা)",
         aiResponse: `${fallbackReply}\n\n[Fallback used because AI provider failed: ${err.message}]`,
-        clientIp: req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress,
+        clientIp: rate.clientIp,
         userAgent: req.headers["user-agent"],
         imageData: lastUserImgPart || null,
       }).catch((notifyError) => console.error("Telegram fallback notification failed:", notifyError.message));
