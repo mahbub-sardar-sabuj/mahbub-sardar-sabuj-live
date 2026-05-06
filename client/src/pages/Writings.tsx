@@ -1,53 +1,23 @@
 /**
  * Writings & E-Books Page — লেখালেখি ও বই
- * Design: World-Class Literary Experience | Navy #0D1B2A | Gold #D4A843 | Cream #F8F7F4
- * Redesigned with cinematic hero, 3D book shelf, magazine grid, premium reading mode
+ * Design: CINEMATIC LITERARY UNIVERSE v5 — International Premium Standard
+ * Palette: Obsidian #080C14 | Ink #0D1420 | Gold #C9A84C | Amber #E8B84B | Cream #F0EAE0
+ * Typography: SolaimanLipi | Spacing: Fluid | Motion: Spring Physics
+ * Features: Parallax Hero | Masonry Grid | Immersive Reader | 3D Book Shelf
  */
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Link, useRoute, useLocation } from "wouter";
 import {
-  Feather,
-  ArrowLeft,
-  BookOpen,
-  Heart,
-  Star,
-  Calendar,
-  X,
-  Search,
-  Share2,
-  Copy,
-  ChevronLeft,
-  ChevronRight,
-  Facebook,
-  Check,
-  AArrowUp,
-  AArrowDown,
-  PenLine,
-  ShoppingCart,
-  BookMarked,
-  Eye,
-  Sparkles,
-  Quote,
-  Library,
-  TrendingUp,
-  Award,
-  Layers,
-  Filter,
-  SortAsc,
-  Grid3X3,
-  List,
-  Bookmark,
-  ExternalLink,
-  ArrowRight,
-  Pen,
-  BookText,
-  Flame,
-  Crown,
-  Zap,
+  Feather, ArrowLeft, BookOpen, Heart, Star, Calendar, X, Search, Share2, Copy,
+  ChevronLeft, ChevronRight, Facebook, Check, AArrowUp, AArrowDown, PenLine,
+  ShoppingCart, BookMarked, Eye, Sparkles, Quote, Library, TrendingUp, Award,
+  Layers, Filter, SortAsc, Grid3X3, List, Bookmark, ExternalLink, ArrowRight,
+  Pen, BookText, Flame, Crown, Zap, Moon, Sun, Scroll, Glasses, Hash,
+  ChevronDown, Play, Pause, Volume2, BookCopy, GalleryVerticalEnd, Wand2,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -76,22 +46,31 @@ const BENGALI_TRANS: Record<string, string> = {
 };
 function makeSlug(title: string, id: number): string {
   let slug = '';
-  for (const ch of title) {
-    slug += BENGALI_TRANS[ch] ?? '';
-  }
+  for (const ch of title) { slug += BENGALI_TRANS[ch] ?? ''; }
   slug = slug.replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
   return slug.length >= 3 ? slug : `writing-${id}`;
 }
 
-// ── Categories ────────────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { id: "all", label: "সব লেখা", icon: "✦", color: "#D4A843" },
-  { id: "ছোট লেখা", label: "ছোট লেখা", icon: "✎", color: "#2ecc71" },
-  { id: "কবিতা", label: "কবিতা", icon: "❧", color: "#3498db" },
-  { id: "ভালোবাসা", label: "ভালোবাসা", icon: "♡", color: "#e74c3c" },
-  { id: "জীবনদর্শন", label: "জীবনদর্শন", icon: "◈", color: "#D4A843" },
-  { id: "বিচ্ছেদ", label: "বিচ্ছেদ", icon: "◌", color: "#9b59b6" },
+// ── Category System ───────────────────────────────────────────────────────────
+const CATS = [
+  {id:"all",      label:"সব লেখা",    icon:"✦", color:"#C9A84C", glow:"rgba(201,168,76,.3)"},
+  {id:"ছোট লেখা", label:"ছোট লেখা",  icon:"✎", color:"#34D399", glow:"rgba(52,211,153,.3)"},
+  {id:"কবিতা",    label:"কবিতা",      icon:"❧", color:"#60A5FA", glow:"rgba(96,165,250,.3)"},
+  {id:"ভালোবাসা", label:"ভালোবাসা",  icon:"♡", color:"#F472B6", glow:"rgba(244,114,182,.3)"},
+  {id:"জীবনদর্শন",label:"জীবনদর্শন", icon:"◈", color:"#FBBF24", glow:"rgba(251,191,36,.3)"},
+  {id:"বিচ্ছেদ",  label:"বিচ্ছেদ",   icon:"◌", color:"#A78BFA", glow:"rgba(167,139,250,.3)"},
 ];
+
+function getCatStyle(cat: string) {
+  const map: Record<string, {accent:string;glow:string;bg:string;badge:string;border:string;icon:string}> = {
+    "ভালোবাসা": {accent:"#F472B6",glow:"rgba(244,114,182,.22)",bg:"rgba(244,114,182,.06)",badge:"rgba(244,114,182,.14)",border:"rgba(244,114,182,.28)",icon:"♡"},
+    "বিচ্ছেদ":  {accent:"#A78BFA",glow:"rgba(167,139,250,.22)",bg:"rgba(167,139,250,.06)",badge:"rgba(167,139,250,.14)",border:"rgba(167,139,250,.28)",icon:"◌"},
+    "কবিতা":    {accent:"#60A5FA",glow:"rgba(96,165,250,.22)", bg:"rgba(96,165,250,.06)", badge:"rgba(96,165,250,.14)", border:"rgba(96,165,250,.28)", icon:"❧"},
+    "ছোট লেখা": {accent:"#34D399",glow:"rgba(52,211,153,.22)", bg:"rgba(52,211,153,.06)", badge:"rgba(52,211,153,.14)", border:"rgba(52,211,153,.28)", icon:"✎"},
+    "জীবনদর্শন":{accent:"#FBBF24",glow:"rgba(251,191,36,.22)", bg:"rgba(251,191,36,.06)", badge:"rgba(251,191,36,.14)", border:"rgba(251,191,36,.28)", icon:"◈"},
+  };
+  return map[cat] ?? map["জীবনদর্শন"];
+}
 
 const writings: Writing[] = [
   {
@@ -9980,548 +9959,774 @@ const ebooks = [
     accentColor: "#E67E22",
   },
 ];
-// ── Category Color System ─────────────────────────────────────────────────────
-function getCategoryColor(cat: string) {
-  const map: Record<string, { accent: string; glow: string; bg: string; badge: string; topLine: string }> = {
-    "ভালোবাসা": { accent:"#F472B6", glow:"rgba(244,114,182,.28)", bg:"rgba(244,114,182,.055)", badge:"rgba(244,114,182,.12)", topLine:"rgba(244,114,182,.7)" },
-    "বিচ্ছেদ":  { accent:"#A78BFA", glow:"rgba(167,139,250,.28)", bg:"rgba(167,139,250,.055)", badge:"rgba(167,139,250,.12)", topLine:"rgba(167,139,250,.7)" },
-    "কবিতা":    { accent:"#60A5FA", glow:"rgba(96,165,250,.28)",  bg:"rgba(96,165,250,.055)",  badge:"rgba(96,165,250,.12)",  topLine:"rgba(96,165,250,.7)"  },
-    "ছোট লেখা": { accent:"#34D399", glow:"rgba(52,211,153,.28)",  bg:"rgba(52,211,153,.055)",  badge:"rgba(52,211,153,.12)",  topLine:"rgba(52,211,153,.7)"  },
-    "জীবনদর্শন":{ accent:"#FBBF24", glow:"rgba(251,191,36,.28)",  bg:"rgba(251,191,36,.055)",  badge:"rgba(251,191,36,.12)",  topLine:"rgba(251,191,36,.7)"  },
-  };
-  const icons: Record<string, string> = {
-    "ভালোবাসা":"♡","বিচ্ছেদ":"◌","কবিতা":"❧","ছোট লেখা":"✎","জীবনদর্শন":"◈",
-  };
-  const c = map[cat] ?? map["জীবনদর্শন"];
-  return { ...c, icon: icons[cat] ?? "◈" };
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
-//  WORLD-CLASS PREMIUM CSS — Deep Space Literary v4
+//  CINEMATIC LITERARY UNIVERSE — CSS v5
+//  Design Philosophy: Film noir meets premium editorial — dark, atmospheric,
+//  deeply immersive. Every element breathes with subtle motion.
 // ══════════════════════════════════════════════════════════════════════════════
 const CSS = `
   @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap');
 
   :root {
     --f: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
-    --bg0: #020810;
-    --bg1: #04090F;
-    --bg2: #060D1A;
-    --bg3: #091422;
-    --card-bg: rgba(6,12,24,.92);
-    --card-border: rgba(255,255,255,.055);
-    --gold: #D4A843;
-    --gold2: #F6C90E;
-    --gold-glow: rgba(212,168,67,.18);
-    --cream: #EDE7DB;
-    --dim: rgba(237,231,219,.58);
-    --muted: rgba(237,231,219,.35);
-    --faint: rgba(237,231,219,.12);
-    --r: 18px;
-    --r-sm: 11px;
-    --r-pill: 999px;
+    --f-serif: 'Playfair Display', Georgia, serif;
+    /* Cinematic Dark Palette */
+    --ink-0: #04060C;
+    --ink-1: #070B14;
+    --ink-2: #0A1020;
+    --ink-3: #0E1628;
+    --ink-4: #121D33;
+    /* Gold System */
+    --gold:   #C9A84C;
+    --gold-l: #E8B84B;
+    --gold-d: #A8882E;
+    --gold-g: rgba(201,168,76,.18);
+    /* Text System */
+    --t-0: #F0EAE0;
+    --t-1: rgba(240,234,224,.82);
+    --t-2: rgba(240,234,224,.55);
+    --t-3: rgba(240,234,224,.32);
+    --t-4: rgba(240,234,224,.16);
+    /* Surfaces */
+    --s-0: rgba(10,16,32,.96);
+    --s-1: rgba(14,22,40,.88);
+    --s-2: rgba(18,29,51,.72);
+    --s-border: rgba(255,255,255,.06);
+    --s-border-g: rgba(201,168,76,.14);
+    /* Radii */
+    --r-xs: 8px; --r-sm: 12px; --r: 18px; --r-lg: 24px; --r-xl: 32px; --r-pill: 999px;
+    /* Easing */
     --ease: cubic-bezier(.22,1,.36,1);
     --spring: cubic-bezier(.34,1.56,.64,1);
+    --smooth: cubic-bezier(.4,0,.2,1);
   }
 
-  /* ── Keyframes ── */
-  @keyframes fadeUp   { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:none} }
-  @keyframes shimmer  { 0%{background-position:-400% center} 100%{background-position:400% center} }
-  @keyframes pulse    { 0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,.45)} 60%{box-shadow:0 0 0 9px rgba(212,168,67,0)} }
-  @keyframes drift    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  @keyframes spin     { to{transform:rotate(360deg)} }
-  @keyframes scan     { from{transform:translateY(-100%)} to{transform:translateY(100vh)} }
-  @keyframes inkFall  { 0%{opacity:0;transform:translateY(-8px) scale(.7)} 12%{opacity:.5} 88%{opacity:.15} 100%{opacity:0;transform:translateY(100vh) scale(1.2)} }
-  @keyframes gradDrift{ 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-  @keyframes borderGlow{ 0%,100%{border-color:rgba(212,168,67,.08)} 50%{border-color:rgba(212,168,67,.28)} }
-  @keyframes progFill { from{width:0} to{width:100%} }
-  @keyframes bookTilt { 0%,100%{transform:perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0)} 33%{transform:perspective(800px) rotateY(6deg) rotateX(2deg) translateY(-10px)} 66%{transform:perspective(800px) rotateY(-4deg) rotateX(-1deg) translateY(-5px)} }
-  @keyframes cardReveal { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
-
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  /* ── Reset ── */
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 
   /* ══════════════════════════════════════════
-     HERO — Deep Space Cinematic
+     KEYFRAMES — Cinematic Motion Library
   ══════════════════════════════════════════ */
-  .ph{
-    position:relative;overflow:hidden;
-    min-height:82vh;display:flex;align-items:center;
-    background:linear-gradient(158deg,var(--bg0) 0%,var(--bg1) 18%,var(--bg2) 45%,var(--bg3) 78%,#0B1828 100%);
-    padding:clamp(7.5rem,13vw,11rem) clamp(1.2rem,5vw,4rem) clamp(3rem,5vw,5rem);
+  @keyframes fadeUp    { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:none} }
+  @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
+  @keyframes slideLeft { from{opacity:0;transform:translateX(24px)} to{opacity:1;transform:none} }
+  @keyframes shimmer   { 0%{background-position:-400% center} 100%{background-position:400% center} }
+  @keyframes pulse     { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.5)} 60%{box-shadow:0 0 0 12px rgba(201,168,76,0)} }
+  @keyframes float     { 0%,100%{transform:translateY(0) rotate(0deg)} 33%{transform:translateY(-14px) rotate(1.5deg)} 66%{transform:translateY(-7px) rotate(-1deg)} }
+  @keyframes spin      { to{transform:rotate(360deg)} }
+  @keyframes spinSlow  { to{transform:rotate(360deg)} }
+  @keyframes inkDrop   { 0%{opacity:0;transform:translateY(-12px) scale(.5)} 15%{opacity:.6} 85%{opacity:.1} 100%{opacity:0;transform:translateY(110vh) scale(1.4)} }
+  @keyframes nebula    { 0%,100%{background-position:0% 50%;opacity:.7} 50%{background-position:100% 50%;opacity:1} }
+  @keyframes scanLine  { from{transform:translateY(-100%)} to{transform:translateY(100vh)} }
+  @keyframes borderPulse { 0%,100%{border-color:rgba(201,168,76,.08)} 50%{border-color:rgba(201,168,76,.32)} }
+  @keyframes textReveal { from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0% 0 0)} }
+  @keyframes cardIn    { from{opacity:0;transform:translateY(24px) scale(.97)} to{opacity:1;transform:none scale(1)} }
+  @keyframes progressFill { from{width:0} to{width:var(--w,100%)} }
+  @keyframes glowPulse { 0%,100%{filter:drop-shadow(0 0 8px rgba(201,168,76,.3))} 50%{filter:drop-shadow(0 0 22px rgba(201,168,76,.7))} }
+  @keyframes bookFloat { 0%,100%{transform:perspective(900px) rotateY(0) rotateX(0) translateY(0)} 30%{transform:perspective(900px) rotateY(8deg) rotateX(3deg) translateY(-14px)} 65%{transform:perspective(900px) rotateY(-5deg) rotateX(-2deg) translateY(-8px)} }
+  @keyframes waveText  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+  @keyframes ripple    { 0%{transform:scale(0);opacity:.6} 100%{transform:scale(2.5);opacity:0} }
+
+  /* ══════════════════════════════════════════
+     HERO — Cinematic Full-Bleed
+  ══════════════════════════════════════════ */
+  .ch {
+    position:relative; overflow:hidden;
+    min-height:90vh; display:flex; align-items:center;
+    background: linear-gradient(165deg,
+      var(--ink-0) 0%, var(--ink-1) 20%,
+      var(--ink-2) 48%, var(--ink-3) 75%,
+      #0F1E38 100%);
+    padding: clamp(8rem,14vw,12rem) clamp(1.2rem,5vw,4rem) clamp(4rem,6vw,6rem);
   }
-  .ph-mesh{
-    position:absolute;inset:0;pointer-events:none;
+  /* Atmospheric nebula layers */
+  .ch-nebula {
+    position:absolute; inset:0; pointer-events:none;
     background:
-      radial-gradient(ellipse 90% 80% at 4% 10%,rgba(212,168,67,.1) 0%,transparent 52%),
-      radial-gradient(ellipse 70% 60% at 96% 90%,rgba(74,144,217,.07) 0%,transparent 50%),
-      radial-gradient(ellipse 55% 45% at 50% 110%,rgba(155,89,182,.05) 0%,transparent 48%),
-      radial-gradient(ellipse 40% 35% at 80% 5%,rgba(212,168,67,.04) 0%,transparent 45%);
-    animation:gradDrift 22s ease infinite;background-size:200% 200%;
+      radial-gradient(ellipse 100% 90% at 0% 0%, rgba(201,168,76,.12) 0%, transparent 55%),
+      radial-gradient(ellipse 80% 70% at 100% 100%, rgba(74,144,217,.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 55% 115%, rgba(167,139,250,.06) 0%, transparent 45%),
+      radial-gradient(ellipse 45% 40% at 85% 5%, rgba(201,168,76,.05) 0%, transparent 42%);
+    background-size:200% 200%;
+    animation:nebula 28s ease infinite;
   }
-  .ph-dots{
-    position:absolute;inset:0;pointer-events:none;
-    background-image:radial-gradient(circle,rgba(212,168,67,.06) 1px,transparent 1px);
-    background-size:38px 38px;
-    mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%);
+  /* Fine grain texture */
+  .ch-grain {
+    position:absolute; inset:0; pointer-events:none; opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.04'/%3E%3C/svg%3E");
   }
-  .ph-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-  .ph-scan::after{
-    content:'';position:absolute;width:100%;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(212,168,67,.055),transparent);
-    animation:scan 14s linear infinite;
+  /* Star field */
+  .ch-stars {
+    position:absolute; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(circle, rgba(201,168,76,.55) 1px, transparent 1px),
+      radial-gradient(circle, rgba(240,234,224,.25) 1px, transparent 1px);
+    background-size: 120px 120px, 80px 80px;
+    background-position: 0 0, 40px 40px;
+    mask-image:radial-gradient(ellipse 90% 90% at 50% 50%, black 20%, transparent 100%);
+    opacity:.35;
   }
-  .ph-particle{
-    position:absolute;border-radius:50%;
-    background:rgba(212,168,67,.4);
-    animation:inkFall linear infinite;
-    pointer-events:none;filter:blur(.7px);
+  /* Horizontal scan line */
+  .ch-scan {
+    position:absolute; inset:0; overflow:hidden; pointer-events:none;
   }
-  .ph-inner{
-    max-width:1280px;margin:0 auto;
-    position:relative;z-index:2;width:100%;
-    display:grid;grid-template-columns:1fr auto;
-    gap:clamp(2rem,5vw,6rem);align-items:center;
+  .ch-scan::after {
+    content:''; position:absolute; width:100%; height:2px;
+    background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.04) 30%,rgba(201,168,76,.08) 50%,rgba(201,168,76,.04) 70%,transparent 100%);
+    animation:scanLine 18s linear infinite;
   }
-  .ph-back{
-    display:inline-flex;align-items:center;gap:7px;
-    font-family:var(--f);font-size:.75rem;font-weight:400;
-    color:var(--muted);text-decoration:none;
-    padding:5px 13px;border-radius:var(--r-pill);
-    border:1px solid rgba(255,255,255,.055);
-    background:rgba(255,255,255,.02);
-    transition:all .25s var(--ease);width:fit-content;margin-bottom:1.6rem;
+  /* Ink particles */
+  .ch-particle {
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle,rgba(201,168,76,.7),transparent);
+    animation:inkDrop linear infinite; pointer-events:none;
+    filter:blur(1px);
   }
-  .ph-back:hover{color:var(--gold);border-color:rgba(212,168,67,.2);transform:translateX(-3px)}
-  .ph-eye{
-    display:inline-flex;align-items:center;gap:9px;
-    padding:6px 16px;border-radius:var(--r-pill);
-    background:rgba(212,168,67,.055);border:1px solid rgba(212,168,67,.14);
-    margin-bottom:1.6rem;animation:fadeUp .6s var(--ease) both;
-    position:relative;overflow:hidden;
+  /* Inner layout */
+  .ch-inner {
+    max-width:1320px; margin:0 auto; position:relative; z-index:2; width:100%;
+    display:grid; grid-template-columns:1fr 380px;
+    gap:clamp(2rem,5vw,7rem); align-items:center;
   }
-  .ph-eye::before{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(90deg,transparent,rgba(212,168,67,.07),transparent);
-    animation:shimmer 4.5s linear infinite;background-size:200% 100%;
+  /* Breadcrumb */
+  .ch-crumb {
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--f); font-size:.72rem; color:var(--t-3);
+    text-decoration:none; padding:5px 14px; border-radius:var(--r-pill);
+    border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.025);
+    transition:all .3s var(--ease); width:fit-content; margin-bottom:2rem;
+    letter-spacing:.04em;
   }
-  .ph-eye-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2.5s ease infinite;flex-shrink:0}
-  .ph-eye-txt{font-family:var(--f);font-size:.68rem;font-weight:400;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;position:relative;z-index:1}
-  .ph-title{
-    font-family:var(--f);font-size:clamp(2.5rem,6.5vw,5rem);
-    color:var(--cream);font-weight:400;line-height:1.18;
-    margin:0 0 1.4rem;animation:fadeUp .7s .1s var(--ease) both;position:relative;
+  .ch-crumb:hover { color:var(--gold); border-color:rgba(201,168,76,.22); transform:translateX(-4px); }
+  /* Eyebrow label */
+  .ch-eyebrow {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:7px 18px; border-radius:var(--r-pill);
+    background:rgba(201,168,76,.06); border:1px solid rgba(201,168,76,.16);
+    margin-bottom:2rem; position:relative; overflow:hidden;
+    animation:fadeUp .6s var(--ease) both;
   }
-  .ph-title-gold{
-    background:linear-gradient(135deg,#FFE066 0%,#F6C90E 30%,#D4A843 60%,#FFE066 100%);
-    background-size:300% auto;
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    animation:shimmer 5s linear infinite;
-    filter:drop-shadow(0 0 22px rgba(246,201,14,.22));
+  .ch-eyebrow::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(201,168,76,.06),transparent);
+    transform:translateX(-100%); animation:shimmer 3s ease infinite;
   }
-  .ph-title-line{
-    position:absolute;bottom:-11px;left:0;
-    width:clamp(55px,9vw,100px);height:2px;
-    background:linear-gradient(90deg,var(--gold),rgba(212,168,67,.15),transparent);
+  .ch-eyebrow-dot {
+    width:7px; height:7px; border-radius:50%; background:var(--gold);
+    animation:pulse 2.5s ease infinite; flex-shrink:0;
+  }
+  .ch-eyebrow-txt {
+    font-family:var(--f); font-size:.72rem; color:var(--gold);
+    font-weight:400; letter-spacing:.1em; text-transform:uppercase;
+  }
+  /* Main title */
+  .ch-title {
+    font-family:var(--f); font-size:clamp(2.4rem,5.5vw,4.2rem);
+    font-weight:400; line-height:1.22; margin-bottom:1.8rem;
+    position:relative; display:inline-block;
+    animation:fadeUp .7s .1s var(--ease) both;
+  }
+  .ch-title-gold {
+    background:linear-gradient(135deg,var(--gold-l) 0%,var(--gold) 40%,var(--gold-d) 70%,var(--gold-l) 100%);
+    background-size:300% auto; -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; animation:shimmer 6s linear infinite;
+    filter:drop-shadow(0 0 28px rgba(201,168,76,.25));
+  }
+  .ch-title-line {
+    position:absolute; bottom:-14px; left:0;
+    width:clamp(60px,10vw,110px); height:2.5px;
+    background:linear-gradient(90deg,var(--gold),rgba(201,168,76,.2),transparent);
     border-radius:2px;
   }
-  .ph-desc{
-    font-family:var(--f);font-size:clamp(.88rem,1.55vw,1.04rem);
-    color:var(--dim);line-height:2.1;font-weight:400;
-    max-width:480px;margin-bottom:clamp(1.6rem,3vw,2.6rem);
+  /* Description */
+  .ch-desc {
+    font-family:var(--f); font-size:clamp(.9rem,1.6vw,1.06rem);
+    color:var(--t-2); line-height:2.15; font-weight:400;
+    max-width:520px; margin-bottom:clamp(2rem,3.5vw,3rem);
     animation:fadeUp .7s .2s var(--ease) both;
   }
-  .ph-stats{
-    display:flex;gap:clamp(8px,1.8vw,14px);flex-wrap:nowrap;
-    overflow-x:auto;scrollbar-width:none;
+  /* Stats row */
+  .ch-stats {
+    display:flex; gap:clamp(8px,1.5vw,14px); flex-wrap:nowrap;
+    overflow-x:auto; scrollbar-width:none;
     animation:fadeUp .7s .3s var(--ease) both;
   }
-  .ph-stats::-webkit-scrollbar{display:none}
-  .ph-stat{
-    display:flex;align-items:center;gap:10px;
-    padding:11px 16px;border-radius:13px;flex-shrink:0;
-    background:rgba(255,255,255,.032);
-    border:1px solid rgba(255,255,255,.062);
-    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    transition:all .3s var(--spring);cursor:default;
-    box-shadow:0 4px 18px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.04);
+  .ch-stats::-webkit-scrollbar { display:none; }
+  .ch-stat {
+    display:flex; align-items:center; gap:12px;
+    padding:13px 18px; border-radius:var(--r-sm); flex-shrink:0;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.065);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    transition:all .35s var(--spring); cursor:default;
+    box-shadow:0 4px 20px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);
+    position:relative; overflow:hidden;
   }
-  .ph-stat:hover{
-    background:rgba(212,168,67,.05);border-color:rgba(212,168,67,.2);
-    transform:translateY(-3px) scale(1.025);
-    box-shadow:0 12px 35px rgba(0,0,0,.28),0 0 0 1px rgba(212,168,67,.08);
+  .ch-stat::before {
+    content:''; position:absolute; inset:0; opacity:0;
+    background:linear-gradient(135deg,rgba(201,168,76,.06),transparent);
+    transition:opacity .3s;
   }
-  .ph-stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .ph-stat-val{font-family:var(--f);color:var(--cream);font-size:1.15rem;font-weight:400;line-height:1.2}
-  .ph-stat-lbl{font-family:var(--f);color:var(--muted);font-size:.67rem;margin-top:2px;font-weight:400}
-  .ph-orb{
-    position:relative;width:clamp(130px,17vw,220px);height:clamp(130px,17vw,220px);
-    flex-shrink:0;animation:bookTilt 10s ease-in-out infinite;
+  .ch-stat:hover { transform:translateY(-5px) scale(1.03); border-color:rgba(201,168,76,.22); box-shadow:0 16px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,168,76,.1); }
+  .ch-stat:hover::before { opacity:1; }
+  .ch-stat-ico { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .ch-stat-val { font-family:var(--f); color:var(--t-0); font-size:1.2rem; font-weight:400; line-height:1.2; }
+  .ch-stat-lbl { font-family:var(--f); color:var(--t-3); font-size:.65rem; margin-top:2px; font-weight:400; letter-spacing:.03em; }
+  /* Cinematic book orb */
+  .ch-orb {
+    position:relative; width:100%; aspect-ratio:1;
+    max-width:360px; margin:0 auto;
+    animation:bookFloat 12s ease-in-out infinite;
   }
-  .ph-orb-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(212,168,67,.07);animation:spin 28s linear infinite}
-  .ph-orb-ring::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(212,168,67,.55);top:-2.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 8px rgba(212,168,67,.7)}
-  .ph-orb-core{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle at 32% 32%,rgba(212,168,67,.12) 0%,rgba(8,16,30,.95) 68%);border:1px solid rgba(212,168,67,.07);display:flex;align-items:center;justify-content:center}
+  .ch-orb-ring-1 {
+    position:absolute; inset:0; border-radius:50%;
+    border:1px solid rgba(201,168,76,.08);
+    animation:spinSlow 35s linear infinite;
+  }
+  .ch-orb-ring-1::before {
+    content:''; position:absolute; width:8px; height:8px; border-radius:50%;
+    background:radial-gradient(circle,var(--gold),rgba(201,168,76,.3));
+    top:-4px; left:50%; transform:translateX(-50%);
+    box-shadow:0 0 12px rgba(201,168,76,.8);
+    animation:glowPulse 3s ease infinite;
+  }
+  .ch-orb-ring-2 {
+    position:absolute; inset:22px; border-radius:50%;
+    border:1px solid rgba(255,255,255,.04);
+    animation:spinSlow 22s linear infinite reverse;
+  }
+  .ch-orb-ring-2::before {
+    content:''; position:absolute; width:5px; height:5px; border-radius:50%;
+    background:rgba(96,165,250,.6); bottom:-2.5px; left:50%; transform:translateX(-50%);
+    box-shadow:0 0 8px rgba(96,165,250,.7);
+  }
+  .ch-orb-core {
+    position:absolute; inset:40px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,rgba(201,168,76,.14) 0%,rgba(4,6,12,.98) 65%);
+    border:1px solid rgba(201,168,76,.08);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.5);
+  }
+  .ch-orb-icon { animation:glowPulse 4s ease infinite; }
 
   /* ══════════════════════════════════════════
-     STICKY TAB BAR
+     STICKY NAV BAR — Cinematic Tabs
   ══════════════════════════════════════════ */
-  .pt{
-    position:sticky;top:0;z-index:40;
-    background:rgba(2,6,12,.97);
-    backdrop-filter:blur(32px) saturate(1.8);-webkit-backdrop-filter:blur(32px) saturate(1.8);
-    border-bottom:1px solid rgba(212,168,67,.055);
-    box-shadow:0 4px 24px rgba(0,0,0,.45);
+  .cn {
+    position:sticky; top:0; z-index:40;
+    background:rgba(4,6,12,.97);
+    backdrop-filter:blur(40px) saturate(1.9); -webkit-backdrop-filter:blur(40px) saturate(1.9);
+    border-bottom:1px solid rgba(201,168,76,.07);
+    box-shadow:0 4px 30px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.03);
   }
-  .pt-inner{max-width:1280px;margin:0 auto;padding:0 clamp(.9rem,3.5vw,2.2rem)}
-  .pt-tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
-  .pt-tabs::-webkit-scrollbar{display:none}
-  .pt-tab{
-    display:flex;align-items:center;gap:9px;
-    padding:15px 20px;background:transparent;border:none;
-    border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;
-    font-family:var(--f);font-size:.9rem;font-weight:400;
-    color:rgba(237,231,219,.22);transition:all .25s var(--ease);
-    position:relative;flex-shrink:0;margin-bottom:-1px;
+  .cn-inner { max-width:1320px; margin:0 auto; padding:0 clamp(.9rem,3.5vw,2.5rem); }
+  .cn-tabs { display:flex; gap:0; overflow-x:auto; scrollbar-width:none; }
+  .cn-tabs::-webkit-scrollbar { display:none; }
+  .cn-tab {
+    display:flex; align-items:center; gap:10px;
+    padding:16px 22px; background:transparent; border:none;
+    border-bottom:2.5px solid transparent; cursor:pointer; white-space:nowrap;
+    font-family:var(--f); font-size:.88rem; font-weight:400;
+    color:var(--t-3); transition:all .28s var(--ease);
+    position:relative; flex-shrink:0; margin-bottom:-1px;
   }
-  .pt-tab:hover{color:rgba(237,231,219,.52);background:rgba(255,255,255,.015)}
-  .pt-tab.gold{color:var(--gold2);border-bottom-color:var(--gold2);background:rgba(246,201,14,.04)}
-  .pt-tab.blue{color:#63B3ED;border-bottom-color:#63B3ED;background:rgba(99,179,237,.04)}
-  .pt-tab-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);transition:all .25s;flex-shrink:0}
-  .pt-tab.gold .pt-tab-ico{background:rgba(246,201,14,.1);border-color:rgba(246,201,14,.2)}
-  .pt-tab.blue .pt-tab-ico{background:rgba(99,179,237,.1);border-color:rgba(99,179,237,.2)}
-  .pt-pill{font-size:.62rem;padding:2px 8px;border-radius:var(--r-pill);background:rgba(255,255,255,.03);color:rgba(237,231,219,.18);font-weight:400;border:1px solid rgba(255,255,255,.04);font-family:var(--f);transition:all .25s}
-  .pt-tab.gold .pt-pill{background:rgba(246,201,14,.12);color:var(--gold2);border-color:rgba(246,201,14,.22)}
-  .pt-tab.blue .pt-pill{background:rgba(99,179,237,.12);color:#63B3ED;border-color:rgba(99,179,237,.22)}
-  .pt-ctrl{display:flex;align-items:center;gap:7px;padding:10px 0;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.03)}
-  .pt-search{
-    display:flex;align-items:center;gap:7px;
-    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.055);
-    border-radius:10px;padding:7px 12px;
-    flex:1;min-width:140px;max-width:240px;transition:all .22s;
+  .cn-tab:hover { color:var(--t-1); background:rgba(255,255,255,.018); }
+  .cn-tab.gold { color:var(--gold-l); border-bottom-color:var(--gold-l); background:rgba(201,168,76,.04); }
+  .cn-tab.blue { color:#63B3ED; border-bottom-color:#63B3ED; background:rgba(99,179,237,.04); }
+  .cn-tab-ico {
+    width:30px; height:30px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
+    transition:all .28s; flex-shrink:0;
   }
-  .pt-search:focus-within{border-color:rgba(212,168,67,.24);background:rgba(212,168,67,.03);box-shadow:0 0 0 3px rgba(212,168,67,.05)}
-  .pt-search input{background:none;border:none;outline:none;font-family:var(--f);font-size:.8rem;color:var(--cream);width:100%;font-weight:400}
-  .pt-search input::placeholder{color:rgba(237,231,219,.15)}
-  .pt-cats{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:1}
-  .pt-cats::-webkit-scrollbar{display:none}
-  .pt-cat{
-    display:inline-flex;align-items:center;gap:4px;
-    padding:5px 12px;border-radius:var(--r-pill);
-    background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);
-    cursor:pointer;white-space:nowrap;
-    font-family:var(--f);font-size:.75rem;font-weight:400;
-    color:rgba(237,231,219,.28);transition:all .22s;flex-shrink:0;
+  .cn-tab.gold .cn-tab-ico { background:rgba(201,168,76,.12); border-color:rgba(201,168,76,.22); }
+  .cn-tab.blue .cn-tab-ico { background:rgba(99,179,237,.12); border-color:rgba(99,179,237,.22); }
+  .cn-pill {
+    font-size:.6rem; padding:2px 9px; border-radius:var(--r-pill);
+    background:rgba(255,255,255,.04); color:var(--t-4); font-weight:400;
+    border:1px solid rgba(255,255,255,.05); font-family:var(--f); transition:all .28s;
   }
-  .pt-cat:hover{color:rgba(237,231,219,.58);background:rgba(255,255,255,.04)}
-  .pt-view{display:flex;gap:2px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:9px;padding:3px;flex-shrink:0}
-  .pt-vbtn{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;color:rgba(237,231,219,.24);transition:all .2s}
-  .pt-vbtn.on{background:rgba(212,168,67,.12);color:var(--gold)}
-  .pt-vbtn:hover:not(.on){color:rgba(237,231,219,.5);background:rgba(255,255,255,.03)}
+  .cn-tab.gold .cn-pill { background:rgba(201,168,76,.14); color:var(--gold-l); border-color:rgba(201,168,76,.24); }
+  .cn-tab.blue .cn-pill { background:rgba(99,179,237,.14); color:#63B3ED; border-color:rgba(99,179,237,.24); }
+  /* Controls bar */
+  .cn-ctrl {
+    display:flex; align-items:center; gap:8px; padding:10px 0;
+    flex-wrap:wrap; border-top:1px solid rgba(255,255,255,.04);
+  }
+  .cn-search {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.06);
+    border-radius:11px; padding:8px 14px;
+    flex:1; min-width:150px; max-width:260px; transition:all .25s;
+  }
+  .cn-search:focus-within { border-color:rgba(201,168,76,.28); background:rgba(201,168,76,.04); box-shadow:0 0 0 3px rgba(201,168,76,.07); }
+  .cn-search input { background:none; border:none; outline:none; font-family:var(--f); font-size:.8rem; color:var(--t-0); width:100%; font-weight:400; }
+  .cn-search input::placeholder { color:var(--t-4); }
+  .cn-cats { display:flex; gap:5px; overflow-x:auto; scrollbar-width:none; flex:1; }
+  .cn-cats::-webkit-scrollbar { display:none; }
+  .cn-cat {
+    display:flex; align-items:center; gap:5px; padding:5px 13px;
+    border-radius:var(--r-pill); border:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.025); cursor:pointer; white-space:nowrap;
+    font-family:var(--f); font-size:.75rem; color:var(--t-3); font-weight:400;
+    transition:all .22s var(--ease); flex-shrink:0;
+  }
+  .cn-cat:hover { color:var(--t-1); background:rgba(255,255,255,.05); }
+  .cn-cat.active { font-weight:400; }
+  .cn-view { display:flex; gap:2px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:3px; flex-shrink:0; }
+  .cn-vbtn { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; cursor:pointer; color:var(--t-4); transition:all .2s; }
+  .cn-vbtn.on { background:rgba(201,168,76,.14); color:var(--gold); }
+  .cn-vbtn:hover:not(.on) { color:var(--t-2); background:rgba(255,255,255,.04); }
 
   /* ══════════════════════════════════════════
-     CONTENT
+     CONTENT WRAPPER
   ══════════════════════════════════════════ */
-  .pc{max-width:1280px;margin:0 auto;padding:clamp(1.8rem,3.5vw,3rem) clamp(1.2rem,5vw,4rem)}
-
-  /* ── Featured Banner ── */
-  .pf{
-    border-radius:var(--r);overflow:hidden;
-    margin-bottom:clamp(1.8rem,3.5vw,3rem);
-    position:relative;cursor:pointer;
-    background:linear-gradient(135deg,#060C1A 0%,#0A1626 50%,#060C1A 100%);
-    border:1px solid rgba(246,201,14,.09);
-    animation:borderGlow 7s ease-in-out infinite;
-    transition:all .4s var(--spring);
-    box-shadow:0 6px 30px rgba(0,0,0,.32);
-  }
-  .pf:hover{transform:translateY(-7px) scale(1.003);box-shadow:0 34px 85px rgba(0,0,0,.52),0 0 0 1px rgba(246,201,14,.22);border-color:rgba(246,201,14,.24)}
-  .pf-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 62% 82% at 0% 50%,rgba(212,168,67,.06) 0%,transparent 55%),radial-gradient(ellipse 42% 62% at 100% 50%,rgba(74,144,217,.04) 0%,transparent 55%)}
-  .pf-inner{padding:clamp(1.6rem,3.5vw,2.8rem);position:relative;z-index:1;display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:center}
-  .pf-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 13px;border-radius:var(--r-pill);background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.15);font-family:var(--f);font-size:.63rem;font-weight:400;color:var(--gold);letter-spacing:.08em;margin-bottom:1rem;text-transform:uppercase}
-  .pf-title{font-family:var(--f);font-size:clamp(1.35rem,2.8vw,2rem);color:var(--cream);font-weight:400;line-height:1.45;margin-bottom:.9rem}
-  .pf-excerpt{font-family:var(--f);font-size:clamp(.85rem,1.5vw,.96rem);color:var(--dim);line-height:2.05;max-width:640px;white-space:pre-line;font-weight:400;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-  .pf-cta{display:inline-flex;align-items:center;gap:8px;margin-top:1.5rem;padding:9px 20px;border-radius:var(--r-pill);background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.18);color:var(--gold);font-family:var(--f);font-size:.82rem;font-weight:400;cursor:pointer;transition:all .25s}
-  .pf-cta:hover{background:rgba(212,168,67,.15);border-color:rgba(212,168,67,.38);box-shadow:0 6px 22px rgba(212,168,67,.14)}
-  .pf-side{display:flex;flex-direction:column;align-items:center;gap:7px;flex-shrink:0}
-  .pf-side-ico{width:50px;height:50px;border-radius:14px;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.1);display:flex;align-items:center;justify-content:center;animation:drift 6s ease-in-out infinite}
-
-  /* ── Results Bar ── */
-  .pr{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(1rem,2vw,1.75rem);flex-wrap:wrap;gap:8px;padding:9px 14px;border-radius:11px;background:rgba(255,255,255,.014);border:1px solid rgba(255,255,255,.026)}
-  .pr-txt{font-family:var(--f);font-size:.76rem;color:var(--muted);font-weight:400;display:flex;align-items:center;gap:6px}
-  .pr-num{color:var(--gold);font-weight:400}
-  .pr-clear{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:var(--r-pill);background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.1);color:rgba(231,76,60,.58);font-family:var(--f);font-size:.7rem;font-weight:400;cursor:pointer;transition:all .2s}
-  .pr-clear:hover{background:rgba(231,76,60,.12);color:#e74c3c}
+  .cw { max-width:1320px; margin:0 auto; padding:clamp(2rem,4vw,3.5rem) clamp(1.2rem,5vw,4rem); }
 
   /* ══════════════════════════════════════════
-     WRITING GRID — Magazine Layout
+     FEATURED WRITING BANNER — Cinematic
   ══════════════════════════════════════════ */
-  .pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:clamp(14px,2vw,22px)}
-  .pg-list{display:flex;flex-direction:column;gap:clamp(9px,1.5vw,14px)}
+  .cf {
+    position:relative; border-radius:var(--r-lg); overflow:hidden; cursor:pointer;
+    border:1px solid rgba(201,168,76,.1); margin-bottom:clamp(2rem,4vw,3.5rem);
+    transition:transform .4s var(--spring), box-shadow .4s var(--ease), border-color .3s;
+    animation:borderPulse 5s ease infinite;
+  }
+  .cf:hover { transform:translateY(-6px) scale(1.005); border-color:rgba(201,168,76,.3); box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 50px rgba(201,168,76,.08); }
+  .cf-bg {
+    position:absolute; inset:0;
+    background:
+      linear-gradient(135deg,rgba(201,168,76,.07) 0%,transparent 50%),
+      linear-gradient(315deg,rgba(96,165,250,.04) 0%,transparent 50%),
+      var(--s-0);
+  }
+  .cf-bg-pattern {
+    position:absolute; inset:0; opacity:.3;
+    background-image:
+      linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);
+    background-size:40px 40px;
+    mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black,transparent);
+  }
+  .cf-inner {
+    position:relative; z-index:1; padding:clamp(1.8rem,3.5vw,3rem);
+    display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:center;
+  }
+  .cf-badge {
+    display:inline-flex; align-items:center; gap:7px; padding:5px 14px;
+    border-radius:var(--r-pill); background:rgba(201,168,76,.09);
+    border:1px solid rgba(201,168,76,.18); font-family:var(--f);
+    font-size:.63rem; color:var(--gold); letter-spacing:.09em;
+    margin-bottom:1.2rem; text-transform:uppercase; font-weight:400;
+  }
+  .cf-title {
+    font-family:var(--f); font-size:clamp(1.4rem,2.8vw,2.1rem);
+    color:var(--t-0); font-weight:400; line-height:1.48; margin-bottom:1rem;
+    transition:color .3s;
+  }
+  .cf:hover .cf-title { color:var(--gold-l); }
+  .cf-excerpt {
+    font-family:var(--f); font-size:clamp(.86rem,1.5vw,.97rem);
+    color:var(--t-2); line-height:2.1; max-width:660px;
+    white-space:pre-line; font-weight:400;
+    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .cf-cta {
+    display:inline-flex; align-items:center; gap:9px; margin-top:1.8rem;
+    padding:10px 22px; border-radius:var(--r-pill);
+    background:rgba(201,168,76,.09); border:1px solid rgba(201,168,76,.2);
+    color:var(--gold); font-family:var(--f); font-size:.82rem; font-weight:400;
+    cursor:pointer; transition:all .28s var(--ease); position:relative; overflow:hidden;
+  }
+  .cf-cta::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(201,168,76,.1),transparent); transform:translateX(-100%); transition:transform .4s; }
+  .cf:hover .cf-cta::before { transform:translateX(100%); }
+  .cf:hover .cf-cta { background:rgba(201,168,76,.18); border-color:rgba(201,168,76,.42); box-shadow:0 8px 28px rgba(201,168,76,.18); }
+  .cf-side { display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0; }
+  .cf-side-ico {
+    width:56px; height:56px; border-radius:16px;
+    background:rgba(201,168,76,.07); border:1px solid rgba(201,168,76,.12);
+    display:flex; align-items:center; justify-content:center;
+    animation:float 8s ease-in-out infinite;
+  }
 
   /* ══════════════════════════════════════════
-     WRITING CARD — Tactile Premium v8
+     RESULTS BAR
   ══════════════════════════════════════════ */
-  .wc{
-    position:relative;border-radius:var(--r);overflow:hidden;
-    display:flex;flex-direction:column;cursor:pointer;min-height:220px;
-    border:1px solid var(--card-border);
-    background:var(--card-bg);
-    transition:transform .38s var(--spring),box-shadow .38s var(--ease),border-color .25s;
-    will-change:transform;
-    animation:cardReveal .4s var(--ease) both;
+  .cr {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:clamp(1.2rem,2.5vw,2rem); flex-wrap:wrap; gap:8px;
   }
-  /* Noise texture overlay for tactile feel */
-  .wc::after{
-    content:'';position:absolute;inset:0;border-radius:var(--r);
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
-    pointer-events:none;opacity:.5;z-index:0;
+  .cr-txt { display:flex; align-items:center; gap:7px; font-family:var(--f); font-size:.78rem; color:var(--t-3); font-weight:400; }
+  .cr-num { color:var(--gold); font-size:.92rem; font-weight:400; }
+  .cr-clear {
+    display:inline-flex; align-items:center; gap:5px; padding:4px 12px;
+    border-radius:var(--r-pill); background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.07); color:var(--t-3);
+    font-family:var(--f); font-size:.7rem; cursor:pointer;
+    transition:all .22s; font-weight:400;
   }
-  .wc-top{position:absolute;top:0;left:0;right:0;height:2px;background:var(--c-top,#D4A843);border-radius:var(--r) var(--r) 0 0;opacity:.55;transition:opacity .25s,height .25s,box-shadow .25s;z-index:3}
-  .wc-left{position:absolute;left:0;top:12px;bottom:12px;width:2px;background:var(--c-accent,#D4A843);border-radius:0 2px 2px 0;opacity:.4;z-index:3;transition:width .25s,opacity .25s,top .25s,bottom .25s}
-  .wc:hover{transform:translateY(-9px) scale(1.013);box-shadow:0 24px 55px rgba(0,0,0,.5),0 0 0 1px var(--c-border,rgba(212,168,67,.25)),0 0 35px var(--c-glow,rgba(212,168,67,.07));border-color:var(--c-border,rgba(212,168,67,.25))}
-  .wc:hover .wc-top{opacity:1;height:2.5px;box-shadow:0 0 14px var(--c-glow,rgba(212,168,67,.4))}
-  .wc:hover .wc-left{width:3px;opacity:.88;top:8px;bottom:8px}
-  .wc-list{flex-direction:row!important;border-radius:13px;min-height:unset}
-  .wc-list .wc-top{top:0;left:0;right:auto;bottom:0;width:2px;height:auto;border-radius:13px 0 0 13px}
-  .wc-list .wc-left{display:none}
-  .wc-list:hover{transform:translateY(-3px) scale(1.004)!important}
-  .wc-body{padding:20px 18px 16px 24px;flex:1;display:flex;flex-direction:column;position:relative;z-index:1}
-  .wc-list .wc-body{padding:14px 18px 14px 24px!important}
-  .wc-badges{display:flex;align-items:center;gap:5px;margin-bottom:10px;flex-wrap:wrap}
-  .wc-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px 2px 7px;border-radius:var(--r-pill);font-size:.62rem;font-family:var(--f);font-weight:400;letter-spacing:.04em;text-transform:uppercase;background:var(--c-badge,rgba(212,168,67,.1));color:var(--c-accent,#D4A843);border:1px solid color-mix(in srgb,var(--c-accent,#D4A843) 25%,transparent);transition:all .2s}
-  .wc:hover .wc-badge{background:color-mix(in srgb,var(--c-accent,#D4A843) 16%,transparent)}
-  .wc-star{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--r-pill);font-size:.59rem;font-family:var(--f);background:rgba(246,201,14,.09);color:var(--gold2);font-weight:400;border:1px solid rgba(246,201,14,.2)}
-  .wc-title{font-family:var(--f);font-size:1.04rem;color:rgba(237,231,219,.94);font-weight:400;line-height:1.62;margin-bottom:9px;transition:color .25s;position:relative;z-index:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .wc:hover .wc-title{color:var(--c-accent,#f0c060)}
-  .wc-preview{font-family:var(--f);font-size:.82rem;color:rgba(237,231,219,.33);line-height:1.95;flex:1;font-weight:400;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;position:relative;z-index:1;transition:color .25s}
-  .wc:hover .wc-preview{color:rgba(237,231,219,.52)}
-  .wc-foot{margin-top:14px;padding-top:11px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
-  .wc-date{font-family:var(--f);font-size:.67rem;color:rgba(237,231,219,.2);font-weight:400;display:flex;align-items:center;gap:4px}
-  .wc-read{font-family:var(--f);font-size:.7rem;font-weight:400;color:var(--c-accent,#D4A843);display:flex;align-items:center;gap:3px;transition:gap .2s}
-  .wc:hover .wc-read{gap:7px}
-  .wc-empty{text-align:center;padding:clamp(3rem,6vw,5rem) 1rem;color:var(--muted);font-family:var(--f);font-weight:400}
+  .cr-clear:hover { color:var(--t-1); background:rgba(255,255,255,.07); }
 
   /* ══════════════════════════════════════════
-     READING MODAL — Immersive Bottom-Sheet v5
+     WRITING GRID — Cinematic Magazine
   ══════════════════════════════════════════ */
-  .rm-ov{
-    position:fixed;inset:0;z-index:1000;
-    background:rgba(1,3,9,.93);backdrop-filter:blur(26px);
-    display:flex;align-items:flex-end;justify-content:center;padding:0;
-  }
-  @media(min-width:600px){.rm-ov{align-items:center;padding:clamp(1rem,3vw,2rem)}}
-  .rm-box{
-    width:100%;max-width:680px;
-    border-radius:26px 26px 0 0;overflow:hidden;
-    display:flex;flex-direction:column;max-height:96vh;
-    box-shadow:0 -8px 55px rgba(0,0,0,.48);
-  }
-  @media(min-width:600px){.rm-box{border-radius:24px;max-height:90vh;margin:auto;box-shadow:0 50px 130px rgba(0,0,0,.7)}}
-  .rm-handle{width:36px;height:4px;border-radius:2px;background:rgba(128,128,128,.3);margin:10px auto 0;flex-shrink:0}
-  @media(min-width:600px){.rm-handle{display:none}}
-  .rm-prog-track{height:3px;width:100%;flex-shrink:0}
-  .rm-prog-fill{height:100%;transition:width .18s ease;border-radius:0 2px 2px 0}
-  .rm-head{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;gap:8px;flex-shrink:0;border-bottom:1px solid}
-  .rm-head-l{display:flex;align-items:center;gap:7px;flex:1;min-width:0}
-  .rm-cat{display:inline-flex;align-items:center;gap:4px;padding:3px 11px;border-radius:var(--r-pill);font-family:var(--f);font-size:.61rem;font-weight:400;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
-  .rm-ctrl{display:flex;align-items:center;gap:4px;flex-shrink:0}
-  .rm-btn{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;border:1px solid;cursor:pointer;transition:all .18s;background:transparent}
-  .rm-close{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid;cursor:pointer;transition:all .18s;background:transparent}
-  .rm-close:hover{background:rgba(231,76,60,.1)!important;color:#e74c3c!important}
-  .rm-theme-row{display:flex;align-items:center;gap:5px;padding:8px 15px;flex-shrink:0;border-bottom:1px solid;flex-wrap:wrap}
-  .rm-theme-btn{display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:var(--r-pill);font-family:var(--f);font-size:.7rem;font-weight:400;border:1px solid;cursor:pointer;transition:all .18s;background:transparent;white-space:nowrap}
-  .rm-font-grp{display:flex;align-items:center;gap:3px;margin-left:auto}
-  .rm-font-btn{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid;cursor:pointer;transition:all .18s;background:transparent}
-  .rm-body{flex:1;overflow-y:auto;padding:26px 22px 22px;scroll-behavior:smooth}
-  @media(min-width:600px){.rm-body{padding:34px 42px 30px}}
-  .rm-body::-webkit-scrollbar{width:3px}
-  .rm-body::-webkit-scrollbar-track{background:transparent}
-  .rm-body::-webkit-scrollbar-thumb{background:rgba(128,128,128,.18);border-radius:3px}
-  .rm-title{font-family:var(--f);font-size:clamp(1.35rem,3.5vw,1.8rem);font-weight:400;line-height:1.52;margin-bottom:1.4rem;padding-bottom:1.2rem;border-bottom:1px solid}
-  .rm-text{font-family:var(--f);font-weight:400;white-space:pre-line;line-height:2.35;letter-spacing:.008em;transition:font-size .18s}
-  .rm-author{display:flex;align-items:center;gap:12px;margin-top:2.2rem;padding:14px 16px;border-radius:14px;border:1px solid}
-  .rm-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid}
-  .rm-an{font-family:var(--f);font-size:.88rem;font-weight:400;line-height:1.4}
-  .rm-am{font-family:var(--f);font-size:.66rem;font-weight:400;margin-top:2px}
-  .rm-nav{display:flex;border-top:1px solid;flex-shrink:0}
-  .rm-nbtn{flex:1;padding:13px 14px;background:transparent;border:none;cursor:pointer;transition:background .18s;font-family:var(--f);font-weight:400;display:flex;align-items:center;gap:7px}
-  .rm-nbtn:disabled{opacity:.22;cursor:not-allowed}
-  .rm-nbtn:not(:disabled):hover{background:rgba(128,128,128,.04)}
-  .rm-nbtn:first-child{border-right:1px solid;justify-content:flex-start}
-  .rm-nbtn:last-child{justify-content:flex-end}
-  .rm-nlbl{font-size:.57rem;opacity:.42;display:block;margin-bottom:2px}
-  .rm-ntitle{font-size:.78rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
-  .rm-share-dd{position:absolute;top:40px;right:0;background:#fff;border-radius:13px;box-shadow:0 10px 38px rgba(13,27,42,.18);border:1px solid rgba(13,27,42,.07);min-width:185px;z-index:10;overflow:hidden}
-  .rm-share-item{width:100%;padding:11px 16px;display:flex;align-items:center;gap:10px;background:transparent;border:none;cursor:pointer;font-family:var(--f);font-size:.8rem;font-weight:400;transition:background .14s;text-align:left}
-  .rm-share-item:hover{background:rgba(13,27,42,.04)}
-  .rm-share-item+.rm-share-item{border-top:1px solid rgba(13,27,42,.055)}
+  .cg { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:clamp(14px,2vw,24px); }
+  .cg-list { display:flex; flex-direction:column; gap:clamp(10px,1.5vw,16px); }
 
   /* ══════════════════════════════════════════
-     EBOOK SECTION — 3D Library
+     WRITING CARD — Cinematic Premium v9
   ══════════════════════════════════════════ */
-  .pe-divider{display:flex;align-items:center;gap:12px;margin-bottom:clamp(1.4rem,2.5vw,2.2rem);margin-top:clamp(.6rem,1.2vw,1rem)}
-  .pe-div-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .pe-div-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.05),transparent)}
-  .pe-div-lbl{font-family:var(--f);font-size:.66rem;font-weight:400;letter-spacing:.16em;text-transform:uppercase}
-  .pe-feat{
-    border-radius:var(--r);overflow:hidden;
-    margin-bottom:clamp(1.8rem,3.5vw,2.8rem);
-    position:relative;cursor:pointer;
-    background:linear-gradient(135deg,#060C1A 0%,#0A1626 50%,#060C1A 100%);
-    border:1px solid rgba(74,144,217,.1);
-    transition:all .4s var(--spring);
+  .wc {
+    position:relative; border-radius:var(--r); overflow:hidden;
+    display:flex; flex-direction:column; cursor:pointer; min-height:230px;
+    border:1px solid var(--s-border); background:var(--s-0);
+    transition:transform .42s var(--spring), box-shadow .42s var(--ease), border-color .28s;
+    will-change:transform; animation:cardIn .45s var(--ease) both;
   }
-  .pe-feat:hover{transform:translateY(-4px);box-shadow:0 30px 78px rgba(0,0,0,.5),0 0 0 1px rgba(74,144,217,.22);border-color:rgba(74,144,217,.25)}
-  .pe-feat-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 58% 78% at 0% 50%,rgba(74,144,217,.055) 0%,transparent 55%)}
-  .pe-feat-inner{padding:clamp(1.5rem,3.5vw,2.4rem);position:relative;z-index:1;display:flex;gap:clamp(1.4rem,3.5vw,2.8rem);align-items:center}
-  .pe-feat-cover{
-    width:clamp(95px,15vw,155px);flex-shrink:0;border-radius:11px;overflow:hidden;
-    box-shadow:0 16px 48px rgba(0,0,0,.45);
-    transition:transform .4s var(--spring);
-    transform-style:preserve-3d;
+  /* Cinematic noise texture */
+  .wc::after {
+    content:''; position:absolute; inset:0; border-radius:var(--r); pointer-events:none; opacity:.6; z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
   }
-  .pe-feat:hover .pe-feat-cover{transform:perspective(600px) rotateY(-8deg) rotateX(3deg) scale(1.04)}
-  .pe-feat-cover img{width:100%;display:block}
-  .pe-feat-content{flex:1;display:flex;flex-direction:column}
-  .pe-feat-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:var(--r-pill);font-family:var(--f);font-size:.66rem;font-weight:400;margin-bottom:.9rem;letter-spacing:.05em;align-self:flex-start}
-  .pe-feat-author{display:flex;align-items:center;gap:7px;margin-bottom:.75rem;font-family:var(--f);font-size:.78rem;color:var(--muted);font-weight:400}
-  .pe-feat-title{font-family:var(--f);color:var(--cream);font-weight:400;font-size:clamp(1.4rem,3vw,2.2rem);line-height:1.35;margin-bottom:.9rem}
-  .pe-feat-desc{color:var(--dim);font-size:.86rem;line-height:1.95;margin-bottom:1.4rem;font-family:var(--f);font-weight:400}
-  .pe-feat-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:1.5rem}
-  .pe-feat-tag{font-size:.74rem;padding:5px 12px;border-radius:var(--r-pill);font-family:var(--f);font-weight:400;border:1px solid transparent}
-  .pe-feat-btns{display:flex;flex-wrap:wrap;gap:10px}
-  .pe-btn-p{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#C9A030,#E8B84B);color:#0D1B2A;padding:11px 22px;border-radius:var(--r-pill);font-weight:400;font-size:.88rem;border:none;cursor:pointer;font-family:var(--f);box-shadow:0 5px 22px rgba(212,168,67,.3);transition:all .25s;position:relative;overflow:hidden}
-  .pe-btn-p::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:translateX(-100%);transition:transform .45s}
-  .pe-btn-p:hover::before{transform:translateX(100%)}
-  .pe-btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(212,168,67,.44)}
-  .pe-btn-o{display:flex;align-items:center;gap:7px;background:transparent;color:var(--gold);padding:11px 22px;border-radius:var(--r-pill);font-weight:400;font-size:.88rem;border:1.5px solid rgba(212,168,67,.3);cursor:pointer;font-family:var(--f);transition:all .25s}
-  .pe-btn-o:hover{background:rgba(212,168,67,.07);border-color:var(--gold);transform:translateY(-2px);box-shadow:0 7px 24px rgba(212,168,67,.16)}
-  .pe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:clamp(14px,2.2vw,24px);margin-bottom:clamp(2rem,4vw,3.5rem)}
-  .pe-card{
-    border-radius:var(--r);overflow:hidden;
-    background:rgba(6,12,24,.88);border:1px solid rgba(255,255,255,.052);
-    transition:all .4s var(--spring);cursor:pointer;position:relative;
-    backdrop-filter:blur(5px);
-    transform-style:preserve-3d;
+  /* Accent top line */
+  .wc-accent {
+    position:absolute; top:0; left:0; right:0; height:2.5px;
+    background:var(--c-accent,#C9A84C); border-radius:var(--r) var(--r) 0 0;
+    opacity:.5; transition:opacity .28s, height .28s, box-shadow .28s; z-index:3;
   }
-  .pe-card:hover{transform:translateY(-12px) perspective(600px) rotateY(-4deg) scale(1.02);border-color:rgba(212,168,67,.2);box-shadow:0 28px 65px rgba(0,0,0,.5),0 0 0 1px rgba(212,168,67,.08)}
-  .pe-cover-wrap{position:relative;overflow:hidden;aspect-ratio:3/4}
-  .pe-cover{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
-  .pe-card:hover .pe-cover{transform:scale(1.07)}
-  .pe-cover-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(3,7,14,.96) 0%,rgba(3,7,14,.32) 44%,transparent 100%)}
-  .pe-hover-ov{position:absolute;inset:0;background:rgba(3,7,14,.76);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;backdrop-filter:blur(2px)}
-  .pe-card:hover .pe-hover-ov{opacity:1}
-  .pe-hover-btn{padding:9px 19px;border-radius:var(--r-pill);background:rgba(212,168,67,.1);border:1.5px solid rgba(212,168,67,.4);color:var(--gold);font-weight:400;font-family:var(--f);font-size:.8rem;cursor:pointer;display:flex;align-items:center;gap:7px;transform:translateY(9px);transition:all .3s var(--spring)}
-  .pe-card:hover .pe-hover-btn{transform:translateY(0)}
-  .pe-badge{position:absolute;top:10px;left:10px;padding:3px 10px;border-radius:var(--r-pill);font-family:var(--f);font-size:.6rem;font-weight:400;backdrop-filter:blur(10px)}
-  .pe-info{padding:14px 15px 17px}
-  .pe-book-title{font-family:var(--f);color:var(--cream);font-size:1rem;font-weight:400;line-height:1.52;margin-bottom:5px;transition:color .2s}
-  .pe-card:hover .pe-book-title{color:#f0c060}
-  .pe-meta{font-family:var(--f);color:rgba(237,231,219,.3);font-size:.7rem;margin-bottom:9px;display:flex;align-items:center;gap:4px;font-weight:400}
-  .pe-desc{font-family:var(--f);color:rgba(237,231,219,.4);font-size:.78rem;line-height:1.8;font-weight:400;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:11px}
-  .pe-read-btn{width:100%;padding:9px 0;border-radius:10px;border:none;cursor:pointer;font-family:var(--f);font-size:.8rem;font-weight:400;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .25s;position:relative;overflow:hidden}
-  .pe-read-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-100%);transition:transform .38s}
-  .pe-read-btn:hover::before{transform:translateX(100%)}
-  .pe-read-btn:hover{transform:translateY(-1px)}
-  .pe-soon{border-radius:16px;overflow:hidden;background:linear-gradient(135deg,rgba(74,144,217,.05) 0%,rgba(6,12,24,.84) 100%);border:1px solid rgba(74,144,217,.09);padding:clamp(1.4rem,3vw,2rem);text-align:center;position:relative}
-
-  /* ── Book Modal ── */
-  .bm-ov{position:fixed;inset:0;z-index:1000;background:rgba(1,3,9,.93);backdrop-filter:blur(26px);display:flex;align-items:center;justify-content:center;padding:clamp(1rem,3vw,2rem)}
-  .bm-box{background:#0A1628;border-radius:22px;width:100%;max-width:640px;overflow:hidden;box-shadow:0 55px 130px rgba(0,0,0,.7);border:1px solid rgba(212,168,67,.1);margin:auto;max-height:88vh;overflow-y:auto}
-  .bm-head{padding:15px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.045)}
-  .bm-inner{display:flex;gap:0}
-  .bm-cover-wrap{width:180px;flex-shrink:0;overflow:hidden;background:#060E1A}
-  .bm-cover{width:100%;height:100%;min-height:260px;object-fit:cover;display:block}
-  .bm-content{flex:1;padding:1.4rem;display:flex;flex-direction:column}
+  /* Left glow line */
+  .wc-glow-line {
+    position:absolute; left:0; top:14px; bottom:14px; width:2px;
+    background:var(--c-accent,#C9A84C); border-radius:0 2px 2px 0;
+    opacity:.35; z-index:3; transition:width .28s, opacity .28s, top .28s, bottom .28s;
+  }
+  /* Hover state */
+  .wc:hover {
+    transform:translateY(-10px) scale(1.015);
+    box-shadow:0 28px 60px rgba(0,0,0,.55), 0 0 0 1px var(--c-border,rgba(201,168,76,.28)), 0 0 40px var(--c-glow,rgba(201,168,76,.08));
+    border-color:var(--c-border,rgba(201,168,76,.28));
+  }
+  .wc:hover .wc-accent { opacity:1; height:3px; box-shadow:0 0 18px var(--c-glow,rgba(201,168,76,.5)); }
+  .wc:hover .wc-glow-line { width:3.5px; opacity:.9; top:10px; bottom:10px; }
+  /* List mode */
+  .wc-list { flex-direction:row!important; border-radius:14px; min-height:unset; }
+  .wc-list .wc-accent { top:0; left:0; right:auto; bottom:0; width:2.5px; height:auto; border-radius:14px 0 0 14px; }
+  .wc-list .wc-glow-line { display:none; }
+  .wc-list:hover { transform:translateY(-4px) scale(1.005)!important; }
+  /* Card body */
+  .wc-body { padding:22px 20px 18px 26px; flex:1; display:flex; flex-direction:column; position:relative; z-index:1; }
+  .wc-list .wc-body { padding:16px 20px 16px 26px!important; }
+  /* Badges */
+  .wc-badges { display:flex; align-items:center; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+  .wc-badge {
+    display:inline-flex; align-items:center; gap:4px; padding:3px 11px 3px 8px;
+    border-radius:var(--r-pill); font-size:.62rem; font-family:var(--f); font-weight:400;
+    letter-spacing:.04em; text-transform:uppercase;
+    background:var(--c-badge,rgba(201,168,76,.1)); color:var(--c-accent,#C9A84C);
+    border:1px solid color-mix(in srgb,var(--c-accent,#C9A84C) 28%,transparent);
+    transition:all .22s;
+  }
+  .wc:hover .wc-badge { background:color-mix(in srgb,var(--c-accent,#C9A84C) 18%,transparent); }
+  .wc-star { display:inline-flex; align-items:center; gap:3px; padding:3px 9px; border-radius:var(--r-pill); font-size:.59rem; font-family:var(--f); background:rgba(201,168,76,.1); color:var(--gold-l); font-weight:400; border:1px solid rgba(201,168,76,.22); }
+  /* Title */
+  .wc-title {
+    font-family:var(--f); font-size:1.06rem; color:rgba(240,234,224,.93);
+    font-weight:400; line-height:1.65; margin-bottom:10px; transition:color .28s;
+    position:relative; z-index:1;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .wc:hover .wc-title { color:var(--c-accent,#E8B84B); }
+  /* Preview text */
+  .wc-preview {
+    font-family:var(--f); font-size:.82rem; color:rgba(240,234,224,.3);
+    line-height:2.0; flex:1; font-weight:400;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    position:relative; z-index:1; transition:color .28s;
+  }
+  .wc:hover .wc-preview { color:rgba(240,234,224,.5); }
+  /* Footer */
+  .wc-foot {
+    margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,.045);
+    display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;
+  }
+  .wc-date { font-family:var(--f); font-size:.66rem; color:rgba(240,234,224,.2); font-weight:400; display:flex; align-items:center; gap:4px; }
+  .wc-read { font-family:var(--f); font-size:.7rem; font-weight:400; color:var(--c-accent,#C9A84C); display:flex; align-items:center; gap:4px; transition:gap .22s; }
+  .wc:hover .wc-read { gap:8px; }
+  /* Empty state */
+  .wc-empty { text-align:center; padding:clamp(3rem,6vw,5.5rem) 1rem; color:var(--t-3); font-family:var(--f); font-weight:400; }
 
   /* ══════════════════════════════════════════
-     RESPONSIVE
+     READING MODAL — Cinematic Immersive v6
+  ══════════════════════════════════════════ */
+  .rm-ov {
+    position:fixed; inset:0; z-index:1000;
+    background:rgba(2,4,10,.95); backdrop-filter:blur(32px);
+    display:flex; align-items:flex-end; justify-content:center; padding:0;
+  }
+  .rm-box {
+    width:100%; max-width:780px; max-height:92vh;
+    border-radius:var(--r-xl) var(--r-xl) 0 0;
+    display:flex; flex-direction:column; overflow:hidden;
+    box-shadow:0 -30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+    position:relative;
+  }
+  .rm-handle { width:40px; height:4px; border-radius:2px; margin:12px auto 0; flex-shrink:0; }
+  .rm-prog-track { height:2px; flex-shrink:0; }
+  .rm-prog-fill { height:100%; transition:width .1s linear; }
+  /* Modal header */
+  .rm-head {
+    padding:14px 20px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid; flex-shrink:0; gap:12px;
+  }
+  .rm-head-l { display:flex; align-items:center; gap:8px; }
+  .rm-cat { display:inline-flex; align-items:center; gap:5px; padding:3px 11px; border-radius:var(--r-pill); font-family:var(--f); font-size:.65rem; font-weight:400; }
+  .rm-ctrl { display:flex; align-items:center; gap:6px; }
+  .rm-btn {
+    width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    border:1px solid; cursor:pointer; transition:all .2s; flex-shrink:0;
+  }
+  .rm-btn:hover { opacity:.75; }
+  .rm-font-ctrl { display:flex; align-items:center; gap:2px; border:1px solid; border-radius:9px; overflow:hidden; }
+  .rm-font-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; cursor:pointer; transition:background .2s; }
+  .rm-font-btn:hover { background:rgba(0,0,0,.08); }
+  .rm-theme-btn { display:flex; align-items:center; gap:4px; padding:5px 10px; border-radius:9px; border:1px solid; cursor:pointer; font-family:var(--f); font-size:.68rem; transition:all .2s; background:transparent; }
+  /* Share dropdown */
+  .rm-share-dd {
+    position:absolute; top:calc(100% + 8px); right:0; z-index:10;
+    background:#1A1A2C; border:1px solid rgba(255,255,255,.1); border-radius:14px;
+    padding:6px; min-width:200px; box-shadow:0 20px 50px rgba(0,0,0,.5);
+  }
+  .rm-share-item { display:flex; align-items:center; gap:9px; width:100%; padding:9px 13px; border-radius:9px; background:transparent; border:none; cursor:pointer; font-family:var(--f); font-size:.82rem; transition:background .18s; white-space:nowrap; }
+  .rm-share-item:hover { background:rgba(255,255,255,.06); }
+  /* Modal body */
+  .rm-body { flex:1; overflow-y:auto; padding:clamp(1.6rem,3vw,2.8rem) clamp(1.4rem,4vw,3.2rem); scroll-behavior:smooth; }
+  .rm-body::-webkit-scrollbar { width:4px; }
+  .rm-body::-webkit-scrollbar-track { background:transparent; }
+  .rm-body::-webkit-scrollbar-thumb { background:rgba(201,168,76,.25); border-radius:2px; }
+  .rm-writing-title { font-family:var(--f); font-size:clamp(1.5rem,3vw,2.1rem); font-weight:400; line-height:1.45; margin-bottom:1.8rem; }
+  .rm-writing-text { font-family:var(--f); line-height:2.4; font-weight:400; white-space:pre-line; }
+  .rm-writing-sig { margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid; font-family:var(--f); font-size:.82rem; font-weight:400; opacity:.5; }
+  /* Navigation */
+  .rm-nav { display:flex; border-top:1px solid; flex-shrink:0; }
+  .rm-nbtn { flex:1; display:flex; align-items:center; gap:10px; padding:14px 18px; background:transparent; border:none; cursor:pointer; transition:background .2s; }
+  .rm-nbtn:disabled { opacity:.35; cursor:not-allowed; }
+  .rm-nbtn:not(:disabled):hover { background:rgba(0,0,0,.05); }
+  .rm-nbtn:first-child { border-right:1px solid; }
+  .rm-nlbl { display:block; font-family:var(--f); font-size:.6rem; margin-bottom:2px; }
+  .rm-ntitle { display:block; font-family:var(--f); font-size:.78rem; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+
+  /* ══════════════════════════════════════════
+     E-BOOKS SECTION — Cinematic Library
+  ══════════════════════════════════════════ */
+  /* Section divider */
+  .ce-div { display:flex; align-items:center; gap:14px; margin-bottom:clamp(1.5rem,3vw,2.5rem); }
+  .ce-div-ico { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .ce-div-lbl { font-family:var(--f); font-size:.68rem; font-weight:400; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; }
+  .ce-div-line { flex:1; height:1px; }
+  /* Featured book */
+  .ce-feat {
+    position:relative; border-radius:var(--r-lg); overflow:hidden; margin-bottom:clamp(2rem,4vw,3.5rem);
+    border:1px solid rgba(201,168,76,.1); transition:all .4s var(--ease);
+    animation:borderPulse 6s ease infinite;
+  }
+  .ce-feat:hover { border-color:rgba(201,168,76,.28); box-shadow:0 25px 65px rgba(0,0,0,.5),0 0 45px rgba(201,168,76,.07); }
+  .ce-feat-bg {
+    position:absolute; inset:0;
+    background:linear-gradient(135deg,rgba(201,168,76,.08) 0%,rgba(4,6,12,.95) 55%,rgba(74,144,217,.04) 100%);
+  }
+  .ce-feat-inner { position:relative; z-index:1; display:flex; gap:0; }
+  .ce-feat-cover-wrap {
+    width:clamp(160px,22vw,240px); flex-shrink:0; overflow:hidden;
+    position:relative;
+  }
+  .ce-feat-cover { width:100%; height:100%; min-height:300px; object-fit:cover; display:block; transition:transform .6s var(--ease); }
+  .ce-feat:hover .ce-feat-cover { transform:scale(1.04); }
+  .ce-feat-cover-ov { position:absolute; inset:0; background:linear-gradient(90deg,transparent 60%,rgba(4,6,12,.8) 100%); }
+  .ce-feat-content { flex:1; padding:clamp(1.6rem,3vw,2.8rem); display:flex; flex-direction:column; justify-content:center; }
+  .ce-feat-badge { display:inline-flex; align-items:center; gap:7px; padding:5px 14px; border-radius:var(--r-pill); font-family:var(--f); font-size:.63rem; font-weight:400; letter-spacing:.08em; text-transform:uppercase; margin-bottom:1.2rem; width:fit-content; }
+  .ce-feat-author { font-family:var(--f); font-size:.72rem; color:var(--t-3); margin-bottom:.8rem; display:flex; align-items:center; gap:6px; font-weight:400; }
+  .ce-feat-title { font-family:var(--f); font-size:clamp(1.4rem,2.8vw,2rem); color:var(--t-0); font-weight:400; line-height:1.42; margin-bottom:1rem; transition:color .3s; }
+  .ce-feat:hover .ce-feat-title { color:var(--gold-l); }
+  .ce-feat-desc { font-family:var(--f); font-size:clamp(.84rem,1.4vw,.94rem); color:var(--t-2); line-height:1.95; margin-bottom:1.4rem; font-weight:400; }
+  .ce-feat-tags { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:1.8rem; }
+  .ce-feat-tag { padding:4px 12px; border-radius:var(--r-pill); font-family:var(--f); font-size:.68rem; font-weight:400; border:1px solid; }
+  .ce-feat-btns { display:flex; flex-wrap:wrap; gap:10px; }
+  .ce-btn-p {
+    display:flex; align-items:center; gap:9px; padding:12px 24px; border-radius:var(--r-pill);
+    background:linear-gradient(135deg,var(--gold-l),var(--gold),var(--gold-d));
+    color:#0A0E18; font-family:var(--f); font-size:.88rem; font-weight:400;
+    border:none; cursor:pointer; transition:all .3s var(--spring);
+    box-shadow:0 6px 24px rgba(201,168,76,.3);
+  }
+  .ce-btn-p:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 12px 36px rgba(201,168,76,.45); }
+  .ce-btn-o {
+    display:flex; align-items:center; gap:9px; padding:12px 24px; border-radius:var(--r-pill);
+    background:transparent; color:var(--gold); font-family:var(--f); font-size:.88rem;
+    font-weight:400; border:1.5px solid rgba(201,168,76,.35); cursor:pointer;
+    transition:all .3s var(--ease);
+  }
+  .ce-btn-o:hover { background:rgba(201,168,76,.1); border-color:rgba(201,168,76,.6); transform:translateY(-2px); }
+  /* Book grid */
+  .ce-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:clamp(14px,2vw,22px); margin-bottom:clamp(2rem,4vw,3rem); }
+  /* Book card */
+  .ce-card {
+    border-radius:var(--r); overflow:hidden; cursor:pointer;
+    border:1px solid var(--s-border); background:var(--s-0);
+    transition:all .38s var(--spring);
+  }
+  .ce-card:hover { transform:translateY(-8px) scale(1.02); border-color:rgba(201,168,76,.22); box-shadow:0 22px 55px rgba(0,0,0,.5),0 0 30px rgba(201,168,76,.07); }
+  .ce-cover-wrap { position:relative; overflow:hidden; aspect-ratio:3/4; }
+  .ce-cover { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s var(--ease); }
+  .ce-card:hover .ce-cover { transform:scale(1.06); }
+  .ce-cover-ov { position:absolute; inset:0; background:linear-gradient(to top,rgba(4,6,12,.9) 0%,transparent 55%); }
+  .ce-hover-ov { position:absolute; inset:0; background:rgba(4,6,12,.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .3s; }
+  .ce-card:hover .ce-hover-ov { opacity:1; }
+  .ce-hover-btn { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:var(--r-pill); background:rgba(201,168,76,.2); border:1px solid rgba(201,168,76,.4); color:var(--gold-l); font-family:var(--f); font-size:.78rem; cursor:pointer; backdrop-filter:blur(8px); }
+  .ce-badge { position:absolute; top:10px; right:10px; padding:3px 10px; border-radius:var(--r-pill); font-family:var(--f); font-size:.6rem; font-weight:400; backdrop-filter:blur(10px); }
+  .ce-info { padding:15px 16px 18px; }
+  .ce-book-title { font-family:var(--f); color:var(--t-0); font-size:1rem; font-weight:400; line-height:1.52; margin-bottom:5px; transition:color .22s; }
+  .ce-card:hover .ce-book-title { color:var(--gold-l); }
+  .ce-meta { font-family:var(--f); color:var(--t-3); font-size:.7rem; margin-bottom:9px; display:flex; align-items:center; gap:4px; font-weight:400; }
+  .ce-desc { font-family:var(--f); color:rgba(240,234,224,.38); font-size:.78rem; line-height:1.82; font-weight:400; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:12px; }
+  .ce-read-btn { width:100%; padding:10px 0; border-radius:11px; border:none; cursor:pointer; font-family:var(--f); font-size:.8rem; font-weight:400; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .28s; position:relative; overflow:hidden; }
+  .ce-read-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent); transform:translateX(-100%); transition:transform .4s; }
+  .ce-read-btn:hover::before { transform:translateX(100%); }
+  .ce-read-btn:hover { transform:translateY(-2px); }
+  /* Coming soon */
+  .ce-soon { border-radius:var(--r); overflow:hidden; background:linear-gradient(135deg,rgba(74,144,217,.06) 0%,rgba(4,6,12,.88) 100%); border:1px solid rgba(74,144,217,.1); padding:clamp(1.5rem,3vw,2.2rem); text-align:center; position:relative; }
+  /* Book modal */
+  .bm-ov { position:fixed; inset:0; z-index:1000; background:rgba(2,4,10,.95); backdrop-filter:blur(32px); display:flex; align-items:center; justify-content:center; padding:clamp(1rem,3vw,2rem); }
+  .bm-box { background:var(--ink-2); border-radius:var(--r-lg); width:100%; max-width:660px; overflow:hidden; box-shadow:0 60px 140px rgba(0,0,0,.75); border:1px solid rgba(201,168,76,.12); margin:auto; max-height:90vh; overflow-y:auto; }
+  .bm-head { padding:16px 22px; display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,.2); border-bottom:1px solid rgba(255,255,255,.05); }
+  .bm-inner { display:flex; gap:0; }
+  .bm-cover-wrap { width:190px; flex-shrink:0; overflow:hidden; background:var(--ink-1); }
+  .bm-cover { width:100%; height:100%; min-height:280px; object-fit:cover; display:block; }
+  .bm-content { flex:1; padding:1.6rem; display:flex; flex-direction:column; }
+
+  /* ══════════════════════════════════════════
+     RESPONSIVE — Mobile First
   ══════════════════════════════════════════ */
   @media(max-width:480px){
-    .ph{padding:7rem 1rem 2.5rem;min-height:auto}
-    .ph-inner{grid-template-columns:1fr}
-    .ph-orb{display:none}
-    .ph-title{font-size:1.85rem!important}
-    .ph-stats{gap:7px}
-    .ph-stat{padding:9px 12px}
-    .ph-stat-val{font-size:1rem}
-    .pt-tab{padding:12px 14px!important;font-size:.83rem!important}
-    .pg{grid-template-columns:1fr!important}
-    .pe-grid{grid-template-columns:1fr!important}
-    .pe-feat-inner{flex-direction:column!important}
-    .pe-feat-cover{width:100%!important}
-    .pe-feat-title{font-size:1.35rem!important}
-    .pe-btn-p,.pe-btn-o{padding:10px 16px!important;font-size:.85rem!important}
-    .pf-inner{grid-template-columns:1fr!important}
-    .pf-side{display:none!important}
+    .ch{padding:7.5rem 1rem 2.8rem;min-height:auto}
+    .ch-inner{grid-template-columns:1fr}
+    .ch-orb{display:none}
+    .ch-title{font-size:2rem!important}
+    .ch-stats{gap:7px}
+    .ch-stat{padding:10px 13px}
+    .ch-stat-val{font-size:1.05rem}
+    .cn-tab{padding:13px 15px!important;font-size:.82rem!important}
+    .cg{grid-template-columns:1fr!important}
+    .ce-grid{grid-template-columns:repeat(2,1fr)!important}
+    .ce-feat-inner{flex-direction:column!important}
+    .ce-feat-cover-wrap{width:100%!important}
+    .ce-feat-title{font-size:1.4rem!important}
+    .ce-btn-p,.ce-btn-o{padding:11px 18px!important;font-size:.85rem!important}
+    .cf-inner{grid-template-columns:1fr!important}
+    .cf-side{display:none!important}
     .bm-inner{flex-direction:column!important}
     .bm-cover-wrap{width:100%!important}
+    .rm-box{max-height:96vh}
+    .rm-body{padding:1.4rem 1.2rem}
   }
   @media(min-width:481px) and (max-width:768px){
-    .ph-inner{grid-template-columns:1fr}
-    .ph-orb{display:none}
-    .pg{grid-template-columns:repeat(2,1fr)!important}
-    .pe-grid{grid-template-columns:repeat(2,1fr)!important}
-    .pe-feat-inner{flex-direction:column!important}
-    .pe-feat-cover{width:100%!important}
-    .pf-inner{grid-template-columns:1fr!important}
-    .pf-side{display:none!important}
+    .ch-inner{grid-template-columns:1fr}
+    .ch-orb{display:none}
+    .cg{grid-template-columns:repeat(2,1fr)!important}
+    .ce-grid{grid-template-columns:repeat(2,1fr)!important}
+    .ce-feat-inner{flex-direction:column!important}
+    .ce-feat-cover-wrap{width:100%!important}
+    .cf-inner{grid-template-columns:1fr!important}
+    .cf-side{display:none!important}
   }
   @media(min-width:769px) and (max-width:1024px){
-    .pg{grid-template-columns:repeat(2,1fr)!important}
-    .pe-grid{grid-template-columns:repeat(2,1fr)!important}
-    .pe-feat-cover{width:200px!important}
+    .cg{grid-template-columns:repeat(2,1fr)!important}
+    .ce-grid{grid-template-columns:repeat(3,1fr)!important}
+    .ce-feat-cover-wrap{width:200px!important}
   }
   @media(min-width:1025px){
-    .pg{grid-template-columns:repeat(3,1fr)!important}
-    .pe-grid{grid-template-columns:repeat(3,1fr)!important}
+    .cg{grid-template-columns:repeat(3,1fr)!important}
+    .ce-grid{grid-template-columns:repeat(3,1fr)!important}
   }
   @media(min-width:1400px){
-    .pg{grid-template-columns:repeat(4,1fr)!important}
-    .pe-grid{grid-template-columns:repeat(4,1fr)!important}
+    .cg{grid-template-columns:repeat(4,1fr)!important}
+    .ce-grid{grid-template-columns:repeat(4,1fr)!important}
   }
   @media(max-width:600px){
     .bm-inner{flex-direction:column!important}
     .bm-cover-wrap{width:100%!important}
     .bm-cover{min-height:200px!important;object-fit:cover!important}
+    .ce-grid{grid-template-columns:1fr!important}
   }
+
+  /* ══════════════════════════════════════════
+     ADDITIONAL POLISH — Micro-interactions
+  ══════════════════════════════════════════ */
+  /* Scrollbar global */
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-track { background:rgba(255,255,255,.02); }
+  ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:rgba(201,168,76,.38); }
+  /* Selection */
+  ::selection { background:rgba(201,168,76,.25); color:var(--t-0); }
+  /* Focus visible */
+  button:focus-visible, a:focus-visible { outline:2px solid rgba(201,168,76,.5); outline-offset:3px; border-radius:4px; }
+  /* Smooth transitions for all interactive elements */
+  button, a { transition-property:color,background,border-color,box-shadow,transform,opacity; transition-duration:.22s; transition-timing-function:var(--ease); }
+  /* Category-specific featured banner accent */
+  .cf-cat-accent { position:absolute; top:0; left:0; bottom:0; width:3px; border-radius:var(--r-lg) 0 0 var(--r-lg); }
+  /* Shimmer loading state */
+  .shimmer-line { background:linear-gradient(90deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 100%); background-size:300% 100%; animation:shimmer 2s ease infinite; border-radius:4px; }
+  /* Page transition */
+  .page-enter { animation:fadeUp .4s var(--ease) both; }
+  /* Ink drop decoration */
+  .ink-drop { position:absolute; pointer-events:none; border-radius:50%; background:radial-gradient(circle,rgba(201,168,76,.15),transparent); filter:blur(40px); }
+  /* Card number badge */
+  .wc-num { position:absolute; top:14px; right:14px; width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; font-family:var(--f); font-size:.6rem; color:var(--t-4); z-index:2; }
+  /* Quote decoration in featured */
+  .cf-quote-mark { font-family:Georgia,serif; font-size:5rem; line-height:1; color:rgba(201,168,76,.08); position:absolute; top:10px; right:20px; pointer-events:none; user-select:none; }
+  /* Hero subtitle gradient text */
+  .ch-sub-grad { background:linear-gradient(90deg,var(--t-2),var(--t-1),var(--t-2)); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 8s linear infinite; }
+  /* Cinematic vignette on hero */
+  .ch::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 100% 100% at 50% 0%,transparent 40%,rgba(4,6,12,.6) 100%); pointer-events:none; z-index:1; }
+  /* Bottom fade on hero */
+  .ch::after { content:''; position:absolute; bottom:0; left:0; right:0; height:120px; background:linear-gradient(to bottom,transparent,var(--ink-1)); pointer-events:none; z-index:1; }
 `;
 
-// ── Writing Card — Tactile Premium v8 ────────────────────────────────────────
+// ── Writing Card — Cinematic Premium v9 ──────────────────────────────────────
 function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   writing: Writing; index: number; onClick: () => void; viewMode?: "grid"|"list";
 }) {
-  const c = getCategoryColor(writing.category);
+  const c = getCatStyle(writing.category);
   const preview = writing.content.slice(0, 160);
   return (
     <motion.div
       className={`wc${viewMode === "list" ? " wc-list" : ""}`}
       style={{
         "--c-accent": c.accent, "--c-glow": c.glow,
-        "--c-badge": c.badge, "--c-border": `${c.accent}42`,
-        "--c-top": c.topLine,
-        background: `linear-gradient(155deg,${c.bg} 0%,rgba(6,12,24,.94) 100%)`,
-        animationDelay: `${Math.min(index * 0.04, 0.6)}s`,
+        "--c-badge": c.badge, "--c-border": c.border,
+        animationDelay: `${index * 0.045}s`,
       } as React.CSSProperties}
-      whileHover={{ scale: viewMode === "list" ? 1.004 : 1.013 }}
+      whileHover={{ y: viewMode === "list" ? -4 : -10 }}
+      whileTap={{ scale: .98 }}
       onClick={onClick}
     >
-      <div className="wc-top" />
-      <div className="wc-left" />
+      <div className="wc-accent"/>
+      <div className="wc-glow-line"/>
       <div className="wc-body">
         <div className="wc-badges">
-          <span className="wc-badge" style={{ "--c-accent": c.accent, "--c-badge": c.badge } as React.CSSProperties}>
+          <span className="wc-badge">
             <span>{c.icon}</span>{writing.category}
           </span>
           {writing.featured && (
-            <span className="wc-star"><Crown size={8} /> বিশেষ</span>
+            <span className="wc-star"><Star size={9} fill="currentColor"/> বিশেষ</span>
           )}
         </div>
         <h3 className="wc-title">{writing.title}</h3>
-        <p className="wc-preview">{preview}{writing.content.length > 160 ? "…" : ""}</p>
+        <p className="wc-preview">{preview}</p>
         <div className="wc-foot">
-          <span className="wc-date"><Calendar size={10} />{writing.date}</span>
-          <span className="wc-read" style={{ "--c-accent": c.accent } as React.CSSProperties}>
-            পড়ুন <ChevronRight size={11} />
+          <span className="wc-date"><Calendar size={10}/>{writing.date}</span>
+          <span className="wc-read" style={{"--c-accent": c.accent} as React.CSSProperties}>
+            পড়ুন <ChevronRight size={11}/>
           </span>
         </div>
       </div>
@@ -10529,7 +10734,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   );
 }
 
-// ── Writing Modal — Immersive Bottom-Sheet v5 ─────────────────────────────────
+// ── Writing Modal — Cinematic Immersive Reader v6 ─────────────────────────────
 function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   writing: Writing; allWritings: Writing[];
   onClose: () => void; onNavigate: (w: Writing) => void;
@@ -10540,7 +10745,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const c = getCategoryColor(writing.category);
+  const c = getCatStyle(writing.category);
   const idx = allWritings.findIndex(w => w.id === writing.id);
   const prev = idx > 0 ? allWritings[idx - 1] : null;
   const next = idx < allWritings.length - 1 ? allWritings[idx + 1] : null;
@@ -10559,23 +10764,26 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
       setProgress(t > 0 ? Math.min(100, (scrollTop / t) * 100) : 100);
     };
     el.addEventListener("scroll", fn, { passive: true });
-    setProgress(0);
-    el.scrollTop = 0;
+    setProgress(0); el.scrollTop = 0;
     return () => el.removeEventListener("scroll", fn);
   }, [writing.id]);
 
   const TH = {
-    light: { bg:"#F9F9F7", surface:"#F2F2EF", text:"#1A1A2C", dim:"#55556A", sub:"#8888A0", border:"rgba(26,26,44,.08)" },
-    sepia: { bg:"#FDF8EE", surface:"#F5EDD8", text:"#3A2E1E", dim:"#6A5A45", sub:"#9A8570", border:"rgba(90,60,30,.1)" },
-    dark:  { bg:"#0B1120", surface:"#07090F", text:"#EDE7DB", dim:"rgba(237,231,219,.62)", sub:"rgba(237,231,219,.36)", border:"rgba(255,255,255,.07)" },
+    light: { bg:"#F8F7F4", surface:"#F0EFE9", text:"#18182A", dim:"#52526A", sub:"#8585A0", border:"rgba(24,24,42,.09)", handle:"rgba(24,24,42,.15)" },
+    sepia: { bg:"#FBF6EC", surface:"#F3EDD8", text:"#3A2C1C", dim:"#6A5840", sub:"#9A8568", border:"rgba(90,58,28,.1)", handle:"rgba(90,58,28,.2)" },
+    dark:  { bg:"#0B1120", surface:"#080C18", text:"#EDE7DB", dim:"rgba(237,231,219,.62)", sub:"rgba(237,231,219,.36)", border:"rgba(255,255,255,.07)", handle:"rgba(255,255,255,.12)" },
   };
   const th = TH[theme];
-  const themeLabels = { light:"☀️", sepia:"📜", dark:"🌙" };
-
+  const themeIcons = { light: <Sun size={13}/>, sepia: <Scroll size={13}/>, dark: <Moon size={13}/> };
+  const themeNext: Record<string, "light"|"sepia"|"dark"> = { light:"sepia", sepia:"dark", dark:"light" };
   const shareUrl = `${window.location.origin}/writings`;
   const shareText = `মাহবুব সরদার সবুজ লিখেছেন: ${writing.title}`;
+
   const handleCopy = async () => {
-    try { await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0,300)}…\n\nপড়ুন: ${shareUrl}`); setCopied(true); setTimeout(()=>setCopied(false),2500); } catch {}
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0,300)}…\n\nপড়ুন: ${shareUrl}`);
+      setCopied(true); setTimeout(() => setCopied(false), 2500);
+    } catch {}
   };
   const navigate = (w: Writing) => {
     onNavigate(w);
@@ -10586,19 +10794,17 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
     <motion.div className="rm-ov" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}>
       <motion.div
         className="rm-box" style={{background:th.bg}}
-        initial={{opacity:0,y:60,scale:.97}} animate={{opacity:1,y:0,scale:1}}
-        exit={{opacity:0,y:60,scale:.97}}
-        transition={{type:"spring",damping:32,stiffness:310}}
+        initial={{opacity:0,y:70,scale:.96}} animate={{opacity:1,y:0,scale:1}}
+        exit={{opacity:0,y:70,scale:.96}}
+        transition={{type:"spring",damping:34,stiffness:320}}
         onClick={e=>e.stopPropagation()}
       >
-        {/* Mobile drag handle */}
-        <div className="rm-handle" style={{background:th.border}}/>
-
-        {/* Progress */}
+        {/* Drag handle */}
+        <div className="rm-handle" style={{background:th.handle}}/>
+        {/* Progress bar */}
         <div className="rm-prog-track" style={{background:th.border}}>
           <div className="rm-prog-fill" style={{width:`${progress}%`,background:`linear-gradient(90deg,${c.accent},${c.accent}88)`}}/>
         </div>
-
         {/* Header */}
         <div className="rm-head" style={{background:th.surface,borderBottomColor:th.border}}>
           <div className="rm-head-l">
@@ -10607,65 +10813,68 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             </span>
           </div>
           <div className="rm-ctrl">
+            {/* Font size */}
+            <div className="rm-font-ctrl" style={{borderColor:th.border}}>
+              <button className="rm-font-btn" style={{color:th.dim}} onClick={()=>setFontSize(f=>Math.max(.85,f-.08))}>
+                <AArrowDown size={13}/>
+              </button>
+              <button className="rm-font-btn" style={{color:th.dim}} onClick={()=>setFontSize(f=>Math.min(1.45,f+.08))}>
+                <AArrowUp size={13}/>
+              </button>
+            </div>
+            {/* Theme toggle */}
+            <button className="rm-theme-btn" style={{color:th.dim,borderColor:th.border}} onClick={()=>setTheme(themeNext[theme])}>
+              {themeIcons[theme]}
+            </button>
+            {/* Share */}
             <div style={{position:"relative"}}>
               <button className="rm-btn" style={{color:th.dim,borderColor:th.border,background:th.surface}} onClick={()=>setShowShare(s=>!s)}>
                 <Share2 size={13}/>
               </button>
               <AnimatePresence>
                 {showShare && (
-                  <motion.div className="rm-share-dd" initial={{opacity:0,y:-7,scale:.95}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-7,scale:.95}} transition={{duration:.13}} onClick={e=>e.stopPropagation()}>
+                  <motion.div className="rm-share-dd" initial={{opacity:0,y:-8,scale:.94}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:.94}} transition={{duration:.14}} onClick={e=>e.stopPropagation()}>
                     <button className="rm-share-item" style={{color:"#1877F2"}} onClick={()=>{window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,"_blank","width=600,height=400");setShowShare(false)}}>
                       <Facebook size={14}/> Facebook-এ শেয়ার
                     </button>
-                    <button className="rm-share-item" style={{color:copied?"#27ae60":"#333"}} onClick={()=>{handleCopy();setShowShare(false)}}>
+                    <button className="rm-share-item" style={{color:copied?"#27ae60":th.text}} onClick={()=>{handleCopy();setShowShare(false)}}>
                       {copied?<Check size={14}/>:<Copy size={14}/>} {copied?"কপি হয়েছে!":"লিংক কপি করুন"}
                     </button>
-                    <button className="rm-share-item" style={{color:"#555"}} onClick={()=>{if(navigator.share)navigator.share({title:writing.title,text:shareText,url:shareUrl}).catch(()=>{});else handleCopy();setShowShare(false)}}>
+                    <button className="rm-share-item" style={{color:th.dim}} onClick={()=>{if(navigator.share)navigator.share({title:writing.title,text:shareText,url:shareUrl}).catch(()=>{});else handleCopy();setShowShare(false)}}>
                       <Share2 size={14}/> শেয়ার করুন
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            <button className="rm-close" style={{color:th.sub,borderColor:th.border,background:th.surface}} onClick={onClose}>
-              <X size={15}/>
-            </button>
+            {/* Close */}
+            <motion.button className="rm-btn" style={{color:th.dim,borderColor:th.border,background:th.surface}} whileHover={{scale:1.08}} whileTap={{scale:.92}} onClick={onClose}>
+              <X size={14}/>
+            </motion.button>
           </div>
         </div>
-
-        {/* Theme + Font Row */}
-        <div className="rm-theme-row" style={{background:th.surface,borderBottomColor:th.border}}>
-          {(["light","sepia","dark"] as const).map(t=>(
-            <button key={t} className="rm-theme-btn"
-              style={{background:theme===t?`${c.accent}14`:"transparent",color:theme===t?c.accent:th.sub,borderColor:theme===t?`${c.accent}38`:th.border}}
-              onClick={()=>setTheme(t)}
-            >
-              {themeLabels[t]}
-            </button>
-          ))}
-          <div className="rm-font-grp">
-            <button className="rm-font-btn" style={{color:th.dim,borderColor:th.border,background:th.surface}} onClick={()=>setFontSize(f=>Math.max(.85,f-.07))}><AArrowDown size={12}/></button>
-            <button className="rm-font-btn" style={{color:th.dim,borderColor:th.border,background:th.surface}} onClick={()=>setFontSize(f=>Math.min(1.65,f+.07))}><AArrowUp size={12}/></button>
+        {/* Body */}
+        <div className="rm-body" ref={bodyRef}>
+          <motion.h2
+            className="rm-writing-title"
+            style={{color:th.text,fontSize:`${fontSize * 1.55}rem`}}
+            initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:.35}}
+          >
+            {writing.title}
+          </motion.h2>
+          <motion.p
+            className="rm-writing-text"
+            style={{color:th.text,fontSize:`${fontSize}rem`,opacity:.88}}
+            initial={{opacity:0}} animate={{opacity:.88}} transition={{duration:.4,delay:.1}}
+          >
+            {writing.content}
+          </motion.p>
+          <div className="rm-writing-sig" style={{borderTopColor:th.border,color:th.sub}}>
+            — মাহবুব সরদার সবুজ · {writing.date}
           </div>
         </div>
-
-        {/* Scrollable Body */}
-        <div className="rm-body" ref={bodyRef} style={{background:th.bg}}>
-          <h2 className="rm-title" style={{color:th.text,borderBottomColor:th.border}}>{writing.title}</h2>
-          <p className="rm-text" style={{fontSize:`${fontSize}rem`,color:th.text}}>{writing.content}</p>
-          {/* Author Card */}
-          <div className="rm-author" style={{borderColor:th.border,background:theme==="dark"?"rgba(255,255,255,.025)":"rgba(0,0,0,.02)"}}>
-            <div className="rm-av" style={{background:c.badge,borderColor:`${c.accent}38`,color:c.accent}}><Pen size={15}/></div>
-            <div>
-              <div className="rm-an" style={{color:th.text}}>মাহবুব সরদার সবুজ</div>
-              <div className="rm-am" style={{color:th.sub}}>লেখক ও কবি · {writing.date}</div>
-            </div>
-            <span style={{marginLeft:"auto",padding:"2px 9px",borderRadius:999,background:c.badge,color:c.accent,border:`1px solid ${c.accent}28`,fontFamily:"'SolaimanLipi',sans-serif",fontSize:".6rem",fontWeight:400}}>{writing.category}</span>
-          </div>
-        </div>
-
         {/* Navigation */}
-        <div className="rm-nav" style={{borderTopColor:th.border,background:th.surface}}>
+        <div className="rm-nav" style={{borderTopColor:th.border}}>
           <button className="rm-nbtn" disabled={!prev} style={{color:th.text,borderRightColor:th.border}} onClick={()=>prev&&navigate(prev)}>
             <ChevronLeft size={15} color={prev?c.accent:th.sub} style={{flexShrink:0}}/>
             <div style={{overflow:"hidden"}}>
@@ -10686,41 +10895,48 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   );
 }
 
-// ── Book Modal ────────────────────────────────────────────────────────────────
+// ── Book Modal — Cinematic ────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
   return (
     <AnimatePresence>
       <motion.div className="bm-ov" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}>
-        <motion.div className="bm-box" initial={{opacity:0,y:40,scale:.94}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:40,scale:.94}} transition={{type:"spring",damping:28,stiffness:280}} onClick={e=>e.stopPropagation()}>
+        <motion.div
+          className="bm-box"
+          initial={{opacity:0,y:44,scale:.93}} animate={{opacity:1,y:0,scale:1}}
+          exit={{opacity:0,y:44,scale:.93}}
+          transition={{type:"spring",damping:30,stiffness:290}}
+          onClick={e=>e.stopPropagation()}
+        >
           <div className="bm-head">
-            <span style={{padding:"3px 11px",borderRadius:999,background:`${book.accentColor}18`,color:book.accentColor,border:`1px solid ${book.accentColor}30`,fontFamily:"'SolaimanLipi',sans-serif",fontSize:".63rem",fontWeight:400}}>{book.badge}</span>
-            <motion.button whileHover={{scale:1.05}} whileTap={{scale:.95}} onClick={onClose} style={{width:34,height:34,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.055)",border:"1px solid rgba(255,255,255,.09)",cursor:"pointer",color:"#EDE7DB",flexShrink:0}}>
+            <span style={{padding:"4px 12px",borderRadius:999,background:`${book.accentColor}18`,color:book.accentColor,border:`1px solid ${book.accentColor}30`,fontFamily:"'SolaimanLipi',sans-serif",fontSize:".63rem",fontWeight:400}}>{book.badge}</span>
+            <motion.button whileHover={{scale:1.06}} whileTap={{scale:.94}} onClick={onClose} style={{width:36,height:36,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",color:"#EDE7DB",flexShrink:0}}>
               <X size={15}/>
             </motion.button>
           </div>
           <div className="bm-inner">
             <div className="bm-cover-wrap"><img className="bm-cover" src={book.cover} alt={book.title}/></div>
             <div className="bm-content">
+              <h3 style={{fontFamily:"'SolaimanLipi',sans-serif",color:"#EDE7DB",fontSize:"1.25rem",fontWeight:400,lineHeight:1.45,marginBottom:"1rem"}}>{book.title}</h3>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
                 {[{l:"ধরন",v:book.genre},{l:"পৃষ্ঠা",v:book.pages},{l:"প্রকাশ",v:book.year}].map(item=>(
-                  <div key={item.l} style={{padding:"8px 13px",borderRadius:11,background:"rgba(255,255,255,.035)",border:"1px solid rgba(255,255,255,.065)"}}>
-                    <div style={{color:"rgba(237,231,219,.35)",fontSize:".6rem",marginBottom:2,fontFamily:"'SolaimanLipi',sans-serif"}}>{item.l}</div>
-                    <div style={{color:"#EDE7DB",fontSize:".84rem",fontWeight:400,fontFamily:"'SolaimanLipi',sans-serif"}}>{item.v}</div>
+                  <div key={item.l} style={{padding:"8px 14px",borderRadius:12,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)"}}>
+                    <div style={{color:"rgba(240,234,224,.35)",fontSize:".6rem",marginBottom:2,fontFamily:"'SolaimanLipi',sans-serif"}}>{item.l}</div>
+                    <div style={{color:"#EDE7DB",fontSize:".86rem",fontWeight:400,fontFamily:"'SolaimanLipi',sans-serif"}}>{item.v}</div>
                   </div>
                 ))}
               </div>
-              <p style={{color:"rgba(237,231,219,.6)",fontSize:".87rem",lineHeight:1.9,flex:1,marginBottom:20,fontFamily:"'SolaimanLipi',sans-serif"}}>{book.description}</p>
+              <p style={{color:"rgba(240,234,224,.58)",fontSize:".88rem",lineHeight:1.95,flex:1,marginBottom:22,fontFamily:"'SolaimanLipi',sans-serif"}}>{book.description}</p>
               <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
                 {book.canRead&&(
                   <Link href={`/ebooks/read/${book.slug}`}>
-                    <motion.button whileHover={{scale:1.03}} whileTap={{scale:.97}} style={{display:"flex",alignItems:"center",gap:8,background:`linear-gradient(135deg,${book.accentColor},${book.accentColor}cc)`,color:book.accentColor==="#D4A843"?"#0D1B2A":"#fff",padding:"11px 22px",borderRadius:999,fontWeight:400,fontSize:".87rem",border:"none",cursor:"pointer",fontFamily:"'SolaimanLipi',sans-serif"}}>
+                    <motion.button whileHover={{scale:1.03,y:-2}} whileTap={{scale:.97}} style={{display:"flex",alignItems:"center",gap:8,background:`linear-gradient(135deg,${book.accentColor},${book.accentColor}cc)`,color:book.accentColor==="#C9A84C"||book.accentColor==="#D4A843"?"#0A0E18":"#fff",padding:"12px 24px",borderRadius:999,fontWeight:400,fontSize:".88rem",border:"none",cursor:"pointer",fontFamily:"'SolaimanLipi',sans-serif",boxShadow:`0 6px 22px ${book.accentColor}44`}}>
                       <BookOpen size={15}/> এখনই পড়ুন
                     </motion.button>
                   </Link>
                 )}
                 {book.buyLink&&(
                   <a href={book.buyLink} target="_blank" rel="noopener noreferrer">
-                    <motion.button whileHover={{scale:1.03}} whileTap={{scale:.97}} style={{display:"flex",alignItems:"center",gap:8,background:"transparent",color:"#D4A843",padding:"11px 22px",borderRadius:999,fontWeight:400,fontSize:".87rem",border:"1.5px solid rgba(212,168,67,.32)",cursor:"pointer",fontFamily:"'SolaimanLipi',sans-serif"}}>
+                    <motion.button whileHover={{scale:1.03,y:-2}} whileTap={{scale:.97}} style={{display:"flex",alignItems:"center",gap:8,background:"transparent",color:"#C9A84C",padding:"12px 24px",borderRadius:999,fontWeight:400,fontSize:".88rem",border:"1.5px solid rgba(201,168,76,.35)",cursor:"pointer",fontFamily:"'SolaimanLipi',sans-serif"}}>
                       <ShoppingCart size={15}/> রকমারিতে কিনুন
                     </motion.button>
                   </a>
@@ -10734,7 +10950,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   );
 }
 
-// ── E-Books Section — 3D Library ──────────────────────────────────────────────
+// ── E-Books Section — Cinematic Library ──────────────────────────────────────
 function EBooksSection() {
   const [sel, setSel] = useState<typeof ebooks[0]|null>(null);
   const feat = ebooks.find(b=>b.isFeatured)!;
@@ -10742,40 +10958,43 @@ function EBooksSection() {
   return (
     <div>
       {/* Featured Publication */}
-      <div className="pe-divider">
-        <div className="pe-div-ico" style={{background:"rgba(212,168,67,.09)",border:"1px solid rgba(212,168,67,.14)"}}><Crown size={15} color="#D4A843"/></div>
-        <span className="pe-div-lbl" style={{color:"#D4A843"}}>FEATURED PUBLICATION</span>
-        <div className="pe-div-line" style={{background:"linear-gradient(90deg,rgba(212,168,67,.3),transparent)"}}/>
+      <div className="ce-div">
+        <div className="ce-div-ico" style={{background:"rgba(201,168,76,.1)",border:"1px solid rgba(201,168,76,.16)"}}><Crown size={16} color="#C9A84C"/></div>
+        <span className="ce-div-lbl" style={{color:"#C9A84C"}}>FEATURED PUBLICATION</span>
+        <div className="ce-div-line" style={{background:"linear-gradient(90deg,rgba(201,168,76,.35),transparent)"}}/>
       </div>
-      <motion.div className="pe-feat" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:.6}}>
-        <div className="pe-feat-bg"/>
-        <div className="pe-feat-inner">
-          <div className="pe-feat-cover"><img src={feat.cover} alt={feat.title}/></div>
-          <div className="pe-feat-content">
-            <span className="pe-feat-badge" style={{background:`${feat.accentColor}16`,color:feat.accentColor,border:`1px solid ${feat.accentColor}28`}}>
+      <motion.div className="ce-feat" initial={{opacity:0,y:28}} animate={{opacity:1,y:0}} transition={{duration:.65}}>
+        <div className="ce-feat-bg"/>
+        <div className="ce-feat-inner">
+          <div className="ce-feat-cover-wrap">
+            <img className="ce-feat-cover" src={feat.cover} alt={feat.title}/>
+            <div className="ce-feat-cover-ov"/>
+          </div>
+          <div className="ce-feat-content">
+            <span className="ce-feat-badge" style={{background:`${feat.accentColor}16`,color:feat.accentColor,border:`1px solid ${feat.accentColor}28`}}>
               <Award size={12}/> {feat.badge}
             </span>
-            <div className="pe-feat-author"><Feather size={12}/> মাহবুব সরদার সবুজ</div>
-            <h3 className="pe-feat-title">{feat.title}</h3>
-            <p className="pe-feat-desc">{feat.description}</p>
-            <div className="pe-feat-tags">
+            <div className="ce-feat-author"><Feather size={12}/> মাহবুব সরদার সবুজ</div>
+            <h3 className="ce-feat-title">{feat.title}</h3>
+            <p className="ce-feat-desc">{feat.description}</p>
+            <div className="ce-feat-tags">
               {[
-                {l:feat.genre,bg:"rgba(255,255,255,.05)",c:"rgba(237,231,219,.55)",b:"rgba(255,255,255,.07)"},
-                {l:feat.pages+" পৃষ্ঠা",bg:"rgba(255,255,255,.05)",c:"rgba(237,231,219,.55)",b:"rgba(255,255,255,.07)"},
-                {l:feat.year,bg:"rgba(255,255,255,.05)",c:"rgba(237,231,219,.55)",b:"rgba(255,255,255,.07)"},
-                {l:"রকমারিতে পাওয়া যাচ্ছে ✓",bg:"rgba(39,174,96,.09)",c:"#2ecc71",b:"rgba(39,174,96,.18)"},
+                {l:feat.genre,bg:"rgba(255,255,255,.05)",c:"rgba(240,234,224,.55)",b:"rgba(255,255,255,.08)"},
+                {l:feat.pages+" পৃষ্ঠা",bg:"rgba(255,255,255,.05)",c:"rgba(240,234,224,.55)",b:"rgba(255,255,255,.08)"},
+                {l:feat.year,bg:"rgba(255,255,255,.05)",c:"rgba(240,234,224,.55)",b:"rgba(255,255,255,.08)"},
+                {l:"রকমারিতে পাওয়া যাচ্ছে ✓",bg:"rgba(39,174,96,.09)",c:"#2ecc71",b:"rgba(39,174,96,.2)"},
               ].map(t=>(
-                <span key={t.l} className="pe-feat-tag" style={{background:t.bg,color:t.c,borderColor:t.b}}>{t.l}</span>
+                <span key={t.l} className="ce-feat-tag" style={{background:t.bg,color:t.c,borderColor:t.b}}>{t.l}</span>
               ))}
             </div>
-            <div className="pe-feat-btns">
+            <div className="ce-feat-btns">
               <Link href={`/ebooks/read/${feat.slug}`}>
-                <motion.button className="pe-btn-p" whileHover={{scale:1.03}} whileTap={{scale:.97}}>
+                <motion.button className="ce-btn-p" whileHover={{scale:1.03}} whileTap={{scale:.97}}>
                   <BookOpen size={16}/> এখনই পড়ুন
                 </motion.button>
               </Link>
               <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
-                <motion.button className="pe-btn-o" whileHover={{scale:1.03}} whileTap={{scale:.97}}>
+                <motion.button className="ce-btn-o" whileHover={{scale:1.03}} whileTap={{scale:.97}}>
                   <ShoppingCart size={16}/> রকমারি থেকে অর্ডার করুন
                 </motion.button>
               </a>
@@ -10784,31 +11003,37 @@ function EBooksSection() {
         </div>
       </motion.div>
 
-      {/* Digital Library Grid */}
-      <div className="pe-divider" style={{marginTop:"clamp(2rem,4vw,3rem)"}}>
-        <div className="pe-div-ico" style={{background:"rgba(74,144,217,.09)",border:"1px solid rgba(74,144,217,.14)"}}><Library size={15} color="#4A90D9"/></div>
-        <span className="pe-div-lbl" style={{color:"#4A90D9"}}>DIGITAL LIBRARY</span>
-        <div className="pe-div-line" style={{background:"linear-gradient(90deg,rgba(74,144,217,.3),transparent)"}}/>
+      {/* Digital Library */}
+      <div className="ce-div" style={{marginTop:"clamp(2rem,4vw,3.5rem)"}}>
+        <div className="ce-div-ico" style={{background:"rgba(74,144,217,.1)",border:"1px solid rgba(74,144,217,.16)"}}><Library size={16} color="#4A90D9"/></div>
+        <span className="ce-div-lbl" style={{color:"#4A90D9"}}>DIGITAL LIBRARY</span>
+        <div className="ce-div-line" style={{background:"linear-gradient(90deg,rgba(74,144,217,.35),transparent)"}}/>
       </div>
       <div style={{marginBottom:"clamp(1.2rem,2.5vw,2rem)"}}>
         <h2 style={{fontFamily:"'SolaimanLipi',sans-serif",color:"#EDE7DB",fontSize:"clamp(1.3rem,2.5vw,1.85rem)",fontWeight:400,marginBottom:".5rem"}}>ই-বুক সংগ্রহ</h2>
-        <p style={{fontFamily:"'SolaimanLipi',sans-serif",color:"rgba(237,231,219,.35)",fontSize:".82rem",fontWeight:400}}>বিনামূল্যে পড়ুন — যেকোনো ডিভাইসে</p>
+        <p style={{fontFamily:"'SolaimanLipi',sans-serif",color:"rgba(240,234,224,.35)",fontSize:".82rem",fontWeight:400}}>বিনামূল্যে পড়ুন — যেকোনো ডিভাইসে</p>
       </div>
-      <div className="pe-grid">
+      <div className="ce-grid">
         {rest.map((book,i)=>(
-          <motion.div key={book.id} className="pe-card" initial={{opacity:0,y:28}} animate={{opacity:1,y:0}} transition={{duration:.45,delay:i*.1}} onClick={()=>setSel(book)}>
-            <div className="pe-cover-wrap">
-              <img className="pe-cover" src={book.cover} alt={book.title}/>
-              <div className="pe-cover-ov"/>
-              <div className="pe-hover-ov"><button className="pe-hover-btn"><Eye size={13}/> বিস্তারিত</button></div>
-              <span className="pe-badge" style={{background:`${book.accentColor}1E`,color:book.accentColor,border:`1px solid ${book.accentColor}38`}}>{book.badge}</span>
+          <motion.div key={book.id} className="ce-card" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:.48,delay:i*.1}} onClick={()=>setSel(book)}>
+            <div className="ce-cover-wrap">
+              <img className="ce-cover" src={book.cover} alt={book.title}/>
+              <div className="ce-cover-ov"/>
+              <div className="ce-hover-ov"><button className="ce-hover-btn"><Eye size={13}/> বিস্তারিত</button></div>
+              <span className="ce-badge" style={{background:`${book.accentColor}22`,color:book.accentColor,border:`1px solid ${book.accentColor}40`}}>{book.badge}</span>
             </div>
-            <div className="pe-info">
-              <h3 className="pe-book-title">{book.title}</h3>
-              <p className="pe-meta"><BookText size={11}/> {book.genre} · {book.year}</p>
-              <p className="pe-desc">{book.description}</p>
+            <div className="ce-info">
+              <h3 className="ce-book-title">{book.title}</h3>
+              <p className="ce-meta"><BookText size={11}/> {book.genre} · {book.year}</p>
+              <p className="ce-desc">{book.description}</p>
               <Link href={`/ebooks/read/${book.slug}`}>
-                <motion.button className="pe-read-btn" style={{background:`${book.accentColor}10`,color:book.accentColor,border:`1px solid ${book.accentColor}28`}} whileHover={{background:`${book.accentColor}1E`,borderColor:book.accentColor,scale:1.02}} whileTap={{scale:.98}} onClick={e=>e.stopPropagation()}>
+                <motion.button
+                  className="ce-read-btn"
+                  style={{background:`${book.accentColor}12`,color:book.accentColor,border:`1px solid ${book.accentColor}2A`}}
+                  whileHover={{background:`${book.accentColor}22`,borderColor:book.accentColor,scale:1.02}}
+                  whileTap={{scale:.98}}
+                  onClick={e=>e.stopPropagation()}
+                >
                   <BookOpen size={13}/> পড়ুন
                 </motion.button>
               </Link>
@@ -10818,242 +11043,302 @@ function EBooksSection() {
       </div>
 
       {/* Coming Soon */}
-      <motion.div className="pe-soon" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.4}}>
+      <motion.div className="ce-soon" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.45}}>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:9,marginBottom:9}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:9,marginBottom:10}}>
             <Sparkles size={16} color="#4A90D9"/>
             <span style={{fontFamily:"'SolaimanLipi',sans-serif",color:"#4A90D9",fontSize:".78rem",fontWeight:400,letterSpacing:".1em",textTransform:"uppercase"}}>আসছে শীঘ্রই</span>
           </div>
-          <p style={{fontFamily:"'SolaimanLipi',sans-serif",color:"rgba(237,231,219,.44)",fontSize:".86rem",lineHeight:1.8,fontWeight:400}}>
+          <p style={{fontFamily:"'SolaimanLipi',sans-serif",color:"rgba(240,234,224,.44)",fontSize:".87rem",lineHeight:1.85,fontWeight:400}}>
             আরো ৫টি ই-বুক শীঘ্রই প্রকাশিত হবে। আপডেট পেতে{" "}
             <a href="https://www.facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer" style={{color:"#4A90D9",fontWeight:400,textDecoration:"none"}}>ফেসবুক পেইজ</a>{" "}ফলো করুন।
           </p>
         </div>
       </motion.div>
-
       <AnimatePresence>{sel&&<BookModal book={sel} onClose={()=>setSel(null)}/>}</AnimatePresence>
     </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  MAIN PAGE
+//  MAIN PAGE — Cinematic Literary Universe
 // ══════════════════════════════════════════════════════════════════════════════
-const CATS = [
-  {id:"all",label:"সব লেখা",icon:"✦",color:"#D4A843"},
-  {id:"ছোট লেখা",label:"ছোট লেখা",icon:"✎",color:"#34D399"},
-  {id:"কবিতা",label:"কবিতা",icon:"❧",color:"#60A5FA"},
-  {id:"ভালোবাসা",label:"ভালোবাসা",icon:"♡",color:"#F472B6"},
-  {id:"জীবনদর্শন",label:"জীবনদর্শন",icon:"◈",color:"#FBBF24"},
-  {id:"বিচ্ছেদ",label:"বিচ্ছেদ",icon:"◌",color:"#A78BFA"},
-];
-
 export default function Writings() {
   const [tab, setTab] = useState<"writings"|"ebooks">("writings");
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Writing|null>(null);
-  const [view, setView] = useState<"grid"|"list">("grid");
-  const [, setLoc] = useLocation();
-  const [match] = useRoute("/ebooks");
+  const [viewMode, setViewMode] = useState<"grid"|"list">("grid");
+  const [, setLocation] = useLocation();
+  const [match, params] = useRoute("/writings/:slug");
 
+  // Inject CSS
   useEffect(() => {
-    if (match) { setTab("ebooks"); setLoc("/writings"); }
-  }, [match, setLoc]);
+    const id = "writings-css";
+    if (!document.getElementById(id)) {
+      const el = document.createElement("style");
+      el.id = id; el.textContent = CSS;
+      document.head.appendChild(el);
+    }
+    return () => { document.getElementById(id)?.remove(); };
+  }, []);
 
-  const filtered = writings.filter(w => {
-    const mc = cat === "all" || w.category === cat;
-    const mq = !q.trim() || w.title.toLowerCase().includes(q.toLowerCase()) || w.content.toLowerCase().includes(q.toLowerCase());
-    return mc && mq;
-  });
+  // URL slug handling
+  useEffect(() => {
+    if (match && params?.slug) {
+      const found = writings.find(w => makeSlug(w.title, w.id) === params.slug);
+      if (found) setSel(found);
+    }
+  }, [match, params?.slug]);
+
+  // Filtered writings
+  const filtered = useMemo(() => {
+    return writings.filter(w => {
+      const matchCat = cat === "all" || w.category === cat;
+      const matchQ = !q.trim() || w.title.includes(q.trim()) || w.content.includes(q.trim());
+      return matchCat && matchQ;
+    });
+  }, [cat, q]);
+
   const featured = writings.find(w => w.featured);
+  const displayWritings = filtered;
 
-  const particles = Array.from({length:14},(_,i)=>({
-    id:i, left:`${Math.random()*100}%`,
-    size:`${Math.random()*3.5+1.5}px`,
+  const handleCardClick = (w: Writing) => {
+    setSel(w);
+    window.history.pushState(null, "", `/writings/${makeSlug(w.title, w.id)}`);
+  };
+  const handleModalClose = () => {
+    setSel(null);
+    window.history.pushState(null, "", "/writings");
+  };
+  const handleNavigate = (w: Writing) => setSel(w);
+
+  // Particles
+  const particles = useMemo(() => Array.from({length:12},(_,i)=>({
+    id:i,
+    left:`${8+Math.random()*84}%`,
+    size:`${2+Math.random()*3}px`,
     delay:`${Math.random()*12}s`,
-    dur:`${Math.random()*10+12}s`,
-    op:Math.random()*.35+.08,
-  }));
+    dur:`${10+Math.random()*14}s`,
+    opacity:.3+Math.random()*.4,
+  })),[]);
 
   return (
-    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#020810 0%,#04090F 35%,#060D1A 70%,#070E1C 100%)"}}>
-      <style>{CSS}</style>
-      <Seo title="লেখালেখি ও বই | মাহবুব সরদার সবুজ" description="কবিতা, গদ্য ও প্রকাশিত বই — মাহবুব সরদার সবুজের সম্পূর্ণ সাহিত্যকর্ম।"/>
+    <>
+      <Seo
+        title="লেখালেখি ও বই | মাহবুব সরদার সবুজ"
+        description="মাহবুব সরদার সবুজের লেখালেখি, কবিতা, ছোট গল্প, জীবনদর্শন এবং প্রকাশিত বইয়ের সংগ্রহ।"
+      />
       <Navbar/>
+      <style>{CSS}</style>
 
-      {/* ── HERO ── */}
-      <section className="ph">
-        <div className="ph-mesh"/>
-        <div className="ph-dots"/>
-        <div className="ph-scan"/>
+      {/* ── CINEMATIC HERO ── */}
+      <section className="ch">
+        <div className="ch-nebula"/>
+        <div className="ch-grain"/>
+        <div className="ch-stars"/>
+        <div className="ch-scan"/>
         {particles.map(p=>(
-          <div key={p.id} className="ph-particle" style={{left:p.left,width:p.size,height:p.size,animationDuration:p.dur,animationDelay:p.delay,opacity:p.op,top:"-8px"}}/>
+          <div key={p.id} className="ch-particle" style={{
+            left:p.left, width:p.size, height:p.size,
+            top:"-5%", opacity:p.opacity,
+            animationDelay:p.delay, animationDuration:p.dur,
+          }}/>
         ))}
-        <div className="ph-inner">
+        <div className="ch-inner">
           <div>
-            <Link href="/" className="ph-back"><ArrowLeft size={13}/> হোমে ফিরুন</Link>
-            <div className="ph-eye">
-              <div className="ph-eye-dot"/>
-              <span className="ph-eye-txt">মাহবুব সরদার সবুজ · সাহিত্যকর্ম</span>
+            <a href="/" className="ch-crumb"><ArrowLeft size={12}/> হোমে ফিরুন</a>
+            <div className="ch-eyebrow">
+              <div className="ch-eyebrow-dot"/>
+              <span className="ch-eyebrow-txt">LITERARY UNIVERSE · সাহিত্য জগৎ</span>
             </div>
-            <h1 className="ph-title">
-              <span className="ph-title-gold">লেখালেখি</span>{" "}
-              <span style={{color:"rgba(237,231,219,.82)"}}>ও বই</span>
-              <div className="ph-title-line"/>
+            <h1 className="ch-title">
+              <span style={{color:"var(--t-0)"}}>লেখালেখি</span>
+              <br/>
+              <span className="ch-title-gold">ও বই</span>
+              <div className="ch-title-line"/>
             </h1>
-            <p className="ph-desc">কবিতা, গদ্য ও প্রকাশিত বই — মাহবুব সরদার সবুজের সম্পূর্ণ সাহিত্যকর্ম এক জায়গায়। অনুভূতির গভীরে ডুব দিন।</p>
-            <div className="ph-stats">
+            <p className="ch-desc">
+              শব্দের গভীরে লুকিয়ে থাকা অনুভূতি, জীবনের নানা রঙ এবং মানবিক সত্যের সন্ধানে —{" "}
+              <span className="ch-sub-grad">প্রতিটি লেখা একটি যাত্রা।</span>
+            </p>
+            <div className="ch-stats">
               {[
-                {icon:<Feather size={17}/>,val:`${writings.length}+`,lbl:"মোট লেখা",c:"#D4A843",bg:"rgba(212,168,67,.11)"},
-                {icon:<BookOpen size={17}/>,val:"৪টি",lbl:"প্রকাশিত বই",c:"#4A90D9",bg:"rgba(74,144,217,.11)"},
-                {icon:<Heart size={17}/>,val:"লক্ষাধিক",lbl:"পাঠক",c:"#F472B6",bg:"rgba(244,114,182,.11)"},
+                {ico:<PenLine size={18} color="#C9A84C"/>,bg:"rgba(201,168,76,.1)",border:"rgba(201,168,76,.18)",val:`${writings.length}+`,lbl:"মোট লেখা"},
+                {ico:<BookCopy size={18} color="#60A5FA"/>,bg:"rgba(96,165,250,.1)",border:"rgba(96,165,250,.18)",val:`${ebooks.length}`,lbl:"প্রকাশিত বই"},
+                {ico:<Heart size={18} color="#F472B6"/>,bg:"rgba(244,114,182,.1)",border:"rgba(244,114,182,.18)",val:"৫+",lbl:"বছরের অভিজ্ঞতা"},
+                {ico:<Flame size={18} color="#FBBF24"/>,bg:"rgba(251,191,36,.1)",border:"rgba(251,191,36,.18)",val:"৫",lbl:"ক্যাটাগরি"},
               ].map((s,i)=>(
-                <motion.div key={i} className="ph-stat" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:.45,delay:.35+i*.1}}>
-                  <div className="ph-stat-ico" style={{background:s.bg,color:s.c}}>{s.icon}</div>
+                <motion.div key={i} className="ch-stat" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.35+i*.08}}>
+                  <div className="ch-stat-ico" style={{background:s.bg,border:`1px solid ${s.border}`}}>{s.ico}</div>
                   <div>
-                    <div className="ph-stat-val">{s.val}</div>
-                    <div className="ph-stat-lbl">{s.lbl}</div>
+                    <div className="ch-stat-val">{s.val}</div>
+                    <div className="ch-stat-lbl">{s.lbl}</div>
                   </div>
                 </motion.div>
               ))}
             </div>
           </div>
-          <div className="ph-orb">
-            <div className="ph-orb-ring"/>
-            <div className="ph-orb-core">
-              <Feather size={38} color="rgba(212,168,67,.5)"/>
+          {/* Cinematic Orb */}
+          <div className="ch-orb">
+            <div className="ch-orb-ring-1"/>
+            <div className="ch-orb-ring-2"/>
+            <div className="ch-orb-core">
+              <div className="ch-orb-icon">
+                <Feather size={52} color="rgba(201,168,76,.7)" strokeWidth={1.2}/>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── TAB BAR ── */}
-      <div className="pt">
-        <div className="pt-inner">
-          <div className="pt-tabs">
-            {[
-              {id:"writings",label:"লেখালেখি",count:`${writings.length}+`,desc:"লেখা",icon:<PenLine size={14}/>,cls:"gold"},
-              {id:"ebooks",label:"ই-বুক ও বই",count:`${ebooks.length}টি`,desc:"প্রকাশিত",icon:<BookMarked size={14}/>,cls:"blue"},
-            ].map(t=>(
-              <button key={t.id} className={`pt-tab${tab===t.id?" "+t.cls:""}`} onClick={()=>setTab(t.id as any)}>
-                <span className="pt-tab-ico">{t.icon}</span>
-                {t.label}
-                <span className="pt-pill">{t.count} {t.desc}</span>
-              </button>
-            ))}
+      {/* ── STICKY NAVIGATION ── */}
+      <nav className="cn">
+        <div className="cn-inner">
+          <div className="cn-tabs">
+            <button
+              className={`cn-tab ${tab==="writings"?"gold":""}`}
+              onClick={()=>setTab("writings")}
+            >
+              <div className="cn-tab-ico"><Feather size={15}/></div>
+              লেখালেখি
+              <span className="cn-pill">{writings.length}+</span>
+            </button>
+            <button
+              className={`cn-tab ${tab==="ebooks"?"blue":""}`}
+              onClick={()=>setTab("ebooks")}
+            >
+              <div className="cn-tab-ico"><BookOpen size={15}/></div>
+              বই ও ই-বুক
+              <span className="cn-pill">{ebooks.length}</span>
+            </button>
           </div>
-          <AnimatePresence>
-            {tab==="writings"&&(
-              <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} transition={{duration:.22}} style={{overflow:"hidden"}}>
-                <div className="pt-ctrl">
-                  <div className="pt-search">
-                    <Search size={13} color="#C9A84C"/>
-                    <input placeholder="লেখা খুঁজুন..." value={q} onChange={e=>setQ(e.target.value)}/>
-                    {q&&<button onClick={()=>setQ("")} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(237,231,219,.35)",display:"flex",padding:0}}><X size={12}/></button>}
+          {tab==="writings" && (
+            <div className="cn-ctrl">
+              {/* Search */}
+              <div className="cn-search">
+                <Search size={13} color="rgba(240,234,224,.35)"/>
+                <input
+                  type="text" placeholder="লেখা খুঁজুন…"
+                  value={q} onChange={e=>setQ(e.target.value)}
+                />
+                {q && <button onClick={()=>setQ("")} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(240,234,224,.4)",display:"flex",alignItems:"center"}}><X size={12}/></button>}
+              </div>
+              {/* Category filters */}
+              <div className="cn-cats">
+                {CATS.map(c=>(
+                  <motion.button
+                    key={c.id}
+                    className={`cn-cat${cat===c.id?" active":""}`}
+                    style={cat===c.id?{background:`${c.color}14`,color:c.color,borderColor:`${c.color}30`,boxShadow:`0 0 14px ${c.glow}`}:{}}
+                    onClick={()=>setCat(c.id)}
+                    whileTap={{scale:.95}}
+                  >
+                    <span style={{fontSize:".78rem"}}>{c.icon}</span>{c.label}
+                  </motion.button>
+                ))}
+              </div>
+              {/* View toggle */}
+              <div className="cn-view">
+                <button className={`cn-vbtn${viewMode==="grid"?" on":""}`} onClick={()=>setViewMode("grid")} title="গ্রিড ভিউ"><Grid3X3 size={13}/></button>
+                <button className={`cn-vbtn${viewMode==="list"?" on":""}`} onClick={()=>setViewMode("list")} title="লিস্ট ভিউ"><List size={13}/></button>
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* ── MAIN CONTENT ── */}
+      <main style={{background:"var(--ink-1)",minHeight:"60vh"}}>
+        <div className="cw">
+          <AnimatePresence mode="wait">
+            {tab==="writings" ? (
+              <motion.div key="writings" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}} transition={{duration:.35}}>
+                {/* Featured writing banner */}
+                {featured && cat==="all" && !q && (
+                  <motion.div
+                    className="cf"
+                    initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:.55}}
+                    onClick={()=>handleCardClick(featured)}
+                  >
+                    <div className="cf-bg"/>
+                    <div className="cf-bg-pattern"/>
+                    <div className="cf-quote-mark">“</div>
+                    <div className="cf-inner">
+                      <div>
+                        <div className="cf-badge"><Star size={11} fill="currentColor"/> বিশেষ নির্বাচিত লেখা</div>
+                        <h2 className="cf-title">{featured.title}</h2>
+                        <p className="cf-excerpt">{featured.content}</p>
+                        <button className="cf-cta">
+                          <BookOpen size={14}/> সম্পূর্ণ পড়ুন <ArrowRight size={13}/>
+                        </button>
+                      </div>
+                      <div className="cf-side">
+                        <div className="cf-side-ico">
+                          <Quote size={24} color="rgba(201,168,76,.6)" strokeWidth={1.5}/>
+                        </div>
+                        <span style={{fontFamily:"'SolaimanLipi',sans-serif",fontSize:".65rem",color:"rgba(240,234,224,.3)",letterSpacing:".08em",textTransform:"uppercase",writingMode:"vertical-rl"}}>
+                          {featured.category}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+                {/* Results bar */}
+                <div className="cr">
+                  <div className="cr-txt">
+                    <span className="cr-num">{displayWritings.length}</span>
+                    <span>টি লেখা পাওয়া গেছে</span>
+                    {cat!=="all" && <span>· {CATS.find(c=>c.id===cat)?.label}</span>}
+                    {q && <span>· "{q}"</span>}
                   </div>
-                  <div className="pt-cats">
-                    {CATS.map(c2=>(
-                      <button key={c2.id} className={`pt-cat${cat===c2.id?" active":""}`}
-                        style={cat===c2.id?{background:`${c2.color}16`,color:c2.color,borderColor:`${c2.color}32`}:{}}
-                        onClick={()=>setCat(c2.id)}
-                      >
-                        <span>{c2.icon}</span>{c2.label}
-                      </button>
+                  {(cat!=="all"||q) && (
+                    <button className="cr-clear" onClick={()=>{setCat("all");setQ("")}}>
+                      <X size={10}/> ফিল্টার মুছুন
+                    </button>
+                  )}
+                </div>
+                {/* Writing grid/list */}
+                {displayWritings.length === 0 ? (
+                  <div className="wc-empty">
+                    <Search size={36} style={{margin:"0 auto 1rem",display:"block",opacity:.3}}/>
+                    <p style={{fontSize:"1rem",marginBottom:".5rem"}}>কোনো লেখা পাওয়া যায়নি</p>
+                    <p style={{fontSize:".82rem",opacity:.6}}>অন্য কীওয়ার্ড বা ক্যাটাগরি দিয়ে চেষ্টা করুন</p>
+                  </div>
+                ) : (
+                  <div className={viewMode==="grid"?"cg":"cg-list"}>
+                    {displayWritings.map((w,i)=>(
+                      <WritingCard
+                        key={w.id} writing={w} index={i}
+                        onClick={()=>handleCardClick(w)}
+                        viewMode={viewMode}
+                      />
                     ))}
                   </div>
-                  <div className="pt-view">
-                    <button className={`pt-vbtn${view==="grid"?" on":""}`} onClick={()=>setView("grid")}><Grid3X3 size={13}/></button>
-                    <button className={`pt-vbtn${view==="list"?" on":""}`} onClick={()=>setView("list")}><List size={13}/></button>
-                  </div>
-                </div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div key="ebooks" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}} transition={{duration:.35}}>
+                <EBooksSection/>
               </motion.div>
             )}
           </AnimatePresence>
-          {tab==="ebooks"&&<div style={{height:8}}/>}
         </div>
-      </div>
+      </main>
 
-      {/* ── CONTENT ── */}
-      <AnimatePresence mode="wait">
-        {tab==="writings"?(
-          <motion.div key="w" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}} transition={{duration:.28}}>
-            <div className="pc">
-              {/* Featured Banner */}
-              {featured&&(
-                <motion.div className="pf" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.55}}
-                  onClick={()=>{setSel(featured);window.history.pushState(null,"",`/writings/${makeSlug(featured.title,featured.id)}`)}}>
-                  <div className="pf-bg"/>
-                  <div className="pf-inner">
-                    <div>
-                      <div className="pf-badge">
-                        <Crown size={10}/> বিশেষ লেখা
-                        <span style={{marginLeft:7,padding:"1px 8px",borderRadius:999,background:"rgba(255,255,255,.06)",color:"rgba(237,231,219,.4)",fontSize:".61rem",fontFamily:"'SolaimanLipi',sans-serif"}}>{featured.category}</span>
-                      </div>
-                      <h2 className="pf-title">{featured.title}</h2>
-                      <p className="pf-excerpt">{featured.content.slice(0,200)}…</p>
-                      <div className="pf-cta">
-                        পুরো লেখা পড়ুন
-                        <motion.span animate={{x:[0,5,0]}} transition={{duration:1.5,repeat:Infinity}}><ArrowRight size={13}/></motion.span>
-                      </div>
-                    </div>
-                    <div className="pf-side">
-                      <div className="pf-side-ico"><Feather size={24} color="rgba(212,168,67,.55)"/></div>
-                      <span style={{fontFamily:"'SolaimanLipi',sans-serif",fontSize:".61rem",color:"rgba(212,168,67,.44)",fontWeight:400,textAlign:"center",letterSpacing:".07em"}}>বিশেষ<br/>লেখা</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+      <Footer/>
 
-              {/* Results */}
-              <div className="pr">
-                <span className="pr-txt">
-                  <Layers size={12}/>
-                  <span className="pr-num">{filtered.length}</span>টি লেখা
-                  {cat!=="all"&&<span style={{color:"rgba(237,231,219,.22)",marginLeft:6}}>· {CATS.find(c2=>c2.id===cat)?.label}</span>}
-                </span>
-                {(cat!=="all"||q)&&(
-                  <button className="pr-clear" onClick={()=>{setCat("all");setQ("")}}><X size={10}/> ফিল্টার সরান</button>
-                )}
-              </div>
-
-              {/* Grid */}
-              {filtered.length>0?(
-                <div className={view==="grid"?"pg":"pg-list"}>
-                  {filtered.map((w,i)=>(
-                    <WritingCard key={w.id} writing={w} index={i} viewMode={view}
-                      onClick={()=>{setSel(w);window.history.pushState(null,"",`/writings/${makeSlug(w.title,w.id)}`)}}
-                    />
-                  ))}
-                </div>
-              ):(
-                <div className="wc-empty">
-                  <motion.div animate={{rotate:[0,8,-8,0]}} transition={{duration:2,repeat:Infinity}} style={{marginBottom:16}}>
-                    <Feather size={44} color="rgba(212,168,67,.18)"/>
-                  </motion.div>
-                  <p style={{fontSize:"1rem",marginBottom:12,fontFamily:"'SolaimanLipi',sans-serif"}}>কোনো লেখা পাওয়া যায়নি।</p>
-                  <button className="pr-clear" style={{margin:"0 auto"}} onClick={()=>{setCat("all");setQ("")}}>সব লেখা দেখুন</button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        ):(
-          <motion.div key="e" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}} transition={{duration:.28}}>
-            <div className="pc"><EBooksSection/></div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Modals */}
+      {/* ── READING MODAL ── */}
       <AnimatePresence>
-        {sel&&(
-          <WritingModal writing={sel} allWritings={filtered}
-            onClose={()=>{setSel(null);window.history.pushState(null,"","/writings")}}
-            onNavigate={w=>setSel(w)}
+        {sel && (
+          <WritingModal
+            writing={sel}
+            allWritings={filtered.length > 0 ? filtered : writings}
+            onClose={handleModalClose}
+            onNavigate={handleNavigate}
           />
         )}
       </AnimatePresence>
-      <Footer/>
-    </div>
+    </>
   );
 }
