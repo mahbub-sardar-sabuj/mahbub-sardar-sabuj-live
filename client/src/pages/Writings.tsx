@@ -9983,30 +9983,50 @@ const ebooks = [
 // ── Category Color Helper — Enhanced ─────────────────────────────────────────
 function getCategoryColor(cat: string) {
   if (cat === "ভালোবাসা") return {
-    stripe: "#F43F5E", badge: "rgba(244,63,94,0.1)", text: "#F43F5E",
-    glow: "rgba(244,63,94,0.25)", cssVar: "#F43F5E",
-    badgeBg: "rgba(244,63,94,0.1)", borderHover: "rgba(244,63,94,0.28)",
+    stripe: "#F43F5E",
+    text: "#F43F5E",
+    glow: "rgba(244,63,94,0.3)",
+    badgeBg: "rgba(244,63,94,0.12)",
+    borderHover: "rgba(244,63,94,0.35)",
+    cardBg: "linear-gradient(145deg, rgba(244,63,94,0.08) 0%, rgba(15,10,20,0.95) 55%)",
+    icon: "♡",
   };
   if (cat === "বিচ্ছেদ") return {
-    stripe: "#818CF8", badge: "rgba(129,140,248,0.1)", text: "#818CF8",
-    glow: "rgba(129,140,248,0.25)", cssVar: "#818CF8",
-    badgeBg: "rgba(129,140,248,0.1)", borderHover: "rgba(129,140,248,0.28)",
+    stripe: "#A78BFA",
+    text: "#A78BFA",
+    glow: "rgba(167,139,250,0.3)",
+    badgeBg: "rgba(167,139,250,0.12)",
+    borderHover: "rgba(167,139,250,0.35)",
+    cardBg: "linear-gradient(145deg, rgba(167,139,250,0.08) 0%, rgba(10,8,20,0.95) 55%)",
+    icon: "◌",
   };
   if (cat === "কবিতা") return {
-    stripe: "#38BDF8", badge: "rgba(56,189,248,0.1)", text: "#38BDF8",
-    glow: "rgba(56,189,248,0.25)", cssVar: "#38BDF8",
-    badgeBg: "rgba(56,189,248,0.1)", borderHover: "rgba(56,189,248,0.28)",
+    stripe: "#38BDF8",
+    text: "#38BDF8",
+    glow: "rgba(56,189,248,0.3)",
+    badgeBg: "rgba(56,189,248,0.12)",
+    borderHover: "rgba(56,189,248,0.35)",
+    cardBg: "linear-gradient(145deg, rgba(56,189,248,0.08) 0%, rgba(5,12,24,0.95) 55%)",
+    icon: "❧",
   };
   if (cat === "ছোট লেখা") return {
-    stripe: "#34D399", badge: "rgba(52,211,153,0.1)", text: "#34D399",
-    glow: "rgba(52,211,153,0.25)", cssVar: "#34D399",
-    badgeBg: "rgba(52,211,153,0.1)", borderHover: "rgba(52,211,153,0.28)",
+    stripe: "#34D399",
+    text: "#34D399",
+    glow: "rgba(52,211,153,0.3)",
+    badgeBg: "rgba(52,211,153,0.12)",
+    borderHover: "rgba(52,211,153,0.35)",
+    cardBg: "linear-gradient(145deg, rgba(52,211,153,0.08) 0%, rgba(5,16,14,0.95) 55%)",
+    icon: "✎",
   };
   // জীবনদর্শন (default)
   return {
-    stripe: "#FBBF24", badge: "rgba(251,191,36,0.1)", text: "#FBBF24",
-    glow: "rgba(251,191,36,0.25)", cssVar: "#FBBF24",
-    badgeBg: "rgba(251,191,36,0.1)", borderHover: "rgba(251,191,36,0.28)",
+    stripe: "#FBBF24",
+    text: "#FBBF24",
+    glow: "rgba(251,191,36,0.3)",
+    badgeBg: "rgba(251,191,36,0.12)",
+    borderHover: "rgba(251,191,36,0.35)",
+    cardBg: "linear-gradient(145deg, rgba(251,191,36,0.08) 0%, rgba(16,12,4,0.95) 55%)",
+    icon: "◈",
   };
 }
 
@@ -10599,182 +10619,172 @@ const WORLD_CLASS_CSS = `
   /* ═══════════════════════════════════════════
      PREMIUM WRITING CARD — v3 Complete Redesign
   ═══════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════
+     WRITING CARD — PREMIUM v4 (Category-Colored)
+  ══════════════════════════════════════════════════ */
   .wc-card {
     position: relative;
-    border-radius: 22px;
+    border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(8,18,34,0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.4s ease,
+                border-color 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: var(--card-bg, rgba(8,18,34,0.92));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    min-height: 240px;
+  }
+  /* Left accent border */
+  .wc-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--card-accent, #D4A843);
+    border-radius: 20px 0 0 20px;
+    transition: width 0.3s ease, opacity 0.3s ease;
+    opacity: 0.7;
   }
   /* Hover glow overlay */
   .wc-card::after {
     content: '';
     position: absolute; inset: 0;
-    border-radius: 22px;
+    border-radius: 20px;
     opacity: 0;
     transition: opacity 0.4s;
     pointer-events: none;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--card-glow, rgba(212,168,67,0.1)) 0%, transparent 70%);
+    background: radial-gradient(ellipse 100% 80% at 0% 50%, var(--card-glow, rgba(212,168,67,0.08)) 0%, transparent 65%);
   }
   .wc-card:hover {
-    transform: translateY(-12px) scale(1.018);
+    transform: translateY(-10px) scale(1.016);
     box-shadow:
-      0 30px 80px rgba(0,0,0,0.6),
-      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.25)),
-      0 0 50px var(--card-glow, rgba(212,168,67,0.06));
-    border-color: var(--card-border-hover, rgba(212,168,67,0.25));
+      0 24px 64px rgba(0,0,0,0.55),
+      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.3)),
+      0 0 40px var(--card-glow, rgba(212,168,67,0.08));
+    border-color: var(--card-border-hover, rgba(212,168,67,0.3));
   }
+  .wc-card:hover::before { width: 5px; opacity: 1; }
   .wc-card:hover::after { opacity: 1; }
-
-  /* Card list variant */
+  /* List variant */
   .wc-card-list {
     flex-direction: row !important;
-    border-radius: 18px;
+    border-radius: 16px;
+    min-height: unset;
   }
-  .wc-card-list:hover { transform: translateY(-5px) scale(1.006) !important; }
-
-  /* Card top accent bar */
-  .wc-card-top-bar {
-    height: 4px;
-    background: linear-gradient(90deg, var(--card-accent, #D4A843) 0%, var(--card-accent, #D4A843) 50%, transparent 100%);
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-    transition: height 0.3s ease;
+  .wc-card-list::before {
+    width: 3px; height: auto;
+    top: 0; bottom: 0; left: 0;
+    border-radius: 16px 0 0 16px;
   }
-  .wc-card:hover .wc-card-top-bar { height: 5px; }
-  .wc-card-top-bar::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-    animation: shimmerGold 2.5s linear infinite;
-    background-size: 200% 100%;
-  }
-  .wc-card-list .wc-card-top-bar {
-    width: 4px; height: auto;
-    background: linear-gradient(180deg, var(--card-accent, #D4A843) 0%, var(--card-accent, #D4A843) 50%, transparent 100%);
-    border-radius: 18px 0 0 18px;
-    flex-shrink: 0;
-  }
-  .wc-card-list .wc-card-top-bar::after {
-    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.5), transparent);
-  }
-
+  .wc-card-list:hover { transform: translateY(-6px) scale(1.008) !important; }
   /* Card body */
   .wc-card-body {
-    padding: 22px 24px 24px;
+    padding: 22px 22px 20px 26px;
     flex: 1; display: flex; flex-direction: column;
-    position: relative;
+    position: relative; z-index: 1;
   }
-  .wc-card-list .wc-card-body { padding: 18px 22px !important; }
-
-  /* Large decorative quote */
-  .wc-card-deco-quote {
-    position: absolute;
-    top: 6px; right: 14px;
-    font-size: 5rem; line-height: 1;
-    font-family: 'Playfair Display', Georgia, serif;
-    font-style: italic;
-    color: var(--card-accent, #D4A843);
-    opacity: 0.055;
-    pointer-events: none; user-select: none;
-    transition: opacity 0.35s;
-  }
-  .wc-card:hover .wc-card-deco-quote { opacity: 0.13; }
-
-  /* Category badge */
+  .wc-card-list .wc-card-body { padding: 18px 22px 18px 26px !important; }
+  /* Category badge row */
   .wc-card-badge-row {
-    display: flex; align-items: center; gap: 6px;
-    margin-bottom: 12px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 13px; flex-wrap: wrap;
   }
   .wc-card-badge {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 12px; border-radius: 999px;
-    font-size: 0.66rem;
+    padding: 3px 11px 3px 8px; border-radius: 999px;
+    font-size: 0.67rem;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-weight: 800; letter-spacing: 0.05em;
-    background: var(--card-badge-bg, rgba(212,168,67,0.1));
+    font-weight: 800; letter-spacing: 0.04em;
+    background: var(--card-badge-bg, rgba(212,168,67,0.12));
     color: var(--card-accent, #D4A843);
-    border: 1px solid transparent;
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 30%, transparent);
+    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 28%, transparent);
     transition: all 0.25s;
+    line-height: 1.6;
+  }
+  .wc-card-badge-icon {
+    font-size: 0.75rem;
+    line-height: 1;
   }
   .wc-card:hover .wc-card-badge {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 18%, transparent);
+    background: color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
+    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 45%, transparent);
   }
   .wc-card-featured-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px; border-radius: 999px;
+    padding: 3px 10px; border-radius: 999px;
     font-size: 0.62rem;
     font-family: 'Noto Sans Bengali', sans-serif;
     background: rgba(212,168,67,0.1);
     color: #C9A84C; font-weight: 700;
-    border: 1px solid rgba(212,168,67,0.2);
+    border: 1px solid rgba(212,168,67,0.22);
   }
-
   /* Card title */
   .wc-card-title {
     font-family: 'Tiro Bangla', serif;
-    font-size: 1.08rem; color: var(--cream);
-    font-weight: 700; line-height: 1.65;
+    font-size: 1.06rem; color: rgba(253,246,236,0.92);
+    font-weight: 700; line-height: 1.7;
     margin-bottom: 10px;
     transition: color 0.25s;
     position: relative; z-index: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .wc-card:hover .wc-card-title {
     color: var(--card-accent, #f0c060);
   }
-
-  /* Card preview text */
+  /* Card preview */
   .wc-card-preview {
     font-family: 'Tiro Bangla', serif;
-    font-size: 0.9rem;
-    color: rgba(253,246,236,0.38);
-    line-height: 2; flex: 1;
-    white-space: pre-line;
+    font-size: 0.875rem;
+    color: rgba(253,246,236,0.4);
+    line-height: 1.95; flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     position: relative; z-index: 1;
     transition: color 0.25s;
   }
   .wc-card:hover .wc-card-preview {
-    color: rgba(253,246,236,0.55);
+    color: rgba(253,246,236,0.58);
   }
-
   /* Card footer */
   .wc-card-footer {
-    margin-top: 18px; padding-top: 14px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 16px; padding-top: 13px;
+    border-top: 1px solid rgba(255,255,255,0.055);
     display: flex; align-items: center; justify-content: space-between;
     position: relative; z-index: 1;
   }
   .wc-card-date {
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.68rem; color: rgba(253,246,236,0.22);
+    font-size: 0.67rem; color: rgba(253,246,236,0.22);
     display: flex; align-items: center; gap: 5px;
   }
   .wc-card-read-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 14px; border-radius: 999px;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.78rem; font-weight: 700;
+    font-size: 0.76rem; font-weight: 700;
     background: color-mix(in srgb, var(--card-accent, #D4A843) 10%, transparent);
     color: var(--card-accent, #D4A843);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
+    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: pointer;
+    letter-spacing: 0.02em;
   }
   .wc-card:hover .wc-card-read-btn {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 45%, transparent);
-    gap: 10px;
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
+    background: color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
+    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 50%, transparent);
+    gap: 9px;
+    box-shadow: 0 4px 18px color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
+    padding-right: 16px;
   }
-
   /* ═══════════════════════════════════════════
      EMPTY STATE
   ═══════════════════════════════════════════ */
@@ -11233,10 +11243,8 @@ function WritingCard({
   viewMode?: "grid" | "list";
 }) {
   const slug = makeSlug(writing.title, writing.id);
-  const isShort = writing.content.length < 200;
-  const preview = writing.content.slice(0, isShort ? writing.content.length : 155);
+  const preview = writing.content.slice(0, 200);
   const colors = getCategoryColor(writing.category);
-
   return (
     <motion.div
       className={`wc-card ${viewMode === "list" ? "wc-card-list" : ""}`}
@@ -11245,22 +11253,18 @@ function WritingCard({
         "--card-glow": colors.glow,
         "--card-badge-bg": colors.badgeBg,
         "--card-border-hover": colors.borderHover,
+        background: colors.cardBg,
       } as React.CSSProperties}
-      initial={{ opacity: 0, y: 28, scale: 0.97 }}
+      initial={{ opacity: 0, y: 24, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.42, delay: Math.min(index * 0.035, 0.65), ease: [0.22, 1, 0.36, 1] }}
-      onClick={() => { onClick(); window.history.pushState(null, '', `/writings/\${slug}`); }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.6), ease: [0.22, 1, 0.36, 1] }}
+      onClick={() => { onClick(); window.history.pushState(null, '', `/writings/${slug}`); }}
     >
-      {/* Top accent bar */}
-      <div className="wc-card-top-bar" />
-
       <div className="wc-card-body">
-        {/* Decorative quote mark */}
-        <span className="wc-card-deco-quote">"</span>
-
         {/* Badge row */}
         <div className="wc-card-badge-row">
           <span className="wc-card-badge">
+            <span className="wc-card-badge-icon">{colors.icon}</span>
             {writing.category}
           </span>
           {writing.featured && (
@@ -11269,22 +11273,17 @@ function WritingCard({
             </span>
           )}
         </div>
-
         {/* Title */}
         <h3 className="wc-card-title">{writing.title}</h3>
-
         {/* Preview */}
-        <p className="wc-card-preview">
-          {preview}{!isShort && writing.content.length > 155 ? "..." : ""}
-        </p>
-
+        <p className="wc-card-preview">{preview}{writing.content.length > 200 ? "..." : ""}</p>
         {/* Footer */}
         <div className="wc-card-footer">
           <span className="wc-card-date">
             <Calendar size={11} /> {writing.date}
           </span>
           <span className="wc-card-read-btn">
-            পড়ুন <ChevronRight size={13} />
+            পড়ুন <ChevronRight size={12} />
           </span>
         </div>
       </div>
@@ -11384,7 +11383,7 @@ ${writing.content.slice(0, 300)}...
             <span style={{
               padding: "4px 13px", borderRadius: 999,
               fontSize: "0.68rem", fontFamily: "'Noto Sans Bengali', sans-serif",
-              background: colors.badge, color: colors.stripe,
+              background: colors.badgeBg, color: colors.stripe,
               fontWeight: 700, border: `1px solid ${colors.stripe}40`,
               flexShrink: 0,
             }}>
@@ -11398,7 +11397,7 @@ ${writing.content.slice(0, 300)}...
                 className="wc-modal-theme-btn"
                 onClick={() => setReadingTheme(t)}
                 style={{
-                  background: readingTheme === t ? colors.badge : "rgba(13,27,42,0.06)",
+                  background: readingTheme === t ? colors.badgeBg : "rgba(13,27,42,0.06)",
                   color: readingTheme === t ? colors.stripe : th.subtext,
                   border: `1px solid ${readingTheme === t ? colors.stripe + "40" : "rgba(13,27,42,0.1)"}`,
                 }}
@@ -11493,7 +11492,7 @@ ${writing.content.slice(0, 300)}...
           }}>
             <div style={{
               width: 40, height: 40, borderRadius: "50%",
-              background: colors.badge,
+              background: colors.badgeBg,
               border: `2px solid ${colors.stripe}40`,
               display: "flex", alignItems: "center", justifyContent: "center",
               color: colors.stripe, flexShrink: 0,
