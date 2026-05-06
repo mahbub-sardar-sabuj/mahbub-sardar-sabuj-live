@@ -9960,773 +9960,588 @@ const ebooks = [
   },
 ];
 // ══════════════════════════════════════════════════════════════════════════════
-//  CINEMATIC LITERARY UNIVERSE — CSS v5
-//  Design Philosophy: Film noir meets premium editorial — dark, atmospheric,
-//  deeply immersive. Every element breathes with subtle motion.
+//  OBSIDIAN EDITORIAL — CSS v6
+//  Inspired by: Vercel, Linear, Craft, Notion Dark
+//  Philosophy: Silence speaks louder. Less text, more feeling.
 // ══════════════════════════════════════════════════════════════════════════════
 const CSS = `
   @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap');
 
   :root {
     --f: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
-    --f-serif: 'Playfair Display', Georgia, serif;
-    /* Cinematic Dark Palette */
-    --ink-0: #04060C;
-    --ink-1: #070B14;
-    --ink-2: #0A1020;
-    --ink-3: #0E1628;
-    --ink-4: #121D33;
-    /* Gold System */
-    --gold:   #C9A84C;
-    --gold-l: #E8B84B;
-    --gold-d: #A8882E;
-    --gold-g: rgba(201,168,76,.18);
-    /* Text System */
-    --t-0: #F0EAE0;
-    --t-1: rgba(240,234,224,.82);
-    --t-2: rgba(240,234,224,.55);
-    --t-3: rgba(240,234,224,.32);
-    --t-4: rgba(240,234,224,.16);
+    /* Obsidian Palette */
+    --bg:    #050709;
+    --bg1:   #080B10;
+    --bg2:   #0C1018;
+    --bg3:   #111620;
+    --bg4:   #161C2A;
+    /* Gold */
+    --au:    #C8A45A;
+    --au-l:  #E5C06A;
+    --au-d:  #9A7A38;
+    --au-g:  rgba(200,164,90,.16);
+    /* Text */
+    --t0: #EEEAE2;
+    --t1: rgba(238,234,226,.75);
+    --t2: rgba(238,234,226,.45);
+    --t3: rgba(238,234,226,.25);
+    --t4: rgba(238,234,226,.12);
     /* Surfaces */
-    --s-0: rgba(10,16,32,.96);
-    --s-1: rgba(14,22,40,.88);
-    --s-2: rgba(18,29,51,.72);
-    --s-border: rgba(255,255,255,.06);
-    --s-border-g: rgba(201,168,76,.14);
-    /* Radii */
-    --r-xs: 8px; --r-sm: 12px; --r: 18px; --r-lg: 24px; --r-xl: 32px; --r-pill: 999px;
+    --s0: rgba(8,11,16,.97);
+    --s1: rgba(12,16,24,.92);
+    --sb: rgba(255,255,255,.055);
+    --sb-au: rgba(200,164,90,.12);
+    /* Radius */
+    --r4:4px;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--r28:28px;--rpill:999px;
     /* Easing */
-    --ease: cubic-bezier(.22,1,.36,1);
-    --spring: cubic-bezier(.34,1.56,.64,1);
-    --smooth: cubic-bezier(.4,0,.2,1);
+    --e1: cubic-bezier(.22,1,.36,1);
+    --e2: cubic-bezier(.34,1.56,.64,1);
+    --e3: cubic-bezier(.4,0,.2,1);
   }
 
-  /* ── Reset ── */
-  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  /* ── Keyframes ── */
+  @keyframes up    {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  @keyframes in    {from{opacity:0}to{opacity:1}}
+  @keyframes shim  {0%{background-position:-300% center}100%{background-position:300% center}}
+  @keyframes glow  {0%,100%{opacity:.5}50%{opacity:1}}
+  @keyframes rot   {to{transform:rotate(360deg)}}
+  @keyframes float {0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes drop  {0%{opacity:0;transform:translateY(-8px)scale(.6)}10%{opacity:.5}90%{opacity:.08}100%{opacity:0;transform:translateY(105vh)scale(1.3)}}
+  @keyframes scan  {from{transform:translateY(-100%)}to{transform:translateY(100vh)}}
+  @keyframes pulse {0%,100%{box-shadow:0 0 0 0 rgba(200,164,90,.4)}60%{box-shadow:0 0 0 10px rgba(200,164,90,0)}}
+  @keyframes card  {from{opacity:0;transform:translateY(18px)scale(.98)}to{opacity:1;transform:none}}
+  @keyframes border{0%,100%{border-color:rgba(200,164,90,.07)}50%{border-color:rgba(200,164,90,.25)}}
+  @keyframes wave  {0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.6)}}
+
+  ::selection{background:rgba(200,164,90,.22);color:var(--t0)}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(200,164,90,.18);border-radius:2px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(200,164,90,.35)}
 
   /* ══════════════════════════════════════════
-     KEYFRAMES — Cinematic Motion Library
+     HERO — Full Cinematic
   ══════════════════════════════════════════ */
-  @keyframes fadeUp    { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:none} }
-  @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
-  @keyframes slideLeft { from{opacity:0;transform:translateX(24px)} to{opacity:1;transform:none} }
-  @keyframes shimmer   { 0%{background-position:-400% center} 100%{background-position:400% center} }
-  @keyframes pulse     { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.5)} 60%{box-shadow:0 0 0 12px rgba(201,168,76,0)} }
-  @keyframes float     { 0%,100%{transform:translateY(0) rotate(0deg)} 33%{transform:translateY(-14px) rotate(1.5deg)} 66%{transform:translateY(-7px) rotate(-1deg)} }
-  @keyframes spin      { to{transform:rotate(360deg)} }
-  @keyframes spinSlow  { to{transform:rotate(360deg)} }
-  @keyframes inkDrop   { 0%{opacity:0;transform:translateY(-12px) scale(.5)} 15%{opacity:.6} 85%{opacity:.1} 100%{opacity:0;transform:translateY(110vh) scale(1.4)} }
-  @keyframes nebula    { 0%,100%{background-position:0% 50%;opacity:.7} 50%{background-position:100% 50%;opacity:1} }
-  @keyframes scanLine  { from{transform:translateY(-100%)} to{transform:translateY(100vh)} }
-  @keyframes borderPulse { 0%,100%{border-color:rgba(201,168,76,.08)} 50%{border-color:rgba(201,168,76,.32)} }
-  @keyframes textReveal { from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0% 0 0)} }
-  @keyframes cardIn    { from{opacity:0;transform:translateY(24px) scale(.97)} to{opacity:1;transform:none scale(1)} }
-  @keyframes progressFill { from{width:0} to{width:var(--w,100%)} }
-  @keyframes glowPulse { 0%,100%{filter:drop-shadow(0 0 8px rgba(201,168,76,.3))} 50%{filter:drop-shadow(0 0 22px rgba(201,168,76,.7))} }
-  @keyframes bookFloat { 0%,100%{transform:perspective(900px) rotateY(0) rotateX(0) translateY(0)} 30%{transform:perspective(900px) rotateY(8deg) rotateX(3deg) translateY(-14px)} 65%{transform:perspective(900px) rotateY(-5deg) rotateX(-2deg) translateY(-8px)} }
-  @keyframes waveText  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-  @keyframes ripple    { 0%{transform:scale(0);opacity:.6} 100%{transform:scale(2.5);opacity:0} }
-
-  /* ══════════════════════════════════════════
-     HERO — Cinematic Full-Bleed
-  ══════════════════════════════════════════ */
-  .ch {
-    position:relative; overflow:hidden;
-    min-height:90vh; display:flex; align-items:center;
-    background: linear-gradient(165deg,
-      var(--ink-0) 0%, var(--ink-1) 20%,
-      var(--ink-2) 48%, var(--ink-3) 75%,
-      #0F1E38 100%);
-    padding: clamp(8rem,14vw,12rem) clamp(1.2rem,5vw,4rem) clamp(4rem,6vw,6rem);
+  .h{
+    position:relative;overflow:hidden;
+    min-height:88vh;display:flex;align-items:center;
+    background:var(--bg);
+    padding:clamp(9rem,15vw,13rem) clamp(1.5rem,6vw,5rem) clamp(5rem,7vw,7rem);
   }
-  /* Atmospheric nebula layers */
-  .ch-nebula {
-    position:absolute; inset:0; pointer-events:none;
+  /* Multi-layer atmosphere */
+  .h-atm{
+    position:absolute;inset:0;pointer-events:none;
     background:
-      radial-gradient(ellipse 100% 90% at 0% 0%, rgba(201,168,76,.12) 0%, transparent 55%),
-      radial-gradient(ellipse 80% 70% at 100% 100%, rgba(74,144,217,.08) 0%, transparent 50%),
-      radial-gradient(ellipse 60% 50% at 55% 115%, rgba(167,139,250,.06) 0%, transparent 45%),
-      radial-gradient(ellipse 45% 40% at 85% 5%, rgba(201,168,76,.05) 0%, transparent 42%);
+      radial-gradient(ellipse 110% 100% at -5% -5%, rgba(200,164,90,.11) 0%,transparent 52%),
+      radial-gradient(ellipse 80% 70% at 105% 105%, rgba(80,120,200,.07) 0%,transparent 50%),
+      radial-gradient(ellipse 60% 55% at 50% 120%, rgba(150,100,200,.05) 0%,transparent 48%);
     background-size:200% 200%;
-    animation:nebula 28s ease infinite;
+    animation:shim 30s ease infinite;
   }
-  /* Fine grain texture */
-  .ch-grain {
-    position:absolute; inset:0; pointer-events:none; opacity:.4;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.04'/%3E%3C/svg%3E");
+  /* Dot grid */
+  .h-grid{
+    position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(circle,rgba(200,164,90,.055) 1px,transparent 1px);
+    background-size:44px 44px;
+    mask-image:radial-gradient(ellipse 85% 85% at 50% 50%,black 30%,transparent 100%);
+    opacity:.7;
   }
-  /* Star field */
-  .ch-stars {
-    position:absolute; inset:0; pointer-events:none;
-    background-image:
-      radial-gradient(circle, rgba(201,168,76,.55) 1px, transparent 1px),
-      radial-gradient(circle, rgba(240,234,224,.25) 1px, transparent 1px);
-    background-size: 120px 120px, 80px 80px;
-    background-position: 0 0, 40px 40px;
-    mask-image:radial-gradient(ellipse 90% 90% at 50% 50%, black 20%, transparent 100%);
-    opacity:.35;
+  /* Scan line */
+  .h-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .h-scan::after{
+    content:'';position:absolute;width:100%;height:1.5px;
+    background:linear-gradient(90deg,transparent,rgba(200,164,90,.06),transparent);
+    animation:scan 20s linear infinite;
   }
-  /* Horizontal scan line */
-  .ch-scan {
-    position:absolute; inset:0; overflow:hidden; pointer-events:none;
+  /* Vignette */
+  .h-vig{
+    position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 100% 100% at 50% 0%,transparent 45%,rgba(5,7,9,.7) 100%);
   }
-  .ch-scan::after {
-    content:''; position:absolute; width:100%; height:2px;
-    background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.04) 30%,rgba(201,168,76,.08) 50%,rgba(201,168,76,.04) 70%,transparent 100%);
-    animation:scanLine 18s linear infinite;
+  .h-vig2{
+    position:absolute;bottom:0;left:0;right:0;height:160px;pointer-events:none;
+    background:linear-gradient(to bottom,transparent,var(--bg1));
   }
-  /* Ink particles */
-  .ch-particle {
-    position:absolute; border-radius:50%;
-    background:radial-gradient(circle,rgba(201,168,76,.7),transparent);
-    animation:inkDrop linear infinite; pointer-events:none;
-    filter:blur(1px);
+  /* Particles */
+  .h-p{
+    position:absolute;border-radius:50%;
+    background:radial-gradient(circle,rgba(200,164,90,.65),transparent);
+    animation:drop linear infinite;pointer-events:none;filter:blur(.8px);
   }
-  /* Inner layout */
-  .ch-inner {
-    max-width:1320px; margin:0 auto; position:relative; z-index:2; width:100%;
-    display:grid; grid-template-columns:1fr 380px;
-    gap:clamp(2rem,5vw,7rem); align-items:center;
+  /* Layout */
+  .h-in{
+    max-width:1340px;margin:0 auto;position:relative;z-index:2;width:100%;
+    display:grid;grid-template-columns:1fr 340px;
+    gap:clamp(2rem,6vw,8rem);align-items:center;
   }
-  /* Breadcrumb */
-  .ch-crumb {
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:var(--f); font-size:.72rem; color:var(--t-3);
-    text-decoration:none; padding:5px 14px; border-radius:var(--r-pill);
-    border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.025);
-    transition:all .3s var(--ease); width:fit-content; margin-bottom:2rem;
+  /* Back link */
+  .h-back{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--f);font-size:.72rem;color:var(--t3);
+    text-decoration:none;padding:5px 13px;border-radius:var(--rpill);
+    border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.02);
+    transition:all .28s var(--e1);width:fit-content;margin-bottom:2.2rem;
     letter-spacing:.04em;
   }
-  .ch-crumb:hover { color:var(--gold); border-color:rgba(201,168,76,.22); transform:translateX(-4px); }
-  /* Eyebrow label */
-  .ch-eyebrow {
-    display:inline-flex; align-items:center; gap:10px;
-    padding:7px 18px; border-radius:var(--r-pill);
-    background:rgba(201,168,76,.06); border:1px solid rgba(201,168,76,.16);
-    margin-bottom:2rem; position:relative; overflow:hidden;
-    animation:fadeUp .6s var(--ease) both;
+  .h-back:hover{color:var(--au);border-color:rgba(200,164,90,.2);transform:translateX(-4px)}
+  /* Eyebrow */
+  .h-eye{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:6px 16px;border-radius:var(--rpill);
+    background:rgba(200,164,90,.055);border:1px solid rgba(200,164,90,.14);
+    margin-bottom:2rem;position:relative;overflow:hidden;
+    animation:up .6s var(--e1) both;
   }
-  .ch-eyebrow::before {
-    content:''; position:absolute; inset:0;
-    background:linear-gradient(90deg,transparent,rgba(201,168,76,.06),transparent);
-    transform:translateX(-100%); animation:shimmer 3s ease infinite;
+  .h-eye::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(200,164,90,.07),transparent);
+    transform:translateX(-100%);animation:shim 4s ease infinite;
   }
-  .ch-eyebrow-dot {
-    width:7px; height:7px; border-radius:50%; background:var(--gold);
-    animation:pulse 2.5s ease infinite; flex-shrink:0;
+  .h-dot{width:6px;height:6px;border-radius:50%;background:var(--au);animation:pulse 2.8s ease infinite;flex-shrink:0}
+  .h-eye-t{font-family:var(--f);font-size:.7rem;color:var(--au);letter-spacing:.12em;text-transform:uppercase}
+  /* Title */
+  .h-t{
+    font-family:var(--f);
+    font-size:clamp(2.8rem,6vw,4.8rem);
+    font-weight:400;line-height:1.18;margin-bottom:1.6rem;
+    animation:up .7s .1s var(--e1) both;
   }
-  .ch-eyebrow-txt {
-    font-family:var(--f); font-size:.72rem; color:var(--gold);
-    font-weight:400; letter-spacing:.1em; text-transform:uppercase;
+  .h-t-w{color:var(--t0)}
+  .h-t-g{
+    background:linear-gradient(135deg,var(--au-l) 0%,var(--au) 45%,var(--au-d) 72%,var(--au-l) 100%);
+    background-size:300% auto;-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;animation:shim 7s linear infinite;
+    filter:drop-shadow(0 0 32px rgba(200,164,90,.22));
   }
-  /* Main title */
-  .ch-title {
-    font-family:var(--f); font-size:clamp(2.4rem,5.5vw,4.2rem);
-    font-weight:400; line-height:1.22; margin-bottom:1.8rem;
-    position:relative; display:inline-block;
-    animation:fadeUp .7s .1s var(--ease) both;
-  }
-  .ch-title-gold {
-    background:linear-gradient(135deg,var(--gold-l) 0%,var(--gold) 40%,var(--gold-d) 70%,var(--gold-l) 100%);
-    background-size:300% auto; -webkit-background-clip:text; background-clip:text;
-    -webkit-text-fill-color:transparent; animation:shimmer 6s linear infinite;
-    filter:drop-shadow(0 0 28px rgba(201,168,76,.25));
-  }
-  .ch-title-line {
-    position:absolute; bottom:-14px; left:0;
-    width:clamp(60px,10vw,110px); height:2.5px;
-    background:linear-gradient(90deg,var(--gold),rgba(201,168,76,.2),transparent);
+  .h-line{
+    display:block;width:clamp(50px,8vw,90px);height:2px;margin-top:18px;
+    background:linear-gradient(90deg,var(--au),rgba(200,164,90,.15),transparent);
     border-radius:2px;
   }
-  /* Description */
-  .ch-desc {
-    font-family:var(--f); font-size:clamp(.9rem,1.6vw,1.06rem);
-    color:var(--t-2); line-height:2.15; font-weight:400;
-    max-width:520px; margin-bottom:clamp(2rem,3.5vw,3rem);
-    animation:fadeUp .7s .2s var(--ease) both;
+  /* Subtitle */
+  .h-sub{
+    font-family:var(--f);font-size:clamp(.9rem,1.7vw,1.08rem);
+    color:var(--t2);line-height:2.1;max-width:500px;
+    margin-bottom:clamp(2.2rem,4vw,3.5rem);
+    animation:up .7s .2s var(--e1) both;
   }
-  /* Stats row */
-  .ch-stats {
-    display:flex; gap:clamp(8px,1.5vw,14px); flex-wrap:nowrap;
-    overflow-x:auto; scrollbar-width:none;
-    animation:fadeUp .7s .3s var(--ease) both;
+  /* Stats */
+  .h-stats{display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;animation:up .7s .3s var(--e1) both}
+  .h-stats::-webkit-scrollbar{display:none}
+  .h-stat{
+    display:flex;align-items:center;gap:11px;
+    padding:12px 16px;border-radius:var(--r12);flex-shrink:0;
+    background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);
+    backdrop-filter:blur(20px);transition:all .35s var(--e2);cursor:default;
+    box-shadow:0 4px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035);
   }
-  .ch-stats::-webkit-scrollbar { display:none; }
-  .ch-stat {
-    display:flex; align-items:center; gap:12px;
-    padding:13px 18px; border-radius:var(--r-sm); flex-shrink:0;
-    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.065);
-    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    transition:all .35s var(--spring); cursor:default;
-    box-shadow:0 4px 20px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);
-    position:relative; overflow:hidden;
+  .h-stat:hover{transform:translateY(-5px) scale(1.03);border-color:rgba(200,164,90,.2);box-shadow:0 14px 36px rgba(0,0,0,.35),0 0 0 1px rgba(200,164,90,.08)}
+  .h-stat-i{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .h-stat-v{font-family:var(--f);color:var(--t0);font-size:1.15rem;line-height:1.2}
+  .h-stat-l{font-family:var(--f);color:var(--t3);font-size:.63rem;margin-top:1px;letter-spacing:.03em}
+  /* Orb */
+  .h-orb{
+    position:relative;width:100%;aspect-ratio:1;max-width:320px;margin:0 auto;
+    animation:float 14s ease-in-out infinite;
   }
-  .ch-stat::before {
-    content:''; position:absolute; inset:0; opacity:0;
-    background:linear-gradient(135deg,rgba(201,168,76,.06),transparent);
-    transition:opacity .3s;
+  .h-r1{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(200,164,90,.07);animation:rot 40s linear infinite}
+  .h-r1::before{content:'';position:absolute;width:7px;height:7px;border-radius:50%;background:var(--au);top:-3.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 14px rgba(200,164,90,.9);animation:glow 3s ease infinite}
+  .h-r2{position:absolute;inset:24px;border-radius:50%;border:1px solid rgba(255,255,255,.035);animation:rot 25s linear infinite reverse}
+  .h-r2::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(100,160,255,.5);bottom:-2.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 8px rgba(100,160,255,.7)}
+  .h-r3{position:absolute;inset:48px;border-radius:50%;border:1px solid rgba(200,164,90,.04);animation:rot 18s linear infinite}
+  .h-core{
+    position:absolute;inset:62px;border-radius:50%;
+    background:radial-gradient(circle at 38% 38%,rgba(200,164,90,.12) 0%,rgba(5,7,9,.98) 65%);
+    border:1px solid rgba(200,164,90,.07);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 50px rgba(0,0,0,.6);
   }
-  .ch-stat:hover { transform:translateY(-5px) scale(1.03); border-color:rgba(201,168,76,.22); box-shadow:0 16px 40px rgba(0,0,0,.35),0 0 0 1px rgba(201,168,76,.1); }
-  .ch-stat:hover::before { opacity:1; }
-  .ch-stat-ico { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .ch-stat-val { font-family:var(--f); color:var(--t-0); font-size:1.2rem; font-weight:400; line-height:1.2; }
-  .ch-stat-lbl { font-family:var(--f); color:var(--t-3); font-size:.65rem; margin-top:2px; font-weight:400; letter-spacing:.03em; }
-  /* Cinematic book orb */
-  .ch-orb {
-    position:relative; width:100%; aspect-ratio:1;
-    max-width:360px; margin:0 auto;
-    animation:bookFloat 12s ease-in-out infinite;
-  }
-  .ch-orb-ring-1 {
-    position:absolute; inset:0; border-radius:50%;
-    border:1px solid rgba(201,168,76,.08);
-    animation:spinSlow 35s linear infinite;
-  }
-  .ch-orb-ring-1::before {
-    content:''; position:absolute; width:8px; height:8px; border-radius:50%;
-    background:radial-gradient(circle,var(--gold),rgba(201,168,76,.3));
-    top:-4px; left:50%; transform:translateX(-50%);
-    box-shadow:0 0 12px rgba(201,168,76,.8);
-    animation:glowPulse 3s ease infinite;
-  }
-  .ch-orb-ring-2 {
-    position:absolute; inset:22px; border-radius:50%;
-    border:1px solid rgba(255,255,255,.04);
-    animation:spinSlow 22s linear infinite reverse;
-  }
-  .ch-orb-ring-2::before {
-    content:''; position:absolute; width:5px; height:5px; border-radius:50%;
-    background:rgba(96,165,250,.6); bottom:-2.5px; left:50%; transform:translateX(-50%);
-    box-shadow:0 0 8px rgba(96,165,250,.7);
-  }
-  .ch-orb-core {
-    position:absolute; inset:40px; border-radius:50%;
-    background:radial-gradient(circle at 35% 35%,rgba(201,168,76,.14) 0%,rgba(4,6,12,.98) 65%);
-    border:1px solid rgba(201,168,76,.08);
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:inset 0 0 40px rgba(0,0,0,.5);
-  }
-  .ch-orb-icon { animation:glowPulse 4s ease infinite; }
+  .h-core-i{animation:glow 5s ease infinite}
 
   /* ══════════════════════════════════════════
-     STICKY NAV BAR — Cinematic Tabs
+     STICKY NAV
   ══════════════════════════════════════════ */
-  .cn {
-    position:sticky; top:0; z-index:40;
-    background:rgba(4,6,12,.97);
-    backdrop-filter:blur(40px) saturate(1.9); -webkit-backdrop-filter:blur(40px) saturate(1.9);
-    border-bottom:1px solid rgba(201,168,76,.07);
-    box-shadow:0 4px 30px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.03);
+  .nav{
+    position:sticky;top:0;z-index:40;
+    background:rgba(5,7,9,.96);
+    backdrop-filter:blur(48px) saturate(2);-webkit-backdrop-filter:blur(48px) saturate(2);
+    border-bottom:1px solid rgba(200,164,90,.06);
+    box-shadow:0 4px 32px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.025);
   }
-  .cn-inner { max-width:1320px; margin:0 auto; padding:0 clamp(.9rem,3.5vw,2.5rem); }
-  .cn-tabs { display:flex; gap:0; overflow-x:auto; scrollbar-width:none; }
-  .cn-tabs::-webkit-scrollbar { display:none; }
-  .cn-tab {
-    display:flex; align-items:center; gap:10px;
-    padding:16px 22px; background:transparent; border:none;
-    border-bottom:2.5px solid transparent; cursor:pointer; white-space:nowrap;
-    font-family:var(--f); font-size:.88rem; font-weight:400;
-    color:var(--t-3); transition:all .28s var(--ease);
-    position:relative; flex-shrink:0; margin-bottom:-1px;
+  .nav-in{max-width:1340px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem)}
+  .nav-tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+  .nav-tabs::-webkit-scrollbar{display:none}
+  .nav-tab{
+    display:flex;align-items:center;gap:9px;padding:15px 20px;
+    background:transparent;border:none;border-bottom:2px solid transparent;
+    cursor:pointer;white-space:nowrap;font-family:var(--f);font-size:.87rem;
+    color:var(--t3);transition:all .26s var(--e1);position:relative;
+    flex-shrink:0;margin-bottom:-1px;
   }
-  .cn-tab:hover { color:var(--t-1); background:rgba(255,255,255,.018); }
-  .cn-tab.gold { color:var(--gold-l); border-bottom-color:var(--gold-l); background:rgba(201,168,76,.04); }
-  .cn-tab.blue { color:#63B3ED; border-bottom-color:#63B3ED; background:rgba(99,179,237,.04); }
-  .cn-tab-ico {
-    width:30px; height:30px; border-radius:9px;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
-    transition:all .28s; flex-shrink:0;
+  .nav-tab:hover{color:var(--t1);background:rgba(255,255,255,.015)}
+  .nav-tab.on-g{color:var(--au-l);border-bottom-color:var(--au-l);background:rgba(200,164,90,.035)}
+  .nav-tab.on-b{color:#63B3ED;border-bottom-color:#63B3ED;background:rgba(99,179,237,.035)}
+  .nav-ti{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.055);transition:all .26s;flex-shrink:0}
+  .nav-tab.on-g .nav-ti{background:rgba(200,164,90,.1);border-color:rgba(200,164,90,.2)}
+  .nav-tab.on-b .nav-ti{background:rgba(99,179,237,.1);border-color:rgba(99,179,237,.2)}
+  .nav-pill{font-size:.58rem;padding:2px 8px;border-radius:var(--rpill);background:rgba(255,255,255,.04);color:var(--t4);border:1px solid rgba(255,255,255,.05);font-family:var(--f);transition:all .26s}
+  .nav-tab.on-g .nav-pill{background:rgba(200,164,90,.12);color:var(--au-l);border-color:rgba(200,164,90,.22)}
+  .nav-tab.on-b .nav-pill{background:rgba(99,179,237,.12);color:#63B3ED;border-color:rgba(99,179,237,.22)}
+  /* Controls */
+  .nav-ctrl{display:flex;align-items:center;gap:7px;padding:9px 0;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.035)}
+  .nav-srch{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.055);
+    border-radius:10px;padding:7px 13px;flex:1;min-width:140px;max-width:240px;transition:all .24s;
   }
-  .cn-tab.gold .cn-tab-ico { background:rgba(201,168,76,.12); border-color:rgba(201,168,76,.22); }
-  .cn-tab.blue .cn-tab-ico { background:rgba(99,179,237,.12); border-color:rgba(99,179,237,.22); }
-  .cn-pill {
-    font-size:.6rem; padding:2px 9px; border-radius:var(--r-pill);
-    background:rgba(255,255,255,.04); color:var(--t-4); font-weight:400;
-    border:1px solid rgba(255,255,255,.05); font-family:var(--f); transition:all .28s;
+  .nav-srch:focus-within{border-color:rgba(200,164,90,.26);background:rgba(200,164,90,.035);box-shadow:0 0 0 3px rgba(200,164,90,.06)}
+  .nav-srch input{background:none;border:none;outline:none;font-family:var(--f);font-size:.79rem;color:var(--t0);width:100%}
+  .nav-srch input::placeholder{color:var(--t4)}
+  .nav-cats{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:1}
+  .nav-cats::-webkit-scrollbar{display:none}
+  .nav-cat{
+    display:flex;align-items:center;gap:5px;padding:5px 12px;
+    border-radius:var(--rpill);border:1px solid rgba(255,255,255,.055);
+    background:rgba(255,255,255,.02);cursor:pointer;white-space:nowrap;
+    font-family:var(--f);font-size:.74rem;color:var(--t3);
+    transition:all .2s var(--e1);flex-shrink:0;
   }
-  .cn-tab.gold .cn-pill { background:rgba(201,168,76,.14); color:var(--gold-l); border-color:rgba(201,168,76,.24); }
-  .cn-tab.blue .cn-pill { background:rgba(99,179,237,.14); color:#63B3ED; border-color:rgba(99,179,237,.24); }
-  /* Controls bar */
-  .cn-ctrl {
-    display:flex; align-items:center; gap:8px; padding:10px 0;
-    flex-wrap:wrap; border-top:1px solid rgba(255,255,255,.04);
-  }
-  .cn-search {
-    display:flex; align-items:center; gap:8px;
-    background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.06);
-    border-radius:11px; padding:8px 14px;
-    flex:1; min-width:150px; max-width:260px; transition:all .25s;
-  }
-  .cn-search:focus-within { border-color:rgba(201,168,76,.28); background:rgba(201,168,76,.04); box-shadow:0 0 0 3px rgba(201,168,76,.07); }
-  .cn-search input { background:none; border:none; outline:none; font-family:var(--f); font-size:.8rem; color:var(--t-0); width:100%; font-weight:400; }
-  .cn-search input::placeholder { color:var(--t-4); }
-  .cn-cats { display:flex; gap:5px; overflow-x:auto; scrollbar-width:none; flex:1; }
-  .cn-cats::-webkit-scrollbar { display:none; }
-  .cn-cat {
-    display:flex; align-items:center; gap:5px; padding:5px 13px;
-    border-radius:var(--r-pill); border:1px solid rgba(255,255,255,.06);
-    background:rgba(255,255,255,.025); cursor:pointer; white-space:nowrap;
-    font-family:var(--f); font-size:.75rem; color:var(--t-3); font-weight:400;
-    transition:all .22s var(--ease); flex-shrink:0;
-  }
-  .cn-cat:hover { color:var(--t-1); background:rgba(255,255,255,.05); }
-  .cn-cat.active { font-weight:400; }
-  .cn-view { display:flex; gap:2px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:3px; flex-shrink:0; }
-  .cn-vbtn { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; cursor:pointer; color:var(--t-4); transition:all .2s; }
-  .cn-vbtn.on { background:rgba(201,168,76,.14); color:var(--gold); }
-  .cn-vbtn:hover:not(.on) { color:var(--t-2); background:rgba(255,255,255,.04); }
+  .nav-cat:hover{color:var(--t1);background:rgba(255,255,255,.045)}
+  .nav-vw{display:flex;gap:2px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:9px;padding:3px;flex-shrink:0}
+  .nav-vb{width:29px;height:29px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;color:var(--t4);transition:all .18s}
+  .nav-vb.on{background:rgba(200,164,90,.13);color:var(--au)}
+  .nav-vb:hover:not(.on){color:var(--t2);background:rgba(255,255,255,.04)}
 
   /* ══════════════════════════════════════════
-     CONTENT WRAPPER
+     CONTENT AREA
   ══════════════════════════════════════════ */
-  .cw { max-width:1320px; margin:0 auto; padding:clamp(2rem,4vw,3.5rem) clamp(1.2rem,5vw,4rem); }
+  .ctn{max-width:1340px;margin:0 auto;padding:clamp(2rem,4vw,3.5rem) clamp(1.5rem,6vw,5rem)}
 
   /* ══════════════════════════════════════════
-     FEATURED WRITING BANNER — Cinematic
+     FEATURED BANNER
   ══════════════════════════════════════════ */
-  .cf {
-    position:relative; border-radius:var(--r-lg); overflow:hidden; cursor:pointer;
-    border:1px solid rgba(201,168,76,.1); margin-bottom:clamp(2rem,4vw,3.5rem);
-    transition:transform .4s var(--spring), box-shadow .4s var(--ease), border-color .3s;
-    animation:borderPulse 5s ease infinite;
+  .fb{
+    position:relative;border-radius:var(--r20);overflow:hidden;cursor:pointer;
+    border:1px solid rgba(200,164,90,.09);margin-bottom:clamp(2rem,4vw,3.5rem);
+    transition:transform .4s var(--e2),box-shadow .4s var(--e1),border-color .3s;
+    animation:border 6s ease infinite;
   }
-  .cf:hover { transform:translateY(-6px) scale(1.005); border-color:rgba(201,168,76,.3); box-shadow:0 30px 70px rgba(0,0,0,.5),0 0 50px rgba(201,168,76,.08); }
-  .cf-bg {
-    position:absolute; inset:0;
+  .fb:hover{transform:translateY(-5px) scale(1.004);border-color:rgba(200,164,90,.28);box-shadow:0 28px 65px rgba(0,0,0,.5),0 0 48px rgba(200,164,90,.07)}
+  .fb-bg{
+    position:absolute;inset:0;
     background:
-      linear-gradient(135deg,rgba(201,168,76,.07) 0%,transparent 50%),
-      linear-gradient(315deg,rgba(96,165,250,.04) 0%,transparent 50%),
-      var(--s-0);
+      linear-gradient(135deg,rgba(200,164,90,.06) 0%,transparent 55%),
+      linear-gradient(315deg,rgba(80,120,200,.04) 0%,transparent 55%),
+      var(--s0);
   }
-  .cf-bg-pattern {
-    position:absolute; inset:0; opacity:.3;
-    background-image:
-      linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);
-    background-size:40px 40px;
-    mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black,transparent);
+  .fb-grid{
+    position:absolute;inset:0;opacity:.25;
+    background-image:linear-gradient(rgba(200,164,90,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,164,90,.04) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 65% 65% at 50% 50%,black,transparent);
   }
-  .cf-inner {
-    position:relative; z-index:1; padding:clamp(1.8rem,3.5vw,3rem);
-    display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:center;
+  .fb-qm{
+    position:absolute;top:12px;right:24px;
+    font-family:Georgia,serif;font-size:6rem;line-height:1;
+    color:rgba(200,164,90,.07);pointer-events:none;user-select:none;
   }
-  .cf-badge {
-    display:inline-flex; align-items:center; gap:7px; padding:5px 14px;
-    border-radius:var(--r-pill); background:rgba(201,168,76,.09);
-    border:1px solid rgba(201,168,76,.18); font-family:var(--f);
-    font-size:.63rem; color:var(--gold); letter-spacing:.09em;
-    margin-bottom:1.2rem; text-transform:uppercase; font-weight:400;
+  .fb-in{
+    position:relative;z-index:1;padding:clamp(2rem,3.5vw,3rem);
+    display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;
   }
-  .cf-title {
-    font-family:var(--f); font-size:clamp(1.4rem,2.8vw,2.1rem);
-    color:var(--t-0); font-weight:400; line-height:1.48; margin-bottom:1rem;
+  .fb-badge{
+    display:inline-flex;align-items:center;gap:7px;padding:5px 13px;
+    border-radius:var(--rpill);background:rgba(200,164,90,.08);
+    border:1px solid rgba(200,164,90,.16);font-family:var(--f);
+    font-size:.62rem;color:var(--au);letter-spacing:.09em;
+    margin-bottom:1.2rem;text-transform:uppercase;width:fit-content;
+  }
+  .fb-title{
+    font-family:var(--f);font-size:clamp(1.5rem,3vw,2.2rem);
+    color:var(--t0);font-weight:400;line-height:1.45;margin-bottom:.9rem;
     transition:color .3s;
   }
-  .cf:hover .cf-title { color:var(--gold-l); }
-  .cf-excerpt {
-    font-family:var(--f); font-size:clamp(.86rem,1.5vw,.97rem);
-    color:var(--t-2); line-height:2.1; max-width:660px;
-    white-space:pre-line; font-weight:400;
-    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+  .fb:hover .fb-title{color:var(--au-l)}
+  .fb-excerpt{
+    font-family:var(--f);font-size:clamp(.86rem,1.5vw,.96rem);
+    color:var(--t2);line-height:2.15;max-width:640px;
+    white-space:pre-line;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
   }
-  .cf-cta {
-    display:inline-flex; align-items:center; gap:9px; margin-top:1.8rem;
-    padding:10px 22px; border-radius:var(--r-pill);
-    background:rgba(201,168,76,.09); border:1px solid rgba(201,168,76,.2);
-    color:var(--gold); font-family:var(--f); font-size:.82rem; font-weight:400;
-    cursor:pointer; transition:all .28s var(--ease); position:relative; overflow:hidden;
+  .fb-cta{
+    display:inline-flex;align-items:center;gap:8px;margin-top:1.6rem;
+    padding:10px 20px;border-radius:var(--rpill);
+    background:rgba(200,164,90,.08);border:1px solid rgba(200,164,90,.18);
+    color:var(--au);font-family:var(--f);font-size:.8rem;cursor:pointer;
+    transition:all .26s var(--e1);position:relative;overflow:hidden;
   }
-  .cf-cta::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(201,168,76,.1),transparent); transform:translateX(-100%); transition:transform .4s; }
-  .cf:hover .cf-cta::before { transform:translateX(100%); }
-  .cf:hover .cf-cta { background:rgba(201,168,76,.18); border-color:rgba(201,168,76,.42); box-shadow:0 8px 28px rgba(201,168,76,.18); }
-  .cf-side { display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0; }
-  .cf-side-ico {
-    width:56px; height:56px; border-radius:16px;
-    background:rgba(201,168,76,.07); border:1px solid rgba(201,168,76,.12);
-    display:flex; align-items:center; justify-content:center;
-    animation:float 8s ease-in-out infinite;
+  .fb-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(200,164,90,.1),transparent);transform:translateX(-100%);transition:transform .4s}
+  .fb:hover .fb-cta::before{transform:translateX(100%)}
+  .fb:hover .fb-cta{background:rgba(200,164,90,.16);border-color:rgba(200,164,90,.38);box-shadow:0 6px 24px rgba(200,164,90,.16)}
+  .fb-side{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+  .fb-side-i{
+    width:52px;height:52px;border-radius:14px;
+    background:rgba(200,164,90,.06);border:1px solid rgba(200,164,90,.1);
+    display:flex;align-items:center;justify-content:center;
+    animation:float 9s ease-in-out infinite;
   }
 
   /* ══════════════════════════════════════════
      RESULTS BAR
   ══════════════════════════════════════════ */
-  .cr {
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:clamp(1.2rem,2.5vw,2rem); flex-wrap:wrap; gap:8px;
-  }
-  .cr-txt { display:flex; align-items:center; gap:7px; font-family:var(--f); font-size:.78rem; color:var(--t-3); font-weight:400; }
-  .cr-num { color:var(--gold); font-size:.92rem; font-weight:400; }
-  .cr-clear {
-    display:inline-flex; align-items:center; gap:5px; padding:4px 12px;
-    border-radius:var(--r-pill); background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.07); color:var(--t-3);
-    font-family:var(--f); font-size:.7rem; cursor:pointer;
-    transition:all .22s; font-weight:400;
-  }
-  .cr-clear:hover { color:var(--t-1); background:rgba(255,255,255,.07); }
+  .rb{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(1rem,2.5vw,1.8rem);flex-wrap:wrap;gap:7px}
+  .rb-t{display:flex;align-items:center;gap:6px;font-family:var(--f);font-size:.77rem;color:var(--t3)}
+  .rb-n{color:var(--au);font-size:.9rem}
+  .rb-clr{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:var(--rpill);background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);color:var(--t3);font-family:var(--f);font-size:.7rem;cursor:pointer;transition:all .2s}
+  .rb-clr:hover{color:var(--t1);background:rgba(255,255,255,.065)}
 
   /* ══════════════════════════════════════════
-     WRITING GRID — Cinematic Magazine
+     WRITING GRID
   ══════════════════════════════════════════ */
-  .cg { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:clamp(14px,2vw,24px); }
-  .cg-list { display:flex; flex-direction:column; gap:clamp(10px,1.5vw,16px); }
+  .wg{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:clamp(14px,2vw,22px)}
+  .wg-l{display:flex;flex-direction:column;gap:clamp(9px,1.5vw,14px)}
 
   /* ══════════════════════════════════════════
-     WRITING CARD — Cinematic Premium v9
+     WRITING CARD — Obsidian Premium v10
   ══════════════════════════════════════════ */
-  .wc {
-    position:relative; border-radius:var(--r); overflow:hidden;
-    display:flex; flex-direction:column; cursor:pointer; min-height:230px;
-    border:1px solid var(--s-border); background:var(--s-0);
-    transition:transform .42s var(--spring), box-shadow .42s var(--ease), border-color .28s;
-    will-change:transform; animation:cardIn .45s var(--ease) both;
+  .wc{
+    position:relative;border-radius:var(--r16);overflow:hidden;
+    display:flex;flex-direction:column;cursor:pointer;min-height:220px;
+    border:1px solid var(--sb);background:var(--s0);
+    transition:transform .42s var(--e2),box-shadow .42s var(--e1),border-color .26s;
+    will-change:transform;animation:card .42s var(--e1) both;
   }
-  /* Cinematic noise texture */
-  .wc::after {
-    content:''; position:absolute; inset:0; border-radius:var(--r); pointer-events:none; opacity:.6; z-index:0;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
-  }
-  /* Accent top line */
-  .wc-accent {
-    position:absolute; top:0; left:0; right:0; height:2.5px;
-    background:var(--c-accent,#C9A84C); border-radius:var(--r) var(--r) 0 0;
-    opacity:.5; transition:opacity .28s, height .28s, box-shadow .28s; z-index:3;
-  }
-  /* Left glow line */
-  .wc-glow-line {
-    position:absolute; left:0; top:14px; bottom:14px; width:2px;
-    background:var(--c-accent,#C9A84C); border-radius:0 2px 2px 0;
-    opacity:.35; z-index:3; transition:width .28s, opacity .28s, top .28s, bottom .28s;
-  }
-  /* Hover state */
-  .wc:hover {
-    transform:translateY(-10px) scale(1.015);
-    box-shadow:0 28px 60px rgba(0,0,0,.55), 0 0 0 1px var(--c-border,rgba(201,168,76,.28)), 0 0 40px var(--c-glow,rgba(201,168,76,.08));
-    border-color:var(--c-border,rgba(201,168,76,.28));
-  }
-  .wc:hover .wc-accent { opacity:1; height:3px; box-shadow:0 0 18px var(--c-glow,rgba(201,168,76,.5)); }
-  .wc:hover .wc-glow-line { width:3.5px; opacity:.9; top:10px; bottom:10px; }
+  /* Noise */
+  .wc::after{content:'';position:absolute;inset:0;border-radius:var(--r16);pointer-events:none;opacity:.55;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.022'/%3E%3C/svg%3E")}
+  /* Top accent */
+  .wc-top{position:absolute;top:0;left:0;right:0;height:2px;background:var(--ca,#C8A45A);border-radius:var(--r16) var(--r16) 0 0;opacity:.45;transition:opacity .26s,height .26s,box-shadow .26s;z-index:3}
+  /* Left line */
+  .wc-lft{position:absolute;left:0;top:12px;bottom:12px;width:2px;background:var(--ca,#C8A45A);border-radius:0 2px 2px 0;opacity:.3;z-index:3;transition:width .26s,opacity .26s,top .26s,bottom .26s}
+  /* Hover */
+  .wc:hover{transform:translateY(-10px) scale(1.014);box-shadow:0 26px 58px rgba(0,0,0,.55),0 0 0 1px var(--cb,rgba(200,164,90,.26)),0 0 38px var(--cg,rgba(200,164,90,.08));border-color:var(--cb,rgba(200,164,90,.26))}
+  .wc:hover .wc-top{opacity:1;height:2.5px;box-shadow:0 0 16px var(--cg,rgba(200,164,90,.5))}
+  .wc:hover .wc-lft{width:3px;opacity:.85;top:9px;bottom:9px}
   /* List mode */
-  .wc-list { flex-direction:row!important; border-radius:14px; min-height:unset; }
-  .wc-list .wc-accent { top:0; left:0; right:auto; bottom:0; width:2.5px; height:auto; border-radius:14px 0 0 14px; }
-  .wc-list .wc-glow-line { display:none; }
-  .wc-list:hover { transform:translateY(-4px) scale(1.005)!important; }
-  /* Card body */
-  .wc-body { padding:22px 20px 18px 26px; flex:1; display:flex; flex-direction:column; position:relative; z-index:1; }
-  .wc-list .wc-body { padding:16px 20px 16px 26px!important; }
+  .wc-list{flex-direction:row!important;border-radius:13px;min-height:unset}
+  .wc-list .wc-top{top:0;left:0;right:auto;bottom:0;width:2px;height:auto;border-radius:13px 0 0 13px}
+  .wc-list .wc-lft{display:none}
+  .wc-list:hover{transform:translateY(-3px) scale(1.004)!important}
+  /* Body */
+  .wc-b{padding:20px 18px 16px 24px;flex:1;display:flex;flex-direction:column;position:relative;z-index:1}
+  .wc-list .wc-b{padding:15px 18px 15px 24px!important}
   /* Badges */
-  .wc-badges { display:flex; align-items:center; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
-  .wc-badge {
-    display:inline-flex; align-items:center; gap:4px; padding:3px 11px 3px 8px;
-    border-radius:var(--r-pill); font-size:.62rem; font-family:var(--f); font-weight:400;
-    letter-spacing:.04em; text-transform:uppercase;
-    background:var(--c-badge,rgba(201,168,76,.1)); color:var(--c-accent,#C9A84C);
-    border:1px solid color-mix(in srgb,var(--c-accent,#C9A84C) 28%,transparent);
-    transition:all .22s;
-  }
-  .wc:hover .wc-badge { background:color-mix(in srgb,var(--c-accent,#C9A84C) 18%,transparent); }
-  .wc-star { display:inline-flex; align-items:center; gap:3px; padding:3px 9px; border-radius:var(--r-pill); font-size:.59rem; font-family:var(--f); background:rgba(201,168,76,.1); color:var(--gold-l); font-weight:400; border:1px solid rgba(201,168,76,.22); }
+  .wc-bgs{display:flex;align-items:center;gap:5px;margin-bottom:11px;flex-wrap:wrap}
+  .wc-bg{display:inline-flex;align-items:center;gap:4px;padding:2px 10px 2px 7px;border-radius:var(--rpill);font-size:.61rem;font-family:var(--f);letter-spacing:.04em;text-transform:uppercase;background:var(--cbg,rgba(200,164,90,.09));color:var(--ca,#C8A45A);border:1px solid color-mix(in srgb,var(--ca,#C8A45A) 26%,transparent);transition:all .2s}
+  .wc:hover .wc-bg{background:color-mix(in srgb,var(--ca,#C8A45A) 16%,transparent)}
+  .wc-star{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--rpill);font-size:.58rem;font-family:var(--f);background:rgba(200,164,90,.09);color:var(--au-l);border:1px solid rgba(200,164,90,.2)}
   /* Title */
-  .wc-title {
-    font-family:var(--f); font-size:1.06rem; color:rgba(240,234,224,.93);
-    font-weight:400; line-height:1.65; margin-bottom:10px; transition:color .28s;
-    position:relative; z-index:1;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-  }
-  .wc:hover .wc-title { color:var(--c-accent,#E8B84B); }
-  /* Preview text */
-  .wc-preview {
-    font-family:var(--f); font-size:.82rem; color:rgba(240,234,224,.3);
-    line-height:2.0; flex:1; font-weight:400;
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
-    position:relative; z-index:1; transition:color .28s;
-  }
-  .wc:hover .wc-preview { color:rgba(240,234,224,.5); }
+  .wc-tt{font-family:var(--f);font-size:1.05rem;color:rgba(238,234,226,.92);line-height:1.65;margin-bottom:9px;transition:color .26s;z-index:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .wc:hover .wc-tt{color:var(--ca,#E5C06A)}
+  /* Preview */
+  .wc-pv{font-family:var(--f);font-size:.81rem;color:rgba(238,234,226,.28);line-height:2.05;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;transition:color .26s}
+  .wc:hover .wc-pv{color:rgba(238,234,226,.48)}
   /* Footer */
-  .wc-foot {
-    margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,.045);
-    display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;
-  }
-  .wc-date { font-family:var(--f); font-size:.66rem; color:rgba(240,234,224,.2); font-weight:400; display:flex; align-items:center; gap:4px; }
-  .wc-read { font-family:var(--f); font-size:.7rem; font-weight:400; color:var(--c-accent,#C9A84C); display:flex; align-items:center; gap:4px; transition:gap .22s; }
-  .wc:hover .wc-read { gap:8px; }
-  /* Empty state */
-  .wc-empty { text-align:center; padding:clamp(3rem,6vw,5.5rem) 1rem; color:var(--t-3); font-family:var(--f); font-weight:400; }
+  .wc-ft{margin-top:14px;padding-top:11px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;z-index:1}
+  .wc-dt{font-family:var(--f);font-size:.65rem;color:rgba(238,234,226,.18);display:flex;align-items:center;gap:4px}
+  .wc-rd{font-family:var(--f);font-size:.69rem;color:var(--ca,#C8A45A);display:flex;align-items:center;gap:4px;transition:gap .2s}
+  .wc:hover .wc-rd{gap:8px}
+  /* Empty */
+  .wc-em{text-align:center;padding:clamp(3rem,6vw,5.5rem) 1rem;color:var(--t3);font-family:var(--f)}
 
   /* ══════════════════════════════════════════
-     READING MODAL — Cinematic Immersive v6
+     READING MODAL — Immersive v7
   ══════════════════════════════════════════ */
-  .rm-ov {
-    position:fixed; inset:0; z-index:1000;
-    background:rgba(2,4,10,.95); backdrop-filter:blur(32px);
-    display:flex; align-items:flex-end; justify-content:center; padding:0;
-  }
-  .rm-box {
-    width:100%; max-width:780px; max-height:92vh;
-    border-radius:var(--r-xl) var(--r-xl) 0 0;
-    display:flex; flex-direction:column; overflow:hidden;
-    box-shadow:0 -30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
-    position:relative;
-  }
-  .rm-handle { width:40px; height:4px; border-radius:2px; margin:12px auto 0; flex-shrink:0; }
-  .rm-prog-track { height:2px; flex-shrink:0; }
-  .rm-prog-fill { height:100%; transition:width .1s linear; }
-  /* Modal header */
-  .rm-head {
-    padding:14px 20px; display:flex; align-items:center; justify-content:space-between;
-    border-bottom:1px solid; flex-shrink:0; gap:12px;
-  }
-  .rm-head-l { display:flex; align-items:center; gap:8px; }
-  .rm-cat { display:inline-flex; align-items:center; gap:5px; padding:3px 11px; border-radius:var(--r-pill); font-family:var(--f); font-size:.65rem; font-weight:400; }
-  .rm-ctrl { display:flex; align-items:center; gap:6px; }
-  .rm-btn {
-    width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
-    border:1px solid; cursor:pointer; transition:all .2s; flex-shrink:0;
-  }
-  .rm-btn:hover { opacity:.75; }
-  .rm-font-ctrl { display:flex; align-items:center; gap:2px; border:1px solid; border-radius:9px; overflow:hidden; }
-  .rm-font-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; cursor:pointer; transition:background .2s; }
-  .rm-font-btn:hover { background:rgba(0,0,0,.08); }
-  .rm-theme-btn { display:flex; align-items:center; gap:4px; padding:5px 10px; border-radius:9px; border:1px solid; cursor:pointer; font-family:var(--f); font-size:.68rem; transition:all .2s; background:transparent; }
-  /* Share dropdown */
-  .rm-share-dd {
-    position:absolute; top:calc(100% + 8px); right:0; z-index:10;
-    background:#1A1A2C; border:1px solid rgba(255,255,255,.1); border-radius:14px;
-    padding:6px; min-width:200px; box-shadow:0 20px 50px rgba(0,0,0,.5);
-  }
-  .rm-share-item { display:flex; align-items:center; gap:9px; width:100%; padding:9px 13px; border-radius:9px; background:transparent; border:none; cursor:pointer; font-family:var(--f); font-size:.82rem; transition:background .18s; white-space:nowrap; }
-  .rm-share-item:hover { background:rgba(255,255,255,.06); }
-  /* Modal body */
-  .rm-body { flex:1; overflow-y:auto; padding:clamp(1.6rem,3vw,2.8rem) clamp(1.4rem,4vw,3.2rem); scroll-behavior:smooth; }
-  .rm-body::-webkit-scrollbar { width:4px; }
-  .rm-body::-webkit-scrollbar-track { background:transparent; }
-  .rm-body::-webkit-scrollbar-thumb { background:rgba(201,168,76,.25); border-radius:2px; }
-  .rm-writing-title { font-family:var(--f); font-size:clamp(1.5rem,3vw,2.1rem); font-weight:400; line-height:1.45; margin-bottom:1.8rem; }
-  .rm-writing-text { font-family:var(--f); line-height:2.4; font-weight:400; white-space:pre-line; }
-  .rm-writing-sig { margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid; font-family:var(--f); font-size:.82rem; font-weight:400; opacity:.5; }
-  /* Navigation */
-  .rm-nav { display:flex; border-top:1px solid; flex-shrink:0; }
-  .rm-nbtn { flex:1; display:flex; align-items:center; gap:10px; padding:14px 18px; background:transparent; border:none; cursor:pointer; transition:background .2s; }
-  .rm-nbtn:disabled { opacity:.35; cursor:not-allowed; }
-  .rm-nbtn:not(:disabled):hover { background:rgba(0,0,0,.05); }
-  .rm-nbtn:first-child { border-right:1px solid; }
-  .rm-nlbl { display:block; font-family:var(--f); font-size:.6rem; margin-bottom:2px; }
-  .rm-ntitle { display:block; font-family:var(--f); font-size:.78rem; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+  .rm{position:fixed;inset:0;z-index:1000;background:rgba(2,3,7,.96);backdrop-filter:blur(36px);display:flex;align-items:flex-end;justify-content:center;padding:0}
+  .rm-box{width:100%;max-width:800px;max-height:93vh;border-radius:var(--r28) var(--r28) 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.055);position:relative}
+  .rm-hnd{width:38px;height:4px;border-radius:2px;margin:11px auto 0;flex-shrink:0}
+  .rm-prog{height:2px;flex-shrink:0}
+  .rm-pf{height:100%;transition:width .1s linear}
+  .rm-hd{padding:13px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid;flex-shrink:0;gap:10px}
+  .rm-hdl{display:flex;align-items:center;gap:7px}
+  .rm-cat{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--rpill);font-family:var(--f);font-size:.63rem}
+  .rm-ctrl{display:flex;align-items:center;gap:5px}
+  .rm-btn{width:33px;height:33px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid;cursor:pointer;transition:all .18s;flex-shrink:0}
+  .rm-btn:hover{opacity:.72}
+  .rm-fc{display:flex;align-items:center;gap:1px;border:1px solid;border-radius:8px;overflow:hidden}
+  .rm-fb{width:31px;height:31px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;transition:background .18s}
+  .rm-fb:hover{background:rgba(0,0,0,.07)}
+  .rm-th{display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:8px;border:1px solid;cursor:pointer;font-family:var(--f);font-size:.67rem;transition:all .18s;background:transparent}
+  .rm-sdd{position:absolute;top:calc(100% + 7px);right:0;z-index:10;background:#181828;border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:5px;min-width:195px;box-shadow:0 18px 48px rgba(0,0,0,.55)}
+  .rm-si{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border-radius:8px;background:transparent;border:none;cursor:pointer;font-family:var(--f);font-size:.8rem;transition:background .16s;white-space:nowrap}
+  .rm-si:hover{background:rgba(255,255,255,.055)}
+  .rm-body{flex:1;overflow-y:auto;padding:clamp(1.6rem,3vw,2.8rem) clamp(1.4rem,4vw,3.2rem);scroll-behavior:smooth}
+  .rm-body::-webkit-scrollbar{width:3px}
+  .rm-body::-webkit-scrollbar-thumb{background:rgba(200,164,90,.22);border-radius:2px}
+  .rm-ttl{font-family:var(--f);font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.42;margin-bottom:1.8rem}
+  .rm-txt{font-family:var(--f);line-height:2.45;white-space:pre-line}
+  .rm-sig{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid;font-family:var(--f);font-size:.8rem;opacity:.45}
+  .rm-nav{display:flex;border-top:1px solid;flex-shrink:0}
+  .rm-nb{flex:1;display:flex;align-items:center;gap:9px;padding:13px 17px;background:transparent;border:none;cursor:pointer;transition:background .18s}
+  .rm-nb:disabled{opacity:.3;cursor:not-allowed}
+  .rm-nb:not(:disabled):hover{background:rgba(0,0,0,.05)}
+  .rm-nb:first-child{border-right:1px solid}
+  .rm-nl{display:block;font-family:var(--f);font-size:.59rem;margin-bottom:2px}
+  .rm-nt{display:block;font-family:var(--f);font-size:.77rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px}
 
   /* ══════════════════════════════════════════
-     E-BOOKS SECTION — Cinematic Library
+     E-BOOKS — Cinematic Library
   ══════════════════════════════════════════ */
-  /* Section divider */
-  .ce-div { display:flex; align-items:center; gap:14px; margin-bottom:clamp(1.5rem,3vw,2.5rem); }
-  .ce-div-ico { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .ce-div-lbl { font-family:var(--f); font-size:.68rem; font-weight:400; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; }
-  .ce-div-line { flex:1; height:1px; }
-  /* Featured book */
-  .ce-feat {
-    position:relative; border-radius:var(--r-lg); overflow:hidden; margin-bottom:clamp(2rem,4vw,3.5rem);
-    border:1px solid rgba(201,168,76,.1); transition:all .4s var(--ease);
-    animation:borderPulse 6s ease infinite;
-  }
-  .ce-feat:hover { border-color:rgba(201,168,76,.28); box-shadow:0 25px 65px rgba(0,0,0,.5),0 0 45px rgba(201,168,76,.07); }
-  .ce-feat-bg {
-    position:absolute; inset:0;
-    background:linear-gradient(135deg,rgba(201,168,76,.08) 0%,rgba(4,6,12,.95) 55%,rgba(74,144,217,.04) 100%);
-  }
-  .ce-feat-inner { position:relative; z-index:1; display:flex; gap:0; }
-  .ce-feat-cover-wrap {
-    width:clamp(160px,22vw,240px); flex-shrink:0; overflow:hidden;
-    position:relative;
-  }
-  .ce-feat-cover { width:100%; height:100%; min-height:300px; object-fit:cover; display:block; transition:transform .6s var(--ease); }
-  .ce-feat:hover .ce-feat-cover { transform:scale(1.04); }
-  .ce-feat-cover-ov { position:absolute; inset:0; background:linear-gradient(90deg,transparent 60%,rgba(4,6,12,.8) 100%); }
-  .ce-feat-content { flex:1; padding:clamp(1.6rem,3vw,2.8rem); display:flex; flex-direction:column; justify-content:center; }
-  .ce-feat-badge { display:inline-flex; align-items:center; gap:7px; padding:5px 14px; border-radius:var(--r-pill); font-family:var(--f); font-size:.63rem; font-weight:400; letter-spacing:.08em; text-transform:uppercase; margin-bottom:1.2rem; width:fit-content; }
-  .ce-feat-author { font-family:var(--f); font-size:.72rem; color:var(--t-3); margin-bottom:.8rem; display:flex; align-items:center; gap:6px; font-weight:400; }
-  .ce-feat-title { font-family:var(--f); font-size:clamp(1.4rem,2.8vw,2rem); color:var(--t-0); font-weight:400; line-height:1.42; margin-bottom:1rem; transition:color .3s; }
-  .ce-feat:hover .ce-feat-title { color:var(--gold-l); }
-  .ce-feat-desc { font-family:var(--f); font-size:clamp(.84rem,1.4vw,.94rem); color:var(--t-2); line-height:1.95; margin-bottom:1.4rem; font-weight:400; }
-  .ce-feat-tags { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:1.8rem; }
-  .ce-feat-tag { padding:4px 12px; border-radius:var(--r-pill); font-family:var(--f); font-size:.68rem; font-weight:400; border:1px solid; }
-  .ce-feat-btns { display:flex; flex-wrap:wrap; gap:10px; }
-  .ce-btn-p {
-    display:flex; align-items:center; gap:9px; padding:12px 24px; border-radius:var(--r-pill);
-    background:linear-gradient(135deg,var(--gold-l),var(--gold),var(--gold-d));
-    color:#0A0E18; font-family:var(--f); font-size:.88rem; font-weight:400;
-    border:none; cursor:pointer; transition:all .3s var(--spring);
-    box-shadow:0 6px 24px rgba(201,168,76,.3);
-  }
-  .ce-btn-p:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 12px 36px rgba(201,168,76,.45); }
-  .ce-btn-o {
-    display:flex; align-items:center; gap:9px; padding:12px 24px; border-radius:var(--r-pill);
-    background:transparent; color:var(--gold); font-family:var(--f); font-size:.88rem;
-    font-weight:400; border:1.5px solid rgba(201,168,76,.35); cursor:pointer;
-    transition:all .3s var(--ease);
-  }
-  .ce-btn-o:hover { background:rgba(201,168,76,.1); border-color:rgba(201,168,76,.6); transform:translateY(-2px); }
+  .ed{display:flex;align-items:center;gap:13px;margin-bottom:clamp(1.5rem,3vw,2.5rem)}
+  .ed-i{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ed-l{font-family:var(--f);font-size:.67rem;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+  .ed-ln{flex:1;height:1px}
+  /* Featured */
+  .ef{position:relative;border-radius:var(--r20);overflow:hidden;margin-bottom:clamp(2rem,4vw,3.5rem);border:1px solid rgba(200,164,90,.09);transition:all .4s var(--e1);animation:border 7s ease infinite}
+  .ef:hover{border-color:rgba(200,164,90,.26);box-shadow:0 24px 62px rgba(0,0,0,.5),0 0 42px rgba(200,164,90,.06)}
+  .ef-bg{position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,164,90,.07) 0%,rgba(5,7,9,.96) 55%,rgba(80,120,200,.04) 100%)}
+  .ef-in{position:relative;z-index:1;display:flex;gap:0}
+  .ef-cw{width:clamp(155px,20vw,230px);flex-shrink:0;overflow:hidden;position:relative}
+  .ef-cv{width:100%;height:100%;min-height:290px;object-fit:cover;display:block;transition:transform .6s var(--e1)}
+  .ef:hover .ef-cv{transform:scale(1.04)}
+  .ef-co{position:absolute;inset:0;background:linear-gradient(90deg,transparent 55%,rgba(5,7,9,.85) 100%)}
+  .ef-cnt{flex:1;padding:clamp(1.6rem,3vw,2.8rem);display:flex;flex-direction:column;justify-content:center}
+  .ef-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:var(--rpill);font-family:var(--f);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.1rem;width:fit-content}
+  .ef-auth{font-family:var(--f);font-size:.71rem;color:var(--t3);margin-bottom:.7rem;display:flex;align-items:center;gap:5px}
+  .ef-ttl{font-family:var(--f);font-size:clamp(1.4rem,2.8vw,2rem);color:var(--t0);line-height:1.4;margin-bottom:.9rem;transition:color .3s}
+  .ef:hover .ef-ttl{color:var(--au-l)}
+  .ef-desc{font-family:var(--f);font-size:clamp(.83rem,1.4vw,.93rem);color:var(--t2);line-height:1.95;margin-bottom:1.3rem}
+  .ef-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.7rem}
+  .ef-tag{padding:4px 11px;border-radius:var(--rpill);font-family:var(--f);font-size:.67rem;border:1px solid}
+  .ef-btns{display:flex;flex-wrap:wrap;gap:9px}
+  .ef-bp{display:flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--rpill);background:linear-gradient(135deg,var(--au-l),var(--au),var(--au-d));color:#08090F;font-family:var(--f);font-size:.87rem;border:none;cursor:pointer;transition:all .3s var(--e2);box-shadow:0 5px 22px rgba(200,164,90,.28)}
+  .ef-bp:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 10px 32px rgba(200,164,90,.42)}
+  .ef-bo{display:flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--rpill);background:transparent;color:var(--au);font-family:var(--f);font-size:.87rem;border:1.5px solid rgba(200,164,90,.32);cursor:pointer;transition:all .3s var(--e1)}
+  .ef-bo:hover{background:rgba(200,164,90,.09);border-color:rgba(200,164,90,.55);transform:translateY(-2px)}
   /* Book grid */
-  .ce-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:clamp(14px,2vw,22px); margin-bottom:clamp(2rem,4vw,3rem); }
+  .eg{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:clamp(13px,2vw,20px);margin-bottom:clamp(2rem,4vw,3rem)}
   /* Book card */
-  .ce-card {
-    border-radius:var(--r); overflow:hidden; cursor:pointer;
-    border:1px solid var(--s-border); background:var(--s-0);
-    transition:all .38s var(--spring);
-  }
-  .ce-card:hover { transform:translateY(-8px) scale(1.02); border-color:rgba(201,168,76,.22); box-shadow:0 22px 55px rgba(0,0,0,.5),0 0 30px rgba(201,168,76,.07); }
-  .ce-cover-wrap { position:relative; overflow:hidden; aspect-ratio:3/4; }
-  .ce-cover { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s var(--ease); }
-  .ce-card:hover .ce-cover { transform:scale(1.06); }
-  .ce-cover-ov { position:absolute; inset:0; background:linear-gradient(to top,rgba(4,6,12,.9) 0%,transparent 55%); }
-  .ce-hover-ov { position:absolute; inset:0; background:rgba(4,6,12,.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .3s; }
-  .ce-card:hover .ce-hover-ov { opacity:1; }
-  .ce-hover-btn { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:var(--r-pill); background:rgba(201,168,76,.2); border:1px solid rgba(201,168,76,.4); color:var(--gold-l); font-family:var(--f); font-size:.78rem; cursor:pointer; backdrop-filter:blur(8px); }
-  .ce-badge { position:absolute; top:10px; right:10px; padding:3px 10px; border-radius:var(--r-pill); font-family:var(--f); font-size:.6rem; font-weight:400; backdrop-filter:blur(10px); }
-  .ce-info { padding:15px 16px 18px; }
-  .ce-book-title { font-family:var(--f); color:var(--t-0); font-size:1rem; font-weight:400; line-height:1.52; margin-bottom:5px; transition:color .22s; }
-  .ce-card:hover .ce-book-title { color:var(--gold-l); }
-  .ce-meta { font-family:var(--f); color:var(--t-3); font-size:.7rem; margin-bottom:9px; display:flex; align-items:center; gap:4px; font-weight:400; }
-  .ce-desc { font-family:var(--f); color:rgba(240,234,224,.38); font-size:.78rem; line-height:1.82; font-weight:400; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:12px; }
-  .ce-read-btn { width:100%; padding:10px 0; border-radius:11px; border:none; cursor:pointer; font-family:var(--f); font-size:.8rem; font-weight:400; display:flex; align-items:center; justify-content:center; gap:7px; transition:all .28s; position:relative; overflow:hidden; }
-  .ce-read-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent); transform:translateX(-100%); transition:transform .4s; }
-  .ce-read-btn:hover::before { transform:translateX(100%); }
-  .ce-read-btn:hover { transform:translateY(-2px); }
+  .ec{border-radius:var(--r16);overflow:hidden;cursor:pointer;border:1px solid var(--sb);background:var(--s0);transition:all .38s var(--e2)}
+  .ec:hover{transform:translateY(-8px) scale(1.02);border-color:rgba(200,164,90,.2);box-shadow:0 20px 52px rgba(0,0,0,.5),0 0 28px rgba(200,164,90,.06)}
+  .ec-cw{position:relative;overflow:hidden;aspect-ratio:3/4}
+  .ec-cv{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--e1)}
+  .ec:hover .ec-cv{transform:scale(1.06)}
+  .ec-co{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,7,9,.92) 0%,transparent 55%)}
+  .ec-hov{position:absolute;inset:0;background:rgba(5,7,9,.52);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .28s}
+  .ec:hover .ec-hov{opacity:1}
+  .ec-hb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rpill);background:rgba(200,164,90,.18);border:1px solid rgba(200,164,90,.38);color:var(--au-l);font-family:var(--f);font-size:.77rem;cursor:pointer;backdrop-filter:blur(8px)}
+  .ec-badge{position:absolute;top:9px;right:9px;padding:3px 9px;border-radius:var(--rpill);font-family:var(--f);font-size:.59rem;backdrop-filter:blur(10px)}
+  .ec-info{padding:14px 15px 17px}
+  .ec-ttl{font-family:var(--f);color:var(--t0);font-size:.98rem;line-height:1.5;margin-bottom:5px;transition:color .2s}
+  .ec:hover .ec-ttl{color:var(--au-l)}
+  .ec-meta{font-family:var(--f);color:var(--t3);font-size:.69rem;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+  .ec-desc{font-family:var(--f);color:rgba(238,234,226,.36);font-size:.77rem;line-height:1.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:11px}
+  .ec-rb{width:100%;padding:9px 0;border-radius:10px;border:none;cursor:pointer;font-family:var(--f);font-size:.79rem;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .26s;position:relative;overflow:hidden}
+  .ec-rb::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transform:translateX(-100%);transition:transform .38s}
+  .ec-rb:hover::before{transform:translateX(100%)}
+  .ec-rb:hover{transform:translateY(-2px)}
   /* Coming soon */
-  .ce-soon { border-radius:var(--r); overflow:hidden; background:linear-gradient(135deg,rgba(74,144,217,.06) 0%,rgba(4,6,12,.88) 100%); border:1px solid rgba(74,144,217,.1); padding:clamp(1.5rem,3vw,2.2rem); text-align:center; position:relative; }
+  .ec-soon{border-radius:var(--r16);overflow:hidden;background:linear-gradient(135deg,rgba(80,120,200,.05) 0%,rgba(5,7,9,.9) 100%);border:1px solid rgba(80,120,200,.09);padding:clamp(1.4rem,3vw,2.2rem);text-align:center;position:relative}
   /* Book modal */
-  .bm-ov { position:fixed; inset:0; z-index:1000; background:rgba(2,4,10,.95); backdrop-filter:blur(32px); display:flex; align-items:center; justify-content:center; padding:clamp(1rem,3vw,2rem); }
-  .bm-box { background:var(--ink-2); border-radius:var(--r-lg); width:100%; max-width:660px; overflow:hidden; box-shadow:0 60px 140px rgba(0,0,0,.75); border:1px solid rgba(201,168,76,.12); margin:auto; max-height:90vh; overflow-y:auto; }
-  .bm-head { padding:16px 22px; display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,.2); border-bottom:1px solid rgba(255,255,255,.05); }
-  .bm-inner { display:flex; gap:0; }
-  .bm-cover-wrap { width:190px; flex-shrink:0; overflow:hidden; background:var(--ink-1); }
-  .bm-cover { width:100%; height:100%; min-height:280px; object-fit:cover; display:block; }
-  .bm-content { flex:1; padding:1.6rem; display:flex; flex-direction:column; }
+  .bm{position:fixed;inset:0;z-index:1000;background:rgba(2,3,7,.96);backdrop-filter:blur(36px);display:flex;align-items:center;justify-content:center;padding:clamp(1rem,3vw,2rem)}
+  .bm-box{background:var(--bg2);border-radius:var(--r20);width:100%;max-width:650px;overflow:hidden;box-shadow:0 55px 130px rgba(0,0,0,.75);border:1px solid rgba(200,164,90,.11);margin:auto;max-height:90vh;overflow-y:auto}
+  .bm-hd{padding:15px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.05)}
+  .bm-in{display:flex;gap:0}
+  .bm-cw{width:185px;flex-shrink:0;overflow:hidden;background:var(--bg1)}
+  .bm-cv{width:100%;height:100%;min-height:275px;object-fit:cover;display:block}
+  .bm-cnt{flex:1;padding:1.5rem;display:flex;flex-direction:column}
 
   /* ══════════════════════════════════════════
-     RESPONSIVE — Mobile First
+     RESPONSIVE
   ══════════════════════════════════════════ */
   @media(max-width:480px){
-    .ch{padding:7.5rem 1rem 2.8rem;min-height:auto}
-    .ch-inner{grid-template-columns:1fr}
-    .ch-orb{display:none}
-    .ch-title{font-size:2rem!important}
-    .ch-stats{gap:7px}
-    .ch-stat{padding:10px 13px}
-    .ch-stat-val{font-size:1.05rem}
-    .cn-tab{padding:13px 15px!important;font-size:.82rem!important}
-    .cg{grid-template-columns:1fr!important}
-    .ce-grid{grid-template-columns:repeat(2,1fr)!important}
-    .ce-feat-inner{flex-direction:column!important}
-    .ce-feat-cover-wrap{width:100%!important}
-    .ce-feat-title{font-size:1.4rem!important}
-    .ce-btn-p,.ce-btn-o{padding:11px 18px!important;font-size:.85rem!important}
-    .cf-inner{grid-template-columns:1fr!important}
-    .cf-side{display:none!important}
-    .bm-inner{flex-direction:column!important}
-    .bm-cover-wrap{width:100%!important}
+    .h{padding:7.5rem 1.2rem 3rem;min-height:auto}
+    .h-in{grid-template-columns:1fr}
+    .h-orb{display:none}
+    .h-t{font-size:2.1rem!important}
+    .h-stats{gap:7px}
+    .h-stat{padding:10px 12px}
+    .nav-tab{padding:12px 14px!important;font-size:.81rem!important}
+    .wg{grid-template-columns:1fr!important}
+    .eg{grid-template-columns:repeat(2,1fr)!important}
+    .ef-in{flex-direction:column!important}
+    .ef-cw{width:100%!important}
+    .ef-ttl{font-size:1.4rem!important}
+    .fb-in{grid-template-columns:1fr!important}
+    .fb-side{display:none!important}
+    .bm-in{flex-direction:column!important}
+    .bm-cw{width:100%!important}
     .rm-box{max-height:96vh}
-    .rm-body{padding:1.4rem 1.2rem}
+    .rm-body{padding:1.3rem 1.1rem}
   }
   @media(min-width:481px) and (max-width:768px){
-    .ch-inner{grid-template-columns:1fr}
-    .ch-orb{display:none}
-    .cg{grid-template-columns:repeat(2,1fr)!important}
-    .ce-grid{grid-template-columns:repeat(2,1fr)!important}
-    .ce-feat-inner{flex-direction:column!important}
-    .ce-feat-cover-wrap{width:100%!important}
-    .cf-inner{grid-template-columns:1fr!important}
-    .cf-side{display:none!important}
+    .h-in{grid-template-columns:1fr}
+    .h-orb{display:none}
+    .wg{grid-template-columns:repeat(2,1fr)!important}
+    .eg{grid-template-columns:repeat(2,1fr)!important}
+    .ef-in{flex-direction:column!important}
+    .ef-cw{width:100%!important}
+    .fb-in{grid-template-columns:1fr!important}
+    .fb-side{display:none!important}
   }
   @media(min-width:769px) and (max-width:1024px){
-    .cg{grid-template-columns:repeat(2,1fr)!important}
-    .ce-grid{grid-template-columns:repeat(3,1fr)!important}
-    .ce-feat-cover-wrap{width:200px!important}
+    .wg{grid-template-columns:repeat(2,1fr)!important}
+    .eg{grid-template-columns:repeat(3,1fr)!important}
+    .ef-cw{width:195px!important}
   }
   @media(min-width:1025px){
-    .cg{grid-template-columns:repeat(3,1fr)!important}
-    .ce-grid{grid-template-columns:repeat(3,1fr)!important}
+    .wg{grid-template-columns:repeat(3,1fr)!important}
+    .eg{grid-template-columns:repeat(3,1fr)!important}
   }
   @media(min-width:1400px){
-    .cg{grid-template-columns:repeat(4,1fr)!important}
-    .ce-grid{grid-template-columns:repeat(4,1fr)!important}
+    .wg{grid-template-columns:repeat(4,1fr)!important}
+    .eg{grid-template-columns:repeat(4,1fr)!important}
   }
   @media(max-width:600px){
-    .bm-inner{flex-direction:column!important}
-    .bm-cover-wrap{width:100%!important}
-    .bm-cover{min-height:200px!important;object-fit:cover!important}
-    .ce-grid{grid-template-columns:1fr!important}
+    .bm-in{flex-direction:column!important}
+    .bm-cw{width:100%!important}
+    .bm-cv{min-height:195px!important}
+    .eg{grid-template-columns:1fr!important}
   }
-
-  /* ══════════════════════════════════════════
-     ADDITIONAL POLISH — Micro-interactions
-  ══════════════════════════════════════════ */
-  /* Scrollbar global */
-  ::-webkit-scrollbar { width:5px; height:5px; }
-  ::-webkit-scrollbar-track { background:rgba(255,255,255,.02); }
-  ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.2); border-radius:3px; }
-  ::-webkit-scrollbar-thumb:hover { background:rgba(201,168,76,.38); }
-  /* Selection */
-  ::selection { background:rgba(201,168,76,.25); color:var(--t-0); }
-  /* Focus visible */
-  button:focus-visible, a:focus-visible { outline:2px solid rgba(201,168,76,.5); outline-offset:3px; border-radius:4px; }
-  /* Smooth transitions for all interactive elements */
-  button, a { transition-property:color,background,border-color,box-shadow,transform,opacity; transition-duration:.22s; transition-timing-function:var(--ease); }
-  /* Category-specific featured banner accent */
-  .cf-cat-accent { position:absolute; top:0; left:0; bottom:0; width:3px; border-radius:var(--r-lg) 0 0 var(--r-lg); }
-  /* Shimmer loading state */
-  .shimmer-line { background:linear-gradient(90deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.04) 100%); background-size:300% 100%; animation:shimmer 2s ease infinite; border-radius:4px; }
-  /* Page transition */
-  .page-enter { animation:fadeUp .4s var(--ease) both; }
-  /* Ink drop decoration */
-  .ink-drop { position:absolute; pointer-events:none; border-radius:50%; background:radial-gradient(circle,rgba(201,168,76,.15),transparent); filter:blur(40px); }
-  /* Card number badge */
-  .wc-num { position:absolute; top:14px; right:14px; width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; font-family:var(--f); font-size:.6rem; color:var(--t-4); z-index:2; }
-  /* Quote decoration in featured */
-  .cf-quote-mark { font-family:Georgia,serif; font-size:5rem; line-height:1; color:rgba(201,168,76,.08); position:absolute; top:10px; right:20px; pointer-events:none; user-select:none; }
-  /* Hero subtitle gradient text */
-  .ch-sub-grad { background:linear-gradient(90deg,var(--t-2),var(--t-1),var(--t-2)); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:shimmer 8s linear infinite; }
-  /* Cinematic vignette on hero */
-  .ch::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 100% 100% at 50% 0%,transparent 40%,rgba(4,6,12,.6) 100%); pointer-events:none; z-index:1; }
-  /* Bottom fade on hero */
-  .ch::after { content:''; position:absolute; bottom:0; left:0; right:0; height:120px; background:linear-gradient(to bottom,transparent,var(--ink-1)); pointer-events:none; z-index:1; }
 `;
 
-// ── Writing Card — Cinematic Premium v9 ──────────────────────────────────────
+
+// ── Writing Card — Obsidian Premium v10 ──────────────────────────────────────
 function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   writing: Writing; index: number; onClick: () => void; viewMode?: "grid"|"list";
 }) {
   const c = getCatStyle(writing.category);
-  const preview = writing.content.slice(0, 160);
+  const isListMode = viewMode === "list";
   return (
     <motion.div
-      className={`wc${viewMode === "list" ? " wc-list" : ""}`}
+      className={`wc${isListMode?" wc-list":""}`}
       style={{
-        "--c-accent": c.accent, "--c-glow": c.glow,
-        "--c-badge": c.badge, "--c-border": c.border,
+        "--ca": c.accent, "--cb": c.border, "--cg": c.glow, "--cbg": c.bg,
         animationDelay: `${index * 0.045}s`,
       } as React.CSSProperties}
-      whileHover={{ y: viewMode === "list" ? -4 : -10 }}
-      whileTap={{ scale: .98 }}
       onClick={onClick}
+      whileTap={{ scale: .97 }}
     >
-      <div className="wc-accent"/>
-      <div className="wc-glow-line"/>
-      <div className="wc-body">
-        <div className="wc-badges">
-          <span className="wc-badge">
-            <span>{c.icon}</span>{writing.category}
+      <div className="wc-top"/>
+      <div className="wc-lft"/>
+      <div className="wc-b">
+        <div className="wc-bgs">
+          <span className="wc-bg">
+            <span style={{fontSize:".7rem"}}>{c.icon}</span>
+            {writing.category}
           </span>
           {writing.featured && (
-            <span className="wc-star"><Star size={9} fill="currentColor"/> বিশেষ</span>
+            <span className="wc-star">
+              <Star size={9} fill="currentColor"/> বিশেষ
+            </span>
           )}
         </div>
-        <h3 className="wc-title">{writing.title}</h3>
-        <p className="wc-preview">{preview}</p>
-        <div className="wc-foot">
-          <span className="wc-date"><Calendar size={10}/>{writing.date}</span>
-          <span className="wc-read" style={{"--c-accent": c.accent} as React.CSSProperties}>
-            পড়ুন <ChevronRight size={11}/>
+        <div className="wc-tt">{writing.title}</div>
+        {!isListMode && (
+          <div className="wc-pv">{writing.content}</div>
+        )}
+        <div className="wc-ft">
+          <span className="wc-dt">
+            <Calendar size={10}/>{writing.date}
+          </span>
+          <span className="wc-rd" style={{color: c.accent}}>
+            পড়ুন <ArrowRight size={11}/>
           </span>
         </div>
       </div>
@@ -10734,160 +10549,185 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   );
 }
 
-// ── Writing Modal — Cinematic Immersive Reader v6 ─────────────────────────────
+// ── Writing Modal — Immersive Reader v7 ──────────────────────────────────────
 function WritingModal({ writing, allWritings, onClose, onNavigate }: {
-  writing: Writing; allWritings: Writing[];
-  onClose: () => void; onNavigate: (w: Writing) => void;
+  writing: Writing;
+  allWritings: Writing[];
+  onClose: () => void;
+  onNavigate: (w: Writing) => void;
 }) {
-  const [fontSize, setFontSize] = useState(1.08);
-  const [theme, setTheme] = useState<"light"|"sepia"|"dark">("light");
+  const c = getCatStyle(writing.category);
+  const [fontSize, setFontSize] = useState(1.05);
+  const [theme, setTheme] = useState<"dark"|"sepia"|"light">("dark");
   const [progress, setProgress] = useState(0);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const c = getCatStyle(writing.category);
+  const shareRef = useRef<HTMLDivElement>(null);
+
   const idx = allWritings.findIndex(w => w.id === writing.id);
   const prev = idx > 0 ? allWritings[idx - 1] : null;
   const next = idx < allWritings.length - 1 ? allWritings[idx + 1] : null;
 
-  useEffect(() => {
-    document.title = `${writing.title} | মাহবুব সরদার সবুজ`;
-    return () => { document.title = "লেখালেখি ও বই | মাহবুব সরদার সবুজ"; };
-  }, [writing.title]);
+  const themes = {
+    dark:  { bg: "#070B10", txt: "#E8E4DC", sub: "rgba(232,228,220,.52)", bdr: "rgba(255,255,255,.06)", hnd: "rgba(255,255,255,.1)", prog: c.accent, cat: c.bg, catTxt: c.accent, catBdr: c.border, nav: "rgba(255,255,255,.04)", navBdr: "rgba(255,255,255,.06)", btn: "rgba(255,255,255,.04)", btnBdr: "rgba(255,255,255,.07)", sig: "rgba(232,228,220,.22)" },
+    sepia: { bg: "#1A1408", txt: "#D4C8A8", sub: "rgba(212,200,168,.52)", bdr: "rgba(212,200,168,.1)", hnd: "rgba(212,200,168,.2)", prog: "#C8A45A", cat: "rgba(200,164,90,.1)", catTxt: "#C8A45A", catBdr: "rgba(200,164,90,.22)", nav: "rgba(212,200,168,.04)", navBdr: "rgba(212,200,168,.08)", btn: "rgba(212,200,168,.06)", btnBdr: "rgba(212,200,168,.12)", sig: "rgba(212,200,168,.25)" },
+    light: { bg: "#F7F5F0", txt: "#1A1612", sub: "rgba(26,22,18,.5)", bdr: "rgba(26,22,18,.1)", hnd: "rgba(26,22,18,.15)", prog: c.accent, cat: "rgba(26,22,18,.06)", catTxt: "#3A3530", catBdr: "rgba(26,22,18,.14)", nav: "rgba(26,22,18,.04)", navBdr: "rgba(26,22,18,.08)", btn: "rgba(26,22,18,.06)", btnBdr: "rgba(26,22,18,.1)", sig: "rgba(26,22,18,.28)" },
+  };
+  const T = themes[theme];
 
   useEffect(() => {
     const el = bodyRef.current;
     if (!el) return;
-    const fn = () => {
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      const t = scrollHeight - clientHeight;
-      setProgress(t > 0 ? Math.min(100, (scrollTop / t) * 100) : 100);
+    const onScroll = () => {
+      const p = el.scrollTop / (el.scrollHeight - el.clientHeight);
+      setProgress(isNaN(p) ? 0 : Math.min(1, p) * 100);
     };
-    el.addEventListener("scroll", fn, { passive: true });
-    setProgress(0); el.scrollTop = 0;
-    return () => el.removeEventListener("scroll", fn);
-  }, [writing.id]);
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [writing]);
 
-  const TH = {
-    light: { bg:"#F8F7F4", surface:"#F0EFE9", text:"#18182A", dim:"#52526A", sub:"#8585A0", border:"rgba(24,24,42,.09)", handle:"rgba(24,24,42,.15)" },
-    sepia: { bg:"#FBF6EC", surface:"#F3EDD8", text:"#3A2C1C", dim:"#6A5840", sub:"#9A8568", border:"rgba(90,58,28,.1)", handle:"rgba(90,58,28,.2)" },
-    dark:  { bg:"#0B1120", surface:"#080C18", text:"#EDE7DB", dim:"rgba(237,231,219,.62)", sub:"rgba(237,231,219,.36)", border:"rgba(255,255,255,.07)", handle:"rgba(255,255,255,.12)" },
-  };
-  const th = TH[theme];
-  const themeIcons = { light: <Sun size={13}/>, sepia: <Scroll size={13}/>, dark: <Moon size={13}/> };
-  const themeNext: Record<string, "light"|"sepia"|"dark"> = { light:"sepia", sepia:"dark", dark:"light" };
-  const shareUrl = `${window.location.origin}/writings`;
-  const shareText = `মাহবুব সরদার সবুজ লিখেছেন: ${writing.title}`;
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && prev) onNavigate(prev);
+      if (e.key === "ArrowRight" && next) onNavigate(next);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [prev, next, onClose, onNavigate]);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0,300)}…\n\nপড়ুন: ${shareUrl}`);
-      setCopied(true); setTimeout(() => setCopied(false), 2500);
-    } catch {}
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShowShare(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
-  const navigate = (w: Writing) => {
-    onNavigate(w);
-    window.history.pushState(null, "", `/writings/${makeSlug(w.title, w.id)}`);
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: writing.title, url: window.location.href });
+    } else {
+      setShowShare(s => !s);
+    }
   };
 
   return (
-    <motion.div className="rm-ov" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}>
+    <motion.div
+      className="rm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: .28 }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
       <motion.div
-        className="rm-box" style={{background:th.bg}}
-        initial={{opacity:0,y:70,scale:.96}} animate={{opacity:1,y:0,scale:1}}
-        exit={{opacity:0,y:70,scale:.96}}
-        transition={{type:"spring",damping:34,stiffness:320}}
-        onClick={e=>e.stopPropagation()}
+        className="rm-box"
+        style={{ background: T.bg }}
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 30, stiffness: 280 }}
       >
-        {/* Drag handle */}
-        <div className="rm-handle" style={{background:th.handle}}/>
+        {/* Handle */}
+        <div className="rm-hnd" style={{ background: T.hnd }}/>
         {/* Progress bar */}
-        <div className="rm-prog-track" style={{background:th.border}}>
-          <div className="rm-prog-fill" style={{width:`${progress}%`,background:`linear-gradient(90deg,${c.accent},${c.accent}88)`}}/>
+        <div className="rm-prog" style={{ background: "rgba(255,255,255,.04)" }}>
+          <div className="rm-pf" style={{ width: `${progress}%`, background: T.prog }}/>
         </div>
         {/* Header */}
-        <div className="rm-head" style={{background:th.surface,borderBottomColor:th.border}}>
-          <div className="rm-head-l">
-            <span className="rm-cat" style={{background:c.badge,color:c.accent,border:`1px solid ${c.accent}35`}}>
-              <span>{c.icon}</span>{writing.category}
+        <div className="rm-hd" style={{ borderColor: T.bdr }}>
+          <div className="rm-hdl">
+            <span className="rm-cat" style={{ background: T.cat, color: T.catTxt, borderColor: T.catBdr, border: "1px solid" }}>
+              <span style={{ fontSize: ".72rem" }}>{c.icon}</span>{writing.category}
             </span>
           </div>
           <div className="rm-ctrl">
             {/* Font size */}
-            <div className="rm-font-ctrl" style={{borderColor:th.border}}>
-              <button className="rm-font-btn" style={{color:th.dim}} onClick={()=>setFontSize(f=>Math.max(.85,f-.08))}>
+            <div className="rm-fc" style={{ borderColor: T.btnBdr }}>
+              <button className="rm-fb" style={{ color: T.sub }} onClick={() => setFontSize(f => Math.max(.85, f - .1))} title="ছোট">
                 <AArrowDown size={13}/>
               </button>
-              <button className="rm-font-btn" style={{color:th.dim}} onClick={()=>setFontSize(f=>Math.min(1.45,f+.08))}>
+              <button className="rm-fb" style={{ color: T.sub, borderLeft: `1px solid ${T.btnBdr}` }} onClick={() => setFontSize(f => Math.min(1.45, f + .1))} title="বড়">
                 <AArrowUp size={13}/>
               </button>
             </div>
-            {/* Theme toggle */}
-            <button className="rm-theme-btn" style={{color:th.dim,borderColor:th.border}} onClick={()=>setTheme(themeNext[theme])}>
-              {themeIcons[theme]}
+            {/* Theme */}
+            <button
+              className="rm-th"
+              style={{ color: T.sub, borderColor: T.btnBdr }}
+              onClick={() => setTheme(t => t === "dark" ? "sepia" : t === "sepia" ? "light" : "dark")}
+              title="থিম পরিবর্তন"
+            >
+              {theme === "dark" ? <Moon size={12}/> : theme === "sepia" ? <Scroll size={12}/> : <Sun size={12}/>}
+              <span style={{ fontSize: ".67rem" }}>{theme === "dark" ? "ডার্ক" : theme === "sepia" ? "সেপিয়া" : "লাইট"}</span>
             </button>
             {/* Share */}
-            <div style={{position:"relative"}}>
-              <button className="rm-btn" style={{color:th.dim,borderColor:th.border,background:th.surface}} onClick={()=>setShowShare(s=>!s)}>
+            <div style={{ position: "relative" }} ref={shareRef}>
+              <button className="rm-btn" style={{ color: T.sub, borderColor: T.btnBdr, background: T.btn }} onClick={handleShare} title="শেয়ার">
                 <Share2 size={13}/>
               </button>
-              <AnimatePresence>
-                {showShare && (
-                  <motion.div className="rm-share-dd" initial={{opacity:0,y:-8,scale:.94}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:-8,scale:.94}} transition={{duration:.14}} onClick={e=>e.stopPropagation()}>
-                    <button className="rm-share-item" style={{color:"#1877F2"}} onClick={()=>{window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,"_blank","width=600,height=400");setShowShare(false)}}>
-                      <Facebook size={14}/> Facebook-এ শেয়ার
-                    </button>
-                    <button className="rm-share-item" style={{color:copied?"#27ae60":th.text}} onClick={()=>{handleCopy();setShowShare(false)}}>
-                      {copied?<Check size={14}/>:<Copy size={14}/>} {copied?"কপি হয়েছে!":"লিংক কপি করুন"}
-                    </button>
-                    <button className="rm-share-item" style={{color:th.dim}} onClick={()=>{if(navigator.share)navigator.share({title:writing.title,text:shareText,url:shareUrl}).catch(()=>{});else handleCopy();setShowShare(false)}}>
-                      <Share2 size={14}/> শেয়ার করুন
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {showShare && (
+                <div className="rm-sdd">
+                  <button className="rm-si" style={{ color: "#E8E4DC" }} onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank"); setShowShare(false); }}>
+                    <Facebook size={14} color="#1877F2"/> Facebook-এ শেয়ার
+                  </button>
+                  <button className="rm-si" style={{ color: "#E8E4DC" }} onClick={handleCopy}>
+                    {copied ? <Check size={14} color="#34D399"/> : <Copy size={14}/>}
+                    {copied ? "কপি হয়েছে!" : "লিংক কপি করুন"}
+                  </button>
+                </div>
+              )}
             </div>
             {/* Close */}
-            <motion.button className="rm-btn" style={{color:th.dim,borderColor:th.border,background:th.surface}} whileHover={{scale:1.08}} whileTap={{scale:.92}} onClick={onClose}>
+            <button className="rm-btn" style={{ color: T.sub, borderColor: T.btnBdr, background: T.btn }} onClick={onClose} title="বন্ধ করুন">
               <X size={14}/>
-            </motion.button>
+            </button>
           </div>
         </div>
         {/* Body */}
         <div className="rm-body" ref={bodyRef}>
-          <motion.h2
-            className="rm-writing-title"
-            style={{color:th.text,fontSize:`${fontSize * 1.55}rem`}}
-            initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:.35}}
-          >
-            {writing.title}
-          </motion.h2>
-          <motion.p
-            className="rm-writing-text"
-            style={{color:th.text,fontSize:`${fontSize}rem`,opacity:.88}}
-            initial={{opacity:0}} animate={{opacity:.88}} transition={{duration:.4,delay:.1}}
-          >
+          <h1 className="rm-ttl" style={{ color: T.txt }}>{writing.title}</h1>
+          <div className="rm-txt" style={{ color: T.txt, fontSize: `${fontSize}rem` }}>
             {writing.content}
-          </motion.p>
-          <div className="rm-writing-sig" style={{borderTopColor:th.border,color:th.sub}}>
+          </div>
+          <div className="rm-sig" style={{ borderColor: T.bdr, color: T.txt }}>
             — মাহবুব সরদার সবুজ · {writing.date}
           </div>
         </div>
         {/* Navigation */}
-        <div className="rm-nav" style={{borderTopColor:th.border}}>
-          <button className="rm-nbtn" disabled={!prev} style={{color:th.text,borderRightColor:th.border}} onClick={()=>prev&&navigate(prev)}>
-            <ChevronLeft size={15} color={prev?c.accent:th.sub} style={{flexShrink:0}}/>
-            <div style={{overflow:"hidden"}}>
-              <span className="rm-nlbl" style={{color:th.sub}}>আগের লেখা</span>
-              <span className="rm-ntitle" style={{color:th.text}}>{prev?.title??"—"}</span>
-            </div>
+        <div className="rm-nav" style={{ borderColor: T.bdr }}>
+          <button
+            className="rm-nb"
+            style={{ color: T.txt, borderColor: T.bdr }}
+            onClick={() => prev && onNavigate(prev)}
+            disabled={!prev}
+          >
+            <ChevronLeft size={16} style={{ color: prev ? c.accent : T.sub, flexShrink: 0 }}/>
+            <span>
+              <span className="rm-nl" style={{ color: T.sub }}>পূর্ববর্তী</span>
+              <span className="rm-nt">{prev?.title ?? "—"}</span>
+            </span>
           </button>
-          <button className="rm-nbtn" disabled={!next} style={{color:th.text}} onClick={()=>next&&navigate(next)}>
-            <div style={{overflow:"hidden",textAlign:"right"}}>
-              <span className="rm-nlbl" style={{color:th.sub}}>পরের লেখা</span>
-              <span className="rm-ntitle" style={{color:th.text}}>{next?.title??"—"}</span>
-            </div>
-            <ChevronRight size={15} color={next?c.accent:th.sub} style={{flexShrink:0}}/>
+          <button
+            className="rm-nb"
+            style={{ color: T.txt, borderColor: T.bdr, justifyContent: "flex-end" }}
+            onClick={() => next && onNavigate(next)}
+            disabled={!next}
+          >
+            <span style={{ textAlign: "right" }}>
+              <span className="rm-nl" style={{ color: T.sub }}>পরবর্তী</span>
+              <span className="rm-nt">{next?.title ?? "—"}</span>
+            </span>
+            <ChevronRight size={16} style={{ color: next ? c.accent : T.sub, flexShrink: 0 }}/>
           </button>
         </div>
       </motion.div>
@@ -10895,173 +10735,207 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   );
 }
 
-// ── Book Modal — Cinematic ────────────────────────────────────────────────────
+// ── Book Modal ────────────────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+
   return (
-    <AnimatePresence>
-      <motion.div className="bm-ov" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}>
-        <motion.div
-          className="bm-box"
-          initial={{opacity:0,y:44,scale:.93}} animate={{opacity:1,y:0,scale:1}}
-          exit={{opacity:0,y:44,scale:.93}}
-          transition={{type:"spring",damping:30,stiffness:290}}
-          onClick={e=>e.stopPropagation()}
-        >
-          <div className="bm-head">
-            <span style={{padding:"4px 12px",borderRadius:999,background:`${book.accentColor}18`,color:book.accentColor,border:`1px solid ${book.accentColor}30`,fontFamily:"'SolaimanLipi',sans-serif",fontSize:".63rem",fontWeight:400}}>{book.badge}</span>
-            <motion.button whileHover={{scale:1.06}} whileTap={{scale:.94}} onClick={onClose} style={{width:36,height:36,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",color:"#EDE7DB",flexShrink:0}}>
-              <X size={15}/>
-            </motion.button>
+    <motion.div
+      className="bm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <motion.div
+        className="bm-box"
+        initial={{ opacity: 0, scale: .94, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: .94, y: 24 }}
+        transition={{ type: "spring", damping: 28, stiffness: 260 }}
+      >
+        <div className="bm-hd">
+          <span style={{ fontFamily: "var(--f)", fontSize: ".75rem", color: "rgba(238,234,226,.45)", display: "flex", alignItems: "center", gap: "6px" }}>
+            <BookOpen size={13} color={book.accentColor}/> {book.subtitle}
+          </span>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(238,234,226,.45)" }}>
+            <X size={14}/>
+          </button>
+        </div>
+        <div className="bm-in">
+          <div className="bm-cw">
+            <img src={book.cover} alt={book.title} className="bm-cv" onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='185' height='275' viewBox='0 0 185 275'%3E%3Crect fill='%230C1018'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
           </div>
-          <div className="bm-inner">
-            <div className="bm-cover-wrap"><img className="bm-cover" src={book.cover} alt={book.title}/></div>
-            <div className="bm-content">
-              <h3 style={{fontFamily:"'SolaimanLipi',sans-serif",color:"#EDE7DB",fontSize:"1.25rem",fontWeight:400,lineHeight:1.45,marginBottom:"1rem"}}>{book.title}</h3>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
-                {[{l:"ধরন",v:book.genre},{l:"পৃষ্ঠা",v:book.pages},{l:"প্রকাশ",v:book.year}].map(item=>(
-                  <div key={item.l} style={{padding:"8px 14px",borderRadius:12,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)"}}>
-                    <div style={{color:"rgba(240,234,224,.35)",fontSize:".6rem",marginBottom:2,fontFamily:"'SolaimanLipi',sans-serif"}}>{item.l}</div>
-                    <div style={{color:"#EDE7DB",fontSize:".86rem",fontWeight:400,fontFamily:"'SolaimanLipi',sans-serif"}}>{item.v}</div>
-                  </div>
+          <div className="bm-cnt">
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 999, background: `${book.accentColor}14`, border: `1px solid ${book.accentColor}28`, marginBottom: "1rem" }}>
+              <span style={{ fontFamily: "var(--f)", fontSize: ".62rem", color: book.accentColor, letterSpacing: ".08em", textTransform: "uppercase" }}>{book.badge}</span>
+            </div>
+            <h2 style={{ fontFamily: "var(--f)", fontSize: "1.3rem", color: "var(--t0)", lineHeight: 1.45, marginBottom: ".7rem", fontWeight: 400 }}>{book.title}</h2>
+            <p style={{ fontFamily: "var(--f)", fontSize: ".8rem", color: "var(--t2)", lineHeight: 1.9, marginBottom: "1.1rem" }}>{book.description}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: "1.3rem" }}>
+              {[{ label: book.genre }, { label: `${book.pages} পৃষ্ঠা` }, { label: book.year }].map((t, i) => (
+                <span key={i} style={{ padding: "3px 10px", borderRadius: 999, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", fontFamily: "var(--f)", fontSize: ".67rem", color: "var(--t3)" }}>{t.label}</span>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {book.buyLink && (
+                <a href={book.buyLink} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 999, background: `linear-gradient(135deg,${book.accentColor},${book.accentColor}CC)`, color: "#08090F", fontFamily: "var(--f)", fontSize: ".85rem", textDecoration: "none", transition: "all .28s", boxShadow: `0 6px 22px ${book.accentColor}30` }}>
+                  <ShoppingCart size={14}/> কিনুন
+                </a>
+              )}
+              {book.canRead && (
+                <a href={`/ebooks/${book.slug}`} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 999, background: "transparent", color: book.accentColor, fontFamily: "var(--f)", fontSize: ".85rem", textDecoration: "none", border: `1.5px solid ${book.accentColor}40`, transition: "all .28s" }}>
+                  <BookOpen size={14}/> পড়ুন
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ── E-Books Section ───────────────────────────────────────────────────────────
+function EBooksSection() {
+  const [selBook, setSelBook] = useState<typeof ebooks[0] | null>(null);
+  const featured = ebooks.find(b => b.isFeatured);
+  const others = ebooks.filter(b => !b.isFeatured);
+
+  return (
+    <>
+      {/* Section header */}
+      <div className="ed">
+        <div className="ed-i" style={{ background: "rgba(99,179,237,.08)", border: "1px solid rgba(99,179,237,.14)" }}>
+          <Library size={16} color="#63B3ED"/>
+        </div>
+        <span className="ed-l" style={{ color: "rgba(99,179,237,.65)" }}>সাহিত্য সংগ্রহ</span>
+        <div className="ed-ln" style={{ background: "linear-gradient(90deg,rgba(99,179,237,.18),transparent)" }}/>
+      </div>
+
+      {/* Featured book */}
+      {featured && (
+        <motion.div
+          className="ef"
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: .5 }}
+        >
+          <div className="ef-bg"/>
+          <div className="ef-in">
+            <div className="ef-cw">
+              <img
+                src={featured.cover} alt={featured.title} className="ef-cv"
+                onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='230' height='290' viewBox='0 0 230 290'%3E%3Crect fill='%230C1018'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='16' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}
+              />
+              <div className="ef-co"/>
+            </div>
+            <div className="ef-cnt">
+              <div className="ef-badge" style={{ background: `${featured.accentColor}14`, border: `1px solid ${featured.accentColor}28`, color: featured.accentColor }}>
+                <Crown size={11}/> {featured.badge}
+              </div>
+              <div className="ef-auth">
+                <Pen size={11}/> মাহবুব সরদার সবুজ
+              </div>
+              <h2 className="ef-ttl">{featured.title}</h2>
+              <p className="ef-desc">{featured.description}</p>
+              <div className="ef-tags">
+                {[featured.genre, `${featured.pages} পৃষ্ঠা`, featured.year].map((t, i) => (
+                  <span key={i} className="ef-tag" style={{ background: "rgba(255,255,255,.03)", color: "rgba(238,234,226,.4)", borderColor: "rgba(255,255,255,.07)" }}>{t}</span>
                 ))}
               </div>
-              <p style={{color:"rgba(240,234,224,.58)",fontSize:".88rem",lineHeight:1.95,flex:1,marginBottom:22,fontFamily:"'SolaimanLipi',sans-serif"}}>{book.description}</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
-                {book.canRead&&(
-                  <Link href={`/ebooks/read/${book.slug}`}>
-                    <motion.button whileHover={{scale:1.03,y:-2}} whileTap={{scale:.97}} style={{display:"flex",alignItems:"center",gap:8,background:`linear-gradient(135deg,${book.accentColor},${book.accentColor}cc)`,color:book.accentColor==="#C9A84C"||book.accentColor==="#D4A843"?"#0A0E18":"#fff",padding:"12px 24px",borderRadius:999,fontWeight:400,fontSize:".88rem",border:"none",cursor:"pointer",fontFamily:"'SolaimanLipi',sans-serif",boxShadow:`0 6px 22px ${book.accentColor}44`}}>
-                      <BookOpen size={15}/> এখনই পড়ুন
-                    </motion.button>
-                  </Link>
+              <div className="ef-btns">
+                {featured.buyLink && (
+                  <a href={featured.buyLink} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <button className="ef-bp"><ShoppingCart size={15}/> এখনই কিনুন</button>
+                  </a>
                 )}
-                {book.buyLink&&(
-                  <a href={book.buyLink} target="_blank" rel="noopener noreferrer">
-                    <motion.button whileHover={{scale:1.03,y:-2}} whileTap={{scale:.97}} style={{display:"flex",alignItems:"center",gap:8,background:"transparent",color:"#C9A84C",padding:"12px 24px",borderRadius:999,fontWeight:400,fontSize:".88rem",border:"1.5px solid rgba(201,168,76,.35)",cursor:"pointer",fontFamily:"'SolaimanLipi',sans-serif"}}>
-                      <ShoppingCart size={15}/> রকমারিতে কিনুন
-                    </motion.button>
+                {featured.canRead && (
+                  <a href={`/ebooks/${featured.slug}`} style={{ textDecoration: "none" }}>
+                    <button className="ef-bo"><BookOpen size={15}/> পড়ুন</button>
                   </a>
                 )}
               </div>
             </div>
           </div>
         </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
+      )}
 
-// ── E-Books Section — Cinematic Library ──────────────────────────────────────
-function EBooksSection() {
-  const [sel, setSel] = useState<typeof ebooks[0]|null>(null);
-  const feat = ebooks.find(b=>b.isFeatured)!;
-  const rest = ebooks.filter(b=>!b.isFeatured);
-  return (
-    <div>
-      {/* Featured Publication */}
-      <div className="ce-div">
-        <div className="ce-div-ico" style={{background:"rgba(201,168,76,.1)",border:"1px solid rgba(201,168,76,.16)"}}><Crown size={16} color="#C9A84C"/></div>
-        <span className="ce-div-lbl" style={{color:"#C9A84C"}}>FEATURED PUBLICATION</span>
-        <div className="ce-div-line" style={{background:"linear-gradient(90deg,rgba(201,168,76,.35),transparent)"}}/>
-      </div>
-      <motion.div className="ce-feat" initial={{opacity:0,y:28}} animate={{opacity:1,y:0}} transition={{duration:.65}}>
-        <div className="ce-feat-bg"/>
-        <div className="ce-feat-inner">
-          <div className="ce-feat-cover-wrap">
-            <img className="ce-feat-cover" src={feat.cover} alt={feat.title}/>
-            <div className="ce-feat-cover-ov"/>
-          </div>
-          <div className="ce-feat-content">
-            <span className="ce-feat-badge" style={{background:`${feat.accentColor}16`,color:feat.accentColor,border:`1px solid ${feat.accentColor}28`}}>
-              <Award size={12}/> {feat.badge}
-            </span>
-            <div className="ce-feat-author"><Feather size={12}/> মাহবুব সরদার সবুজ</div>
-            <h3 className="ce-feat-title">{feat.title}</h3>
-            <p className="ce-feat-desc">{feat.description}</p>
-            <div className="ce-feat-tags">
-              {[
-                {l:feat.genre,bg:"rgba(255,255,255,.05)",c:"rgba(240,234,224,.55)",b:"rgba(255,255,255,.08)"},
-                {l:feat.pages+" পৃষ্ঠা",bg:"rgba(255,255,255,.05)",c:"rgba(240,234,224,.55)",b:"rgba(255,255,255,.08)"},
-                {l:feat.year,bg:"rgba(255,255,255,.05)",c:"rgba(240,234,224,.55)",b:"rgba(255,255,255,.08)"},
-                {l:"রকমারিতে পাওয়া যাচ্ছে ✓",bg:"rgba(39,174,96,.09)",c:"#2ecc71",b:"rgba(39,174,96,.2)"},
-              ].map(t=>(
-                <span key={t.l} className="ce-feat-tag" style={{background:t.bg,color:t.c,borderColor:t.b}}>{t.l}</span>
-              ))}
+      {/* Other books */}
+      {others.length > 0 && (
+        <>
+          <div className="ed" style={{ marginBottom: "clamp(1rem,2vw,1.6rem)" }}>
+            <div className="ed-i" style={{ background: "rgba(167,139,250,.07)", border: "1px solid rgba(167,139,250,.12)" }}>
+              <BookText size={15} color="#A78BFA"/>
             </div>
-            <div className="ce-feat-btns">
-              <Link href={`/ebooks/read/${feat.slug}`}>
-                <motion.button className="ce-btn-p" whileHover={{scale:1.03}} whileTap={{scale:.97}}>
-                  <BookOpen size={16}/> এখনই পড়ুন
-                </motion.button>
-              </Link>
-              <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
-                <motion.button className="ce-btn-o" whileHover={{scale:1.03}} whileTap={{scale:.97}}>
-                  <ShoppingCart size={16}/> রকমারি থেকে অর্ডার করুন
-                </motion.button>
-              </a>
-            </div>
+            <span className="ed-l" style={{ color: "rgba(167,139,250,.6)" }}>আরও বই</span>
+            <div className="ed-ln" style={{ background: "linear-gradient(90deg,rgba(167,139,250,.15),transparent)" }}/>
           </div>
-        </div>
-      </motion.div>
+          <div className="eg">
+            {others.map((book, i) => (
+              <motion.div
+                key={book.id}
+                className="ec"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * .07, duration: .4 }}
+                onClick={() => setSelBook(book)}
+              >
+                <div className="ec-cw">
+                  <img
+                    src={book.cover} alt={book.title} className="ec-cv"
+                    onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='215' height='287' viewBox='0 0 215 287'%3E%3Crect fill='%230C1018'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}
+                  />
+                  <div className="ec-co"/>
+                  <div className="ec-hov">
+                    <button className="ec-hb"><Eye size={13}/> বিস্তারিত</button>
+                  </div>
+                  <span className="ec-badge" style={{ background: `${book.accentColor}18`, color: book.accentColor, border: `1px solid ${book.accentColor}28` }}>
+                    {book.badge}
+                  </span>
+                </div>
+                <div className="ec-info">
+                  <div className="ec-ttl">{book.title}</div>
+                  <div className="ec-meta"><Calendar size={10}/>{book.year} · {book.pages}</div>
+                  <div className="ec-desc">{book.description}</div>
+                  <button
+                    className="ec-rb"
+                    style={{ background: `${book.accentColor}0E`, color: book.accentColor, border: `1px solid ${book.accentColor}22` }}
+                  >
+                    <BookOpen size={13}/> পড়ুন
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+            {/* Coming soon */}
+            <motion.div
+              className="ec-soon"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: others.length * .07, duration: .4 }}
+            >
+              <Sparkles size={22} color="rgba(99,179,237,.4)" style={{ margin: "0 auto 1rem", display: "block", animation: "glow 3s ease infinite" }}/>
+              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.4)", fontSize: ".85rem", marginBottom: ".5rem" }}>শীঘ্রই আসছে</div>
+              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.2)", fontSize: ".72rem" }}>নতুন বই প্রকাশিত হবে</div>
+            </motion.div>
+          </div>
+        </>
+      )}
 
-      {/* Digital Library */}
-      <div className="ce-div" style={{marginTop:"clamp(2rem,4vw,3.5rem)"}}>
-        <div className="ce-div-ico" style={{background:"rgba(74,144,217,.1)",border:"1px solid rgba(74,144,217,.16)"}}><Library size={16} color="#4A90D9"/></div>
-        <span className="ce-div-lbl" style={{color:"#4A90D9"}}>DIGITAL LIBRARY</span>
-        <div className="ce-div-line" style={{background:"linear-gradient(90deg,rgba(74,144,217,.35),transparent)"}}/>
-      </div>
-      <div style={{marginBottom:"clamp(1.2rem,2.5vw,2rem)"}}>
-        <h2 style={{fontFamily:"'SolaimanLipi',sans-serif",color:"#EDE7DB",fontSize:"clamp(1.3rem,2.5vw,1.85rem)",fontWeight:400,marginBottom:".5rem"}}>ই-বুক সংগ্রহ</h2>
-        <p style={{fontFamily:"'SolaimanLipi',sans-serif",color:"rgba(240,234,224,.35)",fontSize:".82rem",fontWeight:400}}>বিনামূল্যে পড়ুন — যেকোনো ডিভাইসে</p>
-      </div>
-      <div className="ce-grid">
-        {rest.map((book,i)=>(
-          <motion.div key={book.id} className="ce-card" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:.48,delay:i*.1}} onClick={()=>setSel(book)}>
-            <div className="ce-cover-wrap">
-              <img className="ce-cover" src={book.cover} alt={book.title}/>
-              <div className="ce-cover-ov"/>
-              <div className="ce-hover-ov"><button className="ce-hover-btn"><Eye size={13}/> বিস্তারিত</button></div>
-              <span className="ce-badge" style={{background:`${book.accentColor}22`,color:book.accentColor,border:`1px solid ${book.accentColor}40`}}>{book.badge}</span>
-            </div>
-            <div className="ce-info">
-              <h3 className="ce-book-title">{book.title}</h3>
-              <p className="ce-meta"><BookText size={11}/> {book.genre} · {book.year}</p>
-              <p className="ce-desc">{book.description}</p>
-              <Link href={`/ebooks/read/${book.slug}`}>
-                <motion.button
-                  className="ce-read-btn"
-                  style={{background:`${book.accentColor}12`,color:book.accentColor,border:`1px solid ${book.accentColor}2A`}}
-                  whileHover={{background:`${book.accentColor}22`,borderColor:book.accentColor,scale:1.02}}
-                  whileTap={{scale:.98}}
-                  onClick={e=>e.stopPropagation()}
-                >
-                  <BookOpen size={13}/> পড়ুন
-                </motion.button>
-              </Link>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Coming Soon */}
-      <motion.div className="ce-soon" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.45}}>
-        <div style={{position:"relative",zIndex:1}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:9,marginBottom:10}}>
-            <Sparkles size={16} color="#4A90D9"/>
-            <span style={{fontFamily:"'SolaimanLipi',sans-serif",color:"#4A90D9",fontSize:".78rem",fontWeight:400,letterSpacing:".1em",textTransform:"uppercase"}}>আসছে শীঘ্রই</span>
-          </div>
-          <p style={{fontFamily:"'SolaimanLipi',sans-serif",color:"rgba(240,234,224,.44)",fontSize:".87rem",lineHeight:1.85,fontWeight:400}}>
-            আরো ৫টি ই-বুক শীঘ্রই প্রকাশিত হবে। আপডেট পেতে{" "}
-            <a href="https://www.facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer" style={{color:"#4A90D9",fontWeight:400,textDecoration:"none"}}>ফেসবুক পেইজ</a>{" "}ফলো করুন।
-          </p>
-        </div>
-      </motion.div>
-      <AnimatePresence>{sel&&<BookModal book={sel} onClose={()=>setSel(null)}/>}</AnimatePresence>
-    </div>
+      {/* Book modal */}
+      <AnimatePresence>
+        {selBook && <BookModal book={selBook} onClose={() => setSelBook(null)}/>}
+      </AnimatePresence>
+    </>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  MAIN PAGE — Cinematic Literary Universe
+//  MAIN PAGE — Obsidian Editorial v6
 // ══════════════════════════════════════════════════════════════════════════════
 export default function Writings() {
   const [tab, setTab] = useState<"writings"|"ebooks">("writings");
@@ -11074,174 +10948,176 @@ export default function Writings() {
 
   // Inject CSS
   useEffect(() => {
-    const id = "writings-css";
+    const id = "writings-css-v6";
     if (!document.getElementById(id)) {
       const el = document.createElement("style");
-      el.id = id; el.textContent = CSS;
+      el.id = id;
+      el.textContent = CSS;
       document.head.appendChild(el);
     }
     return () => { document.getElementById(id)?.remove(); };
   }, []);
 
-  // URL slug handling
-  useEffect(() => {
-    if (match && params?.slug) {
-      const found = writings.find(w => makeSlug(w.title, w.id) === params.slug);
-      if (found) setSel(found);
-    }
-  }, [match, params?.slug]);
+  // Particles
+  const particles = useMemo(() => Array.from({ length: 14 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    size: `${Math.random() * 3 + 1.5}px`,
+    opacity: Math.random() * .45 + .12,
+    delay: `${Math.random() * 18}s`,
+    dur: `${Math.random() * 14 + 10}s`,
+  })), []);
 
   // Filtered writings
   const filtered = useMemo(() => {
-    return writings.filter(w => {
-      const matchCat = cat === "all" || w.category === cat;
-      const matchQ = !q.trim() || w.title.includes(q.trim()) || w.content.includes(q.trim());
-      return matchCat && matchQ;
-    });
+    let list = writings;
+    if (cat !== "all") list = list.filter(w => w.category === cat);
+    if (q.trim()) {
+      const qn = q.trim().toLowerCase();
+      list = list.filter(w => w.title.toLowerCase().includes(qn) || w.content.toLowerCase().includes(qn));
+    }
+    return list;
   }, [cat, q]);
 
   const featured = writings.find(w => w.featured);
-  const displayWritings = filtered;
 
-  const handleCardClick = (w: Writing) => {
+  // URL slug handling
+  useEffect(() => {
+    if (match && params?.slug) {
+      const w = writings.find(wr => makeSlug(wr.title, wr.id) === params.slug);
+      if (w) { setSel(w); setTab("writings"); }
+    }
+  }, [match, params?.slug]);
+
+  const handleCardClick = useCallback((w: Writing) => {
     setSel(w);
-    window.history.pushState(null, "", `/writings/${makeSlug(w.title, w.id)}`);
-  };
-  const handleModalClose = () => {
-    setSel(null);
-    window.history.pushState(null, "", "/writings");
-  };
-  const handleNavigate = (w: Writing) => setSel(w);
+    setLocation(`/writings/${makeSlug(w.title, w.id)}`);
+  }, [setLocation]);
 
-  // Particles
-  const particles = useMemo(() => Array.from({length:12},(_,i)=>({
-    id:i,
-    left:`${8+Math.random()*84}%`,
-    size:`${2+Math.random()*3}px`,
-    delay:`${Math.random()*12}s`,
-    dur:`${10+Math.random()*14}s`,
-    opacity:.3+Math.random()*.4,
-  })),[]);
+  const handleModalClose = useCallback(() => {
+    setSel(null);
+    setLocation("/writings");
+  }, [setLocation]);
+
+  const handleNavigate = useCallback((w: Writing) => {
+    setSel(w);
+    setLocation(`/writings/${makeSlug(w.title, w.id)}`);
+  }, [setLocation]);
 
   return (
     <>
       <Seo
-        title="লেখালেখি ও বই | মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের লেখালেখি, কবিতা, ছোট গল্প, জীবনদর্শন এবং প্রকাশিত বইয়ের সংগ্রহ।"
+        title="লেখালেখি ও বই — মাহবুব সরদার সবুজ"
+        description="মাহবুব সরদার সবুজের সকল লেখা, কবিতা, ছোট লেখা এবং প্রকাশিত বই।"
+        url="https://mahbubsardarsabuj.com/writings"
       />
       <Navbar/>
       <style>{CSS}</style>
 
       {/* ── CINEMATIC HERO ── */}
-      <section className="ch">
-        <div className="ch-nebula"/>
-        <div className="ch-grain"/>
-        <div className="ch-stars"/>
-        <div className="ch-scan"/>
-        {particles.map(p=>(
-          <div key={p.id} className="ch-particle" style={{
-            left:p.left, width:p.size, height:p.size,
-            top:"-5%", opacity:p.opacity,
-            animationDelay:p.delay, animationDuration:p.dur,
+      <section className="h">
+        <div className="h-atm"/>
+        <div className="h-grid"/>
+        <div className="h-scan"/>
+        <div className="h-vig"/>
+        <div className="h-vig2"/>
+        {particles.map(p => (
+          <div key={p.id} className="h-p" style={{
+            left: p.left, width: p.size, height: p.size,
+            opacity: p.opacity, animationDelay: p.delay, animationDuration: p.dur,
           }}/>
         ))}
-        <div className="ch-inner">
+        <div className="h-in">
           <div>
-            <a href="/" className="ch-crumb"><ArrowLeft size={12}/> হোমে ফিরুন</a>
-            <div className="ch-eyebrow">
-              <div className="ch-eyebrow-dot"/>
-              <span className="ch-eyebrow-txt">LITERARY UNIVERSE · সাহিত্য জগৎ</span>
+            <a href="/" className="h-back"><ArrowLeft size={12}/> হোমে ফিরুন</a>
+            <div className="h-eye">
+              <div className="h-dot"/>
+              <span className="h-eye-t">Literary Universe · সাহিত্য জগৎ</span>
             </div>
-            <h1 className="ch-title">
-              <span style={{color:"var(--t-0)"}}>লেখালেখি</span>
+            <h1 className="h-t">
+              <span className="h-t-w">লেখালেখি</span>
               <br/>
-              <span className="ch-title-gold">ও বই</span>
-              <div className="ch-title-line"/>
+              <span className="h-t-g">ও বই</span>
+              <span className="h-line"/>
             </h1>
-            <p className="ch-desc">
-              শব্দের গভীরে লুকিয়ে থাকা অনুভূতি, জীবনের নানা রঙ এবং মানবিক সত্যের সন্ধানে —{" "}
-              <span className="ch-sub-grad">প্রতিটি লেখা একটি যাত্রা।</span>
+            <p className="h-sub">
+              শব্দের গভীরে লুকিয়ে থাকা অনুভূতি, জীবনের নানা রঙ এবং মানবিক সত্যের সন্ধানে।
             </p>
-            <div className="ch-stats">
+            <div className="h-stats">
               {[
-                {ico:<PenLine size={18} color="#C9A84C"/>,bg:"rgba(201,168,76,.1)",border:"rgba(201,168,76,.18)",val:`${writings.length}+`,lbl:"মোট লেখা"},
-                {ico:<BookCopy size={18} color="#60A5FA"/>,bg:"rgba(96,165,250,.1)",border:"rgba(96,165,250,.18)",val:`${ebooks.length}`,lbl:"প্রকাশিত বই"},
-                {ico:<Heart size={18} color="#F472B6"/>,bg:"rgba(244,114,182,.1)",border:"rgba(244,114,182,.18)",val:"৫+",lbl:"বছরের অভিজ্ঞতা"},
-                {ico:<Flame size={18} color="#FBBF24"/>,bg:"rgba(251,191,36,.1)",border:"rgba(251,191,36,.18)",val:"৫",lbl:"ক্যাটাগরি"},
-              ].map((s,i)=>(
-                <motion.div key={i} className="ch-stat" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.35+i*.08}}>
-                  <div className="ch-stat-ico" style={{background:s.bg,border:`1px solid ${s.border}`}}>{s.ico}</div>
+                { ico: <PenLine size={17} color="#C8A45A"/>, bg: "rgba(200,164,90,.1)", bdr: "rgba(200,164,90,.18)", val: `${writings.length}+`, lbl: "লেখা" },
+                { ico: <BookCopy size={17} color="#63B3ED"/>, bg: "rgba(99,179,237,.1)", bdr: "rgba(99,179,237,.18)", val: `${ebooks.length}`, lbl: "বই" },
+                { ico: <Flame size={17} color="#FBBF24"/>, bg: "rgba(251,191,36,.1)", bdr: "rgba(251,191,36,.18)", val: "৫", lbl: "ক্যাটাগরি" },
+              ].map((s, i) => (
+                <motion.div key={i} className="h-stat" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .3 + i * .08 }}>
+                  <div className="h-stat-i" style={{ background: s.bg, border: `1px solid ${s.bdr}` }}>{s.ico}</div>
                   <div>
-                    <div className="ch-stat-val">{s.val}</div>
-                    <div className="ch-stat-lbl">{s.lbl}</div>
+                    <div className="h-stat-v">{s.val}</div>
+                    <div className="h-stat-l">{s.lbl}</div>
                   </div>
                 </motion.div>
               ))}
             </div>
           </div>
-          {/* Cinematic Orb */}
-          <div className="ch-orb">
-            <div className="ch-orb-ring-1"/>
-            <div className="ch-orb-ring-2"/>
-            <div className="ch-orb-core">
-              <div className="ch-orb-icon">
-                <Feather size={52} color="rgba(201,168,76,.7)" strokeWidth={1.2}/>
+          {/* Orb */}
+          <div className="h-orb">
+            <div className="h-r1"/>
+            <div className="h-r2"/>
+            <div className="h-r3"/>
+            <div className="h-core">
+              <div className="h-core-i">
+                <Feather size={46} color="rgba(200,164,90,.65)" strokeWidth={1.2}/>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── STICKY NAVIGATION ── */}
-      <nav className="cn">
-        <div className="cn-inner">
-          <div className="cn-tabs">
-            <button
-              className={`cn-tab ${tab==="writings"?"gold":""}`}
-              onClick={()=>setTab("writings")}
-            >
-              <div className="cn-tab-ico"><Feather size={15}/></div>
+      {/* ── STICKY NAV ── */}
+      <nav className="nav">
+        <div className="nav-in">
+          <div className="nav-tabs">
+            <button className={`nav-tab${tab === "writings" ? " on-g" : ""}`} onClick={() => setTab("writings")}>
+              <div className="nav-ti"><Feather size={14}/></div>
               লেখালেখি
-              <span className="cn-pill">{writings.length}+</span>
+              <span className="nav-pill">{writings.length}+</span>
             </button>
-            <button
-              className={`cn-tab ${tab==="ebooks"?"blue":""}`}
-              onClick={()=>setTab("ebooks")}
-            >
-              <div className="cn-tab-ico"><BookOpen size={15}/></div>
+            <button className={`nav-tab${tab === "ebooks" ? " on-b" : ""}`} onClick={() => setTab("ebooks")}>
+              <div className="nav-ti"><BookOpen size={14}/></div>
               বই ও ই-বুক
-              <span className="cn-pill">{ebooks.length}</span>
+              <span className="nav-pill">{ebooks.length}</span>
             </button>
           </div>
-          {tab==="writings" && (
-            <div className="cn-ctrl">
-              {/* Search */}
-              <div className="cn-search">
-                <Search size={13} color="rgba(240,234,224,.35)"/>
+          {tab === "writings" && (
+            <div className="nav-ctrl">
+              <div className="nav-srch">
+                <Search size={12} color="rgba(238,234,226,.28)"/>
                 <input
                   type="text" placeholder="লেখা খুঁজুন…"
-                  value={q} onChange={e=>setQ(e.target.value)}
+                  value={q} onChange={e => setQ(e.target.value)}
                 />
-                {q && <button onClick={()=>setQ("")} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(240,234,224,.4)",display:"flex",alignItems:"center"}}><X size={12}/></button>}
+                {q && (
+                  <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.35)", display: "flex", alignItems: "center" }}>
+                    <X size={11}/>
+                  </button>
+                )}
               </div>
-              {/* Category filters */}
-              <div className="cn-cats">
-                {CATS.map(c=>(
+              <div className="nav-cats">
+                {CATS.map(c => (
                   <motion.button
                     key={c.id}
-                    className={`cn-cat${cat===c.id?" active":""}`}
-                    style={cat===c.id?{background:`${c.color}14`,color:c.color,borderColor:`${c.color}30`,boxShadow:`0 0 14px ${c.glow}`}:{}}
-                    onClick={()=>setCat(c.id)}
-                    whileTap={{scale:.95}}
+                    className="nav-cat"
+                    style={cat === c.id ? { background: `${c.color}10`, color: c.color, borderColor: `${c.color}28`, boxShadow: `0 0 12px ${c.glow}` } : {}}
+                    onClick={() => setCat(c.id)}
+                    whileTap={{ scale: .94 }}
                   >
-                    <span style={{fontSize:".78rem"}}>{c.icon}</span>{c.label}
+                    <span style={{ fontSize: ".75rem" }}>{c.icon}</span>{c.label}
                   </motion.button>
                 ))}
               </div>
-              {/* View toggle */}
-              <div className="cn-view">
-                <button className={`cn-vbtn${viewMode==="grid"?" on":""}`} onClick={()=>setViewMode("grid")} title="গ্রিড ভিউ"><Grid3X3 size={13}/></button>
-                <button className={`cn-vbtn${viewMode==="list"?" on":""}`} onClick={()=>setViewMode("list")} title="লিস্ট ভিউ"><List size={13}/></button>
+              <div className="nav-vw">
+                <button className={`nav-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড"><Grid3X3 size={12}/></button>
+                <button className={`nav-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট"><List size={12}/></button>
               </div>
             </div>
           )}
@@ -11249,76 +11125,80 @@ export default function Writings() {
       </nav>
 
       {/* ── MAIN CONTENT ── */}
-      <main style={{background:"var(--ink-1)",minHeight:"60vh"}}>
-        <div className="cw">
+      <main style={{ background: "var(--bg1)", minHeight: "60vh" }}>
+        <div className="ctn">
           <AnimatePresence mode="wait">
-            {tab==="writings" ? (
-              <motion.div key="writings" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}} transition={{duration:.35}}>
-                {/* Featured writing banner */}
-                {featured && cat==="all" && !q && (
+            {tab === "writings" ? (
+              <motion.div key="writings" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: .3 }}>
+                {/* Featured banner */}
+                {featured && cat === "all" && !q && (
                   <motion.div
-                    className="cf"
-                    initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:.55}}
-                    onClick={()=>handleCardClick(featured)}
+                    className="fb"
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: .5 }}
+                    onClick={() => handleCardClick(featured)}
                   >
-                    <div className="cf-bg"/>
-                    <div className="cf-bg-pattern"/>
-                    <div className="cf-quote-mark">“</div>
-                    <div className="cf-inner">
+                    <div className="fb-bg"/>
+                    <div className="fb-grid"/>
+                    <div className="fb-qm">"</div>
+                    <div className="fb-in">
                       <div>
-                        <div className="cf-badge"><Star size={11} fill="currentColor"/> বিশেষ নির্বাচিত লেখা</div>
-                        <h2 className="cf-title">{featured.title}</h2>
-                        <p className="cf-excerpt">{featured.content}</p>
-                        <button className="cf-cta">
-                          <BookOpen size={14}/> সম্পূর্ণ পড়ুন <ArrowRight size={13}/>
+                        <div className="fb-badge">
+                          <Star size={10} fill="currentColor"/> বিশেষ নির্বাচিত
+                        </div>
+                        <h2 className="fb-title">{featured.title}</h2>
+                        <p className="fb-excerpt">{featured.content}</p>
+                        <button className="fb-cta">
+                          পড়তে শুরু করুন <ArrowRight size={13}/>
                         </button>
                       </div>
-                      <div className="cf-side">
-                        <div className="cf-side-ico">
-                          <Quote size={24} color="rgba(201,168,76,.6)" strokeWidth={1.5}/>
+                      <div className="fb-side">
+                        <div className="fb-side-i">
+                          <Feather size={24} color="rgba(200,164,90,.6)" strokeWidth={1.4}/>
                         </div>
-                        <span style={{fontFamily:"'SolaimanLipi',sans-serif",fontSize:".65rem",color:"rgba(240,234,224,.3)",letterSpacing:".08em",textTransform:"uppercase",writingMode:"vertical-rl"}}>
-                          {featured.category}
-                        </span>
                       </div>
                     </div>
                   </motion.div>
                 )}
+
                 {/* Results bar */}
-                <div className="cr">
-                  <div className="cr-txt">
-                    <span className="cr-num">{displayWritings.length}</span>
-                    <span>টি লেখা পাওয়া গেছে</span>
-                    {cat!=="all" && <span>· {CATS.find(c=>c.id===cat)?.label}</span>}
+                <div className="rb">
+                  <div className="rb-t">
+                    <span className="rb-n">{filtered.length}</span> টি লেখা
+                    {cat !== "all" && <span>· {CATS.find(c2 => c2.id === cat)?.label}</span>}
                     {q && <span>· "{q}"</span>}
                   </div>
-                  {(cat!=="all"||q) && (
-                    <button className="cr-clear" onClick={()=>{setCat("all");setQ("")}}>
-                      <X size={10}/> ফিল্টার মুছুন
+                  {(cat !== "all" || q) && (
+                    <button className="rb-clr" onClick={() => { setCat("all"); setQ(""); }}>
+                      <X size={10}/> ফিল্টার সরান
                     </button>
                   )}
                 </div>
-                {/* Writing grid/list */}
-                {displayWritings.length === 0 ? (
-                  <div className="wc-empty">
-                    <Search size={36} style={{margin:"0 auto 1rem",display:"block",opacity:.3}}/>
-                    <p style={{fontSize:"1rem",marginBottom:".5rem"}}>কোনো লেখা পাওয়া যায়নি</p>
-                    <p style={{fontSize:".82rem",opacity:.6}}>অন্য কীওয়ার্ড বা ক্যাটাগরি দিয়ে চেষ্টা করুন</p>
-                  </div>
-                ) : (
-                  <div className={viewMode==="grid"?"cg":"cg-list"}>
-                    {displayWritings.map((w,i)=>(
+
+                {/* Grid / List */}
+                {filtered.length > 0 ? (
+                  <div className={viewMode === "grid" ? "wg" : "wg-l"}>
+                    {filtered.map((w, i) => (
                       <WritingCard
-                        key={w.id} writing={w} index={i}
-                        onClick={()=>handleCardClick(w)}
+                        key={w.id}
+                        writing={w}
+                        index={i}
+                        onClick={() => handleCardClick(w)}
                         viewMode={viewMode}
                       />
                     ))}
                   </div>
+                ) : (
+                  <div className="wc-em">
+                    <Search size={28} color="rgba(238,234,226,.15)" style={{ margin: "0 auto 1rem", display: "block" }}/>
+                    <div style={{ fontSize: "1rem", marginBottom: ".5rem" }}>কোনো লেখা পাওয়া যায়নি</div>
+                    <div style={{ fontSize: ".8rem", color: "rgba(238,234,226,.2)" }}>অন্য কিছু খুঁজে দেখুন</div>
+                  </div>
                 )}
               </motion.div>
             ) : (
-              <motion.div key="ebooks" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-16}} transition={{duration:.35}}>
+              <motion.div key="ebooks" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: .3 }}>
                 <EBooksSection/>
               </motion.div>
             )}
@@ -11328,7 +11208,7 @@ export default function Writings() {
 
       <Footer/>
 
-      {/* ── READING MODAL ── */}
+      {/* Reading Modal */}
       <AnimatePresence>
         {sel && (
           <WritingModal
