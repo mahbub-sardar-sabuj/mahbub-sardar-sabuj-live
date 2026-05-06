@@ -9983,49 +9983,54 @@ const ebooks = [
 // ── Category Color Helper — Enhanced ─────────────────────────────────────────
 function getCategoryColor(cat: string) {
   if (cat === "ভালোবাসা") return {
-    stripe: "#F43F5E",
-    text: "#F43F5E",
-    glow: "rgba(244,63,94,0.3)",
-    badgeBg: "rgba(244,63,94,0.12)",
-    borderHover: "rgba(244,63,94,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(244,63,94,0.12) 0%, rgba(18,8,14,0.97) 60%)",
+    stripe: "#FF6B9D",
+    text: "#FF6B9D",
+    glow: "rgba(255,107,157,0.35)",
+    badgeBg: "rgba(255,107,157,0.15)",
+    borderHover: "rgba(255,107,157,0.4)",
+    cardBg: "linear-gradient(160deg, rgba(255,107,157,0.13) 0%, rgba(180,30,80,0.06) 40%, rgba(8,4,12,0.98) 100%)",
+    topLine: "rgba(255,107,157,0.6)",
     icon: "♡",
   };
   if (cat === "বিচ্ছেদ") return {
-    stripe: "#A78BFA",
-    text: "#A78BFA",
-    glow: "rgba(167,139,250,0.3)",
-    badgeBg: "rgba(167,139,250,0.12)",
-    borderHover: "rgba(167,139,250,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(167,139,250,0.12) 0%, rgba(10,7,18,0.97) 60%)",
+    stripe: "#B794F4",
+    text: "#B794F4",
+    glow: "rgba(183,148,244,0.35)",
+    badgeBg: "rgba(183,148,244,0.15)",
+    borderHover: "rgba(183,148,244,0.4)",
+    cardBg: "linear-gradient(160deg, rgba(183,148,244,0.13) 0%, rgba(100,50,200,0.06) 40%, rgba(6,4,14,0.98) 100%)",
+    topLine: "rgba(183,148,244,0.6)",
     icon: "◌",
   };
   if (cat === "কবিতা") return {
-    stripe: "#38BDF8",
-    text: "#38BDF8",
-    glow: "rgba(56,189,248,0.3)",
-    badgeBg: "rgba(56,189,248,0.12)",
-    borderHover: "rgba(56,189,248,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(56,189,248,0.12) 0%, rgba(4,10,20,0.97) 60%)",
+    stripe: "#63B3ED",
+    text: "#63B3ED",
+    glow: "rgba(99,179,237,0.35)",
+    badgeBg: "rgba(99,179,237,0.15)",
+    borderHover: "rgba(99,179,237,0.4)",
+    cardBg: "linear-gradient(160deg, rgba(99,179,237,0.13) 0%, rgba(30,80,160,0.06) 40%, rgba(3,8,18,0.98) 100%)",
+    topLine: "rgba(99,179,237,0.6)",
     icon: "❧",
   };
   if (cat === "ছোট লেখা") return {
-    stripe: "#34D399",
-    text: "#34D399",
-    glow: "rgba(52,211,153,0.3)",
-    badgeBg: "rgba(52,211,153,0.12)",
-    borderHover: "rgba(52,211,153,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(52,211,153,0.12) 0%, rgba(4,14,11,0.97) 60%)",
+    stripe: "#48BB78",
+    text: "#48BB78",
+    glow: "rgba(72,187,120,0.35)",
+    badgeBg: "rgba(72,187,120,0.15)",
+    borderHover: "rgba(72,187,120,0.4)",
+    cardBg: "linear-gradient(160deg, rgba(72,187,120,0.13) 0%, rgba(20,100,60,0.06) 40%, rgba(3,10,6,0.98) 100%)",
+    topLine: "rgba(72,187,120,0.6)",
     icon: "✎",
   };
   // জীবনদর্শন (default)
   return {
-    stripe: "#FBBF24",
-    text: "#FBBF24",
-    glow: "rgba(251,191,36,0.3)",
-    badgeBg: "rgba(251,191,36,0.12)",
-    borderHover: "rgba(251,191,36,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(251,191,36,0.12) 0%, rgba(14,10,3,0.97) 60%)",
+    stripe: "#F6C90E",
+    text: "#F6C90E",
+    glow: "rgba(246,201,14,0.35)",
+    badgeBg: "rgba(246,201,14,0.15)",
+    borderHover: "rgba(246,201,14,0.4)",
+    cardBg: "linear-gradient(160deg, rgba(246,201,14,0.13) 0%, rgba(150,110,0,0.06) 40%, rgba(10,8,2,0.98) 100%)",
+    topLine: "rgba(246,201,14,0.6)",
     icon: "◈",
   };
 }
@@ -10201,19 +10206,20 @@ const WORLD_CLASS_CSS = `
   }
   .wc-hero-title {
     font-family: 'Tiro Bangla', serif;
-    font-size: clamp(2.8rem, 6.5vw, 5rem);
+    font-size: clamp(3.2rem, 7.5vw, 5.8rem);
     color: var(--cream); font-weight: 400;
-    line-height: 1.15; margin: 0 0 1.5rem;
+    line-height: 1.1; margin: 0 0 1.5rem;
     animation: fadeInUp 0.7s 0.1s ease both;
     position: relative;
   }
   .wc-hero-title-accent {
-    background: linear-gradient(135deg, #D4A843 0%, #f0c060 40%, #D4A843 70%, #C9A84C 100%);
+    background: linear-gradient(135deg, #F6C90E 0%, #FFE066 35%, #F6C90E 65%, #D4A843 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: shimmerGold 4s linear infinite;
+    filter: drop-shadow(0 0 20px rgba(246,201,14,0.3));
   }
   .wc-hero-title-underline {
     position: absolute; bottom: -10px; left: 0;
@@ -10223,11 +10229,13 @@ const WORLD_CLASS_CSS = `
   }
   .wc-hero-desc {
     font-family: 'Noto Sans Bengali', sans-serif;
-    color: var(--cream-dim);
-    font-size: clamp(0.95rem, 1.9vw, 1.1rem);
-    line-height: 2; max-width: 520px;
-    margin: 1.75rem 0 2.25rem;
+    font-size: clamp(0.95rem, 1.8vw, 1.12rem);
+    color: rgba(253,246,236,0.58);
+    line-height: 2;
+    max-width: 540px;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
     animation: fadeInUp 0.7s 0.2s ease both;
+    letter-spacing: 0.01em;
   }
   .wc-stats-row {
     display: flex; gap: clamp(12px, 3vw, 24px);
@@ -10236,18 +10244,20 @@ const WORLD_CLASS_CSS = `
   }
   .wc-stat-card {
     display: flex; align-items: center; gap: 14px;
-    padding: 14px 20px; border-radius: 16px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    backdrop-filter: blur(12px);
+    padding: 16px 22px; border-radius: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: default;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .wc-stat-card:hover {
-    background: rgba(212,168,67,0.07);
-    border-color: rgba(212,168,67,0.25);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(212,168,67,0.1);
+    background: rgba(246,201,14,0.07);
+    border-color: rgba(246,201,14,0.28);
+    transform: translateY(-4px) scale(1.025);
+    box-shadow: 0 16px 50px rgba(0,0,0,0.35), 0 0 0 1px rgba(246,201,14,0.12), inset 0 1px 0 rgba(255,255,255,0.07);
   }
   .wc-stat-icon {
     width: 46px; height: 46px; border-radius: 14px;
@@ -10362,14 +10372,16 @@ const WORLD_CLASS_CSS = `
     background: rgba(255,255,255,0.025);
   }
   .wc-tab-btn.active-gold {
-    color: #D4A843;
-    border-bottom-color: #D4A843;
-    background: rgba(212,168,67,0.04);
+    color: #F6C90E;
+    border-bottom-color: #F6C90E;
+    background: rgba(246,201,14,0.07);
+    box-shadow: 0 4px 20px rgba(246,201,14,0.1);
   }
   .wc-tab-btn.active-blue {
-    color: #4A90D9;
-    border-bottom-color: #4A90D9;
-    background: rgba(74,144,217,0.04);
+    color: #63B3ED;
+    border-bottom-color: #63B3ED;
+    background: rgba(99,179,237,0.07);
+    box-shadow: 0 4px 20px rgba(99,179,237,0.1);
   }
   .wc-tab-icon {
     width: 34px; height: 34px; border-radius: 10px;
@@ -10380,12 +10392,14 @@ const WORLD_CLASS_CSS = `
     flex-shrink: 0;
   }
   .wc-tab-btn.active-gold .wc-tab-icon {
-    background: rgba(212,168,67,0.14);
-    border-color: rgba(212,168,67,0.2);
+    background: rgba(246,201,14,0.16);
+    border-color: rgba(246,201,14,0.28);
+    box-shadow: 0 0 16px rgba(246,201,14,0.2);
   }
   .wc-tab-btn.active-blue .wc-tab-icon {
-    background: rgba(74,144,217,0.14);
-    border-color: rgba(74,144,217,0.2);
+    background: rgba(99,179,237,0.16);
+    border-color: rgba(99,179,237,0.28);
+    box-shadow: 0 0 16px rgba(99,179,237,0.2);
   }
   .wc-tab-pill {
     font-size: 0.68rem; padding: 3px 10px; border-radius: 999px;
@@ -10395,14 +10409,16 @@ const WORLD_CLASS_CSS = `
     border: 1px solid rgba(255,255,255,0.05);
   }
   .wc-tab-btn.active-gold .wc-tab-pill {
-    background: rgba(212,168,67,0.15);
-    color: #D4A843;
-    border-color: rgba(212,168,67,0.2);
+    background: rgba(246,201,14,0.18);
+    color: #F6C90E;
+    border-color: rgba(246,201,14,0.3);
+    box-shadow: 0 2px 10px rgba(246,201,14,0.15);
   }
   .wc-tab-btn.active-blue .wc-tab-pill {
-    background: rgba(74,144,217,0.15);
-    color: #4A90D9;
-    border-color: rgba(74,144,217,0.2);
+    background: rgba(99,179,237,0.18);
+    color: #63B3ED;
+    border-color: rgba(99,179,237,0.3);
+    box-shadow: 0 2px 10px rgba(99,179,237,0.15);
   }
   .wc-controls-row {
     display: flex; align-items: center; gap: 10px;
@@ -10486,18 +10502,19 @@ const WORLD_CLASS_CSS = `
      FEATURED BANNER — Magazine Hero
   ═══════════════════════════════════════════ */
   .wc-featured-banner {
-    border-radius: 28px; overflow: hidden;
+    border-radius: 24px; overflow: hidden;
     margin-bottom: clamp(2rem, 4vw, 3.5rem);
     position: relative; cursor: pointer;
     background: linear-gradient(135deg, #0A1628 0%, #0F2035 40%, #0A1628 100%);
-    border: 1px solid rgba(212,168,67,0.12);
+    border: 1px solid rgba(246,201,14,0.16);
     animation: borderPulse 5s ease-in-out infinite;
     transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(246,201,14,0.06);
   }
   .wc-featured-banner:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,168,67,0.3);
-    border-color: rgba(212,168,67,0.35);
+    transform: translateY(-8px) scale(1.005);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(246,201,14,0.35), 0 0 60px rgba(246,201,14,0.06);
+    border-color: rgba(246,201,14,0.38);
   }
   .wc-featured-banner-bg {
     position: absolute; inset: 0;
@@ -10616,126 +10633,148 @@ const WORLD_CLASS_CSS = `
     gap: clamp(12px, 2vw, 18px);
   }
 
-  /* ═══════════════════════════════════════════
-     PREMIUM WRITING CARD — v3 Complete Redesign
-  ═══════════════════════════════════════════ */
-  /* ══════════════════════════════════════════════════
-     WRITING CARD — PREMIUM v4 (Category-Colored)
-  ══════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════════════════════
+     WRITING CARD — PREMIUM v5 (World-Class Magazine Style)
+  ═══════════════════════════════════════════════════════════════════════ */
   .wc-card {
     position: relative;
-    border-radius: 20px;
+    border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.4s ease,
-                border-color 0.3s ease;
-    border: 1px solid rgba(255,255,255,0.07);
-    background: var(--card-bg, rgba(8,18,34,0.92));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    min-height: 240px;
+    transition:
+      transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.45s ease,
+      border-color 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.06);
+    min-height: 250px;
+    will-change: transform;
+  }
+  /* Top accent line — the signature color stripe */
+  .wc-card-top-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2.5px;
+    background: var(--card-top-line, var(--card-accent, #D4A843));
+    border-radius: 18px 18px 0 0;
+    opacity: 0.75;
+    transition: opacity 0.3s, height 0.3s;
+    z-index: 3;
+  }
+  .wc-card:hover .wc-card-top-accent {
+    opacity: 1;
+    height: 3px;
+    box-shadow: 0 0 18px var(--card-glow, rgba(212,168,67,0.5));
   }
   /* Left accent border */
   .wc-card::before {
     content: '';
     position: absolute;
-    left: 0; top: 12px; bottom: 12px;
-    width: 3px;
+    left: 0; top: 18px; bottom: 18px;
+    width: 2.5px;
     background: var(--card-accent, #D4A843);
-    border-radius: 0 3px 3px 0;
-    transition: width 0.3s ease, opacity 0.3s ease, top 0.3s ease, bottom 0.3s ease;
-    opacity: 0.85;
-    box-shadow: 0 0 12px var(--card-glow, rgba(212,168,67,0.4));
+    border-radius: 0 2px 2px 0;
+    transition: width 0.3s ease, opacity 0.3s ease, top 0.3s ease, bottom 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0.6;
+    z-index: 3;
   }
   /* Hover glow overlay */
   .wc-card::after {
     content: '';
     position: absolute; inset: 0;
-    border-radius: 20px;
+    border-radius: 18px;
     opacity: 0;
-    transition: opacity 0.4s;
+    transition: opacity 0.45s;
     pointer-events: none;
-    background: radial-gradient(ellipse 100% 80% at 0% 50%, var(--card-glow, rgba(212,168,67,0.08)) 0%, transparent 65%);
+    background:
+      radial-gradient(ellipse 90% 70% at 0% 30%, var(--card-glow, rgba(212,168,67,0.1)) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, var(--card-glow, rgba(212,168,67,0.05)) 0%, transparent 60%);
   }
   .wc-card:hover {
-    transform: translateY(-10px) scale(1.016);
+    transform: translateY(-12px) scale(1.018);
     box-shadow:
-      0 24px 64px rgba(0,0,0,0.55),
-      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.3)),
-      0 0 40px var(--card-glow, rgba(212,168,67,0.08));
-    border-color: var(--card-border-hover, rgba(212,168,67,0.3));
+      0 30px 70px rgba(0,0,0,0.6),
+      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.35)),
+      0 0 50px var(--card-glow, rgba(212,168,67,0.1));
+    border-color: var(--card-border-hover, rgba(212,168,67,0.35));
   }
-  .wc-card:hover::before { width: 4px; opacity: 1; top: 8px; bottom: 8px; box-shadow: 0 0 20px var(--card-glow, rgba(212,168,67,0.5)); }
+  .wc-card:hover::before {
+    width: 3.5px; opacity: 1;
+    top: 12px; bottom: 12px;
+    box-shadow: 0 0 22px var(--card-glow, rgba(212,168,67,0.5));
+  }
   .wc-card:hover::after { opacity: 1; }
   /* List variant */
   .wc-card-list {
     flex-direction: row !important;
-    border-radius: 16px;
+    border-radius: 14px;
     min-height: unset;
   }
-  .wc-card-list::before {
-    width: 3px; height: auto;
-    top: 0; bottom: 0; left: 0;
-    border-radius: 16px 0 0 16px;
+  .wc-card-list .wc-card-top-accent {
+    top: 0; left: 0; right: auto; bottom: 0;
+    width: 2.5px; height: auto;
+    border-radius: 14px 0 0 14px;
   }
-  .wc-card-list:hover { transform: translateY(-6px) scale(1.008) !important; }
+  .wc-card-list::before { display: none; }
+  .wc-card-list:hover { transform: translateY(-5px) scale(1.008) !important; }
   /* Card body */
   .wc-card-body {
-    padding: 22px 22px 20px 26px;
+    padding: 24px 22px 20px 28px;
     flex: 1; display: flex; flex-direction: column;
     position: relative; z-index: 1;
   }
-  .wc-card-list .wc-card-body { padding: 18px 22px 18px 26px !important; }
+  .wc-card-list .wc-card-body { padding: 18px 22px 18px 28px !important; }
   /* Category badge row */
   .wc-card-badge-row {
     display: flex; align-items: center; gap: 7px;
-    margin-bottom: 13px; flex-wrap: wrap;
+    margin-bottom: 14px; flex-wrap: wrap;
   }
   .wc-card-badge {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 11px 3px 8px; border-radius: 999px;
-    font-size: 0.67rem;
+    padding: 4px 12px 4px 9px; border-radius: 999px;
+    font-size: 0.68rem;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-weight: 800; letter-spacing: 0.04em;
-    background: var(--card-badge-bg, rgba(212,168,67,0.12));
+    font-weight: 800; letter-spacing: 0.05em;
+    background: var(--card-badge-bg, rgba(212,168,67,0.14));
     color: var(--card-accent, #D4A843);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 28%, transparent);
+    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 30%, transparent);
     transition: all 0.25s;
-    line-height: 1.6;
+    line-height: 1.5;
+    text-transform: uppercase;
   }
   .wc-card-badge-icon {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     line-height: 1;
   }
   .wc-card:hover .wc-card-badge {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 45%, transparent);
+    background: color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
+    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 50%, transparent);
+    box-shadow: 0 2px 12px var(--card-glow, rgba(212,168,67,0.2));
   }
   .wc-card-featured-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 10px; border-radius: 999px;
-    font-size: 0.62rem;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 0.63rem;
     font-family: 'Noto Sans Bengali', sans-serif;
-    background: rgba(212,168,67,0.1);
-    color: #C9A84C; font-weight: 700;
-    border: 1px solid rgba(212,168,67,0.22);
+    background: rgba(246,201,14,0.12);
+    color: #F6C90E; font-weight: 700;
+    border: 1px solid rgba(246,201,14,0.28);
+    letter-spacing: 0.04em;
   }
   /* Card title */
   .wc-card-title {
     font-family: 'Tiro Bangla', serif;
-    font-size: 1.1rem; color: rgba(255,248,240,0.95);
-    font-weight: 700; line-height: 1.65;
-    margin-bottom: 10px;
-    transition: color 0.25s;
+    font-size: 1.12rem; color: rgba(255,250,242,0.96);
+    font-weight: 700; line-height: 1.6;
+    margin-bottom: 11px;
+    transition: color 0.3s ease;
     position: relative; z-index: 1;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.015em;
   }
   .wc-card:hover .wc-card-title {
     color: var(--card-accent, #f0c060);
@@ -10743,49 +10782,50 @@ const WORLD_CLASS_CSS = `
   /* Card preview */
   .wc-card-preview {
     font-family: 'Tiro Bangla', serif;
-    font-size: 0.88rem;
-    color: rgba(253,246,236,0.48);
-    line-height: 2; flex: 1;
+    font-size: 0.875rem;
+    color: rgba(253,246,236,0.42);
+    line-height: 2.05; flex: 1;
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     position: relative; z-index: 1;
-    transition: color 0.25s;
+    transition: color 0.3s ease;
   }
   .wc-card:hover .wc-card-preview {
-    color: rgba(253,246,236,0.65);
+    color: rgba(253,246,236,0.62);
   }
   /* Card footer */
   .wc-card-footer {
-    margin-top: 16px; padding-top: 13px;
-    border-top: 1px solid rgba(255,255,255,0.055);
+    margin-top: 18px; padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
     display: flex; align-items: center; justify-content: space-between;
     position: relative; z-index: 1;
   }
   .wc-card-date {
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.67rem; color: rgba(253,246,236,0.22);
+    font-size: 0.67rem; color: rgba(253,246,236,0.2);
     display: flex; align-items: center; gap: 5px;
   }
   .wc-card-read-btn {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 14px; border-radius: 999px;
+    padding: 5px 15px; border-radius: 999px;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.76rem; font-weight: 700;
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 10%, transparent);
+    font-size: 0.75rem; font-weight: 700;
+    background: color-mix(in srgb, var(--card-accent, #D4A843) 12%, transparent);
     color: var(--card-accent, #D4A843);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: pointer;
     letter-spacing: 0.02em;
   }
   .wc-card:hover .wc-card-read-btn {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 50%, transparent);
+    background: color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
+    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 55%, transparent);
     gap: 9px;
-    box-shadow: 0 4px 18px color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
-    padding-right: 16px;
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
+    padding-right: 18px;
+    transform: scale(1.03);
   }
   /* ═══════════════════════════════════════════
      EMPTY STATE
@@ -11232,7 +11272,7 @@ const WORLD_CLASS_CSS = `
   }
 `;
 
-// ── Writing Card — Premium v3 ────────────────────────────────────────────────
+// ── Writing Card — Premium v5 (World-Class) ──────────────────────────────────
 function WritingCard({
   writing,
   index,
@@ -11245,7 +11285,7 @@ function WritingCard({
   viewMode?: "grid" | "list";
 }) {
   const slug = makeSlug(writing.title, writing.id);
-  const preview = writing.content.slice(0, 200);
+  const preview = writing.content.slice(0, 180);
   const colors = getCategoryColor(writing.category);
   return (
     <motion.div
@@ -11255,13 +11295,16 @@ function WritingCard({
         "--card-glow": colors.glow,
         "--card-badge-bg": colors.badgeBg,
         "--card-border-hover": colors.borderHover,
+        "--card-top-line": (colors as any).topLine || colors.stripe,
         background: colors.cardBg,
       } as React.CSSProperties}
-      initial={{ opacity: 0, y: 24, scale: 0.97 }}
+      initial={{ opacity: 0, y: 28, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.6), ease: [0.22, 1, 0.36, 1] }}
-      onClick={() => { onClick(); window.history.pushState(null, '', `/writings/${slug}`); }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.7), ease: [0.22, 1, 0.36, 1] }}
+      onClick={() => { onClick(); window.history.pushState(null, "", `/writings/${slug}`); }}
     >
+      {/* Top accent line */}
+      <div className="wc-card-top-accent" />
       <div className="wc-card-body">
         {/* Badge row */}
         <div className="wc-card-badge-row">
@@ -11278,7 +11321,7 @@ function WritingCard({
         {/* Title */}
         <h3 className="wc-card-title">{writing.title}</h3>
         {/* Preview */}
-        <p className="wc-card-preview">{preview}{writing.content.length > 200 ? "..." : ""}</p>
+        <p className="wc-card-preview">{preview}{writing.content.length > 180 ? "..." : ""}</p>
         {/* Footer */}
         <div className="wc-card-footer">
           <span className="wc-card-date">
@@ -11976,7 +12019,7 @@ export default function Writings() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#060E1A" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #040C18 0%, #060E1A 30%, #070F1C 100%)" }}>
       <style>{WORLD_CLASS_CSS}</style>
       <Seo
         title="লেখালেখি ও বই | মাহবুব সরদার সবুজ"
