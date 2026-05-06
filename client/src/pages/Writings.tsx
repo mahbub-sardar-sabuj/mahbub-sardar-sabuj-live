@@ -1,10 +1,10 @@
 /**
- * Writings Page — লেখালেখি
+ * Writings & E-Books Page — লেখালেখি ও বই
  * Design: Literary Avant-Garde | Navy #0D1B2A | Gold #D4A843 | Cream #F8F7F4
- * All writings are by Mahbub Sardar Sabuj — real content from user-provided files.
+ * Combined page: লেখালেখি + ই-বুক in a single unified tab experience
  */
-
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -26,6 +26,11 @@ import {
   Check,
   AArrowUp,
   AArrowDown,
+  PenLine,
+  ShoppingCart,
+  BookMarked,
+  Eye,
+  Sparkles,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -9882,6 +9887,82 @@ ___`,
   },
 ];
 
+// ── E-Books Data ─────────────────────────────────────────────────────────────
+const ebooks = [
+  {
+    id: 1,
+    slug: "dukkhovilash",
+    title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
+    subtitle: "প্রথম ফিজিক্যাল বই",
+    cover: "/images/ebooks/dukkhovilash.png",
+    description:
+      "'আমি বিচ্ছেদকে বলি দুঃখবিলাস' — লেখক মাহবুব সরদার সবুজের প্রথম প্রকাশিত ফিজিক্যাল বই। বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে।",
+    genre: "আবেগী সাহিত্য",
+    pages: "১৫০+",
+    year: "২০২৬",
+    badge: "ফিজিক্যাল বই",
+    badgeColor: "#D4A843",
+    buyLink: "https://rkmri.co/TTMEoA3l3pM0/",
+    isFeatured: true,
+    canRead: true,
+    accentColor: "#D4A843",
+  },
+  {
+    id: 2,
+    slug: "smritir-boshonte",
+    title: "স্মৃতির বসন্তে তুমি",
+    subtitle: "ই-বুক",
+    cover: "/images/ebooks/smritir-boshonte.jpg",
+    description:
+      "'স্মৃতির বসন্তে তুমি' — মাহবুব সরদার সবুজের একটি আবেগঘন কাব্যিক সংকলন। স্মৃতির গভীরে হারিয়ে যাওয়া প্রিয় মুহূর্তগুলো নিয়ে লেখা এই বইটি।",
+    genre: "কবিতা ও গদ্য",
+    pages: "৮০+",
+    year: "২০২৪",
+    badge: "ই-বুক",
+    badgeColor: "#4A90D9",
+    buyLink: null,
+    isFeatured: false,
+    canRead: true,
+    accentColor: "#4A90D9",
+  },
+  {
+    id: 3,
+    slug: "chand-phool",
+    title: "চাঁদফুল",
+    subtitle: "ই-বুক",
+    cover: "/images/ebooks/chand-phool.jpg",
+    description:
+      "'চাঁদফুল' — মাহবুব সরদার সবুজের একটি বিশেষ কাব্যগ্রন্থ যেখানে প্রকৃতির অপরূপ সৌন্দর্য আর মানবমনের কোমল অনুভূতির মেলবন্ধন ঘটেছে।",
+    genre: "কবিতা",
+    pages: "৬০+",
+    year: "২০২৩",
+    badge: "ই-বুক",
+    badgeColor: "#27AE60",
+    buyLink: null,
+    isFeatured: false,
+    canRead: true,
+    accentColor: "#27AE60",
+  },
+  {
+    id: 4,
+    slug: "shomoyer-gohvore",
+    title: "সময়ের গহ্বরে",
+    subtitle: "ই-বুক",
+    cover: "/images/ebooks/shomoyer-gohvore.jpg",
+    description:
+      "'সময়ের গহ্বরে' — মাহবুব সরদার সবুজের একটি নস্টালজিক সাহিত্যকর্ম। সময়ের স্রোতে হারিয়ে যাওয়া শহর, মানুষ আর স্মৃতির কথা এই বইয়ে অনবদ্যভাবে উঠে এসেছে।",
+    genre: "গদ্য ও কবিতা",
+    pages: "১০০+",
+    year: "২০২৩",
+    badge: "ই-বুক",
+    badgeColor: "#E67E22",
+    buyLink: null,
+    isFeatured: false,
+    canRead: true,
+    accentColor: "#E67E22",
+  },
+];
+
 // ── Category color helper ─────────────────────────────────────────────────────────────────────────────
 function getCategoryColor(cat: string) {
   if (cat === "ভালোবাসা") return { stripe: "#e74c3c", badge: "rgba(231,76,60,0.12)", text: "#c0392b" };
@@ -10422,140 +10503,377 @@ function WritingModal({
 }
 
 // ── Main Writings Page ────────────────────────────────────────────────────────
+
+// ── Book Modal ─────────────────────────────────────────────────────────────────────────────
+function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "rgba(13,27,42,0.88)",
+          backdropFilter: "blur(12px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "1rem",
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 30 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "#FDF6EC",
+            borderRadius: 24,
+            overflow: "hidden",
+            maxWidth: 640,
+            width: "100%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            boxShadow: "0 40px 80px rgba(13,27,42,0.5)",
+          }}
+        >
+          <div style={{ background: "#0D1B2A", padding: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <span style={{ color: "#D4A843", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>{book.badge}</span>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.5rem", marginTop: 4, lineHeight: 1.3 }}>
+                {book.title}
+              </h2>
+              <p style={{ color: "#D4A843", fontSize: "0.875rem", marginTop: 4 }}>মাহবুব সরদার সবুজ</p>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: 40, height: 40, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(255,255,255,0.1)", border: "none", cursor: "pointer",
+                color: "#FDF6EC", flexShrink: 0, marginLeft: 16,
+              }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <div style={{ display: "flex", gap: "1.5rem", padding: "1.5rem", flexWrap: "wrap" }}>
+            <img
+              src={book.cover}
+              alt={book.title}
+              style={{ width: 176, borderRadius: 12, boxShadow: `0 20px 40px ${book.accentColor}40`, flexShrink: 0 }}
+            />
+            <div style={{ flex: 1, minWidth: 192 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                {[
+                  { label: "ধরন", value: book.genre },
+                  { label: "পৃষ্ঠা", value: book.pages },
+                  { label: "প্রকাশ", value: book.year },
+                ].map((item) => (
+                  <div key={item.label} style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(13,27,42,0.06)", border: "1px solid rgba(13,27,42,0.1)" }}>
+                    <div style={{ color: "#D4A843", fontSize: "0.72rem", marginBottom: 2 }}>{item.label}</div>
+                    <div style={{ color: "#0D1B2A", fontSize: "0.875rem", fontWeight: 600 }}>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ color: "#0D1B2A", fontSize: "0.875rem", lineHeight: 1.7, marginBottom: 20 }}>{book.description}</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                {book.canRead && (
+                  <Link href={`/ebooks/read/${book.slug}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.03, boxShadow: "0 8px 25px rgba(212,168,67,0.4)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        background: "linear-gradient(135deg, #D4A843, #f0c060)",
+                        color: "#0D1B2A", padding: "12px 24px", borderRadius: 999,
+                        fontWeight: 700, fontSize: "0.875rem", border: "none", cursor: "pointer",
+                      }}
+                    >
+                      <BookOpen size={18} /> এখনই পড়ুন
+                    </motion.button>
+                  </Link>
+                )}
+                {book.buyLink && (
+                  <a href={book.buyLink} target="_blank" rel="noopener noreferrer">
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        background: "transparent", color: "#D4A843",
+                        padding: "12px 24px", borderRadius: 999,
+                        fontWeight: 700, fontSize: "0.875rem",
+                        border: "2px solid #D4A843", cursor: "pointer",
+                      }}
+                    >
+                      <ShoppingCart size={18} /> রকমারিতে কিনুন
+                    </motion.button>
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+// ── E-Books Section ─────────────────────────────────────────────────────────────────────────────
+function EBooksSection() {
+  const [selectedBook, setSelectedBook] = useState<typeof ebooks[0] | null>(null);
+  const featuredBook = ebooks[0];
+  const otherBooks = ebooks.slice(1);
+
+  return (
+    <div>
+      <div style={{ marginBottom: "3rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.5rem" }}>
+          <Star size={16} fill="#D4A843" color="#D4A843" />
+          <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Featured</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
+        </div>
+        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.4rem, 3vw, 1.8rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
+          প্রধান বই
+        </h2>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          style={{
+            background: "#0D1B2A", borderRadius: 24, overflow: "hidden",
+            boxShadow: "0 30px 80px rgba(13,27,42,0.25)",
+            display: "flex", flexWrap: "wrap",
+          }}
+        >
+          <div style={{ position: "relative", minWidth: 220, flex: "0 0 260px", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(212,168,67,0.15) 0%, transparent 60%)" }} />
+            <img src={featuredBook.cover} alt={featuredBook.title}
+              style={{ width: "100%", height: "100%", minHeight: 320, objectFit: "cover", display: "block" }} />
+            <div style={{ position: "absolute", top: 16, left: 16 }}>
+              <span style={{ background: "#D4A843", color: "#0D1B2A", fontSize: "0.72rem", fontWeight: 700, padding: "6px 14px", borderRadius: 999, display: "flex", alignItems: "center", gap: 5 }}>
+                <Star size={11} fill="currentColor" /> ফিজিক্যাল বই
+              </span>
+            </div>
+          </div>
+          <div style={{ flex: 1, padding: "clamp(1.5rem, 4vw, 3rem)", display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 240 }}>
+            <p style={{ color: "#D4A843", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.75rem" }}>মাহবুব সরদার সবুজ</p>
+            <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 400, lineHeight: 1.3, marginBottom: "1rem" }}>
+              {featuredBook.title}
+            </h3>
+            <p style={{ color: "rgba(253,246,236,0.75)", fontSize: "0.95rem", lineHeight: 1.85, marginBottom: "1.5rem" }}>
+              {featuredBook.description}
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: "1.5rem" }}>
+              {[featuredBook.genre, featuredBook.pages + " পৃষ্ঠা", featuredBook.year, "রকমারিতে পাওয়া যাচ্ছে"].map((tag, i) => (
+                <span key={tag} style={{ fontSize: "0.78rem", padding: "6px 14px", borderRadius: 999, background: i === 3 ? "rgba(39,174,96,0.2)" : "rgba(255,255,255,0.1)", color: i === 3 ? "#2ecc71" : "rgba(253,246,236,0.75)" }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              <Link href={`/ebooks/read/${featuredBook.slug}`}>
+                <motion.button
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 35px rgba(212,168,67,0.45)" }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg, #D4A843, #f0c060)", color: "#0D1B2A", padding: "13px 26px", borderRadius: 999, fontWeight: 700, fontSize: "0.95rem", border: "none", cursor: "pointer", boxShadow: "0 8px 25px rgba(212,168,67,0.3)" }}
+                >
+                  <BookOpen size={18} /> এখনই পড়ুন
+                </motion.button>
+              </Link>
+              <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
+                <motion.button
+                  whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(212,168,67,0.3)" }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", color: "#D4A843", padding: "13px 26px", borderRadius: 999, fontWeight: 700, fontSize: "0.95rem", border: "2px solid #D4A843", cursor: "pointer" }}
+                >
+                  <ShoppingCart size={18} /> রকমারি থেকে অর্ডার করুন
+                </motion.button>
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.5rem" }}>
+          <BookMarked size={16} color="#D4A843" />
+          <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>E-Books</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
+        </div>
+        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.4rem, 3vw, 1.8rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
+          ই-বুক সংগ্রহ
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1.5rem" }}>
+          {otherBooks.map((book, index) => (
+            <motion.div
+              key={book.id}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 20, overflow: "hidden", boxShadow: "0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.12)", display: "flex", flexDirection: "column" }}
+            >
+              <div style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", background: "#0D1B2A", cursor: "pointer" }} onClick={() => setSelectedBook(book)}>
+                <img src={book.cover} alt={book.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.4s" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.transform = "scale(1.05)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.transform = "scale(1)"; }}
+                />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(13,27,42,0.7) 100%)" }} />
+                <span style={{ position: "absolute", top: 12, left: 12, background: book.badgeColor, color: "#FFF", fontSize: "0.72rem", fontWeight: 700, padding: "5px 12px", borderRadius: 999 }}>
+                  {book.badge}
+                </span>
+              </div>
+              <div style={{ padding: "1.25rem", flex: 1, display: "flex", flexDirection: "column" }}>
+                <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.1rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
+                  {book.title}
+                </h3>
+                <p style={{ color: "rgba(201,168,76,0.6)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{book.genre} • {book.year}</p>
+                <p style={{ color: "rgba(253,246,236,0.55)", fontSize: "0.875rem", lineHeight: 1.7, flex: 1, marginBottom: "1.25rem" }}>
+                  {book.description.slice(0, 100)}...
+                </p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Link href={`/ebooks/read/${book.slug}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.04, boxShadow: "0 6px 20px rgba(212,168,67,0.35)" }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{ display: "flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #D4A843, #f0c060)", color: "#0D1B2A", padding: "9px 18px", borderRadius: 999, fontWeight: 700, fontSize: "0.875rem", border: "none", cursor: "pointer" }}
+                    >
+                      <BookOpen size={15} /> পড়ুন
+                    </motion.button>
+                  </Link>
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelectedBook(book)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", color: "rgba(253,246,236,0.7)", padding: "9px 18px", borderRadius: 999, fontWeight: 600, fontSize: "0.875rem", border: "1.5px solid rgba(201,168,76,0.2)", cursor: "pointer" }}
+                  >
+                    <Eye size={15} /> বিস্তারিত
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          style={{ marginTop: "2.5rem", padding: "1.5rem 2rem", background: "rgba(201,168,76,0.04)", border: "1px solid rgba(201,168,76,0.15)", borderRadius: 16, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, flexWrap: "wrap" }}
+        >
+          <Sparkles size={18} color="#D4A843" />
+          <p style={{ color: "rgba(253,246,236,0.6)", fontSize: "0.95rem", lineHeight: 1.8, margin: 0 }}>
+            আরও <strong style={{ color: "#D4A843" }}>৪টি ই-বুক</strong> শীঘ্রই প্রকাশিত হবে।
+            নতুন বই সম্পর্কে আপডেট পেতে{" "}
+            <a href="https://facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer" style={{ color: "#D4A843", fontWeight: 700 }}>
+              ফেসবুক পেইজ
+            </a>{" "}
+            ফলো করুন।
+          </p>
+        </motion.div>
+      </div>
+
+      {selectedBook && (
+        <BookModal book={selectedBook} onClose={() => setSelectedBook(null)} />
+      )}
+    </div>
+  );
+}
+
+// ── Main Combined Page ────────────────────────────────────────────────────────
 export default function Writings() {
+  const [activeTab, setActiveTab] = useState<"writings" | "ebooks">("writings");
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedWriting, setSelectedWriting] = useState<typeof writings[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [, setLocation] = useLocation();
-  // URL-based routing: /writings/:slug
+  const [location] = useLocation();
+
   const [matchSlug, params] = useRoute("/writings/:slug");
   useEffect(() => {
     if (matchSlug && params?.slug) {
       const found = writings.find(w => makeSlug(w.title, w.id) === params.slug);
-      if (found) setSelectedWriting(found);
+      if (found) {
+        setSelectedWriting(found);
+        setActiveTab("writings");
+      }
     }
   }, [matchSlug, params?.slug]);
 
+  useEffect(() => {
+    if (location === "/ebooks") {
+      setActiveTab("ebooks");
+    }
+  }, [location]);
+
   const filtered = writings.filter((w) => {
     const matchCat = activeCategory === "all" || w.category === activeCategory;
-    const matchSearch = searchQuery === "" ||
-      w.title.includes(searchQuery) ||
-      w.content.includes(searchQuery);
+    const matchSearch = searchQuery === "" || w.title.includes(searchQuery) || w.content.includes(searchQuery);
     return matchCat && matchSearch;
   });
-
   const featured = writings.find((w) => w.featured);
 
-  const writingsJsonLd = {
+  const combinedJsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "CollectionPage",
-        "name": "লেখালেখি | মাহবুব সরদার সবুজ",
+        "name": "লেখালেখি ও বই | মাহবুব সরদার সবুজ",
         "url": "https://www.mahbubsardarsabuj.com/writings",
         "inLanguage": "bn-BD",
-        "description": "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ভালোবাসা, জীবনদর্শন ও বিচ্ছেদভিত্তিক লেখার সংগ্রহ।"
+        "description": "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ই-বুক ও প্রকাশিত বইয়ের সম্পূর্ণ সংগ্রহ।"
       },
-      {
-        "@type": "Person",
-        "@id": "https://www.mahbubsardarsabuj.com/#author",
-        "name": "Mahbub Sardar Sabuj",
-        "alternateName": "মাহবুব সরদার সবুজ",
-        "url": "https://www.mahbubsardarsabuj.com/"
-      },
-      ...writings.slice(0, 20).map((w) => ({
-        "@type": w.category === "কবিতা" ? "Poem" : "Article",
-        "@id": `https://www.mahbubsardarsabuj.com/writings/${makeSlug(w.title, w.id)}`,
-        "headline": w.title,
-        "name": w.title,
-        "inLanguage": "bn-BD",
-        "author": {
-          "@type": "Person",
-          "@id": "https://www.mahbubsardarsabuj.com/#author",
-          "name": "মাহবুব সরদার সবুজ",
-        },
-        "datePublished": w.date,
-        "articleSection": w.category,
-        "url": `https://www.mahbubsardarsabuj.com/writings/${makeSlug(w.title, w.id)}`,
-        "description": w.content.slice(0, 160).replace(/\n/g, " "),
-        "isPartOf": {
-          "@type": "CollectionPage",
-          "url": "https://www.mahbubsardarsabuj.com/writings",
-        },
-      })),
     ]
   };
 
   return (
     <div style={{ minHeight: "100vh", background: "#060E1A" }}>
       <Seo
-        title="বাংলা কবিতা ও লেখা | মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের অসংখ্য বাংলা কবিতা ও লেখার সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শনের ছোট লেখা — সবই এক জায়গায়। লক্ষাধিক পাঠকের প্রিয় বাংলা সাহিত্যের সংগ্রহ।"
+        title="লেখালেখি ও বই | মাহবুব সরদার সবুজ"
+        description="মাহবুব সরদার সবুজের বাংলা কবিতা, লেখা ও ই-বুক সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের লেখা, জীবনদর্শন এবং প্রকাশিত বই — সবই এক জায়গায়।"
         path="/writings"
-        keywords="বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শন, মাহবুব সরদার সবুজ লেখালেখি, Mahbub Sardar Sabuj writings, বাংলা সাহিত্য, বাংলা ছোট গল্প, বাংলা প্রবন্ধ, মনের কথা, ভালোবাসার লেখা"
-        jsonLd={writingsJsonLd}
+        keywords="বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শন, মাহবুব সরদার সবুজ লেখালেখি, বাংলা ই-বুক, দুঃখবিলাস, Mahbub Sardar Sabuj writings, বাংলা সাহিত্য"
+        jsonLd={combinedJsonLd}
       />
       <Navbar />
 
-      {/* Page Hero */}
+      {/* ── Page Hero ── */}
       <div style={{
         background: "linear-gradient(135deg, #0D1B2A 0%, #1a2f45 60%, #0D1B2A 100%)",
-        paddingTop: 100,
-        paddingBottom: 60,
-        position: "relative",
-        overflow: "hidden",
+        paddingTop: 100, paddingBottom: 50,
+        position: "relative", overflow: "hidden",
       }}>
         <div style={{
           position: "absolute", inset: 0,
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4A843' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
-
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1.5rem", position: "relative" }}>
           <Link href="/">
             <motion.span
               whileHover={{ x: -4 }}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                color: "rgba(253,246,236,0.5)", fontSize: "0.85rem",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                cursor: "pointer", marginBottom: 24, textDecoration: "none",
-              }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "rgba(253,246,236,0.5)", fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif", cursor: "pointer", marginBottom: 24, textDecoration: "none" }}
             >
               <ArrowLeft size={15} /> হোমে ফিরুন
             </motion.span>
           </Link>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
               <Feather size={28} color="#D4A843" />
               <span style={{ color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                DAILY WRITINGS
+                WRITINGS & BOOKS
               </span>
             </div>
-            <h1 style={{
-              fontFamily: "'Tiro Bangla', serif",
-              fontSize: "clamp(2rem, 5vw, 3.5rem)",
-              color: "#FDF6EC",
-              lineHeight: 1.3,
-              marginBottom: 16,
-            }}>
-              লেখালেখি
+            <h1 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", color: "#FDF6EC", lineHeight: 1.3, marginBottom: 16 }}>
+              লেখালেখি ও বই
             </h1>
-            <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              color: "rgba(253,246,236,0.65)",
-              fontSize: "1rem",
-              maxWidth: 500,
-              lineHeight: 1.8,
-            }}>
-              প্রতিদিনের অনুভূতি, কবিতা, গল্প ও ভাবনা — মাহবুব সরদার সবুজের কলম থেকে।
+            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(253,246,236,0.65)", fontSize: "1rem", maxWidth: 500, lineHeight: 1.8 }}>
+              কবিতা, গদ্য ও প্রকাশিত বই — মাহবুব সরদার সবুজের সম্পূর্ণ সাহিত্যকর্ম এক জায়গায়।
             </p>
           </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -10564,7 +10882,7 @@ export default function Writings() {
           >
             {[
               { icon: <BookOpen size={16} />, label: "মোট লেখা", value: `${writings.length}+` },
-              { icon: <Star size={16} />, label: "প্রকাশিত বই", value: "১টি" },
+              { icon: <Star size={16} />, label: "প্রকাশিত বই", value: "৪টি" },
               { icon: <Heart size={16} />, label: "পাঠক", value: "লক্ষাধিক" },
             ].map((stat, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -10579,173 +10897,153 @@ export default function Writings() {
         </div>
       </div>
 
-      {/* Search + Category Tabs */}
+      {/* ── Tab Switcher (Sticky) ── */}
       <div style={{
-        background: "rgba(6,14,26,0.85)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(201,168,76,0.1)",
-        position: "sticky",
-        top: 70,
-        zIndex: 40,
+        background: "rgba(6,14,26,0.92)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(201,168,76,0.12)",
+        position: "sticky", top: 70, zIndex: 40,
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1.5rem" }}>
-          {/* Search */}
-          <div style={{ paddingTop: 12, paddingBottom: 4 }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 8,
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 8, padding: "8px 14px",
-              maxWidth: 320,
-              border: "1px solid rgba(201,168,76,0.15)",
-            }}>
-              <Search size={14} color="#C9A84C" />
-              <input
-                type="text"
-                placeholder="লেখা খুঁজুন..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  border: "none", background: "transparent", outline: "none",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.85rem", color: "#FDF6EC", width: "100%",
-                }}
-              />
-            </div>
-          </div>
-          {/* Categories */}
-          <div style={{ display: "flex", gap: 4, overflowX: "auto", padding: "8px 0 12px", scrollbarWidth: "none" }}>
-            {CATEGORIES.map((cat) => (
+          <div style={{ display: "flex", gap: 0, paddingTop: 12, paddingBottom: 0 }}>
+            {[
+              { id: "writings" as const, label: "লেখালেখি", icon: <PenLine size={16} />, desc: `${writings.length}+ লেখা` },
+              { id: "ebooks" as const, label: "ই-বুক ও বই", icon: <BookOpen size={16} />, desc: "৪টি প্রকাশিত" },
+            ].map((tab) => (
               <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
                 style={{
-                  padding: "7px 16px",
-                  borderRadius: 50,
-                  border: "none",
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "14px 24px",
+                  background: "transparent", border: "none",
+                  borderBottom: activeTab === tab.id ? "2.5px solid #D4A843" : "2.5px solid transparent",
                   cursor: "pointer",
                   fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.83rem",
-                  whiteSpace: "nowrap",
-                  transition: "all 0.3s",
-                  background: activeCategory === cat.id ? "rgba(201,168,76,0.15)" : "transparent",
-                  color: activeCategory === cat.id ? "#D4A843" : "rgba(253,246,236,0.45)",
-                  fontWeight: activeCategory === cat.id ? 700 : 400,
+                  fontSize: "0.95rem",
+                  fontWeight: activeTab === tab.id ? 700 : 500,
+                  color: activeTab === tab.id ? "#D4A843" : "rgba(253,246,236,0.5)",
+                  transition: "all 0.25s ease",
+                  flexShrink: 0,
                 }}
               >
-                {cat.icon} {cat.label}
+                <span style={{ color: activeTab === tab.id ? "#D4A843" : "rgba(253,246,236,0.4)" }}>{tab.icon}</span>
+                {tab.label}
+                <span style={{
+                  fontSize: "0.68rem", padding: "2px 8px", borderRadius: 999,
+                  background: activeTab === tab.id ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.05)",
+                  color: activeTab === tab.id ? "#D4A843" : "rgba(253,246,236,0.3)",
+                  fontWeight: 600,
+                }}>
+                  {tab.desc}
+                </span>
               </button>
             ))}
           </div>
+
+          {activeTab === "writings" && (
+            <div>
+              <div style={{ paddingTop: 10, paddingBottom: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "8px 14px", maxWidth: 320, border: "1px solid rgba(201,168,76,0.15)" }}>
+                  <Search size={14} color="#C9A84C" />
+                  <input
+                    type="text"
+                    placeholder="লেখা খুঁজুন..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ border: "none", background: "transparent", outline: "none", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "#FDF6EC", width: "100%" }}
+                  />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 4, overflowX: "auto", padding: "8px 0 12px", scrollbarWidth: "none" }}>
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    style={{
+                      padding: "7px 16px", borderRadius: 50, border: "none", cursor: "pointer",
+                      fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", whiteSpace: "nowrap",
+                      transition: "all 0.3s",
+                      background: activeCategory === cat.id ? "rgba(201,168,76,0.15)" : "transparent",
+                      color: activeCategory === cat.id ? "#D4A843" : "rgba(253,246,236,0.45)",
+                      fontWeight: activeCategory === cat.id ? 700 : 400,
+                    }}
+                  >
+                    {cat.icon} {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {activeTab === "ebooks" && <div style={{ height: 12 }} />}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.5rem 1.5rem 4rem" }}>
-
-        {/* Featured Post */}
-        {activeCategory === "all" && !searchQuery && featured && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            onClick={() => setSelectedWriting(featured)}
-            style={{
-              background: "linear-gradient(135deg, #0D1B2A 0%, #1a2f45 100%)",
-              borderRadius: 16,
-              padding: "clamp(24px, 4vw, 44px)",
-              marginBottom: 40,
-              cursor: "pointer",
-              position: "relative",
-              overflow: "hidden",
-            }}
-            whileHover={{ scale: 1.005, boxShadow: "0 20px 60px rgba(13,27,42,0.3)" }}
-          >
-            <div style={{
-              position: "absolute", top: -30, right: -30,
-              width: 200, height: 200, borderRadius: "50%",
-              background: "rgba(212,168,67,0.06)",
-            }} />
-            <div style={{ position: "relative" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <Star size={14} color="#D4A843" fill="#D4A843" />
-                <span style={{ color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
-                  বিশেষ লেখা
-                </span>
+      {/* ── Tab Content ── */}
+      <AnimatePresence mode="wait">
+        {activeTab === "writings" ? (
+          <motion.div key="writings" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.3 }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.5rem 1.5rem 4rem" }}>
+              {activeCategory === "all" && !searchQuery && featured && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  onClick={() => setSelectedWriting(featured)}
+                  style={{
+                    background: "linear-gradient(135deg, #0D1B2A 0%, #1a2f45 100%)",
+                    borderRadius: 16, padding: "clamp(24px, 4vw, 44px)",
+                    marginBottom: 40, cursor: "pointer", position: "relative", overflow: "hidden",
+                  }}
+                  whileHover={{ scale: 1.005, boxShadow: "0 20px 60px rgba(13,27,42,0.3)" }}
+                >
+                  <div style={{ position: "absolute", top: -30, right: -30, width: 200, height: 200, borderRadius: "50%", background: "rgba(212,168,67,0.06)" }} />
+                  <div style={{ position: "relative" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                      <Star size={14} color="#D4A843" fill="#D4A843" />
+                      <span style={{ color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", letterSpacing: "0.1em" }}>বিশেষ লেখা</span>
+                    </div>
+                    <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", color: "#FDF6EC", lineHeight: 1.4, marginBottom: 16 }}>
+                      {featured.title}
+                    </h2>
+                    <p style={{ fontFamily: "'Tiro Bangla', serif", color: "rgba(253,246,236,0.7)", fontSize: "1rem", lineHeight: 2, maxWidth: 600, whiteSpace: "pre-line" }}>
+                      {featured.content.slice(0, 200)}...
+                    </p>
+                    <div style={{ marginTop: 20 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#D4A843", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", fontWeight: 600 }}>
+                        পুরো লেখা পড়ুন →
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", color: "#888", marginBottom: 20 }}>
+                <span style={{ color: "rgba(201,168,76,0.6)" }}>{filtered.length}টি লেখা পাওয়া গেছে</span>
               </div>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                fontSize: "clamp(1.4rem, 3vw, 2rem)",
-                color: "#FDF6EC",
-                lineHeight: 1.4,
-                marginBottom: 16,
-              }}>
-                {featured.title}
-              </h2>
-              <p style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "rgba(253,246,236,0.7)",
-                fontSize: "1rem",
-                lineHeight: 2,
-                maxWidth: 600,
-                whiteSpace: "pre-line",
-              }}>
-                {featured.content.slice(0, 200)}...
-              </p>
-              <div style={{ marginTop: 20 }}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  color: "#D4A843",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.85rem", fontWeight: 600,
-                }}>
-                  পুরো লেখা পড়ুন →
-                </span>
-              </div>
+              {filtered.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                  {filtered.map((writing, i) => (
+                    <WritingCard key={writing.id} writing={writing} index={i} onClick={() => setSelectedWriting(writing)} />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "60px 20px", color: "rgba(253,246,236,0.4)", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                  <Feather size={40} color="rgba(201,168,76,0.3)" style={{ marginBottom: 16 }} />
+                  <p>কোনো লেখা পাওয়া যায়নি।</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div key="ebooks" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.3 }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "2.5rem 1.5rem 4rem" }}>
+              <EBooksSection />
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Results count */}
-        <div style={{
-          fontFamily: "'Noto Sans Bengali', sans-serif",
-          fontSize: "0.8rem",
-          color: "#888",
-          marginBottom: 20,
-        }}>
-          <span style={{ color: "rgba(201,168,76,0.6)" }}>{filtered.length}টি লেখা পাওয়া গেছে</span>
-        </div>
-
-        {/* Grid */}
-        {filtered.length > 0 ? (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: 20,
-          }}>
-            {filtered.map((writing, i) => (
-              <WritingCard
-                key={writing.id}
-                writing={writing}
-                index={i}
-                onClick={() => setSelectedWriting(writing)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            textAlign: "center",
-            padding: "60px 20px",
-            color: "rgba(253,246,236,0.4)",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-          }}>
-            <Feather size={40} color="rgba(201,168,76,0.3)" style={{ marginBottom: 16 }} />
-            <p>কোনো লেখা পাওয়া যায়নি।</p>
-          </div>
-        )}
-      </div>
-
-      {/* Modal */}
       <AnimatePresence>
         {selectedWriting && (
           <WritingModal
@@ -10756,6 +11054,8 @@ export default function Writings() {
           />
         )}
       </AnimatePresence>
+
+      <Footer />
     </div>
   );
 }

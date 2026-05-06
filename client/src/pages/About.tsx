@@ -164,7 +164,7 @@ export default function About() {
                 transition={{ duration: 0.6, delay: 1.0 }}
                 style={{ display: "flex", gap: 14, flexWrap: "wrap" }}
               >
-                <Link href="/ebooks">
+                <Link href="/writings">
                   <motion.span
                     whileHover={{ scale: 1.03, boxShadow: "0 16px 40px rgba(201,168,76,0.35)" }}
                     whileTap={{ scale: 0.97 }}
@@ -620,7 +620,7 @@ export default function About() {
                   <ArrowRight size={16} />
                 </motion.span>
               </Link>
-              <Link href="/ebooks">
+              <Link href="/writings">
                 <motion.span
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}

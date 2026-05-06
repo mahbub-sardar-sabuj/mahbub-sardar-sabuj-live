@@ -141,7 +141,7 @@ const AUTHOR_PHOTO = "/images/author-photo.jpg";
 // ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/about",    label: "পরিচিতি পেজ দেখুন",    keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
-  { path: "/ebooks",   label: "ই-বুক সংগ্রহ দেখুন",   keywords: ["ebooks", "ebook", "ই-বুক", "বই"] },
+  { path: "/writings", label: "লেখালেখি ও বই দেখুন",  keywords: ["ebooks", "ebook", "ই-বুক", "বই", "writings", "লেখালেখি"] },
   { path: "/writings", label: "লেখালেখি পেজ দেখুন",   keywords: ["writings", "writing", "লেখালেখি", "লেখা", "কবিতা"] },
   { path: "/contact",  label: "যোগাযোগ পেজ দেখুন",    keywords: ["contact", "যোগাযোগ", "ইমেইল"] },
   { path: "/editor",   label: "ডিজাইন স্টুডিও খুলুন", keywords: ["editor", "ডিজাইন", "স্টুডিও", "ফরম্যাট"] },

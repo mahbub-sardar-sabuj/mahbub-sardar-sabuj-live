@@ -26,9 +26,9 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
   { label: "পরিচিতি", subtitle: "লেখক পরিচয়", href: "/about", icon: UserRound },
-  { label: "ই-বুক", subtitle: "প্রকাশিত বই", href: "/ebooks", icon: BookOpen },
+  { label: "লেখালেখি ও বই", subtitle: "কবিতা ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
   { label: "আবৃত্তি", subtitle: "ভিডিও সংগ্রহ", href: "/facebook-recitations", icon: Mic2 },
-  { label: "লেখালেখি", subtitle: "প্রবন্ধ ও গদ্য", href: "/writings", icon: PenLine },
+
   { label: "ডিজাইন", subtitle: "কার্ড তৈরি করুন", href: "/editor", icon: Palette },
   { label: "গ্যালারি", subtitle: "ছবির সংগ্রহ", href: "/gallery", icon: Images },
   { label: "সরদার সংবাদ", subtitle: "সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
@@ -284,7 +284,7 @@ export default function Home() {
                 transition={{ duration: 0.7, delay: 0.8 }}
                 className="cta-row"
               >
-                <Link href="/ebooks" style={{ flex: 1 }}>
+                <Link href="/writings" style={{ flex: 1 }}>
                   <motion.span
                     whileHover={{ scale: 1.05, y: -3, boxShadow: "0 20px 50px rgba(201,168,76,0.55)" }}
                     whileTap={{ scale: 0.96 }}
@@ -695,7 +695,7 @@ export default function Home() {
               </div>
 
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-                <Link href="/ebooks">
+                <Link href="/writings">
                   <motion.span
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}

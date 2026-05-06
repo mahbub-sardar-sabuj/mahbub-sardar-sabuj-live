@@ -17,8 +17,8 @@ const socialLinks = [
 
 const quickLinks = [
   { label: "পরিচিতি", href: "/about", icon: UserRound },
-  { label: "বই ও ই-বুক", href: "/ebooks", icon: BookOpen },
-  { label: "লেখালেখি", href: "/writings", icon: PenLine },
+  { label: "লেখালেখি ও বই", href: "/writings", icon: BookOpen },
+
   { label: "আবৃত্তি", href: "/facebook-recitations", icon: Mic2 },
   { label: "গ্যালারি", href: "/gallery", icon: Images },
   { label: "সংবাদ", href: "/news", icon: Newspaper },
