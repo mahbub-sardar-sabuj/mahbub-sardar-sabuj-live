@@ -9980,39 +9980,17 @@ const ebooks = [
     accentColor: "#E67E22",
   },
 ];
-// ── Category Color Helper — Enhanced ─────────────────────────────────────────
+// ── Category color helper ──────────────────────────────────────────────────────
 function getCategoryColor(cat: string) {
-  if (cat === "ভালোবাসা") return {
-    stripe: "#F43F5E", badge: "rgba(244,63,94,0.1)", text: "#F43F5E",
-    glow: "rgba(244,63,94,0.25)", cssVar: "#F43F5E",
-    badgeBg: "rgba(244,63,94,0.1)", borderHover: "rgba(244,63,94,0.28)",
-  };
-  if (cat === "বিচ্ছেদ") return {
-    stripe: "#818CF8", badge: "rgba(129,140,248,0.1)", text: "#818CF8",
-    glow: "rgba(129,140,248,0.25)", cssVar: "#818CF8",
-    badgeBg: "rgba(129,140,248,0.1)", borderHover: "rgba(129,140,248,0.28)",
-  };
-  if (cat === "কবিতা") return {
-    stripe: "#38BDF8", badge: "rgba(56,189,248,0.1)", text: "#38BDF8",
-    glow: "rgba(56,189,248,0.25)", cssVar: "#38BDF8",
-    badgeBg: "rgba(56,189,248,0.1)", borderHover: "rgba(56,189,248,0.28)",
-  };
-  if (cat === "ছোট লেখা") return {
-    stripe: "#34D399", badge: "rgba(52,211,153,0.1)", text: "#34D399",
-    glow: "rgba(52,211,153,0.25)", cssVar: "#34D399",
-    badgeBg: "rgba(52,211,153,0.1)", borderHover: "rgba(52,211,153,0.28)",
-  };
-  // জীবনদর্শন (default)
-  return {
-    stripe: "#FBBF24", badge: "rgba(251,191,36,0.1)", text: "#FBBF24",
-    glow: "rgba(251,191,36,0.25)", cssVar: "#FBBF24",
-    badgeBg: "rgba(251,191,36,0.1)", borderHover: "rgba(251,191,36,0.28)",
-  };
+  if (cat === "ভালোবাসা") return { stripe: "#e74c3c", badge: "rgba(231,76,60,0.12)", text: "#e74c3c", glow: "rgba(231,76,60,0.25)" };
+  if (cat === "বিচ্ছেদ") return { stripe: "#9b59b6", badge: "rgba(155,89,182,0.12)", text: "#9b59b6", glow: "rgba(155,89,182,0.25)" };
+  if (cat === "কবিতা") return { stripe: "#3498db", badge: "rgba(52,152,219,0.12)", text: "#3498db", glow: "rgba(52,152,219,0.25)" };
+  if (cat === "ছোট লেখা") return { stripe: "#2ecc71", badge: "rgba(46,204,113,0.12)", text: "#2ecc71", glow: "rgba(46,204,113,0.25)" };
+  return { stripe: "#D4A843", badge: "rgba(212,168,67,0.12)", text: "#D4A843", glow: "rgba(212,168,67,0.25)" };
 }
 
-
 // ══════════════════════════════════════════════════════════════════════════════
-//  WORLD-CLASS PREMIUM CSS — v3.0
+//  WORLD-CLASS PREMIUM CSS
 // ══════════════════════════════════════════════════════════════════════════════
 const WORLD_CLASS_CSS = `
   /* ── Google Fonts ── */
@@ -10031,6 +10009,10 @@ const WORLD_CLASS_CSS = `
     --cream-dim: rgba(253,246,236,0.65);
     --cream-muted: rgba(253,246,236,0.4);
     --cream-faint: rgba(253,246,236,0.15);
+    --blue-accent: #4A90D9;
+    --red-accent: #e74c3c;
+    --purple-accent: #9b59b6;
+    --green-accent: #2ecc71;
   }
 
   /* ── Keyframes ── */
@@ -10054,6 +10036,10 @@ const WORLD_CLASS_CSS = `
     70%  { box-shadow: 0 0 0 16px rgba(212,168,67,0); }
     100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
   }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-28px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -10076,17 +10062,31 @@ const WORLD_CLASS_CSS = `
     0%   { transform: translateY(-100%); }
     100% { transform: translateY(100vh); }
   }
+  @keyframes particleDrift {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.5; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(360deg); opacity: 0; }
+  }
+  @keyframes typewriter {
+    from { width: 0; }
+    to   { width: 100%; }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+  @keyframes ripple {
+    0%   { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.9; }
+  }
   @keyframes rotateOrb {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
-  }
-  @keyframes cardReveal {
-    from { opacity: 0; transform: translateY(32px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes progressBar {
-    from { width: 0%; }
-    to   { width: 100%; }
   }
 
   /* ── Base ── */
@@ -10098,33 +10098,41 @@ const WORLD_CLASS_CSS = `
   .wc-hero {
     position: relative;
     overflow: hidden;
-    min-height: 88vh;
+    min-height: 85vh;
     display: flex;
     align-items: center;
     background: linear-gradient(160deg, #020810 0%, #060E1A 30%, #0A1628 65%, #0D1B2A 100%);
     padding: clamp(6rem, 12vw, 10rem) clamp(1.25rem, 6vw, 4rem) clamp(3rem, 6vw, 5rem);
   }
+
+  /* Animated gradient mesh background */
   .wc-hero-mesh {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 80% 70% at 10% 20%, rgba(212,168,67,0.14) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 90% 80%, rgba(74,144,217,0.09) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(155,89,182,0.07) 0%, transparent 55%),
-      radial-gradient(ellipse 40% 30% at 80% 10%, rgba(212,168,67,0.06) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 70% at 10% 20%, rgba(212,168,67,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 80%, rgba(74,144,217,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(155,89,182,0.06) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 30% at 80% 10%, rgba(212,168,67,0.05) 0%, transparent 50%);
     pointer-events: none;
     animation: gradientShift 15s ease infinite;
     background-size: 200% 200%;
   }
+
+  /* Fine grid overlay */
   .wc-hero-grid {
     position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(212,168,67,0.028) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212,168,67,0.028) 1px, transparent 1px);
+      linear-gradient(rgba(212,168,67,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,168,67,0.025) 1px, transparent 1px);
     background-size: 80px 80px;
     pointer-events: none;
   }
+
+  /* Scan line effect */
   .wc-hero-scanline {
-    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    position: absolute; inset: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
   .wc-hero-scanline::after {
     content: '';
@@ -10133,6 +10141,8 @@ const WORLD_CLASS_CSS = `
     background: linear-gradient(90deg, transparent, rgba(212,168,67,0.06), transparent);
     animation: scanLine 8s linear infinite;
   }
+
+  /* Ink particles */
   .wc-ink-particle {
     position: absolute;
     border-radius: 50%;
@@ -10141,6 +10151,8 @@ const WORLD_CLASS_CSS = `
     pointer-events: none;
     filter: blur(0.5px);
   }
+
+  /* Hero inner container */
   .wc-hero-inner {
     max-width: 1280px; margin: 0 auto;
     position: relative; z-index: 2;
@@ -10150,6 +10162,8 @@ const WORLD_CLASS_CSS = `
     gap: clamp(2rem, 5vw, 5rem);
     align-items: center;
   }
+
+  /* Hero eyebrow label */
   .wc-hero-eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
     padding: 7px 20px; border-radius: 999px;
@@ -10157,7 +10171,8 @@ const WORLD_CLASS_CSS = `
     border: 1px solid rgba(212,168,67,0.2);
     margin-bottom: 1.75rem;
     animation: fadeInUp 0.6s ease both;
-    position: relative; overflow: hidden;
+    position: relative;
+    overflow: hidden;
   }
   .wc-hero-eyebrow::before {
     content: '';
@@ -10179,6 +10194,8 @@ const WORLD_CLASS_CSS = `
     letter-spacing: 0.22em; text-transform: uppercase;
     position: relative; z-index: 1;
   }
+
+  /* Hero title */
   .wc-hero-title {
     font-family: 'Tiro Bangla', serif;
     font-size: clamp(2.8rem, 6.5vw, 5rem);
@@ -10201,6 +10218,8 @@ const WORLD_CLASS_CSS = `
     background: linear-gradient(90deg, #D4A843, rgba(212,168,67,0.3), transparent);
     border-radius: 2px;
   }
+
+  /* Hero description */
   .wc-hero-desc {
     font-family: 'Noto Sans Bengali', sans-serif;
     color: var(--cream-dim);
@@ -10209,6 +10228,8 @@ const WORLD_CLASS_CSS = `
     margin: 1.75rem 0 2.25rem;
     animation: fadeInUp 0.7s 0.2s ease both;
   }
+
+  /* Stats row */
   .wc-stats-row {
     display: flex; gap: clamp(12px, 3vw, 24px);
     flex-wrap: wrap; row-gap: 12px;
@@ -10250,6 +10271,8 @@ const WORLD_CLASS_CSS = `
     color: var(--cream-muted); font-size: 0.7rem;
     margin-top: 2px;
   }
+
+  /* Hero orb decoration */
   .wc-hero-orb {
     position: relative;
     width: clamp(160px, 22vw, 260px);
@@ -10275,43 +10298,42 @@ const WORLD_CLASS_CSS = `
   .wc-hero-orb-inner {
     position: absolute; inset: 20px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(212,168,67,0.18) 0%, rgba(10,22,40,0.9) 70%);
-    border: 1px solid rgba(212,168,67,0.1);
+    background: radial-gradient(circle, rgba(212,168,67,0.15) 0%, rgba(212,168,67,0.04) 60%, transparent 100%);
+    border: 1px solid rgba(212,168,67,0.12);
     display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
   }
-  .wc-hero-orb-inner::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at 60% 60%, rgba(74,144,217,0.12) 0%, transparent 60%);
+  .wc-hero-orb-core {
+    width: 55%; height: 55%; border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,168,67,0.22) 0%, transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+    animation: glowPulse 3s ease-in-out infinite;
   }
+
+  /* Back link */
   .wc-back-link {
-    display: inline-flex; align-items: center; gap: 8px;
+    display: inline-flex; align-items: center; gap: 7px;
+    color: var(--cream-muted); font-size: 0.82rem;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.78rem; font-weight: 600;
-    color: rgba(253,246,236,0.35);
-    text-decoration: none;
-    margin-bottom: 1.75rem;
+    cursor: pointer; margin-bottom: clamp(20px, 4vw, 36px);
+    text-decoration: none; transition: all 0.25s;
     padding: 6px 14px; border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
-    transition: all 0.25s;
-    animation: fadeInUp 0.5s ease both;
+    border: 1px solid transparent;
   }
   .wc-back-link:hover {
-    color: rgba(253,246,236,0.7);
-    border-color: rgba(255,255,255,0.12);
+    color: var(--cream-dim);
     background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08);
+    transform: translateX(-4px);
   }
 
   /* ═══════════════════════════════════════════
-     TAB BAR — Premium Sticky Navigation
+     STICKY TAB BAR — Premium Navigation
   ═══════════════════════════════════════════ */
   .wc-tab-bar-wrap {
     position: sticky; top: 0; z-index: 40;
-    background: rgba(4,9,18,0.96);
-    backdrop-filter: blur(28px) saturate(2);
-    -webkit-backdrop-filter: blur(28px) saturate(2);
+    background: rgba(4,9,18,0.94);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
     border-bottom: 1px solid rgba(212,168,67,0.08);
     box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(212,168,67,0.06);
   }
@@ -10384,59 +10406,73 @@ const WORLD_CLASS_CSS = `
     color: #4A90D9;
     border-color: rgba(74,144,217,0.2);
   }
+
+  /* Controls row */
   .wc-controls-row {
     display: flex; align-items: center; gap: 10px;
     padding: 14px 0; flex-wrap: wrap;
     border-top: 1px solid rgba(255,255,255,0.04);
   }
+
+  /* Search box */
   .wc-search-box {
     display: flex; align-items: center; gap: 9px;
     background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px; padding: 9px 15px;
-    flex: 1; min-width: 180px; max-width: 280px;
+    border: 1px solid rgba(212,168,67,0.1);
+    border-radius: 12px; padding: 10px 16px;
+    min-width: 200px; max-width: 280px; flex: 0 0 auto;
     transition: all 0.25s;
   }
   .wc-search-box:focus-within {
-    border-color: rgba(212,168,67,0.3);
-    background: rgba(212,168,67,0.04);
+    border-color: rgba(212,168,67,0.4);
     box-shadow: 0 0 0 3px rgba(212,168,67,0.07);
+    background: rgba(212,168,67,0.04);
   }
   .wc-search-input {
-    background: none; border: none; outline: none;
+    border: none; background: transparent; outline: none;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.85rem; color: var(--cream);
-    width: 100%;
+    font-size: 0.87rem; color: var(--cream); width: 100%;
   }
-  .wc-search-input::placeholder { color: rgba(253,246,236,0.2); }
+  .wc-search-input::placeholder { color: rgba(253,246,236,0.25); }
+
+  /* Category scroll */
   .wc-cat-scroll {
-    display: flex; gap: 7px;
+    display: flex; gap: 7px; flex: 1;
     overflow-x: auto; scrollbar-width: none;
-    flex: 1;
+    padding-bottom: 2px;
   }
   .wc-cat-scroll::-webkit-scrollbar { display: none; }
   .wc-cat-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 16px; border-radius: 999px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    cursor: pointer; white-space: nowrap;
+    padding: 8px 18px; border-radius: 999px;
+    cursor: pointer;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.8rem; font-weight: 600;
+    font-size: 0.83rem; white-space: nowrap;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: rgba(255,255,255,0.04);
     color: rgba(253,246,236,0.35);
-    transition: all 0.25s;
+    border: 1px solid rgba(255,255,255,0.06);
     flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
   }
   .wc-cat-btn:hover {
-    color: rgba(253,246,236,0.65);
-    background: rgba(255,255,255,0.05);
+    background: rgba(212,168,67,0.08);
+    color: rgba(212,168,67,0.85);
+    border-color: rgba(212,168,67,0.2);
+    transform: translateY(-1px);
   }
-  .wc-cat-btn.active { font-weight: 700; }
+  .wc-cat-btn.active {
+    background: rgba(212,168,67,0.14);
+    color: #D4A843; font-weight: 700;
+    border-color: rgba(212,168,67,0.3);
+    box-shadow: 0 4px 16px rgba(212,168,67,0.12);
+  }
+
+  /* View toggle */
   .wc-view-toggle {
     display: flex; gap: 4px;
     background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 10px; padding: 3px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 4px;
     flex-shrink: 0;
   }
   .wc-view-btn {
@@ -10446,12 +10482,12 @@ const WORLD_CLASS_CSS = `
     color: rgba(253,246,236,0.3); transition: all 0.2s;
   }
   .wc-view-btn.active {
-    background: rgba(212,168,67,0.15);
+    background: rgba(212,168,67,0.14);
     color: #D4A843;
   }
   .wc-view-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.05);
     color: rgba(253,246,236,0.6);
-    background: rgba(255,255,255,0.04);
   }
 
   /* ═══════════════════════════════════════════
@@ -10459,31 +10495,31 @@ const WORLD_CLASS_CSS = `
   ═══════════════════════════════════════════ */
   .wc-content {
     max-width: 1280px; margin: 0 auto;
-    padding: clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 6vw, 4rem);
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2.5rem) clamp(4rem, 8vw, 6rem);
   }
 
   /* ═══════════════════════════════════════════
-     FEATURED BANNER — Magazine Hero
+     FEATURED WRITING BANNER — Magazine Style
   ═══════════════════════════════════════════ */
   .wc-featured-banner {
-    border-radius: 28px; overflow: hidden;
-    margin-bottom: clamp(2rem, 4vw, 3.5rem);
+    border-radius: 24px; overflow: hidden;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
     position: relative; cursor: pointer;
     background: linear-gradient(135deg, #0A1628 0%, #0F2035 40%, #0A1628 100%);
     border: 1px solid rgba(212,168,67,0.12);
     animation: borderPulse 5s ease-in-out infinite;
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .wc-featured-banner:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,168,67,0.3);
-    border-color: rgba(212,168,67,0.35);
+    transform: translateY(-5px);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,168,67,0.25);
+    border-color: rgba(212,168,67,0.3);
   }
   .wc-featured-banner-bg {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(212,168,67,0.09) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(74,144,217,0.05) 0%, transparent 60%);
+      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(212,168,67,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(74,144,217,0.04) 0%, transparent 60%);
     pointer-events: none;
   }
   .wc-featured-banner-quote {
@@ -10565,26 +10601,26 @@ const WORLD_CLASS_CSS = `
   }
   .wc-results-count {
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.82rem; color: rgba(253,246,236,0.35);
-    display: flex; align-items: center; gap: 7px;
+    font-size: 0.83rem; color: rgba(212,168,67,0.55);
+    display: flex; align-items: center; gap: 8px;
   }
   .wc-clear-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 999px;
-    background: rgba(231,76,60,0.08);
-    border: 1px solid rgba(231,76,60,0.15);
-    color: rgba(231,76,60,0.7);
+    background: rgba(212,168,67,0.07);
+    border: 1px solid rgba(212,168,67,0.16);
+    color: #D4A843; padding: 6px 16px; border-radius: 999px;
+    font-size: 0.75rem; cursor: pointer;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.75rem; font-weight: 600;
-    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 5px;
+    transition: all 0.2s;
   }
   .wc-clear-btn:hover {
-    background: rgba(231,76,60,0.14);
-    color: #e74c3c;
+    background: rgba(212,168,67,0.14);
+    border-color: rgba(212,168,67,0.3);
+    transform: translateY(-1px);
   }
 
   /* ═══════════════════════════════════════════
-     WRITING GRID — Premium Magazine Layout
+     WRITING CARDS — Magazine Grid Style
   ═══════════════════════════════════════════ */
   .wc-grid {
     display: grid;
@@ -10596,74 +10632,63 @@ const WORLD_CLASS_CSS = `
     gap: clamp(12px, 2vw, 18px);
   }
 
-  /* ═══════════════════════════════════════════
-     PREMIUM WRITING CARD — v3 Complete Redesign
-  ═══════════════════════════════════════════ */
+  /* Card base */
   .wc-card {
+    background: rgba(10,22,40,0.7);
+    border: 1px solid rgba(255,255,255,0.055);
+    border-radius: 20px; overflow: hidden;
+    cursor: pointer; display: flex; flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
-    border-radius: 22px;
-    overflow: hidden;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(8,18,34,0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(4px);
   }
-  /* Hover glow overlay */
+  .wc-card::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(212,168,67,0.05) 0%, transparent 55%);
+    opacity: 0; transition: opacity 0.35s;
+    pointer-events: none;
+  }
   .wc-card::after {
     content: '';
-    position: absolute; inset: 0;
-    border-radius: 22px;
-    opacity: 0;
-    transition: opacity 0.4s;
+    position: absolute; inset: 0; border-radius: 20px;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(212,168,67,0.06) 0%, transparent 60%);
+    opacity: 0; transition: opacity 0.35s;
     pointer-events: none;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--card-glow, rgba(212,168,67,0.1)) 0%, transparent 70%);
   }
   .wc-card:hover {
-    transform: translateY(-12px) scale(1.018);
+    transform: translateY(-10px) scale(1.015);
+    border-color: rgba(212,168,67,0.22);
     box-shadow:
-      0 30px 80px rgba(0,0,0,0.6),
-      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.25)),
-      0 0 50px var(--card-glow, rgba(212,168,67,0.06));
-    border-color: var(--card-border-hover, rgba(212,168,67,0.25));
+      0 24px 70px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(212,168,67,0.08),
+      0 0 60px rgba(212,168,67,0.04);
   }
+  .wc-card:hover::before { opacity: 1; }
   .wc-card:hover::after { opacity: 1; }
 
   /* Card list variant */
   .wc-card-list {
     flex-direction: row !important;
-    border-radius: 18px;
+    border-radius: 16px;
   }
-  .wc-card-list:hover { transform: translateY(-5px) scale(1.006) !important; }
+  .wc-card-list:hover { transform: translateY(-4px) scale(1.005) !important; }
+  .wc-card-list .wc-card-stripe { width: 4px; height: auto; border-radius: 16px 0 0 16px; }
+  .wc-card-list .wc-card-body { padding: 18px 22px !important; }
 
-  /* Card top accent bar */
-  .wc-card-top-bar {
-    height: 4px;
-    background: linear-gradient(90deg, var(--card-accent, #D4A843) 0%, var(--card-accent, #D4A843) 50%, transparent 100%);
+  /* Card stripe */
+  .wc-card-stripe {
+    height: 4px; border-radius: 20px 20px 0 0;
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    transition: height 0.3s ease;
   }
-  .wc-card:hover .wc-card-top-bar { height: 5px; }
-  .wc-card-top-bar::after {
+  .wc-card-stripe::after {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-    animation: shimmerGold 2.5s linear infinite;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmerGold 3s linear infinite;
     background-size: 200% 100%;
-  }
-  .wc-card-list .wc-card-top-bar {
-    width: 4px; height: auto;
-    background: linear-gradient(180deg, var(--card-accent, #D4A843) 0%, var(--card-accent, #D4A843) 50%, transparent 100%);
-    border-radius: 18px 0 0 18px;
-    flex-shrink: 0;
-  }
-  .wc-card-list .wc-card-top-bar::after {
-    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.5), transparent);
   }
 
   /* Card body */
@@ -10672,233 +10697,79 @@ const WORLD_CLASS_CSS = `
     flex: 1; display: flex; flex-direction: column;
     position: relative;
   }
-  .wc-card-list .wc-card-body { padding: 18px 22px !important; }
 
-  /* Large decorative quote */
-  .wc-card-deco-quote {
-    position: absolute;
-    top: 6px; right: 14px;
+  /* Decorative quote mark */
+  .wc-card-quote-mark {
+    position: absolute; top: 10px; right: 14px;
     font-size: 5rem; line-height: 1;
     font-family: 'Playfair Display', Georgia, serif;
-    font-style: italic;
-    color: var(--card-accent, #D4A843);
-    opacity: 0.055;
+    color: rgba(212,168,67,0.05);
     pointer-events: none; user-select: none;
-    transition: opacity 0.35s;
+    font-style: italic;
   }
-  .wc-card:hover .wc-card-deco-quote { opacity: 0.13; }
 
-  /* Category badge */
-  .wc-card-badge-row {
-    display: flex; align-items: center; gap: 6px;
-    margin-bottom: 12px; flex-wrap: wrap;
-  }
+  /* Card badge */
   .wc-card-badge {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 12px; border-radius: 999px;
-    font-size: 0.66rem;
+    padding: 4px 13px; border-radius: 999px;
+    font-size: 0.67rem;
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-weight: 800; letter-spacing: 0.05em;
-    background: var(--card-badge-bg, rgba(212,168,67,0.1));
-    color: var(--card-accent, #D4A843);
-    border: 1px solid transparent;
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 30%, transparent);
-    transition: all 0.25s;
-  }
-  .wc-card:hover .wc-card-badge {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 18%, transparent);
+    font-weight: 700; letter-spacing: 0.04em;
+    margin-bottom: 13px;
   }
   .wc-card-featured-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px; border-radius: 999px;
-    font-size: 0.62rem;
+    margin-left: 6px; padding: 4px 11px; border-radius: 999px;
+    font-size: 0.63rem;
     font-family: 'Noto Sans Bengali', sans-serif;
     background: rgba(212,168,67,0.1);
     color: #C9A84C; font-weight: 700;
-    border: 1px solid rgba(212,168,67,0.2);
+    border: 1px solid rgba(212,168,67,0.18);
   }
 
   /* Card title */
   .wc-card-title {
     font-family: 'Tiro Bangla', serif;
     font-size: 1.08rem; color: var(--cream);
-    font-weight: 700; line-height: 1.65;
-    margin-bottom: 10px;
+    font-weight: 700; line-height: 1.6;
+    margin-bottom: 11px;
     transition: color 0.25s;
-    position: relative; z-index: 1;
   }
-  .wc-card:hover .wc-card-title {
-    color: var(--card-accent, #f0c060);
-  }
+  .wc-card:hover .wc-card-title { color: #f0c060; }
 
-  /* Card preview text */
+  /* Card preview */
   .wc-card-preview {
     font-family: 'Tiro Bangla', serif;
     font-size: 0.9rem;
-    color: rgba(253,246,236,0.38);
+    color: rgba(253,246,236,0.42);
     line-height: 2; flex: 1;
     white-space: pre-line;
-    position: relative; z-index: 1;
-    transition: color 0.25s;
-  }
-  .wc-card:hover .wc-card-preview {
-    color: rgba(253,246,236,0.55);
   }
 
   /* Card footer */
   .wc-card-footer {
-    margin-top: 18px; padding-top: 14px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 18px; padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.045);
     display: flex; align-items: center; justify-content: space-between;
-    position: relative; z-index: 1;
   }
   .wc-card-date {
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.68rem; color: rgba(253,246,236,0.22);
+    font-size: 0.7rem; color: rgba(253,246,236,0.25);
     display: flex; align-items: center; gap: 5px;
   }
-  .wc-card-read-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 999px;
+  .wc-card-read {
     font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.78rem; font-weight: 700;
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 10%, transparent);
-    color: var(--card-accent, #D4A843);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    cursor: pointer;
+    font-size: 0.8rem; font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+    transition: gap 0.25s;
+    padding: 5px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
   }
-  .wc-card:hover .wc-card-read-btn {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 45%, transparent);
-    gap: 10px;
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
-  }
+  .wc-card:hover .wc-card-read { gap: 9px; }
 
   /* ═══════════════════════════════════════════
-     EMPTY STATE
-  ═══════════════════════════════════════════ */
-  .wc-empty {
-    text-align: center; padding: clamp(3rem, 8vw, 6rem) 1rem;
-    font-family: 'Tiro Bangla', serif;
-    color: rgba(253,246,236,0.35);
-  }
-
-  /* ═══════════════════════════════════════════
-     READING MODAL — Immersive Full-Screen
-  ═══════════════════════════════════════════ */
-  .wc-modal-overlay {
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(2,6,14,0.96);
-    backdrop-filter: blur(20px);
-    display: flex; align-items: flex-start; justify-content: center;
-    padding: clamp(1rem, 3vw, 2rem);
-    overflow-y: auto;
-  }
-  .wc-modal-box {
-    border-radius: 28px;
-    width: 100%; max-width: 760px;
-    overflow: hidden;
-    box-shadow: 0 60px 140px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
-    position: relative;
-    margin: auto;
-  }
-  .wc-modal-progress {
-    height: 4px;
-    animation: progressBar 0.6s ease both;
-    transform-origin: left;
-  }
-  .wc-modal-header {
-    padding: 16px 22px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    gap: 12px;
-  }
-  .wc-modal-controls {
-    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
-  }
-  .wc-modal-theme-btn {
-    padding: 6px 12px; border-radius: 9px; border: none;
-    font-size: 0.72rem; cursor: pointer;
-    font-family: 'Noto Sans Bengali', sans-serif; font-weight: 600;
-    transition: all 0.2s;
-  }
-  .wc-modal-font-btn {
-    width: 32px; height: 32px; border-radius: 9px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
-    cursor: pointer; color: #333; transition: all 0.2s;
-  }
-  .wc-modal-font-btn:hover { background: rgba(13,27,42,0.12); }
-  .wc-modal-close {
-    width: 38px; height: 38px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
-    cursor: pointer; color: #555; flex-shrink: 0;
-    transition: all 0.2s;
-  }
-  .wc-modal-close:hover { background: rgba(231,76,60,0.1); color: #e74c3c; }
-  .wc-modal-body { padding: 36px 42px 32px; }
-  .wc-modal-content-text {
-    line-height: 2.3; white-space: pre-line;
-    font-family: 'Tiro Bangla', serif;
-    transition: font-size 0.2s;
-  }
-  .wc-modal-nav {
-    display: flex; border-top: 1px solid rgba(13,27,42,0.08);
-  }
-  .wc-modal-nav-btn {
-    flex: 1; padding: 18px 20px;
-    background: transparent; border: none; cursor: pointer;
-    transition: background 0.2s;
-  }
-  .wc-modal-nav-btn:hover:not(:disabled) { background: rgba(13,27,42,0.04); }
-  .wc-modal-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .wc-modal-nav-btn:first-child { border-right: 1px solid rgba(13,27,42,0.08); }
-
-  /* ═══════════════════════════════════════════
-     BOOK MODAL
-  ═══════════════════════════════════════════ */
-  .wc-book-modal-overlay {
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(2,6,14,0.96);
-    backdrop-filter: blur(20px);
-    display: flex; align-items: center; justify-content: center;
-    padding: clamp(1rem, 3vw, 2rem);
-  }
-  .wc-book-modal-box {
-    background: #0A1628; border-radius: 28px;
-    width: 100%; max-width: 700px;
-    overflow: hidden;
-    box-shadow: 0 60px 140px rgba(0,0,0,0.75);
-    border: 1px solid rgba(212,168,67,0.14);
-    margin: auto;
-    max-height: 90vh; overflow-y: auto;
-  }
-  .wc-book-modal-header {
-    padding: 20px 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(0,0,0,0.25);
-    border-bottom: 1px solid rgba(255,255,255,0.055);
-  }
-  .wc-book-modal-inner {
-    display: flex; gap: 0;
-  }
-  .wc-book-modal-cover-wrap {
-    width: 210px; flex-shrink: 0;
-    overflow: hidden; background: #060E1A;
-  }
-  .wc-book-modal-cover {
-    width: 100%; height: 100%; min-height: 300px;
-    object-fit: cover; display: block;
-  }
-  .wc-book-modal-content {
-    flex: 1; padding: 1.75rem;
-    display: flex; flex-direction: column;
-  }
-
-  /* ═══════════════════════════════════════════
-     EBOOKS SECTION
+     SECTION DIVIDER
   ═══════════════════════════════════════════ */
   .wc-section-divider {
     display: flex; align-items: center; gap: 16px;
@@ -10910,60 +10781,66 @@ const WORLD_CLASS_CSS = `
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
+  .wc-section-divider-label {
+    font-size: 0.7rem; font-weight: 800;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    font-family: 'Noto Sans Bengali', sans-serif;
+  }
   .wc-section-divider-line {
     flex: 1; height: 1px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent);
   }
-  .wc-section-divider-label {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.72rem; font-weight: 800;
-    letter-spacing: 0.18em; text-transform: uppercase;
-  }
+
+  /* ═══════════════════════════════════════════
+     FEATURED BOOK — 3D Premium Card
+  ═══════════════════════════════════════════ */
   .wc-featured-book {
-    border-radius: 24px; overflow: hidden;
-    margin-bottom: clamp(2rem, 4vw, 3rem);
-    position: relative; cursor: pointer;
-    background: linear-gradient(135deg, #0A1628 0%, #0F2035 50%, #0A1628 100%);
-    border: 1px solid rgba(74,144,217,0.15);
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 28px; overflow: hidden;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+    position: relative;
+    background: linear-gradient(135deg, #0A1628 0%, #0F2035 45%, #0A1628 100%);
+    border: 1px solid rgba(212,168,67,0.15);
+    box-shadow:
+      0 24px 70px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(212,168,67,0.07),
+      inset 0 -1px 0 rgba(0,0,0,0.3);
+    transition: all 0.4s ease;
   }
   .wc-featured-book:hover {
     transform: translateY(-6px);
-    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(74,144,217,0.3);
-    border-color: rgba(74,144,217,0.35);
+    box-shadow:
+      0 40px 100px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(212,168,67,0.2),
+      inset 0 1px 0 rgba(212,168,67,0.1);
   }
   .wc-featured-book-bg {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(74,144,217,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(212,168,67,0.05) 0%, transparent 60%);
+      radial-gradient(ellipse 65% 65% at 85% 50%, rgba(212,168,67,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 40% at 15% 80%, rgba(74,144,217,0.04) 0%, transparent 60%);
     pointer-events: none;
   }
   .wc-featured-book-inner {
-    padding: clamp(1.75rem, 4vw, 2.5rem);
-    position: relative; z-index: 1;
-    display: flex; gap: clamp(1.5rem, 4vw, 3rem);
-    align-items: center;
+    display: flex; gap: 0; position: relative; z-index: 1;
   }
   .wc-featured-book-cover-wrap {
-    width: clamp(120px, 18vw, 180px); flex-shrink: 0;
-    border-radius: 14px; overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .wc-featured-book:hover .wc-featured-book-cover-wrap {
-    transform: scale(1.05) rotate(-1deg);
+    width: clamp(200px, 30%, 300px); flex-shrink: 0;
+    position: relative; overflow: hidden;
   }
   .wc-featured-book-cover {
-    width: 100%; display: block;
+    width: 100%; height: 100%; min-height: 400px;
+    object-fit: cover; display: block;
+    transition: transform 0.6s ease;
+  }
+  .wc-featured-book:hover .wc-featured-book-cover {
+    transform: scale(1.06);
   }
   .wc-featured-book-cover-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(74,144,217,0.1) 0%, transparent 60%);
-    pointer-events: none;
+    background: linear-gradient(90deg, transparent 60%, rgba(10,22,40,0.85) 100%);
   }
   .wc-featured-book-content {
-    flex: 1; display: flex; flex-direction: column;
+    flex: 1; padding: clamp(1.75rem, 3.5vw, 3rem);
+    display: flex; flex-direction: column; justify-content: center;
   }
   .wc-featured-book-badge {
     display: inline-flex; align-items: center; gap: 7px;
@@ -10972,7 +10849,6 @@ const WORLD_CLASS_CSS = `
     font-size: 0.72rem; font-weight: 800;
     margin-bottom: 1.1rem;
     letter-spacing: 0.06em;
-    align-self: flex-start;
   }
   .wc-featured-book-author {
     display: flex; align-items: center; gap: 9px;
@@ -11040,15 +10916,21 @@ const WORLD_CLASS_CSS = `
     transform: translateY(-3px);
     box-shadow: 0 10px 32px rgba(212,168,67,0.22);
   }
+
+  /* ═══════════════════════════════════════════
+     E-BOOKS GRID — Bookshelf Style
+  ═══════════════════════════════════════════ */
   .wc-ebooks-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
     gap: clamp(18px, 3vw, 30px);
     margin-bottom: clamp(2.5rem, 5vw, 4rem);
   }
+
+  /* Book card */
   .wc-book-card {
     border-radius: 20px; overflow: hidden;
-    background: rgba(10,22,40,0.82);
+    background: rgba(10,22,40,0.75);
     border: 1px solid rgba(255,255,255,0.065);
     transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: pointer; position: relative;
@@ -11071,7 +10953,9 @@ const WORLD_CLASS_CSS = `
     object-fit: cover; display: block;
     transition: transform 0.55s ease;
   }
-  .wc-book-card:hover .wc-book-cover { transform: scale(1.1); }
+  .wc-book-card:hover .wc-book-cover {
+    transform: scale(1.1);
+  }
   .wc-book-cover-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(to top, rgba(4,9,18,0.97) 0%, rgba(4,9,18,0.4) 45%, transparent 100%);
@@ -11096,7 +10980,9 @@ const WORLD_CLASS_CSS = `
     transform: translateY(12px);
     transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .wc-book-card:hover .wc-book-hover-btn { transform: translateY(0); }
+  .wc-book-card:hover .wc-book-hover-btn {
+    transform: translateY(0);
+  }
   .wc-book-hover-btn:hover {
     background: rgba(212,168,67,0.25);
     border-color: #D4A843;
@@ -11110,7 +10996,9 @@ const WORLD_CLASS_CSS = `
     backdrop-filter: blur(10px);
     letter-spacing: 0.04em;
   }
-  .wc-book-info { padding: 18px 20px 22px; }
+  .wc-book-info {
+    padding: 18px 20px 22px;
+  }
   .wc-book-title {
     font-family: 'Tiro Bangla', serif;
     color: var(--cream); font-size: 1.08rem;
@@ -11151,6 +11039,10 @@ const WORLD_CLASS_CSS = `
   }
   .wc-book-read-btn:hover::before { transform: translateX(100%); }
   .wc-book-read-btn:hover { transform: translateY(-2px); }
+
+  /* ═══════════════════════════════════════════
+     COMING SOON BANNER
+  ═══════════════════════════════════════════ */
   .wc-coming-soon {
     border-radius: 20px; overflow: hidden;
     background: linear-gradient(135deg, rgba(74,144,217,0.06) 0%, rgba(10,22,40,0.85) 100%);
@@ -11164,6 +11056,123 @@ const WORLD_CLASS_CSS = `
     position: absolute; inset: 0;
     background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(74,144,217,0.04) 0%, transparent 70%);
     pointer-events: none;
+  }
+
+  /* ═══════════════════════════════════════════
+     EMPTY STATE
+  ═══════════════════════════════════════════ */
+  .wc-empty {
+    text-align: center; padding: clamp(50px, 10vw, 100px) 20px;
+    color: rgba(253,246,236,0.3);
+    font-family: 'Noto Sans Bengali', sans-serif;
+  }
+
+  /* ═══════════════════════════════════════════
+     WRITING MODAL — Premium Reading Experience
+  ═══════════════════════════════════════════ */
+  .wc-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(2,6,14,0.94);
+    backdrop-filter: blur(16px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: clamp(1rem, 3vw, 2rem);
+    overflow-y: auto;
+  }
+  .wc-modal-box {
+    border-radius: 24px;
+    width: 100%; max-width: 720px;
+    overflow: hidden;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+    position: relative;
+    margin: auto;
+  }
+  .wc-modal-header {
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    gap: 12px;
+  }
+  .wc-modal-controls {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .wc-modal-theme-btn {
+    padding: 6px 13px; border-radius: 9px; border: none;
+    font-size: 0.72rem; cursor: pointer;
+    font-family: 'Noto Sans Bengali', sans-serif; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .wc-modal-font-btn {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
+    cursor: pointer; color: #333; transition: all 0.2s;
+  }
+  .wc-modal-font-btn:hover { background: rgba(13,27,42,0.12); }
+  .wc-modal-close {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
+    cursor: pointer; color: #555; flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .wc-modal-close:hover { background: rgba(231,76,60,0.1); color: #e74c3c; }
+  .wc-modal-body { padding: 32px 36px 28px; }
+  .wc-modal-content-text {
+    line-height: 2.2; white-space: pre-line;
+    font-family: 'Tiro Bangla', serif;
+    transition: font-size 0.2s;
+  }
+  .wc-modal-nav {
+    display: flex; border-top: 1px solid rgba(13,27,42,0.08);
+  }
+  .wc-modal-nav-btn {
+    flex: 1; padding: 16px 18px;
+    background: transparent; border: none; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .wc-modal-nav-btn:hover:not(:disabled) { background: rgba(13,27,42,0.04); }
+  .wc-modal-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .wc-modal-nav-btn:first-child { border-right: 1px solid rgba(13,27,42,0.08); }
+
+  /* ═══════════════════════════════════════════
+     BOOK MODAL
+  ═══════════════════════════════════════════ */
+  .wc-book-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(2,6,14,0.94);
+    backdrop-filter: blur(16px);
+    display: flex; align-items: center; justify-content: center;
+    padding: clamp(1rem, 3vw, 2rem);
+    overflow-y: auto;
+  }
+  .wc-book-modal-box {
+    background: #0A1628; border-radius: 24px;
+    width: 100%; max-width: 700px;
+    overflow: hidden;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.75);
+    border: 1px solid rgba(212,168,67,0.14);
+    margin: auto;
+  }
+  .wc-book-modal-header {
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(255,255,255,0.055);
+  }
+  .wc-book-modal-inner {
+    display: flex; gap: 0;
+  }
+  .wc-book-modal-cover-wrap {
+    width: 210px; flex-shrink: 0;
+    overflow: hidden; background: #060E1A;
+  }
+  .wc-book-modal-cover {
+    width: 100%; height: 100%; min-height: 300px;
+    object-fit: cover; display: block;
+  }
+  .wc-book-modal-content {
+    flex: 1; padding: 1.75rem;
+    display: flex; flex-direction: column;
   }
 
   /* ═══════════════════════════════════════════
@@ -11213,14 +11222,14 @@ const WORLD_CLASS_CSS = `
     .wc-grid { grid-template-columns: repeat(4, 1fr) !important; }
     .wc-ebooks-grid { grid-template-columns: repeat(4, 1fr) !important; }
   }
+
   @media (max-width: 600px) {
     .wc-book-modal-inner { flex-direction: column !important; }
     .wc-book-modal-cover-wrap { width: 100% !important; }
     .wc-book-modal-cover { min-height: 240px !important; object-fit: cover !important; }
   }
 `;
-
-// ── Writing Card — Premium v3 ────────────────────────────────────────────────
+// ── Writing Card ──────────────────────────────────────────────────────────────
 function WritingCard({
   writing,
   index,
@@ -11234,33 +11243,28 @@ function WritingCard({
 }) {
   const slug = makeSlug(writing.title, writing.id);
   const isShort = writing.content.length < 200;
-  const preview = writing.content.slice(0, isShort ? writing.content.length : 155);
+  const preview = writing.content.slice(0, isShort ? writing.content.length : 160);
   const colors = getCategoryColor(writing.category);
 
   return (
     <motion.div
       className={`wc-card ${viewMode === "list" ? "wc-card-list" : ""}`}
-      style={{
-        "--card-accent": colors.stripe,
-        "--card-glow": colors.glow,
-        "--card-badge-bg": colors.badgeBg,
-        "--card-border-hover": colors.borderHover,
-      } as React.CSSProperties}
-      initial={{ opacity: 0, y: 28, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.42, delay: Math.min(index * 0.035, 0.65), ease: [0.22, 1, 0.36, 1] }}
-      onClick={() => { onClick(); window.history.pushState(null, '', `/writings/\${slug}`); }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.7) }}
+      onClick={() => { onClick(); window.history.pushState(null, '', `/writings/${slug}`); }}
     >
-      {/* Top accent bar */}
-      <div className="wc-card-top-bar" />
-
+      {/* Top stripe */}
+      <div className="wc-card-stripe" style={{ background: `linear-gradient(90deg, ${colors.stripe}, ${colors.stripe}88)` }} />
       <div className="wc-card-body">
         {/* Decorative quote mark */}
-        <span className="wc-card-deco-quote">"</span>
-
-        {/* Badge row */}
-        <div className="wc-card-badge-row">
-          <span className="wc-card-badge">
+        <span className="wc-card-quote-mark">"</span>
+        {/* Badges */}
+        <div style={{ marginBottom: 13, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 5 }}>
+          <span
+            className="wc-card-badge"
+            style={{ background: colors.badge, color: colors.text, border: `1px solid ${colors.stripe}30` }}
+          >
             {writing.category}
           </span>
           {writing.featured && (
@@ -11269,21 +11273,18 @@ function WritingCard({
             </span>
           )}
         </div>
-
         {/* Title */}
         <h3 className="wc-card-title">{writing.title}</h3>
-
         {/* Preview */}
         <p className="wc-card-preview">
-          {preview}{!isShort && writing.content.length > 155 ? "..." : ""}
+          {preview}{!isShort && writing.content.length > 160 ? "..." : ""}
         </p>
-
         {/* Footer */}
         <div className="wc-card-footer">
           <span className="wc-card-date">
             <Calendar size={11} /> {writing.date}
           </span>
-          <span className="wc-card-read-btn">
+          <span className="wc-card-read" style={{ color: colors.stripe, borderColor: `${colors.stripe}25` }}>
             পড়ুন <ChevronRight size={13} />
           </span>
         </div>
@@ -11291,7 +11292,8 @@ function WritingCard({
     </motion.div>
   );
 }
-// ── Writing Modal — Immersive Reading v3 ─────────────────────────────────────
+
+// ── Writing Modal ─────────────────────────────────────────────────────────────
 function WritingModal({
   writing,
   allWritings,
@@ -11310,37 +11312,32 @@ function WritingModal({
   const slug = makeSlug(writing.title, writing.id);
 
   useEffect(() => {
+    window.history.pushState(null, '', `/writings/${slug}`);
     document.title = `${writing.title} | মাহবুব সরদার সবুজ`;
     return () => {
+      window.history.pushState(null, '', '/writings');
       document.title = 'লেখালেখি ও বই | মাহবুব সরদার সবুজ';
     };
-  }, [writing.title]);
+  }, [slug, writing.title]);
 
   const currentIndex = allWritings.findIndex((w) => w.id === writing.id);
   const prevWriting = currentIndex > 0 ? allWritings[currentIndex - 1] : null;
   const nextWriting = currentIndex < allWritings.length - 1 ? allWritings[currentIndex + 1] : null;
   const colors = getCategoryColor(writing.category);
-
   const shareText = `"মাহবুব সরদার সবুজ" লিখেছেন: ${writing.title}`;
   const shareUrl = `${window.location.origin}/writings`;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(`${shareText}
-
-${writing.content.slice(0, 300)}...
-
-পুরো পড়ুন: ${shareUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0, 300)}...\n\nপুরো পড়ুন: ${shareUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch { /* fallback */ }
   };
-
   const handleFacebookShare = () => {
     const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
     window.open(fbUrl, "_blank", "width=600,height=400");
   };
-
   const handleNativeShare = async () => {
     if (navigator.share) {
       try { await navigator.share({ title: writing.title, text: shareText, url: shareUrl }); }
@@ -11372,11 +11369,8 @@ ${writing.content.slice(0, 300)}...
         transition={{ type: "spring", damping: 28, stiffness: 280 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Reading progress bar */}
-        <div
-          className="wc-modal-progress"
-          style={{ background: `linear-gradient(90deg, ${colors.stripe}, ${colors.stripe}88, transparent)` }}
-        />
+        {/* Top accent stripe */}
+        <div style={{ height: 5, background: `linear-gradient(90deg, ${colors.stripe}, ${colors.stripe}77, transparent)` }} />
 
         {/* Header */}
         <div className="wc-modal-header" style={{ background: th.headerBg, borderBottomColor: th.border }}>
@@ -11392,6 +11386,7 @@ ${writing.content.slice(0, 300)}...
             </span>
           </div>
           <div className="wc-modal-controls">
+            {/* Theme buttons */}
             {(["light", "sepia", "dark"] as const).map((t) => (
               <button
                 key={t}
@@ -11406,12 +11401,14 @@ ${writing.content.slice(0, 300)}...
                 {t === "light" ? "☀" : t === "sepia" ? "📜" : "🌙"}
               </button>
             ))}
+            {/* Font size */}
             <button className="wc-modal-font-btn" style={{ color: th.text, background: th.bg, border: `1px solid ${th.border}` }} onClick={() => setFontSize(f => Math.max(0.85, f - 0.1))}>
               <AArrowDown size={14} />
             </button>
             <button className="wc-modal-font-btn" style={{ color: th.text, background: th.bg, border: `1px solid ${th.border}` }} onClick={() => setFontSize(f => Math.min(1.7, f + 0.1))}>
               <AArrowUp size={14} />
             </button>
+            {/* Share */}
             <div style={{ position: "relative" }}>
               <button
                 className="wc-modal-font-btn"
@@ -11464,6 +11461,7 @@ ${writing.content.slice(0, 300)}...
                 )}
               </AnimatePresence>
             </div>
+            {/* Close */}
             <button className="wc-modal-close" style={{ color: th.subtext, background: th.bg, border: `1px solid ${th.border}` }} onClick={onClose}>
               <X size={16} />
             </button>
@@ -11486,6 +11484,7 @@ ${writing.content.slice(0, 300)}...
           >
             {writing.content}
           </p>
+          {/* Author */}
           <div style={{
             marginTop: "2.25rem", paddingTop: "1.5rem",
             borderTop: `1px solid ${th.border}`,
@@ -11516,7 +11515,7 @@ ${writing.content.slice(0, 300)}...
           <button
             className="wc-modal-nav-btn"
             disabled={!prevWriting}
-            onClick={() => { if (prevWriting) { onNavigate(prevWriting); window.history.pushState(null, '', `/writings/\${makeSlug(prevWriting.title, prevWriting.id)}`); } }}
+            onClick={() => { if (prevWriting) { onNavigate(prevWriting); window.history.pushState(null, '', `/writings/${makeSlug(prevWriting.title, prevWriting.id)}`); } }}
             style={{ display: "flex", alignItems: "center", gap: 9 }}
           >
             <ChevronLeft size={16} color={th.subtext} />
@@ -11530,7 +11529,7 @@ ${writing.content.slice(0, 300)}...
           <button
             className="wc-modal-nav-btn"
             disabled={!nextWriting}
-            onClick={() => { if (nextWriting) { onNavigate(nextWriting); window.history.pushState(null, '', `/writings/\${makeSlug(nextWriting.title, nextWriting.id)}`); } }}
+            onClick={() => { if (nextWriting) { onNavigate(nextWriting); window.history.pushState(null, '', `/writings/${makeSlug(nextWriting.title, nextWriting.id)}`); } }}
             style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 9 }}
           >
             <div style={{ textAlign: "right", overflow: "hidden" }}>
@@ -11546,6 +11545,8 @@ ${writing.content.slice(0, 300)}...
     </motion.div>
   );
 }
+
+// ── Book Modal ────────────────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
   return (
     <AnimatePresence>
