@@ -9959,597 +9959,1014 @@ const ebooks = [
     accentColor: "#E67E22",
   },
 ];
+
 // ══════════════════════════════════════════════════════════════════════════════
-//  OBSIDIAN EDITORIAL — CSS v6
-//  Inspired by: Vercel, Linear, Craft, Notion Dark
-//  Philosophy: Silence speaks louder. Less text, more feeling.
+//  WRITINGS v7 — PURE TAB PREMIUM
+//  No hero. Just two immersive tabs.
+//  Palette: Obsidian #06080E | Gold #C8A45A | Cream #EEEAE2
 // ══════════════════════════════════════════════════════════════════════════════
 const CSS = `
-  @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@300;400;500;600&display=swap');
 
   :root {
-    --f: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
-    /* Obsidian Palette */
-    --bg:    #050709;
-    --bg1:   #080B10;
-    --bg2:   #0C1018;
-    --bg3:   #111620;
-    --bg4:   #161C2A;
-    /* Gold */
-    --au:    #C8A45A;
-    --au-l:  #E5C06A;
-    --au-d:  #9A7A38;
-    --au-g:  rgba(200,164,90,.16);
-    /* Text */
+    --bg0: #06080E;
+    --bg1: #090C14;
+    --bg2: #0D1120;
+    --bg3: #111828;
     --t0: #EEEAE2;
-    --t1: rgba(238,234,226,.75);
-    --t2: rgba(238,234,226,.45);
-    --t3: rgba(238,234,226,.25);
-    --t4: rgba(238,234,226,.12);
-    /* Surfaces */
-    --s0: rgba(8,11,16,.97);
-    --s1: rgba(12,16,24,.92);
-    --sb: rgba(255,255,255,.055);
-    --sb-au: rgba(200,164,90,.12);
-    /* Radius */
-    --r4:4px;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--r28:28px;--rpill:999px;
-    /* Easing */
-    --e1: cubic-bezier(.22,1,.36,1);
-    --e2: cubic-bezier(.34,1.56,.64,1);
-    --e3: cubic-bezier(.4,0,.2,1);
+    --t1: rgba(238,234,226,.82);
+    --t2: rgba(238,234,226,.52);
+    --t3: rgba(238,234,226,.28);
+    --t4: rgba(238,234,226,.14);
+    --gold: #C8A45A;
+    --gold2: #E8C87A;
+    --bdr: rgba(255,255,255,.055);
+    --bdr2: rgba(255,255,255,.09);
+    --f: 'Noto Serif Bengali', 'SolaimanLipi', serif;
+    --r: cubic-bezier(.25,.46,.45,.94);
   }
 
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-  /* ── Keyframes ── */
-  @keyframes up    {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-  @keyframes in    {from{opacity:0}to{opacity:1}}
-  @keyframes shim  {0%{background-position:-300% center}100%{background-position:300% center}}
-  @keyframes glow  {0%,100%{opacity:.5}50%{opacity:1}}
-  @keyframes rot   {to{transform:rotate(360deg)}}
-  @keyframes float {0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-  @keyframes drop  {0%{opacity:0;transform:translateY(-8px)scale(.6)}10%{opacity:.5}90%{opacity:.08}100%{opacity:0;transform:translateY(105vh)scale(1.3)}}
-  @keyframes scan  {from{transform:translateY(-100%)}to{transform:translateY(100vh)}}
-  @keyframes pulse {0%,100%{box-shadow:0 0 0 0 rgba(200,164,90,.4)}60%{box-shadow:0 0 0 10px rgba(200,164,90,0)}}
-  @keyframes card  {from{opacity:0;transform:translateY(18px)scale(.98)}to{opacity:1;transform:none}}
-  @keyframes border{0%,100%{border-color:rgba(200,164,90,.07)}50%{border-color:rgba(200,164,90,.25)}}
-  @keyframes wave  {0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.6)}}
-
-  ::selection{background:rgba(200,164,90,.22);color:var(--t0)}
-  ::-webkit-scrollbar{width:4px;height:4px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:rgba(200,164,90,.18);border-radius:2px}
-  ::-webkit-scrollbar-thumb:hover{background:rgba(200,164,90,.35)}
-
-  /* ══════════════════════════════════════════
-     HERO — Full Cinematic
-  ══════════════════════════════════════════ */
-  .h{
-    position:relative;overflow:hidden;
-    min-height:88vh;display:flex;align-items:center;
-    background:var(--bg);
-    padding:clamp(9rem,15vw,13rem) clamp(1.5rem,6vw,5rem) clamp(5rem,7vw,7rem);
-  }
-  /* Multi-layer atmosphere */
-  .h-atm{
-    position:absolute;inset:0;pointer-events:none;
-    background:
-      radial-gradient(ellipse 110% 100% at -5% -5%, rgba(200,164,90,.11) 0%,transparent 52%),
-      radial-gradient(ellipse 80% 70% at 105% 105%, rgba(80,120,200,.07) 0%,transparent 50%),
-      radial-gradient(ellipse 60% 55% at 50% 120%, rgba(150,100,200,.05) 0%,transparent 48%);
-    background-size:200% 200%;
-    animation:shim 30s ease infinite;
-  }
-  /* Dot grid */
-  .h-grid{
-    position:absolute;inset:0;pointer-events:none;
-    background-image:radial-gradient(circle,rgba(200,164,90,.055) 1px,transparent 1px);
-    background-size:44px 44px;
-    mask-image:radial-gradient(ellipse 85% 85% at 50% 50%,black 30%,transparent 100%);
-    opacity:.7;
-  }
-  /* Scan line */
-  .h-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-  .h-scan::after{
-    content:'';position:absolute;width:100%;height:1.5px;
-    background:linear-gradient(90deg,transparent,rgba(200,164,90,.06),transparent);
-    animation:scan 20s linear infinite;
-  }
-  /* Vignette */
-  .h-vig{
-    position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(ellipse 100% 100% at 50% 0%,transparent 45%,rgba(5,7,9,.7) 100%);
-  }
-  .h-vig2{
-    position:absolute;bottom:0;left:0;right:0;height:160px;pointer-events:none;
-    background:linear-gradient(to bottom,transparent,var(--bg1));
-  }
-  /* Particles */
-  .h-p{
-    position:absolute;border-radius:50%;
-    background:radial-gradient(circle,rgba(200,164,90,.65),transparent);
-    animation:drop linear infinite;pointer-events:none;filter:blur(.8px);
-  }
-  /* Layout */
-  .h-in{
-    max-width:1340px;margin:0 auto;position:relative;z-index:2;width:100%;
-    display:grid;grid-template-columns:1fr 340px;
-    gap:clamp(2rem,6vw,8rem);align-items:center;
-  }
-  /* Back link */
-  .h-back{
-    display:inline-flex;align-items:center;gap:7px;
-    font-family:var(--f);font-size:.72rem;color:var(--t3);
-    text-decoration:none;padding:5px 13px;border-radius:var(--rpill);
-    border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.02);
-    transition:all .28s var(--e1);width:fit-content;margin-bottom:2.2rem;
-    letter-spacing:.04em;
-  }
-  .h-back:hover{color:var(--au);border-color:rgba(200,164,90,.2);transform:translateX(-4px)}
-  /* Eyebrow */
-  .h-eye{
-    display:inline-flex;align-items:center;gap:10px;
-    padding:6px 16px;border-radius:var(--rpill);
-    background:rgba(200,164,90,.055);border:1px solid rgba(200,164,90,.14);
-    margin-bottom:2rem;position:relative;overflow:hidden;
-    animation:up .6s var(--e1) both;
-  }
-  .h-eye::before{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(90deg,transparent,rgba(200,164,90,.07),transparent);
-    transform:translateX(-100%);animation:shim 4s ease infinite;
-  }
-  .h-dot{width:6px;height:6px;border-radius:50%;background:var(--au);animation:pulse 2.8s ease infinite;flex-shrink:0}
-  .h-eye-t{font-family:var(--f);font-size:.7rem;color:var(--au);letter-spacing:.12em;text-transform:uppercase}
-  /* Title */
-  .h-t{
-    font-family:var(--f);
-    font-size:clamp(2.8rem,6vw,4.8rem);
-    font-weight:400;line-height:1.18;margin-bottom:1.6rem;
-    animation:up .7s .1s var(--e1) both;
-  }
-  .h-t-w{color:var(--t0)}
-  .h-t-g{
-    background:linear-gradient(135deg,var(--au-l) 0%,var(--au) 45%,var(--au-d) 72%,var(--au-l) 100%);
-    background-size:300% auto;-webkit-background-clip:text;background-clip:text;
-    -webkit-text-fill-color:transparent;animation:shim 7s linear infinite;
-    filter:drop-shadow(0 0 32px rgba(200,164,90,.22));
-  }
-  .h-line{
-    display:block;width:clamp(50px,8vw,90px);height:2px;margin-top:18px;
-    background:linear-gradient(90deg,var(--au),rgba(200,164,90,.15),transparent);
-    border-radius:2px;
-  }
-  /* Subtitle */
-  .h-sub{
-    font-family:var(--f);font-size:clamp(.9rem,1.7vw,1.08rem);
-    color:var(--t2);line-height:2.1;max-width:500px;
-    margin-bottom:clamp(2.2rem,4vw,3.5rem);
-    animation:up .7s .2s var(--e1) both;
-  }
-  /* Stats */
-  .h-stats{display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;animation:up .7s .3s var(--e1) both}
-  .h-stats::-webkit-scrollbar{display:none}
-  .h-stat{
-    display:flex;align-items:center;gap:11px;
-    padding:12px 16px;border-radius:var(--r12);flex-shrink:0;
-    background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);
-    backdrop-filter:blur(20px);transition:all .35s var(--e2);cursor:default;
-    box-shadow:0 4px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035);
-  }
-  .h-stat:hover{transform:translateY(-5px) scale(1.03);border-color:rgba(200,164,90,.2);box-shadow:0 14px 36px rgba(0,0,0,.35),0 0 0 1px rgba(200,164,90,.08)}
-  .h-stat-i{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .h-stat-v{font-family:var(--f);color:var(--t0);font-size:1.15rem;line-height:1.2}
-  .h-stat-l{font-family:var(--f);color:var(--t3);font-size:.63rem;margin-top:1px;letter-spacing:.03em}
-  /* Orb */
-  .h-orb{
-    position:relative;width:100%;aspect-ratio:1;max-width:320px;margin:0 auto;
-    animation:float 14s ease-in-out infinite;
-  }
-  .h-r1{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(200,164,90,.07);animation:rot 40s linear infinite}
-  .h-r1::before{content:'';position:absolute;width:7px;height:7px;border-radius:50%;background:var(--au);top:-3.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 14px rgba(200,164,90,.9);animation:glow 3s ease infinite}
-  .h-r2{position:absolute;inset:24px;border-radius:50%;border:1px solid rgba(255,255,255,.035);animation:rot 25s linear infinite reverse}
-  .h-r2::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(100,160,255,.5);bottom:-2.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 8px rgba(100,160,255,.7)}
-  .h-r3{position:absolute;inset:48px;border-radius:50%;border:1px solid rgba(200,164,90,.04);animation:rot 18s linear infinite}
-  .h-core{
-    position:absolute;inset:62px;border-radius:50%;
-    background:radial-gradient(circle at 38% 38%,rgba(200,164,90,.12) 0%,rgba(5,7,9,.98) 65%);
-    border:1px solid rgba(200,164,90,.07);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:inset 0 0 50px rgba(0,0,0,.6);
-  }
-  .h-core-i{animation:glow 5s ease infinite}
-
-  /* ══════════════════════════════════════════
-     STICKY NAV
-  ══════════════════════════════════════════ */
-  .nav{
-    position:sticky;top:0;z-index:40;
-    background:rgba(5,7,9,.96);
-    backdrop-filter:blur(48px) saturate(2);-webkit-backdrop-filter:blur(48px) saturate(2);
-    border-bottom:1px solid rgba(200,164,90,.06);
-    box-shadow:0 4px 32px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.025);
-  }
-  .nav-in{max-width:1340px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem)}
-  .nav-tabs{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
-  .nav-tabs::-webkit-scrollbar{display:none}
-  .nav-tab{
-    display:flex;align-items:center;gap:9px;padding:15px 20px;
-    background:transparent;border:none;border-bottom:2px solid transparent;
-    cursor:pointer;white-space:nowrap;font-family:var(--f);font-size:.87rem;
-    color:var(--t3);transition:all .26s var(--e1);position:relative;
-    flex-shrink:0;margin-bottom:-1px;
-  }
-  .nav-tab:hover{color:var(--t1);background:rgba(255,255,255,.015)}
-  .nav-tab.on-g{color:var(--au-l);border-bottom-color:var(--au-l);background:rgba(200,164,90,.035)}
-  .nav-tab.on-b{color:#63B3ED;border-bottom-color:#63B3ED;background:rgba(99,179,237,.035)}
-  .nav-ti{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.055);transition:all .26s;flex-shrink:0}
-  .nav-tab.on-g .nav-ti{background:rgba(200,164,90,.1);border-color:rgba(200,164,90,.2)}
-  .nav-tab.on-b .nav-ti{background:rgba(99,179,237,.1);border-color:rgba(99,179,237,.2)}
-  .nav-pill{font-size:.58rem;padding:2px 8px;border-radius:var(--rpill);background:rgba(255,255,255,.04);color:var(--t4);border:1px solid rgba(255,255,255,.05);font-family:var(--f);transition:all .26s}
-  .nav-tab.on-g .nav-pill{background:rgba(200,164,90,.12);color:var(--au-l);border-color:rgba(200,164,90,.22)}
-  .nav-tab.on-b .nav-pill{background:rgba(99,179,237,.12);color:#63B3ED;border-color:rgba(99,179,237,.22)}
-  /* Controls */
-  .nav-ctrl{display:flex;align-items:center;gap:7px;padding:9px 0;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.035)}
-  .nav-srch{
-    display:flex;align-items:center;gap:8px;
-    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.055);
-    border-radius:10px;padding:7px 13px;flex:1;min-width:140px;max-width:240px;transition:all .24s;
-  }
-  .nav-srch:focus-within{border-color:rgba(200,164,90,.26);background:rgba(200,164,90,.035);box-shadow:0 0 0 3px rgba(200,164,90,.06)}
-  .nav-srch input{background:none;border:none;outline:none;font-family:var(--f);font-size:.79rem;color:var(--t0);width:100%}
-  .nav-srch input::placeholder{color:var(--t4)}
-  .nav-cats{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:1}
-  .nav-cats::-webkit-scrollbar{display:none}
-  .nav-cat{
-    display:flex;align-items:center;gap:5px;padding:5px 12px;
-    border-radius:var(--rpill);border:1px solid rgba(255,255,255,.055);
-    background:rgba(255,255,255,.02);cursor:pointer;white-space:nowrap;
-    font-family:var(--f);font-size:.74rem;color:var(--t3);
-    transition:all .2s var(--e1);flex-shrink:0;
-  }
-  .nav-cat:hover{color:var(--t1);background:rgba(255,255,255,.045)}
-  .nav-vw{display:flex;gap:2px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:9px;padding:3px;flex-shrink:0}
-  .nav-vb{width:29px;height:29px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;color:var(--t4);transition:all .18s}
-  .nav-vb.on{background:rgba(200,164,90,.13);color:var(--au)}
-  .nav-vb:hover:not(.on){color:var(--t2);background:rgba(255,255,255,.04)}
-
-  /* ══════════════════════════════════════════
-     CONTENT AREA
-  ══════════════════════════════════════════ */
-  .ctn{max-width:1340px;margin:0 auto;padding:clamp(2rem,4vw,3.5rem) clamp(1.5rem,6vw,5rem)}
-
-  /* ══════════════════════════════════════════
-     FEATURED BANNER
-  ══════════════════════════════════════════ */
-  .fb{
-    position:relative;border-radius:var(--r20);overflow:hidden;cursor:pointer;
-    border:1px solid rgba(200,164,90,.09);margin-bottom:clamp(2rem,4vw,3.5rem);
-    transition:transform .4s var(--e2),box-shadow .4s var(--e1),border-color .3s;
-    animation:border 6s ease infinite;
-  }
-  .fb:hover{transform:translateY(-5px) scale(1.004);border-color:rgba(200,164,90,.28);box-shadow:0 28px 65px rgba(0,0,0,.5),0 0 48px rgba(200,164,90,.07)}
-  .fb-bg{
-    position:absolute;inset:0;
-    background:
-      linear-gradient(135deg,rgba(200,164,90,.06) 0%,transparent 55%),
-      linear-gradient(315deg,rgba(80,120,200,.04) 0%,transparent 55%),
-      var(--s0);
-  }
-  .fb-grid{
-    position:absolute;inset:0;opacity:.25;
-    background-image:linear-gradient(rgba(200,164,90,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,164,90,.04) 1px,transparent 1px);
-    background-size:48px 48px;
-    mask-image:radial-gradient(ellipse 65% 65% at 50% 50%,black,transparent);
-  }
-  .fb-qm{
-    position:absolute;top:12px;right:24px;
-    font-family:Georgia,serif;font-size:6rem;line-height:1;
-    color:rgba(200,164,90,.07);pointer-events:none;user-select:none;
-  }
-  .fb-in{
-    position:relative;z-index:1;padding:clamp(2rem,3.5vw,3rem);
-    display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;
-  }
-  .fb-badge{
-    display:inline-flex;align-items:center;gap:7px;padding:5px 13px;
-    border-radius:var(--rpill);background:rgba(200,164,90,.08);
-    border:1px solid rgba(200,164,90,.16);font-family:var(--f);
-    font-size:.62rem;color:var(--au);letter-spacing:.09em;
-    margin-bottom:1.2rem;text-transform:uppercase;width:fit-content;
-  }
-  .fb-title{
-    font-family:var(--f);font-size:clamp(1.5rem,3vw,2.2rem);
-    color:var(--t0);font-weight:400;line-height:1.45;margin-bottom:.9rem;
-    transition:color .3s;
-  }
-  .fb:hover .fb-title{color:var(--au-l)}
-  .fb-excerpt{
-    font-family:var(--f);font-size:clamp(.86rem,1.5vw,.96rem);
-    color:var(--t2);line-height:2.15;max-width:640px;
-    white-space:pre-line;
-    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-  }
-  .fb-cta{
-    display:inline-flex;align-items:center;gap:8px;margin-top:1.6rem;
-    padding:10px 20px;border-radius:var(--rpill);
-    background:rgba(200,164,90,.08);border:1px solid rgba(200,164,90,.18);
-    color:var(--au);font-family:var(--f);font-size:.8rem;cursor:pointer;
-    transition:all .26s var(--e1);position:relative;overflow:hidden;
-  }
-  .fb-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(200,164,90,.1),transparent);transform:translateX(-100%);transition:transform .4s}
-  .fb:hover .fb-cta::before{transform:translateX(100%)}
-  .fb:hover .fb-cta{background:rgba(200,164,90,.16);border-color:rgba(200,164,90,.38);box-shadow:0 6px 24px rgba(200,164,90,.16)}
-  .fb-side{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
-  .fb-side-i{
-    width:52px;height:52px;border-radius:14px;
-    background:rgba(200,164,90,.06);border:1px solid rgba(200,164,90,.1);
-    display:flex;align-items:center;justify-content:center;
-    animation:float 9s ease-in-out infinite;
+  /* ── PAGE WRAPPER ── */
+  .wp {
+    background: var(--bg0);
+    min-height: 100vh;
+    padding-top: 0;
   }
 
-  /* ══════════════════════════════════════════
-     RESULTS BAR
-  ══════════════════════════════════════════ */
-  .rb{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(1rem,2.5vw,1.8rem);flex-wrap:wrap;gap:7px}
-  .rb-t{display:flex;align-items:center;gap:6px;font-family:var(--f);font-size:.77rem;color:var(--t3)}
-  .rb-n{color:var(--au);font-size:.9rem}
-  .rb-clr{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:var(--rpill);background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);color:var(--t3);font-family:var(--f);font-size:.7rem;cursor:pointer;transition:all .2s}
-  .rb-clr:hover{color:var(--t1);background:rgba(255,255,255,.065)}
-
-  /* ══════════════════════════════════════════
-     WRITING GRID
-  ══════════════════════════════════════════ */
-  .wg{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:clamp(14px,2vw,22px)}
-  .wg-l{display:flex;flex-direction:column;gap:clamp(9px,1.5vw,14px)}
-
-  /* ══════════════════════════════════════════
-     WRITING CARD — Obsidian Premium v10
-  ══════════════════════════════════════════ */
-  .wc{
-    position:relative;border-radius:var(--r16);overflow:hidden;
-    display:flex;flex-direction:column;cursor:pointer;min-height:220px;
-    border:1px solid var(--sb);background:var(--s0);
-    transition:transform .42s var(--e2),box-shadow .42s var(--e1),border-color .26s;
-    will-change:transform;animation:card .42s var(--e1) both;
+  /* ── TAB HEADER ── */
+  .th {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(6,8,14,.92);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border-bottom: 1px solid var(--bdr);
   }
-  /* Noise */
-  .wc::after{content:'';position:absolute;inset:0;border-radius:var(--r16);pointer-events:none;opacity:.55;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.022'/%3E%3C/svg%3E")}
-  /* Top accent */
-  .wc-top{position:absolute;top:0;left:0;right:0;height:2px;background:var(--ca,#C8A45A);border-radius:var(--r16) var(--r16) 0 0;opacity:.45;transition:opacity .26s,height .26s,box-shadow .26s;z-index:3}
-  /* Left line */
-  .wc-lft{position:absolute;left:0;top:12px;bottom:12px;width:2px;background:var(--ca,#C8A45A);border-radius:0 2px 2px 0;opacity:.3;z-index:3;transition:width .26s,opacity .26s,top .26s,bottom .26s}
-  /* Hover */
-  .wc:hover{transform:translateY(-10px) scale(1.014);box-shadow:0 26px 58px rgba(0,0,0,.55),0 0 0 1px var(--cb,rgba(200,164,90,.26)),0 0 38px var(--cg,rgba(200,164,90,.08));border-color:var(--cb,rgba(200,164,90,.26))}
-  .wc:hover .wc-top{opacity:1;height:2.5px;box-shadow:0 0 16px var(--cg,rgba(200,164,90,.5))}
-  .wc:hover .wc-lft{width:3px;opacity:.85;top:9px;bottom:9px}
-  /* List mode */
-  .wc-list{flex-direction:row!important;border-radius:13px;min-height:unset}
-  .wc-list .wc-top{top:0;left:0;right:auto;bottom:0;width:2px;height:auto;border-radius:13px 0 0 13px}
-  .wc-list .wc-lft{display:none}
-  .wc-list:hover{transform:translateY(-3px) scale(1.004)!important}
-  /* Body */
-  .wc-b{padding:20px 18px 16px 24px;flex:1;display:flex;flex-direction:column;position:relative;z-index:1}
-  .wc-list .wc-b{padding:15px 18px 15px 24px!important}
-  /* Badges */
-  .wc-bgs{display:flex;align-items:center;gap:5px;margin-bottom:11px;flex-wrap:wrap}
-  .wc-bg{display:inline-flex;align-items:center;gap:4px;padding:2px 10px 2px 7px;border-radius:var(--rpill);font-size:.61rem;font-family:var(--f);letter-spacing:.04em;text-transform:uppercase;background:var(--cbg,rgba(200,164,90,.09));color:var(--ca,#C8A45A);border:1px solid color-mix(in srgb,var(--ca,#C8A45A) 26%,transparent);transition:all .2s}
-  .wc:hover .wc-bg{background:color-mix(in srgb,var(--ca,#C8A45A) 16%,transparent)}
-  .wc-star{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--rpill);font-size:.58rem;font-family:var(--f);background:rgba(200,164,90,.09);color:var(--au-l);border:1px solid rgba(200,164,90,.2)}
-  /* Title */
-  .wc-tt{font-family:var(--f);font-size:1.05rem;color:rgba(238,234,226,.92);line-height:1.65;margin-bottom:9px;transition:color .26s;z-index:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .wc:hover .wc-tt{color:var(--ca,#E5C06A)}
-  /* Preview */
-  .wc-pv{font-family:var(--f);font-size:.81rem;color:rgba(238,234,226,.28);line-height:2.05;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;transition:color .26s}
-  .wc:hover .wc-pv{color:rgba(238,234,226,.48)}
-  /* Footer */
-  .wc-ft{margin-top:14px;padding-top:11px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;z-index:1}
-  .wc-dt{font-family:var(--f);font-size:.65rem;color:rgba(238,234,226,.18);display:flex;align-items:center;gap:4px}
-  .wc-rd{font-family:var(--f);font-size:.69rem;color:var(--ca,#C8A45A);display:flex;align-items:center;gap:4px;transition:gap .2s}
-  .wc:hover .wc-rd{gap:8px}
-  /* Empty */
-  .wc-em{text-align:center;padding:clamp(3rem,6vw,5.5rem) 1rem;color:var(--t3);font-family:var(--f)}
+  .th-in {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 clamp(1rem,4vw,2.5rem);
+    display: flex;
+    align-items: center;
+    gap: clamp(.5rem,2vw,1.5rem);
+    min-height: 58px;
+  }
+  .th-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--bdr);
+    border-radius: 14px;
+    padding: 4px;
+  }
+  .th-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--t2);
+    font-family: var(--f);
+    font-size: .88rem;
+    cursor: pointer;
+    transition: all .22s var(--r);
+    white-space: nowrap;
+    position: relative;
+  }
+  .th-tab:hover { color: var(--t1); background: rgba(255,255,255,.04); }
+  .th-tab.tg {
+    background: linear-gradient(135deg,rgba(200,164,90,.18),rgba(200,164,90,.08));
+    color: var(--gold);
+    border: 1px solid rgba(200,164,90,.22);
+    box-shadow: 0 0 18px rgba(200,164,90,.12);
+  }
+  .th-tab.tb {
+    background: linear-gradient(135deg,rgba(99,179,237,.16),rgba(99,179,237,.07));
+    color: #63B3ED;
+    border: 1px solid rgba(99,179,237,.2);
+    box-shadow: 0 0 18px rgba(99,179,237,.1);
+  }
+  .th-cnt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: .65rem;
+    font-family: var(--f);
+    background: rgba(255,255,255,.07);
+    color: var(--t3);
+    transition: all .22s;
+  }
+  .th-tab.tg .th-cnt { background: rgba(200,164,90,.18); color: var(--gold); }
+  .th-tab.tb .th-cnt { background: rgba(99,179,237,.18); color: #63B3ED; }
 
-  /* ══════════════════════════════════════════
-     READING MODAL — Immersive v7
-  ══════════════════════════════════════════ */
-  .rm{position:fixed;inset:0;z-index:1000;background:rgba(2,3,7,.96);backdrop-filter:blur(36px);display:flex;align-items:flex-end;justify-content:center;padding:0}
-  .rm-box{width:100%;max-width:800px;max-height:93vh;border-radius:var(--r28) var(--r28) 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.055);position:relative}
-  .rm-hnd{width:38px;height:4px;border-radius:2px;margin:11px auto 0;flex-shrink:0}
-  .rm-prog{height:2px;flex-shrink:0}
-  .rm-pf{height:100%;transition:width .1s linear}
-  .rm-hd{padding:13px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid;flex-shrink:0;gap:10px}
-  .rm-hdl{display:flex;align-items:center;gap:7px}
-  .rm-cat{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--rpill);font-family:var(--f);font-size:.63rem}
-  .rm-ctrl{display:flex;align-items:center;gap:5px}
-  .rm-btn{width:33px;height:33px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid;cursor:pointer;transition:all .18s;flex-shrink:0}
-  .rm-btn:hover{opacity:.72}
-  .rm-fc{display:flex;align-items:center;gap:1px;border:1px solid;border-radius:8px;overflow:hidden}
-  .rm-fb{width:31px;height:31px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;cursor:pointer;transition:background .18s}
-  .rm-fb:hover{background:rgba(0,0,0,.07)}
-  .rm-th{display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:8px;border:1px solid;cursor:pointer;font-family:var(--f);font-size:.67rem;transition:all .18s;background:transparent}
-  .rm-sdd{position:absolute;top:calc(100% + 7px);right:0;z-index:10;background:#181828;border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:5px;min-width:195px;box-shadow:0 18px 48px rgba(0,0,0,.55)}
-  .rm-si{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border-radius:8px;background:transparent;border:none;cursor:pointer;font-family:var(--f);font-size:.8rem;transition:background .16s;white-space:nowrap}
-  .rm-si:hover{background:rgba(255,255,255,.055)}
-  .rm-body{flex:1;overflow-y:auto;padding:clamp(1.6rem,3vw,2.8rem) clamp(1.4rem,4vw,3.2rem);scroll-behavior:smooth}
-  .rm-body::-webkit-scrollbar{width:3px}
-  .rm-body::-webkit-scrollbar-thumb{background:rgba(200,164,90,.22);border-radius:2px}
-  .rm-ttl{font-family:var(--f);font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.42;margin-bottom:1.8rem}
-  .rm-txt{font-family:var(--f);line-height:2.45;white-space:pre-line}
-  .rm-sig{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid;font-family:var(--f);font-size:.8rem;opacity:.45}
-  .rm-nav{display:flex;border-top:1px solid;flex-shrink:0}
-  .rm-nb{flex:1;display:flex;align-items:center;gap:9px;padding:13px 17px;background:transparent;border:none;cursor:pointer;transition:background .18s}
-  .rm-nb:disabled{opacity:.3;cursor:not-allowed}
-  .rm-nb:not(:disabled):hover{background:rgba(0,0,0,.05)}
-  .rm-nb:first-child{border-right:1px solid}
-  .rm-nl{display:block;font-family:var(--f);font-size:.59rem;margin-bottom:2px}
-  .rm-nt{display:block;font-family:var(--f);font-size:.77rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px}
+  /* ── SEARCH & FILTER BAR ── */
+  .sf {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sf-s {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--bdr);
+    border-radius: 10px;
+    padding: 0 12px;
+    height: 36px;
+    min-width: 160px;
+    max-width: 220px;
+    transition: border-color .2s;
+  }
+  .sf-s:focus-within { border-color: rgba(200,164,90,.3); }
+  .sf-s input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--t1);
+    font-family: var(--f);
+    font-size: .82rem;
+    width: 100%;
+  }
+  .sf-s input::placeholder { color: var(--t3); }
+  .sf-cats {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .sf-cat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--bdr);
+    background: rgba(255,255,255,.03);
+    color: var(--t2);
+    font-family: var(--f);
+    font-size: .75rem;
+    cursor: pointer;
+    transition: all .2s var(--r);
+    white-space: nowrap;
+  }
+  .sf-cat:hover { border-color: var(--bdr2); color: var(--t1); }
+  .sf-vw {
+    display: flex;
+    gap: 3px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--bdr);
+    border-radius: 8px;
+    padding: 3px;
+    margin-left: auto;
+  }
+  .sf-vb {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--t3);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .sf-vb.on { background: rgba(255,255,255,.08); color: var(--t1); }
 
-  /* ══════════════════════════════════════════
-     E-BOOKS — Cinematic Library
-  ══════════════════════════════════════════ */
-  .ed{display:flex;align-items:center;gap:13px;margin-bottom:clamp(1.5rem,3vw,2.5rem)}
-  .ed-i{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .ed-l{font-family:var(--f);font-size:.67rem;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
-  .ed-ln{flex:1;height:1px}
-  /* Featured */
-  .ef{position:relative;border-radius:var(--r20);overflow:hidden;margin-bottom:clamp(2rem,4vw,3.5rem);border:1px solid rgba(200,164,90,.09);transition:all .4s var(--e1);animation:border 7s ease infinite}
-  .ef:hover{border-color:rgba(200,164,90,.26);box-shadow:0 24px 62px rgba(0,0,0,.5),0 0 42px rgba(200,164,90,.06)}
-  .ef-bg{position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,164,90,.07) 0%,rgba(5,7,9,.96) 55%,rgba(80,120,200,.04) 100%)}
-  .ef-in{position:relative;z-index:1;display:flex;gap:0}
-  .ef-cw{width:clamp(155px,20vw,230px);flex-shrink:0;overflow:hidden;position:relative}
-  .ef-cv{width:100%;height:100%;min-height:290px;object-fit:cover;display:block;transition:transform .6s var(--e1)}
-  .ef:hover .ef-cv{transform:scale(1.04)}
-  .ef-co{position:absolute;inset:0;background:linear-gradient(90deg,transparent 55%,rgba(5,7,9,.85) 100%)}
-  .ef-cnt{flex:1;padding:clamp(1.6rem,3vw,2.8rem);display:flex;flex-direction:column;justify-content:center}
-  .ef-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:var(--rpill);font-family:var(--f);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.1rem;width:fit-content}
-  .ef-auth{font-family:var(--f);font-size:.71rem;color:var(--t3);margin-bottom:.7rem;display:flex;align-items:center;gap:5px}
-  .ef-ttl{font-family:var(--f);font-size:clamp(1.4rem,2.8vw,2rem);color:var(--t0);line-height:1.4;margin-bottom:.9rem;transition:color .3s}
-  .ef:hover .ef-ttl{color:var(--au-l)}
-  .ef-desc{font-family:var(--f);font-size:clamp(.83rem,1.4vw,.93rem);color:var(--t2);line-height:1.95;margin-bottom:1.3rem}
-  .ef-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.7rem}
-  .ef-tag{padding:4px 11px;border-radius:var(--rpill);font-family:var(--f);font-size:.67rem;border:1px solid}
-  .ef-btns{display:flex;flex-wrap:wrap;gap:9px}
-  .ef-bp{display:flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--rpill);background:linear-gradient(135deg,var(--au-l),var(--au),var(--au-d));color:#08090F;font-family:var(--f);font-size:.87rem;border:none;cursor:pointer;transition:all .3s var(--e2);box-shadow:0 5px 22px rgba(200,164,90,.28)}
-  .ef-bp:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 10px 32px rgba(200,164,90,.42)}
-  .ef-bo{display:flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--rpill);background:transparent;color:var(--au);font-family:var(--f);font-size:.87rem;border:1.5px solid rgba(200,164,90,.32);cursor:pointer;transition:all .3s var(--e1)}
-  .ef-bo:hover{background:rgba(200,164,90,.09);border-color:rgba(200,164,90,.55);transform:translateY(-2px)}
-  /* Book grid */
-  .eg{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:clamp(13px,2vw,20px);margin-bottom:clamp(2rem,4vw,3rem)}
+  /* ── MAIN CONTENT ── */
+  .mc {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: clamp(1.5rem,3vw,2.5rem) clamp(1rem,4vw,2.5rem);
+  }
+
+  /* ── RESULTS BAR ── */
+  .rb2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: clamp(1.2rem,2.5vw,2rem);
+    padding-bottom: .9rem;
+    border-bottom: 1px solid var(--bdr);
+  }
+  .rb2-t {
+    font-family: var(--f);
+    font-size: .78rem;
+    color: var(--t3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .rb2-n {
+    color: var(--gold);
+    font-size: .9rem;
+  }
+  .rb2-clr {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--bdr);
+    background: none;
+    color: var(--t3);
+    font-family: var(--f);
+    font-size: .72rem;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .rb2-clr:hover { color: var(--t1); border-color: var(--bdr2); }
+
+  /* ── WRITING CARDS GRID ── */
+  .wg2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: clamp(14px,2vw,20px);
+  }
+  .wg2-l {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── WRITING CARD ── */
+  .wc2 {
+    position: relative;
+    background: var(--bg2);
+    border: 1px solid var(--bdr);
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .28s var(--r), box-shadow .28s var(--r), border-color .28s;
+    animation: fadeUp .4s var(--r) both;
+  }
+  .wc2:hover {
+    transform: translateY(-6px) scale(1.012);
+    border-color: var(--bdr2);
+    box-shadow: 0 18px 50px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .wc2-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--ca, var(--gold));
+    opacity: 0;
+    transition: opacity .28s;
+  }
+  .wc2:hover .wc2-top { opacity: 1; }
+  .wc2-glow {
+    position: absolute;
+    top: -40px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 80px;
+    border-radius: 50%;
+    background: var(--cg, rgba(200,164,90,.12));
+    filter: blur(28px);
+    opacity: 0;
+    transition: opacity .35s;
+    pointer-events: none;
+  }
+  .wc2:hover .wc2-glow { opacity: 1; }
+  .wc2-body {
+    padding: clamp(1rem,2.5vw,1.4rem);
+  }
+  .wc2-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: .85rem;
+    flex-wrap: wrap;
+  }
+  .wc2-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--f);
+    font-size: .68rem;
+    background: var(--cbg, rgba(200,164,90,.08));
+    color: var(--ca, var(--gold));
+    border: 1px solid var(--cbdr, rgba(200,164,90,.2));
+    transition: all .2s;
+  }
+  .wc2:hover .wc2-cat { background: var(--cbg2, rgba(200,164,90,.14)); }
+  .wc2-star {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-family: var(--f);
+    font-size: .62rem;
+    background: rgba(251,191,36,.08);
+    color: #FBBF24;
+    border: 1px solid rgba(251,191,36,.18);
+  }
+  .wc2-title {
+    font-family: var(--f);
+    font-size: clamp(1rem,2.2vw,1.12rem);
+    color: var(--t0);
+    line-height: 1.55;
+    margin-bottom: .7rem;
+    font-weight: 500;
+    letter-spacing: -.01em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .wc2-preview {
+    font-family: var(--f);
+    font-size: .82rem;
+    color: var(--t2);
+    line-height: 1.85;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .wc2-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: .85rem;
+    border-top: 1px solid var(--bdr);
+  }
+  .wc2-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--f);
+    font-size: .7rem;
+    color: var(--t3);
+  }
+  .wc2-read {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--f);
+    font-size: .75rem;
+    font-weight: 500;
+    transition: gap .2s;
+  }
+  .wc2:hover .wc2-read { gap: 8px; }
+
+  /* List mode card */
+  .wc2-l {
+    border-radius: 14px;
+    padding: 0;
+  }
+  .wc2-l .wc2-body {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: .9rem 1.2rem;
+  }
+  .wc2-l .wc2-title {
+    font-size: .92rem;
+    margin-bottom: .3rem;
+    -webkit-line-clamp: 1;
+  }
+  .wc2-l .wc2-preview { display: none; }
+  .wc2-l .wc2-tags { margin-bottom: 0; }
+  .wc2-l .wc2-foot { border: none; padding: 0; margin-left: auto; }
+
+  /* Empty state */
+  .wc2-em {
+    text-align: center;
+    padding: 5rem 2rem;
+    color: var(--t3);
+    font-family: var(--f);
+  }
+
+  /* ── READING MODAL ── */
+  .rm2 {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(3,4,8,.75);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .rm2-box {
+    width: 100%;
+    max-width: 760px;
+    max-height: 94vh;
+    border-radius: 24px 24px 0 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -24px 80px rgba(0,0,0,.7);
+  }
+  .rm2-hnd {
+    width: 36px; height: 4px;
+    border-radius: 999px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+  .rm2-prog {
+    height: 2px;
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+  .rm2-pf {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .1s linear;
+  }
+  .rm2-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .8rem 1.4rem;
+    border-bottom: 1px solid;
+    flex-shrink: 0;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .rm2-hdl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .rm2-ctrl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .rm2-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 1px solid;
+    background: none;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .rm2-btn:hover { opacity: .8; }
+  .rm2-fc {
+    display: flex;
+    border-radius: 8px;
+    border: 1px solid;
+    overflow: hidden;
+  }
+  .rm2-fb {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .rm2-fb:hover { opacity: .7; }
+  .rm2-th {
+    display: flex; align-items: center; gap: 5px;
+    padding: 0 10px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid;
+    background: none;
+    cursor: pointer;
+    font-family: var(--f);
+    font-size: .68rem;
+    transition: all .18s;
+  }
+  .rm2-th:hover { opacity: .75; }
+  .rm2-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: clamp(1.4rem,4vw,2.5rem) clamp(1.2rem,5vw,3rem);
+    scroll-behavior: smooth;
+  }
+  .rm2-body::-webkit-scrollbar { width: 4px; }
+  .rm2-body::-webkit-scrollbar-track { background: transparent; }
+  .rm2-body::-webkit-scrollbar-thumb { background: rgba(200,164,90,.25); border-radius: 999px; }
+  .rm2-ttl {
+    font-family: var(--f);
+    font-size: clamp(1.4rem,4vw,2rem);
+    line-height: 1.45;
+    margin-bottom: 1.8rem;
+    font-weight: 500;
+    letter-spacing: -.02em;
+  }
+  .rm2-txt {
+    font-family: var(--f);
+    line-height: 2.1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .rm2-sig {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid;
+    font-family: var(--f);
+    font-size: .82rem;
+    opacity: .45;
+    font-style: italic;
+  }
+  .rm2-nav {
+    display: flex;
+    border-top: 1px solid;
+    flex-shrink: 0;
+  }
+  .rm2-nb {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1rem 1.4rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background .18s;
+  }
+  .rm2-nb:hover { background: rgba(255,255,255,.03); }
+  .rm2-nb:disabled { opacity: .3; cursor: default; }
+  .rm2-nb:disabled:hover { background: none; }
+  .rm2-nb + .rm2-nb { border-left: 1px solid; }
+  .rm2-nl {
+    display: block;
+    font-family: var(--f);
+    font-size: .65rem;
+    margin-bottom: 2px;
+  }
+  .rm2-nt {
+    display: block;
+    font-family: var(--f);
+    font-size: .8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+  .rm2-sdd {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #0F1420;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 180px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5);
+    z-index: 10;
+  }
+  .rm2-si {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--f);
+    font-size: .8rem;
+    transition: background .15s;
+  }
+  .rm2-si:hover { background: rgba(255,255,255,.05); }
+
+  /* ── BOOKS SECTION ── */
+  .bs {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem,4vw,3rem);
+  }
+
+  /* Featured book */
+  .bf {
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid rgba(200,164,90,.15);
+    background: linear-gradient(135deg,rgba(200,164,90,.06) 0%,rgba(200,164,90,.02) 50%,rgba(99,179,237,.04) 100%);
+    cursor: pointer;
+    transition: transform .3s var(--r), box-shadow .3s;
+  }
+  .bf:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(200,164,90,.2);
+  }
+  .bf-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 10% 50%, rgba(200,164,90,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .bf-in {
+    position: relative;
+    display: flex;
+    gap: clamp(1.5rem,4vw,3rem);
+    padding: clamp(1.5rem,3vw,2.5rem);
+    align-items: center;
+  }
+  .bf-cw {
+    flex-shrink: 0;
+    position: relative;
+  }
+  .bf-cv {
+    width: clamp(120px,18vw,185px);
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 16px 50px rgba(0,0,0,.55), 4px 4px 0 rgba(200,164,90,.12);
+    display: block;
+    transition: transform .35s var(--r);
+  }
+  .bf:hover .bf-cv { transform: rotate(-1.5deg) scale(1.03); }
+  .bf-badge {
+    position: absolute;
+    top: -8px; left: -8px;
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: var(--f);
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
+  .bf-cnt {
+    flex: 1;
+    min-width: 0;
+  }
+  .bf-sub {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--f);
+    font-size: .72rem;
+    color: var(--t3);
+    margin-bottom: .7rem;
+  }
+  .bf-ttl {
+    font-family: var(--f);
+    font-size: clamp(1.2rem,3vw,1.65rem);
+    color: var(--t0);
+    line-height: 1.45;
+    margin-bottom: .8rem;
+    font-weight: 500;
+    letter-spacing: -.02em;
+  }
+  .bf-desc {
+    font-family: var(--f);
+    font-size: .85rem;
+    color: var(--t2);
+    line-height: 1.9;
+    margin-bottom: 1.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .bf-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1.4rem;
+  }
+  .bf-tag {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--f);
+    font-size: .68rem;
+    background: rgba(255,255,255,.04);
+    color: var(--t3);
+    border: 1px solid var(--bdr);
+  }
+  .bf-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .bf-buy {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: none;
+    font-family: var(--f);
+    font-size: .88rem;
+    cursor: pointer;
+    transition: all .25s var(--r);
+    text-decoration: none;
+  }
+  .bf-buy:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .bf-read {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: transparent;
+    font-family: var(--f);
+    font-size: .88rem;
+    cursor: pointer;
+    transition: all .25s var(--r);
+    text-decoration: none;
+  }
+  .bf-read:hover { background: rgba(255,255,255,.06); }
+
+  /* Books grid */
+  .bg2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: clamp(14px,2vw,20px);
+  }
+
   /* Book card */
-  .ec{border-radius:var(--r16);overflow:hidden;cursor:pointer;border:1px solid var(--sb);background:var(--s0);transition:all .38s var(--e2)}
-  .ec:hover{transform:translateY(-8px) scale(1.02);border-color:rgba(200,164,90,.2);box-shadow:0 20px 52px rgba(0,0,0,.5),0 0 28px rgba(200,164,90,.06)}
-  .ec-cw{position:relative;overflow:hidden;aspect-ratio:3/4}
-  .ec-cv{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--e1)}
-  .ec:hover .ec-cv{transform:scale(1.06)}
-  .ec-co{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,7,9,.92) 0%,transparent 55%)}
-  .ec-hov{position:absolute;inset:0;background:rgba(5,7,9,.52);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .28s}
-  .ec:hover .ec-hov{opacity:1}
-  .ec-hb{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rpill);background:rgba(200,164,90,.18);border:1px solid rgba(200,164,90,.38);color:var(--au-l);font-family:var(--f);font-size:.77rem;cursor:pointer;backdrop-filter:blur(8px)}
-  .ec-badge{position:absolute;top:9px;right:9px;padding:3px 9px;border-radius:var(--rpill);font-family:var(--f);font-size:.59rem;backdrop-filter:blur(10px)}
-  .ec-info{padding:14px 15px 17px}
-  .ec-ttl{font-family:var(--f);color:var(--t0);font-size:.98rem;line-height:1.5;margin-bottom:5px;transition:color .2s}
-  .ec:hover .ec-ttl{color:var(--au-l)}
-  .ec-meta{font-family:var(--f);color:var(--t3);font-size:.69rem;margin-bottom:8px;display:flex;align-items:center;gap:4px}
-  .ec-desc{font-family:var(--f);color:rgba(238,234,226,.36);font-size:.77rem;line-height:1.8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:11px}
-  .ec-rb{width:100%;padding:9px 0;border-radius:10px;border:none;cursor:pointer;font-family:var(--f);font-size:.79rem;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .26s;position:relative;overflow:hidden}
-  .ec-rb::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transform:translateX(-100%);transition:transform .38s}
-  .ec-rb:hover::before{transform:translateX(100%)}
-  .ec-rb:hover{transform:translateY(-2px)}
-  /* Coming soon */
-  .ec-soon{border-radius:var(--r16);overflow:hidden;background:linear-gradient(135deg,rgba(80,120,200,.05) 0%,rgba(5,7,9,.9) 100%);border:1px solid rgba(80,120,200,.09);padding:clamp(1.4rem,3vw,2.2rem);text-align:center;position:relative}
-  /* Book modal */
-  .bm{position:fixed;inset:0;z-index:1000;background:rgba(2,3,7,.96);backdrop-filter:blur(36px);display:flex;align-items:center;justify-content:center;padding:clamp(1rem,3vw,2rem)}
-  .bm-box{background:var(--bg2);border-radius:var(--r20);width:100%;max-width:650px;overflow:hidden;box-shadow:0 55px 130px rgba(0,0,0,.75);border:1px solid rgba(200,164,90,.11);margin:auto;max-height:90vh;overflow-y:auto}
-  .bm-hd{padding:15px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.05)}
-  .bm-in{display:flex;gap:0}
-  .bm-cw{width:185px;flex-shrink:0;overflow:hidden;background:var(--bg1)}
-  .bm-cv{width:100%;height:100%;min-height:275px;object-fit:cover;display:block}
-  .bm-cnt{flex:1;padding:1.5rem;display:flex;flex-direction:column}
+  .bc {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--bg2);
+    border: 1px solid var(--bdr);
+    cursor: pointer;
+    transition: transform .28s var(--r), box-shadow .28s, border-color .28s;
+  }
+  .bc:hover {
+    transform: translateY(-8px) scale(1.015);
+    border-color: var(--bdr2);
+    box-shadow: 0 22px 55px rgba(0,0,0,.5);
+  }
+  .bc-cw {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg3);
+    aspect-ratio: 3/4;
+  }
+  .bc-cv {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .4s var(--r);
+  }
+  .bc:hover .bc-cv { transform: scale(1.06); }
+  .bc-ov {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(6,8,14,.9) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .bc:hover .bc-ov { opacity: 1; }
+  .bc-hov {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .bc:hover .bc-hov { opacity: 1; }
+  .bc-hb {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(6,8,14,.85);
+    border: 1px solid rgba(255,255,255,.15);
+    color: var(--t0);
+    font-family: var(--f);
+    font-size: .75rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .bc-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-family: var(--f);
+    font-size: .62rem;
+    backdrop-filter: blur(8px);
+  }
+  .bc-info {
+    padding: 1rem;
+  }
+  .bc-ttl {
+    font-family: var(--f);
+    font-size: .9rem;
+    color: var(--t0);
+    line-height: 1.5;
+    margin-bottom: .4rem;
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .bc-meta {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--f);
+    font-size: .68rem;
+    color: var(--t3);
+    margin-bottom: .7rem;
+  }
+  .bc-rb {
+    display: flex; align-items: center; gap: 6px;
+    width: 100%;
+    padding: 7px 0;
+    border-radius: 8px;
+    border: 1px solid;
+    background: transparent;
+    font-family: var(--f);
+    font-size: .75rem;
+    cursor: pointer;
+    justify-content: center;
+    transition: all .2s;
+  }
+  .bc-rb:hover { opacity: .8; }
 
-  /* ══════════════════════════════════════════
-     RESPONSIVE
-  ══════════════════════════════════════════ */
-  @media(max-width:480px){
-    .h{padding:7.5rem 1.2rem 3rem;min-height:auto}
-    .h-in{grid-template-columns:1fr}
-    .h-orb{display:none}
-    .h-t{font-size:2.1rem!important}
-    .h-stats{gap:7px}
-    .h-stat{padding:10px 12px}
-    .nav-tab{padding:12px 14px!important;font-size:.81rem!important}
-    .wg{grid-template-columns:1fr!important}
-    .eg{grid-template-columns:repeat(2,1fr)!important}
-    .ef-in{flex-direction:column!important}
-    .ef-cw{width:100%!important}
-    .ef-ttl{font-size:1.4rem!important}
-    .fb-in{grid-template-columns:1fr!important}
-    .fb-side{display:none!important}
-    .bm-in{flex-direction:column!important}
-    .bm-cw{width:100%!important}
-    .rm-box{max-height:96vh}
-    .rm-body{padding:1.3rem 1.1rem}
+  /* Coming soon card */
+  .bc-soon {
+    border-radius: 18px;
+    border: 1px dashed rgba(255,255,255,.08);
+    background: rgba(255,255,255,.015);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    min-height: 280px;
   }
-  @media(min-width:481px) and (max-width:768px){
-    .h-in{grid-template-columns:1fr}
-    .h-orb{display:none}
-    .wg{grid-template-columns:repeat(2,1fr)!important}
-    .eg{grid-template-columns:repeat(2,1fr)!important}
-    .ef-in{flex-direction:column!important}
-    .ef-cw{width:100%!important}
-    .fb-in{grid-template-columns:1fr!important}
-    .fb-side{display:none!important}
+
+  /* Book modal */
+  .bm2 {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(3,4,8,.8);
+    backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
   }
-  @media(min-width:769px) and (max-width:1024px){
-    .wg{grid-template-columns:repeat(2,1fr)!important}
-    .eg{grid-template-columns:repeat(3,1fr)!important}
-    .ef-cw{width:195px!important}
+  .bm2-box {
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    border-radius: 22px;
+    background: #0D1120;
+    border: 1px solid rgba(255,255,255,.09);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 30px 90px rgba(0,0,0,.65);
   }
-  @media(min-width:1025px){
-    .wg{grid-template-columns:repeat(3,1fr)!important}
-    .eg{grid-template-columns:repeat(3,1fr)!important}
+  .bm2-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
   }
-  @media(min-width:1400px){
-    .wg{grid-template-columns:repeat(4,1fr)!important}
-    .eg{grid-template-columns:repeat(4,1fr)!important}
+  .bm2-in {
+    display: flex;
+    gap: clamp(1.2rem,3vw,2rem);
+    padding: clamp(1.2rem,3vw,2rem);
+    overflow-y: auto;
+    align-items: flex-start;
   }
-  @media(max-width:600px){
-    .bm-in{flex-direction:column!important}
-    .bm-cw{width:100%!important}
-    .bm-cv{min-height:195px!important}
-    .eg{grid-template-columns:1fr!important}
+  .bm2-in::-webkit-scrollbar { width: 4px; }
+  .bm2-in::-webkit-scrollbar-thumb { background: rgba(200,164,90,.2); border-radius: 999px; }
+  .bm2-cw { flex-shrink: 0; }
+  .bm2-cv {
+    width: clamp(110px,20vw,160px);
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5);
+    display: block;
+  }
+  .bm2-cnt { flex: 1; min-width: 0; }
+
+  /* Section divider */
+  .sd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: clamp(1.2rem,2.5vw,1.8rem);
+  }
+  .sd-i {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sd-l {
+    font-family: var(--f);
+    font-size: .72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  .sd-ln {
+    flex: 1;
+    height: 1px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes glow {
+    0%,100% { opacity: .4; }
+    50%      { opacity: .8; }
+  }
+
+  /* ── SCROLLBAR ── */
+  * { scrollbar-width: thin; scrollbar-color: rgba(200,164,90,.2) transparent; }
+
+  /* ── SELECTION ── */
+  ::selection { background: rgba(200,164,90,.22); color: var(--t0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .th-in { flex-wrap: wrap; min-height: auto; padding: .6rem clamp(.8rem,3vw,1.2rem); gap: .5rem; }
+    .sf { order: 3; width: 100%; padding-bottom: .5rem; }
+    .sf-s { max-width: 100%; flex: 1; }
+    .sf-cats { display: none; }
+    .wg2 { grid-template-columns: 1fr; }
+    .bg2 { grid-template-columns: repeat(2, 1fr); }
+    .bf-in { flex-direction: column; }
+    .bf-cv { width: clamp(100px,40vw,150px); }
+    .bm2-in { flex-direction: column; }
+    .bm2-cv { width: clamp(100px,35vw,140px); }
+    .rm2-nt { max-width: 120px; }
+  }
+  @media (max-width: 480px) {
+    .bg2 { grid-template-columns: 1fr; }
+    .th-tabs { width: 100%; }
+    .th-tab { flex: 1; justify-content: center; padding: 8px 12px; font-size: .8rem; }
   }
 `;
 
-
-// ── Writing Card — Obsidian Premium v10 ──────────────────────────────────────
+// ── Writing Card v7 ───────────────────────────────────────────────────────────
 function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   writing: Writing; index: number; onClick: () => void; viewMode?: "grid"|"list";
 }) {
   const c = getCatStyle(writing.category);
-  const isListMode = viewMode === "list";
+  const isL = viewMode === "list";
   return (
     <motion.div
-      className={`wc${isListMode?" wc-list":""}`}
+      className={`wc2${isL?" wc2-l":""}`}
       style={{
-        "--ca": c.accent, "--cb": c.border, "--cg": c.glow, "--cbg": c.bg,
-        animationDelay: `${index * 0.045}s`,
+        "--ca": c.accent,
+        "--cg": c.glow,
+        "--cbg": c.bg,
+        "--cbg2": c.badge,
+        "--cbdr": c.border,
+        animationDelay: `${index * 0.04}s`,
       } as React.CSSProperties}
       onClick={onClick}
       whileTap={{ scale: .97 }}
     >
-      <div className="wc-top"/>
-      <div className="wc-lft"/>
-      <div className="wc-b">
-        <div className="wc-bgs">
-          <span className="wc-bg">
-            <span style={{fontSize:".7rem"}}>{c.icon}</span>
-            {writing.category}
-          </span>
-          {writing.featured && (
-            <span className="wc-star">
-              <Star size={9} fill="currentColor"/> বিশেষ
-            </span>
-          )}
-        </div>
-        <div className="wc-tt">{writing.title}</div>
-        {!isListMode && (
-          <div className="wc-pv">{writing.content}</div>
+      <div className="wc2-top"/>
+      <div className="wc2-glow"/>
+      <div className="wc2-body">
+        {isL ? (
+          <>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="wc2-tags">
+                <span className="wc2-cat">
+                  <span style={{ fontSize: ".72rem" }}>{c.icon}</span>{writing.category}
+                </span>
+                {writing.featured && (
+                  <span className="wc2-star"><Star size={9} fill="currentColor"/> বিশেষ</span>
+                )}
+              </div>
+              <div className="wc2-title">{writing.title}</div>
+            </div>
+            <div className="wc2-foot" style={{ border: "none", padding: 0 }}>
+              <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
+              <span className="wc2-read" style={{ color: c.accent, marginLeft: 12 }}>
+                পড়ুন <ArrowRight size={11}/>
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="wc2-tags">
+              <span className="wc2-cat">
+                <span style={{ fontSize: ".72rem" }}>{c.icon}</span>{writing.category}
+              </span>
+              {writing.featured && (
+                <span className="wc2-star"><Star size={9} fill="currentColor"/> বিশেষ</span>
+              )}
+            </div>
+            <div className="wc2-title">{writing.title}</div>
+            <div className="wc2-preview">{writing.content}</div>
+            <div className="wc2-foot">
+              <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
+              <span className="wc2-read" style={{ color: c.accent }}>
+                পড়ুন <ArrowRight size={11}/>
+              </span>
+            </div>
+          </>
         )}
-        <div className="wc-ft">
-          <span className="wc-dt">
-            <Calendar size={10}/>{writing.date}
-          </span>
-          <span className="wc-rd" style={{color: c.accent}}>
-            পড়ুন <ArrowRight size={11}/>
-          </span>
-        </div>
       </div>
     </motion.div>
   );
 }
 
-// ── Writing Modal — Immersive Reader v7 ──────────────────────────────────────
+// ── Writing Modal v7 ──────────────────────────────────────────────────────────
 function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   writing: Writing;
   allWritings: Writing[];
@@ -10557,7 +10974,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   onNavigate: (w: Writing) => void;
 }) {
   const c = getCatStyle(writing.category);
-  const [fontSize, setFontSize] = useState(1.05);
+  const [fontSize, setFontSize] = useState(1.0);
   const [theme, setTheme] = useState<"dark"|"sepia"|"light">("dark");
   const [progress, setProgress] = useState(0);
   const [showShare, setShowShare] = useState(false);
@@ -10569,163 +10986,131 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const prev = idx > 0 ? allWritings[idx - 1] : null;
   const next = idx < allWritings.length - 1 ? allWritings[idx + 1] : null;
 
-  const themes = {
-    dark:  { bg: "#070B10", txt: "#E8E4DC", sub: "rgba(232,228,220,.52)", bdr: "rgba(255,255,255,.06)", hnd: "rgba(255,255,255,.1)", prog: c.accent, cat: c.bg, catTxt: c.accent, catBdr: c.border, nav: "rgba(255,255,255,.04)", navBdr: "rgba(255,255,255,.06)", btn: "rgba(255,255,255,.04)", btnBdr: "rgba(255,255,255,.07)", sig: "rgba(232,228,220,.22)" },
-    sepia: { bg: "#1A1408", txt: "#D4C8A8", sub: "rgba(212,200,168,.52)", bdr: "rgba(212,200,168,.1)", hnd: "rgba(212,200,168,.2)", prog: "#C8A45A", cat: "rgba(200,164,90,.1)", catTxt: "#C8A45A", catBdr: "rgba(200,164,90,.22)", nav: "rgba(212,200,168,.04)", navBdr: "rgba(212,200,168,.08)", btn: "rgba(212,200,168,.06)", btnBdr: "rgba(212,200,168,.12)", sig: "rgba(212,200,168,.25)" },
-    light: { bg: "#F7F5F0", txt: "#1A1612", sub: "rgba(26,22,18,.5)", bdr: "rgba(26,22,18,.1)", hnd: "rgba(26,22,18,.15)", prog: c.accent, cat: "rgba(26,22,18,.06)", catTxt: "#3A3530", catBdr: "rgba(26,22,18,.14)", nav: "rgba(26,22,18,.04)", navBdr: "rgba(26,22,18,.08)", btn: "rgba(26,22,18,.06)", btnBdr: "rgba(26,22,18,.1)", sig: "rgba(26,22,18,.28)" },
-  };
-  const T = themes[theme];
+  const T = {
+    dark:  { bg: "#06080E", txt: "#EEEAE2", sub: "rgba(238,234,226,.48)", bdr: "rgba(255,255,255,.06)", hnd: "rgba(255,255,255,.1)", prog: c.accent },
+    sepia: { bg: "#120E06", txt: "#D4C8A0", sub: "rgba(212,200,160,.48)", bdr: "rgba(212,200,160,.1)", hnd: "rgba(212,200,160,.2)", prog: "#C8A45A" },
+    light: { bg: "#F6F3EE", txt: "#1A1612", sub: "rgba(26,22,18,.45)", bdr: "rgba(26,22,18,.1)", hnd: "rgba(26,22,18,.15)", prog: c.accent },
+  }[theme];
 
   useEffect(() => {
     const el = bodyRef.current;
     if (!el) return;
-    const onScroll = () => {
+    const fn = () => {
       const p = el.scrollTop / (el.scrollHeight - el.clientHeight);
       setProgress(isNaN(p) ? 0 : Math.min(1, p) * 100);
     };
-    el.addEventListener("scroll", onScroll);
-    return () => el.removeEventListener("scroll", onScroll);
+    el.addEventListener("scroll", fn);
+    return () => el.removeEventListener("scroll", fn);
   }, [writing]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const fn = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowLeft" && prev) onNavigate(prev);
       if (e.key === "ArrowRight" && next) onNavigate(next);
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
   }, [prev, next, onClose, onNavigate]);
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    const fn = (e: MouseEvent) => {
       if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShowShare(false);
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
   }, []);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: writing.title, url: window.location.href });
-    } else {
-      setShowShare(s => !s);
-    }
-  };
 
   return (
     <motion.div
-      className="rm"
+      className="rm2"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: .28 }}
+      transition={{ duration: .25 }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <motion.div
-        className="rm-box"
+        className="rm2-box"
         style={{ background: T.bg }}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 30, stiffness: 280 }}
+        transition={{ type: "spring", damping: 32, stiffness: 290 }}
       >
-        {/* Handle */}
-        <div className="rm-hnd" style={{ background: T.hnd }}/>
-        {/* Progress bar */}
-        <div className="rm-prog" style={{ background: "rgba(255,255,255,.04)" }}>
-          <div className="rm-pf" style={{ width: `${progress}%`, background: T.prog }}/>
+        <div className="rm2-hnd" style={{ background: T.hnd }}/>
+        <div className="rm2-prog" style={{ background: "rgba(255,255,255,.04)" }}>
+          <div className="rm2-pf" style={{ width: `${progress}%`, background: T.prog }}/>
         </div>
-        {/* Header */}
-        <div className="rm-hd" style={{ borderColor: T.bdr }}>
-          <div className="rm-hdl">
-            <span className="rm-cat" style={{ background: T.cat, color: T.catTxt, borderColor: T.catBdr, border: "1px solid" }}>
+        <div className="rm2-hd" style={{ borderColor: T.bdr }}>
+          <div className="rm2-hdl">
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "3px 10px", borderRadius: 999,
+              background: c.bg, color: c.accent, border: `1px solid ${c.border}`,
+              fontFamily: "var(--f)", fontSize: ".68rem",
+            }}>
               <span style={{ fontSize: ".72rem" }}>{c.icon}</span>{writing.category}
             </span>
           </div>
-          <div className="rm-ctrl">
-            {/* Font size */}
-            <div className="rm-fc" style={{ borderColor: T.btnBdr }}>
-              <button className="rm-fb" style={{ color: T.sub }} onClick={() => setFontSize(f => Math.max(.85, f - .1))} title="ছোট">
+          <div className="rm2-ctrl">
+            <div className="rm2-fc" style={{ borderColor: T.bdr }}>
+              <button className="rm2-fb" style={{ color: T.sub }} onClick={() => setFontSize(f => Math.max(.82, f - .1))}>
                 <AArrowDown size={13}/>
               </button>
-              <button className="rm-fb" style={{ color: T.sub, borderLeft: `1px solid ${T.btnBdr}` }} onClick={() => setFontSize(f => Math.min(1.45, f + .1))} title="বড়">
+              <button className="rm2-fb" style={{ color: T.sub, borderLeft: `1px solid ${T.bdr}` }} onClick={() => setFontSize(f => Math.min(1.4, f + .1))}>
                 <AArrowUp size={13}/>
               </button>
             </div>
-            {/* Theme */}
-            <button
-              className="rm-th"
-              style={{ color: T.sub, borderColor: T.btnBdr }}
-              onClick={() => setTheme(t => t === "dark" ? "sepia" : t === "sepia" ? "light" : "dark")}
-              title="থিম পরিবর্তন"
-            >
+            <button className="rm2-th" style={{ color: T.sub, borderColor: T.bdr }}
+              onClick={() => setTheme(t => t === "dark" ? "sepia" : t === "sepia" ? "light" : "dark")}>
               {theme === "dark" ? <Moon size={12}/> : theme === "sepia" ? <Scroll size={12}/> : <Sun size={12}/>}
               <span style={{ fontSize: ".67rem" }}>{theme === "dark" ? "ডার্ক" : theme === "sepia" ? "সেপিয়া" : "লাইট"}</span>
             </button>
-            {/* Share */}
             <div style={{ position: "relative" }} ref={shareRef}>
-              <button className="rm-btn" style={{ color: T.sub, borderColor: T.btnBdr, background: T.btn }} onClick={handleShare} title="শেয়ার">
+              <button className="rm2-btn" style={{ color: T.sub, borderColor: T.bdr }} onClick={() => setShowShare(s => !s)}>
                 <Share2 size={13}/>
               </button>
               {showShare && (
-                <div className="rm-sdd">
-                  <button className="rm-si" style={{ color: "#E8E4DC" }} onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank"); setShowShare(false); }}>
-                    <Facebook size={14} color="#1877F2"/> Facebook-এ শেয়ার
+                <div className="rm2-sdd">
+                  <button className="rm2-si" style={{ color: "#EEEAE2" }}
+                    onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank"); setShowShare(false); }}>
+                    <Facebook size={14} color="#1877F2"/> Facebook
                   </button>
-                  <button className="rm-si" style={{ color: "#E8E4DC" }} onClick={handleCopy}>
+                  <button className="rm2-si" style={{ color: "#EEEAE2" }}
+                    onClick={() => { navigator.clipboard.writeText(window.location.href).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}>
                     {copied ? <Check size={14} color="#34D399"/> : <Copy size={14}/>}
-                    {copied ? "কপি হয়েছে!" : "লিংক কপি করুন"}
+                    {copied ? "কপি হয়েছে!" : "লিংক কপি"}
                   </button>
                 </div>
               )}
             </div>
-            {/* Close */}
-            <button className="rm-btn" style={{ color: T.sub, borderColor: T.btnBdr, background: T.btn }} onClick={onClose} title="বন্ধ করুন">
+            <button className="rm2-btn" style={{ color: T.sub, borderColor: T.bdr }} onClick={onClose}>
               <X size={14}/>
             </button>
           </div>
         </div>
-        {/* Body */}
-        <div className="rm-body" ref={bodyRef}>
-          <h1 className="rm-ttl" style={{ color: T.txt }}>{writing.title}</h1>
-          <div className="rm-txt" style={{ color: T.txt, fontSize: `${fontSize}rem` }}>
+        <div className="rm2-body" ref={bodyRef}>
+          <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>
+          <div className="rm2-txt" style={{ color: T.txt, fontSize: `${fontSize}rem` }}>
             {writing.content}
           </div>
-          <div className="rm-sig" style={{ borderColor: T.bdr, color: T.txt }}>
+          <div className="rm2-sig" style={{ borderColor: T.bdr, color: T.txt }}>
             — মাহবুব সরদার সবুজ · {writing.date}
           </div>
         </div>
-        {/* Navigation */}
-        <div className="rm-nav" style={{ borderColor: T.bdr }}>
-          <button
-            className="rm-nb"
-            style={{ color: T.txt, borderColor: T.bdr }}
-            onClick={() => prev && onNavigate(prev)}
-            disabled={!prev}
-          >
+        <div className="rm2-nav" style={{ borderColor: T.bdr }}>
+          <button className="rm2-nb" style={{ borderColor: T.bdr }} onClick={() => prev && onNavigate(prev)} disabled={!prev}>
             <ChevronLeft size={16} style={{ color: prev ? c.accent : T.sub, flexShrink: 0 }}/>
             <span>
-              <span className="rm-nl" style={{ color: T.sub }}>পূর্ববর্তী</span>
-              <span className="rm-nt">{prev?.title ?? "—"}</span>
+              <span className="rm2-nl" style={{ color: T.sub }}>পূর্ববর্তী</span>
+              <span className="rm2-nt" style={{ color: T.txt }}>{prev?.title ?? "—"}</span>
             </span>
           </button>
-          <button
-            className="rm-nb"
-            style={{ color: T.txt, borderColor: T.bdr, justifyContent: "flex-end" }}
-            onClick={() => next && onNavigate(next)}
-            disabled={!next}
-          >
+          <button className="rm2-nb" style={{ borderColor: T.bdr, justifyContent: "flex-end" }} onClick={() => next && onNavigate(next)} disabled={!next}>
             <span style={{ textAlign: "right" }}>
-              <span className="rm-nl" style={{ color: T.sub }}>পরবর্তী</span>
-              <span className="rm-nt">{next?.title ?? "—"}</span>
+              <span className="rm2-nl" style={{ color: T.sub }}>পরবর্তী</span>
+              <span className="rm2-nt" style={{ color: T.txt }}>{next?.title ?? "—"}</span>
             </span>
             <ChevronRight size={16} style={{ color: next ? c.accent : T.sub, flexShrink: 0 }}/>
           </button>
@@ -10735,61 +11120,55 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   );
 }
 
-// ── Book Modal ────────────────────────────────────────────────────────────────
+// ── Book Modal v7 ─────────────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
   useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
   }, [onClose]);
 
   return (
-    <motion.div
-      className="bm"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={e => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        className="bm-box"
-        initial={{ opacity: 0, scale: .94, y: 24 }}
+    <motion.div className="bm2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div className="bm2-box"
+        initial={{ opacity: 0, scale: .93, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: .94, y: 24 }}
-        transition={{ type: "spring", damping: 28, stiffness: 260 }}
-      >
-        <div className="bm-hd">
-          <span style={{ fontFamily: "var(--f)", fontSize: ".75rem", color: "rgba(238,234,226,.45)", display: "flex", alignItems: "center", gap: "6px" }}>
+        exit={{ opacity: 0, scale: .93, y: 20 }}
+        transition={{ type: "spring", damping: 28, stiffness: 260 }}>
+        <div className="bm2-hd">
+          <span style={{ fontFamily: "var(--f)", fontSize: ".75rem", color: "rgba(238,234,226,.4)", display: "flex", alignItems: "center", gap: 6 }}>
             <BookOpen size={13} color={book.accentColor}/> {book.subtitle}
           </span>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(238,234,226,.45)" }}>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(238,234,226,.4)" }}>
             <X size={14}/>
           </button>
         </div>
-        <div className="bm-in">
-          <div className="bm-cw">
-            <img src={book.cover} alt={book.title} className="bm-cv" onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='185' height='275' viewBox='0 0 185 275'%3E%3Crect fill='%230C1018'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
+        <div className="bm2-in">
+          <div className="bm2-cw">
+            <img src={book.cover} alt={book.title} className="bm2-cv"
+              onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='213' viewBox='0 0 160 213'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
           </div>
-          <div className="bm-cnt">
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 999, background: `${book.accentColor}14`, border: `1px solid ${book.accentColor}28`, marginBottom: "1rem" }}>
+          <div className="bm2-cnt">
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 999, background: `${book.accentColor}12`, border: `1px solid ${book.accentColor}25`, marginBottom: ".9rem" }}>
               <span style={{ fontFamily: "var(--f)", fontSize: ".62rem", color: book.accentColor, letterSpacing: ".08em", textTransform: "uppercase" }}>{book.badge}</span>
             </div>
-            <h2 style={{ fontFamily: "var(--f)", fontSize: "1.3rem", color: "var(--t0)", lineHeight: 1.45, marginBottom: ".7rem", fontWeight: 400 }}>{book.title}</h2>
-            <p style={{ fontFamily: "var(--f)", fontSize: ".8rem", color: "var(--t2)", lineHeight: 1.9, marginBottom: "1.1rem" }}>{book.description}</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: "1.3rem" }}>
-              {[{ label: book.genre }, { label: `${book.pages} পৃষ্ঠা` }, { label: book.year }].map((t, i) => (
-                <span key={i} style={{ padding: "3px 10px", borderRadius: 999, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", fontFamily: "var(--f)", fontSize: ".67rem", color: "var(--t3)" }}>{t.label}</span>
+            <h2 style={{ fontFamily: "var(--f)", fontSize: "1.2rem", color: "#EEEAE2", lineHeight: 1.45, marginBottom: ".6rem", fontWeight: 500 }}>{book.title}</h2>
+            <p style={{ fontFamily: "var(--f)", fontSize: ".82rem", color: "rgba(238,234,226,.5)", lineHeight: 1.9, marginBottom: "1rem" }}>{book.description}</p>
+            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: "1.2rem" }}>
+              {[book.genre, `${book.pages} পৃষ্ঠা`, book.year].map((t, i) => (
+                <span key={i} style={{ padding: "3px 10px", borderRadius: 999, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", fontFamily: "var(--f)", fontSize: ".67rem", color: "rgba(238,234,226,.35)" }}>{t}</span>
               ))}
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {book.buyLink && (
-                <a href={book.buyLink} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 999, background: `linear-gradient(135deg,${book.accentColor},${book.accentColor}CC)`, color: "#08090F", fontFamily: "var(--f)", fontSize: ".85rem", textDecoration: "none", transition: "all .28s", boxShadow: `0 6px 22px ${book.accentColor}30` }}>
-                  <ShoppingCart size={14}/> কিনুন
+                <a href={book.buyLink} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, background: `linear-gradient(135deg,${book.accentColor},${book.accentColor}CC)`, color: "#08090F", fontFamily: "var(--f)", fontSize: ".82rem", textDecoration: "none", transition: "all .25s", boxShadow: `0 6px 20px ${book.accentColor}28` }}>
+                  <ShoppingCart size={13}/> কিনুন
                 </a>
               )}
               {book.canRead && (
-                <a href={`/ebooks/${book.slug}`} style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 999, background: "transparent", color: book.accentColor, fontFamily: "var(--f)", fontSize: ".85rem", textDecoration: "none", border: `1.5px solid ${book.accentColor}40`, transition: "all .28s" }}>
-                  <BookOpen size={14}/> পড়ুন
+                <a href={`/ebooks/${book.slug}`} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, background: "transparent", color: book.accentColor, fontFamily: "var(--f)", fontSize: ".82rem", textDecoration: "none", border: `1.5px solid ${book.accentColor}35`, transition: "all .25s" }}>
+                  <BookOpen size={13}/> পড়ুন
                 </a>
               )}
             </div>
@@ -10800,142 +11179,138 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   );
 }
 
-// ── E-Books Section ───────────────────────────────────────────────────────────
-function EBooksSection() {
+// ── Books Tab ─────────────────────────────────────────────────────────────────
+function BooksTab() {
   const [selBook, setSelBook] = useState<typeof ebooks[0] | null>(null);
   const featured = ebooks.find(b => b.isFeatured);
   const others = ebooks.filter(b => !b.isFeatured);
 
   return (
-    <>
-      {/* Section header */}
-      <div className="ed">
-        <div className="ed-i" style={{ background: "rgba(99,179,237,.08)", border: "1px solid rgba(99,179,237,.14)" }}>
-          <Library size={16} color="#63B3ED"/>
-        </div>
-        <span className="ed-l" style={{ color: "rgba(99,179,237,.65)" }}>সাহিত্য সংগ্রহ</span>
-        <div className="ed-ln" style={{ background: "linear-gradient(90deg,rgba(99,179,237,.18),transparent)" }}/>
-      </div>
-
-      {/* Featured book */}
+    <div className="bs">
+      {/* Featured */}
       {featured && (
-        <motion.div
-          className="ef"
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: .5 }}
-        >
-          <div className="ef-bg"/>
-          <div className="ef-in">
-            <div className="ef-cw">
-              <img
-                src={featured.cover} alt={featured.title} className="ef-cv"
-                onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='230' height='290' viewBox='0 0 230 290'%3E%3Crect fill='%230C1018'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='16' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}
-              />
-              <div className="ef-co"/>
+        <>
+          <div className="sd">
+            <div className="sd-i" style={{ background: "rgba(200,164,90,.08)", border: "1px solid rgba(200,164,90,.14)" }}>
+              <Crown size={15} color="#C8A45A"/>
             </div>
-            <div className="ef-cnt">
-              <div className="ef-badge" style={{ background: `${featured.accentColor}14`, border: `1px solid ${featured.accentColor}28`, color: featured.accentColor }}>
-                <Crown size={11}/> {featured.badge}
-              </div>
-              <div className="ef-auth">
-                <Pen size={11}/> মাহবুব সরদার সবুজ
-              </div>
-              <h2 className="ef-ttl">{featured.title}</h2>
-              <p className="ef-desc">{featured.description}</p>
-              <div className="ef-tags">
-                {[featured.genre, `${featured.pages} পৃষ্ঠা`, featured.year].map((t, i) => (
-                  <span key={i} className="ef-tag" style={{ background: "rgba(255,255,255,.03)", color: "rgba(238,234,226,.4)", borderColor: "rgba(255,255,255,.07)" }}>{t}</span>
-                ))}
-              </div>
-              <div className="ef-btns">
-                {featured.buyLink && (
-                  <a href={featured.buyLink} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                    <button className="ef-bp"><ShoppingCart size={15}/> এখনই কিনুন</button>
-                  </a>
-                )}
-                {featured.canRead && (
-                  <a href={`/ebooks/${featured.slug}`} style={{ textDecoration: "none" }}>
-                    <button className="ef-bo"><BookOpen size={15}/> পড়ুন</button>
-                  </a>
-                )}
-              </div>
-            </div>
+            <span className="sd-l" style={{ color: "rgba(200,164,90,.6)" }}>বিশেষ প্রকাশনা</span>
+            <div className="sd-ln" style={{ background: "linear-gradient(90deg,rgba(200,164,90,.15),transparent)" }}/>
           </div>
-        </motion.div>
+          <motion.div
+            className="bf"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: .45 }}
+            onClick={() => setSelBook(featured)}
+          >
+            <div className="bf-bg"/>
+            <div className="bf-in">
+              <div className="bf-cw">
+                <span className="bf-badge" style={{ background: `${featured.accentColor}18`, color: featured.accentColor, border: `1px solid ${featured.accentColor}28` }}>
+                  <Crown size={10}/> {featured.badge}
+                </span>
+                <img src={featured.cover} alt={featured.title} className="bf-cv"
+                  onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='185' height='247' viewBox='0 0 185 247'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='16' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
+              </div>
+              <div className="bf-cnt">
+                <div className="bf-sub">
+                  <Pen size={11}/> মাহবুব সরদার সবুজ
+                </div>
+                <h2 className="bf-ttl">{featured.title}</h2>
+                <p className="bf-desc">{featured.description}</p>
+                <div className="bf-meta">
+                  {[featured.genre, `${featured.pages} পৃষ্ঠা`, featured.year].map((t, i) => (
+                    <span key={i} className="bf-tag">{t}</span>
+                  ))}
+                </div>
+                <div className="bf-btns">
+                  {featured.buyLink && (
+                    <a href={featured.buyLink} target="_blank" rel="noopener noreferrer"
+                      className="bf-buy"
+                      style={{ background: `linear-gradient(135deg,${featured.accentColor},${featured.accentColor}CC)`, color: "#08090F", boxShadow: `0 8px 26px ${featured.accentColor}30` }}
+                      onClick={e => e.stopPropagation()}>
+                      <ShoppingCart size={15}/> এখনই কিনুন
+                    </a>
+                  )}
+                  {featured.canRead && (
+                    <a href={`/ebooks/${featured.slug}`}
+                      className="bf-read"
+                      style={{ color: featured.accentColor, border: `1.5px solid ${featured.accentColor}35` }}
+                      onClick={e => e.stopPropagation()}>
+                      <BookOpen size={15}/> পড়ুন
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </>
       )}
 
       {/* Other books */}
       {others.length > 0 && (
         <>
-          <div className="ed" style={{ marginBottom: "clamp(1rem,2vw,1.6rem)" }}>
-            <div className="ed-i" style={{ background: "rgba(167,139,250,.07)", border: "1px solid rgba(167,139,250,.12)" }}>
-              <BookText size={15} color="#A78BFA"/>
+          <div className="sd">
+            <div className="sd-i" style={{ background: "rgba(167,139,250,.07)", border: "1px solid rgba(167,139,250,.12)" }}>
+              <Library size={15} color="#A78BFA"/>
             </div>
-            <span className="ed-l" style={{ color: "rgba(167,139,250,.6)" }}>আরও বই</span>
-            <div className="ed-ln" style={{ background: "linear-gradient(90deg,rgba(167,139,250,.15),transparent)" }}/>
+            <span className="sd-l" style={{ color: "rgba(167,139,250,.6)" }}>ই-বুক সংগ্রহ</span>
+            <div className="sd-ln" style={{ background: "linear-gradient(90deg,rgba(167,139,250,.14),transparent)" }}/>
           </div>
-          <div className="eg">
+          <div className="bg2">
             {others.map((book, i) => (
               <motion.div
                 key={book.id}
-                className="ec"
-                initial={{ opacity: 0, y: 18 }}
+                className="bc"
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * .07, duration: .4 }}
+                transition={{ delay: i * .07, duration: .38 }}
                 onClick={() => setSelBook(book)}
               >
-                <div className="ec-cw">
-                  <img
-                    src={book.cover} alt={book.title} className="ec-cv"
-                    onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='215' height='287' viewBox='0 0 215 287'%3E%3Crect fill='%230C1018'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}
-                  />
-                  <div className="ec-co"/>
-                  <div className="ec-hov">
-                    <button className="ec-hb"><Eye size={13}/> বিস্তারিত</button>
+                <div className="bc-cw">
+                  <img src={book.cover} alt={book.title} className="bc-cv"
+                    onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
+                  <div className="bc-ov"/>
+                  <div className="bc-hov">
+                    <button className="bc-hb"><Eye size={12}/> দেখুন</button>
                   </div>
-                  <span className="ec-badge" style={{ background: `${book.accentColor}18`, color: book.accentColor, border: `1px solid ${book.accentColor}28` }}>
+                  <span className="bc-badge" style={{ background: `${book.accentColor}18`, color: book.accentColor, border: `1px solid ${book.accentColor}28` }}>
                     {book.badge}
                   </span>
                 </div>
-                <div className="ec-info">
-                  <div className="ec-ttl">{book.title}</div>
-                  <div className="ec-meta"><Calendar size={10}/>{book.year} · {book.pages}</div>
-                  <div className="ec-desc">{book.description}</div>
-                  <button
-                    className="ec-rb"
-                    style={{ background: `${book.accentColor}0E`, color: book.accentColor, border: `1px solid ${book.accentColor}22` }}
-                  >
-                    <BookOpen size={13}/> পড়ুন
+                <div className="bc-info">
+                  <div className="bc-ttl">{book.title}</div>
+                  <div className="bc-meta"><Calendar size={10}/>{book.year} · {book.pages}</div>
+                  <button className="bc-rb" style={{ color: book.accentColor, borderColor: `${book.accentColor}28` }}>
+                    <BookOpen size={12}/> পড়ুন
                   </button>
                 </div>
               </motion.div>
             ))}
-            {/* Coming soon */}
             <motion.div
-              className="ec-soon"
-              initial={{ opacity: 0, y: 18 }}
+              className="bc-soon"
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: others.length * .07, duration: .4 }}
+              transition={{ delay: others.length * .07, duration: .38 }}
             >
-              <Sparkles size={22} color="rgba(99,179,237,.4)" style={{ margin: "0 auto 1rem", display: "block", animation: "glow 3s ease infinite" }}/>
-              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.4)", fontSize: ".85rem", marginBottom: ".5rem" }}>শীঘ্রই আসছে</div>
-              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.2)", fontSize: ".72rem" }}>নতুন বই প্রকাশিত হবে</div>
+              <Sparkles size={20} color="rgba(99,179,237,.35)" style={{ marginBottom: ".8rem", animation: "glow 3s ease infinite" }}/>
+              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.35)", fontSize: ".82rem", marginBottom: ".4rem" }}>শীঘ্রই আসছে</div>
+              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.18)", fontSize: ".7rem" }}>নতুন বই</div>
             </motion.div>
           </div>
         </>
       )}
 
-      {/* Book modal */}
       <AnimatePresence>
         {selBook && <BookModal book={selBook} onClose={() => setSelBook(null)}/>}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  MAIN PAGE — Obsidian Editorial v6
+//  MAIN PAGE v7 — Pure Tab Premium
 // ══════════════════════════════════════════════════════════════════════════════
 export default function Writings() {
   const [tab, setTab] = useState<"writings"|"ebooks">("writings");
@@ -10946,9 +11321,8 @@ export default function Writings() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/writings/:slug");
 
-  // Inject CSS
   useEffect(() => {
-    const id = "writings-css-v6";
+    const id = "writings-css-v7";
     if (!document.getElementById(id)) {
       const el = document.createElement("style");
       el.id = id;
@@ -10958,17 +11332,6 @@ export default function Writings() {
     return () => { document.getElementById(id)?.remove(); };
   }, []);
 
-  // Particles
-  const particles = useMemo(() => Array.from({ length: 14 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    size: `${Math.random() * 3 + 1.5}px`,
-    opacity: Math.random() * .45 + .12,
-    delay: `${Math.random() * 18}s`,
-    dur: `${Math.random() * 14 + 10}s`,
-  })), []);
-
-  // Filtered writings
   const filtered = useMemo(() => {
     let list = writings;
     if (cat !== "all") list = list.filter(w => w.category === cat);
@@ -10979,9 +11342,6 @@ export default function Writings() {
     return list;
   }, [cat, q]);
 
-  const featured = writings.find(w => w.featured);
-
-  // URL slug handling
   useEffect(() => {
     if (match && params?.slug) {
       const w = writings.find(wr => makeSlug(wr.title, wr.id) === params.slug);
@@ -11008,177 +11368,102 @@ export default function Writings() {
     <>
       <Seo
         title="লেখালেখি ও বই — মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের সকল লেখা, কবিতা, ছোট লেখা এবং প্রকাশিত বই।"
+        description="মাহবুব সরদার সবুজের সকল লেখা, কবিতা এবং প্রকাশিত বই।"
         url="https://mahbubsardarsabuj.com/writings"
       />
       <Navbar/>
       <style>{CSS}</style>
 
-      {/* ── CINEMATIC HERO ── */}
-      <section className="h">
-        <div className="h-atm"/>
-        <div className="h-grid"/>
-        <div className="h-scan"/>
-        <div className="h-vig"/>
-        <div className="h-vig2"/>
-        {particles.map(p => (
-          <div key={p.id} className="h-p" style={{
-            left: p.left, width: p.size, height: p.size,
-            opacity: p.opacity, animationDelay: p.delay, animationDuration: p.dur,
-          }}/>
-        ))}
-        <div className="h-in">
-          <div>
-            <a href="/" className="h-back"><ArrowLeft size={12}/> হোমে ফিরুন</a>
-            <div className="h-eye">
-              <div className="h-dot"/>
-              <span className="h-eye-t">Literary Universe · সাহিত্য জগৎ</span>
+      <div className="wp">
+        {/* ── STICKY TAB HEADER ── */}
+        <div className="th">
+          <div className="th-in">
+            {/* Tabs */}
+            <div className="th-tabs">
+              <button
+                className={`th-tab${tab === "writings" ? " tg" : ""}`}
+                onClick={() => setTab("writings")}
+              >
+                <Feather size={14}/>
+                লেখালেখি
+                <span className="th-cnt">{writings.length}+</span>
+              </button>
+              <button
+                className={`th-tab${tab === "ebooks" ? " tb" : ""}`}
+                onClick={() => setTab("ebooks")}
+              >
+                <BookOpen size={14}/>
+                ই-বুক ও বই
+                <span className="th-cnt">{ebooks.length}</span>
+              </button>
             </div>
-            <h1 className="h-t">
-              <span className="h-t-w">লেখালেখি</span>
-              <br/>
-              <span className="h-t-g">ও বই</span>
-              <span className="h-line"/>
-            </h1>
-            <p className="h-sub">
-              শব্দের গভীরে লুকিয়ে থাকা অনুভূতি, জীবনের নানা রঙ এবং মানবিক সত্যের সন্ধানে।
-            </p>
-            <div className="h-stats">
-              {[
-                { ico: <PenLine size={17} color="#C8A45A"/>, bg: "rgba(200,164,90,.1)", bdr: "rgba(200,164,90,.18)", val: `${writings.length}+`, lbl: "লেখা" },
-                { ico: <BookCopy size={17} color="#63B3ED"/>, bg: "rgba(99,179,237,.1)", bdr: "rgba(99,179,237,.18)", val: `${ebooks.length}`, lbl: "বই" },
-                { ico: <Flame size={17} color="#FBBF24"/>, bg: "rgba(251,191,36,.1)", bdr: "rgba(251,191,36,.18)", val: "৫", lbl: "ক্যাটাগরি" },
-              ].map((s, i) => (
-                <motion.div key={i} className="h-stat" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .3 + i * .08 }}>
-                  <div className="h-stat-i" style={{ background: s.bg, border: `1px solid ${s.bdr}` }}>{s.ico}</div>
-                  <div>
-                    <div className="h-stat-v">{s.val}</div>
-                    <div className="h-stat-l">{s.lbl}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          {/* Orb */}
-          <div className="h-orb">
-            <div className="h-r1"/>
-            <div className="h-r2"/>
-            <div className="h-r3"/>
-            <div className="h-core">
-              <div className="h-core-i">
-                <Feather size={46} color="rgba(200,164,90,.65)" strokeWidth={1.2}/>
+
+            {/* Search & Filter — only for writings tab */}
+            {tab === "writings" && (
+              <div className="sf">
+                <div className="sf-s">
+                  <Search size={12} color="rgba(238,234,226,.28)"/>
+                  <input
+                    type="text"
+                    placeholder="লেখা খুঁজুন…"
+                    value={q}
+                    onChange={e => setQ(e.target.value)}
+                  />
+                  {q && (
+                    <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.3)", display: "flex" }}>
+                      <X size={11}/>
+                    </button>
+                  )}
+                </div>
+                <div className="sf-cats">
+                  {CATS.map(c2 => (
+                    <motion.button
+                      key={c2.id}
+                      className="sf-cat"
+                      style={cat === c2.id ? { background: `${c2.color}0E`, color: c2.color, borderColor: `${c2.color}25`, boxShadow: `0 0 10px ${c2.glow}` } : {}}
+                      onClick={() => setCat(c2.id)}
+                      whileTap={{ scale: .93 }}
+                    >
+                      <span style={{ fontSize: ".75rem" }}>{c2.icon}</span>{c2.label}
+                    </motion.button>
+                  ))}
+                </div>
+                <div className="sf-vw">
+                  <button className={`sf-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড"><Grid3X3 size={12}/></button>
+                  <button className={`sf-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট"><List size={12}/></button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
-      </section>
 
-      {/* ── STICKY NAV ── */}
-      <nav className="nav">
-        <div className="nav-in">
-          <div className="nav-tabs">
-            <button className={`nav-tab${tab === "writings" ? " on-g" : ""}`} onClick={() => setTab("writings")}>
-              <div className="nav-ti"><Feather size={14}/></div>
-              লেখালেখি
-              <span className="nav-pill">{writings.length}+</span>
-            </button>
-            <button className={`nav-tab${tab === "ebooks" ? " on-b" : ""}`} onClick={() => setTab("ebooks")}>
-              <div className="nav-ti"><BookOpen size={14}/></div>
-              বই ও ই-বুক
-              <span className="nav-pill">{ebooks.length}</span>
-            </button>
-          </div>
-          {tab === "writings" && (
-            <div className="nav-ctrl">
-              <div className="nav-srch">
-                <Search size={12} color="rgba(238,234,226,.28)"/>
-                <input
-                  type="text" placeholder="লেখা খুঁজুন…"
-                  value={q} onChange={e => setQ(e.target.value)}
-                />
-                {q && (
-                  <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.35)", display: "flex", alignItems: "center" }}>
-                    <X size={11}/>
-                  </button>
-                )}
-              </div>
-              <div className="nav-cats">
-                {CATS.map(c => (
-                  <motion.button
-                    key={c.id}
-                    className="nav-cat"
-                    style={cat === c.id ? { background: `${c.color}10`, color: c.color, borderColor: `${c.color}28`, boxShadow: `0 0 12px ${c.glow}` } : {}}
-                    onClick={() => setCat(c.id)}
-                    whileTap={{ scale: .94 }}
-                  >
-                    <span style={{ fontSize: ".75rem" }}>{c.icon}</span>{c.label}
-                  </motion.button>
-                ))}
-              </div>
-              <div className="nav-vw">
-                <button className={`nav-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড"><Grid3X3 size={12}/></button>
-                <button className={`nav-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট"><List size={12}/></button>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
-
-      {/* ── MAIN CONTENT ── */}
-      <main style={{ background: "var(--bg1)", minHeight: "60vh" }}>
-        <div className="ctn">
+        {/* ── CONTENT ── */}
+        <div className="mc">
           <AnimatePresence mode="wait">
             {tab === "writings" ? (
-              <motion.div key="writings" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: .3 }}>
-                {/* Featured banner */}
-                {featured && cat === "all" && !q && (
-                  <motion.div
-                    className="fb"
-                    initial={{ opacity: 0, y: 22 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: .5 }}
-                    onClick={() => handleCardClick(featured)}
-                  >
-                    <div className="fb-bg"/>
-                    <div className="fb-grid"/>
-                    <div className="fb-qm">"</div>
-                    <div className="fb-in">
-                      <div>
-                        <div className="fb-badge">
-                          <Star size={10} fill="currentColor"/> বিশেষ নির্বাচিত
-                        </div>
-                        <h2 className="fb-title">{featured.title}</h2>
-                        <p className="fb-excerpt">{featured.content}</p>
-                        <button className="fb-cta">
-                          পড়তে শুরু করুন <ArrowRight size={13}/>
-                        </button>
-                      </div>
-                      <div className="fb-side">
-                        <div className="fb-side-i">
-                          <Feather size={24} color="rgba(200,164,90,.6)" strokeWidth={1.4}/>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
+              <motion.div
+                key="writings"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: .28 }}
+              >
                 {/* Results bar */}
-                <div className="rb">
-                  <div className="rb-t">
-                    <span className="rb-n">{filtered.length}</span> টি লেখা
+                <div className="rb2">
+                  <div className="rb2-t">
+                    <span className="rb2-n">{filtered.length}</span> টি লেখা
                     {cat !== "all" && <span>· {CATS.find(c2 => c2.id === cat)?.label}</span>}
                     {q && <span>· "{q}"</span>}
                   </div>
                   {(cat !== "all" || q) && (
-                    <button className="rb-clr" onClick={() => { setCat("all"); setQ(""); }}>
-                      <X size={10}/> ফিল্টার সরান
+                    <button className="rb2-clr" onClick={() => { setCat("all"); setQ(""); }}>
+                      <X size={10}/> সরান
                     </button>
                   )}
                 </div>
 
-                {/* Grid / List */}
                 {filtered.length > 0 ? (
-                  <div className={viewMode === "grid" ? "wg" : "wg-l"}>
+                  <div className={viewMode === "grid" ? "wg2" : "wg2-l"}>
                     {filtered.map((w, i) => (
                       <WritingCard
                         key={w.id}
@@ -11190,25 +11475,29 @@ export default function Writings() {
                     ))}
                   </div>
                 ) : (
-                  <div className="wc-em">
-                    <Search size={28} color="rgba(238,234,226,.15)" style={{ margin: "0 auto 1rem", display: "block" }}/>
-                    <div style={{ fontSize: "1rem", marginBottom: ".5rem" }}>কোনো লেখা পাওয়া যায়নি</div>
-                    <div style={{ fontSize: ".8rem", color: "rgba(238,234,226,.2)" }}>অন্য কিছু খুঁজে দেখুন</div>
+                  <div className="wc2-em">
+                    <Search size={26} color="rgba(238,234,226,.12)" style={{ margin: "0 auto .8rem", display: "block" }}/>
+                    <div style={{ fontSize: ".95rem", color: "rgba(238,234,226,.3)", fontFamily: "var(--f)" }}>কোনো লেখা পাওয়া যায়নি</div>
                   </div>
                 )}
               </motion.div>
             ) : (
-              <motion.div key="ebooks" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: .3 }}>
-                <EBooksSection/>
+              <motion.div
+                key="ebooks"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: .28 }}
+              >
+                <BooksTab/>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-      </main>
+      </div>
 
       <Footer/>
 
-      {/* Reading Modal */}
       <AnimatePresence>
         {sel && (
           <WritingModal
