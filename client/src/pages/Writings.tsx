@@ -9888,6 +9888,7 @@ ___`,
 ];
 
 // ── E-Books Data ─────────────────────────────────────────────────────────────
+
 const ebooks = [
   {
     id: 1,
@@ -9963,16 +9964,875 @@ const ebooks = [
   },
 ];
 
-// ── Category color helper ─────────────────────────────────────────────────────────────────────────────
+// ── Category color helper ──────────────────────────────────────────────────────
 function getCategoryColor(cat: string) {
-  if (cat === "ভালোবাসা") return { stripe: "#e74c3c", badge: "rgba(231,76,60,0.12)", text: "#c0392b" };
-  if (cat === "বিচ্ছেদ") return { stripe: "#8e44ad", badge: "rgba(142,68,173,0.12)", text: "#7d3c98" };
-  if (cat === "কবিতা") return { stripe: "#2980b9", badge: "rgba(41,128,185,0.12)", text: "#1a6fa0" };
-  if (cat === "ছোট লেখা") return { stripe: "#27ae60", badge: "rgba(39,174,96,0.12)", text: "#1e8449" };
-  return { stripe: "#D4A843", badge: "rgba(212,168,67,0.12)", text: "#b8860b" };
+  if (cat === "ভালোবাসা") return { stripe: "#e74c3c", badge: "rgba(231,76,60,0.12)", text: "#e74c3c", glow: "rgba(231,76,60,0.25)" };
+  if (cat === "বিচ্ছেদ") return { stripe: "#9b59b6", badge: "rgba(155,89,182,0.12)", text: "#9b59b6", glow: "rgba(155,89,182,0.25)" };
+  if (cat === "কবিতা") return { stripe: "#3498db", badge: "rgba(52,152,219,0.12)", text: "#3498db", glow: "rgba(52,152,219,0.25)" };
+  if (cat === "ছোট লেখা") return { stripe: "#2ecc71", badge: "rgba(46,204,113,0.12)", text: "#2ecc71", glow: "rgba(46,204,113,0.25)" };
+  return { stripe: "#D4A843", badge: "rgba(212,168,67,0.12)", text: "#D4A843", glow: "rgba(212,168,67,0.25)" };
 }
 
-// ── Writing Card ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+//  PREMIUM RESPONSIVE CSS
+// ══════════════════════════════════════════════════════════════════════════════
+const PREMIUM_CSS = `
+  /* ── Google Fonts ── */
+  @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&display=swap');
+
+  /* ── Keyframes ── */
+  @keyframes inkDrop {
+    0%   { transform: translateY(-20px) scale(0.8); opacity: 0; }
+    60%  { opacity: 1; }
+    100% { transform: translateY(100vh) scale(1.1); opacity: 0; }
+  }
+  @keyframes floatUp {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%       { transform: translateY(-12px) rotate(2deg); }
+    66%       { transform: translateY(-6px) rotate(-1deg); }
+  }
+  @keyframes shimmerGold {
+    0%   { background-position: -300% center; }
+    100% { background-position: 300% center; }
+  }
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(212,168,67,0.5); }
+    70%  { box-shadow: 0 0 0 14px rgba(212,168,67,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes borderGlow {
+    0%, 100% { border-color: rgba(212,168,67,0.15); }
+    50%       { border-color: rgba(212,168,67,0.45); }
+  }
+  @keyframes bookFloat {
+    0%, 100% { transform: translateY(0) rotateY(0deg); }
+    50%       { transform: translateY(-8px) rotateY(3deg); }
+  }
+
+  /* ── Base ── */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  /* ── Hero ── */
+  .pw-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #060E1A 0%, #0A1628 45%, #0D1B2A 100%);
+    padding: clamp(5rem, 10vw, 8rem) clamp(1.25rem, 6vw, 4rem) clamp(2rem, 4vw, 3rem);
+  }
+  .pw-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 15% 30%, rgba(212,168,67,0.10) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 40% at 85% 70%, rgba(41,128,185,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 50% 90%, rgba(155,89,182,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .pw-hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(212,168,67,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,168,67,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .pw-ink-particle {
+    position: absolute;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: rgba(212,168,67,0.4);
+    animation: inkDrop linear infinite;
+    pointer-events: none;
+  }
+  .pw-hero-label {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 18px; border-radius: 999px;
+    background: rgba(212,168,67,0.08);
+    border: 1px solid rgba(212,168,67,0.2);
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.6s ease both;
+  }
+  .pw-hero-label span {
+    color: #D4A843;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .pw-hero-title {
+    font-family: 'Tiro Bangla', serif;
+    font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+    color: #FDF6EC; font-weight: 400;
+    line-height: 1.2; margin: 0 0 1.25rem;
+    animation: fadeInUp 0.7s 0.1s ease both;
+    position: relative;
+  }
+  .pw-hero-title::after {
+    content: '';
+    position: absolute; bottom: -8px; left: 0;
+    width: clamp(60px, 10vw, 100px); height: 2px;
+    background: linear-gradient(90deg, #D4A843, transparent);
+  }
+  .pw-hero-desc {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    color: rgba(253,246,236,0.55);
+    font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+    line-height: 1.9; max-width: 500px;
+    margin: 1.5rem 0 2rem;
+    animation: fadeInUp 0.7s 0.2s ease both;
+  }
+  .pw-stats-row {
+    display: flex; gap: clamp(16px, 4vw, 40px);
+    flex-wrap: wrap; row-gap: 14px;
+    animation: fadeInUp 0.7s 0.3s ease both;
+  }
+  .pw-stat-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px; border-radius: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+  }
+  .pw-stat-card:hover {
+    background: rgba(212,168,67,0.06);
+    border-color: rgba(212,168,67,0.2);
+    transform: translateY(-2px);
+  }
+  .pw-stat-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pw-stat-value {
+    font-family: 'Tiro Bangla', serif;
+    color: #FDF6EC; font-size: 1.25rem; font-weight: 700;
+    line-height: 1.2;
+  }
+  .pw-stat-label {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    color: rgba(253,246,236,0.4); font-size: 0.7rem;
+  }
+
+  /* ── Sticky Tab Bar ── */
+  .pw-tab-bar-wrap {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(6,14,26,0.92);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border-bottom: 1px solid rgba(212,168,67,0.1);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  }
+  .pw-tab-bar-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 0 clamp(1rem, 4vw, 2.5rem);
+  }
+  .pw-tabs-row {
+    display: flex; gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .pw-tabs-row::-webkit-scrollbar { display: none; }
+  .pw-tab-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 24px;
+    background: transparent; border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer; white-space: nowrap;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.92rem; font-weight: 600;
+    color: rgba(253,246,236,0.35);
+    transition: all 0.3s ease;
+    position: relative; flex-shrink: 0;
+    margin-bottom: -1px;
+  }
+  .pw-tab-btn:hover {
+    color: rgba(253,246,236,0.7);
+    background: rgba(255,255,255,0.03);
+  }
+  .pw-tab-btn.active {
+    color: #D4A843;
+    border-bottom-color: #D4A843;
+    background: rgba(212,168,67,0.04);
+  }
+  .pw-tab-btn.active-blue {
+    color: #4A90D9;
+    border-bottom-color: #4A90D9;
+    background: rgba(74,144,217,0.04);
+  }
+  .pw-tab-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .pw-tab-btn.active .pw-tab-icon {
+    background: rgba(212,168,67,0.12);
+  }
+  .pw-tab-btn.active-blue .pw-tab-icon {
+    background: rgba(74,144,217,0.12);
+  }
+  .pw-tab-pill {
+    font-size: 0.68rem; padding: 2px 9px; border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(253,246,236,0.3);
+    font-weight: 700; transition: all 0.3s;
+  }
+  .pw-tab-btn.active .pw-tab-pill {
+    background: rgba(212,168,67,0.15);
+    color: #D4A843;
+  }
+  .pw-tab-btn.active-blue .pw-tab-pill {
+    background: rgba(74,144,217,0.15);
+    color: #4A90D9;
+  }
+  .pw-controls-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 0; flex-wrap: wrap;
+  }
+  .pw-search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,168,67,0.12);
+    border-radius: 10px; padding: 9px 14px;
+    min-width: 180px; max-width: 260px; flex: 0 0 auto;
+    transition: all 0.25s;
+  }
+  .pw-search-box:focus-within {
+    border-color: rgba(212,168,67,0.4);
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.08);
+    background: rgba(212,168,67,0.04);
+  }
+  .pw-search-input {
+    border: none; background: transparent; outline: none;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.85rem; color: #FDF6EC; width: 100%;
+  }
+  .pw-search-input::placeholder { color: rgba(253,246,236,0.3); }
+  .pw-cat-scroll {
+    display: flex; gap: 6px; flex: 1;
+    overflow-x: auto; scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .pw-cat-scroll::-webkit-scrollbar { display: none; }
+  .pw-cat-btn {
+    padding: 7px 16px; border-radius: 999px;
+    cursor: pointer;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.82rem; white-space: nowrap;
+    transition: all 0.25s;
+    background: rgba(255,255,255,0.04);
+    color: rgba(253,246,236,0.4);
+    border: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+  .pw-cat-btn:hover {
+    background: rgba(212,168,67,0.08);
+    color: rgba(212,168,67,0.8);
+    border-color: rgba(212,168,67,0.2);
+  }
+  .pw-cat-btn.active {
+    background: rgba(212,168,67,0.15);
+    color: #D4A843; font-weight: 700;
+    border-color: rgba(212,168,67,0.3);
+  }
+
+  /* ── Writing Card (Premium Magazine Style) ── */
+  .pw-card {
+    background: rgba(13,27,42,0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; overflow: hidden;
+    cursor: pointer; display: flex; flex-direction: column;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    animation: fadeInUp 0.5s ease both;
+  }
+  .pw-card::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(212,168,67,0.04) 0%, transparent 60%);
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .pw-card:hover {
+    transform: translateY(-8px) scale(1.01);
+    border-color: rgba(212,168,67,0.25);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,67,0.1);
+  }
+  .pw-card:hover::before { opacity: 1; }
+  .pw-card-stripe {
+    height: 3px; border-radius: 16px 16px 0 0;
+    flex-shrink: 0;
+  }
+  .pw-card-body {
+    padding: 20px 22px 22px;
+    flex: 1; display: flex; flex-direction: column;
+    position: relative;
+  }
+  .pw-card-quote-mark {
+    position: absolute; top: 12px; right: 16px;
+    font-size: 4rem; line-height: 1;
+    font-family: Georgia, serif;
+    color: rgba(212,168,67,0.06);
+    pointer-events: none; user-select: none;
+    font-style: italic;
+  }
+  .pw-card-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 12px; border-radius: 999px;
+    font-size: 0.67rem;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-weight: 700; letter-spacing: 0.04em;
+    margin-bottom: 12px;
+  }
+  .pw-card-featured-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: 6px; padding: 3px 10px; border-radius: 999px;
+    font-size: 0.63rem;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    background: rgba(212,168,67,0.12);
+    color: #C9A84C; font-weight: 700;
+    border: 1px solid rgba(212,168,67,0.2);
+  }
+  .pw-card-title {
+    font-family: 'Tiro Bangla', serif;
+    font-size: 1.05rem; color: #FDF6EC;
+    font-weight: 700; line-height: 1.6;
+    margin-bottom: 10px;
+    transition: color 0.2s;
+  }
+  .pw-card:hover .pw-card-title { color: #f0c060; }
+  .pw-card-preview {
+    font-family: 'Tiro Bangla', serif;
+    font-size: 0.88rem;
+    color: rgba(253,246,236,0.45);
+    line-height: 1.9; flex: 1;
+    white-space: pre-line;
+  }
+  .pw-card-footer {
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pw-card-date {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.7rem; color: rgba(253,246,236,0.28);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .pw-card-read {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.78rem; font-weight: 700;
+    display: flex; align-items: center; gap: 4px;
+    transition: gap 0.2s;
+  }
+  .pw-card:hover .pw-card-read { gap: 8px; }
+
+  /* ── Featured Writing Banner ── */
+  .pw-featured-banner {
+    border-radius: 20px; overflow: hidden;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    position: relative; cursor: pointer;
+    background: linear-gradient(135deg, #0D1B2A 0%, #112236 50%, #0A1628 100%);
+    border: 1px solid rgba(212,168,67,0.15);
+    animation: borderGlow 4s ease-in-out infinite;
+    transition: all 0.35s ease;
+  }
+  .pw-featured-banner:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,67,0.3);
+  }
+  .pw-featured-banner-inner {
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    position: relative; z-index: 1;
+  }
+  .pw-featured-banner::after {
+    content: '"';
+    position: absolute; bottom: -20px; right: 24px;
+    font-size: 12rem; line-height: 1;
+    font-family: Georgia, serif; font-style: italic;
+    color: rgba(212,168,67,0.05);
+    pointer-events: none; user-select: none;
+  }
+  .pw-featured-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 14px; border-radius: 999px;
+    background: rgba(212,168,67,0.12);
+    border: 1px solid rgba(212,168,67,0.25);
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.68rem; font-weight: 700;
+    color: #D4A843; letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+  }
+  .pw-featured-title {
+    font-family: 'Tiro Bangla', serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: #FDF6EC; font-weight: 400;
+    line-height: 1.4; margin-bottom: 1rem;
+  }
+  .pw-featured-excerpt {
+    font-family: 'Tiro Bangla', serif;
+    font-size: clamp(0.9rem, 1.8vw, 1rem);
+    color: rgba(253,246,236,0.55);
+    line-height: 2; max-width: 680px;
+    white-space: pre-line;
+  }
+  .pw-featured-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 1.5rem; padding: 10px 22px;
+    border-radius: 999px;
+    background: rgba(212,168,67,0.1);
+    border: 1px solid rgba(212,168,67,0.25);
+    color: #D4A843;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; transition: all 0.25s;
+  }
+  .pw-featured-cta:hover {
+    background: rgba(212,168,67,0.2);
+    border-color: rgba(212,168,67,0.5);
+    transform: translateX(4px);
+  }
+
+  /* ── Writings Grid ── */
+  .pw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: clamp(14px, 2.5vw, 22px);
+  }
+
+  /* ── Results Bar ── */
+  .pw-results-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: clamp(1rem, 2vw, 1.5rem); flex-wrap: wrap; gap: 8px;
+  }
+  .pw-results-count {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.82rem; color: rgba(212,168,67,0.5);
+  }
+  .pw-clear-btn {
+    background: rgba(212,168,67,0.08);
+    border: 1px solid rgba(212,168,67,0.18);
+    color: #D4A843; padding: 5px 14px; border-radius: 999px;
+    font-size: 0.75rem; cursor: pointer;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    display: flex; align-items: center; gap: 5px;
+    transition: all 0.2s;
+  }
+  .pw-clear-btn:hover {
+    background: rgba(212,168,67,0.15);
+    border-color: rgba(212,168,67,0.35);
+  }
+
+  /* ── Section Divider ── */
+  .pw-section-divider {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .pw-section-divider-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pw-section-divider-label {
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    font-family: 'Noto Sans Bengali', sans-serif;
+  }
+  .pw-section-divider-line {
+    flex: 1; height: 1px;
+  }
+
+  /* ── Featured Book (Premium) ── */
+  .pw-featured-book {
+    border-radius: 24px; overflow: hidden;
+    margin-bottom: clamp(2rem, 4vw, 3.5rem);
+    position: relative;
+    background: linear-gradient(135deg, #0D1B2A 0%, #0F2035 50%, #0D1B2A 100%);
+    border: 1px solid rgba(212,168,67,0.18);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(212,168,67,0.08);
+  }
+  .pw-featured-book::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 80% 50%, rgba(212,168,67,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .pw-featured-book-inner {
+    display: flex; gap: 0; position: relative; z-index: 1;
+  }
+  .pw-featured-book-cover-wrap {
+    width: clamp(180px, 28%, 280px); flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .pw-featured-book-cover {
+    width: 100%; height: 100%; min-height: 360px;
+    object-fit: cover; display: block;
+    transition: transform 0.5s ease;
+  }
+  .pw-featured-book:hover .pw-featured-book-cover {
+    transform: scale(1.05);
+  }
+  .pw-featured-book-cover-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 70%, rgba(13,27,42,0.8) 100%);
+  }
+  .pw-featured-book-content {
+    flex: 1; padding: clamp(1.5rem, 3vw, 2.5rem);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .pw-featured-book-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 999px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.7rem; font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  .pw-featured-book-author {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 0.75rem;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.82rem; color: rgba(253,246,236,0.5);
+  }
+  .pw-featured-book-title {
+    font-family: 'Tiro Bangla', serif;
+    color: #FDF6EC; font-weight: 400;
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+    line-height: 1.35; margin-bottom: 1rem;
+  }
+  .pw-featured-book-desc {
+    color: rgba(253,246,236,0.65); font-size: 0.92rem;
+    line-height: 1.9; margin-bottom: 1.5rem;
+    font-family: 'Noto Sans Bengali', sans-serif;
+  }
+  .pw-featured-book-tags {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 1.75rem;
+  }
+  .pw-featured-book-tag {
+    font-size: 0.78rem; padding: 6px 14px; border-radius: 999px;
+    font-family: 'Noto Sans Bengali', sans-serif; font-weight: 500;
+  }
+  .pw-featured-book-btns {
+    display: flex; flex-wrap: wrap; gap: 12px;
+  }
+  .pw-btn-primary {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #D4A843, #f0c060);
+    color: #0D1B2A; padding: 13px 26px; border-radius: 999px;
+    font-weight: 800; font-size: 0.95rem; border: none;
+    cursor: pointer; font-family: 'Noto Sans Bengali', sans-serif;
+    box-shadow: 0 8px 28px rgba(212,168,67,0.35);
+    transition: all 0.3s ease;
+  }
+  .pw-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(212,168,67,0.5);
+  }
+  .pw-btn-outline {
+    display: flex; align-items: center; gap: 8px;
+    background: transparent; color: #D4A843;
+    padding: 13px 26px; border-radius: 999px;
+    font-weight: 700; font-size: 0.95rem;
+    border: 1.5px solid rgba(212,168,67,0.4);
+    cursor: pointer; font-family: 'Noto Sans Bengali', sans-serif;
+    transition: all 0.3s ease;
+  }
+  .pw-btn-outline:hover {
+    background: rgba(212,168,67,0.08);
+    border-color: #D4A843;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(212,168,67,0.2);
+  }
+
+  /* ── E-Books Grid ── */
+  .pw-ebooks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: clamp(16px, 3vw, 28px);
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  .pw-book-card {
+    border-radius: 18px; overflow: hidden;
+    background: rgba(13,27,42,0.7);
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer; position: relative;
+  }
+  .pw-book-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    border-color: rgba(212,168,67,0.3);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,168,67,0.15);
+  }
+  .pw-book-cover-wrap {
+    position: relative; overflow: hidden;
+    aspect-ratio: 3/4;
+  }
+  .pw-book-cover {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 0.5s ease;
+  }
+  .pw-book-card:hover .pw-book-cover {
+    transform: scale(1.08);
+  }
+  .pw-book-cover-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(6,14,26,0.95) 0%, rgba(6,14,26,0.3) 50%, transparent 100%);
+    transition: opacity 0.3s;
+  }
+  .pw-book-hover-overlay {
+    position: absolute; inset: 0;
+    background: rgba(6,14,26,0.75);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .pw-book-card:hover .pw-book-hover-overlay { opacity: 1; }
+  .pw-book-hover-btn {
+    padding: 10px 22px; border-radius: 999px;
+    background: rgba(212,168,67,0.15);
+    border: 1.5px solid rgba(212,168,67,0.5);
+    color: #D4A843; font-weight: 700;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.85rem; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: all 0.2s;
+    transform: translateY(8px);
+    transition: all 0.3s ease;
+  }
+  .pw-book-card:hover .pw-book-hover-btn {
+    transform: translateY(0);
+  }
+  .pw-book-hover-btn:hover {
+    background: rgba(212,168,67,0.25);
+    border-color: #D4A843;
+  }
+  .pw-book-badge {
+    position: absolute; top: 14px; left: 14px;
+    padding: 4px 12px; border-radius: 999px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.65rem; font-weight: 700;
+    backdrop-filter: blur(8px);
+  }
+  .pw-book-info {
+    padding: 16px 18px 20px;
+  }
+  .pw-book-title {
+    font-family: 'Tiro Bangla', serif;
+    color: #FDF6EC; font-size: 1.05rem;
+    font-weight: 700; line-height: 1.5;
+    margin-bottom: 6px;
+    transition: color 0.2s;
+  }
+  .pw-book-card:hover .pw-book-title { color: #f0c060; }
+  .pw-book-meta {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    color: rgba(253,246,236,0.4); font-size: 0.75rem;
+    margin-bottom: 12px;
+  }
+  .pw-book-desc {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    color: rgba(253,246,236,0.5); font-size: 0.82rem;
+    line-height: 1.75;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .pw-book-read-btn {
+    width: 100%; padding: 10px 0; border-radius: 10px;
+    border: none; cursor: pointer;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.25s;
+  }
+
+  /* ── Coming Soon Banner ── */
+  .pw-coming-soon {
+    border-radius: 16px; overflow: hidden;
+    background: linear-gradient(135deg, rgba(74,144,217,0.06) 0%, rgba(13,27,42,0.8) 100%);
+    border: 1px solid rgba(74,144,217,0.15);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    text-align: center;
+  }
+
+  /* ── Empty State ── */
+  .pw-empty {
+    text-align: center; padding: clamp(40px, 8vw, 80px) 20px;
+    color: rgba(253,246,236,0.35);
+    font-family: 'Noto Sans Bengali', sans-serif;
+  }
+
+  /* ── Content Area ── */
+  .pw-content {
+    max-width: 1200px; margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 6vw, 5rem);
+  }
+
+  /* ── Back Link ── */
+  .pw-back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: rgba(253,246,236,0.4); font-size: 0.82rem;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    cursor: pointer; margin-bottom: clamp(16px, 3vw, 28px);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .pw-back-link:hover { color: rgba(253,246,236,0.7); }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .pw-hero { padding: 4.5rem 1rem 1.5rem; }
+    .pw-hero-title { font-size: 2rem !important; }
+    .pw-stat-card { padding: 10px 14px; }
+    .pw-stat-value { font-size: 1.05rem; }
+    .pw-tab-btn { padding: 13px 16px !important; font-size: 0.85rem !important; }
+    .pw-grid { grid-template-columns: 1fr !important; }
+    .pw-ebooks-grid { grid-template-columns: 1fr !important; }
+    .pw-featured-book-inner { flex-direction: column !important; }
+    .pw-featured-book-cover-wrap { width: 100% !important; }
+    .pw-featured-book-cover { min-height: 220px !important; }
+    .pw-featured-book-content { padding: 1.25rem !important; }
+    .pw-featured-book-title { font-size: 1.4rem !important; }
+    .pw-btn-primary, .pw-btn-outline { padding: 11px 18px !important; font-size: 0.88rem !important; }
+    .pw-featured-banner-inner { padding: 1.25rem !important; }
+    .pw-featured-title { font-size: 1.3rem !important; }
+  }
+  @media (min-width: 481px) and (max-width: 768px) {
+    .pw-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .pw-ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .pw-featured-book-inner { flex-direction: column !important; }
+    .pw-featured-book-cover-wrap { width: 100% !important; }
+    .pw-featured-book-cover { min-height: 260px !important; }
+  }
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .pw-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .pw-ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .pw-featured-book-cover-wrap { width: 220px !important; }
+  }
+  @media (min-width: 1025px) {
+    .pw-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .pw-ebooks-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
+  /* ── Writing Modal ── */
+  .pw-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(4,10,20,0.92);
+    backdrop-filter: blur(12px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: clamp(1rem, 3vw, 2rem);
+    overflow-y: auto;
+  }
+  .pw-modal-box {
+    background: #fff; border-radius: 20px;
+    width: 100%; max-width: 700px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+    position: relative;
+    margin: auto;
+  }
+  .pw-modal-header {
+    padding: 18px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(13,27,42,0.08);
+    gap: 12px;
+  }
+  .pw-modal-controls {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .pw-modal-theme-btn {
+    padding: 5px 12px; border-radius: 8px; border: none;
+    font-size: 0.72rem; cursor: pointer;
+    font-family: 'Noto Sans Bengali', sans-serif; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .pw-modal-font-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
+    cursor: pointer; color: #333; transition: all 0.2s;
+  }
+  .pw-modal-font-btn:hover { background: rgba(13,27,42,0.12); }
+  .pw-modal-close {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
+    cursor: pointer; color: #555; flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .pw-modal-close:hover { background: rgba(231,76,60,0.1); color: #e74c3c; }
+  .pw-modal-body { padding: 28px 32px 24px; }
+  .pw-modal-content-text {
+    line-height: 2.1; white-space: pre-line;
+    font-family: 'Tiro Bangla', serif;
+    transition: font-size 0.2s;
+  }
+  .pw-modal-nav {
+    display: flex; border-top: 1px solid rgba(13,27,42,0.08);
+  }
+  .pw-modal-nav-btn {
+    flex: 1; padding: 14px 16px;
+    background: transparent; border: none; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .pw-modal-nav-btn:hover:not(:disabled) { background: rgba(13,27,42,0.04); }
+  .pw-modal-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .pw-modal-nav-btn:first-child { border-right: 1px solid rgba(13,27,42,0.08); }
+
+  /* ── Book Modal ── */
+  .pw-book-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(4,10,20,0.92);
+    backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    padding: clamp(1rem, 3vw, 2rem);
+    overflow-y: auto;
+  }
+  .pw-book-modal-box {
+    background: #0D1B2A; border-radius: 20px;
+    width: 100%; max-width: 680px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+    border: 1px solid rgba(212,168,67,0.15);
+    margin: auto;
+  }
+  .pw-book-modal-header {
+    padding: 18px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .pw-book-modal-inner {
+    display: flex; gap: 0;
+  }
+  .pw-book-modal-cover-wrap {
+    width: 200px; flex-shrink: 0;
+    overflow: hidden; background: #060E1A;
+  }
+  .pw-book-modal-cover {
+    width: 100%; height: 100%; min-height: 280px;
+    object-fit: cover; display: block;
+  }
+  .pw-book-modal-content {
+    flex: 1; padding: 1.5rem;
+    display: flex; flex-direction: column;
+  }
+  @media (max-width: 600px) {
+    .pw-book-modal-inner { flex-direction: column !important; }
+    .pw-book-modal-cover-wrap { width: 100% !important; }
+    .pw-book-modal-cover { min-height: 220px !important; object-fit: cover !important; }
+    .pw-modal-body { padding: 20px 18px 18px !important; }
+  }
+`;
+
+// ── Writing Card ──────────────────────────────────────────────────────────────
 function WritingCard({
   writing,
   index,
@@ -9984,115 +10844,46 @@ function WritingCard({
 }) {
   const slug = makeSlug(writing.title, writing.id);
   const isShort = writing.content.length < 200;
-  const preview = writing.content.slice(0, isShort ? writing.content.length : 140);
+  const preview = writing.content.slice(0, isShort ? writing.content.length : 150);
   const colors = getCategoryColor(writing.category);
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      className="pw-card"
+      initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.04 }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.6) }}
       onClick={() => { onClick(); window.history.pushState(null, '', `/writings/${slug}`); }}
-      style={{
-        background: "rgba(255,255,255,0.03)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: 14,
-        overflow: "hidden",
-        cursor: "pointer",
-        border: "1px solid rgba(201,168,76,0.1)",
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
-      }}
-      whileHover={{
-        y: -5,
-        boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
-        borderColor: colors.stripe + "99",
-      }}
     >
-      {/* Category stripe */}
-      <div style={{ height: 4, background: colors.stripe, borderRadius: "14px 14px 0 0" }} />
-
-      <div style={{ padding: "20px 22px 22px", flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* Category badge */}
-        <div style={{ marginBottom: 10 }}>
-          <span style={{
-            display: "inline-block",
-            padding: "3px 12px",
-            borderRadius: 50,
-            fontSize: "0.68rem",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            background: colors.badge,
-            color: colors.text,
-            fontWeight: 600,
-            letterSpacing: "0.04em",
-          }}>
+      {/* Top stripe */}
+      <div className="pw-card-stripe" style={{ background: colors.stripe }} />
+      <div className="pw-card-body">
+        {/* Decorative quote mark */}
+        <span className="pw-card-quote-mark">"</span>
+        {/* Badges */}
+        <div style={{ marginBottom: 12, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 4 }}>
+          <span
+            className="pw-card-badge"
+            style={{ background: colors.badge, color: colors.text, border: `1px solid ${colors.stripe}33` }}
+          >
             {writing.category}
           </span>
           {writing.featured && (
-            <span style={{
-              display: "inline-block", marginLeft: 6,
-              padding: "3px 10px", borderRadius: 50,
-              fontSize: "0.65rem",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              background: "rgba(212,168,67,0.15)",
-              color: "#b8860b", fontWeight: 700,
-            }}>★ বিশেষ</span>
+            <span className="pw-card-featured-badge">★ বিশেষ</span>
           )}
         </div>
-
         {/* Title */}
-        <h3 style={{
-          fontFamily: "'Tiro Bangla', serif",
-          fontSize: "1.08rem",
-          color: "#FDF6EC",
-          fontWeight: 700,
-          lineHeight: 1.55,
-          marginBottom: 10,
-        }}>
-          {writing.title}
-        </h3>
-
+        <h3 className="pw-card-title">{writing.title}</h3>
         {/* Preview */}
-        <p style={{
-          fontFamily: "'Tiro Bangla', serif",
-          fontSize: "0.9rem",
-          color: "rgba(253,246,236,0.5)",
-          lineHeight: 2,
-          flex: 1,
-          whiteSpace: "pre-line",
-        }}>
-          {preview}{!isShort && writing.content.length > 140 ? "..." : ""}
+        <p className="pw-card-preview">
+          {preview}{!isShort && writing.content.length > 150 ? "..." : ""}
         </p>
-
         {/* Footer */}
-        <div style={{
-          marginTop: 16,
-          paddingTop: 14,
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}>
-          <span style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.7rem",
-            color: "rgba(253,246,236,0.3)",
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}>
+        <div className="pw-card-footer">
+          <span className="pw-card-date">
             <Calendar size={11} /> {writing.date}
           </span>
-          <span style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            fontSize: "0.75rem",
-            color: colors.stripe,
-            fontWeight: 700,
-            display: "flex", alignItems: "center", gap: 4,
-          }}>
-            পড়ুন <ChevronRight size={13} />
+          <span className="pw-card-read" style={{ color: colors.stripe }}>
+            পড়ুন <ChevronRight size={13} />
           </span>
         </div>
       </div>
@@ -10100,7 +10891,7 @@ function WritingCard({
   );
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────────────
+// ── Writing Modal ─────────────────────────────────────────────────────────────
 function WritingModal({
   writing,
   allWritings,
@@ -10117,7 +10908,7 @@ function WritingModal({
   const [fontSize, setFontSize] = useState(1.1);
   const [readingTheme, setReadingTheme] = useState<"light" | "sepia" | "dark">("light");
   const slug = makeSlug(writing.title, writing.id);
-  // Update URL when modal opens/navigates
+
   useEffect(() => {
     window.history.pushState(null, '', `/writings/${slug}`);
     document.title = `${writing.title} | মাহবুব সরদার সবুজ`;
@@ -10131,370 +10922,222 @@ function WritingModal({
   const prevWriting = currentIndex > 0 ? allWritings[currentIndex - 1] : null;
   const nextWriting = currentIndex < allWritings.length - 1 ? allWritings[currentIndex + 1] : null;
   const colors = getCategoryColor(writing.category);
-
   const shareText = `"মাহবুব সরদার সবুজ" লিখেছেন: ${writing.title}`;
   const shareUrl = `${window.location.origin}/writings`;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0, 300)}...\n\nপুরো পড়ুন: ${shareUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n\n${writing.content.slice(0, 300)}...\n\nপুরো পড়ুন: ${shareUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch {
-      // fallback
-    }
+    } catch { /* fallback */ }
   };
-
   const handleFacebookShare = () => {
     const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
     window.open(fbUrl, "_blank", "width=600,height=400");
   };
-
   const handleNativeShare = async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({ title: writing.title, text: shareText, url: shareUrl });
-      } catch { /* user cancelled */ }
-    } else {
-      handleCopy();
-    }
+      try { await navigator.share({ title: writing.title, text: shareText, url: shareUrl }); }
+      catch { /* user cancelled */ }
+    } else { handleCopy(); }
   };
+
+  // Theme styles
+  const themes = {
+    light: { bg: "#ffffff", text: "#1a1a2e", subtext: "#555", border: "rgba(13,27,42,0.08)", headerBg: "#fff" },
+    sepia: { bg: "#fdf6e3", text: "#3b2f2f", subtext: "#7a6a5a", border: "rgba(90,60,30,0.1)", headerBg: "#fdf6e3" },
+    dark:  { bg: "#0D1B2A", text: "#FDF6EC", subtext: "rgba(253,246,236,0.55)", border: "rgba(255,255,255,0.08)", headerBg: "#060E1A" },
+  };
+  const th = themes[readingTheme];
 
   return (
     <motion.div
+      className="pw-modal-overlay"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(13,27,42,0.8)",
-        backdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "1rem",
-      }}
     >
       <motion.div
-        key={writing.id}
-        initial={{ opacity: 0, scale: 0.95, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 16 }}
-        transition={{ type: "spring", stiffness: 320, damping: 32 }}
+        className="pw-modal-box"
+        style={{ background: th.bg }}
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 40, scale: 0.96 }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "#FEFCF8",
-          borderRadius: 20,
-          width: "100%",
-          maxWidth: 640,
-          maxHeight: "90vh",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 40px 100px rgba(13,27,42,0.35), 0 0 0 1px rgba(212,168,67,0.15)",
-        }}
       >
-        {/* Modal header */}
-        <div style={{
-          background: `linear-gradient(135deg, #0D1B2A 0%, #1a2f45 100%)`,
-          padding: "22px 24px 18px",
-          position: "relative",
-          borderBottom: `3px solid ${colors.stripe}`,
-        }}>
-          {/* Top row: close + share */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        {/* Top accent stripe */}
+        <div style={{ height: 4, background: `linear-gradient(90deg, ${colors.stripe}, ${colors.stripe}88)` }} />
+
+        {/* Header */}
+        <div className="pw-modal-header" style={{ background: th.headerBg, borderBottomColor: th.border }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
             <span style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              padding: "4px 12px",
-              borderRadius: 50,
-              fontSize: "0.68rem",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              background: colors.badge,
-              color: colors.stripe,
-              fontWeight: 700,
-              border: `1px solid ${colors.stripe}44`,
+              padding: "3px 12px", borderRadius: 999,
+              fontSize: "0.68rem", fontFamily: "'Noto Sans Bengali', sans-serif",
+              background: colors.badge, color: colors.stripe,
+              fontWeight: 700, border: `1px solid ${colors.stripe}44`,
+              flexShrink: 0,
             }}>
               {writing.category}
             </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              {/* Share button */}
-              <div style={{ position: "relative" }}>
-                <button
-                  onClick={() => setShowShare(s => !s)}
-                  style={{
-                    background: "rgba(255,255,255,0.1)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: 8,
-                    width: 34, height: 34,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer", color: "#D4A843",
-                    transition: "all 0.2s",
-                  }}
-                  title="শেয়ার করুন"
-                >
-                  <Share2 size={15} />
-                </button>
-                {/* Share dropdown */}
-                <AnimatePresence>
-                  {showShare && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      style={{
-                        position: "absolute", top: 40, right: 0,
-                        background: "#fff",
-                        borderRadius: 12,
-                        boxShadow: "0 8px 32px rgba(13,27,42,0.2)",
-                        border: "1px solid rgba(13,27,42,0.1)",
-                        minWidth: 180,
-                        zIndex: 10,
-                        overflow: "hidden",
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => { handleFacebookShare(); setShowShare(false); }}
-                        style={{
-                          width: "100%", padding: "11px 16px",
-                          display: "flex", alignItems: "center", gap: 10,
-                          background: "transparent", border: "none",
-                          cursor: "pointer", color: "#1877F2",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.82rem", fontWeight: 600,
-                          borderBottom: "1px solid rgba(13,27,42,0.06)",
-                          transition: "background 0.15s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(24,119,242,0.06)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <Facebook size={15} /> Facebook-এ শেয়ার
-                      </button>
-                      <button
-                        onClick={() => { handleCopy(); setShowShare(false); }}
-                        style={{
-                          width: "100%", padding: "11px 16px",
-                          display: "flex", alignItems: "center", gap: 10,
-                          background: "transparent", border: "none",
-                          cursor: "pointer", color: copied ? "#27ae60" : "#333",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.82rem", fontWeight: 600,
-                          borderBottom: "1px solid rgba(13,27,42,0.06)",
-                          transition: "background 0.15s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,27,42,0.04)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >
-                        {copied ? <Check size={15} /> : <Copy size={15} />}
-                        {copied ? "কপি হয়েছে!" : "লিংক কপি করুন"}
-                      </button>
-                      <button
-                        onClick={() => { handleNativeShare(); setShowShare(false); }}
-                        style={{
-                          width: "100%", padding: "11px 16px",
-                          display: "flex", alignItems: "center", gap: 10,
-                          background: "transparent", border: "none",
-                          cursor: "pointer", color: "#555",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.82rem", fontWeight: 600,
-                          transition: "background 0.15s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,27,42,0.04)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <Share2 size={15} /> অন্যভাবে শেয়ার
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              {/* Close */}
+          </div>
+          <div className="pw-modal-controls">
+            {/* Theme buttons */}
+            {(["light", "sepia", "dark"] as const).map((t) => (
               <button
-                onClick={onClose}
+                key={t}
+                className="pw-modal-theme-btn"
+                onClick={() => setReadingTheme(t)}
                 style={{
-                  background: "rgba(255,255,255,0.1)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 8,
-                  width: 34, height: 34,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", color: "rgba(255,255,255,0.7)",
+                  background: readingTheme === t ? colors.badge : "rgba(13,27,42,0.06)",
+                  color: readingTheme === t ? colors.stripe : th.subtext,
+                  border: `1px solid ${readingTheme === t ? colors.stripe + "44" : "rgba(13,27,42,0.1)"}`,
                 }}
               >
-                <X size={15} />
+                {t === "light" ? "☀" : t === "sepia" ? "📜" : "🌙"}
               </button>
+            ))}
+            {/* Font size */}
+            <button className="pw-modal-font-btn" style={{ color: th.text, background: `${th.bg}`, border: `1px solid ${th.border}` }} onClick={() => setFontSize(f => Math.max(0.85, f - 0.1))}>
+              <AArrowDown size={14} />
+            </button>
+            <button className="pw-modal-font-btn" style={{ color: th.text, background: `${th.bg}`, border: `1px solid ${th.border}` }} onClick={() => setFontSize(f => Math.min(1.6, f + 0.1))}>
+              <AArrowUp size={14} />
+            </button>
+            {/* Share */}
+            <div style={{ position: "relative" }}>
+              <button
+                className="pw-modal-font-btn"
+                style={{ color: th.text, background: `${th.bg}`, border: `1px solid ${th.border}` }}
+                onClick={() => setShowShare(s => !s)}
+              >
+                <Share2 size={14} />
+              </button>
+              <AnimatePresence>
+                {showShare && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      position: "absolute", top: 40, right: 0,
+                      background: "#fff", borderRadius: 12,
+                      boxShadow: "0 8px 32px rgba(13,27,42,0.2)",
+                      border: "1px solid rgba(13,27,42,0.1)",
+                      minWidth: 180, zIndex: 10, overflow: "hidden",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {[
+                      { label: "Facebook-এ শেয়ার", icon: <Facebook size={15} />, color: "#1877F2", action: () => { handleFacebookShare(); setShowShare(false); } },
+                      { label: copied ? "কপি হয়েছে!" : "লিংক কপি করুন", icon: copied ? <Check size={15} /> : <Copy size={15} />, color: copied ? "#27ae60" : "#333", action: () => { handleCopy(); setShowShare(false); } },
+                      { label: "শেয়ার করুন", icon: <Share2 size={15} />, color: "#555", action: () => { handleNativeShare(); setShowShare(false); } },
+                    ].map((item, i, arr) => (
+                      <button
+                        key={item.label}
+                        onClick={item.action}
+                        style={{
+                          width: "100%", padding: "11px 16px",
+                          display: "flex", alignItems: "center", gap: 10,
+                          background: "transparent", border: "none",
+                          cursor: "pointer", color: item.color,
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.82rem", fontWeight: 600,
+                          borderBottom: i < arr.length - 1 ? "1px solid rgba(13,27,42,0.06)" : "none",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,27,42,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {item.icon} {item.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+            {/* Close */}
+            <button className="pw-modal-close" onClick={onClose}>
+              <X size={16} />
+            </button>
           </div>
+        </div>
 
-          {/* Title */}
+        {/* Body */}
+        <div className="pw-modal-body" style={{ background: th.bg }}>
           <h2 style={{
             fontFamily: "'Tiro Bangla', serif",
-            fontSize: "clamp(1.25rem, 3vw, 1.65rem)",
-            color: "#FDF6EC",
-            lineHeight: 1.45,
-            marginBottom: 10,
+            fontSize: "clamp(1.4rem, 3vw, 1.85rem)",
+            color: th.text, fontWeight: 700,
+            lineHeight: 1.5, marginBottom: "1.5rem",
           }}>
             {writing.title}
           </h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <span style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif", display: "flex", alignItems: "center", gap: 4 }}>
-              <Calendar size={11} /> {writing.date}
-            </span>
-            <span style={{ color: "rgba(253,246,236,0.3)", fontSize: "0.75rem" }}>•</span>
-            <span style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-              {currentIndex + 1} / {allWritings.length}
-            </span>
-          </div>
-        </div>
-
-        {/* Font size & Reading Theme controls */}
-        {(() => {
-          const themeBg = readingTheme === "dark" ? "#1a1a2e" : readingTheme === "sepia" ? "#F5EDD8" : "#F5F3EE";
-          const themeFg = readingTheme === "dark" ? "#d0cfc8" : "#555";
-          const themeLabelColor = readingTheme === "dark" ? "#888" : "#aaa";
-          return (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "8px 20px",
-              background: themeBg,
-              borderBottom: "1px solid rgba(13,27,42,0.06)",
-              gap: 6,
-            }}>
-              {/* Theme switcher */}
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: themeLabelColor, marginRight: 4 }}>থিম:</span>
-                {([
-                  { id: "light", label: "সাদা", bg: "#fff", border: "#ccc" },
-                  { id: "sepia", label: "সেপিয়া", bg: "#F5EDD8", border: "#c8a96e" },
-                  { id: "dark", label: "ডার্ক", bg: "#1a1a2e", border: "#555" },
-                ] as const).map((t) => (
-                  <button
-                    key={t.id}
-                    title={t.label}
-                    onClick={() => setReadingTheme(t.id)}
-                    style={{
-                      width: 20, height: 20, borderRadius: "50%",
-                      background: t.bg,
-                      border: readingTheme === t.id ? "2px solid #D4A843" : `1.5px solid ${t.border}`,
-                      cursor: "pointer",
-                      outline: "none",
-                      boxShadow: readingTheme === t.id ? "0 0 0 2px rgba(212,168,67,0.3)" : "none",
-                      transition: "box-shadow 0.2s",
-                    }}
-                  />
-                ))}
-              </div>
-              {/* Font size */}
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", color: themeLabelColor, marginRight: 4 }}>ফন্ট সাইজ:</span>
-                <button
-                  onClick={() => setFontSize(s => Math.max(0.85, s - 0.1))}
-                  style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: themeFg }}
-                >
-                  <AArrowDown size={13} />
-                </button>
-                <button
-                  onClick={() => setFontSize(s => Math.min(1.5, s + 0.1))}
-                  style={{ background: "rgba(13,27,42,0.06)", border: "none", borderRadius: 6, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: themeFg }}
-                >
-                  <AArrowUp size={13} />
-                </button>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Body */}
-        <div style={{ padding: "28px 28px 24px", overflowY: "auto", flex: 1, background: readingTheme === "dark" ? "#1a1a2e" : readingTheme === "sepia" ? "#FDF6E3" : "#fff", transition: "background 0.3s" }}>
-          <div style={{
-            fontFamily: "'Tiro Bangla', serif",
-            fontSize: `${fontSize}rem`,
-            color: readingTheme === "dark" ? "#d0cfc8" : "#1a1a2e",
-            lineHeight: 2.3,
-            whiteSpace: "pre-line",
-            letterSpacing: "0.01em",
-            transition: "color 0.3s",
-          }}>
+          <p
+            className="pw-modal-content-text"
+            style={{ fontSize: `${fontSize}rem`, color: th.text }}
+          >
             {writing.content}
-          </div>
-
-          <div style={{ margin: "28px 0 20px", borderTop: "1px solid rgba(212,168,67,0.25)" }} />
-
+          </p>
           {/* Author */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{
+            marginTop: "2rem", paddingTop: "1.25rem",
+            borderTop: `1px solid ${th.border}`,
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
             <div style={{
-              width: 42, height: 42, borderRadius: "50%",
-              background: "linear-gradient(135deg, #0D1B2A, #1a2f45)",
+              width: 36, height: 36, borderRadius: "50%",
+              background: colors.badge,
+              border: `2px solid ${colors.stripe}44`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: "0 4px 12px rgba(13,27,42,0.2)",
+              color: colors.stripe, flexShrink: 0,
             }}>
-              <Feather size={18} color="#D4A843" />
+              <PenLine size={16} />
             </div>
             <div>
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.95rem", color: "#0D1B2A", fontWeight: 700 }}>মাহবুব সরদার সবুজ</div>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.72rem", color: "#aaa" }}>Mahbub Sardar Sabuj</div>
+              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.9rem", color: th.text, fontWeight: 700 }}>
+                মাহবুব সরদার সবুজ
+              </div>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", color: th.subtext }}>
+                লেখক ও কবি · {writing.date}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation footer */}
-        <div style={{
-          display: "flex",
-          alignItems: "stretch",
-          borderTop: "1px solid rgba(13,27,42,0.08)",
-          background: "#F5F3EE",
-        }}>
-          {/* Prev */}
+        {/* Navigation */}
+        <div className="pw-modal-nav" style={{ borderTopColor: th.border }}>
           <button
-            onClick={() => { if (prevWriting) { onNavigate(prevWriting); window.history.pushState(null, '', `/writings/${makeSlug(prevWriting.title, prevWriting.id)}`); } }}
+            className="pw-modal-nav-btn"
             disabled={!prevWriting}
-            style={{
-              flex: 1,
-              padding: "14px 16px",
-              background: "transparent",
-              border: "none",
-              borderRight: "1px solid rgba(13,27,42,0.08)",
-              cursor: prevWriting ? "pointer" : "not-allowed",
-              display: "flex", alignItems: "center", gap: 8,
-              opacity: prevWriting ? 1 : 0.35,
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={e => prevWriting && (e.currentTarget.style.background = "rgba(13,27,42,0.05)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => { if (prevWriting) { onNavigate(prevWriting); window.history.pushState(null, '', `/writings/${makeSlug(prevWriting.title, prevWriting.id)}`); } }}
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
           >
-            <ChevronLeft size={16} color="#0D1B2A" />
+            <ChevronLeft size={16} color={th.subtext} />
             <div style={{ textAlign: "left", overflow: "hidden" }}>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#aaa", marginBottom: 2 }}>আগের লেখা</div>
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.82rem", color: "#0D1B2A", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>আগের লেখা</div>
+              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.82rem", color: th.text, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>
                 {prevWriting?.title}
               </div>
             </div>
           </button>
-
-          {/* Next */}
           <button
-            onClick={() => { if (nextWriting) { onNavigate(nextWriting); window.history.pushState(null, '', `/writings/${makeSlug(nextWriting.title, nextWriting.id)}`); } }}
+            className="pw-modal-nav-btn"
             disabled={!nextWriting}
-            style={{
-              flex: 1,
-              padding: "14px 16px",
-              background: "transparent",
-              border: "none",
-              cursor: nextWriting ? "pointer" : "not-allowed",
-              display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8,
-              opacity: nextWriting ? 1 : 0.35,
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={e => nextWriting && (e.currentTarget.style.background = "rgba(13,27,42,0.05)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onClick={() => { if (nextWriting) { onNavigate(nextWriting); window.history.pushState(null, '', `/writings/${makeSlug(nextWriting.title, nextWriting.id)}`); } }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}
           >
             <div style={{ textAlign: "right", overflow: "hidden" }}>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#aaa", marginBottom: 2 }}>পরের লেখা</div>
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.82rem", color: "#0D1B2A", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>পরের লেখা</div>
+              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.82rem", color: th.text, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>
                 {nextWriting?.title}
               </div>
             </div>
-            <ChevronRight size={16} color="#0D1B2A" />
+            <ChevronRight size={16} color={th.subtext} />
           </button>
         </div>
       </motion.div>
@@ -10502,200 +11145,79 @@ function WritingModal({
   );
 }
 
-// ── Main Writings Page ────────────────────────────────────────────────────────
-
-// ── Book Modal ─────────────────────────────────────────────────────────────────────────────
-
-// ── Responsive CSS Injection ─────────────────────────────────────────────────
-const RESPONSIVE_CSS = `
-  @keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
-  }
-  @keyframes pulse-gold {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
-    50% { box-shadow: 0 0 0 12px rgba(212,168,67,0); }
-  }
-  .writings-hero-bg {
-    background: linear-gradient(135deg, #060E1A 0%, #0D1B2A 40%, #112236 70%, #060E1A 100%);
-    position: relative;
-    overflow: hidden;
-  }
-  .writings-hero-bg::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(212,168,67,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(41,128,185,0.06) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  .tab-btn-active {
-    color: #D4A843 !important;
-    border-bottom-color: #D4A843 !important;
-  }
-  .tab-btn-active .tab-pill {
-    background: rgba(212,168,67,0.15) !important;
-    color: #D4A843 !important;
-  }
-  .writing-card:hover .writing-card-read {
-    opacity: 1 !important;
-    transform: translateX(0) !important;
-  }
-  .book-card:hover {
-    transform: translateY(-10px) !important;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.5) !important;
-  }
-  .book-card:hover img {
-    transform: scale(1.06) !important;
-  }
-  .featured-book-card {
-    background: linear-gradient(135deg, #0D1B2A 0%, #112236 50%, #0D1B2A 100%);
-    border: 1px solid rgba(212,168,67,0.2);
-  }
-  .search-input::placeholder {
-    color: rgba(253,246,236,0.3);
-  }
-  .search-input:focus {
-    border-color: rgba(212,168,67,0.4) !important;
-    box-shadow: 0 0 0 3px rgba(212,168,67,0.08) !important;
-  }
-  @media (max-width: 768px) {
-    .hero-title { font-size: 2rem !important; }
-    .hero-desc { font-size: 0.9rem !important; }
-    .hero-stats { gap: 20px !important; }
-    .tab-bar { overflow-x: auto; scrollbar-width: none; }
-    .tab-bar::-webkit-scrollbar { display: none; }
-    .tab-btn { padding: 12px 16px !important; font-size: 0.88rem !important; }
-    .category-scroll { overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
-    .category-scroll::-webkit-scrollbar { display: none; }
-    .writings-grid { grid-template-columns: 1fr !important; }
-    .ebooks-grid { grid-template-columns: 1fr !important; }
-    .featured-book-inner { flex-direction: column !important; }
-    .featured-book-cover { width: 100% !important; max-height: 280px !important; object-fit: cover !important; }
-    .featured-book-content { padding: 1.5rem !important; }
-    .book-modal-inner { flex-direction: column !important; }
-    .book-modal-img { width: 100% !important; max-height: 260px !important; object-fit: cover !important; }
-    .stat-value { font-size: 1rem !important; }
-  }
-  @media (min-width: 769px) and (max-width: 1024px) {
-    .writings-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  }
-  @media (min-width: 1025px) {
-    .writings-grid { grid-template-columns: repeat(3, 1fr) !important; }
-    .ebooks-grid { grid-template-columns: repeat(3, 1fr) !important; }
-  }
-`;
-
-// ── Book Modal ─────────────────────────────────────────────────────────────────────────────
+// ── Book Modal ────────────────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
   return (
     <AnimatePresence>
       <motion.div
+        className="pw-book-modal-overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        style={{
-          position: "fixed", inset: 0, zIndex: 1000,
-          background: "rgba(6,14,26,0.92)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          padding: "1rem",
-        }}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.88, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.88, y: 40 }}
-          transition={{ type: "spring", stiffness: 280, damping: 28 }}
+          className="pw-book-modal-box"
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 40, scale: 0.95 }}
+          transition={{ type: "spring", damping: 28, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          style={{
-            background: "#0D1B2A",
-            borderRadius: 24,
-            overflow: "hidden",
-            maxWidth: 660,
-            width: "100%",
-            maxHeight: "90vh",
-            overflowY: "auto",
-            boxShadow: "0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,168,67,0.15)",
-          }}
         >
+          {/* Top accent */}
+          <div style={{ height: 4, background: `linear-gradient(90deg, ${book.accentColor}, ${book.accentColor}66)` }} />
           {/* Header */}
-          <div style={{
-            background: "linear-gradient(135deg, #112236 0%, #0D1B2A 100%)",
-            padding: "1.5rem 1.5rem 1.25rem",
-            borderBottom: "1px solid rgba(212,168,67,0.12)",
-            display: "flex", justifyContent: "space-between", alignItems: "flex-start",
-          }}>
-            <div>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: 5,
-                background: `${book.accentColor}22`, color: book.accentColor,
-                fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em",
-                textTransform: "uppercase", padding: "4px 12px", borderRadius: 999,
-                border: `1px solid ${book.accentColor}44`,
+          <div className="pw-book-modal-header">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 8,
+                background: `${book.accentColor}18`,
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <BookMarked size={11} /> {book.badge}
-              </span>
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#FDF6EC", fontSize: "clamp(1.2rem, 3vw, 1.6rem)",
-                marginTop: 10, lineHeight: 1.4,
-              }}>
-                {book.title}
-              </h2>
-              <p style={{ color: "#D4A843", fontSize: "0.85rem", marginTop: 4, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-                মাহবুব সরদার সবুজ
-              </p>
+                <BookOpen size={16} color={book.accentColor} />
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "0.95rem", fontWeight: 700 }}>
+                  {book.title}
+                </div>
+                <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(253,246,236,0.4)", fontSize: "0.72rem", marginTop: 2 }}>
+                  মাহবুব সরদার সবুজ
+                </div>
+              </div>
             </div>
             <motion.button
               whileHover={{ scale: 1.1, background: "rgba(255,255,255,0.15)" }}
               whileTap={{ scale: 0.95 }}
               onClick={onClose}
               style={{
-                width: 38, height: 38, borderRadius: "50%",
+                width: 36, height: 36, borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
-                cursor: "pointer", color: "#FDF6EC", flexShrink: 0, marginLeft: 16,
+                background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
+                cursor: "pointer", color: "#FDF6EC", flexShrink: 0,
               }}
             >
-              <X size={18} />
+              <X size={16} />
             </motion.button>
           </div>
-
           {/* Body */}
-          <div className="book-modal-inner" style={{ display: "flex", gap: 0 }}>
-            {/* Cover */}
-            <div style={{ width: 200, flexShrink: 0, overflow: "hidden", background: "#060E1A" }}>
-              <img
-                className="book-modal-img"
-                src={book.cover}
-                alt={book.title}
-                style={{ width: "100%", height: "100%", minHeight: 260, objectFit: "cover", display: "block" }}
-              />
+          <div className="pw-book-modal-inner">
+            <div className="pw-book-modal-cover-wrap">
+              <img className="pw-book-modal-cover" src={book.cover} alt={book.title} />
             </div>
-            {/* Info */}
-            <div style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column" }}>
-              {/* Meta tags */}
+            <div className="pw-book-modal-content">
+              {/* Meta */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
                 {[
-                  { label: "ধরন", value: book.genre, icon: "📚" },
-                  { label: "পৃষ্ঠা", value: book.pages, icon: "📄" },
-                  { label: "প্রকাশ", value: book.year, icon: "📅" },
+                  { label: "ধরন", value: book.genre },
+                  { label: "পৃষ্ঠা", value: book.pages },
+                  { label: "প্রকাশ", value: book.year },
                 ].map((item) => (
                   <div key={item.label} style={{
                     padding: "8px 14px", borderRadius: 10,
                     background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.08)",
                   }}>
-                    <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.65rem", marginBottom: 3, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                    <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.63rem", marginBottom: 3, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
                       {item.label}
                     </div>
                     <div style={{ color: "#FDF6EC", fontSize: "0.85rem", fontWeight: 600, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
@@ -10705,7 +11227,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                 ))}
               </div>
               <p style={{
-                color: "rgba(253,246,236,0.65)", fontSize: "0.9rem",
+                color: "rgba(253,246,236,0.65)", fontSize: "0.88rem",
                 lineHeight: 1.85, flex: 1, marginBottom: 20,
                 fontFamily: "'Noto Sans Bengali', sans-serif",
               }}>
@@ -10716,12 +11238,13 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                 {book.canRead && (
                   <Link href={`/ebooks/read/${book.slug}`}>
                     <motion.button
-                      whileHover={{ scale: 1.04, boxShadow: "0 8px 28px rgba(212,168,67,0.4)" }}
+                      whileHover={{ scale: 1.04, boxShadow: `0 8px 28px ${book.accentColor}44` }}
                       whileTap={{ scale: 0.97 }}
                       style={{
                         display: "flex", alignItems: "center", gap: 8,
-                        background: "linear-gradient(135deg, #D4A843, #f0c060)",
-                        color: "#0D1B2A", padding: "11px 22px", borderRadius: 999,
+                        background: `linear-gradient(135deg, ${book.accentColor}, ${book.accentColor}cc)`,
+                        color: book.accentColor === "#D4A843" ? "#0D1B2A" : "#fff",
+                        padding: "11px 22px", borderRadius: 999,
                         fontWeight: 700, fontSize: "0.875rem", border: "none",
                         cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
                       }}
@@ -10733,14 +11256,14 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                 {book.buyLink && (
                   <a href={book.buyLink} target="_blank" rel="noopener noreferrer">
                     <motion.button
-                      whileHover={{ scale: 1.04, boxShadow: "0 8px 28px rgba(212,168,67,0.2)" }}
+                      whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.97 }}
                       style={{
                         display: "flex", alignItems: "center", gap: 8,
                         background: "transparent", color: "#D4A843",
                         padding: "11px 22px", borderRadius: 999,
                         fontWeight: 700, fontSize: "0.875rem",
-                        border: "1.5px solid rgba(212,168,67,0.5)",
+                        border: "1.5px solid rgba(212,168,67,0.4)",
                         cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
                       }}
                     >
@@ -10757,488 +11280,300 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   );
 }
 
-// ── E-Books Section ─────────────────────────────────────────────────────────────────────────────
+// ── E-Books Section ───────────────────────────────────────────────────────────
 function EBooksSection() {
   const [selectedBook, setSelectedBook] = useState<typeof ebooks[0] | null>(null);
-  const featuredBook = ebooks[0];
-  const otherBooks = ebooks.slice(1);
+  const featuredBook = ebooks.find((b) => b.isFeatured)!;
+  const otherBooks = ebooks.filter((b) => !b.isFeatured);
 
   return (
     <div>
       {/* Featured Book */}
-      <div style={{ marginBottom: "3.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.75rem" }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: "50%",
-            background: "rgba(212,168,67,0.12)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Star size={15} fill="#D4A843" color="#D4A843" />
-          </div>
-          <div>
-            <span style={{
-              color: "#D4A843", fontSize: "0.72rem", fontWeight: 700,
-              letterSpacing: "0.18em", textTransform: "uppercase",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-            }}>
-              FEATURED BOOK
-            </span>
-          </div>
-          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(212,168,67,0.3), transparent)" }} />
+      <div className="pw-section-divider" style={{ marginBottom: "clamp(1.25rem, 2.5vw, 2rem)" }}>
+        <div className="pw-section-divider-icon" style={{ background: "rgba(212,168,67,0.1)" }}>
+          <Star size={16} color="#D4A843" />
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="featured-book-card"
-          style={{
-            borderRadius: 24, overflow: "hidden",
-            boxShadow: "0 30px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,168,67,0.15)",
-          }}
-        >
-          <div className="featured-book-inner" style={{ display: "flex" }}>
-            {/* Cover */}
-            <div style={{
-              position: "relative", width: 280, flexShrink: 0,
-              overflow: "hidden", background: "#060E1A",
-            }}>
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, transparent 50%)",
-                zIndex: 1,
-              }} />
-              <img
-                className="featured-book-cover"
-                src={featuredBook.cover}
-                alt={featuredBook.title}
-                style={{
-                  width: "100%", height: "100%", minHeight: 380,
-                  objectFit: "cover", display: "block",
-                  transition: "transform 0.5s ease",
-                }}
-              />
-              {/* Badge */}
-              <div style={{
-                position: "absolute", top: 20, left: 20, zIndex: 2,
-              }}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: 5,
-                  background: "linear-gradient(135deg, #D4A843, #f0c060)",
-                  color: "#0D1B2A", fontSize: "0.72rem", fontWeight: 800,
-                  padding: "6px 14px", borderRadius: 999,
-                  boxShadow: "0 4px 12px rgba(212,168,67,0.4)",
-                }}>
-                  <Star size={11} fill="currentColor" /> ফিজিক্যাল বই
-                </span>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div
-              className="featured-book-content"
-              style={{
-                flex: 1, padding: "clamp(1.5rem, 4vw, 3rem)",
-                display: "flex", flexDirection: "column", justifyContent: "center",
-              }}
-            >
-              <div style={{ marginBottom: "0.75rem" }}>
-                <span style={{
-                  color: "#D4A843", fontSize: "0.8rem", fontWeight: 600,
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  display: "flex", alignItems: "center", gap: 6,
-                }}>
-                  <Feather size={14} /> মাহবুব সরদার সবুজ
-                </span>
-              </div>
-
-              <h3 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "#FDF6EC",
-                fontSize: "clamp(1.5rem, 3.5vw, 2.4rem)",
-                fontWeight: 400, lineHeight: 1.35,
-                marginBottom: "1rem",
-              }}>
-                {featuredBook.title}
-              </h3>
-
-              <p style={{
-                color: "rgba(253,246,236,0.7)", fontSize: "0.95rem",
-                lineHeight: 1.9, marginBottom: "1.5rem",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-              }}>
-                {featuredBook.description}
-              </p>
-
-              {/* Tags */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: "1.75rem" }}>
-                {[
-                  { label: featuredBook.genre, color: "rgba(255,255,255,0.08)", text: "rgba(253,246,236,0.65)" },
-                  { label: featuredBook.pages + " পৃষ্ঠা", color: "rgba(255,255,255,0.08)", text: "rgba(253,246,236,0.65)" },
-                  { label: featuredBook.year, color: "rgba(255,255,255,0.08)", text: "rgba(253,246,236,0.65)" },
-                  { label: "রকমারিতে পাওয়া যাচ্ছে ✓", color: "rgba(39,174,96,0.15)", text: "#2ecc71" },
-                ].map((tag) => (
-                  <span key={tag.label} style={{
-                    fontSize: "0.78rem", padding: "6px 14px", borderRadius: 999,
-                    background: tag.color, color: tag.text,
-                    fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 500,
-                  }}>
-                    {tag.label}
-                  </span>
-                ))}
-              </div>
-
-              {/* CTA Buttons */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                <Link href={`/ebooks/read/${featuredBook.slug}`}>
-                  <motion.button
-                    whileHover={{ scale: 1.04, boxShadow: "0 0 40px rgba(212,168,67,0.5)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      background: "linear-gradient(135deg, #D4A843, #f0c060)",
-                      color: "#0D1B2A", padding: "13px 26px", borderRadius: 999,
-                      fontWeight: 800, fontSize: "0.95rem", border: "none",
-                      cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
-                      boxShadow: "0 8px 28px rgba(212,168,67,0.35)",
-                    }}
-                  >
-                    <BookOpen size={18} /> এখনই পড়ুন
-                  </motion.button>
-                </Link>
-                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
-                  <motion.button
-                    whileHover={{ scale: 1.04, borderColor: "#D4A843", boxShadow: "0 8px 28px rgba(212,168,67,0.2)" }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      background: "transparent", color: "#D4A843",
-                      padding: "13px 26px", borderRadius: 999,
-                      fontWeight: 700, fontSize: "0.95rem",
-                      border: "1.5px solid rgba(212,168,67,0.4)",
-                      cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.25s",
-                    }}
-                  >
-                    <ShoppingCart size={18} /> রকমারি থেকে অর্ডার করুন
-                  </motion.button>
-                </a>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        <span className="pw-section-divider-label" style={{ color: "#D4A843" }}>FEATURED BOOK</span>
+        <div className="pw-section-divider-line" style={{ background: "linear-gradient(90deg, rgba(212,168,67,0.3), transparent)" }} />
       </div>
 
-      {/* E-Books Grid */}
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.75rem" }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: "50%",
-            background: "rgba(74,144,217,0.12)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <BookMarked size={15} color="#4A90D9" />
+      <motion.div
+        className="pw-featured-book"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="pw-featured-book-inner">
+          {/* Cover */}
+          <div className="pw-featured-book-cover-wrap">
+            <img
+              className="pw-featured-book-cover"
+              src={featuredBook.cover}
+              alt={featuredBook.title}
+            />
+            <div className="pw-featured-book-cover-overlay" />
           </div>
-          <span style={{
-            color: "#4A90D9", fontSize: "0.72rem", fontWeight: 700,
-            letterSpacing: "0.18em", textTransform: "uppercase",
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-          }}>
-            E-BOOKS COLLECTION
-          </span>
-          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(74,144,217,0.3), transparent)" }} />
-        </div>
-
-        <h2 style={{
-          fontFamily: "'Tiro Bangla', serif",
-          color: "#FDF6EC",
-          fontSize: "clamp(1.3rem, 2.5vw, 1.7rem)",
-          fontWeight: 400, marginBottom: "1.5rem",
-        }}>
-          ই-বুক সংগ্রহ
-        </h2>
-
-        <div
-          className="ebooks-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-            gap: "1.5rem",
-          }}
-        >
-          {otherBooks.map((book, index) => (
-            <motion.div
-              key={book.id}
-              className="book-card"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+          {/* Content */}
+          <div className="pw-featured-book-content">
+            <span
+              className="pw-featured-book-badge"
               style={{
-                background: "rgba(255,255,255,0.03)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                borderRadius: 20, overflow: "hidden",
-                border: "1px solid rgba(255,255,255,0.07)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-                display: "flex", flexDirection: "column",
-                transition: "transform 0.35s ease, box-shadow 0.35s ease",
+                background: `${featuredBook.accentColor}18`,
+                color: featuredBook.accentColor,
+                border: `1px solid ${featuredBook.accentColor}33`,
               }}
             >
-              {/* Cover */}
-              <div style={{
-                position: "relative",
-                aspectRatio: "3/4",
-                overflow: "hidden",
-                background: "#060E1A",
-                cursor: "pointer",
-              }}
-                onClick={() => setSelectedBook(book)}
-              >
-                <img
-                  src={book.cover}
-                  alt={book.title}
-                  style={{
-                    width: "100%", height: "100%",
-                    objectFit: "cover", display: "block",
-                    transition: "transform 0.4s ease",
-                  }}
-                />
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(180deg, transparent 55%, rgba(6,14,26,0.85) 100%)",
-                }} />
-                {/* Badge */}
-                <span style={{
-                  position: "absolute", top: 12, left: 12,
-                  background: book.badgeColor,
-                  color: "#fff", fontSize: "0.7rem", fontWeight: 700,
-                  padding: "5px 12px", borderRadius: 999,
-                  boxShadow: `0 4px 12px ${book.badgeColor}66`,
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                }}>
-                  {book.badge}
-                </span>
-                {/* Hover overlay */}
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "rgba(13,27,42,0.5)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  opacity: 0, transition: "opacity 0.3s",
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
+              <BookMarked size={13} /> {featuredBook.badge}
+            </span>
+            <div className="pw-featured-book-author">
+              <Feather size={13} /> মাহবুব সরদার সবুজ
+            </div>
+            <h3 className="pw-featured-book-title">{featuredBook.title}</h3>
+            <p className="pw-featured-book-desc">{featuredBook.description}</p>
+            <div className="pw-featured-book-tags">
+              {[
+                { label: featuredBook.genre, bg: "rgba(255,255,255,0.06)", color: "rgba(253,246,236,0.65)" },
+                { label: featuredBook.pages + " পৃষ্ঠা", bg: "rgba(255,255,255,0.06)", color: "rgba(253,246,236,0.65)" },
+                { label: featuredBook.year, bg: "rgba(255,255,255,0.06)", color: "rgba(253,246,236,0.65)" },
+                { label: "রকমারিতে পাওয়া যাচ্ছে ✓", bg: "rgba(39,174,96,0.12)", color: "#2ecc71" },
+              ].map((tag) => (
+                <span
+                  key={tag.label}
+                  className="pw-featured-book-tag"
+                  style={{ background: tag.bg, color: tag.color }}
                 >
-                  <span style={{
-                    background: "rgba(212,168,67,0.9)", color: "#0D1B2A",
-                    padding: "8px 18px", borderRadius: 999,
-                    fontSize: "0.8rem", fontWeight: 700,
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    display: "flex", alignItems: "center", gap: 6,
-                  }}>
-                    <Eye size={14} /> বিস্তারিত দেখুন
-                  </span>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div style={{ padding: "1.25rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{
-                  fontFamily: "'Tiro Bangla', serif",
-                  color: "#FDF6EC", fontSize: "1.05rem",
-                  fontWeight: 400, lineHeight: 1.5,
-                  marginBottom: "0.4rem",
-                }}>
-                  {book.title}
-                </h3>
-                <p style={{
-                  color: "rgba(212,168,67,0.55)", fontSize: "0.78rem",
-                  marginBottom: "0.75rem",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                }}>
-                  {book.genre} · {book.year}
-                </p>
-                <p style={{
-                  color: "rgba(253,246,236,0.5)", fontSize: "0.85rem",
-                  lineHeight: 1.75, flex: 1, marginBottom: "1.25rem",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                }}>
-                  {book.description.slice(0, 90)}...
-                </p>
-
-                {/* Action Buttons */}
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Link href={`/ebooks/read/${book.slug}`} style={{ flex: 1 }}>
-                    <motion.button
-                      whileHover={{ scale: 1.04, boxShadow: "0 6px 20px rgba(212,168,67,0.35)" }}
-                      whileTap={{ scale: 0.97 }}
-                      style={{
-                        width: "100%",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        background: "linear-gradient(135deg, #D4A843, #f0c060)",
-                        color: "#0D1B2A", padding: "10px 0", borderRadius: 999,
-                        fontWeight: 700, fontSize: "0.85rem", border: "none",
-                        cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
-                      }}
-                    >
-                      <BookOpen size={15} /> পড়ুন
-                    </motion.button>
-                  </Link>
-                  <motion.button
-                    whileHover={{ scale: 1.04, borderColor: "rgba(212,168,67,0.4)" }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setSelectedBook(book)}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                      background: "transparent",
-                      color: "rgba(253,246,236,0.6)", padding: "10px 16px", borderRadius: 999,
-                      fontWeight: 600, fontSize: "0.85rem",
-                      border: "1.5px solid rgba(255,255,255,0.1)",
-                      cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.25s",
-                    }}
-                  >
-                    <Eye size={15} />
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+                  {tag.label}
+                </span>
+              ))}
+            </div>
+            <div className="pw-featured-book-btns">
+              <Link href={`/ebooks/read/${featuredBook.slug}`}>
+                <motion.button
+                  className="pw-btn-primary"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <BookOpen size={18} /> এখনই পড়ুন
+                </motion.button>
+              </Link>
+              <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
+                <motion.button
+                  className="pw-btn-outline"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <ShoppingCart size={18} /> রকমারি থেকে অর্ডার করুন
+                </motion.button>
+              </a>
+            </div>
+          </div>
         </div>
+      </motion.div>
 
-        {/* Coming soon notice */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          style={{
-            marginTop: "2.5rem",
-            padding: "1.5rem 2rem",
-            background: "rgba(212,168,67,0.04)",
-            border: "1px solid rgba(212,168,67,0.12)",
-            borderRadius: 16,
-            textAlign: "center",
-            display: "flex", alignItems: "center",
-            justifyContent: "center", gap: 10, flexWrap: "wrap",
-          }}
-        >
-          <Sparkles size={18} color="#D4A843" />
-          <p style={{
-            color: "rgba(253,246,236,0.6)", fontSize: "0.95rem",
-            lineHeight: 1.8, margin: 0,
+      {/* E-Books Grid */}
+      <div className="pw-section-divider" style={{ marginTop: "clamp(2rem, 4vw, 3rem)" }}>
+        <div className="pw-section-divider-icon" style={{ background: "rgba(74,144,217,0.1)" }}>
+          <BookMarked size={16} color="#4A90D9" />
+        </div>
+        <span className="pw-section-divider-label" style={{ color: "#4A90D9" }}>E-BOOKS COLLECTION</span>
+        <div className="pw-section-divider-line" style={{ background: "linear-gradient(90deg, rgba(74,144,217,0.3), transparent)" }} />
+      </div>
+
+      <h2 style={{
+        fontFamily: "'Tiro Bangla', serif",
+        color: "#FDF6EC",
+        fontSize: "clamp(1.3rem, 2.5vw, 1.8rem)",
+        fontWeight: 400, marginBottom: "clamp(1.25rem, 2.5vw, 2rem)",
+      }}>
+        ই-বুক সংগ্রহ
+      </h2>
+
+      <div className="pw-ebooks-grid">
+        {otherBooks.map((book, i) => (
+          <motion.div
+            key={book.id}
+            className="pw-book-card"
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: i * 0.1 }}
+            onClick={() => setSelectedBook(book)}
+          >
+            {/* Cover */}
+            <div className="pw-book-cover-wrap">
+              <img className="pw-book-cover" src={book.cover} alt={book.title} />
+              <div className="pw-book-cover-overlay" />
+              {/* Hover overlay */}
+              <div className="pw-book-hover-overlay">
+                <button className="pw-book-hover-btn">
+                  <Eye size={15} /> বিস্তারিত দেখুন
+                </button>
+              </div>
+              {/* Badge */}
+              <span
+                className="pw-book-badge"
+                style={{
+                  background: `${book.accentColor}22`,
+                  color: book.accentColor,
+                  border: `1px solid ${book.accentColor}44`,
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {book.badge}
+              </span>
+            </div>
+            {/* Info */}
+            <div className="pw-book-info">
+              <h3 className="pw-book-title">{book.title}</h3>
+              <p className="pw-book-meta">{book.genre} · {book.year}</p>
+              <p className="pw-book-desc">{book.description}</p>
+              <Link href={`/ebooks/read/${book.slug}`}>
+                <motion.button
+                  className="pw-book-read-btn"
+                  style={{
+                    background: `${book.accentColor}14`,
+                    color: book.accentColor,
+                    border: `1px solid ${book.accentColor}33`,
+                  }}
+                  whileHover={{
+                    background: `${book.accentColor}25`,
+                    borderColor: book.accentColor,
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <BookOpen size={15} /> পড়ুন
+                </motion.button>
+              </Link>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Coming Soon */}
+      <motion.div
+        className="pw-coming-soon"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+          <Sparkles size={16} color="#4A90D9" />
+          <span style={{
             fontFamily: "'Noto Sans Bengali', sans-serif",
+            color: "rgba(253,246,236,0.55)", fontSize: "0.88rem",
           }}>
-            আরও <strong style={{ color: "#D4A843" }}>৪টি ই-বুক</strong> শীঘ্রই প্রকাশিত হবে।
-            আপডেট পেতে{" "}
+            আরো ৫টি ই-বুক শীঘ্রই প্রকাশিত হবে। আপডেট পেতে{" "}
             <a
-              href="https://facebook.com/MahbubSardarSabuj"
-              target="_blank" rel="noopener noreferrer"
-              style={{ color: "#D4A843", fontWeight: 700, textDecoration: "none" }}
+              href="https://www.facebook.com/MahbubSardarSabuj"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#4A90D9", fontWeight: 700, textDecoration: "none" }}
             >
               ফেসবুক পেইজ
             </a>{" "}
             ফলো করুন।
-          </p>
-        </motion.div>
-      </div>
+          </span>
+        </div>
+      </motion.div>
 
-      {selectedBook && (
-        <BookModal book={selectedBook} onClose={() => setSelectedBook(null)} />
-      )}
+      {/* Book Modal */}
+      <AnimatePresence>
+        {selectedBook && (
+          <BookModal book={selectedBook} onClose={() => setSelectedBook(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Main Combined Page ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+//  MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════════════════════
 export default function Writings() {
   const [activeTab, setActiveTab] = useState<"writings" | "ebooks">("writings");
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedWriting, setSelectedWriting] = useState<typeof writings[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [location] = useLocation();
-  const [matchSlug, params] = useRoute("/writings/:slug");
+  const [selectedWriting, setSelectedWriting] = useState<Writing | null>(null);
+  const [, setLocation] = useLocation();
+  const [match] = useRoute("/ebooks");
 
+  // Redirect /ebooks → /writings with ebooks tab
   useEffect(() => {
-    if (matchSlug && params?.slug) {
-      const found = writings.find(w => makeSlug(w.title, w.id) === params.slug);
-      if (found) {
-        setSelectedWriting(found);
-        setActiveTab("writings");
-      }
-    }
-  }, [matchSlug, params?.slug]);
-
-  useEffect(() => {
-    if (location === "/ebooks") {
+    if (match) {
       setActiveTab("ebooks");
+      setLocation("/writings");
     }
-  }, [location]);
+  }, [match, setLocation]);
 
+  // Filter writings
   const filtered = writings.filter((w) => {
     const matchCat = activeCategory === "all" || w.category === activeCategory;
-    const matchSearch = searchQuery === "" || w.title.includes(searchQuery) || w.content.includes(searchQuery);
+    const q = searchQuery.toLowerCase().trim();
+    const matchSearch = !q || w.title.toLowerCase().includes(q) || w.content.toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
-  const featured = writings.find((w) => w.featured);
 
-  const combinedJsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [{
-      "@type": "CollectionPage",
-      "name": "লেখালেখি ও বই | মাহবুব সরদার সবুজ",
-      "url": "https://www.mahbubsardarsabuj.com/writings",
-      "inLanguage": "bn-BD",
-      "description": "মাহবুব সরদার সবুজের কবিতা, ছোট লেখা, ই-বুক ও প্রকাশিত বইয়ের সম্পূর্ণ সংগ্রহ।"
-    }]
-  };
+  const featuredWriting = writings.find((w) => w.featured);
+
+  const TABS = [
+    {
+      id: "writings" as const,
+      label: "লেখালেখি",
+      count: `${writings.length}+`,
+      desc: "লেখা",
+      icon: <PenLine size={15} />,
+      activeClass: "active",
+      accentColor: "#D4A843",
+    },
+    {
+      id: "ebooks" as const,
+      label: "ই-বুক ও বই",
+      count: `${ebooks.length}টি`,
+      desc: "প্রকাশিত",
+      icon: <BookMarked size={15} />,
+      activeClass: "active-blue",
+      accentColor: "#4A90D9",
+    },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#060E1A" }}>
-      {/* Inject responsive CSS */}
-      <style dangerouslySetInnerHTML={{ __html: RESPONSIVE_CSS }} />
+      {/* Inject CSS */}
+      <style dangerouslySetInnerHTML={{ __html: PREMIUM_CSS }} />
 
       <Seo
         title="লেখালেখি ও বই | মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের বাংলা কবিতা, লেখা ও ই-বুক সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের লেখা, জীবনদর্শন এবং প্রকাশিত বই — সবই এক জায়গায়।"
-        path="/writings"
-        keywords="বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শন, মাহবুব সরদার সবুজ লেখালেখি, বাংলা ই-বুক, দুঃখবিলাস, Mahbub Sardar Sabuj writings, বাংলা সাহিত্য"
-        jsonLd={combinedJsonLd}
+        description="মাহবুব সরদার সবুজের কবিতা, গদ্য ও প্রকাশিত বই — সম্পূর্ণ সাহিত্যকর্ম এক জায়গায়।"
       />
       <Navbar />
 
-      {/* ══════════════════════════════════════════════════════════════
-          HERO SECTION
-      ══════════════════════════════════════════════════════════════ */}
-      <div className="writings-hero-bg" style={{ paddingTop: "clamp(80px, 12vw, 120px)", paddingBottom: "clamp(40px, 6vw, 70px)" }}>
-        {/* Decorative orbs */}
-        <div style={{
-          position: "absolute", top: "10%", right: "5%",
-          width: "clamp(200px, 30vw, 400px)", height: "clamp(200px, 30vw, 400px)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "5%", left: "2%",
-          width: "clamp(150px, 20vw, 300px)", height: "clamp(150px, 20vw, 300px)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(41,128,185,0.05) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
+      {/* ── Hero ── */}
+      <section className="pw-hero">
+        <div className="pw-hero-grid" />
 
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(1rem, 4vw, 2rem)", position: "relative" }}>
-          {/* Breadcrumb */}
+        {/* Ink drop particles */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={i}
+            className="pw-ink-particle"
+            style={{
+              left: `${10 + i * 12}%`,
+              top: `${Math.random() * 20}%`,
+              animationDuration: `${6 + i * 1.5}s`,
+              animationDelay: `${i * 0.8}s`,
+              width: i % 3 === 0 ? "4px" : "2px",
+              height: i % 3 === 0 ? "4px" : "2px",
+              opacity: 0.3 + (i % 3) * 0.15,
+            }}
+          />
+        ))}
+
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          {/* Back link */}
           <Link href="/">
             <motion.span
+              className="pw-back-link"
               whileHover={{ x: -4 }}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                color: "rgba(253,246,236,0.4)", fontSize: "0.82rem",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                cursor: "pointer", marginBottom: "clamp(16px, 3vw, 28px)",
-                textDecoration: "none", transition: "color 0.2s",
-              }}
             >
               <ArrowLeft size={14} /> হোমে ফিরুন
             </motion.span>
@@ -11246,213 +11581,106 @@ export default function Writings() {
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "2rem" }}>
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
               style={{ flex: 1, minWidth: 280 }}
             >
               {/* Label */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
+              <div className="pw-hero-label">
                 <div style={{
-                  width: 36, height: 36, borderRadius: "50%",
-                  background: "rgba(212,168,67,0.12)",
-                  border: "1px solid rgba(212,168,67,0.2)",
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: "rgba(212,168,67,0.15)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  animation: "float 4s ease-in-out infinite",
+                  animation: "floatUp 4s ease-in-out infinite",
                 }}>
-                  <Feather size={18} color="#D4A843" />
+                  <Feather size={14} color="#D4A843" />
                 </div>
-                <span style={{
-                  color: "#D4A843",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.75rem", letterSpacing: "0.2em",
-                  textTransform: "uppercase", fontWeight: 700,
-                }}>
-                  WRITINGS & BOOKS
-                </span>
+                <span>WRITINGS & BOOKS</span>
               </div>
 
               {/* Title */}
-              <h1
-                className="hero-title"
-                style={{
-                  fontFamily: "'Tiro Bangla', serif",
-                  fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
-                  color: "#FDF6EC",
-                  lineHeight: 1.25,
-                  marginBottom: "1rem",
-                  fontWeight: 400,
-                }}
-              >
-                লেখালেখি ও বই
-              </h1>
+              <h1 className="pw-hero-title">লেখালেখি ও বই</h1>
 
               {/* Description */}
-              <p
-                className="hero-desc"
-                style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  color: "rgba(253,246,236,0.6)",
-                  fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
-                  maxWidth: 480, lineHeight: 1.85,
-                  marginBottom: "clamp(1.5rem, 3vw, 2.5rem)",
-                }}
-              >
+              <p className="pw-hero-desc">
                 কবিতা, গদ্য ও প্রকাশিত বই — মাহবুব সরদার সবুজের সম্পূর্ণ সাহিত্যকর্ম এক জায়গায়।
               </p>
 
-              {/* Stats row */}
-              <div
-                className="hero-stats"
-                style={{
-                  display: "flex", gap: "clamp(20px, 5vw, 48px)",
-                  flexWrap: "wrap", rowGap: 16,
-                }}
-              >
+              {/* Stats */}
+              <div className="pw-stats-row">
                 {[
-                  { icon: <BookOpen size={18} />, value: `${writings.length}+`, label: "মোট লেখা", color: "#D4A843" },
-                  { icon: <Star size={18} />, value: "৪টি", label: "প্রকাশিত বই", color: "#4A90D9" },
-                  { icon: <Heart size={18} />, value: "লক্ষাধিক", label: "পাঠক", color: "#e74c3c" },
+                  { icon: <BookOpen size={18} />, value: `${writings.length}+`, label: "মোট লেখা", color: "#D4A843", bg: "rgba(212,168,67,0.12)" },
+                  { icon: <Star size={18} />, value: "৪টি", label: "প্রকাশিত বই", color: "#4A90D9", bg: "rgba(74,144,217,0.12)" },
+                  { icon: <Heart size={18} />, value: "লক্ষাধিক", label: "পাঠক", color: "#e74c3c", bg: "rgba(231,76,60,0.12)" },
                 ].map((stat, i) => (
                   <motion.div
                     key={i}
+                    className="pw-stat-card"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                    transition={{ duration: 0.5, delay: 0.35 + i * 0.12 }}
                   >
-                    <div style={{
-                      width: 40, height: 40, borderRadius: 12,
-                      background: `${stat.color}15`,
-                      border: `1px solid ${stat.color}30`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: stat.color,
-                    }}>
+                    <div className="pw-stat-icon" style={{ background: stat.bg, color: stat.color }}>
                       {stat.icon}
                     </div>
                     <div>
-                      <div
-                        className="stat-value"
-                        style={{
-                          fontFamily: "'Tiro Bangla', serif",
-                          color: "#FDF6EC", fontSize: "1.2rem", fontWeight: 700,
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {stat.value}
-                      </div>
-                      <div style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: "rgba(253,246,236,0.45)", fontSize: "0.72rem",
-                      }}>
-                        {stat.label}
-                      </div>
+                      <div className="pw-stat-value">{stat.value}</div>
+                      <div className="pw-stat-label">{stat.label}</div>
                     </div>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
 
-            {/* Decorative quote card (hidden on small screens) */}
+            {/* Decorative orb */}
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.4 }}
               style={{
-                display: "none",
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(212,168,67,0.12)",
-                borderRadius: 20, padding: "1.5rem",
-                maxWidth: 280, backdropFilter: "blur(12px)",
+                width: "clamp(120px, 20vw, 200px)",
+                height: "clamp(120px, 20vw, 200px)",
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.03) 60%, transparent 100%)",
+                border: "1px solid rgba(212,168,67,0.1)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                animation: "floatUp 6s ease-in-out infinite",
+                flexShrink: 0,
+                alignSelf: "center",
               }}
-              className="hero-quote-card"
             >
-              <div style={{ color: "#D4A843", fontSize: "2.5rem", fontFamily: "serif", lineHeight: 1, marginBottom: 8, opacity: 0.6 }}>"</div>
-              <p style={{
-                fontFamily: "'Tiro Bangla', serif",
-                color: "rgba(253,246,236,0.75)", fontSize: "0.95rem",
-                lineHeight: 2, fontStyle: "italic",
+              <div style={{
+                width: "65%", height: "65%", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(212,168,67,0.18) 0%, transparent 70%)",
+                border: "1px solid rgba(212,168,67,0.15)",
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                লেখা মানে নিজেকে খোঁজা, নিজেকে চেনা।
-              </p>
-              <div style={{ marginTop: 12, color: "#D4A843", fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-                — মাহবুব সরদার সবুজ
+                <Feather size={32} color="rgba(212,168,67,0.5)" />
               </div>
             </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ══════════════════════════════════════════════════════════════
-          STICKY TAB BAR
-      ══════════════════════════════════════════════════════════════ */}
-      <div style={{
-        background: "rgba(6,14,26,0.95)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        position: "sticky", top: 68, zIndex: 40,
-        boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
-      }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(1rem, 4vw, 2rem)" }}>
-          {/* Main Tabs */}
-          <div
-            className="tab-bar"
-            style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-          >
-            {[
-              {
-                id: "writings" as const,
-                label: "লেখালেখি",
-                icon: <PenLine size={16} />,
-                count: `${writings.length}+`,
-                desc: "লেখা",
-                activeColor: "#D4A843",
-              },
-              {
-                id: "ebooks" as const,
-                label: "ই-বুক ও বই",
-                icon: <BookOpen size={16} />,
-                count: "৪টি",
-                desc: "প্রকাশিত",
-                activeColor: "#4A90D9",
-              },
-            ].map((tab) => {
+      {/* ── Sticky Tab Bar ── */}
+      <div className="pw-tab-bar-wrap">
+        <div className="pw-tab-bar-inner">
+          {/* Main tabs */}
+          <div className="pw-tabs-row">
+            {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
-                  className={`tab-btn ${isActive ? "tab-btn-active" : ""}`}
+                  className={`pw-tab-btn ${isActive ? tab.activeClass : ""}`}
                   onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "clamp(10px, 2vw, 16px) clamp(14px, 3vw, 28px)",
-                    background: "transparent", border: "none",
-                    borderBottom: isActive ? `2.5px solid ${tab.activeColor}` : "2.5px solid transparent",
-                    cursor: "pointer",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "clamp(0.85rem, 2vw, 0.98rem)",
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? tab.activeColor : "rgba(253,246,236,0.45)",
-                    transition: "all 0.25s ease",
-                    flexShrink: 0,
-                    whiteSpace: "nowrap",
-                    marginBottom: -1,
-                  }}
                 >
-                  <span style={{ color: isActive ? tab.activeColor : "rgba(253,246,236,0.3)", display: "flex" }}>
+                  <span className="pw-tab-icon" style={{ color: isActive ? tab.accentColor : "rgba(253,246,236,0.3)" }}>
                     {tab.icon}
                   </span>
                   {tab.label}
-                  <span
-                    className="tab-pill"
-                    style={{
-                      fontSize: "0.68rem", padding: "2px 9px", borderRadius: 999,
-                      background: isActive ? `${tab.activeColor}20` : "rgba(255,255,255,0.05)",
-                      color: isActive ? tab.activeColor : "rgba(253,246,236,0.3)",
-                      fontWeight: 700, transition: "all 0.25s",
-                    }}
-                  >
+                  <span className="pw-tab-pill">
                     {tab.count} {tab.desc}
                   </span>
                 </button>
@@ -11460,7 +11688,7 @@ export default function Writings() {
             })}
           </div>
 
-          {/* Writings sub-controls */}
+          {/* Writings controls */}
           <AnimatePresence>
             {activeTab === "writings" && (
               <motion.div
@@ -11470,33 +11698,16 @@ export default function Writings() {
                 transition={{ duration: 0.25 }}
                 style={{ overflow: "hidden" }}
               >
-                <div style={{
-                  display: "flex", alignItems: "center",
-                  gap: "clamp(8px, 2vw, 16px)",
-                  padding: "10px 0 0",
-                  flexWrap: "wrap",
-                }}>
+                <div className="pw-controls-row">
                   {/* Search */}
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "rgba(255,255,255,0.05)",
-                    borderRadius: 10, padding: "8px 14px",
-                    border: "1px solid rgba(212,168,67,0.12)",
-                    minWidth: 180, maxWidth: 280, flex: "0 0 auto",
-                    transition: "border-color 0.2s, box-shadow 0.2s",
-                  }}>
+                  <div className="pw-search-box">
                     <Search size={14} color="#C9A84C" />
                     <input
-                      className="search-input"
+                      className="pw-search-input"
                       type="text"
                       placeholder="লেখা খুঁজুন..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        border: "none", background: "transparent", outline: "none",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.85rem", color: "#FDF6EC", width: "100%",
-                      }}
                     />
                     {searchQuery && (
                       <button
@@ -11507,47 +11718,27 @@ export default function Writings() {
                       </button>
                     )}
                   </div>
-
-                  {/* Category pills */}
-                  <div
-                    className="category-scroll"
-                    style={{ display: "flex", gap: 6, flex: 1, overflowX: "auto" }}
-                  >
-                    {CATEGORIES.map((cat) => {
-                      const isActive = activeCategory === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          onClick={() => setActiveCategory(cat.id)}
-                          style={{
-                            padding: "7px 16px", borderRadius: 50,
-                            cursor: "pointer",
-                            fontFamily: "'Noto Sans Bengali', sans-serif",
-                            fontSize: "0.82rem", whiteSpace: "nowrap",
-                            transition: "all 0.25s",
-                            background: isActive ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.04)",
-                            color: isActive ? "#D4A843" : "rgba(253,246,236,0.4)",
-                            fontWeight: isActive ? 700 : 400,
-                            border: isActive ? "1px solid rgba(212,168,67,0.25)" : "1px solid rgba(255,255,255,0.06)",
-                          }}
-                        >
-                          {cat.icon} {cat.label}
-                        </button>
-                      );
-                    })}
+                  {/* Categories */}
+                  <div className="pw-cat-scroll">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        className={`pw-cat-btn ${activeCategory === cat.id ? "active" : ""}`}
+                        onClick={() => setActiveCategory(cat.id)}
+                      >
+                        {cat.icon} {cat.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div style={{ height: 12 }} />
               </motion.div>
             )}
           </AnimatePresence>
-          {activeTab === "ebooks" && <div style={{ height: 12 }} />}
+          {activeTab === "ebooks" && <div style={{ height: 10 }} />}
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          TAB CONTENT
-      ══════════════════════════════════════════════════════════════ */}
+      {/* ── Tab Content ── */}
       <AnimatePresence mode="wait">
         {activeTab === "writings" ? (
           <motion.div
@@ -11557,111 +11748,47 @@ export default function Writings() {
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.3 }}
           >
-            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem)" }}>
-
+            <div className="pw-content">
               {/* Featured Writing Banner */}
-              {activeCategory === "all" && !searchQuery && featured && (
+              {featuredWriting && (
                 <motion.div
-                  initial={{ opacity: 0, y: 24 }}
+                  className="pw-featured-banner"
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  onClick={() => setSelectedWriting(featured)}
-                  whileHover={{ y: -4, boxShadow: "0 24px 64px rgba(13,27,42,0.5)" }}
-                  style={{
-                    background: "linear-gradient(135deg, #0D1B2A 0%, #112236 50%, #0D1B2A 100%)",
-                    borderRadius: 20,
-                    padding: "clamp(1.5rem, 4vw, 2.75rem)",
-                    marginBottom: "clamp(1.5rem, 3vw, 2.5rem)",
-                    cursor: "pointer",
-                    position: "relative", overflow: "hidden",
-                    border: "1px solid rgba(212,168,67,0.15)",
-                    boxShadow: "0 12px 40px rgba(0,0,0,0.3)",
-                    transition: "box-shadow 0.3s, transform 0.3s",
-                  }}
+                  onClick={() => { setSelectedWriting(featuredWriting); window.history.pushState(null, '', `/writings/${makeSlug(featuredWriting.title, featuredWriting.id)}`); }}
                 >
-                  {/* Decorative elements */}
-                  <div style={{
-                    position: "absolute", top: -40, right: -40,
-                    width: 200, height: 200, borderRadius: "50%",
-                    background: "rgba(212,168,67,0.05)",
-                    pointerEvents: "none",
-                  }} />
-                  <div style={{
-                    position: "absolute", bottom: -20, left: "30%",
-                    width: 120, height: 120, borderRadius: "50%",
-                    background: "rgba(41,128,185,0.04)",
-                    pointerEvents: "none",
-                  }} />
-
-                  <div style={{ position: "relative" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1rem" }}>
-                      <Star size={14} color="#D4A843" fill="#D4A843" />
+                  <div className="pw-featured-banner-inner">
+                    <div className="pw-featured-label">
+                      <Star size={11} /> বিশেষ লেখা
                       <span style={{
-                        color: "#D4A843",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.72rem", letterSpacing: "0.15em",
-                        textTransform: "uppercase", fontWeight: 700,
-                      }}>
-                        বিশেষ লেখা
-                      </span>
-                      <span style={{
-                        padding: "2px 10px", borderRadius: 999,
-                        background: "rgba(212,168,67,0.1)",
-                        color: "rgba(212,168,67,0.7)",
-                        fontSize: "0.68rem",
+                        marginLeft: 8, padding: "2px 10px", borderRadius: 999,
+                        background: "rgba(255,255,255,0.08)",
+                        color: "rgba(253,246,236,0.5)",
+                        fontSize: "0.65rem",
                         fontFamily: "'Noto Sans Bengali', sans-serif",
                       }}>
-                        {featured.category}
+                        {featuredWriting.category}
                       </span>
                     </div>
-
-                    <h2 style={{
-                      fontFamily: "'Tiro Bangla', serif",
-                      fontSize: "clamp(1.4rem, 3.5vw, 2.1rem)",
-                      color: "#FDF6EC", lineHeight: 1.4,
-                      marginBottom: "1rem",
-                    }}>
-                      {featured.title}
-                    </h2>
-
-                    <p style={{
-                      fontFamily: "'Tiro Bangla', serif",
-                      color: "rgba(253,246,236,0.65)", fontSize: "clamp(0.9rem, 2vw, 1rem)",
-                      lineHeight: 2, maxWidth: 600, whiteSpace: "pre-line",
-                    }}>
-                      {featured.content.slice(0, 220)}...
+                    <h2 className="pw-featured-title">{featuredWriting.title}</h2>
+                    <p className="pw-featured-excerpt">
+                      {featuredWriting.content.slice(0, 200)}...
                     </p>
-
-                    <div style={{ marginTop: "1.25rem", display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                        color: "#D4A843",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.88rem", fontWeight: 700,
-                      }}>
-                        পুরো লেখা পড়ুন
-                        <motion.span
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          →
-                        </motion.span>
-                      </span>
+                    <div className="pw-featured-cta">
+                      পুরো লেখা পড়ুন
+                      <motion.span
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >→</motion.span>
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* Results count */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                marginBottom: "clamp(1rem, 2vw, 1.5rem)", flexWrap: "wrap", gap: 8,
-              }}>
-                <span style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.82rem",
-                  color: "rgba(212,168,67,0.55)",
-                }}>
+              {/* Results bar */}
+              <div className="pw-results-bar">
+                <span className="pw-results-count">
                   {filtered.length}টি লেখা পাওয়া গেছে
                   {activeCategory !== "all" && (
                     <span style={{ color: "rgba(253,246,236,0.3)", marginLeft: 8 }}>
@@ -11671,30 +11798,17 @@ export default function Writings() {
                 </span>
                 {(activeCategory !== "all" || searchQuery) && (
                   <button
+                    className="pw-clear-btn"
                     onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
-                    style={{
-                      background: "rgba(212,168,67,0.1)", border: "1px solid rgba(212,168,67,0.2)",
-                      color: "#D4A843", padding: "4px 12px", borderRadius: 999,
-                      fontSize: "0.75rem", cursor: "pointer",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      display: "flex", alignItems: "center", gap: 5,
-                    }}
                   >
                     <X size={11} /> ফিল্টার সরান
                   </button>
                 )}
               </div>
 
-              {/* Writings Grid */}
+              {/* Grid */}
               {filtered.length > 0 ? (
-                <div
-                  className="writings-grid"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                    gap: "clamp(12px, 2vw, 20px)",
-                  }}
-                >
+                <div className="pw-grid">
                   {filtered.map((writing, i) => (
                     <WritingCard
                       key={writing.id}
@@ -11705,30 +11819,17 @@ export default function Writings() {
                   ))}
                 </div>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  style={{
-                    textAlign: "center", padding: "clamp(40px, 8vw, 80px) 20px",
-                    color: "rgba(253,246,236,0.35)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                  }}
-                >
-                  <Feather size={40} color="rgba(212,168,67,0.25)" style={{ marginBottom: 16 }} />
-                  <p style={{ fontSize: "1rem" }}>কোনো লেখা পাওয়া যায়নি।</p>
+                <div className="pw-empty">
+                  <Feather size={40} color="rgba(212,168,67,0.2)" style={{ marginBottom: 16 }} />
+                  <p style={{ fontSize: "1rem", marginBottom: 12 }}>কোনো লেখা পাওয়া যায়নি।</p>
                   <button
+                    className="pw-clear-btn"
+                    style={{ margin: "0 auto" }}
                     onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
-                    style={{
-                      marginTop: 12, background: "rgba(212,168,67,0.1)",
-                      border: "1px solid rgba(212,168,67,0.2)",
-                      color: "#D4A843", padding: "8px 20px", borderRadius: 999,
-                      fontSize: "0.85rem", cursor: "pointer",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                    }}
                   >
                     সব লেখা দেখুন
                   </button>
-                </motion.div>
+                </div>
               )}
             </div>
           </motion.div>
@@ -11740,7 +11841,7 @@ export default function Writings() {
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.3 }}
           >
-            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem)" }}>
+            <div className="pw-content">
               <EBooksSection />
             </div>
           </motion.div>
@@ -11763,4 +11864,3 @@ export default function Writings() {
     </div>
   );
 }
-
