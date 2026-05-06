@@ -10139,7 +10139,7 @@ const WORLD_CLASS_CSS = `
       #0A1628 75%,
       #0C1A30 100%
     );
-    padding: clamp(5.5rem, 10vw, 9rem) clamp(1.25rem, 6vw, 4rem) clamp(3rem, 5vw, 5rem);
+    padding: clamp(7rem, 12vw, 10rem) clamp(1.25rem, 6vw, 4rem) clamp(3rem, 5vw, 5rem);
   }
 
   /* Ambient background mesh */
@@ -11105,7 +11105,7 @@ const WORLD_CLASS_CSS = `
      RESPONSIVE
   ══════════════════════════════════════════ */
   @media (max-width: 480px) {
-    .wc-hero { padding: 5rem 1rem 2.5rem; min-height: auto; }
+    .wc-hero { padding: 6.5rem 1rem 2.5rem; min-height: auto; }
     .wc-hero-inner { grid-template-columns: 1fr; }
     .wc-hero-orb { display: none; }
     .wc-hero-title { font-size: 1.9rem !important; }
@@ -11220,6 +11220,7 @@ function WritingCard({
   );
 }
 // ── Writing Modal — Immersive Reading v3 ─────────────────────────────────────
+// ── Writing Modal — Premium Immersive Reading v4 ─────────────────────────────
 function WritingModal({
   writing,
   allWritings,
@@ -11233,16 +11234,29 @@ function WritingModal({
 }) {
   const [copied, setCopied] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [fontSize, setFontSize] = useState(1.12);
+  const [fontSize, setFontSize] = useState(1.1);
   const [readingTheme, setReadingTheme] = useState<"light" | "sepia" | "dark">("light");
+  const [readProgress, setReadProgress] = useState(0);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const slug = makeSlug(writing.title, writing.id);
 
   useEffect(() => {
     document.title = `${writing.title} | মাহবুব সরদার সবুজ`;
-    return () => {
-      document.title = 'লেখালেখি ও বই | মাহবুব সরদার সবুজ';
-    };
+    return () => { document.title = 'লেখালেখি ও বই | মাহবুব সরদার সবুজ'; };
   }, [writing.title]);
+
+  // Track reading progress
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const total = scrollHeight - clientHeight;
+      setReadProgress(total > 0 ? Math.min(100, (scrollTop / total) * 100) : 100);
+    };
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [writing]);
 
   const currentIndex = allWritings.findIndex((w) => w.id === writing.id);
   const prevWriting = currentIndex > 0 ? allWritings[currentIndex - 1] : null;
@@ -11254,96 +11268,273 @@ function WritingModal({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(`${shareText}
-
-${writing.content.slice(0, 300)}...
-
-পুরো পড়ুন: ${shareUrl}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      await navigator.clipboard.writeText(`${shareText}\n${writing.content.slice(0, 300)}...\nপুরো পড়ুন: ${shareUrl}`);
+      setCopied(true); setTimeout(() => setCopied(false), 2500);
     } catch { /* fallback */ }
   };
-
   const handleFacebookShare = () => {
-    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
-    window.open(fbUrl, "_blank", "width=600,height=400");
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, "_blank", "width=600,height=400");
   };
-
   const handleNativeShare = async () => {
     if (navigator.share) {
       try { await navigator.share({ title: writing.title, text: shareText, url: shareUrl }); }
-      catch { /* user cancelled */ }
+      catch { /* cancelled */ }
     } else { handleCopy(); }
   };
 
   const themes = {
-    light: { bg: "#ffffff", text: "#1a1a2e", subtext: "#666", border: "rgba(13,27,42,0.08)", headerBg: "#fafafa" },
-    sepia: { bg: "#fdf6e3", text: "#3b2f2f", subtext: "#7a6a5a", border: "rgba(90,60,30,0.1)", headerBg: "#f8f0d8" },
-    dark:  { bg: "#0A1628", text: "#FDF6EC", subtext: "rgba(253,246,236,0.5)", border: "rgba(255,255,255,0.07)", headerBg: "#060E1A" },
+    light: {
+      bg: "#FAFAF8",
+      surface: "#FFFFFF",
+      text: "#1C1C2E",
+      textDim: "#555566",
+      subtext: "#8888A0",
+      border: "rgba(28,28,46,0.08)",
+      headerBg: "#F5F5F2",
+      navBg: "#F5F5F2",
+      progressBg: "rgba(28,28,46,0.06)",
+      label: "দিনের আলো",
+      icon: "☀️",
+    },
+    sepia: {
+      bg: "#FDF8EE",
+      surface: "#FDF8EE",
+      text: "#3B2F1E",
+      textDim: "#6B5A45",
+      subtext: "#9A8570",
+      border: "rgba(90,60,30,0.1)",
+      headerBg: "#F5EDD8",
+      navBg: "#F5EDD8",
+      progressBg: "rgba(90,60,30,0.08)",
+      label: "সেপিয়া",
+      icon: "📜",
+    },
+    dark: {
+      bg: "#0C1220",
+      surface: "#0C1220",
+      text: "#EEE8DC",
+      textDim: "rgba(238,232,220,0.65)",
+      subtext: "rgba(238,232,220,0.38)",
+      border: "rgba(255,255,255,0.07)",
+      headerBg: "#080E18",
+      navBg: "#080E18",
+      progressBg: "rgba(255,255,255,0.04)",
+      label: "রাতের থিম",
+      icon: "🌙",
+    },
   };
   const th = themes[readingTheme];
 
+  const MODAL_CSS = `
+    .wm-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(2,5,12,0.92);
+      backdrop-filter: blur(28px) saturate(1.5);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 0;
+    }
+    @media (min-width: 600px) {
+      .wm-overlay { align-items: center; padding: clamp(1rem, 3vw, 2rem); }
+    }
+    .wm-sheet {
+      width: 100%; max-width: 680px;
+      border-radius: 28px 28px 0 0;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      max-height: 96vh;
+      position: relative;
+    }
+    @media (min-width: 600px) {
+      .wm-sheet { border-radius: 26px; max-height: 90vh; margin: auto; }
+    }
+    .wm-progress-track {
+      height: 3px; width: 100%; position: relative;
+      flex-shrink: 0;
+    }
+    .wm-progress-fill {
+      height: 100%; transition: width 0.2s ease;
+      border-radius: 0 2px 2px 0;
+    }
+    .wm-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; gap: 10px; flex-shrink: 0;
+      border-bottom: 1px solid;
+    }
+    .wm-header-left {
+      display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
+    }
+    .wm-category-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 12px; border-radius: 999px;
+      font-family: 'SolaimanLipi', sans-serif;
+      font-size: 0.65rem; font-weight: 400;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .wm-controls {
+      display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    }
+    .wm-ctrl-btn {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid; cursor: pointer; transition: all 0.2s;
+      font-size: 0.78rem;
+    }
+    .wm-close-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid; cursor: pointer; transition: all 0.2s;
+    }
+    .wm-close-btn:hover { background: rgba(231,76,60,0.1) !important; color: #e74c3c !important; }
+    .wm-theme-strip {
+      display: flex; align-items: center; gap: 4px;
+      padding: 8px 16px; flex-shrink: 0;
+      border-bottom: 1px solid;
+    }
+    .wm-theme-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      font-family: 'SolaimanLipi', sans-serif;
+      font-size: 0.72rem; font-weight: 400;
+      border: 1px solid; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .wm-font-controls {
+      display: flex; align-items: center; gap: 4px; margin-left: auto;
+    }
+    .wm-font-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid; cursor: pointer; transition: all 0.2s;
+    }
+    .wm-body {
+      flex: 1; overflow-y: auto; padding: 28px 24px 24px;
+      scroll-behavior: smooth;
+    }
+    @media (min-width: 600px) {
+      .wm-body { padding: 36px 44px 32px; }
+    }
+    .wm-body::-webkit-scrollbar { width: 4px; }
+    .wm-body::-webkit-scrollbar-track { background: transparent; }
+    .wm-body::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 4px; }
+    .wm-title {
+      font-family: 'SolaimanLipi', sans-serif;
+      font-size: clamp(1.4rem, 4vw, 1.85rem);
+      font-weight: 400; line-height: 1.55;
+      margin-bottom: 1.5rem; padding-bottom: 1.25rem;
+      border-bottom: 1px solid;
+    }
+    .wm-content {
+      font-family: 'SolaimanLipi', sans-serif;
+      font-weight: 400; white-space: pre-line;
+      line-height: 2.35; letter-spacing: 0.01em;
+      transition: font-size 0.2s;
+    }
+    .wm-author-card {
+      display: flex; align-items: center; gap: 14px;
+      margin-top: 2.5rem; padding: 16px 18px;
+      border-radius: 16px; border: 1px solid;
+    }
+    .wm-author-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; border: 2px solid;
+    }
+    .wm-author-name {
+      font-family: 'SolaimanLipi', sans-serif;
+      font-size: 0.9rem; font-weight: 400; line-height: 1.4;
+    }
+    .wm-author-meta {
+      font-family: 'SolaimanLipi', sans-serif;
+      font-size: 0.68rem; font-weight: 400; margin-top: 2px;
+    }
+    .wm-nav {
+      display: flex; border-top: 1px solid; flex-shrink: 0;
+    }
+    .wm-nav-btn {
+      flex: 1; padding: 14px 16px;
+      background: transparent; border: none; cursor: pointer;
+      transition: background 0.2s; font-family: 'SolaimanLipi', sans-serif;
+      font-weight: 400; display: flex; align-items: center; gap: 8px;
+    }
+    .wm-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .wm-nav-btn:not(:disabled):hover { background: rgba(128,128,128,0.05); }
+    .wm-nav-btn:first-child { border-right: 1px solid; justify-content: flex-start; }
+    .wm-nav-btn:last-child { justify-content: flex-end; }
+    .wm-nav-label { font-size: 0.6rem; opacity: 0.5; display: block; margin-bottom: 2px; }
+    .wm-nav-title {
+      font-size: 0.8rem; display: block;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;
+    }
+    .wm-share-dropdown {
+      position: absolute; top: 44px; right: 0;
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 12px 44px rgba(13,27,42,0.2);
+      border: 1px solid rgba(13,27,42,0.08);
+      min-width: 195px; z-index: 10; overflow: hidden;
+    }
+    .wm-share-item {
+      width: 100%; padding: 12px 18px;
+      display: flex; align-items: center; gap: 11px;
+      background: transparent; border: none; cursor: pointer;
+      font-family: 'SolaimanLipi', sans-serif;
+      font-size: 0.82rem; font-weight: 400;
+      transition: background 0.15s; text-align: left;
+    }
+    .wm-share-item:hover { background: rgba(13,27,42,0.04); }
+    .wm-share-item + .wm-share-item { border-top: 1px solid rgba(13,27,42,0.06); }
+  `;
+
   return (
     <motion.div
-      className="wc-modal-overlay"
+      className="wm-overlay"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
+      <style>{MODAL_CSS}</style>
       <motion.div
-        className="wc-modal-box"
+        className="wm-sheet"
         style={{ background: th.bg }}
-        initial={{ opacity: 0, y: 50, scale: 0.94 }}
+        initial={{ opacity: 0, y: 60, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 50, scale: 0.94 }}
-        transition={{ type: "spring", damping: 28, stiffness: 280 }}
+        exit={{ opacity: 0, y: 60, scale: 0.96 }}
+        transition={{ type: "spring", damping: 30, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Reading progress bar */}
-        <div
-          className="wc-modal-progress"
-          style={{ background: `linear-gradient(90deg, ${colors.stripe}, ${colors.stripe}88, transparent)` }}
-        />
+        {/* Progress Track */}
+        <div className="wm-progress-track" style={{ background: th.progressBg }}>
+          <div
+            className="wm-progress-fill"
+            style={{
+              width: `${readProgress}%`,
+              background: `linear-gradient(90deg, ${colors.stripe}, ${colors.stripe}99)`,
+            }}
+          />
+        </div>
 
         {/* Header */}
-        <div className="wc-modal-header" style={{ background: th.headerBg, borderBottomColor: th.border }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
-            <span style={{
-              padding: "4px 13px", borderRadius: 999,
-              fontSize: "0.68rem", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
-              background: colors.badgeBg, color: colors.stripe,
-              fontWeight: 400, border: `1px solid ${colors.stripe}40`,
-              flexShrink: 0,
-            }}>
+        <div className="wm-header" style={{ background: th.headerBg, borderBottomColor: th.border }}>
+          <div className="wm-header-left">
+            <span
+              className="wm-category-badge"
+              style={{
+                background: colors.badgeBg,
+                color: colors.stripe,
+                border: `1px solid ${colors.stripe}38`,
+              }}
+            >
+              <span>{colors.icon}</span>
               {writing.category}
             </span>
           </div>
-          <div className="wc-modal-controls">
-            {(["light", "sepia", "dark"] as const).map((t) => (
-              <button
-                key={t}
-                className="wc-modal-theme-btn"
-                onClick={() => setReadingTheme(t)}
-                style={{
-                  background: readingTheme === t ? colors.badgeBg : "rgba(13,27,42,0.06)",
-                  color: readingTheme === t ? colors.stripe : th.subtext,
-                  border: `1px solid ${readingTheme === t ? colors.stripe + "40" : "rgba(13,27,42,0.1)"}`,
-                }}
-              >
-                {t === "light" ? "☀" : t === "sepia" ? "📜" : "🌙"}
-              </button>
-            ))}
-            <button className="wc-modal-font-btn" style={{ color: th.text, background: th.bg, border: `1px solid ${th.border}` }} onClick={() => setFontSize(f => Math.max(0.85, f - 0.1))}>
-              <AArrowDown size={14} />
-            </button>
-            <button className="wc-modal-font-btn" style={{ color: th.text, background: th.bg, border: `1px solid ${th.border}` }} onClick={() => setFontSize(f => Math.min(1.7, f + 0.1))}>
-              <AArrowUp size={14} />
-            </button>
+          <div className="wm-controls">
+            {/* Share */}
             <div style={{ position: "relative" }}>
               <button
-                className="wc-modal-font-btn"
-                style={{ color: th.text, background: th.bg, border: `1px solid ${th.border}` }}
+                className="wm-ctrl-btn"
+                style={{ color: th.textDim, background: th.surface, borderColor: th.border }}
                 onClick={() => setShowShare(s => !s)}
               >
                 <Share2 size={14} />
@@ -11351,123 +11542,166 @@ ${writing.content.slice(0, 300)}...
               <AnimatePresence>
                 {showShare && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.94 }}
+                    className="wm-share-dropdown"
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.94 }}
-                    transition={{ duration: 0.15 }}
-                    style={{
-                      position: "absolute", top: 44, right: 0,
-                      background: "#fff", borderRadius: 14,
-                      boxShadow: "0 10px 40px rgba(13,27,42,0.22)",
-                      border: "1px solid rgba(13,27,42,0.09)",
-                      minWidth: 190, zIndex: 10, overflow: "hidden",
-                    }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={{ duration: 0.14 }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {[
-                      { label: "Facebook-এ শেয়ার", icon: <Facebook size={15} />, color: "#1877F2", action: () => { handleFacebookShare(); setShowShare(false); } },
-                      { label: copied ? "কপি হয়েছে!" : "লিংক কপি করুন", icon: copied ? <Check size={15} /> : <Copy size={15} />, color: copied ? "#27ae60" : "#333", action: () => { handleCopy(); setShowShare(false); } },
-                      { label: "শেয়ার করুন", icon: <Share2 size={15} />, color: "#555", action: () => { handleNativeShare(); setShowShare(false); } },
-                    ].map((item, i, arr) => (
-                      <button
-                        key={item.label}
-                        onClick={item.action}
-                        style={{
-                          width: "100%", padding: "12px 18px",
-                          display: "flex", alignItems: "center", gap: 11,
-                          background: "transparent", border: "none",
-                          cursor: "pointer", color: item.color,
-                          fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.83rem", fontWeight: 400,
-                          borderBottom: i < arr.length - 1 ? "1px solid rgba(13,27,42,0.06)" : "none",
-                          transition: "background 0.15s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(13,27,42,0.04)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >
-                        {item.icon} {item.label}
-                      </button>
-                    ))}
+                    <button className="wm-share-item" style={{ color: "#1877F2" }} onClick={() => { handleFacebookShare(); setShowShare(false); }}>
+                      <Facebook size={15} /> Facebook-এ শেয়ার
+                    </button>
+                    <button className="wm-share-item" style={{ color: copied ? "#27ae60" : "#333" }} onClick={() => { handleCopy(); setShowShare(false); }}>
+                      {copied ? <Check size={15} /> : <Copy size={15} />} {copied ? "কপি হয়েছে!" : "লিংক কপি করুন"}
+                    </button>
+                    <button className="wm-share-item" style={{ color: "#555" }} onClick={() => { handleNativeShare(); setShowShare(false); }}>
+                      <Share2 size={15} /> শেয়ার করুন
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            <button className="wc-modal-close" style={{ color: th.subtext, background: th.bg, border: `1px solid ${th.border}` }} onClick={onClose}>
+            {/* Close */}
+            <button
+              className="wm-close-btn"
+              style={{ color: th.subtext, background: th.surface, borderColor: th.border }}
+              onClick={onClose}
+            >
               <X size={16} />
             </button>
           </div>
         </div>
 
-        {/* Body */}
-        <div className="wc-modal-body" style={{ background: th.bg }}>
-          <h2 style={{
-            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
-            fontSize: "clamp(1.45rem, 3vw, 1.95rem)",
-            color: th.text, fontWeight: 400,
-            lineHeight: 1.5, marginBottom: "1.75rem",
-          }}>
+        {/* Theme & Font Strip */}
+        <div className="wm-theme-strip" style={{ background: th.headerBg, borderBottomColor: th.border }}>
+          {(["light", "sepia", "dark"] as const).map((t) => (
+            <button
+              key={t}
+              className="wm-theme-btn"
+              onClick={() => setReadingTheme(t)}
+              style={{
+                background: readingTheme === t ? `${colors.stripe}18` : "transparent",
+                color: readingTheme === t ? colors.stripe : th.subtext,
+                borderColor: readingTheme === t ? `${colors.stripe}40` : th.border,
+              }}
+            >
+              <span>{themes[t].icon}</span>
+              <span style={{ display: "none" }}>{themes[t].label}</span>
+            </button>
+          ))}
+          <div className="wm-font-controls">
+            <button
+              className="wm-font-btn"
+              style={{ color: th.textDim, background: th.surface, borderColor: th.border }}
+              onClick={() => setFontSize(f => Math.max(0.85, f - 0.08))}
+              title="ছোট করুন"
+            >
+              <AArrowDown size={13} />
+            </button>
+            <button
+              className="wm-font-btn"
+              style={{ color: th.textDim, background: th.surface, borderColor: th.border }}
+              onClick={() => setFontSize(f => Math.min(1.65, f + 0.08))}
+              title="বড় করুন"
+            >
+              <AArrowUp size={13} />
+            </button>
+          </div>
+        </div>
+
+        {/* Body — Scrollable */}
+        <div className="wm-body" ref={bodyRef} style={{ background: th.bg }}>
+          {/* Title */}
+          <h2
+            className="wm-title"
+            style={{ color: th.text, borderBottomColor: th.border }}
+          >
             {writing.title}
           </h2>
+
+          {/* Content */}
           <p
-            className="wc-modal-content-text"
+            className="wm-content"
             style={{ fontSize: `${fontSize}rem`, color: th.text }}
           >
             {writing.content}
           </p>
-          <div style={{
-            marginTop: "2.25rem", paddingTop: "1.5rem",
-            borderTop: `1px solid ${th.border}`,
-            display: "flex", alignItems: "center", gap: 12,
-          }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: "50%",
-              background: colors.badgeBg,
-              border: `2px solid ${colors.stripe}40`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: colors.stripe, flexShrink: 0,
-            }}>
+
+          {/* Author Card */}
+          <div
+            className="wm-author-card"
+            style={{ borderColor: th.border, background: readingTheme === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.025)" }}
+          >
+            <div
+              className="wm-author-avatar"
+              style={{
+                background: colors.badgeBg,
+                borderColor: `${colors.stripe}40`,
+                color: colors.stripe,
+              }}
+            >
               <Pen size={16} />
             </div>
             <div>
-              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.92rem", color: th.text, fontWeight: 400 }}>
+              <div className="wm-author-name" style={{ color: th.text }}>
                 মাহবুব সরদার সবুজ
               </div>
-              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", color: th.subtext, marginTop: 2 }}>
+              <div className="wm-author-meta" style={{ color: th.subtext }}>
                 লেখক ও কবি · {writing.date}
               </div>
+            </div>
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  padding: "3px 10px", borderRadius: 999,
+                  background: colors.badgeBg, color: colors.stripe,
+                  border: `1px solid ${colors.stripe}30`,
+                  fontFamily: "'SolaimanLipi', sans-serif",
+                  fontSize: "0.62rem", fontWeight: 400,
+                }}
+              >
+                {writing.category}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="wc-modal-nav" style={{ borderTopColor: th.border }}>
+        <div className="wm-nav" style={{ borderTopColor: th.border, background: th.navBg }}>
           <button
-            className="wc-modal-nav-btn"
+            className="wm-nav-btn"
             disabled={!prevWriting}
-            onClick={() => { if (prevWriting) { onNavigate(prevWriting); window.history.pushState(null, '', `/writings/\${makeSlug(prevWriting.title, prevWriting.id)}`); } }}
-            style={{ display: "flex", alignItems: "center", gap: 9 }}
+            style={{ color: th.text, borderRightColor: th.border }}
+            onClick={() => {
+              if (prevWriting) {
+                onNavigate(prevWriting);
+                window.history.pushState(null, '', `/writings/${makeSlug(prevWriting.title, prevWriting.id)}`);
+              }
+            }}
           >
-            <ChevronLeft size={16} color={th.subtext} />
-            <div style={{ textAlign: "left", overflow: "hidden" }}>
-              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>আগের লেখা</div>
-              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", color: th.text, fontWeight: 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
-                {prevWriting?.title}
-              </div>
+            <ChevronLeft size={16} color={prevWriting ? colors.stripe : th.subtext} style={{ flexShrink: 0 }} />
+            <div style={{ overflow: "hidden" }}>
+              <span className="wm-nav-label" style={{ color: th.subtext }}>আগের লেখা</span>
+              <span className="wm-nav-title" style={{ color: th.text }}>{prevWriting?.title ?? "—"}</span>
             </div>
           </button>
           <button
-            className="wc-modal-nav-btn"
+            className="wm-nav-btn"
             disabled={!nextWriting}
-            onClick={() => { if (nextWriting) { onNavigate(nextWriting); window.history.pushState(null, '', `/writings/\${makeSlug(nextWriting.title, nextWriting.id)}`); } }}
-            style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 9 }}
+            style={{ color: th.text }}
+            onClick={() => {
+              if (nextWriting) {
+                onNavigate(nextWriting);
+                window.history.pushState(null, '', `/writings/${makeSlug(nextWriting.title, nextWriting.id)}`);
+              }
+            }}
           >
-            <div style={{ textAlign: "right", overflow: "hidden" }}>
-              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>পরের লেখা</div>
-              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", color: th.text, fontWeight: 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
-                {nextWriting?.title}
-              </div>
+            <div style={{ overflow: "hidden", textAlign: "right" }}>
+              <span className="wm-nav-label" style={{ color: th.subtext }}>পরের লেখা</span>
+              <span className="wm-nav-title" style={{ color: th.text }}>{nextWriting?.title ?? "—"}</span>
             </div>
-            <ChevronRight size={16} color={th.subtext} />
+            <ChevronRight size={16} color={nextWriting ? colors.stripe : th.subtext} style={{ flexShrink: 0 }} />
           </button>
         </div>
       </motion.div>
