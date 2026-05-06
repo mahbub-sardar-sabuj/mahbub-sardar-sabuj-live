@@ -10040,35 +10040,33 @@ function getCategoryColor(cat: string) {
 //  WORLD-CLASS PREMIUM CSS — v3.0
 // ══════════════════════════════════════════════════════════════════════════════
 const WORLD_CLASS_CSS = `
-  /* ── Google Fonts ── */
-  @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+  @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
-  /* ── CSS Custom Properties ── */
   :root {
+    --cream: #FDF6EC;
+    --cream-dim: rgba(253,246,236,0.62);
+    --cream-muted: rgba(253,246,236,0.4);
+    --cream-faint: rgba(253,246,236,0.15);
+    --gold: #D4A843;
+    --gold-light: #F6C90E;
     --navy: #060E1A;
     --navy-mid: #0A1628;
     --navy-light: #0D1B2A;
-    --navy-card: #0F2035;
-    --gold: #D4A843;
-    --gold-light: #f0c060;
-    --gold-pale: #C9A84C;
-    --cream: #FDF6EC;
-    --cream-dim: rgba(253,246,236,0.65);
-    --cream-muted: rgba(253,246,236,0.4);
-    --cream-faint: rgba(253,246,236,0.15);
+    --font-main: 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
   }
 
   /* ── Keyframes ── */
   @keyframes inkDrop {
     0%   { transform: translateY(-20px) scale(0.8); opacity: 0; }
-    20%  { opacity: 0.6; }
-    80%  { opacity: 0.3; }
+    20%  { opacity: 0.5; }
+    80%  { opacity: 0.2; }
     100% { transform: translateY(100vh) scale(1.1); opacity: 0; }
   }
   @keyframes floatUp {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
-    33%       { transform: translateY(-14px) rotate(2deg); }
-    66%       { transform: translateY(-7px) rotate(-1deg); }
+    33%       { transform: translateY(-12px) rotate(1.5deg); }
+    66%       { transform: translateY(-6px) rotate(-1deg); }
   }
   @keyframes shimmerGold {
     0%   { background-position: -300% center; }
@@ -10076,21 +10074,21 @@ const WORLD_CLASS_CSS = `
   }
   @keyframes pulseRing {
     0%   { box-shadow: 0 0 0 0 rgba(212,168,67,0.5); }
-    70%  { box-shadow: 0 0 0 16px rgba(212,168,67,0); }
+    70%  { box-shadow: 0 0 0 14px rgba(212,168,67,0); }
     100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
   }
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
+    from { opacity: 0; transform: translateY(22px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes borderPulse {
-    0%, 100% { border-color: rgba(212,168,67,0.12); box-shadow: 0 0 0 rgba(212,168,67,0); }
-    50%       { border-color: rgba(212,168,67,0.4); box-shadow: 0 0 30px rgba(212,168,67,0.08); }
+    0%, 100% { border-color: rgba(212,168,67,0.12); }
+    50%       { border-color: rgba(212,168,67,0.38); }
   }
   @keyframes bookFloat {
-    0%, 100% { transform: translateY(0) rotateY(0deg) rotateX(0deg); }
-    25%       { transform: translateY(-10px) rotateY(4deg) rotateX(2deg); }
-    75%       { transform: translateY(-5px) rotateY(-2deg) rotateX(-1deg); }
+    0%, 100% { transform: translateY(0) rotateY(0deg); }
+    25%       { transform: translateY(-10px) rotateY(4deg); }
+    75%       { transform: translateY(-5px) rotateY(-2deg); }
   }
   @keyframes gradientShift {
     0%   { background-position: 0% 50%; }
@@ -10105,47 +10103,38 @@ const WORLD_CLASS_CSS = `
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
   }
-  @keyframes cardReveal {
-    from { opacity: 0; transform: translateY(32px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
   @keyframes progressBar {
     from { width: 0%; }
     to   { width: 100%; }
   }
 
-  /* ── Base ── */
   *, *::before, *::after { box-sizing: border-box; }
 
   /* ═══════════════════════════════════════════
-     HERO SECTION — Cinematic Full-Screen
+     HERO SECTION
   ═══════════════════════════════════════════ */
   .wc-hero {
-    position: relative;
-    overflow: hidden;
-    min-height: 72vh;
-    display: flex;
-    align-items: center;
+    position: relative; overflow: hidden;
+    min-height: 75vh; display: flex; align-items: center;
     background: linear-gradient(160deg, #020810 0%, #060E1A 30%, #0A1628 65%, #0D1B2A 100%);
-    padding: clamp(5rem, 10vw, 8rem) clamp(1.25rem, 6vw, 4rem) clamp(2.5rem, 5vw, 4rem);
+    padding: clamp(5.5rem, 10vw, 8.5rem) clamp(1.25rem, 6vw, 4rem) clamp(3rem, 5vw, 4.5rem);
   }
   .wc-hero-mesh {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 80% 70% at 10% 20%, rgba(212,168,67,0.14) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 90% 80%, rgba(74,144,217,0.09) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(155,89,182,0.07) 0%, transparent 55%),
-      radial-gradient(ellipse 40% 30% at 80% 10%, rgba(212,168,67,0.06) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 70% at 8% 18%, rgba(212,168,67,0.13) 0%, transparent 58%),
+      radial-gradient(ellipse 60% 50% at 92% 82%, rgba(74,144,217,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(155,89,182,0.06) 0%, transparent 55%);
     pointer-events: none;
-    animation: gradientShift 15s ease infinite;
+    animation: gradientShift 18s ease infinite;
     background-size: 200% 200%;
   }
   .wc-hero-grid {
     position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(212,168,67,0.028) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212,168,67,0.028) 1px, transparent 1px);
-    background-size: 80px 80px;
+      linear-gradient(rgba(212,168,67,0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,168,67,0.022) 1px, transparent 1px);
+    background-size: 90px 90px;
     pointer-events: none;
   }
   .wc-hero-scanline {
@@ -10153,23 +10142,19 @@ const WORLD_CLASS_CSS = `
   }
   .wc-hero-scanline::after {
     content: '';
-    position: absolute;
-    width: 100%; height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(212,168,67,0.06), transparent);
-    animation: scanLine 8s linear infinite;
+    position: absolute; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,168,67,0.05), transparent);
+    animation: scanLine 10s linear infinite;
   }
   .wc-ink-particle {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(212,168,67,0.5);
+    position: absolute; border-radius: 50%;
+    background: rgba(212,168,67,0.45);
     animation: inkDrop linear infinite;
-    pointer-events: none;
-    filter: blur(0.5px);
+    pointer-events: none; filter: blur(0.5px);
   }
   .wc-hero-inner {
     max-width: 1280px; margin: 0 auto;
-    position: relative; z-index: 2;
-    width: 100%;
+    position: relative; z-index: 2; width: 100%;
     display: grid;
     grid-template-columns: 1fr auto;
     gap: clamp(2rem, 5vw, 5rem);
@@ -10178,8 +10163,8 @@ const WORLD_CLASS_CSS = `
   .wc-hero-eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
     padding: 7px 20px; border-radius: 999px;
-    background: rgba(212,168,67,0.08);
-    border: 1px solid rgba(212,168,67,0.2);
+    background: rgba(212,168,67,0.07);
+    border: 1px solid rgba(212,168,67,0.18);
     margin-bottom: 1.75rem;
     animation: fadeInUp 0.6s ease both;
     position: relative; overflow: hidden;
@@ -10187,28 +10172,28 @@ const WORLD_CLASS_CSS = `
   .wc-hero-eyebrow::before {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(212,168,67,0.08), transparent);
-    animation: shimmerGold 3s linear infinite;
+    background: linear-gradient(90deg, transparent, rgba(212,168,67,0.07), transparent);
+    animation: shimmerGold 3.5s linear infinite;
     background-size: 200% 100%;
   }
   .wc-hero-eyebrow-dot {
     width: 7px; height: 7px; border-radius: 50%;
     background: #D4A843;
-    animation: pulseRing 2s ease infinite;
+    animation: pulseRing 2.2s ease infinite;
     flex-shrink: 0;
   }
   .wc-hero-eyebrow-text {
     color: #D4A843;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.72rem; font-weight: 800;
-    letter-spacing: 0.22em; text-transform: uppercase;
+    font-family: var(--font-main);
+    font-size: 0.72rem; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
     position: relative; z-index: 1;
   }
   .wc-hero-title {
-    font-family: 'Tiro Bangla', serif;
-    font-size: clamp(3.2rem, 7.5vw, 5.8rem);
+    font-family: var(--font-main);
+    font-size: clamp(2.8rem, 7vw, 5.2rem);
     color: var(--cream); font-weight: 400;
-    line-height: 1.1; margin: 0 0 1.5rem;
+    line-height: 1.15; margin: 0 0 1.5rem;
     animation: fadeInUp 0.7s 0.1s ease both;
     position: relative;
   }
@@ -10219,131 +10204,127 @@ const WORLD_CLASS_CSS = `
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: shimmerGold 4s linear infinite;
-    filter: drop-shadow(0 0 20px rgba(246,201,14,0.3));
+    filter: drop-shadow(0 0 18px rgba(246,201,14,0.28));
   }
   .wc-hero-title-underline {
     position: absolute; bottom: -10px; left: 0;
-    width: clamp(80px, 14vw, 130px); height: 3px;
-    background: linear-gradient(90deg, #D4A843, rgba(212,168,67,0.3), transparent);
+    width: clamp(70px, 12vw, 120px); height: 2.5px;
+    background: linear-gradient(90deg, #D4A843, rgba(212,168,67,0.25), transparent);
     border-radius: 2px;
   }
   .wc-hero-desc {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: clamp(0.95rem, 1.8vw, 1.12rem);
-    color: rgba(253,246,236,0.58);
-    line-height: 2;
-    max-width: 540px;
+    font-family: var(--font-main);
+    font-size: clamp(0.92rem, 1.7vw, 1.08rem);
+    color: rgba(253,246,236,0.55);
+    line-height: 2.1; max-width: 520px;
     margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
     animation: fadeInUp 0.7s 0.2s ease both;
-    letter-spacing: 0.01em;
   }
+
+  /* ── Stats Row — Horizontal elegant strip ── */
   .wc-stats-row {
-    display: flex; gap: clamp(12px, 3vw, 24px);
-    flex-wrap: wrap; row-gap: 12px;
+    display: flex; gap: clamp(10px, 2.5vw, 20px);
+    flex-wrap: wrap; row-gap: 10px;
     animation: fadeInUp 0.7s 0.3s ease both;
   }
   .wc-stat-card {
-    display: flex; align-items: center; gap: 14px;
-    padding: 16px 22px; border-radius: 16px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-radius: 14px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: default;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.04);
   }
   .wc-stat-card:hover {
-    background: rgba(246,201,14,0.07);
-    border-color: rgba(246,201,14,0.28);
-    transform: translateY(-4px) scale(1.025);
-    box-shadow: 0 16px 50px rgba(0,0,0,0.35), 0 0 0 1px rgba(246,201,14,0.12), inset 0 1px 0 rgba(255,255,255,0.07);
+    background: rgba(212,168,67,0.06);
+    border-color: rgba(212,168,67,0.24);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(212,168,67,0.1);
   }
   .wc-stat-icon {
-    width: 46px; height: 46px; border-radius: 14px;
+    width: 42px; height: 42px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; position: relative;
-  }
-  .wc-stat-icon::after {
-    content: '';
-    position: absolute; inset: -1px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
   }
   .wc-stat-value {
-    font-family: 'Tiro Bangla', serif;
-    color: var(--cream); font-size: 1.35rem; font-weight: 700;
+    font-family: var(--font-main);
+    color: var(--cream); font-size: 1.25rem; font-weight: 400;
     line-height: 1.2;
   }
   .wc-stat-label {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    color: var(--cream-muted); font-size: 0.7rem;
-    margin-top: 2px;
+    font-family: var(--font-main);
+    color: var(--cream-muted); font-size: 0.72rem;
+    margin-top: 2px; font-weight: 400;
   }
+
+  /* ── Hero Orb ── */
   .wc-hero-orb {
     position: relative;
-    width: clamp(160px, 22vw, 260px);
-    height: clamp(160px, 22vw, 260px);
+    width: clamp(150px, 20vw, 240px);
+    height: clamp(150px, 20vw, 240px);
     flex-shrink: 0;
     animation: bookFloat 8s ease-in-out infinite;
   }
   .wc-hero-orb-ring {
     position: absolute; inset: 0;
     border-radius: 50%;
-    border: 1px solid rgba(212,168,67,0.12);
-    animation: rotateOrb 20s linear infinite;
+    border: 1px solid rgba(212,168,67,0.1);
+    animation: rotateOrb 22s linear infinite;
   }
   .wc-hero-orb-ring::before {
     content: '';
     position: absolute;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(212,168,67,0.6);
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(212,168,67,0.55);
     top: -4px; left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 12px rgba(212,168,67,0.8);
+    box-shadow: 0 0 10px rgba(212,168,67,0.7);
   }
   .wc-hero-orb-inner {
     position: absolute; inset: 20px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(212,168,67,0.18) 0%, rgba(10,22,40,0.9) 70%);
-    border: 1px solid rgba(212,168,67,0.1);
+    background: radial-gradient(circle at 35% 35%, rgba(212,168,67,0.16) 0%, rgba(10,22,40,0.92) 70%);
+    border: 1px solid rgba(212,168,67,0.09);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
-  .wc-hero-orb-inner::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(circle at 60% 60%, rgba(74,144,217,0.12) 0%, transparent 60%);
+  .wc-hero-orb-core {
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
   }
+
+  /* ── Back Link ── */
   .wc-back-link {
     display: inline-flex; align-items: center; gap: 8px;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.78rem; font-weight: 600;
-    color: rgba(253,246,236,0.35);
-    text-decoration: none;
-    margin-bottom: 1.75rem;
-    padding: 6px 14px; border-radius: 999px;
+    font-family: var(--font-main);
+    font-size: 0.8rem; font-weight: 400;
+    color: rgba(253,246,236,0.38);
+    text-decoration: none; margin-bottom: 1.5rem;
+    padding: 7px 14px; border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
+    background: rgba(255,255,255,0.025);
     transition: all 0.25s;
-    animation: fadeInUp 0.5s ease both;
+    width: fit-content;
   }
   .wc-back-link:hover {
-    color: rgba(253,246,236,0.7);
-    border-color: rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.04);
+    color: #D4A843;
+    border-color: rgba(212,168,67,0.22);
+    background: rgba(212,168,67,0.05);
   }
 
   /* ═══════════════════════════════════════════
-     TAB BAR — Premium Sticky Navigation
+     STICKY TAB BAR
   ═══════════════════════════════════════════ */
   .wc-tab-bar-wrap {
     position: sticky; top: 0; z-index: 40;
-    background: rgba(4,9,18,0.96);
-    backdrop-filter: blur(28px) saturate(2);
-    -webkit-backdrop-filter: blur(28px) saturate(2);
-    border-bottom: 1px solid rgba(212,168,67,0.08);
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(212,168,67,0.06);
+    background: rgba(4,9,18,0.97);
+    backdrop-filter: blur(30px) saturate(1.8);
+    -webkit-backdrop-filter: blur(30px) saturate(1.8);
+    border-bottom: 1px solid rgba(212,168,67,0.07);
+    box-shadow: 0 6px 32px rgba(0,0,0,0.45);
   }
   .wc-tab-bar-inner {
     max-width: 1280px; margin: 0 auto;
@@ -10355,139 +10336,136 @@ const WORLD_CLASS_CSS = `
   }
   .wc-tabs-row::-webkit-scrollbar { display: none; }
   .wc-tab-btn {
-    display: flex; align-items: center; gap: 12px;
-    padding: 18px 28px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 16px 24px;
     background: transparent; border: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2.5px solid transparent;
     cursor: pointer; white-space: nowrap;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.95rem; font-weight: 600;
-    color: rgba(253,246,236,0.3);
-    transition: all 0.3s ease;
+    font-family: var(--font-main);
+    font-size: 0.93rem; font-weight: 400;
+    color: rgba(253,246,236,0.28);
+    transition: all 0.28s ease;
     position: relative; flex-shrink: 0;
     margin-bottom: -1px;
   }
   .wc-tab-btn:hover {
-    color: rgba(253,246,236,0.65);
-    background: rgba(255,255,255,0.025);
+    color: rgba(253,246,236,0.6);
+    background: rgba(255,255,255,0.02);
   }
   .wc-tab-btn.active-gold {
     color: #F6C90E;
     border-bottom-color: #F6C90E;
-    background: rgba(246,201,14,0.07);
-    box-shadow: 0 4px 20px rgba(246,201,14,0.1);
+    background: rgba(246,201,14,0.05);
   }
   .wc-tab-btn.active-blue {
     color: #63B3ED;
     border-bottom-color: #63B3ED;
-    background: rgba(99,179,237,0.07);
-    box-shadow: 0 4px 20px rgba(99,179,237,0.1);
+    background: rgba(99,179,237,0.05);
   }
   .wc-tab-icon {
-    width: 34px; height: 34px; border-radius: 10px;
+    width: 32px; height: 32px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    transition: all 0.3s;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.055);
+    transition: all 0.28s;
     flex-shrink: 0;
   }
   .wc-tab-btn.active-gold .wc-tab-icon {
-    background: rgba(246,201,14,0.16);
-    border-color: rgba(246,201,14,0.28);
-    box-shadow: 0 0 16px rgba(246,201,14,0.2);
+    background: rgba(246,201,14,0.12);
+    border-color: rgba(246,201,14,0.24);
   }
   .wc-tab-btn.active-blue .wc-tab-icon {
-    background: rgba(99,179,237,0.16);
-    border-color: rgba(99,179,237,0.28);
-    box-shadow: 0 0 16px rgba(99,179,237,0.2);
+    background: rgba(99,179,237,0.12);
+    border-color: rgba(99,179,237,0.24);
   }
   .wc-tab-pill {
-    font-size: 0.68rem; padding: 3px 10px; border-radius: 999px;
-    background: rgba(255,255,255,0.04);
-    color: rgba(253,246,236,0.25);
-    font-weight: 700; transition: all 0.3s;
-    border: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.67rem; padding: 3px 9px; border-radius: 999px;
+    background: rgba(255,255,255,0.035);
+    color: rgba(253,246,236,0.22);
+    font-weight: 400; transition: all 0.28s;
+    border: 1px solid rgba(255,255,255,0.045);
+    font-family: var(--font-main);
   }
   .wc-tab-btn.active-gold .wc-tab-pill {
-    background: rgba(246,201,14,0.18);
+    background: rgba(246,201,14,0.14);
     color: #F6C90E;
-    border-color: rgba(246,201,14,0.3);
-    box-shadow: 0 2px 10px rgba(246,201,14,0.15);
+    border-color: rgba(246,201,14,0.26);
   }
   .wc-tab-btn.active-blue .wc-tab-pill {
-    background: rgba(99,179,237,0.18);
+    background: rgba(99,179,237,0.14);
     color: #63B3ED;
-    border-color: rgba(99,179,237,0.3);
-    box-shadow: 0 2px 10px rgba(99,179,237,0.15);
+    border-color: rgba(99,179,237,0.26);
   }
+
+  /* ── Controls Row ── */
   .wc-controls-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 0; flex-wrap: wrap;
-    border-top: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 0; flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,0.035);
   }
   .wc-search-box {
-    display: flex; align-items: center; gap: 9px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px; padding: 9px 15px;
-    flex: 1; min-width: 180px; max-width: 280px;
-    transition: all 0.25s;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.065);
+    border-radius: 10px; padding: 8px 14px;
+    flex: 1; min-width: 160px; max-width: 260px;
+    transition: all 0.22s;
   }
   .wc-search-box:focus-within {
-    border-color: rgba(212,168,67,0.3);
-    background: rgba(212,168,67,0.04);
-    box-shadow: 0 0 0 3px rgba(212,168,67,0.07);
+    border-color: rgba(212,168,67,0.28);
+    background: rgba(212,168,67,0.035);
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.06);
   }
   .wc-search-input {
     background: none; border: none; outline: none;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.85rem; color: var(--cream);
-    width: 100%;
+    font-family: var(--font-main);
+    font-size: 0.83rem; color: var(--cream);
+    width: 100%; font-weight: 400;
   }
-  .wc-search-input::placeholder { color: rgba(253,246,236,0.2); }
+  .wc-search-input::placeholder { color: rgba(253,246,236,0.18); }
   .wc-cat-scroll {
-    display: flex; gap: 7px;
+    display: flex; gap: 6px;
     overflow-x: auto; scrollbar-width: none;
     flex: 1;
   }
   .wc-cat-scroll::-webkit-scrollbar { display: none; }
   .wc-cat-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 16px; border-radius: 999px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
     cursor: pointer; white-space: nowrap;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.8rem; font-weight: 600;
-    color: rgba(253,246,236,0.35);
-    transition: all 0.25s;
+    font-family: var(--font-main);
+    font-size: 0.78rem; font-weight: 400;
+    color: rgba(253,246,236,0.32);
+    transition: all 0.22s;
     flex-shrink: 0;
   }
   .wc-cat-btn:hover {
-    color: rgba(253,246,236,0.65);
-    background: rgba(255,255,255,0.05);
+    color: rgba(253,246,236,0.6);
+    background: rgba(255,255,255,0.045);
   }
-  .wc-cat-btn.active { font-weight: 700; }
+  .wc-cat-btn.active { font-weight: 400; }
   .wc-view-toggle {
-    display: flex; gap: 4px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 10px; padding: 3px;
+    display: flex; gap: 3px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 9px; padding: 3px;
     flex-shrink: 0;
   }
   .wc-view-btn {
-    width: 32px; height: 32px; border-radius: 8px;
+    width: 30px; height: 30px; border-radius: 7px;
     display: flex; align-items: center; justify-content: center;
     background: transparent; border: none; cursor: pointer;
-    color: rgba(253,246,236,0.3); transition: all 0.2s;
+    color: rgba(253,246,236,0.28); transition: all 0.2s;
   }
   .wc-view-btn.active {
-    background: rgba(212,168,67,0.15);
+    background: rgba(212,168,67,0.13);
     color: #D4A843;
   }
   .wc-view-btn:hover:not(.active) {
-    color: rgba(253,246,236,0.6);
-    background: rgba(255,255,255,0.04);
+    color: rgba(253,246,236,0.55);
+    background: rgba(255,255,255,0.035);
   }
 
   /* ═══════════════════════════════════════════
@@ -10498,36 +10476,34 @@ const WORLD_CLASS_CSS = `
     padding: clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 6vw, 4rem);
   }
 
-  /* ═══════════════════════════════════════════
-     FEATURED BANNER — Magazine Hero
-  ═══════════════════════════════════════════ */
+  /* ── Featured Writing Banner ── */
   .wc-featured-banner {
-    border-radius: 24px; overflow: hidden;
+    border-radius: 22px; overflow: hidden;
     margin-bottom: clamp(2rem, 4vw, 3.5rem);
     position: relative; cursor: pointer;
     background: linear-gradient(135deg, #0A1628 0%, #0F2035 40%, #0A1628 100%);
-    border: 1px solid rgba(246,201,14,0.16);
-    animation: borderPulse 5s ease-in-out infinite;
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(246,201,14,0.06);
+    border: 1px solid rgba(246,201,14,0.14);
+    animation: borderPulse 6s ease-in-out infinite;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 36px rgba(0,0,0,0.38);
   }
   .wc-featured-banner:hover {
-    transform: translateY(-8px) scale(1.005);
-    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(246,201,14,0.35), 0 0 60px rgba(246,201,14,0.06);
-    border-color: rgba(246,201,14,0.38);
+    transform: translateY(-7px) scale(1.004);
+    box-shadow: 0 36px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(246,201,14,0.3);
+    border-color: rgba(246,201,14,0.34);
   }
   .wc-featured-banner-bg {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(212,168,67,0.09) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(74,144,217,0.05) 0%, transparent 60%);
+      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(212,168,67,0.08) 0%, transparent 58%),
+      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(74,144,217,0.04) 0%, transparent 58%);
     pointer-events: none;
   }
   .wc-featured-banner-quote {
-    position: absolute; bottom: -30px; right: 20px;
-    font-size: 14rem; line-height: 1;
+    position: absolute; bottom: -28px; right: 18px;
+    font-size: 13rem; line-height: 1;
     font-family: 'Playfair Display', Georgia, serif; font-style: italic;
-    color: rgba(212,168,67,0.04);
+    color: rgba(212,168,67,0.035);
     pointer-events: none; user-select: none;
   }
   .wc-featured-banner-inner {
@@ -10540,304 +10516,258 @@ const WORLD_CLASS_CSS = `
   }
   .wc-featured-label {
     display: inline-flex; align-items: center; gap: 7px;
-    padding: 5px 16px; border-radius: 999px;
-    background: rgba(212,168,67,0.1);
-    border: 1px solid rgba(212,168,67,0.22);
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.68rem; font-weight: 800;
-    color: #D4A843; letter-spacing: 0.1em;
+    padding: 5px 15px; border-radius: 999px;
+    background: rgba(212,168,67,0.09);
+    border: 1px solid rgba(212,168,67,0.2);
+    font-family: var(--font-main);
+    font-size: 0.68rem; font-weight: 400;
+    color: #D4A843; letter-spacing: 0.08em;
     margin-bottom: 1.1rem;
     text-transform: uppercase;
   }
   .wc-featured-title {
-    font-family: 'Tiro Bangla', serif;
-    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-family: var(--font-main);
+    font-size: clamp(1.45rem, 3.2vw, 2.1rem);
     color: var(--cream); font-weight: 400;
-    line-height: 1.4; margin-bottom: 1rem;
+    line-height: 1.45; margin-bottom: 1rem;
   }
   .wc-featured-excerpt {
-    font-family: 'Tiro Bangla', serif;
-    font-size: clamp(0.9rem, 1.8vw, 1.02rem);
+    font-family: var(--font-main);
+    font-size: clamp(0.88rem, 1.7vw, 1rem);
     color: var(--cream-dim);
     line-height: 2.1; max-width: 680px;
-    white-space: pre-line;
+    white-space: pre-line; font-weight: 400;
   }
   .wc-featured-cta {
     display: inline-flex; align-items: center; gap: 9px;
-    margin-top: 1.75rem; padding: 11px 24px;
+    margin-top: 1.75rem; padding: 10px 22px;
     border-radius: 999px;
-    background: rgba(212,168,67,0.1);
-    border: 1px solid rgba(212,168,67,0.25);
+    background: rgba(212,168,67,0.09);
+    border: 1px solid rgba(212,168,67,0.22);
     color: #D4A843;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.87rem; font-weight: 700;
-    cursor: pointer; transition: all 0.3s;
+    font-family: var(--font-main);
+    font-size: 0.85rem; font-weight: 400;
+    cursor: pointer; transition: all 0.28s;
   }
   .wc-featured-cta:hover {
-    background: rgba(212,168,67,0.2);
-    border-color: rgba(212,168,67,0.5);
-    box-shadow: 0 8px 28px rgba(212,168,67,0.2);
+    background: rgba(212,168,67,0.17);
+    border-color: rgba(212,168,67,0.45);
+    box-shadow: 0 7px 24px rgba(212,168,67,0.18);
   }
   .wc-featured-side-badge {
     display: flex; flex-direction: column; align-items: center;
     gap: 8px; flex-shrink: 0;
   }
   .wc-featured-side-icon {
-    width: 70px; height: 70px; border-radius: 20px;
-    background: rgba(212,168,67,0.08);
-    border: 1px solid rgba(212,168,67,0.15);
+    width: 65px; height: 65px; border-radius: 18px;
+    background: rgba(212,168,67,0.07);
+    border: 1px solid rgba(212,168,67,0.13);
     display: flex; align-items: center; justify-content: center;
-    animation: floatUp 5s ease-in-out infinite;
+    animation: floatUp 5.5s ease-in-out infinite;
   }
 
-  /* ═══════════════════════════════════════════
-     RESULTS BAR
-  ═══════════════════════════════════════════ */
+  /* ── Results Bar ── */
   .wc-results-bar {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: clamp(1.25rem, 2.5vw, 2rem); flex-wrap: wrap; gap: 10px;
-    padding: 12px 18px; border-radius: 14px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.04);
+    padding: 11px 16px; border-radius: 12px;
+    background: rgba(255,255,255,0.018);
+    border: 1px solid rgba(255,255,255,0.035);
   }
   .wc-results-count {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.82rem; color: rgba(253,246,236,0.35);
-    display: flex; align-items: center; gap: 7px;
+    font-family: var(--font-main);
+    font-size: 0.8rem; color: rgba(253,246,236,0.32);
+    display: flex; align-items: center; gap: 7px; font-weight: 400;
+  }
+  .wc-results-count strong {
+    font-weight: 400;
+    color: #D4A843;
   }
   .wc-clear-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 999px;
-    background: rgba(231,76,60,0.08);
-    border: 1px solid rgba(231,76,60,0.15);
-    color: rgba(231,76,60,0.7);
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.75rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 13px; border-radius: 999px;
+    background: rgba(231,76,60,0.07);
+    border: 1px solid rgba(231,76,60,0.13);
+    color: rgba(231,76,60,0.65);
+    font-family: var(--font-main);
+    font-size: 0.74rem; font-weight: 400;
     cursor: pointer; transition: all 0.2s;
   }
   .wc-clear-btn:hover {
-    background: rgba(231,76,60,0.14);
+    background: rgba(231,76,60,0.13);
     color: #e74c3c;
   }
 
   /* ═══════════════════════════════════════════
-     WRITING GRID — Premium Magazine Layout
+     WRITING GRID
   ═══════════════════════════════════════════ */
   .wc-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: clamp(16px, 2.5vw, 24px);
+    gap: clamp(14px, 2.2vw, 22px);
   }
   .wc-grid-list {
     display: flex; flex-direction: column;
-    gap: clamp(12px, 2vw, 18px);
+    gap: clamp(10px, 1.8vw, 16px);
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     WRITING CARD — PREMIUM v5 (World-Class Magazine Style)
-  ═══════════════════════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════
+     WRITING CARD — Premium v6
+  ═══════════════════════════════════════════ */
   .wc-card {
     position: relative;
-    border-radius: 18px;
-    overflow: hidden;
+    border-radius: 18px; overflow: hidden;
+    display: flex; flex-direction: column;
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
     transition:
-      transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.45s ease,
-      border-color 0.3s ease;
-    border: 1px solid rgba(255,255,255,0.06);
-    min-height: 250px;
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.4s ease,
+      border-color 0.28s ease;
+    border: 1px solid rgba(255,255,255,0.055);
+    min-height: 240px;
     will-change: transform;
   }
-  /* Top accent line — the signature color stripe */
   .wc-card-top-accent {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2.5px;
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
     background: var(--card-top-line, var(--card-accent, #D4A843));
     border-radius: 18px 18px 0 0;
-    opacity: 0.75;
-    transition: opacity 0.3s, height 0.3s;
+    opacity: 0.65; transition: opacity 0.28s, height 0.28s;
     z-index: 3;
   }
   .wc-card:hover .wc-card-top-accent {
-    opacity: 1;
-    height: 3px;
-    box-shadow: 0 0 18px var(--card-glow, rgba(212,168,67,0.5));
+    opacity: 1; height: 2.5px;
+    box-shadow: 0 0 16px var(--card-glow, rgba(212,168,67,0.45));
   }
-  /* Left accent border */
   .wc-card::before {
     content: '';
-    position: absolute;
-    left: 0; top: 18px; bottom: 18px;
-    width: 2.5px;
+    position: absolute; left: 0; top: 16px; bottom: 16px;
+    width: 2px;
     background: var(--card-accent, #D4A843);
     border-radius: 0 2px 2px 0;
-    transition: width 0.3s ease, opacity 0.3s ease, top 0.3s ease, bottom 0.3s ease, box-shadow 0.3s ease;
-    opacity: 0.6;
-    z-index: 3;
+    transition: width 0.28s ease, opacity 0.28s ease;
+    opacity: 0.5; z-index: 3;
   }
-  /* Hover glow overlay */
   .wc-card::after {
     content: '';
-    position: absolute; inset: 0;
-    border-radius: 18px;
-    opacity: 0;
-    transition: opacity 0.45s;
+    position: absolute; inset: 0; border-radius: 18px;
+    opacity: 0; transition: opacity 0.4s;
     pointer-events: none;
     background:
-      radial-gradient(ellipse 90% 70% at 0% 30%, var(--card-glow, rgba(212,168,67,0.1)) 0%, transparent 65%),
-      radial-gradient(ellipse 60% 40% at 100% 100%, var(--card-glow, rgba(212,168,67,0.05)) 0%, transparent 60%);
+      radial-gradient(ellipse 90% 70% at 0% 30%, var(--card-glow, rgba(212,168,67,0.08)) 0%, transparent 62%);
   }
   .wc-card:hover {
-    transform: translateY(-12px) scale(1.018);
+    transform: translateY(-10px) scale(1.015);
     box-shadow:
-      0 30px 70px rgba(0,0,0,0.6),
-      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.35)),
-      0 0 50px var(--card-glow, rgba(212,168,67,0.1));
-    border-color: var(--card-border-hover, rgba(212,168,67,0.35));
+      0 26px 60px rgba(0,0,0,0.55),
+      0 0 0 1px var(--card-border-hover, rgba(212,168,67,0.3)),
+      0 0 40px var(--card-glow, rgba(212,168,67,0.08));
+    border-color: var(--card-border-hover, rgba(212,168,67,0.3));
   }
-  .wc-card:hover::before {
-    width: 3.5px; opacity: 1;
-    top: 12px; bottom: 12px;
-    box-shadow: 0 0 22px var(--card-glow, rgba(212,168,67,0.5));
-  }
+  .wc-card:hover::before { width: 3px; opacity: 0.9; top: 10px; bottom: 10px; }
   .wc-card:hover::after { opacity: 1; }
-  /* List variant */
   .wc-card-list {
     flex-direction: row !important;
-    border-radius: 14px;
-    min-height: unset;
+    border-radius: 13px; min-height: unset;
   }
   .wc-card-list .wc-card-top-accent {
     top: 0; left: 0; right: auto; bottom: 0;
-    width: 2.5px; height: auto;
-    border-radius: 14px 0 0 14px;
+    width: 2px; height: auto;
+    border-radius: 13px 0 0 13px;
   }
   .wc-card-list::before { display: none; }
-  .wc-card-list:hover { transform: translateY(-5px) scale(1.008) !important; }
-  /* Card body */
+  .wc-card-list:hover { transform: translateY(-4px) scale(1.006) !important; }
   .wc-card-body {
-    padding: 24px 22px 20px 28px;
+    padding: 22px 20px 18px 26px;
     flex: 1; display: flex; flex-direction: column;
     position: relative; z-index: 1;
   }
-  .wc-card-list .wc-card-body { padding: 18px 22px 18px 28px !important; }
-  /* Category badge row */
+  .wc-card-list .wc-card-body { padding: 16px 20px 16px 26px !important; }
   .wc-card-badge-row {
-    display: flex; align-items: center; gap: 7px;
-    margin-bottom: 14px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 12px; flex-wrap: wrap;
   }
   .wc-card-badge {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 12px 4px 9px; border-radius: 999px;
-    font-size: 0.68rem;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-weight: 800; letter-spacing: 0.05em;
-    background: var(--card-badge-bg, rgba(212,168,67,0.14));
+    padding: 3px 11px 3px 8px; border-radius: 999px;
+    font-size: 0.67rem;
+    font-family: var(--font-main);
+    font-weight: 400; letter-spacing: 0.04em;
+    background: var(--card-badge-bg, rgba(212,168,67,0.12));
     color: var(--card-accent, #D4A843);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 30%, transparent);
-    transition: all 0.25s;
-    line-height: 1.5;
+    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 28%, transparent);
+    transition: all 0.22s; line-height: 1.5;
     text-transform: uppercase;
   }
-  .wc-card-badge-icon {
-    font-size: 0.8rem;
-    line-height: 1;
-  }
+  .wc-card-badge-icon { font-size: 0.78rem; line-height: 1; }
   .wc-card:hover .wc-card-badge {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 22%, transparent);
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 50%, transparent);
-    box-shadow: 0 2px 12px var(--card-glow, rgba(212,168,67,0.2));
+    background: color-mix(in srgb, var(--card-accent, #D4A843) 20%, transparent);
+    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 45%, transparent);
   }
   .wc-card-featured-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px; border-radius: 999px;
-    font-size: 0.63rem;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    background: rgba(246,201,14,0.12);
-    color: #F6C90E; font-weight: 700;
-    border: 1px solid rgba(246,201,14,0.28);
-    letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 999px;
+    font-size: 0.62rem;
+    font-family: var(--font-main);
+    background: rgba(246,201,14,0.1);
+    color: #F6C90E; font-weight: 400;
+    border: 1px solid rgba(246,201,14,0.24);
   }
-  /* Card title */
   .wc-card-title {
-    font-family: 'Tiro Bangla', serif;
-    font-size: 1.12rem; color: rgba(255,250,242,0.96);
-    font-weight: 700; line-height: 1.6;
-    margin-bottom: 11px;
-    transition: color 0.3s ease;
+    font-family: var(--font-main);
+    font-size: 1.08rem; color: rgba(255,250,242,0.95);
+    font-weight: 400; line-height: 1.65;
+    margin-bottom: 10px;
+    transition: color 0.28s ease;
     position: relative; z-index: 1;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    letter-spacing: 0.015em;
   }
-  .wc-card:hover .wc-card-title {
-    color: var(--card-accent, #f0c060);
-  }
-  /* Card preview */
+  .wc-card:hover .wc-card-title { color: var(--card-accent, #f0c060); }
   .wc-card-preview {
-    font-family: 'Tiro Bangla', serif;
-    font-size: 0.875rem;
-    color: rgba(253,246,236,0.42);
-    line-height: 2.05; flex: 1;
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    color: rgba(253,246,236,0.38);
+    line-height: 2.0; flex: 1;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     position: relative; z-index: 1;
-    transition: color 0.3s ease;
+    transition: color 0.28s ease; font-weight: 400;
   }
-  .wc-card:hover .wc-card-preview {
-    color: rgba(253,246,236,0.62);
-  }
-  /* Card footer */
+  .wc-card:hover .wc-card-preview { color: rgba(253,246,236,0.58); }
   .wc-card-footer {
-    margin-top: 18px; padding-top: 14px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.045);
     display: flex; align-items: center; justify-content: space-between;
     position: relative; z-index: 1;
   }
   .wc-card-date {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.67rem; color: rgba(253,246,236,0.2);
-    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-main);
+    font-size: 0.72rem; color: rgba(253,246,236,0.25);
+    display: flex; align-items: center; gap: 5px; font-weight: 400;
   }
   .wc-card-read-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 15px; border-radius: 999px;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.75rem; font-weight: 700;
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 12%, transparent);
+    font-family: var(--font-main);
+    font-size: 0.75rem; font-weight: 400;
     color: var(--card-accent, #D4A843);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    cursor: pointer;
-    letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 4px;
+    transition: gap 0.22s;
   }
-  .wc-card:hover .wc-card-read-btn {
-    background: color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
-    border-color: color-mix(in srgb, var(--card-accent, #D4A843) 55%, transparent);
-    gap: 9px;
-    box-shadow: 0 4px 20px color-mix(in srgb, var(--card-accent, #D4A843) 25%, transparent);
-    padding-right: 18px;
-    transform: scale(1.03);
-  }
-  /* ═══════════════════════════════════════════
-     EMPTY STATE
-  ═══════════════════════════════════════════ */
+  .wc-card:hover .wc-card-read-btn { gap: 8px; }
+
+  /* ── Empty State ── */
   .wc-empty {
-    text-align: center; padding: clamp(3rem, 8vw, 6rem) 1rem;
-    font-family: 'Tiro Bangla', serif;
+    text-align: center; padding: clamp(3rem, 6vw, 5rem) 1rem;
     color: rgba(253,246,236,0.35);
+    font-family: var(--font-main); font-weight: 400;
   }
 
   /* ═══════════════════════════════════════════
-     READING MODAL — Immersive Full-Screen
+     READING MODAL
   ═══════════════════════════════════════════ */
   .wc-modal-overlay {
     position: fixed; inset: 0; z-index: 1000;
@@ -10848,65 +10778,63 @@ const WORLD_CLASS_CSS = `
     overflow-y: auto;
   }
   .wc-modal-box {
-    border-radius: 28px;
-    width: 100%; max-width: 760px;
+    border-radius: 26px; width: 100%; max-width: 740px;
     overflow: hidden;
-    box-shadow: 0 60px 140px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
-    position: relative;
-    margin: auto;
+    box-shadow: 0 55px 130px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.055);
+    position: relative; margin: auto;
   }
   .wc-modal-progress {
-    height: 4px;
+    height: 3.5px;
     animation: progressBar 0.6s ease both;
     transform-origin: left;
   }
   .wc-modal-header {
-    padding: 16px 22px;
+    padding: 15px 20px;
     display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    gap: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    gap: 10px;
   }
   .wc-modal-controls {
-    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   }
   .wc-modal-theme-btn {
-    padding: 6px 12px; border-radius: 9px; border: none;
-    font-size: 0.72rem; cursor: pointer;
-    font-family: 'Noto Sans Bengali', sans-serif; font-weight: 600;
+    padding: 5px 11px; border-radius: 8px; border: none;
+    font-size: 0.7rem; cursor: pointer;
+    font-family: var(--font-main); font-weight: 400;
     transition: all 0.2s;
   }
   .wc-modal-font-btn {
-    width: 32px; height: 32px; border-radius: 9px;
+    width: 30px; height: 30px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
+    background: rgba(13,27,42,0.055); border: 1px solid rgba(13,27,42,0.09);
     cursor: pointer; color: #333; transition: all 0.2s;
   }
-  .wc-modal-font-btn:hover { background: rgba(13,27,42,0.12); }
+  .wc-modal-font-btn:hover { background: rgba(13,27,42,0.11); }
   .wc-modal-close {
-    width: 38px; height: 38px; border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.1);
-    cursor: pointer; color: #555; flex-shrink: 0;
-    transition: all 0.2s;
+    background: rgba(13,27,42,0.055); border: 1px solid rgba(13,27,42,0.09);
+    cursor: pointer; color: #555; flex-shrink: 0; transition: all 0.2s;
   }
-  .wc-modal-close:hover { background: rgba(231,76,60,0.1); color: #e74c3c; }
-  .wc-modal-body { padding: 36px 42px 32px; }
+  .wc-modal-close:hover { background: rgba(231,76,60,0.09); color: #e74c3c; }
+  .wc-modal-body { padding: 34px 40px 30px; }
   .wc-modal-content-text {
-    line-height: 2.3; white-space: pre-line;
-    font-family: 'Tiro Bangla', serif;
+    line-height: 2.4; white-space: pre-line;
+    font-family: var(--font-main); font-weight: 400;
     transition: font-size 0.2s;
   }
   .wc-modal-nav {
-    display: flex; border-top: 1px solid rgba(13,27,42,0.08);
+    display: flex; border-top: 1px solid rgba(13,27,42,0.07);
   }
   .wc-modal-nav-btn {
-    flex: 1; padding: 18px 20px;
+    flex: 1; padding: 16px 18px;
     background: transparent; border: none; cursor: pointer;
     transition: background 0.2s;
+    font-family: var(--font-main); font-weight: 400;
   }
-  .wc-modal-nav-btn:hover:not(:disabled) { background: rgba(13,27,42,0.04); }
-  .wc-modal-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .wc-modal-nav-btn:first-child { border-right: 1px solid rgba(13,27,42,0.08); }
+  .wc-modal-nav-btn:hover:not(:disabled) { background: rgba(13,27,42,0.035); }
+  .wc-modal-nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+  .wc-modal-nav-btn:first-child { border-right: 1px solid rgba(13,27,42,0.07); }
 
   /* ═══════════════════════════════════════════
      BOOK MODAL
@@ -10919,33 +10847,31 @@ const WORLD_CLASS_CSS = `
     padding: clamp(1rem, 3vw, 2rem);
   }
   .wc-book-modal-box {
-    background: #0A1628; border-radius: 28px;
-    width: 100%; max-width: 700px;
+    background: #0A1628; border-radius: 26px;
+    width: 100%; max-width: 680px;
     overflow: hidden;
-    box-shadow: 0 60px 140px rgba(0,0,0,0.75);
-    border: 1px solid rgba(212,168,67,0.14);
+    box-shadow: 0 55px 130px rgba(0,0,0,0.72);
+    border: 1px solid rgba(212,168,67,0.12);
     margin: auto;
     max-height: 90vh; overflow-y: auto;
   }
   .wc-book-modal-header {
-    padding: 20px 24px;
+    padding: 18px 22px;
     display: flex; align-items: center; justify-content: space-between;
-    background: rgba(0,0,0,0.25);
-    border-bottom: 1px solid rgba(255,255,255,0.055);
+    background: rgba(0,0,0,0.22);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
   }
-  .wc-book-modal-inner {
-    display: flex; gap: 0;
-  }
+  .wc-book-modal-inner { display: flex; gap: 0; }
   .wc-book-modal-cover-wrap {
-    width: 210px; flex-shrink: 0;
+    width: 200px; flex-shrink: 0;
     overflow: hidden; background: #060E1A;
   }
   .wc-book-modal-cover {
-    width: 100%; height: 100%; min-height: 300px;
+    width: 100%; height: 100%; min-height: 280px;
     object-fit: cover; display: block;
   }
   .wc-book-modal-content {
-    flex: 1; padding: 1.75rem;
+    flex: 1; padding: 1.6rem;
     display: flex; flex-direction: column;
   }
 
@@ -10953,42 +10879,44 @@ const WORLD_CLASS_CSS = `
      EBOOKS SECTION
   ═══════════════════════════════════════════ */
   .wc-section-divider {
-    display: flex; align-items: center; gap: 16px;
-    margin-bottom: clamp(1.75rem, 3.5vw, 2.75rem);
-    margin-top: clamp(1rem, 2vw, 1.5rem);
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    margin-top: clamp(0.75rem, 1.5vw, 1.25rem);
   }
   .wc-section-divider-icon {
-    width: 40px; height: 40px; border-radius: 12px;
+    width: 38px; height: 38px; border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
   .wc-section-divider-line {
     flex: 1; height: 1px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent);
+    background: linear-gradient(90deg, rgba(255,255,255,0.055), transparent);
   }
   .wc-section-divider-label {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.72rem; font-weight: 800;
-    letter-spacing: 0.18em; text-transform: uppercase;
+    font-family: var(--font-main);
+    font-size: 0.7rem; font-weight: 400;
+    letter-spacing: 0.16em; text-transform: uppercase;
   }
+
+  /* ── Featured Book ── */
   .wc-featured-book {
-    border-radius: 24px; overflow: hidden;
+    border-radius: 22px; overflow: hidden;
     margin-bottom: clamp(2rem, 4vw, 3rem);
     position: relative; cursor: pointer;
     background: linear-gradient(135deg, #0A1628 0%, #0F2035 50%, #0A1628 100%);
-    border: 1px solid rgba(74,144,217,0.15);
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(74,144,217,0.13);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .wc-featured-book:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(74,144,217,0.3);
-    border-color: rgba(74,144,217,0.35);
+    transform: translateY(-5px);
+    box-shadow: 0 36px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(74,144,217,0.26);
+    border-color: rgba(74,144,217,0.3);
   }
   .wc-featured-book-bg {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(74,144,217,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(212,168,67,0.05) 0%, transparent 60%);
+      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(74,144,217,0.07) 0%, transparent 58%),
+      radial-gradient(ellipse 40% 60% at 100% 50%, rgba(212,168,67,0.04) 0%, transparent 58%);
     pointer-events: none;
   }
   .wc-featured-book-inner {
@@ -10998,121 +10926,119 @@ const WORLD_CLASS_CSS = `
     align-items: center;
   }
   .wc-featured-book-cover-wrap {
-    width: clamp(120px, 18vw, 180px); flex-shrink: 0;
-    border-radius: 14px; overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    width: clamp(110px, 17vw, 170px); flex-shrink: 0;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 18px 55px rgba(0,0,0,0.48);
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .wc-featured-book:hover .wc-featured-book-cover-wrap {
-    transform: scale(1.05) rotate(-1deg);
+    transform: scale(1.04) rotate(-0.8deg);
   }
-  .wc-featured-book-cover {
-    width: 100%; display: block;
-  }
+  .wc-featured-book-cover { width: 100%; display: block; }
   .wc-featured-book-cover-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(74,144,217,0.1) 0%, transparent 60%);
+    background: linear-gradient(135deg, rgba(74,144,217,0.08) 0%, transparent 58%);
     pointer-events: none;
   }
   .wc-featured-book-content {
     flex: 1; display: flex; flex-direction: column;
   }
   .wc-featured-book-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 6px 16px; border-radius: 999px;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.72rem; font-weight: 800;
-    margin-bottom: 1.1rem;
-    letter-spacing: 0.06em;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 999px;
+    font-family: var(--font-main);
+    font-size: 0.7rem; font-weight: 400;
+    margin-bottom: 1rem; letter-spacing: 0.05em;
     align-self: flex-start;
   }
   .wc-featured-book-author {
-    display: flex; align-items: center; gap: 9px;
-    margin-bottom: 0.85rem;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.84rem; color: var(--cream-muted);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 0.8rem;
+    font-family: var(--font-main);
+    font-size: 0.82rem; color: var(--cream-muted); font-weight: 400;
   }
   .wc-featured-book-title {
-    font-family: 'Tiro Bangla', serif;
+    font-family: var(--font-main);
     color: var(--cream); font-weight: 400;
-    font-size: clamp(1.6rem, 3.8vw, 2.6rem);
-    line-height: 1.3; margin-bottom: 1.1rem;
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+    line-height: 1.35; margin-bottom: 1rem;
   }
   .wc-featured-book-desc {
-    color: var(--cream-dim); font-size: 0.93rem;
-    line-height: 1.95; margin-bottom: 1.6rem;
-    font-family: 'Noto Sans Bengali', sans-serif;
+    color: var(--cream-dim); font-size: 0.9rem;
+    line-height: 2; margin-bottom: 1.5rem;
+    font-family: var(--font-main); font-weight: 400;
   }
   .wc-featured-book-tags {
-    display: flex; flex-wrap: wrap; gap: 9px;
-    margin-bottom: 2rem;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 1.75rem;
   }
   .wc-featured-book-tag {
-    font-size: 0.8rem; padding: 7px 16px; border-radius: 999px;
-    font-family: 'Noto Sans Bengali', sans-serif; font-weight: 500;
+    font-size: 0.78rem; padding: 6px 14px; border-radius: 999px;
+    font-family: var(--font-main); font-weight: 400;
     border: 1px solid transparent;
   }
   .wc-featured-book-btns {
-    display: flex; flex-wrap: wrap; gap: 14px;
+    display: flex; flex-wrap: wrap; gap: 12px;
   }
   .wc-btn-primary {
-    display: flex; align-items: center; gap: 9px;
+    display: flex; align-items: center; gap: 8px;
     background: linear-gradient(135deg, #D4A843, #f0c060);
-    color: #0D1B2A; padding: 14px 28px; border-radius: 999px;
-    font-weight: 800; font-size: 0.95rem; border: none;
-    cursor: pointer; font-family: 'Noto Sans Bengali', sans-serif;
-    box-shadow: 0 8px 32px rgba(212,168,67,0.38);
-    transition: all 0.3s ease;
+    color: #0D1B2A; padding: 13px 26px; border-radius: 999px;
+    font-weight: 400; font-size: 0.93rem; border: none;
+    cursor: pointer; font-family: var(--font-main);
+    box-shadow: 0 7px 28px rgba(212,168,67,0.34);
+    transition: all 0.28s ease;
     position: relative; overflow: hidden;
   }
   .wc-btn-primary::before {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
     transform: translateX(-100%);
     transition: transform 0.5s ease;
   }
   .wc-btn-primary:hover::before { transform: translateX(100%); }
   .wc-btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 50px rgba(212,168,67,0.55);
+    transform: translateY(-2.5px);
+    box-shadow: 0 14px 44px rgba(212,168,67,0.5);
   }
   .wc-btn-outline {
-    display: flex; align-items: center; gap: 9px;
+    display: flex; align-items: center; gap: 8px;
     background: transparent; color: #D4A843;
-    padding: 14px 28px; border-radius: 999px;
-    font-weight: 700; font-size: 0.95rem;
-    border: 1.5px solid rgba(212,168,67,0.38);
-    cursor: pointer; font-family: 'Noto Sans Bengali', sans-serif;
-    transition: all 0.3s ease;
+    padding: 13px 26px; border-radius: 999px;
+    font-weight: 400; font-size: 0.93rem;
+    border: 1.5px solid rgba(212,168,67,0.34);
+    cursor: pointer; font-family: var(--font-main);
+    transition: all 0.28s ease;
   }
   .wc-btn-outline:hover {
-    background: rgba(212,168,67,0.09);
+    background: rgba(212,168,67,0.08);
     border-color: #D4A843;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 32px rgba(212,168,67,0.22);
+    transform: translateY(-2.5px);
+    box-shadow: 0 9px 28px rgba(212,168,67,0.2);
   }
+
+  /* ── E-Books Grid ── */
   .wc-ebooks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: clamp(18px, 3vw, 30px);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: clamp(16px, 2.8vw, 28px);
     margin-bottom: clamp(2.5rem, 5vw, 4rem);
   }
   .wc-book-card {
-    border-radius: 20px; overflow: hidden;
-    background: rgba(10,22,40,0.82);
-    border: 1px solid rgba(255,255,255,0.065);
-    transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 18px; overflow: hidden;
+    background: rgba(10,22,40,0.8);
+    border: 1px solid rgba(255,255,255,0.058);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: pointer; position: relative;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(5px);
   }
   .wc-book-card:hover {
-    transform: translateY(-14px) scale(1.025);
-    border-color: rgba(212,168,67,0.28);
+    transform: translateY(-12px) scale(1.022);
+    border-color: rgba(212,168,67,0.24);
     box-shadow:
-      0 35px 80px rgba(0,0,0,0.6),
-      0 0 0 1px rgba(212,168,67,0.12),
-      0 0 80px rgba(212,168,67,0.05);
+      0 30px 70px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(212,168,67,0.1);
   }
   .wc-book-cover-wrap {
     position: relative; overflow: hidden;
@@ -11121,101 +11047,116 @@ const WORLD_CLASS_CSS = `
   .wc-book-cover {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
-    transition: transform 0.55s ease;
+    transition: transform 0.5s ease;
   }
-  .wc-book-card:hover .wc-book-cover { transform: scale(1.1); }
+  .wc-book-card:hover .wc-book-cover { transform: scale(1.08); }
   .wc-book-cover-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(4,9,18,0.97) 0%, rgba(4,9,18,0.4) 45%, transparent 100%);
-    transition: opacity 0.3s;
+    background: linear-gradient(to top, rgba(4,9,18,0.96) 0%, rgba(4,9,18,0.38) 44%, transparent 100%);
+    transition: opacity 0.28s;
   }
   .wc-book-hover-overlay {
     position: absolute; inset: 0;
-    background: rgba(4,9,18,0.78);
+    background: rgba(4,9,18,0.76);
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.35s;
+    opacity: 0; transition: opacity 0.32s;
     backdrop-filter: blur(2px);
   }
   .wc-book-card:hover .wc-book-hover-overlay { opacity: 1; }
   .wc-book-hover-btn {
-    padding: 11px 24px; border-radius: 999px;
-    background: rgba(212,168,67,0.14);
-    border: 1.5px solid rgba(212,168,67,0.5);
-    color: #D4A843; font-weight: 700;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.87rem; cursor: pointer;
-    display: flex; align-items: center; gap: 9px;
-    transform: translateY(12px);
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 10px 22px; border-radius: 999px;
+    background: rgba(212,168,67,0.12);
+    border: 1.5px solid rgba(212,168,67,0.45);
+    color: #D4A843; font-weight: 400;
+    font-family: var(--font-main);
+    font-size: 0.85rem; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transform: translateY(10px);
+    transition: all 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .wc-book-card:hover .wc-book-hover-btn { transform: translateY(0); }
   .wc-book-hover-btn:hover {
-    background: rgba(212,168,67,0.25);
+    background: rgba(212,168,67,0.22);
     border-color: #D4A843;
-    box-shadow: 0 8px 28px rgba(212,168,67,0.3);
+    box-shadow: 0 7px 24px rgba(212,168,67,0.28);
   }
   .wc-book-badge {
-    position: absolute; top: 14px; left: 14px;
-    padding: 5px 13px; border-radius: 999px;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.65rem; font-weight: 800;
+    position: absolute; top: 12px; left: 12px;
+    padding: 4px 12px; border-radius: 999px;
+    font-family: var(--font-main);
+    font-size: 0.63rem; font-weight: 400;
     backdrop-filter: blur(10px);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
   }
-  .wc-book-info { padding: 18px 20px 22px; }
+  .wc-book-info { padding: 16px 18px 20px; }
   .wc-book-title {
-    font-family: 'Tiro Bangla', serif;
-    color: var(--cream); font-size: 1.08rem;
-    font-weight: 700; line-height: 1.5;
-    margin-bottom: 7px;
-    transition: color 0.25s;
+    font-family: var(--font-main);
+    color: var(--cream); font-size: 1.05rem;
+    font-weight: 400; line-height: 1.55;
+    margin-bottom: 6px;
+    transition: color 0.22s;
   }
   .wc-book-card:hover .wc-book-title { color: #f0c060; }
   .wc-book-meta {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    color: rgba(253,246,236,0.38); font-size: 0.76rem;
-    margin-bottom: 13px;
-    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-main);
+    color: rgba(253,246,236,0.35); font-size: 0.74rem;
+    margin-bottom: 11px;
+    display: flex; align-items: center; gap: 5px; font-weight: 400;
   }
   .wc-book-desc {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    color: rgba(253,246,236,0.48); font-size: 0.83rem;
-    line-height: 1.8;
+    font-family: var(--font-main);
+    color: rgba(253,246,236,0.44); font-size: 0.81rem;
+    line-height: 1.85; font-weight: 400;
     display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
-    margin-bottom: 15px;
+    margin-bottom: 13px;
   }
   .wc-book-read-btn {
-    width: 100%; padding: 11px 0; border-radius: 12px;
+    width: 100%; padding: 10px 0; border-radius: 11px;
     border: none; cursor: pointer;
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 0.87rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; gap: 9px;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: var(--font-main);
+    font-size: 0.85rem; font-weight: 400;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative; overflow: hidden;
   }
   .wc-book-read-btn::before {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
     transform: translateX(-100%);
     transition: transform 0.4s ease;
   }
   .wc-book-read-btn:hover::before { transform: translateX(100%); }
-  .wc-book-read-btn:hover { transform: translateY(-2px); }
+  .wc-book-read-btn:hover { transform: translateY(-1.5px); }
+
+  /* ── Coming Soon ── */
   .wc-coming-soon {
-    border-radius: 20px; overflow: hidden;
-    background: linear-gradient(135deg, rgba(74,144,217,0.06) 0%, rgba(10,22,40,0.85) 100%);
-    border: 1px solid rgba(74,144,217,0.14);
+    border-radius: 18px; overflow: hidden;
+    background: linear-gradient(135deg, rgba(74,144,217,0.055) 0%, rgba(10,22,40,0.84) 100%);
+    border: 1px solid rgba(74,144,217,0.12);
     padding: clamp(1.5rem, 3.5vw, 2.25rem);
-    text-align: center;
-    position: relative;
+    text-align: center; position: relative;
   }
   .wc-coming-soon::before {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(74,144,217,0.04) 0%, transparent 70%);
+    background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(74,144,217,0.035) 0%, transparent 68%);
     pointer-events: none;
+  }
+
+  /* ── Book Modal Content Fonts ── */
+  .wc-book-modal-content * {
+    font-family: var(--font-main) !important;
+    font-weight: 400 !important;
+  }
+  .wc-book-modal-content h3, .wc-book-modal-content h4 {
+    font-weight: 400 !important;
+  }
+
+  /* ── General font override for all wc elements ── */
+  [class^="wc-"], [class*=" wc-"] {
+    font-family: var(--font-main);
   }
 
   /* ═══════════════════════════════════════════
@@ -11225,21 +11166,22 @@ const WORLD_CLASS_CSS = `
     .wc-hero { padding: 5rem 1rem 2rem; min-height: auto; }
     .wc-hero-inner { grid-template-columns: 1fr; }
     .wc-hero-orb { display: none; }
-    .wc-hero-title { font-size: 2.2rem !important; }
-    .wc-stat-card { padding: 11px 15px; }
-    .wc-stat-value { font-size: 1.1rem; }
-    .wc-tab-btn { padding: 14px 18px !important; font-size: 0.87rem !important; }
+    .wc-hero-title { font-size: 2rem !important; }
+    .wc-stat-card { padding: 10px 14px; }
+    .wc-stat-value { font-size: 1.05rem; }
+    .wc-tab-btn { padding: 13px 16px !important; font-size: 0.85rem !important; }
     .wc-grid { grid-template-columns: 1fr !important; }
     .wc-ebooks-grid { grid-template-columns: 1fr !important; }
     .wc-featured-book-inner { flex-direction: column !important; }
     .wc-featured-book-cover-wrap { width: 100% !important; }
-    .wc-featured-book-cover { min-height: 240px !important; }
-    .wc-featured-book-content { padding: 1.5rem !important; }
-    .wc-featured-book-title { font-size: 1.5rem !important; }
-    .wc-btn-primary, .wc-btn-outline { padding: 12px 20px !important; font-size: 0.9rem !important; }
+    .wc-featured-book-cover { min-height: 220px !important; }
+    .wc-featured-book-content { padding: 1.4rem !important; }
+    .wc-featured-book-title { font-size: 1.45rem !important; }
+    .wc-btn-primary, .wc-btn-outline { padding: 11px 18px !important; font-size: 0.88rem !important; }
     .wc-featured-banner-inner { grid-template-columns: 1fr !important; }
     .wc-featured-side-badge { display: none !important; }
-    .wc-modal-body { padding: 22px 20px 18px !important; }
+    .wc-modal-body { padding: 20px 18px 16px !important; }
+    .wc-stats-row { gap: 8px; }
   }
   @media (min-width: 481px) and (max-width: 768px) {
     .wc-hero-inner { grid-template-columns: 1fr; }
@@ -11248,14 +11190,14 @@ const WORLD_CLASS_CSS = `
     .wc-ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .wc-featured-book-inner { flex-direction: column !important; }
     .wc-featured-book-cover-wrap { width: 100% !important; }
-    .wc-featured-book-cover { min-height: 280px !important; }
+    .wc-featured-book-cover { min-height: 260px !important; }
     .wc-featured-banner-inner { grid-template-columns: 1fr !important; }
     .wc-featured-side-badge { display: none !important; }
   }
   @media (min-width: 769px) and (max-width: 1024px) {
     .wc-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .wc-ebooks-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .wc-featured-book-cover-wrap { width: 240px !important; }
+    .wc-featured-book-cover-wrap { width: 220px !important; }
   }
   @media (min-width: 1025px) {
     .wc-grid { grid-template-columns: repeat(3, 1fr) !important; }
@@ -11268,7 +11210,7 @@ const WORLD_CLASS_CSS = `
   @media (max-width: 600px) {
     .wc-book-modal-inner { flex-direction: column !important; }
     .wc-book-modal-cover-wrap { width: 100% !important; }
-    .wc-book-modal-cover { min-height: 240px !important; object-fit: cover !important; }
+    .wc-book-modal-cover { min-height: 220px !important; object-fit: cover !important; }
   }
 `;
 
@@ -11427,9 +11369,9 @@ ${writing.content.slice(0, 300)}...
           <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
             <span style={{
               padding: "4px 13px", borderRadius: 999,
-              fontSize: "0.68rem", fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontSize: "0.68rem", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               background: colors.badgeBg, color: colors.stripe,
-              fontWeight: 700, border: `1px solid ${colors.stripe}40`,
+              fontWeight: 400, border: `1px solid ${colors.stripe}40`,
               flexShrink: 0,
             }}>
               {writing.category}
@@ -11493,8 +11435,8 @@ ${writing.content.slice(0, 300)}...
                           display: "flex", alignItems: "center", gap: 11,
                           background: "transparent", border: "none",
                           cursor: "pointer", color: item.color,
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.83rem", fontWeight: 600,
+                          fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.83rem", fontWeight: 400,
                           borderBottom: i < arr.length - 1 ? "1px solid rgba(13,27,42,0.06)" : "none",
                           transition: "background 0.15s",
                         }}
@@ -11517,9 +11459,9 @@ ${writing.content.slice(0, 300)}...
         {/* Body */}
         <div className="wc-modal-body" style={{ background: th.bg }}>
           <h2 style={{
-            fontFamily: "'Tiro Bangla', serif",
+            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
             fontSize: "clamp(1.45rem, 3vw, 1.95rem)",
-            color: th.text, fontWeight: 700,
+            color: th.text, fontWeight: 400,
             lineHeight: 1.5, marginBottom: "1.75rem",
           }}>
             {writing.title}
@@ -11545,10 +11487,10 @@ ${writing.content.slice(0, 300)}...
               <Pen size={16} />
             </div>
             <div>
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.92rem", color: th.text, fontWeight: 700 }}>
+              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.92rem", color: th.text, fontWeight: 400 }}>
                 মাহবুব সরদার সবুজ
               </div>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", color: th.subtext, marginTop: 2 }}>
+              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", color: th.subtext, marginTop: 2 }}>
                 লেখক ও কবি · {writing.date}
               </div>
             </div>
@@ -11565,8 +11507,8 @@ ${writing.content.slice(0, 300)}...
           >
             <ChevronLeft size={16} color={th.subtext} />
             <div style={{ textAlign: "left", overflow: "hidden" }}>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>আগের লেখা</div>
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.83rem", color: th.text, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
+              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>আগের লেখা</div>
+              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", color: th.text, fontWeight: 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
                 {prevWriting?.title}
               </div>
             </div>
@@ -11578,8 +11520,8 @@ ${writing.content.slice(0, 300)}...
             style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 9 }}
           >
             <div style={{ textAlign: "right", overflow: "hidden" }}>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>পরের লেখা</div>
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.83rem", color: th.text, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
+              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: th.subtext, marginBottom: 2 }}>পরের লেখা</div>
+              <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", color: th.text, fontWeight: 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
                 {nextWriting?.title}
               </div>
             </div>
@@ -11622,10 +11564,10 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                 <BookOpen size={17} color={book.accentColor} />
               </div>
               <div>
-                <div style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "0.97rem", fontWeight: 700 }}>
+                <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "0.97rem", fontWeight: 400 }}>
                   {book.title}
                 </div>
-                <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(253,246,236,0.38)", fontSize: "0.72rem", marginTop: 2 }}>
+                <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: "rgba(253,246,236,0.38)", fontSize: "0.72rem", marginTop: 2 }}>
                   মাহবুব সরদার সবুজ
                 </div>
               </div>
@@ -11662,10 +11604,10 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                     background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.07)",
                   }}>
-                    <div style={{ color: "rgba(253,246,236,0.38)", fontSize: "0.63rem", marginBottom: 3, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                    <div style={{ color: "rgba(253,246,236,0.38)", fontSize: "0.63rem", marginBottom: 3, fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif" }}>
                       {item.label}
                     </div>
-                    <div style={{ color: "#FDF6EC", fontSize: "0.87rem", fontWeight: 600, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                    <div style={{ color: "#FDF6EC", fontSize: "0.87rem", fontWeight: 400, fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif" }}>
                       {item.value}
                     </div>
                   </div>
@@ -11674,7 +11616,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
               <p style={{
                 color: "rgba(253,246,236,0.62)", fontSize: "0.9rem",
                 lineHeight: 1.9, flex: 1, marginBottom: 22,
-                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               }}>
                 {book.description}
               </p>
@@ -11690,8 +11632,8 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                         background: `linear-gradient(135deg, ${book.accentColor}, ${book.accentColor}cc)`,
                         color: book.accentColor === "#D4A843" ? "#0D1B2A" : "#fff",
                         padding: "12px 24px", borderRadius: 999,
-                        fontWeight: 800, fontSize: "0.9rem", border: "none",
-                        cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontWeight: 400, fontSize: "0.9rem", border: "none",
+                        cursor: "pointer", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       }}
                     >
                       <BookOpen size={16} /> এখনই পড়ুন
@@ -11707,9 +11649,9 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                         display: "flex", alignItems: "center", gap: 9,
                         background: "transparent", color: "#D4A843",
                         padding: "12px 24px", borderRadius: 999,
-                        fontWeight: 700, fontSize: "0.9rem",
+                        fontWeight: 400, fontSize: "0.9rem",
                         border: "1.5px solid rgba(212,168,67,0.38)",
-                        cursor: "pointer", fontFamily: "'Noto Sans Bengali', sans-serif",
+                        cursor: "pointer", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       }}
                     >
                       <ShoppingCart size={16} /> রকমারিতে কিনুন
@@ -11828,7 +11770,7 @@ function EBooksSection() {
 
       <div style={{ marginBottom: "clamp(1.5rem, 3vw, 2.25rem)" }}>
         <h2 style={{
-          fontFamily: "'Tiro Bangla', serif",
+          fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
           color: "#FDF6EC",
           fontSize: "clamp(1.4rem, 2.8vw, 2rem)",
           fontWeight: 400, marginBottom: "0.6rem",
@@ -11836,7 +11778,7 @@ function EBooksSection() {
           ই-বুক সংগ্রহ
         </h2>
         <p style={{
-          fontFamily: "'Noto Sans Bengali', sans-serif",
+          fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
           color: "rgba(253,246,236,0.4)",
           fontSize: "0.87rem",
         }}>
@@ -11918,15 +11860,15 @@ function EBooksSection() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10 }}>
             <Sparkles size={18} color="#4A90D9" />
             <span style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              color: "#4A90D9", fontSize: "0.82rem", fontWeight: 700,
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+              color: "#4A90D9", fontSize: "0.82rem", fontWeight: 400,
               letterSpacing: "0.1em", textTransform: "uppercase",
             }}>
               আসছে শীঘ্রই
             </span>
           </div>
           <p style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
             color: "rgba(253,246,236,0.5)", fontSize: "0.9rem",
             lineHeight: 1.8,
           }}>
@@ -11935,7 +11877,7 @@ function EBooksSection() {
               href="https://www.facebook.com/MahbubSardarSabuj"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#4A90D9", fontWeight: 700, textDecoration: "none" }}
+              style={{ color: "#4A90D9", fontWeight: 400, textDecoration: "none" }}
             >
               ফেসবুক পেইজ
             </a>{" "}
@@ -12243,7 +12185,7 @@ export default function Writings() {
                           background: "rgba(255,255,255,0.07)",
                           color: "rgba(253,246,236,0.45)",
                           fontSize: "0.65rem",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         }}>
                           {featuredWriting.category}
                         </span>
@@ -12267,9 +12209,9 @@ export default function Writings() {
                         <Feather size={28} color="rgba(212,168,67,0.6)" />
                       </div>
                       <span style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.65rem", color: "rgba(212,168,67,0.5)",
-                        fontWeight: 700, textAlign: "center",
+                        fontWeight: 400, textAlign: "center",
                         letterSpacing: "0.08em",
                       }}>
                         বিশেষ<br/>লেখা
@@ -12283,7 +12225,7 @@ export default function Writings() {
               <div className="wc-results-bar">
                 <span className="wc-results-count">
                   <Layers size={13} />
-                  <strong style={{ color: "#D4A843" }}>{filtered.length}</strong>টি লেখা পাওয়া গেছে
+                  <span style={{ color: "#D4A843", fontWeight: 400 }}>{filtered.length}</span>টি লেখা পাওয়া গেছে
                   {activeCategory !== "all" && (
                     <span style={{ color: "rgba(253,246,236,0.28)", marginLeft: 8 }}>
                       · {CATEGORIES.find(c => c.id === activeCategory)?.label}
@@ -12322,7 +12264,7 @@ export default function Writings() {
                   >
                     <Feather size={48} color="rgba(212,168,67,0.2)" />
                   </motion.div>
-                  <p style={{ fontSize: "1.05rem", marginBottom: 14, fontFamily: "'Tiro Bangla', serif" }}>
+                  <p style={{ fontSize: "1.05rem", marginBottom: 14, fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif" }}>
                     কোনো লেখা পাওয়া যায়নি।
                   </p>
                   <button
