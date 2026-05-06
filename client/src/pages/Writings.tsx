@@ -9988,7 +9988,7 @@ function getCategoryColor(cat: string) {
     glow: "rgba(244,63,94,0.3)",
     badgeBg: "rgba(244,63,94,0.12)",
     borderHover: "rgba(244,63,94,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(244,63,94,0.08) 0%, rgba(15,10,20,0.95) 55%)",
+    cardBg: "linear-gradient(145deg, rgba(244,63,94,0.12) 0%, rgba(18,8,14,0.97) 60%)",
     icon: "♡",
   };
   if (cat === "বিচ্ছেদ") return {
@@ -9997,7 +9997,7 @@ function getCategoryColor(cat: string) {
     glow: "rgba(167,139,250,0.3)",
     badgeBg: "rgba(167,139,250,0.12)",
     borderHover: "rgba(167,139,250,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(167,139,250,0.08) 0%, rgba(10,8,20,0.95) 55%)",
+    cardBg: "linear-gradient(145deg, rgba(167,139,250,0.12) 0%, rgba(10,7,18,0.97) 60%)",
     icon: "◌",
   };
   if (cat === "কবিতা") return {
@@ -10006,7 +10006,7 @@ function getCategoryColor(cat: string) {
     glow: "rgba(56,189,248,0.3)",
     badgeBg: "rgba(56,189,248,0.12)",
     borderHover: "rgba(56,189,248,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(56,189,248,0.08) 0%, rgba(5,12,24,0.95) 55%)",
+    cardBg: "linear-gradient(145deg, rgba(56,189,248,0.12) 0%, rgba(4,10,20,0.97) 60%)",
     icon: "❧",
   };
   if (cat === "ছোট লেখা") return {
@@ -10015,7 +10015,7 @@ function getCategoryColor(cat: string) {
     glow: "rgba(52,211,153,0.3)",
     badgeBg: "rgba(52,211,153,0.12)",
     borderHover: "rgba(52,211,153,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(52,211,153,0.08) 0%, rgba(5,16,14,0.95) 55%)",
+    cardBg: "linear-gradient(145deg, rgba(52,211,153,0.12) 0%, rgba(4,14,11,0.97) 60%)",
     icon: "✎",
   };
   // জীবনদর্শন (default)
@@ -10025,7 +10025,7 @@ function getCategoryColor(cat: string) {
     glow: "rgba(251,191,36,0.3)",
     badgeBg: "rgba(251,191,36,0.12)",
     borderHover: "rgba(251,191,36,0.35)",
-    cardBg: "linear-gradient(145deg, rgba(251,191,36,0.08) 0%, rgba(16,12,4,0.95) 55%)",
+    cardBg: "linear-gradient(145deg, rgba(251,191,36,0.12) 0%, rgba(14,10,3,0.97) 60%)",
     icon: "◈",
   };
 }
@@ -10118,11 +10118,11 @@ const WORLD_CLASS_CSS = `
   .wc-hero {
     position: relative;
     overflow: hidden;
-    min-height: 88vh;
+    min-height: 72vh;
     display: flex;
     align-items: center;
     background: linear-gradient(160deg, #020810 0%, #060E1A 30%, #0A1628 65%, #0D1B2A 100%);
-    padding: clamp(6rem, 12vw, 10rem) clamp(1.25rem, 6vw, 4rem) clamp(3rem, 6vw, 5rem);
+    padding: clamp(5rem, 10vw, 8rem) clamp(1.25rem, 6vw, 4rem) clamp(2.5rem, 5vw, 4rem);
   }
   .wc-hero-mesh {
     position: absolute; inset: 0;
@@ -10642,12 +10642,13 @@ const WORLD_CLASS_CSS = `
   .wc-card::before {
     content: '';
     position: absolute;
-    left: 0; top: 0; bottom: 0;
+    left: 0; top: 12px; bottom: 12px;
     width: 3px;
     background: var(--card-accent, #D4A843);
-    border-radius: 20px 0 0 20px;
-    transition: width 0.3s ease, opacity 0.3s ease;
-    opacity: 0.7;
+    border-radius: 0 3px 3px 0;
+    transition: width 0.3s ease, opacity 0.3s ease, top 0.3s ease, bottom 0.3s ease;
+    opacity: 0.85;
+    box-shadow: 0 0 12px var(--card-glow, rgba(212,168,67,0.4));
   }
   /* Hover glow overlay */
   .wc-card::after {
@@ -10667,7 +10668,7 @@ const WORLD_CLASS_CSS = `
       0 0 40px var(--card-glow, rgba(212,168,67,0.08));
     border-color: var(--card-border-hover, rgba(212,168,67,0.3));
   }
-  .wc-card:hover::before { width: 5px; opacity: 1; }
+  .wc-card:hover::before { width: 4px; opacity: 1; top: 8px; bottom: 8px; box-shadow: 0 0 20px var(--card-glow, rgba(212,168,67,0.5)); }
   .wc-card:hover::after { opacity: 1; }
   /* List variant */
   .wc-card-list {
@@ -10725,8 +10726,8 @@ const WORLD_CLASS_CSS = `
   /* Card title */
   .wc-card-title {
     font-family: 'Tiro Bangla', serif;
-    font-size: 1.06rem; color: rgba(253,246,236,0.92);
-    font-weight: 700; line-height: 1.7;
+    font-size: 1.1rem; color: rgba(255,248,240,0.95);
+    font-weight: 700; line-height: 1.65;
     margin-bottom: 10px;
     transition: color 0.25s;
     position: relative; z-index: 1;
@@ -10734,6 +10735,7 @@ const WORLD_CLASS_CSS = `
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    letter-spacing: 0.01em;
   }
   .wc-card:hover .wc-card-title {
     color: var(--card-accent, #f0c060);
@@ -10741,9 +10743,9 @@ const WORLD_CLASS_CSS = `
   /* Card preview */
   .wc-card-preview {
     font-family: 'Tiro Bangla', serif;
-    font-size: 0.875rem;
-    color: rgba(253,246,236,0.4);
-    line-height: 1.95; flex: 1;
+    font-size: 0.88rem;
+    color: rgba(253,246,236,0.48);
+    line-height: 2; flex: 1;
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
@@ -10752,7 +10754,7 @@ const WORLD_CLASS_CSS = `
     transition: color 0.25s;
   }
   .wc-card:hover .wc-card-preview {
-    color: rgba(253,246,236,0.58);
+    color: rgba(253,246,236,0.65);
   }
   /* Card footer */
   .wc-card-footer {
