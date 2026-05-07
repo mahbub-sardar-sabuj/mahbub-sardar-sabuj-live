@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   Crown,
+  Edit3,
   Eye,
   Film,
   Heart,
@@ -18,10 +19,13 @@ import {
   PenLine,
   Plus,
   RefreshCw,
+  Search,
   Send,
   Share2,
   Sparkles,
   ThumbsUp,
+  Trash2,
+  User,
   UserPlus,
   X,
   Frown,
@@ -951,8 +955,144 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
   );
 }
 
+// ── Edit Post Modal ─────────────────────────────────────────────────────────
+function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onClose: () => void; authorName: string }) {
+  const [title, setTitle] = useState(post.title);
+  const [content, setContent] = useState(post.content);
+  const [category, setCategory] = useState<Exclude<CategoryKey, "all">>(post.category as Exclude<CategoryKey, "all">);
+  const [mediaUrl, setMediaUrl] = useState(post.mediaUrl ?? "");
+  const [mediaType, setMediaType] = useState<"none" | "image" | "video">(post.mediaType as "none" | "image" | "video");
+  const [submitted, setSubmitted] = useState(false);
+  const utils = trpc.useUtils();
+  const editPost = trpc.writingPlatform.editPost.useMutation({
+    onSuccess: () => {
+      setSubmitted(true);
+      utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.myPosts.invalidate();
+      setTimeout(() => onClose(), 2200);
+    },
+  });
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim() || !content.trim()) return;
+    editPost.mutate({
+      postId: post.id,
+      title: title.trim(),
+      content: content.trim(),
+      category,
+      mediaUrl: mediaUrl.trim() || undefined,
+      mediaType: mediaUrl.trim() ? mediaType : "none",
+    });
+  }
+  const inputStyle: CSSProperties = {
+    width: "100%",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(232,201,122,0.22)",
+    borderRadius: 14,
+    padding: "0.7rem 0.9rem",
+    color: "#FDF6EC",
+    fontFamily: adorshoFont,
+    fontSize: "0.95rem",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+  const labelStyle: CSSProperties = {
+    display: "block",
+    color: "#F7D56F",
+    fontWeight: 700,
+    fontSize: "0.88rem",
+    marginBottom: 6,
+  };
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(7,20,38,0.88)",
+        backdropFilter: "blur(12px)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
+      }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        style={{
+          ...glassStyle,
+          borderRadius: 28,
+          padding: "clamp(1.2rem, 4vw, 2rem)",
+          width: "min(600px, 100%)",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          display: "grid",
+          gap: "1.1rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Avatar name={authorName} size={38} />
+            <div>
+              <div style={{ fontWeight: 900, color: "#F7D56F" }}>{authorName}</div>
+              <div style={{ fontSize: "0.78rem", color: "rgba(253,246,236,0.5)" }}>পোস্ট সম্পাদনা করুন</div>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} style={{ width: 36, height: 36, borderRadius: "50%", border: "1px solid rgba(232,201,122,0.22)", background: "rgba(255,255,255,0.06)", color: "rgba(253,246,236,0.7)", cursor: "pointer", display: "grid", placeItems: "center" }}>
+            <X size={16} />
+          </button>
+        </div>
+        {submitted ? (
+          <div style={{ textAlign: "center", padding: "2rem", display: "grid", gap: "0.75rem" }}>
+            <CheckCircle2 size={48} color="#86EFAC" style={{ margin: "0 auto" }} />
+            <div style={{ color: "#86EFAC", fontWeight: 900, fontSize: "1.1rem" }}>পোস্ট আপডেট হয়েছে!</div>
+            <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "0.88rem" }}>পর্যালোচনার পর প্রকাশিত হবে।</div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
+            <div>
+              <label style={labelStyle}>শিরোনাম</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="পোস্টের শিরোনাম" maxLength={220} required style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>বিভাগ</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value as Exclude<CategoryKey, "all">)} style={{ ...inputStyle, cursor: "pointer" }}>
+                {CATEGORIES.filter((c) => c.key !== "all").map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>বিষয়বস্তু</label>
+              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="আপনার বাস্তবতার গল্প লিখুন..." rows={8} maxLength={20000} required style={{ ...inputStyle, resize: "vertical", minHeight: 160 }} />
+            </div>
+            <div>
+              <label style={labelStyle}>মিডিয়া URL (ঐচ্ছিক)</label>
+              <input type="url" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="ছবি বা ভিডিওর লিংক" style={inputStyle} />
+              {mediaUrl.trim() && (
+                <select value={mediaType} onChange={(e) => setMediaType(e.target.value as "image" | "video")} style={{ ...inputStyle, marginTop: 8 }}>
+                  <option value="image">ছবি</option>
+                  <option value="video">ভিডিও</option>
+                </select>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button type="button" onClick={onClose} style={{ padding: "0.6rem 1.2rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.25)", background: "transparent", color: "rgba(253,246,236,0.7)", fontFamily: adorshoFont, cursor: "pointer" }}>বাতিল</button>
+              <ActionButton type="submit" disabled={editPost.isPending || !title.trim() || !content.trim()}>
+                {editPost.isPending ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <CheckCircle2 size={15} />}
+                {editPost.isPending ? "আপডেট হচ্ছে..." : "আপডেট করুন"}
+              </ActionButton>
+            </div>
+            {editPost.isError && (
+              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>
+                আপডেট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
+              </div>
+            )}
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
 // ── Post Detail View ──────────────────────────────────────────────────────────
-
 function PostDetail({
   slug,
   isAuthenticated,
@@ -1155,13 +1295,34 @@ export default function AmiOLikhboBastobota() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showLocalAuth, setShowLocalAuth] = useState(false);
   const [localAuthMode, setLocalAuthMode] = useState<"login" | "register">("login");
-
+  const [activeTab, setActiveTab] = useState<"feed" | "myPosts">("feed");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
+  const [editingPost, setEditingPost] = useState<EnrichedPost | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
     activeCategory === "all" ? undefined : { category: activeCategory as Exclude<CategoryKey, "all"> },
-    { refetchInterval: 60000 }
+    { refetchInterval: 60000, enabled: !searchActive }
   );
-
-  const posts = (postsQuery.data ?? []) as EnrichedPost[];
+  const searchQuery_ = searchQuery.trim();
+  const searchResultsQuery = trpc.writingPlatform.searchPosts.useQuery(
+    { query: searchQuery_ || "_" },
+    { enabled: searchActive && searchQuery_.length >= 2 }
+  );
+  const myPostsQuery = trpc.writingPlatform.myPosts.useQuery(
+    undefined,
+    { enabled: isAuthenticated && activeTab === "myPosts" }
+  );
+  const utils = trpc.useUtils();
+  const deletePostMutation = trpc.writingPlatform.deletePost.useMutation({
+    onSuccess: () => {
+      utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.myPosts.invalidate();
+    },
+  });
+  const posts = (searchActive && searchQuery_.length >= 2
+    ? (searchResultsQuery.data ?? [])
+    : (postsQuery.data ?? [])) as EnrichedPost[];
 
   function handleLoginRequired() {
     setShowLoginPrompt(true);
@@ -1333,8 +1494,78 @@ export default function AmiOLikhboBastobota() {
             />
           ) : (
             <>
+              {/* ── Search bar ── */}
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(253,246,236,0.4)", pointerEvents: "none" }} />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchActive(e.target.value.trim().length >= 2);
+                    }}
+                    onFocus={() => searchQuery.trim().length >= 2 && setSearchActive(true)}
+                    placeholder="পোস্ট, লেখক বা বিষয় খুঁজুন..."
+                    style={{
+                      width: "100%",
+                      padding: "0.65rem 1rem 0.65rem 2.5rem",
+                      borderRadius: 999,
+                      border: searchActive ? "1px solid rgba(247,213,111,0.5)" : "1px solid rgba(232,201,122,0.22)",
+                      background: "rgba(255,255,255,0.06)",
+                      color: "#FDF6EC",
+                      fontFamily: adorshoFont,
+                      fontSize: "0.9rem",
+                      outline: "none",
+                      transition: "border 0.15s",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+                {searchActive && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(""); setSearchActive(false); }}
+                    style={{ background: "none", border: "none", color: "rgba(253,246,236,0.5)", cursor: "pointer", padding: "0.5rem", display: "flex", alignItems: "center" }}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              {/* ── Tab navigation (Feed / My Posts) ── */}
+              {isAuthenticated && !searchActive && (
+                <div style={{ display: "flex", gap: 4, padding: "0.25rem", borderRadius: 999, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(232,201,122,0.15)" }}>
+                  {(["feed", "myPosts"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      style={{
+                        flex: 1,
+                        padding: "0.5rem 1rem",
+                        borderRadius: 999,
+                        border: "none",
+                        background: activeTab === tab ? "linear-gradient(135deg, #F7D56F, #D4A843)" : "transparent",
+                        color: activeTab === tab ? "#071426" : "rgba(253,246,236,0.6)",
+                        fontFamily: adorshoFont,
+                        fontWeight: 900,
+                        fontSize: "0.88rem",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {tab === "feed" ? <><Sparkles size={14} /> সব পোস্ট</> : <><User size={14} /> আমার পোস্ট</>}
+                    </button>
+                  ))}
+                </div>
+              )}
               {/* ── Create post box (logged in) ── */}
-              {isAuthenticated && (
+              {isAuthenticated && !searchActive && activeTab === "feed" && (
                 <div
                   style={{
                     ...cardStyle,
@@ -1367,7 +1598,8 @@ export default function AmiOLikhboBastobota() {
                 </div>
               )}
 
-              {/* ── Category filter ── */}
+              {/* ── Category filter (only in feed tab, not search) ── */}
+              {!searchActive && activeTab === "feed" && (
               <div
                 style={{
                   display: "flex",
@@ -1410,9 +1642,67 @@ export default function AmiOLikhboBastobota() {
                   </button>
                 ))}
               </div>
-
+              )}
+              {/* ── My Posts tab ── */}
+              {activeTab === "myPosts" && !searchActive && (
+                <>
+                  {myPostsQuery.isLoading ? (
+                    <div style={{ display: "grid", placeItems: "center", minHeight: 240 }}>
+                      <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
+                    </div>
+                  ) : (myPostsQuery.data ?? []).length === 0 ? (
+                    <div style={{ ...cardStyle, padding: "3rem 1.5rem", textAlign: "center", display: "grid", gap: "0.75rem" }}>
+                      <PenLine size={40} color="rgba(232,201,122,0.35)" style={{ margin: "0 auto" }} />
+                      <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "1rem" }}>আপনি এখনো কোনো পোস্ট লেখেননি।</div>
+                      <ActionButton onClick={() => setShowCreateModal(true)} small>
+                        <Plus size={15} /> প্রথম পোস্ট লিখুন
+                      </ActionButton>
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gap: "1rem" }}>
+                      {(myPostsQuery.data as EnrichedPost[] ?? []).map((post) => (
+                        <div key={post.id} className="post-card-enter">
+                          <div style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "0.85rem" }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <Avatar name={post.authorName} size={38} />
+                                <div>
+                                  <div style={{ fontWeight: 900, color: "#F7D56F", fontSize: "0.9rem" }}>{post.authorName}</div>
+                                  <TimeAgo date={post.createdAt} />
+                                </div>
+                              </div>
+                              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <span style={{ padding: "0.2rem 0.6rem", borderRadius: 999, fontSize: "0.75rem", fontWeight: 700, background: post.status === "approved" ? "rgba(34,197,94,0.15)" : post.status === "pending" ? "rgba(251,191,36,0.15)" : "rgba(239,68,68,0.15)", color: post.status === "approved" ? "#86EFAC" : post.status === "pending" ? "#FDE68A" : "#FCA5A5", border: `1px solid ${post.status === "approved" ? "rgba(34,197,94,0.3)" : post.status === "pending" ? "rgba(251,191,36,0.3)" : "rgba(239,68,68,0.3)"}` }}>
+                                  {post.status === "approved" ? "অনুমোদিত" : post.status === "pending" ? "পর্যালোচনাধীন" : "প্রত্যাখ্যাত"}
+                                </span>
+                                <button type="button" onClick={() => setEditingPost(post)} style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(232,201,122,0.25)", background: "rgba(255,255,255,0.06)", color: "rgba(253,246,236,0.7)", cursor: "pointer", display: "grid", placeItems: "center" }}>
+                                  <Edit3 size={14} />
+                                </button>
+                                <button type="button" onClick={() => { if (window.confirm("পোস্টটি মুছে ফেলতে চান?")) deletePostMutation.mutate({ postId: post.id }); }} style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)", color: "#FCA5A5", cursor: "pointer", display: "grid", placeItems: "center" }}>
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                            <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 900, color: "#FDF6EC", lineHeight: 1.4 }}>{post.title}</h3>
+                            <p style={{ margin: 0, color: "rgba(253,246,236,0.75)", fontSize: "0.9rem", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{post.content.slice(0, 200)}{post.content.length > 200 ? "..." : ""}</p>
+                            <div style={{ display: "flex", gap: 12, color: "rgba(253,246,236,0.4)", fontSize: "0.8rem" }}>
+                              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Eye size={12} /> {post.viewCount}</span>
+                              <span style={{ display: "flex", alignItems: "center", gap: 4 }}><MessageCircle size={12} /> {post.commentCount}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
               {/* ── Feed ── */}
-              {postsQuery.isLoading ? (
+              {(activeTab === "feed" || searchActive) && (
+              <>{searchActive && searchQuery_.length < 2 ? (
+                <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
+                  অনুসন্ধানের জন্য কমপক্ষে ২টি অক্ষর লিখুন।
+                </div>
+              ) : (searchActive && searchResultsQuery.isLoading) || (!searchActive && postsQuery.isLoading) ? (
                 <div style={{ display: "grid", placeItems: "center", minHeight: 240 }}>
                   <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
                 </div>
@@ -1428,13 +1718,14 @@ export default function AmiOLikhboBastobota() {
                 >
                   <PenLine size={40} color="rgba(232,201,122,0.35)" style={{ margin: "0 auto" }} />
                   <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "1rem" }}>
-                    এখনো কোনো পোস্ট নেই।
+                    {searchActive ? "খোঁজার ফলাফল পাওয়া যায়নি।" : "এখনো কোনো পোস্ট নেই।"}
                   </div>
-                  {isAuthenticated ? (
+                  {!searchActive && isAuthenticated && (
                     <ActionButton onClick={() => setShowCreateModal(true)} small>
                       <Plus size={15} /> প্রথম পোস্ট লিখুন
                     </ActionButton>
-                  ) : (
+                  )}
+                  {!searchActive && !isAuthenticated && (
                     <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.88rem" }}>
                       লগইন করে প্রথম পোস্ট লিখুন!
                     </div>
@@ -1442,6 +1733,11 @@ export default function AmiOLikhboBastobota() {
                 </div>
               ) : (
                 <div style={{ display: "grid", gap: "1rem" }}>
+                  {searchActive && (
+                    <div style={{ color: "rgba(253,246,236,0.5)", fontSize: "0.82rem", paddingLeft: 4 }}>
+                      "{searchQuery}" এর জন্য {posts.length}টি ফলাফল
+                    </div>
+                  )}
                   {posts.map((post) => (
                     <div key={post.id} className="post-card-enter">
                       <PostCard
@@ -1454,9 +1750,10 @@ export default function AmiOLikhboBastobota() {
                   ))}
                 </div>
               )}
-
+              </>
+              )}
               {/* ── Refresh ── */}
-              {posts.length > 0 && (
+              {!searchActive && activeTab === "feed" && posts.length > 0 && (
                 <div style={{ textAlign: "center" }}>
                   <ActionButton
                     onClick={() => postsQuery.refetch()}
@@ -1468,8 +1765,7 @@ export default function AmiOLikhboBastobota() {
                     {postsQuery.isFetching ? "লোড হচ্ছে..." : "নতুন পোস্ট দেখুন"}
                   </ActionButton>
                 </div>
-              )}
-            </>
+              )}            </>
           )}
         </div>
       </main>
@@ -1481,7 +1777,13 @@ export default function AmiOLikhboBastobota() {
           authorName={user?.name ?? "আপনি"}
         />
       )}
-
+      {editingPost && (
+        <EditPostModal
+          post={editingPost}
+          onClose={() => setEditingPost(null)}
+          authorName={user?.name ?? "আপনি"}
+        />
+      )}
       <Footer />
     </div>
   );

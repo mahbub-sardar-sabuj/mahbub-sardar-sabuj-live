@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, like, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
@@ -92,6 +92,54 @@ export const writingPlatformRouter = router({
       return Promise.all(posts.map((post) => enrichPost(post, ctx.user?.openId)));
     }),
 
+  listPostsPaginated: publicProcedure
+    .input(z.object({
+      category: postCategorySchema.optional(),
+      featuredOnly: z.boolean().optional(),
+      limit: z.number().min(1).max(50).default(10),
+      offset: z.number().min(0).default(0),
+    }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return { posts: [], hasMore: false };
+      const conditions = [eq(writingPosts.status, "approved")];
+      if (input?.category) conditions.push(eq(writingPosts.category, input.category));
+      if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
+      const limit = input?.limit ?? 10;
+      const posts = await db
+        .select()
+        .from(writingPosts)
+        .where(and(...conditions))
+        .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
+        .limit(limit)
+        .offset(input?.offset ?? 0);
+      const enriched = await Promise.all(posts.map((post) => enrichPost(post, ctx.user?.openId)));
+      return { posts: enriched, hasMore: posts.length === limit };
+    }),
+  searchPosts: publicProcedure
+    .input(z.object({
+      query: z.string().min(1).max(200),
+      limit: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      const searchTerm = `%${input.query.trim()}%`;
+      const posts = await db
+        .select()
+        .from(writingPosts)
+        .where(and(
+          eq(writingPosts.status, "approved"),
+          or(
+            like(writingPosts.title, searchTerm),
+            like(writingPosts.content, searchTerm),
+            like(writingPosts.authorName, searchTerm)
+          )
+        ))
+        .orderBy(desc(writingPosts.createdAt))
+        .limit(input.limit);
+      return Promise.all(posts.map((post) => enrichPost(post, ctx.user?.openId)));
+    }),
   getPostBySlug: publicProcedure
     .input(z.object({ slug: z.string().min(1).max(180) }))
     .query(async ({ ctx, input }) => {
@@ -173,6 +221,58 @@ export const writingPlatformRouter = router({
       return { success: true };
     }),
 
+  deletePost: protectedProcedure
+    .input(z.object({ postId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db
+        .select()
+        .from(writingPosts)
+        .where(eq(writingPosts.id, input.postId))
+        .limit(1);
+      if (posts.length === 0) throw new Error("Post not found");
+      const post = posts[0];
+      if (post.authorOpenId !== ctx.user.openId && ctx.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+      await db.delete(writingPosts).where(eq(writingPosts.id, input.postId));
+      return { success: true };
+    }),
+  editPost: protectedProcedure
+    .input(z.object({
+      postId: z.number().int().positive(),
+      title: z.string().min(3).max(220),
+      category: postCategorySchema,
+      content: z.string().min(20).max(20000),
+      mediaUrl: z.string().url().max(2000).optional().or(z.literal("")),
+      mediaType: mediaTypeSchema.default("none"),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db
+        .select()
+        .from(writingPosts)
+        .where(eq(writingPosts.id, input.postId))
+        .limit(1);
+      if (posts.length === 0) throw new Error("Post not found");
+      const post = posts[0];
+      if (post.authorOpenId !== ctx.user.openId && ctx.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+      const mediaUrl = input.mediaUrl?.trim() || null;
+      const mediaType = mediaUrl ? input.mediaType : "none";
+      await db.update(writingPosts).set({
+        title: input.title.trim(),
+        category: input.category,
+        content: input.content.trim(),
+        mediaUrl,
+        mediaType,
+        status: ctx.user.role === "admin" ? post.status : "pending",
+      }).where(eq(writingPosts.id, input.postId));
+      return { success: true };
+    }),
   reactToPost: protectedProcedure
     .input(z.object({ postId: z.number().int().positive(), type: reactionTypeSchema }))
     .mutation(async ({ ctx, input }) => {
