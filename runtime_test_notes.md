@@ -29,3 +29,9 @@ The local page `http://localhost:3001/amio-likhbo-bastobota` loaded successfully
 ## Live verification after push
 
 After pushing commit `cac33e4`, the live URL `https://www.mahbubsardarsabuj.com/amio-likhbo-bastobota` still loaded without browser console errors. At the moment of verification, the production deployment was still serving the previous asset version: the hero login CTA was still a normal `লগইন করুন` link rather than the new disabled `লগইন শীঘ্রই চালু হবে` state. This indicates the GitHub commit is pushed, but the hosting deployment has not yet picked up or finished deploying the latest commit.
+
+## 2026-05-07 — আমিও লিখবো বাস্তবতা login/account-only redesign verification
+
+Local page checked at `http://localhost:3001/amio-likhbo-bastobota` after redesign. The tab now renders as a dedicated login/account landing page with three cards: **লগইন প্যানেল**, **একাউন্ট তৈরি**, and **প্রোফাইল প্রস্তুতি**. The previous writing feed, category list, post composer, reactions, comments, and admin moderation UI are no longer present on this page.
+
+Build verification passed with `pnpm run check` and `pnpm run build`. Browser console on the local page showed no JavaScript errors. The UI uses the AdorshoLipi font stack through page-level styling and global Bengali font variables.

@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./styles/desktop-premium.css";
+
+@font-face {
+  font-family: 'AdorshoLipi';
+  src: url('/fonts/AdorshoLipi.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -51,8 +60,8 @@
   --color-cream: oklch(0.97 0.005 80);
   --color-cream-dark: oklch(0.93 0.008 80);
 
-  --font-bengali: 'Tiro Bangla', 'Noto Sans Bengali', serif;
-  --font-bengali-body: 'Noto Sans Bengali', sans-serif;
+  --font-bengali: 'AdorshoLipi', 'Tiro Bangla', 'Noto Sans Bengali', serif;
+  --font-bengali-body: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
   --font-display: 'DM Serif Display', serif;
   --font-body: 'Space Grotesk', sans-serif;
 }
@@ -101,7 +110,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Noto Sans Bengali', 'Space Grotesk', sans-serif;
+    font-family: 'AdorshoLipi', 'Noto Sans Bengali', 'Space Grotesk', sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -157,7 +166,7 @@
 
   /* Section heading style */
   .section-heading {
-    font-family: 'Tiro Bangla', serif;
+    font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
     position: relative;
     display: inline-block;
     padding-bottom: 12px;

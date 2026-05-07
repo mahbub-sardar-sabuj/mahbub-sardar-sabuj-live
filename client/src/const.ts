@@ -6,10 +6,9 @@ const hasConfiguredEnvValue = (value: unknown) =>
 export const isLoginConfigured =
   hasConfiguredEnvValue(import.meta.env.VITE_OAUTH_PORTAL_URL) && hasConfiguredEnvValue(import.meta.env.VITE_APP_ID);
 
-// Generate login URL at runtime so redirect URI reflects the current origin.
-// If OAuth environment variables are missing in production, return a safe local
-// fallback instead of throwing `undefined/app-auth cannot be parsed as a URL`.
-export const getLoginUrl = () => {
+type AuthFlowType = "signIn" | "signUp";
+
+const getAuthUrl = (type: AuthFlowType) => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
 
@@ -29,7 +28,15 @@ export const getLoginUrl = () => {
   url.searchParams.set("appId", appId);
   url.searchParams.set("redirectUri", redirectUri);
   url.searchParams.set("state", state);
-  url.searchParams.set("type", "signIn");
+  url.searchParams.set("type", type);
 
   return url.toString();
 };
+
+// Generate login URL at runtime so redirect URI reflects the current origin.
+// If OAuth environment variables are missing in production, return a safe local
+// fallback instead of throwing `undefined/app-auth cannot be parsed as a URL`.
+export const getLoginUrl = () => getAuthUrl("signIn");
+
+// Generate account creation URL through the same secure OAuth portal.
+export const getSignupUrl = () => getAuthUrl("signUp");
