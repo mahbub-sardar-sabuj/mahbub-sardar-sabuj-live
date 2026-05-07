@@ -9885,6 +9885,8 @@ ___`,
 // ── E-Books Data ─────────────────────────────────────────────────────────────
 
 
+const WRITINGS_PAGE_SIZE = 24;
+
 const ebooks = [
   {
     id: 1,
@@ -10181,6 +10183,35 @@ const CSS = `
     transition: all .18s;
   }
   .rb2-clr:hover { color: var(--t1); border-color: var(--bdr2); }
+  .lm2 {
+    margin: clamp(1.5rem,3vw,2.2rem) auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .7rem;
+    font-family: var(--f);
+    color: var(--t3);
+  }
+  .lm2-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(200,164,90,.28);
+    background: linear-gradient(135deg, rgba(200,164,90,.12), rgba(255,255,255,.03));
+    color: var(--gold);
+    font-family: var(--f);
+    font-size: .82rem;
+    cursor: pointer;
+    transition: transform .22s var(--r), border-color .22s, background .22s;
+  }
+  .lm2-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(200,164,90,.45);
+    background: linear-gradient(135deg, rgba(200,164,90,.18), rgba(255,255,255,.05));
+  }
+  .lm2-note { font-size: .72rem; color: var(--t3); }
 
   /* ── WRITING CARDS GRID ── */
   .wg2 {
@@ -10660,6 +10691,27 @@ const CSS = `
   }
   .bf-read:hover { background: rgba(255,255,255,.06); }
 
+  .bk-sum {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0 0 clamp(1.2rem,2.5vw,1.8rem);
+  }
+  .bk-sum-card {
+    border: 1px solid var(--bdr);
+    background: linear-gradient(135deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+    border-radius: 16px;
+    padding: 1rem;
+    font-family: var(--f);
+  }
+  .bk-sum-num {
+    display: block;
+    color: var(--gold);
+    font-size: 1.15rem;
+    margin-bottom: .25rem;
+  }
+  .bk-sum-label { color: var(--t3); font-size: .72rem; line-height: 1.7; }
+
   /* Books grid */
   .bg2 {
     display: grid;
@@ -10738,6 +10790,17 @@ const CSS = `
   .bc-info {
     padding: 1rem;
   }
+  .bc-genre {
+    display: inline-flex;
+    margin-bottom: .45rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid var(--bdr);
+    color: var(--t3);
+    font-family: var(--f);
+    font-size: .62rem;
+  }
   .bc-ttl {
     font-family: var(--f);
     font-size: .9rem;
@@ -10755,8 +10818,35 @@ const CSS = `
     font-family: var(--f);
     font-size: .68rem;
     color: var(--t3);
-    margin-bottom: .7rem;
+    margin-bottom: .55rem;
   }
+  .bc-desc {
+    font-family: var(--f);
+    font-size: .72rem;
+    color: var(--t2);
+    line-height: 1.75;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: .85rem;
+  }
+  .bc-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bc-vb {
+    display: flex; align-items: center; gap: 6px;
+    width: 100%;
+    padding: 7px 0;
+    border-radius: 8px;
+    border: 1px solid var(--bdr);
+    color: var(--t2);
+    background: rgba(255,255,255,.025);
+    font-family: var(--f);
+    font-size: .75rem;
+    cursor: pointer;
+    justify-content: center;
+    transition: all .2s;
+  }
+  .bc-vb:hover { color: var(--t0); border-color: var(--bdr2); }
   .bc-rb {
     display: flex; align-items: center; gap: 6px;
     width: 100%;
@@ -10884,6 +10974,7 @@ const CSS = `
     .sf-s { max-width: 100%; flex: 1; }
     .sf-cats { display: none; }
     .wg2 { grid-template-columns: 1fr; }
+    .bk-sum { grid-template-columns: 1fr; }
     .bg2 { grid-template-columns: repeat(2, 1fr); }
     .bf-in { flex-direction: column; }
     .bf-cv { width: clamp(100px,40vw,150px); }
@@ -11184,9 +11275,17 @@ function BooksTab() {
   const [selBook, setSelBook] = useState<typeof ebooks[0] | null>(null);
   const featured = ebooks.find(b => b.isFeatured);
   const others = ebooks.filter(b => !b.isFeatured);
+  const readableBooks = ebooks.filter(b => b.canRead).length;
+  const physicalBooks = ebooks.filter(b => b.badge.includes("ফিজিক্যাল")).length;
 
   return (
     <div className="bs">
+      <div className="bk-sum" aria-label="বই সংগ্রহের সারাংশ">
+        <div className="bk-sum-card"><span className="bk-sum-num">{ebooks.length}</span><span className="bk-sum-label">মোট প্রকাশনা</span></div>
+        <div className="bk-sum-card"><span className="bk-sum-num">{readableBooks}</span><span className="bk-sum-label">অনলাইনে পড়ার সুযোগ</span></div>
+        <div className="bk-sum-card"><span className="bk-sum-num">{physicalBooks}</span><span className="bk-sum-label">ফিজিক্যাল বই</span></div>
+      </div>
+
       {/* Featured */}
       {featured && (
         <>
@@ -11280,11 +11379,18 @@ function BooksTab() {
                   </span>
                 </div>
                 <div className="bc-info">
+                  <span className="bc-genre">{book.genre}</span>
                   <div className="bc-ttl">{book.title}</div>
                   <div className="bc-meta"><Calendar size={10}/>{book.year} · {book.pages}</div>
-                  <button className="bc-rb" style={{ color: book.accentColor, borderColor: `${book.accentColor}28` }}>
-                    <BookOpen size={12}/> পড়ুন
-                  </button>
+                  <p className="bc-desc">{book.description}</p>
+                  <div className="bc-actions">
+                    <button className="bc-vb" onClick={(e) => { e.stopPropagation(); setSelBook(book); }}>
+                      <Eye size={12}/> দেখুন
+                    </button>
+                    <button className="bc-rb" style={{ color: book.accentColor, borderColor: `${book.accentColor}28` }} onClick={(e) => { e.stopPropagation(); window.location.href = `/ebooks/${book.slug}`; }}>
+                      <BookOpen size={12}/> পড়ুন
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -11318,6 +11424,7 @@ export default function Writings() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Writing|null>(null);
   const [viewMode, setViewMode] = useState<"grid"|"list">("grid");
+  const [visibleCount, setVisibleCount] = useState(WRITINGS_PAGE_SIZE);
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/writings/:slug");
 
@@ -11341,6 +11448,13 @@ export default function Writings() {
     }
     return list;
   }, [cat, q]);
+
+  useEffect(() => {
+    setVisibleCount(WRITINGS_PAGE_SIZE);
+  }, [cat, q]);
+
+  const visibleWritings = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const hasMoreWritings = visibleCount < filtered.length;
 
   useEffect(() => {
     if (match && params?.slug) {
@@ -11369,7 +11483,7 @@ export default function Writings() {
       <Seo
         title="লেখালেখি ও বই — মাহবুব সরদার সবুজ"
         description="মাহবুব সরদার সবুজের সকল লেখা, কবিতা এবং প্রকাশিত বই।"
-        url="https://mahbubsardarsabuj.com/writings"
+        path="/writings"
       />
       <Navbar/>
       <style>{CSS}</style>
@@ -11451,7 +11565,7 @@ export default function Writings() {
                 {/* Results bar */}
                 <div className="rb2">
                   <div className="rb2-t">
-                    <span className="rb2-n">{filtered.length}</span> টি লেখা
+                    <span className="rb2-n">{filtered.length}</span> টি লেখা{filtered.length > visibleWritings.length && <span>· প্রথমে {visibleWritings.length}টি দেখানো হচ্ছে</span>}
                     {cat !== "all" && <span>· {CATS.find(c2 => c2.id === cat)?.label}</span>}
                     {q && <span>· "{q}"</span>}
                   </div>
@@ -11463,8 +11577,9 @@ export default function Writings() {
                 </div>
 
                 {filtered.length > 0 ? (
+                  <>
                   <div className={viewMode === "grid" ? "wg2" : "wg2-l"}>
-                    {filtered.map((w, i) => (
+                    {visibleWritings.map((w, i) => (
                       <WritingCard
                         key={w.id}
                         writing={w}
@@ -11474,6 +11589,15 @@ export default function Writings() {
                       />
                     ))}
                   </div>
+                  {hasMoreWritings && (
+                    <div className="lm2">
+                      <button className="lm2-btn" onClick={() => setVisibleCount((n) => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))}>
+                        <ChevronDown size={15}/> আরও লেখা দেখুন
+                      </button>
+                      <div className="lm2-note">{visibleWritings.length} / {filtered.length} টি লেখা দেখা যাচ্ছে</div>
+                    </div>
+                  )}
+                  </>
                 ) : (
                   <div className="wc2-em">
                     <Search size={26} color="rgba(238,234,226,.12)" style={{ margin: "0 auto .8rem", display: "block" }}/>
