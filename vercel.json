@@ -5,6 +5,9 @@
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
   "functions": {
+    "api/trpc.ts": {
+      "includeFiles": "shared/**"
+    },
     "api/audio-edit.js": {
       "maxDuration": 60,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"

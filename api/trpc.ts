@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { COOKIE_NAME } from "../shared/const";
+// Inlined from shared/const to avoid Vercel module resolution issues
+const COOKIE_NAME = "app_session_id";
 import type { TrpcContext } from "../server/_core/context";
 import type { User } from "../drizzle/schema";
 
