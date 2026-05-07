@@ -66,7 +66,7 @@ function Router() {
         <Route path={"/terms"} component={Terms} />
         <Route path={"/about"} component={About} />
         <Route path={"/contact"} component={Contact} />
-        <Route path={"/ebooks"} component={Writings} />
+        <Route path={"/ebooks"} component={EBooks} />
         <Route path={"/ebooks/read/:slug"} component={EBookReader} />
         <Route path={"/editor"} component={Editor} />
         <Route path={"/news"} component={News} />

@@ -44,6 +44,8 @@ const isInfoTabActive = (href: string, location: string) => location === href;
 
 const isPrimaryNavActive = (href: string, type: string, location: string) => {
   if (href === "/") return location === "/";
+  // লেখালেখি ও বই: /writings, /ebooks, /ebooks/read/* সব পেইজেই active
+  if (href === "/writings") return location === "/writings" || location === "/ebooks" || location.startsWith("/ebooks/");
   if (type === "page") return location === href;
   return false;
 };
@@ -62,7 +64,7 @@ export default function Navbar() {
   const [logoHovered, setLogoHovered] = useState(false);
   const isEditorPage = location === "/editor";
   const isEBookReaderPage = location.startsWith("/ebooks/read/");
-  const isWritingsPage = location === "/writings";
+  const isWritingsPage = location === "/writings" || location === "/ebooks";
   const navElevated = scrolled || isWritingsPage;
 
   useEffect(() => {
