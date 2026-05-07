@@ -1308,16 +1308,16 @@ export default function AmiOLikhboBastobota() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
     activeCategory === "all" ? undefined : { category: activeCategory as Exclude<CategoryKey, "all"> },
-    { refetchInterval: 60000, enabled: !searchActive }
+    { refetchInterval: 60000, enabled: !searchActive, retry: false }
   );
   const searchQuery_ = searchQuery.trim();
   const searchResultsQuery = trpc.writingPlatform.searchPosts.useQuery(
     { query: searchQuery_ || "_" },
-    { enabled: searchActive && searchQuery_.length >= 2 }
+    { enabled: searchActive && searchQuery_.length >= 2, retry: false }
   );
   const myPostsQuery = trpc.writingPlatform.myPosts.useQuery(
     undefined,
-    { enabled: isAuthenticated && activeTab === "myPosts" }
+    { enabled: isAuthenticated && activeTab === "myPosts", retry: false }
   );
   const utils = trpc.useUtils();
   const deletePostMutation = trpc.writingPlatform.deletePost.useMutation({
@@ -1326,6 +1326,9 @@ export default function AmiOLikhboBastobota() {
       utils.writingPlatform.myPosts.invalidate();
     },
   });
+  const activeFeedQuery = searchActive && searchQuery_.length >= 2 ? searchResultsQuery : postsQuery;
+  const feedHasError = Boolean(activeFeedQuery.isError);
+  const feedIsLoading = Boolean(activeFeedQuery.isLoading || activeFeedQuery.isFetching);
   const posts = (searchActive && searchQuery_.length >= 2
     ? (searchResultsQuery.data ?? [])
     : (postsQuery.data ?? [])) as EnrichedPost[];
@@ -1656,6 +1659,14 @@ export default function AmiOLikhboBastobota() {
                     <div style={{ display: "grid", placeItems: "center", minHeight: 240 }}>
                       <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
                     </div>
+                  ) : myPostsQuery.isError ? (
+                    <div style={{ ...cardStyle, padding: "2rem 1.5rem", textAlign: "center", display: "grid", gap: "0.75rem" }}>
+                      <PenLine size={34} color="rgba(239,68,68,0.55)" style={{ margin: "0 auto" }} />
+                      <div style={{ color: "#FCA5A5", fontWeight: 800 }}>আপনার পোস্টগুলো লোড করা যায়নি।</div>
+                      <ActionButton onClick={() => myPostsQuery.refetch()} variant="ghost" small>
+                        <RefreshCw size={14} /> আবার চেষ্টা করুন
+                      </ActionButton>
+                    </div>
                   ) : (myPostsQuery.data ?? []).length === 0 ? (
                     <div style={{ ...cardStyle, padding: "3rem 1.5rem", textAlign: "center", display: "grid", gap: "0.75rem" }}>
                       <PenLine size={40} color="rgba(232,201,122,0.35)" style={{ margin: "0 auto" }} />
@@ -1708,9 +1719,19 @@ export default function AmiOLikhboBastobota() {
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
                   অনুসন্ধানের জন্য কমপক্ষে ২টি অক্ষর লিখুন।
                 </div>
-              ) : (searchActive && searchResultsQuery.isLoading) || (!searchActive && postsQuery.isLoading) ? (
+              ) : feedIsLoading ? (
                 <div style={{ display: "grid", placeItems: "center", minHeight: 240 }}>
                   <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
+                </div>
+              ) : feedHasError ? (
+                <div style={{ ...cardStyle, padding: "2rem 1.5rem", textAlign: "center", display: "grid", gap: "0.75rem" }}>
+                  <PenLine size={40} color="rgba(239,68,68,0.55)" style={{ margin: "0 auto" }} />
+                  <div style={{ color: "#FCA5A5", fontWeight: 800 }}>
+                    পোস্টগুলো লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।
+                  </div>
+                  <ActionButton onClick={() => activeFeedQuery.refetch()} variant="ghost" small>
+                    <RefreshCw size={14} /> আবার চেষ্টা করুন
+                  </ActionButton>
                 </div>
               ) : posts.length === 0 ? (
                 <div
