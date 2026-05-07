@@ -82,6 +82,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "action required" });
   }
 
+  // Check DATABASE_URL
+  if (!process.env.DATABASE_URL) {
+    console.error("[local-auth] DATABASE_URL is not set!");
+    return res.status(500).json({ error: "ডেটাবেজ কনফিগারেশন সমস্যা। অ্যাডমিনকে জানান।" });
+  }
   const db = getPool();
 
   // ── REGISTER ──────────────────────────────────────────────────────────────
