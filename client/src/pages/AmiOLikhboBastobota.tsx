@@ -109,6 +109,8 @@ function ActionButton({
 }) {
   const baseStyle: CSSProperties = {
     display: "inline-flex",
+    boxSizing: "border-box",
+    maxWidth: "100%",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
@@ -1360,14 +1362,22 @@ export default function AmiOLikhboBastobota() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .post-card-enter { animation: fadeIn 0.35s ease forwards; }
+        .amio-category-row::-webkit-scrollbar { display: none; }
+        @media (max-width: 520px) {
+          .amio-mobile-stack { align-items: stretch !important; }
+          .amio-mobile-stack > * { width: 100%; }
+          .amio-hero-actions { width: 100%; max-width: 100%; flex-direction: column; overflow: hidden; }
+          .amio-hero-actions > * { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box !important; }
+        }
       `}</style>
 
-      <main style={{ padding: "clamp(2rem, 6vw, 4rem) 0 3rem" }}>
-        <div style={{ width: "min(720px, calc(100% - 2rem))", margin: "0 auto", display: "grid", gap: "1.25rem" }}>
+      <main style={{ padding: "calc(var(--site-nav-offset, 98px) + clamp(1rem, 4vw, 2rem)) 0 3rem" }}>
+        <div style={{ width: "min(720px, calc(100% - clamp(1rem, 5vw, 2rem)))", margin: "0 auto", display: "grid", gap: "1.25rem" }}>
 
           {/* ── Hero header ── */}
           {!slugFromUrl && (
             <div
+              className="amio-mobile-stack"
               style={{
                 ...glassStyle,
                 borderRadius: 28,
@@ -1402,7 +1412,7 @@ export default function AmiOLikhboBastobota() {
                   <Plus size={16} /> নতুন পোস্ট
                 </ActionButton>
               ) : (
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div className="amio-hero-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {isLoginConfigured ? (
                     <>
                       <ActionButton href={loginHref} small>
@@ -1535,10 +1545,11 @@ export default function AmiOLikhboBastobota() {
                 {searchActive && (
                   <button
                     type="button"
+                    aria-label="অনুসন্ধান মুছুন"
                     onClick={() => { setSearchQuery(""); setSearchActive(false); }}
                     style={{ background: "none", border: "none", color: "rgba(253,246,236,0.5)", cursor: "pointer", padding: "0.5rem", display: "flex", alignItems: "center" }}
                   >
-                    <X size={16} />
+                    <X size={16} aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -1610,12 +1621,16 @@ export default function AmiOLikhboBastobota() {
               {/* ── Category filter (only in feed tab, not search) ── */}
               {!searchActive && activeTab === "feed" && (
               <div
+                className="amio-category-row"
                 style={{
                   display: "flex",
                   gap: 8,
                   overflowX: "auto",
-                  paddingBottom: 4,
+                  padding: "0 0.25rem 0.45rem",
+                  marginInline: "-0.25rem",
                   scrollbarWidth: "none",
+                  WebkitOverflowScrolling: "touch",
+                  overscrollBehaviorX: "contain",
                 }}
               >
                 {CATEGORIES.map((cat) => (
@@ -1724,11 +1739,14 @@ export default function AmiOLikhboBastobota() {
                   <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
                 </div>
               ) : feedHasError ? (
-                <div style={{ ...cardStyle, padding: "2rem 1.5rem", textAlign: "center", display: "grid", gap: "0.75rem" }}>
-                  <PenLine size={40} color="rgba(239,68,68,0.55)" style={{ margin: "0 auto" }} />
-                  <div style={{ color: "#FCA5A5", fontWeight: 800 }}>
-                    পোস্টগুলো লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।
+                <div style={{ ...cardStyle, padding: "clamp(1.5rem, 6vw, 2rem)", textAlign: "center", display: "grid", gap: "0.75rem" }}>
+                  <PenLine size={40} color="rgba(247,213,111,0.55)" style={{ margin: "0 auto" }} />
+                  <div style={{ color: "#F7D56F", fontWeight: 900 }}>
+                    পোস্টগুলো এই মুহূর্তে দেখা যাচ্ছে না।
                   </div>
+                  <p style={{ margin: 0, color: "rgba(253,246,236,0.58)", fontSize: "0.9rem", lineHeight: 1.7 }}>
+                    নেটওয়ার্ক বা সার্ভার সংযোগ সাময়িকভাবে ব্যস্ত হতে পারে। কিছুক্ষণ পর আবার চেষ্টা করুন।
+                  </p>
                   <ActionButton onClick={() => activeFeedQuery.refetch()} variant="ghost" small>
                     <RefreshCw size={14} /> আবার চেষ্টা করুন
                   </ActionButton>
