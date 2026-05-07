@@ -277,7 +277,7 @@ export default function Home() {
                 </p>
               </motion.div>
 
-              {/* CTA buttons — one row */}
+              {/* CTA buttons — card style */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -286,43 +286,55 @@ export default function Home() {
               >
                 <Link href="/writings" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.05, y: -3, boxShadow: "0 20px 50px rgba(201,168,76,0.55)" }}
+                    whileHover={{ scale: 1.04, y: -5, boxShadow: "0 22px 55px rgba(201,168,76,0.6)" }}
                     whileTap={{ scale: 0.96 }}
                     className="cta-btn cta-primary"
                   >
-                    <BookOpen size={17} />
-                    বই পড়ুন
-                    <ArrowRight size={15} />
+                    <span className="cta-icon-wrap cta-icon-gold"><BookOpen size={20} /></span>
+                    <span className="cta-text-wrap">
+                      <span className="cta-label">বই পড়ুন</span>
+                      <span className="cta-sub">লেখা ও ই-বুক</span>
+                    </span>
+                    <ArrowRight size={14} className="cta-arrow" />
                   </motion.span>
                 </Link>
                 <Link href="/about" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
+                    whileHover={{ scale: 1.04, y: -5, boxShadow: "0 18px 45px rgba(96,165,250,0.35)", borderColor: "rgba(96,165,250,0.8)", background: "rgba(96,165,250,0.1)" }}
                     whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-secondary"
+                    className="cta-btn cta-secondary cta-blue"
                   >
-                    <UserRound size={17} />
-                    পরিচিতি
+                    <span className="cta-icon-wrap cta-icon-blue"><UserRound size={20} /></span>
+                    <span className="cta-text-wrap">
+                      <span className="cta-label">পরিচিতি</span>
+                      <span className="cta-sub">লেখক পরিচয়</span>
+                    </span>
                   </motion.span>
                 </Link>
                 <Link href="/editor" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
+                    whileHover={{ scale: 1.04, y: -5, boxShadow: "0 18px 45px rgba(167,139,250,0.35)", borderColor: "rgba(167,139,250,0.8)", background: "rgba(167,139,250,0.1)" }}
                     whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-secondary"
+                    className="cta-btn cta-secondary cta-purple"
                   >
-                    <Palette size={17} />
-                    ডিজাইন করুন
+                    <span className="cta-icon-wrap cta-icon-purple"><Palette size={20} /></span>
+                    <span className="cta-text-wrap">
+                      <span className="cta-label">ডিজাইন</span>
+                      <span className="cta-sub">ফ্রি টুলস</span>
+                    </span>
                   </motion.span>
                 </Link>
                 <Link href="/news" style={{ flex: 1 }}>
                   <motion.span
-                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
+                    whileHover={{ scale: 1.04, y: -5, boxShadow: "0 18px 45px rgba(52,211,153,0.35)", borderColor: "rgba(52,211,153,0.8)", background: "rgba(52,211,153,0.1)" }}
                     whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-secondary"
+                    className="cta-btn cta-secondary cta-green"
                   >
-                    <Newspaper size={17} />
-                    সরদার সংবাদ
+                    <span className="cta-icon-wrap cta-icon-green"><Newspaper size={20} /></span>
+                    <span className="cta-text-wrap">
+                      <span className="cta-label">সংবাদ</span>
+                      <span className="cta-sub">সরদার সংবাদ</span>
+                    </span>
                   </motion.span>
                 </Link>
               </motion.div>
@@ -1104,10 +1116,10 @@ export default function Home() {
           50% { opacity: 0.6; transform: scale(1.5); box-shadow: 0 0 16px rgba(201,168,76,0.8); }
         }
 
-        /* CTA row — one line, equal boxes */
+        /* CTA row — card style */
         .cta-row {
           display: flex;
-          gap: 8px;
+          gap: 10px;
           width: 100%;
           max-width: 680px;
         }
@@ -1118,36 +1130,99 @@ export default function Home() {
         .cta-btn {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 13px 8px;
-          border-radius: 6px;
+          justify-content: flex-start;
+          gap: 8px;
+          padding: 12px 10px;
+          border-radius: 12px;
           font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 700;
           cursor: pointer;
           text-decoration: none;
           width: 100%;
+          transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+          position: relative;
+          overflow: hidden;
+        }
+        .cta-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+          pointer-events: none;
+        }
+        .cta-icon-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 9px;
+          flex-shrink: 0;
+          transition: transform 0.28s ease;
+        }
+        .cta-btn:hover .cta-icon-wrap {
+          transform: scale(1.15) rotate(-5deg);
+        }
+        .cta-icon-gold { background: rgba(201,168,76,0.22); color: #C9A84C; }
+        .cta-icon-blue { background: rgba(96,165,250,0.18); color: #60A5FA; }
+        .cta-icon-purple { background: rgba(167,139,250,0.18); color: #A78BFA; }
+        .cta-icon-green { background: rgba(52,211,153,0.18); color: #34D399; }
+        .cta-text-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1px;
+          flex: 1;
+          min-width: 0;
+        }
+        .cta-label {
+          font-size: 0.82rem;
+          font-weight: 700;
           white-space: nowrap;
-          transition: all 0.25s ease;
-          letter-spacing: 0.01em;
+          line-height: 1.2;
+        }
+        .cta-sub {
+          font-size: 0.62rem;
+          font-weight: 400;
+          opacity: 0.55;
+          white-space: nowrap;
+          line-height: 1.2;
+        }
+        .cta-arrow {
+          flex-shrink: 0;
+          opacity: 0.7;
+          transition: transform 0.25s ease;
+        }
+        .cta-btn:hover .cta-arrow {
+          transform: translateX(3px);
+          opacity: 1;
         }
         .cta-primary {
-          background: linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%);
+          background: linear-gradient(135deg, #B8922A 0%, #E8C97A 45%, #C9A84C 100%);
           background-size: 200% 100%;
           color: #060E1A;
-          box-shadow: 0 8px 28px rgba(201,168,76,0.35);
+          box-shadow: 0 8px 32px rgba(201,168,76,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
           animation: goldShimmer 3s ease-in-out infinite;
+          border: 1px solid rgba(255,220,100,0.3);
         }
+        .cta-primary .cta-label { color: #1a0f00; }
+        .cta-primary .cta-sub { color: rgba(30,15,0,0.6); opacity: 1; }
         .cta-secondary {
-          background: rgba(201,168,76,0.04);
-          border: 1px solid rgba(201,168,76,0.3);
-          color: rgba(250,246,239,0.85);
-          backdrop-filter: blur(10px);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.12);
+          color: rgba(250,246,239,0.88);
+          backdrop-filter: blur(12px);
         }
-        .cta-secondary:hover {
-          background: rgba(201,168,76,0.08);
-          border-color: rgba(201,168,76,0.7);
+        .cta-blue {
+          border-color: rgba(96,165,250,0.28);
+          box-shadow: 0 4px 20px rgba(96,165,250,0.12);
+        }
+        .cta-purple {
+          border-color: rgba(167,139,250,0.28);
+          box-shadow: 0 4px 20px rgba(167,139,250,0.12);
+        }
+        .cta-green {
+          border-color: rgba(52,211,153,0.28);
+          box-shadow: 0 4px 20px rgba(52,211,153,0.12);
         }
 
         /* Hero layout */
@@ -1225,43 +1300,34 @@ export default function Home() {
           .hero-container { padding-top: 80px; padding-bottom: 60px; }
           .sections-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .hero-portrait { height: 320px; }
-          .cta-row { gap: 5px; max-width: 100%; }
-          .cta-btn {
-            font-size: 0.72rem;
-            padding: 11px 4px;
-            gap: 3px;
-          }
-          .cta-btn svg { width: 13px; height: 13px; }
+          .cta-row { gap: 6px; max-width: 100%; }
+          .cta-btn { padding: 10px 8px; gap: 6px; border-radius: 10px; }
+          .cta-icon-wrap { width: 30px; height: 30px; border-radius: 7px; }
+          .cta-icon-wrap svg { width: 15px; height: 15px; }
+          .cta-label { font-size: 0.74rem; }
+          .cta-sub { font-size: 0.56rem; }
+          .cta-arrow { width: 12px; height: 12px; }
         }
 
         @media (max-width: 480px) {
           .sections-grid { grid-template-columns: 1fr !important; }
-          .cta-row { gap: 4px; }
-          .cta-btn {
-            font-size: 0.68rem;
-            padding: 10px 3px;
-            gap: 2px;
-          }
-          .cta-btn svg { width: 12px; height: 12px; }
+          .cta-row { gap: 5px; }
+          .cta-btn { padding: 9px 7px; gap: 5px; }
+          .cta-icon-wrap { width: 28px; height: 28px; border-radius: 7px; }
+          .cta-icon-wrap svg { width: 14px; height: 14px; }
+          .cta-label { font-size: 0.7rem; }
+          .cta-sub { font-size: 0.54rem; }
         }
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: 70px; padding-bottom: 50px; }
-          .cta-row {
-            flex-wrap: wrap;
-            gap: 6px;
-          }
-          .cta-row a {
-            flex: 1 1 calc(50% - 3px);
-            min-width: 0;
-          }
-          .cta-btn {
-            font-size: 0.6rem;
-            padding: 9px 4px;
-            gap: 2px;
-            justify-content: center;
-          }
-          .cta-btn svg { width: 10px; height: 10px; }
+          .cta-row { flex-wrap: wrap; gap: 6px; }
+          .cta-row a { flex: 1 1 calc(50% - 3px); min-width: 0; }
+          .cta-btn { padding: 9px 7px; gap: 5px; border-radius: 9px; }
+          .cta-icon-wrap { width: 26px; height: 26px; }
+          .cta-icon-wrap svg { width: 13px; height: 13px; }
+          .cta-label { font-size: 0.68rem; }
+          .cta-sub { font-size: 0.52rem; }
           .sections-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
