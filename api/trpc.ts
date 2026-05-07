@@ -1,10 +1,10 @@
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { COOKIE_NAME } from "../../shared/const";
-import { appRouter } from "../../server/routers";
-import { sdk } from "../../server/_core/sdk";
-import type { TrpcContext } from "../../server/_core/context";
-import type { User } from "../../drizzle/schema";
+import { COOKIE_NAME } from "../shared/const";
+import { appRouter } from "../server/routers";
+import { sdk } from "../server/_core/sdk";
+import type { TrpcContext } from "../server/_core/context";
+import type { User } from "../drizzle/schema";
 
 function firstHeaderValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;

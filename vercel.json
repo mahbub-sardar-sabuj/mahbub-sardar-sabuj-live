@@ -46,6 +46,10 @@
   ],
   "routes": [
     {
+      "src": "/api/trpc/(.*)",
+      "dest": "/api/trpc?trpc=$1"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
