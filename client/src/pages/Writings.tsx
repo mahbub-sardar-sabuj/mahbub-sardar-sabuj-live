@@ -11293,6 +11293,18 @@ const CSS = `
     78%, 100% { transform: translateX(125%) skewX(-18deg); opacity: 0; }
   }
 
+  /* ── ACCESSIBILITY & PREMIUM MICRO-INTERACTIONS ── */
+  .ebook-tile, .wc2, .sf-cat, .sf-vb, .lm2-btn, .ebook-preview, .ebook-read, .ebook-buy, .rb2-clr {
+    outline: none;
+  }
+  .ebook-tile:focus-visible, .wc2:focus-visible, .sf-cat:focus-visible, .sf-vb:focus-visible, .lm2-btn:focus-visible, .ebook-preview:focus-visible, .ebook-read:focus-visible, .ebook-buy:focus-visible, .rb2-clr:focus-visible {
+    box-shadow: 0 0 0 3px rgba(201,168,76,.28), 0 0 0 1px rgba(238,234,226,.12) inset;
+  }
+  .ebook-tile, .wc2 { cursor: pointer; }
+  .ebook-row { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+  .sf-s input { min-height: 42px; }
+  .writing-tools { will-change: transform; }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -11390,6 +11402,10 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
         animationDelay: `${index * 0.04}s`,
       } as React.CSSProperties}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`${writing.title} পড়ুন`}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
       whileTap={{ scale: .97 }}
     >
       <div className="wc2-top"/>
@@ -11684,6 +11700,10 @@ function BooksTab() {
             animate={{ opacity: 1, y: 0, rotateX: 0 }}
             transition={{ delay: i * .08, duration: .48, ease: [.25,.46,.45,.94] }}
             onClick={() => setSelBook(book)}
+            role="button"
+            tabIndex={0}
+            aria-label={`${book.title} সম্পর্কে দেখুন`}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelBook(book); } }}
           >
             <div className="ebook-glow"/>
             <div className="ebook-cover-wrap">
@@ -11733,16 +11753,6 @@ export default function Writings() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/writings/:slug");
 
-  useEffect(() => {
-    const id = "writings-css-v8";
-    if (!document.getElementById(id)) {
-      const el = document.createElement("style");
-      el.id = id;
-      el.textContent = CSS;
-      document.head.appendChild(el);
-    }
-    return () => { document.getElementById(id)?.remove(); };
-  }, []);
 
   const filtered = useMemo(() => {
     let list = writings;
@@ -11830,11 +11840,12 @@ export default function Writings() {
                 <input
                   type="text"
                   placeholder="লেখা খুঁজুন…"
+                  aria-label="লেখা খুঁজুন"
                   value={q}
                   onChange={e => setQ(e.target.value)}
                 />
                 {q && (
-                  <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.35)", display: "flex" }}>
+                  <button aria-label="সার্চ মুছে ফেলুন" onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.35)", display: "flex" }}>
                     <X size={12}/>
                   </button>
                 )}
@@ -11846,6 +11857,7 @@ export default function Writings() {
                     className="sf-cat"
                     style={cat === c2.id ? { background: `${c2.color}0E`, color: c2.color, borderColor: `${c2.color}25`, boxShadow: `0 0 10px ${c2.glow}` } : {}}
                     onClick={() => setCat(c2.id)}
+                    aria-pressed={cat === c2.id}
                     whileTap={{ scale: .93 }}
                   >
                     <span style={{ fontSize: ".75rem" }}>{c2.icon}</span>{c2.label}
@@ -11853,8 +11865,8 @@ export default function Writings() {
                 ))}
               </div>
               <div className="sf-vw wt-view">
-                <button className={`sf-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড"><Grid3X3 size={12}/></button>
-                <button className={`sf-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট"><List size={12}/></button>
+                <button className={`sf-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড" aria-label="গ্রিড ভিউ" aria-pressed={viewMode === "grid"}><Grid3X3 size={12}/></button>
+                <button className={`sf-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট" aria-label="লিস্ট ভিউ" aria-pressed={viewMode === "list"}><List size={12}/></button>
               </div>
             </div>
 
@@ -11865,7 +11877,7 @@ export default function Writings() {
                 {q && <span>· “{q}”</span>}
               </div>
               {(cat !== "all" || q) && (
-                <button className="rb2-clr" onClick={() => { setCat("all"); setQ(""); }}>
+                <button className="rb2-clr" aria-label="সব ফিল্টার সরান" onClick={() => { setCat("all"); setQ(""); }}>
                   <X size={10}/> সরান
                 </button>
               )}
@@ -11886,7 +11898,7 @@ export default function Writings() {
                 </div>
                 {hasMoreWritings && (
                   <div className="lm2">
-                    <button className="lm2-btn" onClick={() => setVisibleCount((n) => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))}>
+                    <button className="lm2-btn" aria-label="আরও লেখা দেখুন" onClick={() => setVisibleCount((n) => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))}>
                       <ChevronDown size={15}/> আরও লেখা দেখুন
                     </button>
                     <div className="lm2-note">{visibleWritings.length} / {filtered.length} টি লেখা দেখা যাচ্ছে</div>

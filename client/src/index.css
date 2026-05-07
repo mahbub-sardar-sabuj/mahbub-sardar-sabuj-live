@@ -204,3 +204,33 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.65 0.14 80);
 }
+
+/* Global premium polish */
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+}
+img, video, canvas, svg {
+  max-width: 100%;
+}
+a, button, input, textarea, select {
+  touch-action: manipulation;
+}
+:focus-visible {
+  outline: 2px solid rgba(201,168,76,.72);
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
