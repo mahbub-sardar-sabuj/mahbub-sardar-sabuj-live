@@ -1869,12 +1869,6 @@ function BooksTab() {
         <div>
           <div className="wc-kicker"><Library size={14}/> প্রথম সারি</div>
           <h2 id="ebook-stage-title">ই-বুক ও প্রকাশনা সংগ্রহ</h2>
-          <p>পাঠকের জন্য সবচেয়ে গুরুত্বপূর্ণ বইগুলো প্রথমেই রাখা হলো—cover, genre, read/buy action এবং cinematic depth সহ।</p>
-        </div>
-        <div className="bk-sum bk-sum-cinema" aria-label="বই সংগ্রহের সারাংশ">
-          <div className="bk-sum-card"><span className="bk-sum-num">{ebooks.length}</span><span className="bk-sum-label">মোট প্রকাশনা</span></div>
-          <div className="bk-sum-card"><span className="bk-sum-num">{readableBooks}</span><span className="bk-sum-label">অনলাইনে পড়া যায়</span></div>
-          <div className="bk-sum-card"><span className="bk-sum-num">{physicalBooks}</span><span className="bk-sum-label">ফিজিক্যাল বই</span></div>
         </div>
       </div>
 
@@ -2098,13 +2092,7 @@ export default function Writings() {
             transition={{ duration: .55 }}
           >
             <div className="lh-kicker"><Sparkles size={14}/> সাহিত্য সংগ্রহ</div>
-            <h1 className="lh-title">বই থেকে লেখা—একই নক্ষত্রময় পাঠভুবন</h1>
-            <p className="lh-copy">প্রথম সারিতে নির্বাচিত ই-বুক ও প্রকাশনা, তারপর আবেগ, বিচ্ছেদ, জীবনদর্শন ও কবিতার curated লেখালেখি—সিনেমাটিক অভিজ্ঞতায় সাজানো।</p>
-            <div className="lh-stats" aria-label="সাহিত্য সংগ্রহের সারাংশ">
-              <div><strong>{ebooks.length}</strong><span>বই ও ই-বুক</span></div>
-              <div><strong>{archive.length ? `${archive.length}+` : "লোড হচ্ছে"}</strong><span>লেখা</span></div>
-              <div><strong>{CATS.length - 1}</strong><span>ধরন</span></div>
-            </div>
+            <h1 className="lh-title">বই থেকে লেখা—একই নক্ষত্রময় পাঠভুবন</h1>
           </motion.section>
 
           <BooksTab/>
@@ -2114,7 +2102,6 @@ export default function Writings() {
               <div>
                 <div className="wc-kicker"><Feather size={14}/> লেখালেখি</div>
                 <h2>নির্বাচিত অনুভূতির আর্কাইভ</h2>
-                <p>প্রতিটি লেখাকে premium reading card হিসেবে সাজানো হয়েছে, যাতে মোবাইল ও ডেস্কটপ—দুই জায়গাতেই পড়ার অভিজ্ঞতা সুন্দর থাকে।</p>
               </div>
               <div className="wc-count"><span>{filtered.length}</span> টি লেখা</div>
             </div>
