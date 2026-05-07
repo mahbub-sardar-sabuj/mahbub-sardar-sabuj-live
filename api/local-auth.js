@@ -192,5 +192,34 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true });
   }
 
+  // ── OWNER RESET PASSWORD ──────────────────────────────────────────────────
+  // Only allows owner email to reset their own password via a secret token
+  if (action === "owner-reset") {
+    const resetToken = process.env.OWNER_RESET_TOKEN;
+    const { token, newPassword } = req.body || {};
+    if (!resetToken || !token || token !== resetToken) {
+      return res.status(403).json({ error: "অনুমতি নেই" });
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
+    }
+    const ownerEmail = OWNER_EMAIL.toLowerCase();
+    const db = getPool();
+    try {
+      const newHash = hashPassword(newPassword);
+      const [result] = await db.execute(
+        "UPDATE local_users SET passwordHash = ? WHERE email = ?",
+        [newHash, ownerEmail]
+      );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "ব্যবহারকারী পাওয়া যায়নি" });
+      }
+      return res.status(200).json({ success: true, message: "পাসওয়ার্ড আপডেট হয়েছে" });
+    } catch (err) {
+      console.error("[local-auth owner-reset]", err);
+      return res.status(500).json({ error: "পাসওয়ার্ড রিসেটে সমস্যা হয়েছে" });
+    }
+  }
+
   return res.status(400).json({ error: "অজানা action" });
 }
