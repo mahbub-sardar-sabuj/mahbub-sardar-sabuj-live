@@ -75,9 +75,8 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
     // Register Telegram webhook after server starts (production only)
     if (ENV.isProduction && ENV.telegramBotToken) {
-      const appUrl = process.env.APP_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : `http://localhost:${port}`;
+      const appUrl = process.env.APP_URL
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${port}`);
       registerTelegramWebhook(`${appUrl}/api/telegram/webhook`);
     }
   });
