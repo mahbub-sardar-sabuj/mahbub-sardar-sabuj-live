@@ -6,6 +6,7 @@ const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 const API_FILE = path.join(ROOT, 'api', 'ssr-og.js');
 const CLIENT_NEWS_FILE = path.join(ROOT, 'client', 'src', 'pages', 'News.tsx');
+const CLIENT_NEWS_DATA_FILE = path.join(ROOT, 'client', 'src', 'data', 'newsData.ts');
 const PUBLIC_DIR = path.join(ROOT, 'client', 'public');
 const MAIN_SITEMAP = path.join(PUBLIC_DIR, 'sitemap.xml');
 const NEWS_SITEMAP = path.join(PUBLIC_DIR, 'news-sitemap.xml');
@@ -44,10 +45,22 @@ function extractNewsData() {
 }
 
 function extractClientNewsIds() {
-  const source = fs.readFileSync(CLIENT_NEWS_FILE, 'utf8');
-  const match = source.match(/const newsData: NewsItem\[\] = \[([\s\S]*?)\];/);
+  // Try newsData.ts first (new location), then fall back to News.tsx
+  let source;
+  let match;
+  
+  if (fs.existsSync(CLIENT_NEWS_DATA_FILE)) {
+    source = fs.readFileSync(CLIENT_NEWS_DATA_FILE, 'utf8');
+    match = source.match(/const newsData: NewsItem\[\] = \[([\s\S]*?)\];/);
+  }
+  
   if (!match) {
-    throw new Error('client/src/pages/News.tsx থেকে frontend newsData বের করা যায়নি।');
+    source = fs.readFileSync(CLIENT_NEWS_FILE, 'utf8');
+    match = source.match(/const newsData: NewsItem\[\] = \[([\s\S]*?)\];/);
+  }
+  
+  if (!match) {
+    throw new Error('newsData array বের করা যায়নি।');
   }
   return [...match[1].matchAll(/\bid:\s*(\d+)/g)].map((m) => Number(m[1]));
 }
