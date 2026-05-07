@@ -120,4 +120,3 @@ client/public/__manus__/version.json
 .env*.local
 .env.vercel
 .env.*
-api/trpc-bundled.js
