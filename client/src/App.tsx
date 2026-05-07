@@ -26,6 +26,7 @@ const Gallery = lazy(() => import("./pages/Gallery"));
 const AmiOLikhboBastobota = lazy(() => import("./pages/AmiOLikhboBastobota"));
 const AIChatbot = lazy(() => import("./components/AIChatbot"));
 const AdminLiveChat = lazy(() => import("./pages/AdminLiveChat"));
+const AdminWritingModeration = lazy(() => import("./pages/AdminWritingModeration"));
 
 // Page loading fallback
 function PageLoader() {
@@ -76,6 +77,7 @@ function Router() {
         <Route path={"/amio-likhbo-bastobota"} component={AmiOLikhboBastobota} />
         <Route path={"/amio-likhbo-bastobota/:slug"} component={AmiOLikhboBastobota} />
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />
+        <Route path={"/admin/writing"} component={AdminWritingModeration} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />

@@ -402,6 +402,95 @@ async function sendTelegramSessionClosed(sessionId, visitorName) {
     console.error("[Telegram] session closed notification error:", err);
   }
 }
+async function sendTelegramPostSubmitted(opts) {
+  if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) return;
+  const categoryLabels = {
+    experience: "\u0985\u09AD\u09BF\u099C\u09CD\u099E\u09A4\u09BE",
+    story: "\u0997\u09B2\u09CD\u09AA",
+    poem: "\u0995\u09AC\u09BF\u09A4\u09BE",
+    thought: "\u09AD\u09BE\u09AC\u09A8\u09BE",
+    photo: "\u099B\u09AC\u09BF",
+    video: "\u09AD\u09BF\u09A1\u09BF\u0993"
+  };
+  const catLabel = categoryLabels[opts.category] ?? opts.category;
+  const text2 = `\u{1F4DD} *\u09A8\u09A4\u09C1\u09A8 \u09B2\u09C7\u0996\u09BE \u099C\u09AE\u09BE \u09AA\u09A1\u09BC\u09C7\u099B\u09C7 \u2014 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8\u09C7\u09B0 \u0985\u09AA\u09C7\u0995\u09CD\u09B7\u09BE\u09AF\u09BC*
+
+\u270D\uFE0F *\u09B2\u09C7\u0996\u0995:* ${escapeMarkdown(opts.authorName)}
+\u{1F4CC} *\u09B6\u09BF\u09B0\u09CB\u09A8\u09BE\u09AE:* ${escapeMarkdown(opts.title)}
+\u{1F3F7}\uFE0F *\u09AC\u09BF\u09AD\u09BE\u0997:* ${catLabel}
+\u{1F194} *Post ID:* ${opts.postId}
+
+\u{1F449} \u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09AA\u09CD\u09AF\u09BE\u09A8\u09C7\u09B2\u09C7 \u0997\u09BF\u09AF\u09BC\u09C7 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u09AC\u09BE \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8\u0964`;
+  try {
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ENV.telegramAdminChatId,
+        text: text2,
+        parse_mode: "Markdown"
+      })
+    });
+  } catch (err) {
+    console.error("[Telegram] post submitted notification error:", err);
+  }
+}
+async function sendTelegramPostModerated(opts) {
+  if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) return;
+  const actionLabels = {
+    approved: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7",
+    rejected: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7",
+    removed: "\u{1F5D1}\uFE0F \u09B8\u09B0\u09BF\u09AF\u09BC\u09C7 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7",
+    featured: "\u2B50 \u09AB\u09BF\u099A\u09BE\u09B0\u09CD\u09A1 \u0995\u09B0\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7",
+    unfeatured: "\u2606 \u09AB\u09BF\u099A\u09BE\u09B0\u09CD\u09A1 \u09A5\u09C7\u0995\u09C7 \u09B8\u09B0\u09BE\u09A8\u09CB \u09B9\u09AF\u09BC\u09C7\u099B\u09C7"
+  };
+  const actionLabel = actionLabels[opts.action] ?? opts.action;
+  const text2 = `${actionLabel}
+
+\u270D\uFE0F *\u09B2\u09C7\u0996\u0995:* ${escapeMarkdown(opts.authorName)}
+\u{1F4CC} *\u09B6\u09BF\u09B0\u09CB\u09A8\u09BE\u09AE:* ${escapeMarkdown(opts.title)}
+\u{1F194} *Post ID:* ${opts.postId}`;
+  try {
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ENV.telegramAdminChatId,
+        text: text2,
+        parse_mode: "Markdown"
+      })
+    });
+  } catch (err) {
+    console.error("[Telegram] post moderated notification error:", err);
+  }
+}
+async function sendTelegramCommentSubmitted(opts) {
+  if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) return;
+  const preview = opts.contentPreview.length > 120 ? opts.contentPreview.slice(0, 120) + "..." : opts.contentPreview;
+  const text2 = `\u{1F4AC} *\u09A8\u09A4\u09C1\u09A8 \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF \u099C\u09AE\u09BE \u09AA\u09A1\u09BC\u09C7\u099B\u09C7 \u2014 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8\u09C7\u09B0 \u0985\u09AA\u09C7\u0995\u09CD\u09B7\u09BE\u09AF\u09BC*
+
+\u270D\uFE0F *\u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF\u0995\u09BE\u09B0\u09C0:* ${escapeMarkdown(opts.authorName)}
+\u{1F4CC} *\u09AA\u09CB\u09B8\u09CD\u099F:* ${escapeMarkdown(opts.postTitle)}
+\u{1F194} *Comment ID:* ${opts.commentId}
+
+\u{1F4DD} *\u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF:*
+${escapeMarkdown(preview)}
+
+\u{1F449} \u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09AA\u09CD\u09AF\u09BE\u09A8\u09C7\u09B2\u09C7 \u0997\u09BF\u09AF\u09BC\u09C7 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u09AC\u09BE \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8\u0964`;
+  try {
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ENV.telegramAdminChatId,
+        text: text2,
+        parse_mode: "Markdown"
+      })
+    });
+  } catch (err) {
+    console.error("[Telegram] comment submitted notification error:", err);
+  }
+}
 function escapeMarkdown(text2) {
   return text2.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
 }
@@ -739,7 +828,7 @@ var writingPlatformRouter = router({
     if (!db) throw new Error("Database unavailable");
     const mediaUrl = input.mediaUrl?.trim() || null;
     const mediaType = mediaUrl ? input.mediaType : "none";
-    await db.insert(writingPosts).values({
+    const insertResult = await db.insert(writingPosts).values({
       slug: createSlug(input.title),
       authorOpenId: ctx.user.openId,
       authorName: normalizeAuthorName(ctx.user.name),
@@ -750,6 +839,16 @@ var writingPlatformRouter = router({
       mediaType,
       status: ctx.user.role === "admin" ? "approved" : "pending"
     });
+    if (ctx.user.role !== "admin") {
+      const insertId = insertResult.insertId ?? insertResult[0]?.insertId ?? 0;
+      sendTelegramPostSubmitted({
+        postId: insertId,
+        title: input.title.trim(),
+        authorName: normalizeAuthorName(ctx.user.name),
+        category: input.category,
+        slug: ""
+      }).catch((err) => console.error("[Telegram post submit notify error]", err));
+    }
     return { success: true };
   }),
   deletePost: protectedProcedure.input(z3.object({ postId: z3.number().int().positive() })).mutation(async ({ ctx, input }) => {
@@ -818,13 +917,22 @@ var writingPlatformRouter = router({
     if (!db) throw new Error("Database unavailable");
     const posts = await db.select().from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
     if (posts.length === 0) throw new Error("Post not found");
-    await db.insert(writingComments).values({
+    const commentInsert = await db.insert(writingComments).values({
       postId: input.postId,
       authorOpenId: ctx.user.openId,
       authorName: normalizeAuthorName(ctx.user.name),
       content: input.content.trim(),
       status: ctx.user.role === "admin" ? "approved" : "pending"
     });
+    if (ctx.user.role !== "admin") {
+      const commentId = commentInsert.insertId ?? commentInsert[0]?.insertId ?? 0;
+      sendTelegramCommentSubmitted({
+        commentId,
+        postTitle: posts[0].title,
+        authorName: normalizeAuthorName(ctx.user.name),
+        contentPreview: input.content.trim()
+      }).catch((err) => console.error("[Telegram comment submit notify error]", err));
+    }
     return { success: true };
   }),
   adminListPosts: adminProcedure.input(z3.object({ status: postStatusSchema.or(z3.literal("all")).default("pending") }).optional()).query(async ({ input }) => {
@@ -845,11 +953,29 @@ var writingPlatformRouter = router({
   })).mutation(async ({ input }) => {
     const db = await getWritingDb();
     if (!db) throw new Error("Database unavailable");
+    const existingPosts = await db.select().from(writingPosts).where(eq4(writingPosts.id, input.postId)).limit(1);
+    const existingPost = existingPosts[0];
     const updateSet = {};
     if (input.status !== void 0) updateSet.status = input.status;
     if (input.featured !== void 0) updateSet.featured = input.featured;
     if (input.boostedScore !== void 0) updateSet.boostedScore = input.boostedScore;
     await db.update(writingPosts).set(updateSet).where(eq4(writingPosts.id, input.postId));
+    if (existingPost) {
+      let action = null;
+      if (input.status === "approved") action = "approved";
+      else if (input.status === "rejected") action = "rejected";
+      else if (input.status === "removed") action = "removed";
+      else if (input.featured === true) action = "featured";
+      else if (input.featured === false && existingPost.featured === true) action = "unfeatured";
+      if (action) {
+        sendTelegramPostModerated({
+          postId: input.postId,
+          title: existingPost.title,
+          authorName: existingPost.authorName,
+          action
+        }).catch((err) => console.error("[Telegram post moderated notify error]", err));
+      }
+    }
     return { success: true };
   }),
   adminListComments: adminProcedure.input(z3.object({ status: commentStatusSchema.or(z3.literal("all")).default("pending") }).optional()).query(async ({ input }) => {

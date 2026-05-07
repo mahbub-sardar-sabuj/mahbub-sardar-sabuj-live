@@ -1,30 +1,29 @@
 /**
  * LiveChatWidget — Visitor-facing Live Chat component
- * Supports text + image messages in both directions
- * Uses Telegram API via serverless /api/live-chat endpoint
+ * Migrated to tRPC/DB-backed flow (liveChat router)
+ * Supports text messages in both directions
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { trpc } from "@/lib/trpc";
+import { nanoid } from "nanoid";
+
 const GOLD = "#D4A843";
 const NAVY = "#060E1A";
 const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
-interface Message {
-  id: string;
-  text?: string;
-  imageUrl?: string;
-  type: "text" | "image";
-  sender: "visitor" | "admin";
-  timestamp: number;
-}
-
-const STORAGE_KEY = "mss_live_chat_v4";
+const STORAGE_KEY = "mss_live_chat_v5";
 
 function generateSessionId() {
-  return Math.random().toString(36).substring(2, 10).toUpperCase();
+  return nanoid(16);
 }
-function formatTime(ts: number) {
-  return new Date(ts).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+
+function generateVisitorId() {
+  return nanoid(20);
+}
+
+function formatTime(date: Date | string | number) {
+  return new Date(date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
 }
 
 interface Props {
@@ -32,21 +31,17 @@ interface Props {
 }
 
 export default function LiveChatWidget({ onClose }: Props) {
-  const [visitorName, setVisitorName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [contactInput, setContactInput] = useState("");
   const [contactType, setContactType] = useState<"whatsapp" | "gmail" | "">("");
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [visitorId, setVisitorId] = useState<string | null>(null);
+  const [visitorName, setVisitorName] = useState("");
   const [inputText, setInputText] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [lastUpdateId, setLastUpdateId] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [error, setError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null); // base64 preview
+  const [lastMsgId, setLastMsgId] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Detect contact type
   useEffect(() => {
@@ -57,78 +52,64 @@ export default function LiveChatWidget({ onClose }: Props) {
     else setContactType("");
   }, [contactInput]);
 
-  // Restore session
+  // Restore session from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        const { name, sid, msgs, lastId } = JSON.parse(saved);
-        setVisitorName(name || "");
-        setSessionId(sid || null);
-        setMessages(msgs || []);
-        setLastUpdateId(lastId || (Date.now() - 7 * 24 * 60 * 60 * 1000));
+        const { name, sid, vid } = JSON.parse(saved);
+        if (name && sid && vid) {
+          setVisitorName(name);
+          setSessionId(sid);
+          setVisitorId(vid);
+        }
       }
     } catch {}
   }, []);
 
-  // Save session
+  // Save session to localStorage
   useEffect(() => {
-    if (sessionId) {
+    if (sessionId && visitorId && visitorName) {
       try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ name: visitorName, sid: sessionId, msgs: messages, lastId: lastUpdateId })
-        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          name: visitorName,
+          sid: sessionId,
+          vid: visitorId,
+        }));
       } catch {}
     }
-  }, [sessionId, visitorName, messages, lastUpdateId]);
+  }, [sessionId, visitorId, visitorName]);
 
-  // Scroll to bottom
+  // ── tRPC mutations & queries ──────────────────────────────────────────────
+  const startSessionMutation = trpc.liveChat.startSession.useMutation();
+  const sendMessageMutation = trpc.liveChat.sendMessage.useMutation();
+
+  const { data: pollData, refetch: refetchMessages } = trpc.liveChat.pollMessages.useQuery(
+    {
+      sessionId: sessionId ?? "",
+      visitorId: visitorId ?? "",
+      afterId: lastMsgId || undefined,
+    },
+    {
+      enabled: !!sessionId && !!visitorId,
+      refetchInterval: 4000,
+    }
+  );
+
+  // Track last message id for polling
+  useEffect(() => {
+    if (pollData?.messages && pollData.messages.length > 0) {
+      const maxId = Math.max(...pollData.messages.map((m) => m.id));
+      setLastMsgId((prev) => Math.max(prev, maxId));
+    }
+  }, [pollData]);
+
+  // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [pollData?.messages]);
 
-  // Poll for replies
-  const pollReplies = useCallback(async () => {
-    if (!sessionId) return;
-    try {
-      const res = await fetch(
-        `/api/live-chat?action=poll&sessionId=${encodeURIComponent(sessionId)}&since=${lastUpdateId}`
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.ok && data.replies && data.replies.length > 0) {
-        const newMsgs: Message[] = data.replies.map((r: { type: string; text?: string; imageUrl?: string; timestamp: number; updateId: number }) => ({
-          id: `admin-${r.updateId}`,
-          type: (r.type === "image" ? "image" : "text") as "text" | "image",
-          text: r.text,
-          imageUrl: r.imageUrl,
-          sender: "admin" as const,
-          timestamp: r.timestamp,
-        }));
-        setMessages(prev => {
-          const existingIds = new Set(prev.map(m => m.id));
-          const fresh = newMsgs.filter(m => !existingIds.has(m.id));
-          return fresh.length > 0 ? [...prev, ...fresh] : prev;
-        });
-      }
-      if (data.ok && typeof data.lastUpdateId === "number" && data.lastUpdateId > lastUpdateId) {
-        setLastUpdateId(data.lastUpdateId);
-      }
-    } catch {}
-  }, [sessionId, lastUpdateId]);
-
-  // Start/stop polling
-  useEffect(() => {
-    if (sessionId) {
-      pollReplies();
-      pollRef.current = setInterval(pollReplies, 4000);
-    }
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [sessionId, pollReplies]);
-
+  // ── Start session ─────────────────────────────────────────────────────────
   const startSession = async () => {
     if (!nameInput.trim()) return;
     if (!contactInput.trim() || !contactType) {
@@ -138,135 +119,71 @@ export default function LiveChatWidget({ onClose }: Props) {
     setIsStarting(true);
     setError("");
     try {
-      const sid = generateSessionId();
-      const contact = contactInput.trim();
-      const res = await fetch("/api/live-chat?action=send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          visitorName: nameInput.trim(),
-          message: "🟢 নতুন সেশন শুরু হয়েছে",
-          sessionId: sid,
-          contact: contact || null,
-          contactType: contactType || null,
-          isSystemMessage: true,
-        }),
+      const vid = generateVisitorId();
+      const name = nameInput.trim();
+
+      const result = await startSessionMutation.mutateAsync({
+        visitorId: vid,
+        visitorName: name,
       });
-      const data = await res.json();
-      if (!data.ok) {
-        setError("সংযোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-        return;
-      }
-      setVisitorName(nameInput.trim());
-      setSessionId(sid);
-      setMessages([{
-        id: "welcome",
-        type: "text",
-        text: `স্বাগতম ${nameInput.trim()}! আপনার বার্তা বা ছবি পাঠান। মাহবুব সরদার সবুজ অনলাইনে থাকলে উত্তর দেবেন।${contact ? " অনলাইনে না থাকলে আপনার দেওয়া যোগাযোগ মাধ্যমে উত্তর পাঠানো হবে।" : ""}`,
-        sender: "admin",
-        timestamp: Date.now(),
-      }]);
-    } catch {
-      setError("নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।");
+
+      setVisitorName(name);
+      setSessionId(result.sessionId);
+      setVisitorId(vid);
+      setLastMsgId(0);
+    } catch (err) {
+      setError("সংযোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setIsStarting(false);
     }
   };
 
+  // ── Send message ──────────────────────────────────────────────────────────
   const sendMessage = async () => {
-    if ((!inputText.trim() && !imagePreview) || !sessionId || isSending) return;
-    setIsSending(true);
-    setError("");
-
-    // If image selected, send image
-    if (imagePreview) {
-      const tempMsg: Message = {
-        id: `v-img-${Date.now()}`,
-        type: "image",
-        imageUrl: imagePreview,
-        text: inputText.trim() || undefined,
-        sender: "visitor",
-        timestamp: Date.now(),
-      };
-      setMessages(prev => [...prev, tempMsg]);
-      setImagePreview(null);
-      setInputText("");
-      try {
-        const res = await fetch("/api/live-chat?action=send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            visitorName,
-            sessionId,
-            imageData: tempMsg.imageUrl,
-            message: tempMsg.text || "",
-          }),
-        });
-        const data = await res.json();
-        if (!data.ok) setError("ছবি পাঠাতে সমস্যা হয়েছে।");
-      } catch {
-        setError("নেটওয়ার্ক সমস্যা।");
-      } finally {
-        setIsSending(false);
-      }
-      return;
-    }
-
-    // Text message
+    if (!inputText.trim() || !sessionId || !visitorId) return;
     const text = inputText.trim();
     setInputText("");
-    const tempMsg: Message = {
-      id: `v-${Date.now()}`,
-      type: "text",
-      text,
-      sender: "visitor",
-      timestamp: Date.now(),
-    };
-    setMessages(prev => [...prev, tempMsg]);
+    setError("");
     try {
-      const res = await fetch("/api/live-chat?action=send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ visitorName, message: text, sessionId }),
+      await sendMessageMutation.mutateAsync({
+        sessionId,
+        visitorId,
+        content: text,
       });
-      const data = await res.json();
-      if (!data.ok) setError("বার্তা পাঠাতে সমস্যা হয়েছে।");
+      await refetchMessages();
     } catch {
-      setError("নেটওয়ার্ক সমস্যা।");
-    } finally {
-      setIsSending(false);
+      setError("বার্তা পাঠাতে সমস্যা হয়েছে।");
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setError("ছবির সাইজ ৫ MB-এর বেশি হওয়া যাবে না।");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setImagePreview(ev.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-    // Reset file input
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
+  // ── Reset session ─────────────────────────────────────────────────────────
   const resetSession = () => {
-    if (pollRef.current) clearInterval(pollRef.current);
     localStorage.removeItem(STORAGE_KEY);
     setVisitorName("");
     setNameInput("");
     setContactInput("");
     setContactType("");
     setSessionId(null);
-    setMessages([]);
-    setLastUpdateId(0);
+    setVisitorId(null);
+    setLastMsgId(0);
     setError("");
-    setImagePreview(null);
   };
+
+  // ── Combine all messages for display ─────────────────────────────────────
+  // We get all messages from pollMessages (no afterId filter initially)
+  const { data: allMessagesData } = trpc.liveChat.pollMessages.useQuery(
+    {
+      sessionId: sessionId ?? "",
+      visitorId: visitorId ?? "",
+    },
+    {
+      enabled: !!sessionId && !!visitorId,
+      refetchInterval: 4000,
+    }
+  );
+
+  const messages = allMessagesData?.messages ?? [];
+  const sessionStatus = allMessagesData?.sessionStatus ?? "waiting";
 
   // ── Name + Contact entry screen ────────────────────────────────────────────
   if (!sessionId) {
@@ -482,6 +399,8 @@ export default function LiveChatWidget({ onClose }: Props) {
   }
 
   // ── Chat screen ────────────────────────────────────────────────────────────
+  const isClosed = sessionStatus === "closed";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Status bar */}
@@ -493,11 +412,17 @@ export default function LiveChatWidget({ onClose }: Props) {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{
-            width: 8, height: 8, borderRadius: "50%", background: "#fbbf24",
-            display: "inline-block", animation: "pulse 2s infinite",
+            width: 8, height: 8, borderRadius: "50%",
+            background: isClosed ? "#f87171" : sessionStatus === "active" ? "#4ade80" : "#fbbf24",
+            display: "inline-block",
+            animation: isClosed ? "none" : "pulse 2s infinite",
           }} />
           <span style={{ color: "rgba(245,238,222,0.7)", fontFamily: FONT, fontSize: "0.75rem" }}>
-            বার্তা পাঠানো হয়েছে — উত্তরের অপেক্ষায়
+            {isClosed
+              ? "কথোপকথন শেষ হয়েছে"
+              : sessionStatus === "active"
+              ? "সক্রিয় — উত্তর পাঠানো হচ্ছে"
+              : "বার্তা পাঠানো হয়েছে — উত্তরের অপেক্ষায়"}
           </span>
         </div>
         <button
@@ -520,6 +445,27 @@ export default function LiveChatWidget({ onClose }: Props) {
           display: "flex", flexDirection: "column", gap: 10,
         }}
       >
+        {/* Welcome message */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ display: "flex", justifyContent: "flex-start" }}
+        >
+          <div style={{
+            maxWidth: "80%",
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(212,168,67,0.18)",
+            borderRadius: "4px 16px 16px 16px",
+            padding: "10px 14px",
+            color: "rgba(245,238,222,0.9)",
+            fontFamily: FONT, fontSize: "0.85rem", lineHeight: 1.75,
+          }}>
+            <p style={{ margin: 0 }}>
+              স্বাগতম {visitorName}! আপনার বার্তা পাঠান। মাহবুব সরদার সবুজ অনলাইনে থাকলে উত্তর দেবেন।
+            </p>
+          </div>
+        </motion.div>
+
         <AnimatePresence initial={false}>
           {messages.map(msg => (
             <motion.div
@@ -539,39 +485,17 @@ export default function LiveChatWidget({ onClose }: Props) {
                   : "rgba(255,255,255,0.06)",
                 border: msg.sender === "visitor" ? "none" : "1px solid rgba(212,168,67,0.18)",
                 borderRadius: msg.sender === "visitor" ? "16px 16px 4px 16px" : "4px 16px 16px 16px",
-                padding: msg.type === "image" ? "6px" : "10px 14px",
+                padding: "10px 14px",
                 color: msg.sender === "visitor" ? NAVY : "rgba(245,238,222,0.9)",
                 fontFamily: FONT, fontSize: "0.85rem", lineHeight: 1.75,
-                overflow: "hidden",
               }}>
-                {/* Image message */}
-                {msg.type === "image" && msg.imageUrl && (
-                  <div>
-                    <img
-                      src={msg.imageUrl}
-                      alt="ছবি"
-                      style={{
-                        maxWidth: "100%", maxHeight: 220,
-                        borderRadius: 10, display: "block",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => window.open(msg.imageUrl, "_blank")}
-                    />
-                    {msg.text && (
-                      <p style={{ margin: "6px 8px 2px", fontSize: "0.82rem" }}>{msg.text}</p>
-                    )}
-                  </div>
-                )}
-                {/* Text message */}
-                {msg.type === "text" && msg.text && (
-                  <p style={{ margin: 0 }}>{msg.text}</p>
-                )}
+                <p style={{ margin: 0 }}>{msg.content}</p>
                 <p style={{
-                  margin: msg.type === "image" ? "2px 8px 4px" : "4px 0 0",
+                  margin: "4px 0 0",
                   fontSize: "0.7rem",
                   color: msg.sender === "visitor" ? "rgba(6,14,26,0.55)" : "rgba(245,238,222,0.35)",
                 }}>
-                  {formatTime(msg.timestamp)}
+                  {formatTime(msg.createdAt)}
                 </p>
               </div>
             </motion.div>
@@ -587,124 +511,87 @@ export default function LiveChatWidget({ onClose }: Props) {
         </div>
       )}
 
-      {/* Image preview */}
-      {imagePreview && (
+      {/* Input — disabled if session closed */}
+      {!isClosed ? (
         <div style={{
-          padding: "8px 12px",
+          padding: "10px 12px",
           borderTop: "1px solid rgba(212,168,67,0.12)",
-          display: "flex", alignItems: "center", gap: 10,
-          background: "rgba(212,168,67,0.04)",
+          display: "flex", gap: 8, alignItems: "flex-end",
         }}>
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <img
-              src={imagePreview}
-              alt="preview"
-              style={{ height: 60, borderRadius: 8, display: "block", maxWidth: 100, objectFit: "cover" }}
-            />
-            <button
-              onClick={() => setImagePreview(null)}
-              style={{
-                position: "absolute", top: -6, right: -6,
-                width: 18, height: 18, borderRadius: "50%",
-                background: "#ef4444", border: "none",
-                color: "#fff", fontSize: "10px", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                lineHeight: 1,
-              }}
-            >✕</button>
-          </div>
-          <span style={{ color: "rgba(245,238,222,0.5)", fontFamily: FONT, fontSize: "0.75rem" }}>
-            ছবি নির্বাচিত — পাঠাতে Send বাটনে চাপুন
-          </span>
+          <textarea
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+            placeholder="বার্তা লিখুন..."
+            rows={1}
+            style={{
+              flex: 1, background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(212,168,67,0.3)", borderRadius: 12,
+              padding: "10px 14px", color: "#FAF6EF", fontFamily: FONT,
+              fontSize: "0.85rem", outline: "none", resize: "none", lineHeight: 1.5,
+            }}
+          />
+
+          <button
+            onClick={sendMessage}
+            disabled={!inputText.trim() || sendMessageMutation.isPending}
+            style={{
+              width: 40, height: 40, borderRadius: 12,
+              background: inputText.trim() && !sendMessageMutation.isPending
+                ? "linear-gradient(135deg, #C9A84C, #D4A843)"
+                : "rgba(212,168,67,0.15)",
+              border: "none",
+              cursor: inputText.trim() && !sendMessageMutation.isPending ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, transition: "all 0.2s",
+            }}
+          >
+            {sendMessageMutation.isPending ? (
+              <div style={{
+                width: 16, height: 16,
+                border: "2px solid rgba(6,14,26,0.3)",
+                borderTop: "2px solid rgba(6,14,26,0.8)",
+                borderRadius: "50%", animation: "spin 0.8s linear infinite",
+              }} />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke={inputText.trim() ? NAVY : "rgba(212,168,67,0.4)"}
+                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            )}
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          padding: "12px 14px",
+          borderTop: "1px solid rgba(212,168,67,0.12)",
+          textAlign: "center",
+        }}>
+          <p style={{ color: "rgba(245,238,222,0.4)", fontFamily: FONT, fontSize: "0.75rem", margin: "0 0 8px" }}>
+            এই কথোপকথনটি বন্ধ হয়ে গেছে।
+          </p>
+          <button
+            onClick={resetSession}
+            style={{
+              background: "rgba(212,168,67,0.15)",
+              border: "1px solid rgba(212,168,67,0.3)",
+              borderRadius: 10, padding: "8px 16px",
+              color: GOLD, fontFamily: FONT, fontSize: "0.8rem",
+              cursor: "pointer",
+            }}
+          >
+            নতুন চ্যাট শুরু করুন
+          </button>
         </div>
       )}
 
-      {/* Input */}
-      <div style={{
-        padding: "10px 12px",
-        borderTop: "1px solid rgba(212,168,67,0.12)",
-        display: "flex", gap: 8, alignItems: "flex-end",
-      }}>
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageSelect}
-          style={{ display: "none" }}
-        />
-
-        {/* Image attach button */}
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          title="ছবি পাঠান"
-          style={{
-            width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-            background: imagePreview ? "rgba(212,168,67,0.25)" : "rgba(255,255,255,0.05)",
-            border: `1px solid ${imagePreview ? "rgba(212,168,67,0.6)" : "rgba(212,168,67,0.2)"}`,
-            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.2s",
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke={imagePreview ? GOLD : "rgba(212,168,67,0.5)"}
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-        </button>
-
-        <textarea
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage();
-            }
-          }}
-          placeholder={imagePreview ? "ছবির সাথে বার্তা (ঐচ্ছিক)..." : "বার্তা লিখুন..."}
-          rows={1}
-          style={{
-            flex: 1, background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(212,168,67,0.3)", borderRadius: 12,
-            padding: "10px 14px", color: "#FAF6EF", fontFamily: FONT,
-            fontSize: "0.85rem", outline: "none", resize: "none", lineHeight: 1.5,
-          }}
-        />
-
-        <button
-          onClick={sendMessage}
-          disabled={(!inputText.trim() && !imagePreview) || isSending}
-          style={{
-            width: 40, height: 40, borderRadius: 12,
-            background: (inputText.trim() || imagePreview) && !isSending
-              ? "linear-gradient(135deg, #C9A84C, #D4A843)"
-              : "rgba(212,168,67,0.15)",
-            border: "none",
-            cursor: (inputText.trim() || imagePreview) && !isSending ? "pointer" : "not-allowed",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0, transition: "all 0.2s",
-          }}
-        >
-          {isSending ? (
-            <div style={{
-              width: 16, height: 16,
-              border: "2px solid rgba(6,14,26,0.3)",
-              borderTop: "2px solid rgba(6,14,26,0.8)",
-              borderRadius: "50%", animation: "spin 0.8s linear infinite",
-            }} />
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke={(inputText.trim() || imagePreview) ? NAVY : "rgba(212,168,67,0.4)"}
-              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          )}
-        </button>
-      </div>
       <p style={{
         color: "rgba(245,238,222,0.25)", fontFamily: FONT, fontSize: "0.68rem",
         textAlign: "center", padding: "0 0 8px", margin: 0,

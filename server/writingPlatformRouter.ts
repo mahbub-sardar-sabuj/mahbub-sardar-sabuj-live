@@ -4,6 +4,11 @@ import { nanoid } from "nanoid";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
 import { writingComments, writingPosts, writingReactions } from "../drizzle/schema";
+import {
+  sendTelegramPostSubmitted,
+  sendTelegramPostModerated,
+  sendTelegramCommentSubmitted,
+} from "./telegramService";
 
 const postCategorySchema = z.enum(["experience", "story", "poem", "thought", "photo", "video"]);
 const mediaTypeSchema = z.enum(["none", "image", "video"]);
@@ -256,7 +261,7 @@ export const writingPlatformRouter = router({
       const mediaUrl = input.mediaUrl?.trim() || null;
       const mediaType = mediaUrl ? input.mediaType : "none";
 
-      await db.insert(writingPosts).values({
+      const insertResult = await db.insert(writingPosts).values({
         slug: createSlug(input.title),
         authorOpenId: ctx.user.openId,
         authorName: normalizeAuthorName(ctx.user.name),
@@ -267,6 +272,18 @@ export const writingPlatformRouter = router({
         mediaType,
         status: ctx.user.role === "admin" ? "approved" : "pending",
       });
+
+      // Send Telegram notification for pending posts (non-admin submissions)
+      if (ctx.user.role !== "admin") {
+        const insertId = (insertResult as any).insertId ?? (insertResult as any)[0]?.insertId ?? 0;
+        sendTelegramPostSubmitted({
+          postId: insertId,
+          title: input.title.trim(),
+          authorName: normalizeAuthorName(ctx.user.name),
+          category: input.category,
+          slug: "",
+        }).catch(err => console.error("[Telegram post submit notify error]", err));
+      }
 
       return { success: true };
     }),
@@ -374,13 +391,24 @@ export const writingPlatformRouter = router({
         .limit(1);
       if (posts.length === 0) throw new Error("Post not found");
 
-      await db.insert(writingComments).values({
+      const commentInsert = await db.insert(writingComments).values({
         postId: input.postId,
         authorOpenId: ctx.user.openId,
         authorName: normalizeAuthorName(ctx.user.name),
         content: input.content.trim(),
         status: ctx.user.role === "admin" ? "approved" : "pending",
       });
+
+      // Send Telegram notification for pending comments (non-admin)
+      if (ctx.user.role !== "admin") {
+        const commentId = (commentInsert as any).insertId ?? (commentInsert as any)[0]?.insertId ?? 0;
+        sendTelegramCommentSubmitted({
+          commentId,
+          postTitle: posts[0].title,
+          authorName: normalizeAuthorName(ctx.user.name),
+          contentPreview: input.content.trim(),
+        }).catch(err => console.error("[Telegram comment submit notify error]", err));
+      }
 
       return { success: true };
     }),
@@ -413,12 +441,40 @@ export const writingPlatformRouter = router({
       const db = await getWritingDb();
       if (!db) throw new Error("Database unavailable");
 
+      // Fetch post info for Telegram notification
+      const existingPosts = await db
+        .select()
+        .from(writingPosts)
+        .where(eq(writingPosts.id, input.postId))
+        .limit(1);
+      const existingPost = existingPosts[0];
+
       const updateSet: Partial<typeof writingPosts.$inferInsert> = {};
       if (input.status !== undefined) updateSet.status = input.status;
       if (input.featured !== undefined) updateSet.featured = input.featured;
       if (input.boostedScore !== undefined) updateSet.boostedScore = input.boostedScore;
 
       await db.update(writingPosts).set(updateSet).where(eq(writingPosts.id, input.postId));
+
+      // Send Telegram notification for moderation actions
+      if (existingPost) {
+        let action: "approved" | "rejected" | "removed" | "featured" | "unfeatured" | null = null;
+        if (input.status === "approved") action = "approved";
+        else if (input.status === "rejected") action = "rejected";
+        else if (input.status === "removed") action = "removed";
+        else if (input.featured === true) action = "featured";
+        else if (input.featured === false && existingPost.featured === true) action = "unfeatured";
+
+        if (action) {
+          sendTelegramPostModerated({
+            postId: input.postId,
+            title: existingPost.title,
+            authorName: existingPost.authorName,
+            action,
+          }).catch(err => console.error("[Telegram post moderated notify error]", err));
+        }
+      }
+
       return { success: true };
     }),
 

@@ -178,6 +178,122 @@ async function sendHelpMessage(): Promise<void> {
   );
 }
 
+// ── Writing Platform Moderation Notifications ────────────────────────────────
+export async function sendTelegramPostSubmitted(opts: {
+  postId: number;
+  title: string;
+  authorName: string;
+  category: string;
+  slug: string;
+}): Promise<void> {
+  if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) return;
+
+  const categoryLabels: Record<string, string> = {
+    experience: "অভিজ্ঞতা",
+    story: "গল্প",
+    poem: "কবিতা",
+    thought: "ভাবনা",
+    photo: "ছবি",
+    video: "ভিডিও",
+  };
+  const catLabel = categoryLabels[opts.category] ?? opts.category;
+
+  const text =
+    `📝 *নতুন লেখা জমা পড়েছে — অনুমোদনের অপেক্ষায়*\n\n` +
+    `✍️ *লেখক:* ${escapeMarkdown(opts.authorName)}\n` +
+    `📌 *শিরোনাম:* ${escapeMarkdown(opts.title)}\n` +
+    `🏷️ *বিভাগ:* ${catLabel}\n` +
+    `🆔 *Post ID:* ${opts.postId}\n\n` +
+    `👉 অ্যাডমিন প্যানেলে গিয়ে অনুমোদন বা প্রত্যাখ্যান করুন।`;
+
+  try {
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ENV.telegramAdminChatId,
+        text,
+        parse_mode: "Markdown",
+      }),
+    });
+  } catch (err) {
+    console.error("[Telegram] post submitted notification error:", err);
+  }
+}
+
+export async function sendTelegramPostModerated(opts: {
+  postId: number;
+  title: string;
+  authorName: string;
+  action: "approved" | "rejected" | "removed" | "featured" | "unfeatured";
+}): Promise<void> {
+  if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) return;
+
+  const actionLabels: Record<string, string> = {
+    approved: "✅ অনুমোদিত হয়েছে",
+    rejected: "❌ প্রত্যাখ্যাত হয়েছে",
+    removed: "🗑️ সরিয়ে দেওয়া হয়েছে",
+    featured: "⭐ ফিচার্ড করা হয়েছে",
+    unfeatured: "☆ ফিচার্ড থেকে সরানো হয়েছে",
+  };
+  const actionLabel = actionLabels[opts.action] ?? opts.action;
+
+  const text =
+    `${actionLabel}\n\n` +
+    `✍️ *লেখক:* ${escapeMarkdown(opts.authorName)}\n` +
+    `📌 *শিরোনাম:* ${escapeMarkdown(opts.title)}\n` +
+    `🆔 *Post ID:* ${opts.postId}`;
+
+  try {
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ENV.telegramAdminChatId,
+        text,
+        parse_mode: "Markdown",
+      }),
+    });
+  } catch (err) {
+    console.error("[Telegram] post moderated notification error:", err);
+  }
+}
+
+export async function sendTelegramCommentSubmitted(opts: {
+  commentId: number;
+  postTitle: string;
+  authorName: string;
+  contentPreview: string;
+}): Promise<void> {
+  if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) return;
+
+  const preview = opts.contentPreview.length > 120
+    ? opts.contentPreview.slice(0, 120) + "..."
+    : opts.contentPreview;
+
+  const text =
+    `💬 *নতুন মন্তব্য জমা পড়েছে — অনুমোদনের অপেক্ষায়*\n\n` +
+    `✍️ *মন্তব্যকারী:* ${escapeMarkdown(opts.authorName)}\n` +
+    `📌 *পোস্ট:* ${escapeMarkdown(opts.postTitle)}\n` +
+    `🆔 *Comment ID:* ${opts.commentId}\n\n` +
+    `📝 *মন্তব্য:*\n${escapeMarkdown(preview)}\n\n` +
+    `👉 অ্যাডমিন প্যানেলে গিয়ে অনুমোদন বা প্রত্যাখ্যান করুন।`;
+
+  try {
+    await fetch(`${TELEGRAM_API}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: ENV.telegramAdminChatId,
+        text,
+        parse_mode: "Markdown",
+      }),
+    });
+  } catch (err) {
+    console.error("[Telegram] comment submitted notification error:", err);
+  }
+}
+
 // ── Register webhook with Telegram ───────────────────────────────────────────
 export async function registerTelegramWebhook(webhookUrl: string): Promise<void> {
   if (!ENV.telegramBotToken) return;
