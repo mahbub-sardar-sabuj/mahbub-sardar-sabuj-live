@@ -62,6 +62,8 @@ export default function Navbar() {
   const [logoHovered, setLogoHovered] = useState(false);
   const isEditorPage = location === "/editor";
   const isEBookReaderPage = location.startsWith("/ebooks/read/");
+  const isWritingsPage = location === "/writings";
+  const navElevated = scrolled || isWritingsPage;
 
   useEffect(() => {
     const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
@@ -72,9 +74,23 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const bannerHeight = showBanner && !isEditorPage && !isEBookReaderPage ? 28 : 0;
+    const navHeight = scrolled ? 58 : 70;
+    document.documentElement.style.setProperty("--site-nav-offset", `${bannerHeight + navHeight}px`);
+    document.documentElement.style.setProperty("--site-nav-height", `${navHeight}px`);
+    document.documentElement.style.setProperty("--site-banner-height", `${bannerHeight}px`);
+    return () => {
+      document.documentElement.style.removeProperty("--site-nav-offset");
+      document.documentElement.style.removeProperty("--site-nav-height");
+      document.documentElement.style.removeProperty("--site-banner-height");
+    };
+  }, [showBanner, isEditorPage, isEBookReaderPage, scrolled]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -213,14 +229,14 @@ export default function Navbar() {
         top: (showBanner && !isEditorPage && !isEBookReaderPage) ? 28 : 0, left: 0, right: 0,
         zIndex: 50,
         transition: "all 0.5s",
-        background: scrolled ? "rgba(6,14,26,0.92)" : "transparent",
-        backdropFilter: scrolled ? "blur(24px) saturate(1.5)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(24px) saturate(1.5)" : "none",
-        boxShadow: scrolled ? "0 4px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.03)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(201,168,76,0.1)" : "none",
+        background: navElevated ? "rgba(6,14,26,0.92)" : "transparent",
+        backdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
+        WebkitBackdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
+        boxShadow: navElevated ? "0 4px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.03)" : "none",
+        borderBottom: navElevated ? "1px solid rgba(201,168,76,0.1)" : "none",
       }}
     >
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isDesktop ? "0 1.5rem" : "0 1rem", position: "relative", zIndex: 2 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: scrolled ? 58 : 70, transition: "height 0.4s ease" }}>
 
           {/* ── PREMIUM LOGO (original) ── */}
@@ -245,13 +261,14 @@ export default function Navbar() {
             <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                fontSize: "1.12rem",
+                fontSize: isDesktop ? "1.12rem" : "1.02rem",
                 fontWeight: 800,
                 letterSpacing: "0.02em",
-                background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                color: "#E8C97A",
+                background: isDesktop ? "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)" : "none",
+                WebkitBackgroundClip: isDesktop ? "text" : "border-box",
+                WebkitTextFillColor: isDesktop ? "transparent" : "#E8C97A",
+                backgroundClip: isDesktop ? "text" : "border-box",
               }}>
                 মাহবুব সরদার সবুজ
               </span>

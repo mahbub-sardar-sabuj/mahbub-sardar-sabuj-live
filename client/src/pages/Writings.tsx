@@ -9992,14 +9992,14 @@ const CSS = `
   .wp {
     background: var(--bg0);
     min-height: 100vh;
-    padding-top: 0;
+    padding-top: var(--site-nav-offset, 98px);
   }
 
   /* ── TAB HEADER ── */
   .th {
     position: sticky;
-    top: 0;
-    z-index: 100;
+    top: var(--site-nav-offset, 98px);
+    z-index: 45;
     background: rgba(6,8,14,.92);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
