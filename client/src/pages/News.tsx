@@ -41,7 +41,7 @@ export default function News() {
   useEffect(() => {
     import('../data/newsData').then(m => setNewsData(m.newsData));
   }, []);
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
@@ -62,18 +62,21 @@ export default function News() {
     return () => { if (tickerRef.current) clearInterval(tickerRef.current); };
   }, []);
 
-  // Handle initial load from URL
+  // Keep selected news in sync with direct URLs and browser back/forward navigation.
   useEffect(() => {
-    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-    const match = pathname.match(/^\/news\/(\d+)$/);
+    if (newsData.length === 0) return;
+
+    const match = location.match(/^\/news\/(\d+)$/);
+
     if (match) {
-      const newsId = parseInt(match[1]);
-      const news = newsData.find(n => n.id === newsId);
-      if (news) setSelectedNews(news);
-    } else {
-      setSelectedNews(null);
+      const newsId = Number.parseInt(match[1], 10);
+      const news = newsData.find(n => n.id === newsId) ?? null;
+      setSelectedNews(news);
+      return;
     }
-  }, []);
+
+    setSelectedNews(null);
+  }, [location, newsData]);
 
   const handleSelectNews = (news: NewsItem | null) => {
     if (news) {
@@ -518,13 +521,22 @@ export default function News() {
             {/* ── ALL NEWS GRID (equal cards) ── */}
             <div className="news-card-grid">
               {filtered.map((item, idx) => (
-                <motion.div
+                <motion.article
                   key={item.id}
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.08, duration: 0.5 }}
                   viewport={{ once: true }}
                   onClick={() => handleSelectNews(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectNews(item);
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`${item.title} পড়ুন`}
                   onHoverStart={() => setCardHovered(item.id)}
                   onHoverEnd={() => setCardHovered(null)}
                   className="news-card"
@@ -684,7 +696,7 @@ export default function News() {
                         >
                           {copySuccessId === item.id ? <Check size={14} /> : <Share2 size={14} />}
                         </button>
-                        <div style={{
+                        <span style={{
                           color: "#F5A623",
                           display: "flex",
                           alignItems: "center",
@@ -694,11 +706,11 @@ export default function News() {
                           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         }}>
                           পড়ুন <ChevronRight size={14} />
-                        </div>
+                        </span>
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </motion.article>
               ))}
             </div>
           </>
@@ -746,6 +758,9 @@ export default function News() {
             >
               {/* Close button */}
               <button
+                type="button"
+                aria-label="সংবাদ বিস্তারিত বন্ধ করুন"
+                title="সংবাদ বিস্তারিত বন্ধ করুন"
                 onClick={() => handleSelectNews(null)}
                 style={{
                   position: "absolute",
