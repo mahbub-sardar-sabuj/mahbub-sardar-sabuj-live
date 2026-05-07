@@ -11,7 +11,7 @@ import { facebookPageUrl, facebookRecitations } from "@/data/facebookRecitations
 
 export default function FacebookRecitations() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 

@@ -18,6 +18,7 @@ const socialLinks = [
 const quickLinks = [
   { label: "পরিচিতি", href: "/about", icon: UserRound },
   { label: "লেখালেখি ও বই", href: "/writings", icon: BookOpen },
+  { label: "আমিও লিখবো বাস্তবতা", href: "/amio-likhbo-bastobota", icon: PenLine },
 
   { label: "আবৃত্তি", href: "/facebook-recitations", icon: Mic2 },
   { label: "গ্যালারি", href: "/gallery", icon: Images },

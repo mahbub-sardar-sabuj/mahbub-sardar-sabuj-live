@@ -23,6 +23,7 @@ const EBookReader = lazy(() => import("./pages/EBookReader"));
 const Editor = lazy(() => import("./pages/Editor"));
 const News = lazy(() => import("./pages/News"));
 const Gallery = lazy(() => import("./pages/Gallery"));
+const AmiOLikhboBastobota = lazy(() => import("./pages/AmiOLikhboBastobota"));
 const AIChatbot = lazy(() => import("./components/AIChatbot"));
 const AdminLiveChat = lazy(() => import("./pages/AdminLiveChat"));
 
@@ -72,6 +73,7 @@ function Router() {
         <Route path={"/news"} component={News} />
         <Route path={"/news/:id"} component={News} />
         <Route path={"/gallery"} component={Gallery} />
+        <Route path={"/amio-likhbo-bastobota"} component={AmiOLikhboBastobota} />
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
