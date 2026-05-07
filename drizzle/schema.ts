@@ -53,3 +53,51 @@ export const liveChatMessages = mysqlTable("live_chat_messages", {
 
 export type LiveChatMessage = typeof liveChatMessages.$inferSelect;
 export type InsertLiveChatMessage = typeof liveChatMessages.$inferInsert;
+
+// ── “আমিও লিখবো বাস্তবতা” Writing Platform ───────────────────────────────────
+export const writingPosts = mysqlTable("writing_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 180 }).notNull().unique(),
+  authorOpenId: varchar("authorOpenId", { length: 64 }).notNull(),
+  authorName: varchar("authorName", { length: 160 }).notNull(),
+  title: varchar("title", { length: 220 }).notNull(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  content: text("content").notNull(),
+  mediaUrl: text("mediaUrl"),
+  mediaType: mysqlEnum("mediaType", ["none", "image", "video"]).default("none").notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  boostedScore: int("boostedScore").default(0).notNull(),
+  viewCount: int("viewCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WritingPost = typeof writingPosts.$inferSelect;
+export type InsertWritingPost = typeof writingPosts.$inferInsert;
+
+export const writingComments = mysqlTable("writing_comments", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  authorOpenId: varchar("authorOpenId", { length: 64 }).notNull(),
+  authorName: varchar("authorName", { length: 160 }).notNull(),
+  content: text("content").notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WritingComment = typeof writingComments.$inferSelect;
+export type InsertWritingComment = typeof writingComments.$inferInsert;
+
+export const writingReactions = mysqlTable("writing_reactions", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  userOpenId: varchar("userOpenId", { length: 64 }).notNull(),
+  type: mysqlEnum("type", ["like", "love", "inspiring", "sad"]).default("like").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WritingReaction = typeof writingReactions.$inferSelect;
+export type InsertWritingReaction = typeof writingReactions.$inferInsert;

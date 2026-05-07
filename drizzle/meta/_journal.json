@@ -8,6 +8,13 @@
       "when": 1774631005675,
       "tag": "0000_curved_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1778145218020,
+      "tag": "0001_magenta_kinsey_walden",
+      "breakpoints": true
     }
   ]
 }

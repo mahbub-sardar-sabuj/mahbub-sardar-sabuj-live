@@ -74,6 +74,7 @@ function Router() {
         <Route path={"/news/:id"} component={News} />
         <Route path={"/gallery"} component={Gallery} />
         <Route path={"/amio-likhbo-bastobota"} component={AmiOLikhboBastobota} />
+        <Route path={"/amio-likhbo-bastobota/:slug"} component={AmiOLikhboBastobota} />
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
