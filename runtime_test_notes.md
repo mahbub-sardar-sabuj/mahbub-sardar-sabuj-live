@@ -25,3 +25,7 @@ The local page `http://localhost:3001/amio-likhbo-bastobota` loaded successfully
 ## Build verification after inline-login UX fix
 
 `pnpm run check && pnpm run build` completed successfully after the UX fix. The build still reports only the existing large-chunk warning for frontend assets, not a blocking error.
+
+## Live verification after push
+
+After pushing commit `cac33e4`, the live URL `https://www.mahbubsardarsabuj.com/amio-likhbo-bastobota` still loaded without browser console errors. At the moment of verification, the production deployment was still serving the previous asset version: the hero login CTA was still a normal `লগইন করুন` link rather than the new disabled `লগইন শীঘ্রই চালু হবে` state. This indicates the GitHub commit is pushed, but the hosting deployment has not yet picked up or finished deploying the latest commit.
