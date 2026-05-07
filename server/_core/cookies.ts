@@ -20,14 +20,14 @@ function isIpAddress(host: string) {
   return host.includes(":");
 }
 
-function isSecureRequest(req: IncomingMessage) {
+function isSecureRequest(req: IncomingMessage & { protocol?: string }) {
+  // Check protocol property (added by Express or our compatibility layer)
+  if ((req as any).protocol === "https") return true;
   const forwardedProto = req.headers["x-forwarded-proto"];
   if (!forwardedProto) return false;
-
   const protoList = Array.isArray(forwardedProto)
     ? forwardedProto
     : forwardedProto.split(",");
-
   return protoList.some((proto: string) => proto.trim().toLowerCase() === "https");
 }
 
