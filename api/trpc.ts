@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
+import { appRouter } from "../server/routers";
 // Inlined from shared/const to avoid Vercel module resolution issues
 const COOKIE_NAME = "app_session_id";
 import type { TrpcContext } from "../server/_core/context";
@@ -115,11 +117,6 @@ function sendFunctionError(res: ServerResponse, error: unknown) {
 
 export default async function handler(req: IncomingMessage & { query?: Record<string, unknown> }, res: ServerResponse) {
   try {
-    const [{ nodeHTTPRequestHandler }, { appRouter }] = await Promise.all([
-      import("@trpc/server/adapters/node-http"),
-      import("../server/routers"),
-    ]);
-
     await nodeHTTPRequestHandler({
       router: appRouter,
       path: getTrpcPath(req),
