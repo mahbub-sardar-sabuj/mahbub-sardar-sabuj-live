@@ -97,6 +97,7 @@ function ActionButton({
   variant = "primary",
   onClick,
   small,
+  type = "button",
 }: {
   href?: string;
   disabled?: boolean;
@@ -104,6 +105,7 @@ function ActionButton({
   variant?: "primary" | "ghost" | "danger";
   onClick?: () => void;
   small?: boolean;
+  type?: "button" | "submit" | "reset";
 }) {
   const baseStyle: CSSProperties = {
     display: "inline-flex",
@@ -146,7 +148,7 @@ function ActionButton({
   }
 
   return (
-    <button type="button" disabled={disabled} style={baseStyle} onClick={onClick}>
+    <button type={type} disabled={disabled} style={baseStyle} onClick={onClick}>
       {children}
     </button>
   );
@@ -483,15 +485,19 @@ function CommentSection({
 type EnrichedPost = {
   id: number;
   slug: string;
+  authorOpenId: string;
   authorName: string;
   title: string;
   category: string;
   content: string;
   mediaUrl: string | null;
   mediaType: string;
+  status: string;
   featured: boolean;
+  boostedScore: number;
   viewCount: number;
   createdAt: Date | string;
+  updatedAt: Date | string;
   reactionCounts: Record<ReactionType, number>;
   commentCount: number;
   myReaction: ReactionType | null;
