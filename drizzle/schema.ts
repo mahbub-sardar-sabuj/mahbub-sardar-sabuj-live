@@ -101,3 +101,17 @@ export const writingReactions = mysqlTable("writing_reactions", {
 
 export type WritingReaction = typeof writingReactions.$inferSelect;
 export type InsertWritingReaction = typeof writingReactions.$inferInsert;
+
+// ── Local Auth Users (email+password login without OAuth) ─────────────────────
+export const localUsers = mysqlTable("local_users", {
+  id: int("id").autoincrement().primaryKey(),
+  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 160 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  passwordHash: text("passwordHash").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LocalUser = typeof localUsers.$inferSelect;
+export type InsertLocalUser = typeof localUsers.$inferInsert;

@@ -15,6 +15,13 @@
       "when": 1778145218020,
       "tag": "0001_magenta_kinsey_walden",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778150000000,
+      "tag": "0002_local_users",
+      "breakpoints": true
     }
   ]
 }

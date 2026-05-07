@@ -32,6 +32,7 @@ import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl, getSignupUrl, isLoginConfigured } from "@/const";
+import LocalAuthModal from "@/components/LocalAuthModal";
 
 const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
@@ -1152,6 +1153,8 @@ export default function AmiOLikhboBastobota() {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showLocalAuth, setShowLocalAuth] = useState(false);
+  const [localAuthMode, setLocalAuthMode] = useState<"login" | "register">("login");
 
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
     activeCategory === "all" ? undefined : { category: activeCategory as Exclude<CategoryKey, "all"> },
@@ -1230,15 +1233,37 @@ export default function AmiOLikhboBastobota() {
                 </ActionButton>
               ) : (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <ActionButton href={loginHref} disabled={!isLoginConfigured} small>
-                    <KeyRound size={15} /> লগইন
-                  </ActionButton>
-                  <ActionButton href={signupHref} disabled={!isLoginConfigured} variant="ghost" small>
-                    <UserPlus size={15} /> একাউন্ট খুলুন
-                  </ActionButton>
+                  {isLoginConfigured ? (
+                    <>
+                      <ActionButton href={loginHref} small>
+                        <KeyRound size={15} /> লগইন
+                      </ActionButton>
+                      <ActionButton href={signupHref} variant="ghost" small>
+                        <UserPlus size={15} /> একাউন্ট খুলুন
+                      </ActionButton>
+                    </>
+                  ) : (
+                    <>
+                      <ActionButton onClick={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }} small>
+                        <KeyRound size={15} /> লগইন
+                      </ActionButton>
+                      <ActionButton onClick={() => { setLocalAuthMode("register"); setShowLocalAuth(true); }} variant="ghost" small>
+                        <UserPlus size={15} /> একাউন্ট খুলুন
+                      </ActionButton>
+                    </>
+                  )}
                 </div>
               )}
             </div>
+          )}
+
+          {/* ── Local Auth Modal ── */}
+          {showLocalAuth && (
+            <LocalAuthModal
+              defaultMode={localAuthMode}
+              onClose={() => setShowLocalAuth(false)}
+              onSuccess={() => setShowLocalAuth(false)}
+            />
           )}
 
           {/* ── Login prompt toast ── */}
@@ -1260,21 +1285,41 @@ export default function AmiOLikhboBastobota() {
               <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
                 <KeyRound size={16} /> এই কাজটি করতে লগইন করুন
               </span>
-              <a
-                href={loginHref}
-                style={{
-                  padding: "0.3rem 0.75rem",
-                  borderRadius: 999,
-                  background: "rgba(212,168,67,0.2)",
-                  border: "1px solid rgba(212,168,67,0.4)",
-                  color: "#F7D56F",
-                  fontWeight: 900,
-                  fontSize: "0.82rem",
-                  textDecoration: "none",
-                }}
-              >
-                লগইন করুন
-              </a>
+              {isLoginConfigured ? (
+                <a
+                  href={loginHref}
+                  style={{
+                    padding: "0.3rem 0.75rem",
+                    borderRadius: 999,
+                    background: "rgba(212,168,67,0.2)",
+                    border: "1px solid rgba(212,168,67,0.4)",
+                    color: "#F7D56F",
+                    fontWeight: 900,
+                    fontSize: "0.82rem",
+                    textDecoration: "none",
+                  }}
+                >
+                  লগইন করুন
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setLocalAuthMode("login"); setShowLocalAuth(true); setShowLoginPrompt(false); }}
+                  style={{
+                    padding: "0.3rem 0.75rem",
+                    borderRadius: 999,
+                    background: "rgba(212,168,67,0.2)",
+                    border: "1px solid rgba(212,168,67,0.4)",
+                    color: "#F7D56F",
+                    fontWeight: 900,
+                    fontSize: "0.82rem",
+                    fontFamily: adorshoFont,
+                    cursor: "pointer",
+                  }}
+                >
+                  লগইন করুন
+                </button>
+              )}
             </div>
           )}
 
