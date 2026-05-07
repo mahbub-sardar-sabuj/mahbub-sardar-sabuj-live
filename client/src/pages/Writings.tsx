@@ -148,6 +148,24 @@ const ebooks = [
     canRead: true,
     accentColor: "#E67E22",
   },
+  {
+    id: 5,
+    slug: "onoboddo-lekha",
+    title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
+    subtitle: "ই-বুক",
+    cover: "/images/ebooks/onoboddo-lekha.jpg",
+    description:
+      "'মাহবুব সরদার সবুজের অনবদ্য লেখা' — ১০০টি জীবনমুখী ও অনুপ্রেরণামূলক লেখার সংকলন। ভালোবাসা, বিচ্ছেদ, জীবনদর্শন ও মানবিক অনুভূতির মিশ্রণে রচিত এই সংকলনটি পাঠকের মনে গভীর ছাপ ফেলবে।",
+    genre: "মিশ্র সাহিত্য",
+    pages: "১০১",
+    year: "২০২৬",
+    badge: "ই-বুক",
+    badgeColor: "#8B5CF6",
+    buyLink: null,
+    isFeatured: true,
+    canRead: true,
+    accentColor: "#8B5CF6",
+  },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════

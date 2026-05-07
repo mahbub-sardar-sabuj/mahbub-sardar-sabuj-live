@@ -77,6 +77,16 @@ const ebookData: Record<string, {
     year: "২০২৩",
     totalPages: 0,
   },
+  "onoboddo-lekha": {
+    title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
+    author: "মাহবুব সরদার সবুজ",
+    cover: "/images/ebooks/onoboddo-lekha.jpg",
+    pdfUrl: "/ebooks/onoboddo-lekha.pdf",
+    description: "১০০টি জীবনমুখী ও অনুপ্রেরণামূলক লেখার সংকলন। ভালোবাসা, বিচ্ছেদ, জীবনদর্শন ও মানবিক অনুভূতির মিশ্রণে রচিত এই সংকলন।",
+    genre: "মিশ্র সাহিত্য",
+    year: "২০২৬",
+    totalPages: 101,
+  },
 };
 
 // AdSense Auto ads — Google স্বয়ংক্রিয়ভাবে সঠিক জায়গায় বিজ্ঞাপন দেখাবে
