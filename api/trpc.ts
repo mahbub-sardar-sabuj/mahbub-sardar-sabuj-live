@@ -1,8 +1,5 @@
-import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { COOKIE_NAME } from "../shared/const";
-import { appRouter } from "../server/routers";
-import { sdk } from "../server/_core/sdk";
 import type { TrpcContext } from "../server/_core/context";
 import type { User } from "../drizzle/schema";
 
@@ -70,6 +67,7 @@ async function createVercelContext({
   let user: User | null = null;
 
   try {
+    const { sdk } = await import("../server/_core/sdk");
     user = await sdk.authenticateRequest(compatibleReq as TrpcContext["req"]);
   } catch {
     user = null;
@@ -82,15 +80,53 @@ async function createVercelContext({
   };
 }
 
-export default async function handler(req: IncomingMessage & { query?: Record<string, unknown> }, res: ServerResponse) {
+function getTrpcPath(req: IncomingMessage & { query?: Record<string, unknown> }) {
   const trpcPath = req.query?.trpc;
-  const path = Array.isArray(trpcPath) ? trpcPath.join("/") : String(trpcPath ?? "");
+  if (Array.isArray(trpcPath)) return trpcPath.join("/");
+  if (typeof trpcPath === "string") return trpcPath;
 
-  await nodeHTTPRequestHandler({
-    router: appRouter,
-    path,
-    req,
-    res,
-    createContext: createVercelContext,
-  });
+  const url = req.url ? new URL(req.url, "https://local.invalid") : null;
+  const queryPath = url?.searchParams.get("trpc");
+  if (queryPath) return queryPath;
+
+  const pathname = url?.pathname ?? "";
+  const routePrefix = "/api/trpc/";
+  if (pathname.startsWith(routePrefix)) return decodeURIComponent(pathname.slice(routePrefix.length));
+
+  return "";
+}
+
+function sendFunctionError(res: ServerResponse, error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error("[tRPC function failure]", error);
+
+  if (!res.headersSent) {
+    res.statusCode = 500;
+    res.setHeader("content-type", "application/json; charset=utf-8");
+    res.setHeader("x-app-function-error", message.slice(0, 180));
+  }
+
+  res.end(JSON.stringify({
+    error: "API function failed to initialize.",
+    message: message.slice(0, 300),
+  }));
+}
+
+export default async function handler(req: IncomingMessage & { query?: Record<string, unknown> }, res: ServerResponse) {
+  try {
+    const [{ nodeHTTPRequestHandler }, { appRouter }] = await Promise.all([
+      import("@trpc/server/adapters/node-http"),
+      import("../server/routers"),
+    ]);
+
+    await nodeHTTPRequestHandler({
+      router: appRouter,
+      path: getTrpcPath(req),
+      req,
+      res,
+      createContext: createVercelContext,
+    });
+  } catch (error) {
+    sendFunctionError(res, error);
+  }
 }
