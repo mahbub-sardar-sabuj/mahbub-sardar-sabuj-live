@@ -2,12 +2,13 @@
  * Gallery.tsx — ফটো গ্যালারি পেজ
  * সব ছবি compact masonry grid + Lightbox (no filter tabs, no featured image)
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Images, ZoomIn, Copy, Check, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
+import { useLocation } from "wouter";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
@@ -68,9 +69,32 @@ type GalleryImage = { src: string; caption: string };
 export default function Gallery() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [galleryCopied, setGalleryCopied] = useState(false);
+  const [location] = useLocation();
 
-  const openLightbox = (idx: number) => setLightboxIdx(idx);
-  const closeLightbox = () => setLightboxIdx(null);
+  // URL-এ ?photo=N থাকলে সরাসরি সেই ছবির lightbox খোলা
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const photoParam = params.get("photo");
+    if (photoParam !== null) {
+      const idx = parseInt(photoParam, 10);
+      if (!isNaN(idx) && idx >= 0 && idx < galleryImages.length) {
+        setLightboxIdx(idx);
+      }
+    }
+  }, [location]);
+
+  const openLightbox = (idx: number) => {
+    setLightboxIdx(idx);
+    const url = new URL(window.location.href);
+    url.searchParams.set("photo", String(idx));
+    window.history.replaceState(null, "", url.toString());
+  };
+  const closeLightbox = () => {
+    setLightboxIdx(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("photo");
+    window.history.replaceState(null, "", url.toString());
+  };
 
   const goPrev = (e: React.MouseEvent) => {
     e.stopPropagation();

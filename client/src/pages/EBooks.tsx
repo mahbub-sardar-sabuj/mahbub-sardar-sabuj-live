@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Eye, X, Star, ShoppingCart, BookMarked, Sparkles } from "lucide-react";
+import { BookOpen, Eye, X, Star, ShoppingCart, BookMarked, Sparkles, Copy, Check, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
@@ -86,6 +86,27 @@ const ebooks = [
 ];
 
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const bookUrl = `https://www.mahbubsardarsabuj.com/ebooks/read/${book.slug}`;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(bookUrl).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = bookUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: book.title, text: `মাহবুব সরদার সবুজের '${book.title}' পড়ুন`, url: bookUrl });
+    } else {
+      handleCopy();
+    }
+  };
   return (
     <AnimatePresence>
       <motion.div
@@ -171,6 +192,26 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                     </motion.button>
                   </a>
                 )}
+                <motion.button
+                  onClick={handleCopy}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-full font-bold border-2 transition-colors ${
+                    copied ? "border-green-500 text-green-600 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? "কপি হয়েছে!" : "লিংক কপি"}
+                </motion.button>
+                <motion.button
+                  onClick={handleShare}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-2 px-4 py-3 rounded-full font-bold border-2 border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  <Share2 size={16} />
+                  শেয়ার
+                </motion.button>
               </div>
             </div>
           </div>

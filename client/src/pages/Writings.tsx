@@ -1597,6 +1597,19 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   const c = getCatStyle(writing.category);
   const isL = viewMode === "list";
   const slug = makeSlug(writing.title, writing.id);
+
+  // ❤️ ভালো লেগেছে বাটন (localStorage)
+  const likeKey = `like_${writing.id}`;
+  const [liked, setLiked] = useState(() => localStorage.getItem(likeKey) === "1");
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const next = !liked;
+    setLiked(next);
+    if (next) localStorage.setItem(likeKey, "1");
+    else localStorage.removeItem(likeKey);
+  };
+
   return (
     <motion.div
       className={`wc2${isL?" wc2-l":""}`}
@@ -1637,15 +1650,21 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             </div>
             <div className="wc2-foot" style={{ border: "none", padding: 0 }}>
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
-              <Link
-                href={`/writings/${slug}`}
-                onClick={(e) => { e.stopPropagation(); onClick(); }}
-                className="wc2-read"
-                style={{ color: c.accent, marginLeft: 12, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
-                aria-label={`${writing.title} পড়ুন`}
-              >
-                পড়ুন <ArrowRight size={11}/>
-              </Link>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 12 }}>
+                <button onClick={handleLike} title="ভালো লেগেছে"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: liked ? 1 : 0.45, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.2)" : "scale(1)" }}>
+                  {liked ? "❤️" : "🤍"}
+                </button>
+                <Link
+                  href={`/writings/${slug}`}
+                  onClick={(e) => { e.stopPropagation(); onClick(); }}
+                  className="wc2-read"
+                  style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                  aria-label={`${writing.title} পড়ুন`}
+                >
+                  পড়ুন <ArrowRight size={11}/>
+                </Link>
+              </div>
             </div>
           </>
         ) : (
@@ -1662,15 +1681,21 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             <div className="wc2-preview">{writing.content}</div>
             <div className="wc2-foot">
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
-              <Link
-                href={`/writings/${slug}`}
-                onClick={(e) => { e.stopPropagation(); onClick(); }}
-                className="wc2-read"
-                style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
-                aria-label={`${writing.title} পড়ুন`}
-              >
-                পড়ুন <ArrowRight size={11}/>
-              </Link>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button onClick={handleLike} title="ভালো লেগেছে"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: liked ? 1 : 0.45, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.2)" : "scale(1)" }}>
+                  {liked ? "❤️" : "🤍"}
+                </button>
+                <Link
+                  href={`/writings/${slug}`}
+                  onClick={(e) => { e.stopPropagation(); onClick(); }}
+                  className="wc2-read"
+                  style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                  aria-label={`${writing.title} পড়ুন`}
+                >
+                  পড়ুন <ArrowRight size={11}/>
+                </Link>
+              </div>
             </div>
           </>
         )}
@@ -1700,6 +1725,16 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const next = idx < allWritings.length - 1 ? allWritings[idx + 1] : null;
   const writingSlug = makeSlug(writing.title, writing.id);
   const writingUrl = `${window.location.origin}/writings/${writingSlug}`;
+
+  // পড়ার সময় হিসাব করা (প্রতি মিনিটে ​১৫০ শব্দ)
+  const wordCount = writing.content.trim().split(/\s+/).length;
+  const readMinutes = Math.max(1, Math.round(wordCount / 150));
+  const readTimeLabel = readMinutes === 1 ? "১ মিনিট" : `${readMinutes} মিনিট`;
+
+  // সম্পর্কিত লেখা (একই ক্যাটাগরি থেকে ৩টি)
+  const relatedWritings = allWritings
+    .filter(w => w.id !== writing.id && w.category === writing.category)
+    .slice(0, 3);
 
   const T = {
     dark:  { bg: "#06080E", txt: "#EEEAE2", sub: "rgba(238,234,226,.48)", bdr: "rgba(255,255,255,.06)", hnd: "rgba(255,255,255,.1)", prog: c.accent },
@@ -1793,6 +1828,10 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
                     <Facebook size={14} color="#1877F2"/> Facebook
                   </button>
                   <button className="rm2-si" style={{ color: "#EEEAE2" }}
+                    onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(writing.title + ' — ' + writingUrl)}`, "_blank"); setShowShare(false); }}>
+                    <span style={{ fontSize: 14 }}>💬</span> WhatsApp
+                  </button>
+                  <button className="rm2-si" style={{ color: "#EEEAE2" }}
                     onClick={() => { navigator.clipboard.writeText(writingUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => { const el = document.createElement('textarea'); el.value = writingUrl; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}>
                     {copied ? <Check size={14} color="#34D399"/> : <Copy size={14}/>}
                     {copied ? "কপি হয়েছে!" : "লিংক কপি"}
@@ -1807,12 +1846,32 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         </div>
         <div className="rm2-body" ref={bodyRef}>
           <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "1rem", opacity: 0.55 }}>
+            <span style={{ color: T.txt, fontSize: ".72rem", fontFamily: "var(--f)" }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
+            <span style={{ color: T.bdr }}>·</span>
+            <span style={{ color: T.txt, fontSize: ".72rem", fontFamily: "var(--f)" }}>{writing.category}</span>
+          </div>
           <div className="rm2-txt" style={{ color: T.txt, fontSize: `${fontSize}rem` }}>
             {writing.content}
           </div>
           <div className="rm2-sig" style={{ borderColor: T.bdr, color: T.txt }}>
             — মাহবুব সরদার সবুজ · {writing.date}
           </div>
+          {relatedWritings.length > 0 && (
+            <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: `1px solid ${T.bdr}` }}>
+              <p style={{ color: T.sub, fontSize: ".72rem", fontFamily: "var(--f)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: ".8rem" }}>সম্পর্কিত লেখা</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: ".5rem" }}>
+                {relatedWritings.map(rw => (
+                  <button key={rw.id} onClick={() => onNavigate(rw)}
+                    style={{ textAlign: "left", padding: ".6rem .9rem", borderRadius: 8, background: "rgba(255,255,255,.04)", border: `1px solid ${T.bdr}`, color: T.txt, cursor: "pointer", fontSize: ".82rem", fontFamily: "var(--f)", lineHeight: 1.4, transition: "background .15s" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,.08)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,.04)")}>
+                    {rw.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="rm2-nav" style={{ borderColor: T.bdr }}>
           <button className="rm2-nb" style={{ borderColor: T.bdr }} onClick={() => prev && onNavigate(prev)} disabled={!prev}>
