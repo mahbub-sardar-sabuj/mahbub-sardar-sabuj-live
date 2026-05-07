@@ -319,7 +319,10 @@ async function upsertUser(user) {
     if (user.role !== void 0) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
+    } else if (
+      user.openId === ENV.ownerOpenId ||
+      (user.email && user.email === (process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com"))
+    ) {
       values.role = "admin";
       updateSet.role = "admin";
     }
@@ -1129,7 +1132,7 @@ var SDKServer = class {
     return new Map(Object.entries(parsed));
   }
   getSessionSecret() {
-    const secret = ENV.cookieSecret;
+    const secret = ENV.cookieSecret || "local-secret-fallback-32chars!!";
     return new TextEncoder().encode(secret);
   }
   /**

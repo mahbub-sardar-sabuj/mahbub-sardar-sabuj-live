@@ -9,6 +9,7 @@ import { nanoid } from "nanoid";
 import * as crypto from "crypto";
 
 const COOKIE_NAME = "app_session_id";
+const OWNER_EMAIL = process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com";
 const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 const APP_ID = process.env.VITE_APP_ID || "local-app";
 const JWT_SECRET = process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
@@ -122,11 +123,13 @@ export default async function handler(req, res) {
       );
 
       // Also upsert into main users table so tRPC auth.me works
+      const ownerEmail = OWNER_EMAIL;
+      const registerRole = (ownerEmail && normalEmail === ownerEmail.toLowerCase()) ? 'admin' : 'user';
       await db.execute(
         `INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
-         VALUES (?, ?, ?, 'local', 'user', NOW())
-         ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), lastSignedIn=NOW()`,
-        [openId, normalName, normalEmail]
+         VALUES (?, ?, ?, 'local', ?, NOW())
+         ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), role=VALUES(role), lastSignedIn=NOW()`,
+        [openId, normalName, normalEmail, registerRole]
       );
 
       const token = await createSessionToken(openId, normalName);
@@ -164,11 +167,13 @@ export default async function handler(req, res) {
       }
 
       // Update lastSignedIn in main users table
+      const ownerEmail = OWNER_EMAIL;
+      const loginRole = (ownerEmail && normalEmail === ownerEmail.toLowerCase()) ? 'admin' : 'user';
       await db.execute(
         `INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
-         VALUES (?, ?, ?, 'local', 'user', NOW())
-         ON DUPLICATE KEY UPDATE lastSignedIn=NOW()`,
-        [user.openId, user.name, normalEmail]
+         VALUES (?, ?, ?, 'local', ?, NOW())
+         ON DUPLICATE KEY UPDATE role=VALUES(role), lastSignedIn=NOW()`,
+        [user.openId, user.name, normalEmail, loginRole]
       );
 
       const token = await createSessionToken(user.openId, user.name);
