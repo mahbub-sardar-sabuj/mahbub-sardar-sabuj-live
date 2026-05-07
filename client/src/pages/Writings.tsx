@@ -1578,6 +1578,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
 }) {
   const c = getCatStyle(writing.category);
   const isL = viewMode === "list";
+  const slug = makeSlug(writing.title, writing.id);
   return (
     <motion.div
       className={`wc2${isL?" wc2-l":""}`}
@@ -1588,13 +1589,17 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
         "--cbg2": c.badge,
         "--cbdr": c.border,
         animationDelay: `${index * 0.04}s`,
+        cursor: "pointer",
+        textDecoration: "none",
+        display: "block",
       } as React.CSSProperties}
       onClick={onClick}
-      role="button"
+      role="article"
       tabIndex={0}
       aria-label={`${writing.title} পড়ুন`}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
       whileTap={{ scale: .97 }}
+      data-href={`/writings/${slug}`}
     >
       <div className="wc2-top"/>
       <div className="wc2-glow"/>
@@ -1614,9 +1619,15 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             </div>
             <div className="wc2-foot" style={{ border: "none", padding: 0 }}>
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
-              <span className="wc2-read" style={{ color: c.accent, marginLeft: 12 }}>
+              <Link
+                href={`/writings/${slug}`}
+                onClick={(e) => { e.stopPropagation(); onClick(); }}
+                className="wc2-read"
+                style={{ color: c.accent, marginLeft: 12, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                aria-label={`${writing.title} পড়ুন`}
+              >
                 পড়ুন <ArrowRight size={11}/>
-              </span>
+              </Link>
             </div>
           </>
         ) : (
@@ -1633,9 +1644,15 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             <div className="wc2-preview">{writing.content}</div>
             <div className="wc2-foot">
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
-              <span className="wc2-read" style={{ color: c.accent }}>
+              <Link
+                href={`/writings/${slug}`}
+                onClick={(e) => { e.stopPropagation(); onClick(); }}
+                className="wc2-read"
+                style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                aria-label={`${writing.title} পড়ুন`}
+              >
                 পড়ুন <ArrowRight size={11}/>
-              </span>
+              </Link>
             </div>
           </>
         )}
@@ -1857,11 +1874,9 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   );
 }
 
-// ── Cinematic E-Book Shelf ───────────────────────────────────────────────────
+// ── Cinematic E-Book Shelf ───────────────────────────────────────────────────────────────────
 function BooksTab() {
-  const [selBook, setSelBook] = useState<typeof ebooks[0] | null>(null);
-  const readableBooks = ebooks.filter(b => b.canRead).length;
-  const physicalBooks = ebooks.filter(b => b.badge.includes("ফিজিক্যাল")).length;
+  const [, setLocation] = useLocation();
 
   return (
     <section className="bs ebook-stage" aria-labelledby="ebook-stage-title">
@@ -1881,11 +1896,11 @@ function BooksTab() {
             initial={{ opacity: 0, y: 28, rotateX: 8 }}
             animate={{ opacity: 1, y: 0, rotateX: 0 }}
             transition={{ delay: i * .08, duration: .48, ease: [.25,.46,.45,.94] }}
-            onClick={() => setSelBook(book)}
-            role="button"
+            onClick={() => setLocation(`/ebooks/read/${book.slug}`)}
+            role="article"
             tabIndex={0}
-            aria-label={`${book.title} সম্পর্কে দেখুন`}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelBook(book); } }}
+            aria-label={`${book.title} দেখুন`}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${book.slug}`); } }}
           >
             <div className="ebook-glow"/>
             <div className="ebook-cover-wrap">
@@ -1899,7 +1914,7 @@ function BooksTab() {
               <p>{book.description}</p>
               <div className="ebook-meta"><Calendar size={10}/>{book.year} · {book.pages} পৃষ্ঠা</div>
               <div className="ebook-actions">
-                <button className="ebook-preview" onClick={(e) => { e.stopPropagation(); setSelBook(book); }}><Eye size={12}/> দেখুন</button>
+                <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-preview" style={{ display: "flex", alignItems: "center", gap: 5, textDecoration: "none" }}><Eye size={12}/> দেখুন</Link>
                 {book.canRead && (
                   <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-read">
                     <BookOpen size={12}/> পড়ুন
@@ -1916,9 +1931,7 @@ function BooksTab() {
         ))}
       </div>
 
-      <AnimatePresence>
-        {selBook && <BookModal book={selBook} onClose={() => setSelBook(null)}/>} 
-      </AnimatePresence>
+
     </section>
   );
 }
