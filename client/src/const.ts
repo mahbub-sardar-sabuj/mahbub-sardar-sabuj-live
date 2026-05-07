@@ -1,5 +1,11 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+const hasConfiguredEnvValue = (value: unknown) =>
+  typeof value === "string" && value.trim().length > 0 && value !== "undefined" && value !== "null";
+
+export const isLoginConfigured =
+  hasConfiguredEnvValue(import.meta.env.VITE_OAUTH_PORTAL_URL) && hasConfiguredEnvValue(import.meta.env.VITE_APP_ID);
+
 // Generate login URL at runtime so redirect URI reflects the current origin.
 // If OAuth environment variables are missing in production, return a safe local
 // fallback instead of throwing `undefined/app-auth cannot be parsed as a URL`.
@@ -11,7 +17,7 @@ export const getLoginUrl = () => {
     return "/";
   }
 
-  if (!oauthPortalUrl || !appId) {
+  if (!isLoginConfigured) {
     console.warn("OAuth login is not configured. Missing VITE_OAUTH_PORTAL_URL or VITE_APP_ID.");
     return "/?login=configuration-required";
   }

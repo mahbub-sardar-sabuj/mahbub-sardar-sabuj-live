@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import { trpc } from "@/lib/trpc";
-import { getLoginUrl } from "@/const";
+import { getLoginUrl, isLoginConfigured } from "@/const";
 
 type Category = "experience" | "story" | "poem" | "thought" | "photo" | "video";
 type ReactionType = "like" | "love" | "inspiring" | "sad";
@@ -130,15 +130,37 @@ function GhostButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   );
 }
 
+function LoginUnavailableNotice({ compact = false }: { compact?: boolean }) {
+  return (
+    <div
+      style={{
+        border: "1px solid rgba(232,201,122,0.28)",
+        borderRadius: compact ? 16 : 20,
+        padding: compact ? "0.85rem 1rem" : "1rem 1.1rem",
+        background: "rgba(212,168,67,0.09)",
+        color: "rgba(253,246,236,0.82)",
+        lineHeight: 1.75,
+      }}
+    >
+      <strong style={{ color: "#E8C97A" }}>লগইন সিস্টেম শীঘ্রই চালু হবে।</strong>{" "}
+      লেখা জমা, রিঅ্যাকশন ও কমেন্ট করার জন্য অ্যাকাউন্টে প্রবেশ প্রয়োজন। লগইন সুবিধা চালু হলে এই ট্যাব থেকেই সরাসরি শুরু করা যাবে।
+    </div>
+  );
+}
+
 function LoginPrompt() {
   return (
     <div style={{ ...cardStyle, padding: "1.25rem", marginTop: "1rem" }}>
       <p style={{ margin: "0 0 1rem", color: "rgba(253,246,236,0.72)", lineHeight: 1.75 }}>
         পোস্ট লিখতে, রিঅ্যাকশন দিতে বা কমেন্ট করতে আগে অ্যাকাউন্টে প্রবেশ করুন। বর্তমান ওয়েবসাইটের নিরাপদ login ব্যবস্থার মাধ্যমেই আপনার profile তৈরি হবে।
       </p>
-      <a href={getLoginUrl()} style={{ textDecoration: "none" }}>
-        <PrimaryButton type="button">লগইন করে শুরু করুন <ArrowRight size={17} /></PrimaryButton>
-      </a>
+      {isLoginConfigured ? (
+        <a href={getLoginUrl()} style={{ textDecoration: "none" }}>
+          <PrimaryButton type="button">লগইন করে শুরু করুন <ArrowRight size={17} /></PrimaryButton>
+        </a>
+      ) : (
+        <LoginUnavailableNotice />
+      )}
     </div>
   );
 }
@@ -206,7 +228,11 @@ function PlatformHero({ isAuthenticated }: { isAuthenticated: boolean }) {
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: "1.5rem" }}>
             <a href="#write" style={{ textDecoration: "none" }}><PrimaryButton type="button"><PenLine size={17} /> পোস্ট লিখুন</PrimaryButton></a>
-            {!isAuthenticated && <a href={getLoginUrl()} style={{ textDecoration: "none" }}><GhostButton type="button"><ShieldCheck size={17} /> লগইন করুন</GhostButton></a>}
+            {!isAuthenticated && (isLoginConfigured ? (
+              <a href={getLoginUrl()} style={{ textDecoration: "none" }}><GhostButton type="button"><ShieldCheck size={17} /> লগইন করুন</GhostButton></a>
+            ) : (
+              <GhostButton type="button" disabled><ShieldCheck size={17} /> লগইন শীঘ্রই চালু হবে</GhostButton>
+            ))}
           </div>
         </div>
       </div>
@@ -228,6 +254,7 @@ export default function AmiOLikhboBastobota() {
   const [comment, setComment] = useState("");
   const [adminPostStatus, setAdminPostStatus] = useState<StatusFilter>("pending");
   const [adminCommentStatus, setAdminCommentStatus] = useState<StatusFilter>("pending");
+  const [loginNotice, setLoginNotice] = useState("");
 
   const listInput = useMemo(() => ({ category: category === "all" ? undefined : category, limit: 30 }), [category]);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(listInput, { enabled: !postSlug });
@@ -283,9 +310,14 @@ export default function AmiOLikhboBastobota() {
 
   const handleReaction = (postId: number, type: ReactionType) => {
     if (!isAuthenticated) {
+      if (!isLoginConfigured) {
+        setLoginNotice("রিঅ্যাকশন দিতে লগইন প্রয়োজন। লগইন সিস্টেম চালু হলে এই পেজ থেকেই রিঅ্যাকশন দিতে পারবেন।");
+        return;
+      }
       window.location.href = getLoginUrl();
       return;
     }
+    setLoginNotice("");
     reactToPost.mutate({ postId, type });
   };
 
@@ -312,6 +344,12 @@ export default function AmiOLikhboBastobota() {
       />
       <Navbar />
       <PlatformHero isAuthenticated={isAuthenticated} />
+      {loginNotice && (
+        <div style={{ ...sectionStyle, marginTop: "-1rem", marginBottom: "1.5rem" }}>
+          <LoginUnavailableNotice compact />
+          <p style={{ margin: "0.65rem 0 0", color: "rgba(253,246,236,0.62)", lineHeight: 1.7 }}>{loginNotice}</p>
+        </div>
+      )}
 
       {postSlug ? (
         <main style={{ ...sectionStyle, paddingBottom: "4rem" }}>
