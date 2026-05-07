@@ -5,9 +5,8 @@
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
   "functions": {
-    "api/trpc-bundled.js": {}
-    ,"api/trpc.ts": {
-      "includeFiles": "{shared/**,server/**,drizzle/**}"
+    "api/trpc-bundled.js": {
+      "memory": 1024
     },
     "api/audio-edit.js": {
       "maxDuration": 60,
