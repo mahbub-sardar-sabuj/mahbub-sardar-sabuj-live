@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Facebook, ExternalLink, Mic, Play } from "lucide-react";
-import { useRef } from "react";
+import { Facebook, ExternalLink, Mic, Play, Copy, Check } from "lucide-react";
+import { useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
@@ -11,6 +11,7 @@ import { facebookPageUrl, facebookRecitations } from "@/data/facebookRecitations
 
 export default function FacebookRecitations() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
@@ -430,19 +431,30 @@ export default function FacebookRecitations() {
                   }}>
                     <Facebook size={14} /> Facebook-এ দেখুন
                   </span>
-                  <div style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "rgba(201,168,76,0.12)",
-                    border: "1px solid rgba(201,168,76,0.2)",
-                    color: "#C9A84C",
-                    flexShrink: 0,
-                  }}>
-                    <ExternalLink size={14} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); const url = video.url; navigator.clipboard.writeText(url).catch(() => { const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }); setCopiedId(video.id); setTimeout(() => setCopiedId(null), 2000); }}
+                      title="লিংক কপি করুন"
+                      style={{
+                        width: 32, height: 32, borderRadius: "50%",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: copiedId === video.id ? "rgba(52,211,153,0.15)" : "rgba(201,168,76,0.12)",
+                        border: copiedId === video.id ? "1px solid rgba(52,211,153,0.4)" : "1px solid rgba(201,168,76,0.2)",
+                        color: copiedId === video.id ? "#34D399" : "#C9A84C",
+                        cursor: "pointer", flexShrink: 0,
+                      }}
+                    >
+                      {copiedId === video.id ? <Check size={14}/> : <Copy size={14}/>}
+                    </button>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "rgba(201,168,76,0.12)",
+                      border: "1px solid rgba(201,168,76,0.2)",
+                      color: "#C9A84C", flexShrink: 0,
+                    }}>
+                      <ExternalLink size={14} />
+                    </div>
                   </div>
                 </div>
               </motion.a>

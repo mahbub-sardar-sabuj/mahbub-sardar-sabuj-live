@@ -1680,6 +1680,8 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const idx = allWritings.findIndex(w => w.id === writing.id);
   const prev = idx > 0 ? allWritings[idx - 1] : null;
   const next = idx < allWritings.length - 1 ? allWritings[idx + 1] : null;
+  const writingSlug = makeSlug(writing.title, writing.id);
+  const writingUrl = `${window.location.origin}/writings/${writingSlug}`;
 
   const T = {
     dark:  { bg: "#06080E", txt: "#EEEAE2", sub: "rgba(238,234,226,.48)", bdr: "rgba(255,255,255,.06)", hnd: "rgba(255,255,255,.1)", prog: c.accent },
@@ -1769,11 +1771,11 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
               {showShare && (
                 <div className="rm2-sdd">
                   <button className="rm2-si" style={{ color: "#EEEAE2" }}
-                    onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank"); setShowShare(false); }}>
+                    onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(writingUrl)}`, "_blank"); setShowShare(false); }}>
                     <Facebook size={14} color="#1877F2"/> Facebook
                   </button>
                   <button className="rm2-si" style={{ color: "#EEEAE2" }}
-                    onClick={() => { navigator.clipboard.writeText(window.location.href).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}>
+                    onClick={() => { navigator.clipboard.writeText(writingUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => { const el = document.createElement('textarea'); el.value = writingUrl; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}>
                     {copied ? <Check size={14} color="#34D399"/> : <Copy size={14}/>}
                     {copied ? "কপি হয়েছে!" : "লিংক কপি"}
                   </button>

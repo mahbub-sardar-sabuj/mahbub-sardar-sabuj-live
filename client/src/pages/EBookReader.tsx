@@ -17,6 +17,9 @@ import {
   Moon,
   Sun,
   PenLine,
+  Copy,
+  Check,
+  Share2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -92,6 +95,7 @@ function getDefaultScale(): number {
 
 export default function EBookReader() {
   const [, params] = useRoute("/ebooks/read/:slug");
+  const [ebookCopied, setEbookCopied] = useState(false);
   const slug = params?.slug || "";
   const book = ebookData[slug];
 
@@ -434,6 +438,27 @@ export default function EBookReader() {
                   <span className="hidden md:inline text-xs font-bold">লেখালেখি</span>
                 </button>
               </Link>
+              {/* শেয়ার/কপি লিংক বাটন */}
+              <button
+                onClick={() => {
+                  const url = window.location.href;
+                  navigator.clipboard.writeText(url).catch(() => {
+                    const ta = document.createElement("textarea");
+                    ta.value = url;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(ta);
+                  });
+                  setEbookCopied(true);
+                  setTimeout(() => setEbookCopied(false), 2000);
+                }}
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors flex-shrink-0 ${ebookCopied ? "bg-green-100 text-green-700" : isDarkMode ? "hover:bg-gray-800 text-gray-300" : "hover:bg-gray-100 text-gray-600"}`}
+                title="লিংক কপি করুন"
+              >
+                {ebookCopied ? <Check size={15} /> : <Copy size={15} />}
+                <span className="hidden md:inline text-xs font-medium">{ebookCopied ? "কপি!" : "লিংক"}</span>
+              </button>
             </div>
 
           </div>

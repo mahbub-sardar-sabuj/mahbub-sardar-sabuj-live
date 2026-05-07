@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Images, ZoomIn } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Images, ZoomIn, Copy, Check, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
@@ -67,6 +67,7 @@ type GalleryImage = { src: string; caption: string };
 
 export default function Gallery() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [galleryCopied, setGalleryCopied] = useState(false);
 
   const openLightbox = (idx: number) => setLightboxIdx(idx);
   const closeLightbox = () => setLightboxIdx(null);
@@ -282,7 +283,7 @@ export default function Gallery() {
                   display: "block",
                 }}
               />
-              {/* Caption */}
+              {/* Caption + Share */}
               <div style={{ textAlign: "center", marginTop: "1rem" }}>
                 <p style={{
                   fontFamily: "'Noto Sans Bengali', sans-serif",
@@ -294,8 +295,24 @@ export default function Gallery() {
                   fontFamily: "'Noto Sans Bengali', sans-serif",
                   color: "rgba(201,168,76,0.5)",
                   fontSize: "0.75rem",
-                  margin: 0,
+                  margin: "0 0 12px",
                 }}>{(lightboxIdx ?? 0) + 1} / {galleryImages.length}</p>
+                <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); const url = window.location.origin + "/gallery?photo=" + (lightboxIdx ?? 0); navigator.clipboard.writeText(url).catch(() => { const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }); setGalleryCopied(true); setTimeout(() => setGalleryCopied(false), 2000); }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: galleryCopied ? "rgba(52,211,153,0.15)" : "rgba(201,168,76,0.12)", border: galleryCopied ? "1px solid rgba(52,211,153,0.4)" : "1px solid rgba(201,168,76,0.3)", color: galleryCopied ? "#34D399" : "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", cursor: "pointer" }}
+                  >
+                    {galleryCopied ? <Check size={13}/> : <Copy size={13}/>}
+                  </button>
+                  <a
+                    href={"https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(window.location.origin + "/gallery?photo=" + (lightboxIdx ?? 0))}
+                    target="_blank" rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: "rgba(24,119,242,0.12)", border: "1px solid rgba(24,119,242,0.3)", color: "#1877F2", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", textDecoration: "none" }}
+                  >
+                    <Share2 size={13}/> শেয়ার
+                  </a>
+                </div>
               </div>
               {/* Close */}
               <motion.button
