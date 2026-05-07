@@ -10951,6 +10951,348 @@ const CSS = `
     height: 1px;
   }
 
+  /* ── UNIFIED CINEMATIC LIBRARY v8 ── */
+  .wp-cinema {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 18% 8%, rgba(201,168,76,.12), transparent 34%),
+      radial-gradient(circle at 82% 18%, rgba(244,114,182,.09), transparent 30%),
+      radial-gradient(circle at 50% 86%, rgba(96,165,250,.07), transparent 38%),
+      var(--bg);
+  }
+  .cinema-aurora {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .75;
+    background:
+      linear-gradient(115deg, transparent 0 18%, rgba(201,168,76,.045) 32%, transparent 48% 100%),
+      radial-gradient(circle at 45% 0%, rgba(232,184,75,.09), transparent 32%);
+    filter: blur(.2px);
+  }
+  .mc-cinema { position: relative; z-index: 1; padding-top: clamp(1.2rem, 3vw, 2.2rem); }
+  .library-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: clamp(24px,4vw,40px);
+    padding: clamp(1.4rem,4vw,3rem);
+    margin-bottom: clamp(1.2rem,3vw,2rem);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.018)),
+      radial-gradient(circle at 90% 5%, rgba(201,168,76,.16), transparent 34%),
+      rgba(8,12,20,.62);
+    box-shadow: 0 28px 100px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(18px);
+  }
+  .library-hero::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(120deg, rgba(201,168,76,.28), transparent 28%, transparent 72%, rgba(244,114,182,.18));
+    opacity: .42;
+    pointer-events: none;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    padding: 1px;
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .lh-kicker, .wc-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gold);
+    font-family: var(--f);
+    font-size: .78rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    margin-bottom: .9rem;
+  }
+  .lh-title {
+    max-width: 830px;
+    margin: 0 0 1rem;
+    font-family: var(--f);
+    font-size: clamp(2rem, 6vw, 4.8rem);
+    line-height: 1.08;
+    color: var(--t0);
+    text-wrap: balance;
+    letter-spacing: -.03em;
+    text-shadow: 0 20px 60px rgba(0,0,0,.55);
+  }
+  .lh-copy {
+    max-width: 760px;
+    margin: 0;
+    color: var(--t2);
+    font-family: var(--f);
+    font-size: clamp(1rem, 2.1vw, 1.22rem);
+    line-height: 1.9;
+  }
+  .lh-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .lh-stats div {
+    min-width: 128px;
+    padding: .85rem 1rem;
+    border: 1px solid rgba(255,255,255,.075);
+    border-radius: 18px;
+    background: rgba(255,255,255,.035);
+  }
+  .lh-stats strong {
+    display: block;
+    color: var(--gold);
+    font-size: 1.35rem;
+    line-height: 1;
+    font-family: var(--f);
+  }
+  .lh-stats span {
+    display: block;
+    margin-top: .35rem;
+    color: var(--t3);
+    font-family: var(--f);
+    font-size: .78rem;
+  }
+  .ebook-stage, .writing-cinema {
+    position: relative;
+    margin-bottom: clamp(1.6rem,4vw,3rem);
+    border-radius: clamp(24px,4vw,36px);
+    border: 1px solid rgba(255,255,255,.07);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.015)),
+      rgba(7,10,18,.68);
+    box-shadow: 0 28px 90px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.065);
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+  }
+  .ebook-stage { padding: clamp(1rem,3vw,2rem); }
+  .ebook-stage::after {
+    content: "";
+    position: absolute;
+    left: 8%; right: 8%; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,.55), transparent);
+  }
+  .ebook-stage-head, .writing-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: clamp(1rem,3vw,2rem);
+    margin-bottom: clamp(1rem,3vw,1.6rem);
+  }
+  .ebook-stage-head h2, .writing-head h2 {
+    margin: 0;
+    color: var(--t0);
+    font-family: var(--f);
+    font-size: clamp(1.45rem,3.5vw,2.5rem);
+    line-height: 1.25;
+  }
+  .ebook-stage-head p, .writing-head p {
+    max-width: 650px;
+    margin: .55rem 0 0;
+    color: var(--t2);
+    font-family: var(--f);
+    line-height: 1.85;
+    font-size: .94rem;
+  }
+  .bk-sum-cinema {
+    grid-template-columns: repeat(3, minmax(94px, 1fr));
+    margin: 0;
+    min-width: min(430px, 100%);
+  }
+  .ebook-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(.9rem, 2vw, 1.25rem);
+    perspective: 1200px;
+  }
+  .ebook-tile {
+    --book-accent: var(--gold);
+    position: relative;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 26px;
+    border: 1px solid color-mix(in srgb, var(--book-accent) 26%, rgba(255,255,255,.08));
+    background:
+      linear-gradient(160deg, color-mix(in srgb, var(--book-accent) 13%, transparent), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.018)),
+      #090D19;
+    box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease;
+  }
+  .ebook-tile:hover {
+    transform: translateY(-8px) rotateX(2deg);
+    border-color: color-mix(in srgb, var(--book-accent) 52%, rgba(255,255,255,.12));
+    box-shadow: 0 34px 90px rgba(0,0,0,.48), 0 0 42px color-mix(in srgb, var(--book-accent) 18%, transparent);
+  }
+  .ebook-tile.featured::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+    transform: translateX(-120%) skewX(-18deg);
+    animation: ebookShine 4.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .ebook-glow {
+    position: absolute;
+    inset: auto 12% 38% 12%;
+    height: 64px;
+    background: color-mix(in srgb, var(--book-accent) 30%, transparent);
+    filter: blur(30px);
+    opacity: .75;
+  }
+  .ebook-cover-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 1.15rem 1rem .75rem;
+    min-height: 205px;
+  }
+  .ebook-cover {
+    position: relative;
+    z-index: 1;
+    width: min(142px, 54vw);
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 22px 45px rgba(0,0,0,.5), -8px 0 18px rgba(0,0,0,.28);
+    transform: rotateY(-10deg) rotateZ(-1deg);
+    transition: transform .28s ease;
+  }
+  .ebook-tile:hover .ebook-cover { transform: rotateY(-2deg) translateY(-4px); }
+  .ebook-badge {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    left: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: calc(100% - 28px);
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: var(--t0);
+    background: rgba(5,8,14,.72);
+    border: 1px solid color-mix(in srgb, var(--book-accent) 36%, rgba(255,255,255,.08));
+    font-family: var(--f);
+    font-size: .66rem;
+    backdrop-filter: blur(10px);
+  }
+  .ebook-copy {
+    position: relative;
+    z-index: 1;
+    padding: .25rem 1.1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .ebook-genre {
+    color: var(--book-accent);
+    font-family: var(--f);
+    font-size: .7rem;
+    letter-spacing: .08em;
+  }
+  .ebook-copy h3 {
+    margin: .45rem 0 .55rem;
+    color: var(--t0);
+    font-family: var(--f);
+    font-size: 1.04rem;
+    line-height: 1.45;
+  }
+  .ebook-copy p {
+    margin: 0;
+    color: var(--t2);
+    font-family: var(--f);
+    font-size: .78rem;
+    line-height: 1.75;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .ebook-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: .8rem;
+    color: var(--t3);
+    font-family: var(--f);
+    font-size: .72rem;
+  }
+  .ebook-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 1rem;
+  }
+  .ebook-actions > * {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    font-family: var(--f);
+    font-size: .75rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .ebook-preview { background: rgba(255,255,255,.035); color: var(--t2); }
+  .ebook-read, .ebook-buy { background: color-mix(in srgb, var(--book-accent) 18%, transparent); color: var(--t0); border-color: color-mix(in srgb, var(--book-accent) 42%, rgba(255,255,255,.08)); }
+  .ebook-actions > *:hover { transform: translateY(-2px); filter: brightness(1.08); }
+  .writing-cinema { padding: clamp(1rem,3vw,2rem); }
+  .writing-head { align-items: center; }
+  .wc-count {
+    flex-shrink: 0;
+    min-width: 112px;
+    padding: .9rem 1rem;
+    border-radius: 20px;
+    border: 1px solid rgba(201,168,76,.18);
+    background: rgba(201,168,76,.07);
+    color: var(--t2);
+    font-family: var(--f);
+    text-align: center;
+  }
+  .wc-count span { display: block; color: var(--gold); font-size: 1.35rem; line-height: 1; }
+  .writing-tools {
+    position: sticky;
+    top: var(--site-nav-offset, 98px);
+    z-index: 40;
+    display: grid;
+    grid-template-columns: minmax(220px, 360px) 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin: 1.15rem 0;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.07);
+    background: rgba(8,12,20,.82);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.28);
+  }
+  .wt-search { max-width: none; width: 100%; }
+  .wt-cats { overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .wt-cats::-webkit-scrollbar { display: none; }
+  .wt-view { flex-shrink: 0; }
+  .rb2-cinema { margin-top: .25rem; margin-bottom: 1.1rem; }
+  @keyframes ebookShine {
+    0%, 56% { transform: translateX(-125%) skewX(-18deg); opacity: 0; }
+    64% { opacity: .7; }
+    78%, 100% { transform: translateX(125%) skewX(-18deg); opacity: 0; }
+  }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -10968,24 +11310,65 @@ const CSS = `
   ::selection { background: rgba(200,164,90,.22); color: var(--t0); }
 
   /* ── RESPONSIVE ── */
+  @media (max-width: 980px) {
+    .ebook-stage-head, .writing-head { flex-direction: column; }
+    .bk-sum-cinema { width: 100%; }
+    .ebook-row {
+      display: flex;
+      overflow-x: auto;
+      padding: 2px 2px 14px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .ebook-row::-webkit-scrollbar { display: none; }
+    .ebook-tile { min-width: min(78vw, 310px); scroll-snap-align: start; }
+    .writing-tools { grid-template-columns: 1fr auto; }
+    .wt-cats { grid-column: 1 / -1; }
+  }
   @media (max-width: 768px) {
     .th-in { flex-wrap: wrap; min-height: auto; padding: .6rem clamp(.8rem,3vw,1.2rem); gap: .5rem; }
     .sf { order: 3; width: 100%; padding-bottom: .5rem; }
     .sf-s { max-width: 100%; flex: 1; }
     .sf-cats { display: none; }
+    .wt-cats { display: flex; }
     .wg2 { grid-template-columns: 1fr; }
     .bk-sum { grid-template-columns: 1fr; }
+    .bk-sum-cinema { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .bg2 { grid-template-columns: repeat(2, 1fr); }
     .bf-in { flex-direction: column; }
     .bf-cv { width: clamp(100px,40vw,150px); }
     .bm2-in { flex-direction: column; }
     .bm2-cv { width: clamp(100px,35vw,140px); }
     .rm2-nt { max-width: 120px; }
+    .library-hero, .ebook-stage, .writing-cinema { border-radius: 24px; }
+    .writing-tools { top: var(--site-nav-offset, 98px); border-radius: 18px; }
   }
   @media (max-width: 480px) {
     .bg2 { grid-template-columns: 1fr; }
     .th-tabs { width: 100%; }
     .th-tab { flex: 1; justify-content: center; padding: 8px 12px; font-size: .8rem; }
+    .mc-cinema { padding-top: .8rem; }
+    .library-hero { padding: 1rem; margin-bottom: .85rem; }
+    .lh-kicker { margin-bottom: .55rem; font-size: .66rem; letter-spacing: .12em; }
+    .lh-title { font-size: clamp(1.55rem, 9vw, 2.2rem); line-height: 1.18; margin-bottom: .65rem; }
+    .lh-copy { font-size: .86rem; line-height: 1.75; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .lh-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: .9rem; }
+    .lh-stats div { min-width: 0; padding: .65rem .42rem; border-radius: 15px; }
+    .lh-stats strong { font-size: 1rem; }
+    .lh-stats span { font-size: .6rem; }
+    .bk-sum-cinema { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .ebook-stage, .writing-cinema { padding: .85rem; margin-bottom: 1rem; }
+    .ebook-stage-head, .writing-head { gap: .7rem; margin-bottom: .8rem; }
+    .ebook-stage-head h2, .writing-head h2 { font-size: 1.28rem; }
+    .ebook-stage-head p, .writing-head p { font-size: .78rem; line-height: 1.65; }
+    .ebook-tile { min-width: 82vw; min-height: 360px; }
+    .ebook-cover-wrap { min-height: 170px; padding: .85rem .75rem .45rem; }
+    .ebook-cover { width: 118px; }
+    .ebook-copy h3 { font-size: .96rem; }
+    .ebook-copy p { -webkit-line-clamp: 2; font-size: .74rem; }
+    .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; }
+    .wt-view { justify-self: end; }
+    .wc-count { width: 100%; }
   }
 `;
 
@@ -11258,7 +11641,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                 </a>
               )}
               {book.canRead && (
-                <a href={`/ebooks/${book.slug}`} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, background: "transparent", color: book.accentColor, fontFamily: "var(--f)", fontSize: ".82rem", textDecoration: "none", border: `1.5px solid ${book.accentColor}35`, transition: "all .25s" }}>
+                <a href={`/ebooks/read/${book.slug}`} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, background: "transparent", color: book.accentColor, fontFamily: "var(--f)", fontSize: ".82rem", textDecoration: "none", border: `1.5px solid ${book.accentColor}35`, transition: "all .25s" }}>
                   <BookOpen size={13}/> পড়ুন
                 </a>
               )}
@@ -11270,156 +11653,78 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   );
 }
 
-// ── Books Tab ─────────────────────────────────────────────────────────────────
+// ── Cinematic E-Book Shelf ───────────────────────────────────────────────────
 function BooksTab() {
   const [selBook, setSelBook] = useState<typeof ebooks[0] | null>(null);
-  const featured = ebooks.find(b => b.isFeatured);
-  const others = ebooks.filter(b => !b.isFeatured);
   const readableBooks = ebooks.filter(b => b.canRead).length;
   const physicalBooks = ebooks.filter(b => b.badge.includes("ফিজিক্যাল")).length;
 
   return (
-    <div className="bs">
-      <div className="bk-sum" aria-label="বই সংগ্রহের সারাংশ">
-        <div className="bk-sum-card"><span className="bk-sum-num">{ebooks.length}</span><span className="bk-sum-label">মোট প্রকাশনা</span></div>
-        <div className="bk-sum-card"><span className="bk-sum-num">{readableBooks}</span><span className="bk-sum-label">অনলাইনে পড়ার সুযোগ</span></div>
-        <div className="bk-sum-card"><span className="bk-sum-num">{physicalBooks}</span><span className="bk-sum-label">ফিজিক্যাল বই</span></div>
+    <section className="bs ebook-stage" aria-labelledby="ebook-stage-title">
+      <div className="ebook-stage-head">
+        <div>
+          <div className="wc-kicker"><Library size={14}/> প্রথম সারি</div>
+          <h2 id="ebook-stage-title">ই-বুক ও প্রকাশনা সংগ্রহ</h2>
+          <p>পাঠকের জন্য সবচেয়ে গুরুত্বপূর্ণ বইগুলো প্রথমেই রাখা হলো—cover, genre, read/buy action এবং cinematic depth সহ।</p>
+        </div>
+        <div className="bk-sum bk-sum-cinema" aria-label="বই সংগ্রহের সারাংশ">
+          <div className="bk-sum-card"><span className="bk-sum-num">{ebooks.length}</span><span className="bk-sum-label">মোট প্রকাশনা</span></div>
+          <div className="bk-sum-card"><span className="bk-sum-num">{readableBooks}</span><span className="bk-sum-label">অনলাইনে পড়া যায়</span></div>
+          <div className="bk-sum-card"><span className="bk-sum-num">{physicalBooks}</span><span className="bk-sum-label">ফিজিক্যাল বই</span></div>
+        </div>
       </div>
 
-      {/* Featured */}
-      {featured && (
-        <>
-          <div className="sd">
-            <div className="sd-i" style={{ background: "rgba(200,164,90,.08)", border: "1px solid rgba(200,164,90,.14)" }}>
-              <Crown size={15} color="#C8A45A"/>
-            </div>
-            <span className="sd-l" style={{ color: "rgba(200,164,90,.6)" }}>বিশেষ প্রকাশনা</span>
-            <div className="sd-ln" style={{ background: "linear-gradient(90deg,rgba(200,164,90,.15),transparent)" }}/>
-          </div>
-          <motion.div
-            className="bf"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: .45 }}
-            onClick={() => setSelBook(featured)}
+      <div className="ebook-row">
+        {ebooks.map((book, i) => (
+          <motion.article
+            key={book.id}
+            className={`ebook-tile${book.isFeatured ? " featured" : ""}`}
+            style={{ "--book-accent": book.accentColor } as React.CSSProperties}
+            initial={{ opacity: 0, y: 28, rotateX: 8 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{ delay: i * .08, duration: .48, ease: [.25,.46,.45,.94] }}
+            onClick={() => setSelBook(book)}
           >
-            <div className="bf-bg"/>
-            <div className="bf-in">
-              <div className="bf-cw">
-                <span className="bf-badge" style={{ background: `${featured.accentColor}18`, color: featured.accentColor, border: `1px solid ${featured.accentColor}28` }}>
-                  <Crown size={10}/> {featured.badge}
-                </span>
-                <img src={featured.cover} alt={featured.title} className="bf-cv"
-                  onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='185' height='247' viewBox='0 0 185 247'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='16' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
-              </div>
-              <div className="bf-cnt">
-                <div className="bf-sub">
-                  <Pen size={11}/> মাহবুব সরদার সবুজ
-                </div>
-                <h2 className="bf-ttl">{featured.title}</h2>
-                <p className="bf-desc">{featured.description}</p>
-                <div className="bf-meta">
-                  {[featured.genre, `${featured.pages} পৃষ্ঠা`, featured.year].map((t, i) => (
-                    <span key={i} className="bf-tag">{t}</span>
-                  ))}
-                </div>
-                <div className="bf-btns">
-                  {featured.buyLink && (
-                    <a href={featured.buyLink} target="_blank" rel="noopener noreferrer"
-                      className="bf-buy"
-                      style={{ background: `linear-gradient(135deg,${featured.accentColor},${featured.accentColor}CC)`, color: "#08090F", boxShadow: `0 8px 26px ${featured.accentColor}30` }}
-                      onClick={e => e.stopPropagation()}>
-                      <ShoppingCart size={15}/> এখনই কিনুন
-                    </a>
-                  )}
-                  {featured.canRead && (
-                    <a href={`/ebooks/${featured.slug}`}
-                      className="bf-read"
-                      style={{ color: featured.accentColor, border: `1.5px solid ${featured.accentColor}35` }}
-                      onClick={e => e.stopPropagation()}>
-                      <BookOpen size={15}/> পড়ুন
-                    </a>
-                  )}
-                </div>
+            <div className="ebook-glow"/>
+            <div className="ebook-cover-wrap">
+              <img src={book.cover} alt={book.title} className="ebook-cover"
+                onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
+              <span className="ebook-badge">{book.isFeatured && <Crown size={10}/>} {book.badge}</span>
+            </div>
+            <div className="ebook-copy">
+              <span className="ebook-genre">{book.genre}</span>
+              <h3>{book.title}</h3>
+              <p>{book.description}</p>
+              <div className="ebook-meta"><Calendar size={10}/>{book.year} · {book.pages} পৃষ্ঠা</div>
+              <div className="ebook-actions">
+                <button className="ebook-preview" onClick={(e) => { e.stopPropagation(); setSelBook(book); }}><Eye size={12}/> দেখুন</button>
+                {book.canRead && (
+                  <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-read">
+                    <BookOpen size={12}/> পড়ুন
+                  </Link>
+                )}
+                {book.buyLink && (
+                  <a href={book.buyLink} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="ebook-buy">
+                    <ShoppingCart size={12}/> কিনুন
+                  </a>
+                )}
               </div>
             </div>
-          </motion.div>
-        </>
-      )}
-
-      {/* Other books */}
-      {others.length > 0 && (
-        <>
-          <div className="sd">
-            <div className="sd-i" style={{ background: "rgba(167,139,250,.07)", border: "1px solid rgba(167,139,250,.12)" }}>
-              <Library size={15} color="#A78BFA"/>
-            </div>
-            <span className="sd-l" style={{ color: "rgba(167,139,250,.6)" }}>ই-বুক সংগ্রহ</span>
-            <div className="sd-ln" style={{ background: "linear-gradient(90deg,rgba(167,139,250,.14),transparent)" }}/>
-          </div>
-          <div className="bg2">
-            {others.map((book, i) => (
-              <motion.div
-                key={book.id}
-                className="bc"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * .07, duration: .38 }}
-                onClick={() => setSelBook(book)}
-              >
-                <div className="bc-cw">
-                  <img src={book.cover} alt={book.title} className="bc-cv"
-                    onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
-                  <div className="bc-ov"/>
-                  <div className="bc-hov">
-                    <button className="bc-hb"><Eye size={12}/> দেখুন</button>
-                  </div>
-                  <span className="bc-badge" style={{ background: `${book.accentColor}18`, color: book.accentColor, border: `1px solid ${book.accentColor}28` }}>
-                    {book.badge}
-                  </span>
-                </div>
-                <div className="bc-info">
-                  <span className="bc-genre">{book.genre}</span>
-                  <div className="bc-ttl">{book.title}</div>
-                  <div className="bc-meta"><Calendar size={10}/>{book.year} · {book.pages}</div>
-                  <p className="bc-desc">{book.description}</p>
-                  <div className="bc-actions">
-                    <button className="bc-vb" onClick={(e) => { e.stopPropagation(); setSelBook(book); }}>
-                      <Eye size={12}/> দেখুন
-                    </button>
-                    <button className="bc-rb" style={{ color: book.accentColor, borderColor: `${book.accentColor}28` }} onClick={(e) => { e.stopPropagation(); window.location.href = `/ebooks/${book.slug}`; }}>
-                      <BookOpen size={12}/> পড়ুন
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-            <motion.div
-              className="bc-soon"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: others.length * .07, duration: .38 }}
-            >
-              <Sparkles size={20} color="rgba(99,179,237,.35)" style={{ marginBottom: ".8rem", animation: "glow 3s ease infinite" }}/>
-              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.35)", fontSize: ".82rem", marginBottom: ".4rem" }}>শীঘ্রই আসছে</div>
-              <div style={{ fontFamily: "var(--f)", color: "rgba(238,234,226,.18)", fontSize: ".7rem" }}>নতুন বই</div>
-            </motion.div>
-          </div>
-        </>
-      )}
+          </motion.article>
+        ))}
+      </div>
 
       <AnimatePresence>
-        {selBook && <BookModal book={selBook} onClose={() => setSelBook(null)}/>}
+        {selBook && <BookModal book={selBook} onClose={() => setSelBook(null)}/>} 
       </AnimatePresence>
-    </div>
+    </section>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  MAIN PAGE v7 — Pure Tab Premium
+//  MAIN PAGE v8 — Unified Cinematic Library
 // ══════════════════════════════════════════════════════════════════════════════
 export default function Writings() {
-  const [tab, setTab] = useState<"writings"|"ebooks">("writings");
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Writing|null>(null);
@@ -11429,7 +11734,7 @@ export default function Writings() {
   const [match, params] = useRoute("/writings/:slug");
 
   useEffect(() => {
-    const id = "writings-css-v7";
+    const id = "writings-css-v8";
     if (!document.getElementById(id)) {
       const el = document.createElement("style");
       el.id = id;
@@ -11459,7 +11764,7 @@ export default function Writings() {
   useEffect(() => {
     if (match && params?.slug) {
       const w = writings.find(wr => makeSlug(wr.title, wr.id) === params.slug);
-      if (w) { setSel(w); setTab("writings"); }
+      if (w) setSel(w);
     }
   }, [match, params?.slug]);
 
@@ -11482,141 +11787,119 @@ export default function Writings() {
     <>
       <Seo
         title="লেখালেখি ও বই — মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের সকল লেখা, কবিতা এবং প্রকাশিত বই।"
+        description="মাহবুব সরদার সবুজের প্রকাশিত ই-বুক, বই এবং সকল লেখা একসাথে একটি প্রিমিয়াম সাহিত্য সংগ্রহে।"
         path="/writings"
       />
       <Navbar/>
       <style>{CSS}</style>
 
-      <div className="wp">
-        {/* ── STICKY TAB HEADER ── */}
-        <div className="th">
-          <div className="th-in">
-            {/* Tabs */}
-            <div className="th-tabs">
-              <button
-                className={`th-tab${tab === "writings" ? " tg" : ""}`}
-                onClick={() => setTab("writings")}
-              >
-                <Feather size={14}/>
-                লেখালেখি
-                <span className="th-cnt">{writings.length}+</span>
-              </button>
-              <button
-                className={`th-tab${tab === "ebooks" ? " tb" : ""}`}
-                onClick={() => setTab("ebooks")}
-              >
-                <BookOpen size={14}/>
-                ই-বুক ও বই
-                <span className="th-cnt">{ebooks.length}</span>
-              </button>
+      <div className="wp wp-cinema">
+        <div className="cinema-aurora" aria-hidden="true"/>
+        <div className="mc mc-cinema">
+          <motion.section
+            className="library-hero"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: .55 }}
+          >
+            <div className="lh-kicker"><Sparkles size={14}/> সাহিত্য সংগ্রহ</div>
+            <h1 className="lh-title">বই থেকে লেখা—একই নক্ষত্রময় পাঠভুবন</h1>
+            <p className="lh-copy">প্রথম সারিতে নির্বাচিত ই-বুক ও প্রকাশনা, তারপর আবেগ, বিচ্ছেদ, জীবনদর্শন ও কবিতার curated লেখালেখি—সিনেমাটিক অভিজ্ঞতায় সাজানো।</p>
+            <div className="lh-stats" aria-label="সাহিত্য সংগ্রহের সারাংশ">
+              <div><strong>{ebooks.length}</strong><span>বই ও ই-বুক</span></div>
+              <div><strong>{writings.length}+</strong><span>লেখা</span></div>
+              <div><strong>{CATS.length - 1}</strong><span>ধরন</span></div>
+            </div>
+          </motion.section>
+
+          <BooksTab/>
+
+          <section className="writing-cinema" id="all-writings">
+            <div className="writing-head">
+              <div>
+                <div className="wc-kicker"><Feather size={14}/> লেখালেখি</div>
+                <h2>নির্বাচিত অনুভূতির আর্কাইভ</h2>
+                <p>প্রতিটি লেখাকে premium reading card হিসেবে সাজানো হয়েছে, যাতে মোবাইল ও ডেস্কটপ—দুই জায়গাতেই পড়ার অভিজ্ঞতা সুন্দর থাকে।</p>
+              </div>
+              <div className="wc-count"><span>{filtered.length}</span> টি লেখা</div>
             </div>
 
-            {/* Search & Filter — only for writings tab */}
-            {tab === "writings" && (
-              <div className="sf">
-                <div className="sf-s">
-                  <Search size={12} color="rgba(238,234,226,.28)"/>
-                  <input
-                    type="text"
-                    placeholder="লেখা খুঁজুন…"
-                    value={q}
-                    onChange={e => setQ(e.target.value)}
-                  />
-                  {q && (
-                    <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.3)", display: "flex" }}>
-                      <X size={11}/>
-                    </button>
-                  )}
-                </div>
-                <div className="sf-cats">
-                  {CATS.map(c2 => (
-                    <motion.button
-                      key={c2.id}
-                      className="sf-cat"
-                      style={cat === c2.id ? { background: `${c2.color}0E`, color: c2.color, borderColor: `${c2.color}25`, boxShadow: `0 0 10px ${c2.glow}` } : {}}
-                      onClick={() => setCat(c2.id)}
-                      whileTap={{ scale: .93 }}
-                    >
-                      <span style={{ fontSize: ".75rem" }}>{c2.icon}</span>{c2.label}
-                    </motion.button>
+            <div className="writing-tools">
+              <div className="sf-s wt-search">
+                <Search size={13} color="rgba(238,234,226,.34)"/>
+                <input
+                  type="text"
+                  placeholder="লেখা খুঁজুন…"
+                  value={q}
+                  onChange={e => setQ(e.target.value)}
+                />
+                {q && (
+                  <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(238,234,226,.35)", display: "flex" }}>
+                    <X size={12}/>
+                  </button>
+                )}
+              </div>
+              <div className="sf-cats wt-cats">
+                {CATS.map(c2 => (
+                  <motion.button
+                    key={c2.id}
+                    className="sf-cat"
+                    style={cat === c2.id ? { background: `${c2.color}0E`, color: c2.color, borderColor: `${c2.color}25`, boxShadow: `0 0 10px ${c2.glow}` } : {}}
+                    onClick={() => setCat(c2.id)}
+                    whileTap={{ scale: .93 }}
+                  >
+                    <span style={{ fontSize: ".75rem" }}>{c2.icon}</span>{c2.label}
+                  </motion.button>
+                ))}
+              </div>
+              <div className="sf-vw wt-view">
+                <button className={`sf-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড"><Grid3X3 size={12}/></button>
+                <button className={`sf-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট"><List size={12}/></button>
+              </div>
+            </div>
+
+            <div className="rb2 rb2-cinema">
+              <div className="rb2-t">
+                <span className="rb2-n">{filtered.length}</span> টি লেখা{filtered.length > visibleWritings.length && <span>· প্রথমে {visibleWritings.length}টি দেখানো হচ্ছে</span>}
+                {cat !== "all" && <span>· {CATS.find(c2 => c2.id === cat)?.label}</span>}
+                {q && <span>· “{q}”</span>}
+              </div>
+              {(cat !== "all" || q) && (
+                <button className="rb2-clr" onClick={() => { setCat("all"); setQ(""); }}>
+                  <X size={10}/> সরান
+                </button>
+              )}
+            </div>
+
+            {filtered.length > 0 ? (
+              <>
+                <div className={viewMode === "grid" ? "wg2" : "wg2-l"}>
+                  {visibleWritings.map((w, i) => (
+                    <WritingCard
+                      key={w.id}
+                      writing={w}
+                      index={i}
+                      onClick={() => handleCardClick(w)}
+                      viewMode={viewMode}
+                    />
                   ))}
                 </div>
-                <div className="sf-vw">
-                  <button className={`sf-vb${viewMode === "grid" ? " on" : ""}`} onClick={() => setViewMode("grid")} title="গ্রিড"><Grid3X3 size={12}/></button>
-                  <button className={`sf-vb${viewMode === "list" ? " on" : ""}`} onClick={() => setViewMode("list")} title="লিস্ট"><List size={12}/></button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── CONTENT ── */}
-        <div className="mc">
-          <AnimatePresence mode="wait">
-            {tab === "writings" ? (
-              <motion.div
-                key="writings"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: .28 }}
-              >
-                {/* Results bar */}
-                <div className="rb2">
-                  <div className="rb2-t">
-                    <span className="rb2-n">{filtered.length}</span> টি লেখা{filtered.length > visibleWritings.length && <span>· প্রথমে {visibleWritings.length}টি দেখানো হচ্ছে</span>}
-                    {cat !== "all" && <span>· {CATS.find(c2 => c2.id === cat)?.label}</span>}
-                    {q && <span>· "{q}"</span>}
-                  </div>
-                  {(cat !== "all" || q) && (
-                    <button className="rb2-clr" onClick={() => { setCat("all"); setQ(""); }}>
-                      <X size={10}/> সরান
+                {hasMoreWritings && (
+                  <div className="lm2">
+                    <button className="lm2-btn" onClick={() => setVisibleCount((n) => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))}>
+                      <ChevronDown size={15}/> আরও লেখা দেখুন
                     </button>
-                  )}
-                </div>
-
-                {filtered.length > 0 ? (
-                  <>
-                  <div className={viewMode === "grid" ? "wg2" : "wg2-l"}>
-                    {visibleWritings.map((w, i) => (
-                      <WritingCard
-                        key={w.id}
-                        writing={w}
-                        index={i}
-                        onClick={() => handleCardClick(w)}
-                        viewMode={viewMode}
-                      />
-                    ))}
-                  </div>
-                  {hasMoreWritings && (
-                    <div className="lm2">
-                      <button className="lm2-btn" onClick={() => setVisibleCount((n) => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))}>
-                        <ChevronDown size={15}/> আরও লেখা দেখুন
-                      </button>
-                      <div className="lm2-note">{visibleWritings.length} / {filtered.length} টি লেখা দেখা যাচ্ছে</div>
-                    </div>
-                  )}
-                  </>
-                ) : (
-                  <div className="wc2-em">
-                    <Search size={26} color="rgba(238,234,226,.12)" style={{ margin: "0 auto .8rem", display: "block" }}/>
-                    <div style={{ fontSize: ".95rem", color: "rgba(238,234,226,.3)", fontFamily: "var(--f)" }}>কোনো লেখা পাওয়া যায়নি</div>
+                    <div className="lm2-note">{visibleWritings.length} / {filtered.length} টি লেখা দেখা যাচ্ছে</div>
                   </div>
                 )}
-              </motion.div>
+              </>
             ) : (
-              <motion.div
-                key="ebooks"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: .28 }}
-              >
-                <BooksTab/>
-              </motion.div>
+              <div className="wc2-em">
+                <Search size={26} color="rgba(238,234,226,.12)" style={{ margin: "0 auto .8rem", display: "block" }}/>
+                <div style={{ fontSize: ".95rem", color: "rgba(238,234,226,.3)", fontFamily: "var(--f)" }}>কোনো লেখা পাওয়া যায়নি</div>
+              </div>
             )}
-          </AnimatePresence>
+          </section>
         </div>
       </div>
 
@@ -11635,3 +11918,4 @@ export default function Writings() {
     </>
   );
 }
+
