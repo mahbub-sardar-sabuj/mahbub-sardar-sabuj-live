@@ -6,7 +6,7 @@
   "outputDirectory": "dist/public",
   "functions": {
     "api/trpc.ts": {
-      "includeFiles": "{shared/**,server/**,drizzle/**}"
+      "includeFiles": "{shared/**,server/**,drizzle/**,node_modules/.pnpm/**}"
     },
     "api/audio-edit.js": {
       "maxDuration": 60,

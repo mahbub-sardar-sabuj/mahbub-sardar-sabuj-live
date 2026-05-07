@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
 import { appRouter } from "../server/routers";
+import { sdk } from "../server/_core/sdk";
 // Inlined from shared/const to avoid Vercel module resolution issues
 const COOKIE_NAME = "app_session_id";
 import type { TrpcContext } from "../server/_core/context";
@@ -70,7 +71,6 @@ async function createVercelContext({
   let user: User | null = null;
 
   try {
-    const { sdk } = await import("../server/_core/sdk");
     user = await sdk.authenticateRequest(compatibleReq as TrpcContext["req"]);
   } catch {
     user = null;
