@@ -5,8 +5,9 @@
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
   "functions": {
-    "api/trpc.ts": {
-      "includeFiles": "{shared/**,server/**,drizzle/**,node_modules/@trpc/**,node_modules/drizzle-orm/**,node_modules/mysql2/**,node_modules/jose/**,node_modules/superjson/**,node_modules/zod/**,node_modules/axios/**,node_modules/nanoid/**,node_modules/cookie/**,node_modules/asynckit/**,node_modules/combined-stream/**,node_modules/debug/**,node_modules/ms/**,node_modules/follow-redirects/**,node_modules/form-data/**,node_modules/mime-types/**,node_modules/mime-db/**,node_modules/copy-anything/**,node_modules/is-what/**,node_modules/lru-cache/**,node_modules/lru.min/**,node_modules/named-placeholders/**,node_modules/seq-queue/**,node_modules/sqlstring/**,node_modules/aws-ssl-profiles/**,node_modules/denque/**,node_modules/long/**,node_modules/generate-function/**,node_modules/is-property/**,node_modules/safer-buffer/**,node_modules/delayed-stream/**,node_modules/proxy-from-env/**,node_modules/call-bind-apply-helpers/**,node_modules/dunder-proto/**,node_modules/es-define-property/**,node_modules/es-errors/**,node_modules/es-object-atoms/**,node_modules/es-set-tostringtag/**,node_modules/function-bind/**,node_modules/get-intrinsic/**,node_modules/get-proto/**,node_modules/gopd/**,node_modules/has-symbols/**,node_modules/has-tostringtag/**,node_modules/hasown/**,node_modules/math-intrinsics/**}"
+    "api/trpc-bundled.js": {}
+    ,"api/trpc.ts": {
+      "includeFiles": "{shared/**,server/**,drizzle/**}"
     },
     "api/audio-edit.js": {
       "maxDuration": 60,
@@ -50,7 +51,7 @@
   "routes": [
     {
       "src": "/api/trpc/(.*)",
-      "dest": "/api/trpc?trpc=$1"
+      "dest": "/api/trpc-bundled?trpc=$1"
     },
     {
       "src": "/api/(.*)",
