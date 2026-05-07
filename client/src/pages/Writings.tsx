@@ -2085,16 +2085,6 @@ export default function Writings() {
       <div className="wp wp-cinema">
         <div className="cinema-aurora" aria-hidden="true"/>
         <div className="mc mc-cinema">
-          <motion.section
-            className="library-hero"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: .55 }}
-          >
-            <div className="lh-kicker"><Sparkles size={14}/> সাহিত্য সংগ্রহ</div>
-            <h1 className="lh-title">বই থেকে লেখা—একই নক্ষত্রময় পাঠভুবন</h1>
-          </motion.section>
-
           <BooksTab/>
 
           <section className="writing-cinema" id="all-writings">
