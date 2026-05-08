@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { useRoute, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl, getSignupUrl, isLoginConfigured } from "@/const";
@@ -1858,7 +1857,6 @@ export default function AmiOLikhboBastobota() {
           authorName={user?.name ?? "আপনি"}
         />
       )}
-      <Footer />
     </div>
   );
 }
