@@ -507,15 +507,23 @@ function PostCard({
   isAuthenticated,
   onLoginRequired,
   onOpenDetail,
+  currentUserOpenId,
+  onEdit,
+  onDelete,
 }: {
   post: EnrichedPost;
   isAuthenticated: boolean;
   onLoginRequired: () => void;
   onOpenDetail: (slug: string) => void;
+  currentUserOpenId?: string;
+  onEdit?: (post: EnrichedPost) => void;
+  onDelete?: (postId: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isLong = post.content.length > 280;
   const displayContent = isLong && !expanded ? post.content.slice(0, 280) + "..." : post.content;
+  const isOwner = Boolean(currentUserOpenId && post.authorOpenId === currentUserOpenId);
 
   return (
     <article style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "1rem" }}>
@@ -545,6 +553,42 @@ function PostCard({
                 }}
               >
                 <Crown size={11} /> বিশেষ
+              </span>
+            )}
+            {isOwner && post.status === "pending" && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "0.18rem 0.55rem",
+                  borderRadius: 999,
+                  background: "rgba(251,191,36,0.12)",
+                  border: "1px solid rgba(251,191,36,0.35)",
+                  color: "#FCD34D",
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                }}
+              >
+                পর্যালোচনাধীন
+              </span>
+            )}
+            {isOwner && post.status === "rejected" && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "0.18rem 0.55rem",
+                  borderRadius: 999,
+                  background: "rgba(239,68,68,0.1)",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  color: "#FCA5A5",
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                }}
+              >
+                প্রকাশিত হয়নি
               </span>
             )}
           </div>
@@ -689,6 +733,76 @@ function PostCard({
         >
           <Share2 size={15} /> শেয়ার
         </button>
+
+        {/* Owner actions */}
+        {isOwner && onEdit && onDelete && (
+          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+            <button
+              type="button"
+              onClick={() => onEdit(post)}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 5,
+                padding: "0.4rem 0.75rem", borderRadius: 999,
+                border: "1px solid rgba(232,201,122,0.25)",
+                background: "rgba(255,255,255,0.05)",
+                color: "rgba(253,246,236,0.6)",
+                fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.8rem",
+                cursor: "pointer",
+              }}
+            >
+              <Edit3 size={13} /> সম্পাদনা
+            </button>
+            {!confirmDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  padding: "0.4rem 0.75rem", borderRadius: 999,
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  background: "rgba(239,68,68,0.08)",
+                  color: "#FCA5A5",
+                  fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.8rem",
+                  cursor: "pointer",
+                }}
+              >
+                <Trash2 size={13} /> মুছুন
+              </button>
+            ) : (
+              <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                <span style={{ fontSize: "0.78rem", color: "rgba(253,246,236,0.55)", fontFamily: adorshoFont }}>নিশ্চিত?</span>
+                <button
+                  type="button"
+                  onClick={() => { onDelete(post.id); setConfirmDelete(false); }}
+                  style={{
+                    padding: "0.35rem 0.65rem", borderRadius: 999,
+                    border: "1px solid rgba(239,68,68,0.5)",
+                    background: "rgba(239,68,68,0.18)",
+                    color: "#FCA5A5",
+                    fontFamily: adorshoFont, fontWeight: 900, fontSize: "0.78rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  হ্যাঁ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  style={{
+                    padding: "0.35rem 0.65rem", borderRadius: 999,
+                    border: "1px solid rgba(232,201,122,0.2)",
+                    background: "transparent",
+                    color: "rgba(253,246,236,0.55)",
+                    fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.78rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  না
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </article>
   );
@@ -1327,6 +1441,7 @@ export default function AmiOLikhboBastobota() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showMyPosts, setShowMyPosts] = useState(false);
   // Check for password reset token in URL
   const resetTokenFromUrl = typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("reset_token") || ""
@@ -1353,12 +1468,19 @@ export default function AmiOLikhboBastobota() {
       utils.writingPlatform.myPosts.invalidate();
     },
   });
+  const myPostsQuery = trpc.writingPlatform.myPosts.useQuery(undefined, {
+    enabled: isAuthenticated && showMyPosts,
+    retry: false,
+  });
   const activeFeedQuery = searchActive && searchQuery_.length >= 2 ? searchResultsQuery : postsQuery;
   const feedHasError = Boolean(activeFeedQuery.isError);
   const feedIsLoading = Boolean(activeFeedQuery.isLoading || activeFeedQuery.isFetching);
   const posts = (searchActive && searchQuery_.length >= 2
     ? (searchResultsQuery.data ?? [])
     : (postsQuery.data ?? [])) as EnrichedPost[];
+  const displayPosts = showMyPosts
+    ? ((myPostsQuery.data ?? []) as EnrichedPost[])
+    : posts;
 
   function handleLoginRequired() {
     setShowLoginPrompt(true);
@@ -1432,29 +1554,36 @@ export default function AmiOLikhboBastobota() {
                 </p>
               </div>
 
-              {!isAuthenticated && (
-                <div className="amio-hero-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {isLoginConfigured ? (
-                    <>
-                      <ActionButton href={loginHref} small>
-                        <KeyRound size={15} /> লগইন
-                      </ActionButton>
-                      <ActionButton href={signupHref} variant="ghost" small>
-                        <UserPlus size={15} /> একাউন্ট খুলুন
-                      </ActionButton>
-                    </>
-                  ) : (
-                    <>
-                      <ActionButton onClick={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }} small>
-                        <KeyRound size={15} /> লগইন
-                      </ActionButton>
-                      <ActionButton onClick={() => { setLocalAuthMode("register"); setShowLocalAuth(true); }} variant="ghost" small>
-                        <UserPlus size={15} /> একাউন্ট খুলুন
-                      </ActionButton>
-                    </>
-                  )}
-                </div>
-              )}
+              <div className="amio-hero-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {isAuthenticated ? (
+                  <>
+                    <ActionButton onClick={() => setShowCreateModal(true)} small>
+                      <Plus size={15} /> নতুন লেখা
+                    </ActionButton>
+                    <ActionButton onClick={() => setShowMyPosts((p) => !p)} variant="ghost" small>
+                      <PenLine size={15} /> {showMyPosts ? "সব পোস্ট" : "আমার পোস্ট"}
+                    </ActionButton>
+                  </>
+                ) : isLoginConfigured ? (
+                  <>
+                    <ActionButton href={loginHref} small>
+                      <KeyRound size={15} /> লগইন
+                    </ActionButton>
+                    <ActionButton href={signupHref} variant="ghost" small>
+                      <UserPlus size={15} /> একাউন্ট খুলুন
+                    </ActionButton>
+                  </>
+                ) : (
+                  <>
+                    <ActionButton onClick={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }} small>
+                      <KeyRound size={15} /> লগইন
+                    </ActionButton>
+                    <ActionButton onClick={() => { setLocalAuthMode("register"); setShowLocalAuth(true); }} variant="ghost" small>
+                      <UserPlus size={15} /> একাউন্ট খুলুন
+                    </ActionButton>
+                  </>
+                )}
+              </div>
             </div>
           )}
 
@@ -1580,11 +1709,11 @@ export default function AmiOLikhboBastobota() {
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
                   অনুসন্ধানের জন্য কমপক্ষে ২টি অক্ষর লিখুন।
                 </div>
-              ) : feedIsLoading ? (
+              ) : (showMyPosts ? myPostsQuery.isLoading : feedIsLoading) ? (
                 <div style={{ display: "grid", placeItems: "center", minHeight: 240 }}>
                   <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
                 </div>
-              ) : feedHasError ? (
+              ) : (!showMyPosts && feedHasError) ? (
                 <div style={{ ...cardStyle, padding: "clamp(1.5rem, 6vw, 2rem)", textAlign: "center", display: "grid", gap: "0.75rem" }}>
                   <PenLine size={40} color="rgba(247,213,111,0.55)" style={{ margin: "0 auto" }} />
                   <div style={{ color: "#F7D56F", fontWeight: 900 }}>
@@ -1597,7 +1726,7 @@ export default function AmiOLikhboBastobota() {
                     <RefreshCw size={14} /> আবার চেষ্টা করুন
                   </ActionButton>
                 </div>
-              ) : posts.length === 0 ? (
+              ) : displayPosts.length === 0 ? (
                 <div
                   style={{
                     ...cardStyle,
@@ -1609,9 +1738,13 @@ export default function AmiOLikhboBastobota() {
                 >
                   <PenLine size={40} color="rgba(232,201,122,0.35)" style={{ margin: "0 auto" }} />
                   <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "1rem" }}>
-                    {searchActive ? "খোঁজার ফলাফল পাওয়া যায়নি।" : "এখনো কোনো পোস্ট নেই।"}
+                    {showMyPosts ? "আপনি এখনো কোনো পোস্ট লেখেননি।" : searchActive ? "খোঁজার ফলাফল পাওয়া যায়নি।" : "এখনো কোনো পোস্ট নেই।"}
                   </div>
-                  {!searchActive && !isAuthenticated && (
+                  {showMyPosts ? (
+                    <ActionButton onClick={() => setShowCreateModal(true)} small>
+                      <Plus size={14} /> প্রথম পোস্ট লিখুন
+                    </ActionButton>
+                  ) : !searchActive && !isAuthenticated && (
                     <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.88rem" }}>
                       লগইন করে প্রথম পোস্ট লিখুন!
                     </div>
@@ -1624,13 +1757,16 @@ export default function AmiOLikhboBastobota() {
                       "{searchQuery}" এর জন্য {posts.length}টি ফলাফল
                     </div>
                   )}
-                  {posts.map((post) => (
+                  {displayPosts.map((post) => (
                     <div key={post.id} className="post-card-enter">
                       <PostCard
                         post={post}
                         isAuthenticated={isAuthenticated}
                         onLoginRequired={handleLoginRequired}
                         onOpenDetail={handleOpenDetail}
+                        currentUserOpenId={user?.openId}
+                        onEdit={(p) => setEditingPost(p)}
+                        onDelete={(id) => deletePostMutation.mutate({ postId: id })}
                       />
                     </div>
                   ))}
