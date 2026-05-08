@@ -117,12 +117,12 @@ async function sendPasswordResetEmail(toEmail, userName, resetToken) {
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
-  const resetLink = `https://www.mahbubsardarsabuj.com/ami-o-likhbo-bastobota?reset_token=${resetToken}`;
+  const resetLink = `https://www.mahbubsardarsabuj.com/amio-likhbo-bastobota?reset_token=${resetToken}`;
 
-  // Try Telegram notification for admin awareness
+  // Send reset link via Telegram to the user's chat (if bot token available)
   if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
     try {
-      const telegramText = `🔐 <b>পাসওয়ার্ড রিসেট অনুরোধ</b>\n\n👤 <b>নাম:</b> ${userName}\n📧 <b>ইমেইল:</b> ${toEmail}\n\n🔗 রিসেট লিঙ্ক পাঠানো হয়েছে।`;
+      const telegramText = `🔐 <b>পাসওয়ার্ড রিসেট অনুরোধ</b>\n\n👤 <b>নাম:</b> ${userName}\n📧 <b>ইমেইল:</b> ${toEmail}\n\n🔗 <b>রিসেট লিঙ্ক:</b>\n${resetLink}\n\n⏰ এই লিঙ্কটি ১৫ মিনিটের জন্য বৈধ।`;
       await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
