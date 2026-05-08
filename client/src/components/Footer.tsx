@@ -38,6 +38,10 @@ export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
   const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
 
+  if (isAmioLikhboPage) {
+    return null;
+  }
+
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
