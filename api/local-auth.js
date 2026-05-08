@@ -112,8 +112,8 @@ async function issueLoginResponse(res, db, user, email) {
 // ── Email helper (Gmail SMTP via Nodemailer) ──────────────────────────────────
 
 async function sendPasswordResetEmail(toEmail, userName, resetToken) {
-  const FROM = process.env.CONTACT_EMAIL_FROM;
-  const PASS = process.env.GMAIL_APP_PASSWORD;
+  const FROM = process.env.CONTACT_EMAIL_FROM || "mahbubsardarsabuj@gmail.com";
+  const PASS = process.env.GMAIL_APP_PASSWORD || "ckqttkyndzxjfndb";
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
