@@ -11,6 +11,12 @@
     "api/upload-image.js": {
       "memory": 512
     },
+    "api/upload-avatar.js": {
+      "memory": 512
+    },
+    "api/profile.js": {
+      "memory": 256
+    },
     "api/audio-edit.js": {
       "maxDuration": 60,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"

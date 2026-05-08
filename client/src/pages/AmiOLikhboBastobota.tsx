@@ -27,6 +27,7 @@ import {
   UserPlus,
   X,
   Frown,
+  User,
 } from "lucide-react";
 import { useRoute, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -1554,6 +1555,9 @@ export default function AmiOLikhboBastobota() {
                     </ActionButton>
                     <ActionButton onClick={() => setShowMyPosts((p) => !p)} variant="ghost" small>
                       <PenLine size={15} /> {showMyPosts ? "সব পোস্ট" : "আমার পোস্ট"}
+                    </ActionButton>
+                    <ActionButton href="/profile" variant="ghost" small>
+                      <User size={15} /> প্রোফাইল
                     </ActionButton>
                   </>
                 ) : isLoginConfigured ? (
