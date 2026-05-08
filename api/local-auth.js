@@ -1,6 +1,6 @@
 /**
  * /api/local-auth — Custom email+password auth for "আমিও লিখবো বাস্তবতা"
- * Actions: register, login, logout, owner-reset
+ * Actions: register, login, logout, owner-reset, forgot-password, reset-password
  */
 
 import { SignJWT } from "jose";
@@ -107,6 +107,79 @@ async function issueLoginResponse(res, db, user, email) {
   const token = await createSessionToken(user.openId, user.name);
   res.setHeader("Set-Cookie", setCookieHeader(token));
   return res.status(200).json({ success: true, name: user.name, email });
+}
+
+// ── Email helper (Gmail SMTP via Nodemailer) ──────────────────────────────────
+
+async function sendPasswordResetEmail(toEmail, userName, resetToken) {
+  const FROM = process.env.CONTACT_EMAIL_FROM;
+  const PASS = process.env.GMAIL_APP_PASSWORD;
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+
+  const resetLink = `https://www.mahbubsardarsabuj.com/ami-o-likhbo-bastobota?reset_token=${resetToken}`;
+
+  // Try Telegram notification for admin awareness
+  if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
+    try {
+      const telegramText = `🔐 <b>পাসওয়ার্ড রিসেট অনুরোধ</b>\n\n👤 <b>নাম:</b> ${userName}\n📧 <b>ইমেইল:</b> ${toEmail}\n\n🔗 রিসেট লিঙ্ক পাঠানো হয়েছে।`;
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_ADMIN_CHAT_ID,
+          text: telegramText,
+          parse_mode: "HTML",
+        }),
+      });
+    } catch (e) {
+      console.warn("[forgot-password] Telegram notify failed:", e.message);
+    }
+  }
+
+  if (!FROM || !PASS) {
+    console.warn("[forgot-password] CONTACT_EMAIL_FROM or GMAIL_APP_PASSWORD not set — email not sent");
+    return false;
+  }
+
+  try {
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.default.createTransport({
+      service: "gmail",
+      auth: { user: FROM, pass: PASS },
+    });
+
+    await transporter.sendMail({
+      from: `"বাস্তবতা লেখক" <${FROM}>`,
+      to: toEmail,
+      subject: "পাসওয়ার্ড রিসেট — আমিও লিখবো বাস্তবতা",
+      text: `প্রিয় ${userName},\n\nআপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন।\n\nনিচের লিঙ্কে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন:\n${resetLink}\n\nএই লিঙ্কটি ১৫ মিনিটের জন্য বৈধ।\n\nযদি আপনি এই অনুরোধ না করে থাকেন, তাহলে এই ইমেইলটি উপেক্ষা করুন।\n\n— বাস্তবতা টিম`,
+      html: `
+        <div style="font-family: 'Noto Sans Bengali', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #071426; border-radius: 16px; overflow: hidden; border: 1px solid rgba(232,201,122,0.3);">
+          <div style="background: linear-gradient(135deg, #0d1f3c, #071426); padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid rgba(232,201,122,0.2);">
+            <h1 style="color: #F7D56F; margin: 0; font-size: 22px; font-weight: 900;">আমিও লিখবো বাস্তবতা</h1>
+            <p style="color: rgba(253,246,236,0.6); margin: 8px 0 0; font-size: 14px;">mahbubsardarsabuj.com</p>
+          </div>
+          <div style="padding: 32px;">
+            <p style="color: #FDF6EC; font-size: 16px; margin: 0 0 16px;">প্রিয় <strong style="color: #F7D56F;">${userName}</strong>,</p>
+            <p style="color: rgba(253,246,236,0.8); font-size: 15px; line-height: 1.7; margin: 0 0 24px;">আপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন। নিচের বাটনে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন।</p>
+            <div style="text-align: center; margin: 28px 0;">
+              <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%); color: #071426; text-decoration: none; padding: 14px 32px; border-radius: 999px; font-weight: 900; font-size: 16px;">পাসওয়ার্ড রিসেট করুন</a>
+            </div>
+            <p style="color: rgba(253,246,236,0.5); font-size: 13px; text-align: center; margin: 0 0 8px;">এই লিঙ্কটি <strong style="color: #F7D56F;">১৫ মিনিটের</strong> জন্য বৈধ।</p>
+            <p style="color: rgba(253,246,236,0.4); font-size: 12px; text-align: center; margin: 0;">যদি আপনি এই অনুরোধ না করে থাকেন, তাহলে এই ইমেইলটি উপেক্ষা করুন।</p>
+          </div>
+          <div style="padding: 16px 32px; border-top: 1px solid rgba(232,201,122,0.15); text-align: center;">
+            <p style="color: rgba(253,246,236,0.3); font-size: 11px; margin: 0;">© 2025 মাহবুব সরদার সবুজ — mahbubsardarsabuj.com</p>
+          </div>
+        </div>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error("[forgot-password] Email send failed:", err.message);
+    return false;
+  }
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -223,6 +296,144 @@ export default async function handler(req, res) {
   if (action === "logout") {
     res.setHeader("Set-Cookie", clearCookieHeader());
     return res.status(200).json({ success: true });
+  }
+
+  // ── FORGOT PASSWORD — ইমেইলে রিসেট লিঙ্ক পাঠানো ─────────────────────────
+
+  if (action === "forgot-password") {
+    if (!email?.trim()) {
+      return res.status(400).json({ error: "ইমেইল ঠিকানা দিন" });
+    }
+    const normalEmail = email.trim().toLowerCase();
+
+    try {
+      // Ensure table exists (auto-create if missing)
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          email VARCHAR(320) NOT NULL,
+          token VARCHAR(64) NOT NULL UNIQUE,
+          expiresAt TIMESTAMP NOT NULL,
+          usedAt TIMESTAMP NULL,
+          createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Check user exists — always return same message to prevent email enumeration
+      const [rows] = await db.execute(
+        "SELECT name FROM local_users WHERE email = ? LIMIT 1",
+        [normalEmail]
+      );
+
+      if (rows.length === 0) {
+        // Return success anyway to prevent email enumeration attack
+        return res.status(200).json({
+          success: true,
+          message: "যদি এই ইমেইলে একাউন্ট থাকে, তাহলে রিসেট লিঙ্ক পাঠানো হয়েছে।",
+        });
+      }
+
+      const userName = rows[0].name;
+
+      // Invalidate old tokens for this email
+      await db.execute(
+        "UPDATE password_reset_tokens SET usedAt = NOW() WHERE email = ? AND usedAt IS NULL",
+        [normalEmail]
+      );
+
+      // Generate secure token
+      const resetToken = nanoid(40);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      await db.execute(
+        "INSERT INTO password_reset_tokens (email, token, expiresAt) VALUES (?, ?, ?)",
+        [normalEmail, resetToken, expiresAt]
+      );
+
+      // Send email
+      await sendPasswordResetEmail(normalEmail, userName, resetToken);
+
+      return res.status(200).json({
+        success: true,
+        message: "পাসওয়ার্ড রিসেটের লিঙ্ক আপনার ইমেইলে পাঠানো হয়েছে। ১৫ মিনিটের মধ্যে ব্যবহার করুন।",
+      });
+    } catch (err) {
+      console.error("[local-auth forgot-password]", err);
+      return res.status(500).json({ error: "পাসওয়ার্ড রিসেটে সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
+    }
+  }
+
+  // ── RESET PASSWORD — টোকেন যাচাই করে নতুন পাসওয়ার্ড সেট করা ────────────
+
+  if (action === "reset-password") {
+    const { token, newPassword } = req.body || {};
+
+    if (!token?.trim()) {
+      return res.status(400).json({ error: "রিসেট টোকেন প্রয়োজন" });
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
+    }
+
+    try {
+      // Ensure table exists
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          email VARCHAR(320) NOT NULL,
+          token VARCHAR(64) NOT NULL UNIQUE,
+          expiresAt TIMESTAMP NOT NULL,
+          usedAt TIMESTAMP NULL,
+          createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      const [tokenRows] = await db.execute(
+        "SELECT email, expiresAt, usedAt FROM password_reset_tokens WHERE token = ? LIMIT 1",
+        [token.trim()]
+      );
+
+      if (tokenRows.length === 0) {
+        return res.status(400).json({ error: "রিসেট লিঙ্কটি বৈধ নয় বা মেয়াদ শেষ হয়ে গেছে।" });
+      }
+
+      const tokenRow = tokenRows[0];
+
+      if (tokenRow.usedAt) {
+        return res.status(400).json({ error: "এই রিসেট লিঙ্কটি আগেই ব্যবহার করা হয়েছে।" });
+      }
+
+      if (new Date(tokenRow.expiresAt) < new Date()) {
+        return res.status(400).json({ error: "রিসেট লিঙ্কের মেয়াদ শেষ হয়ে গেছে। নতুন লিঙ্কের জন্য আবার চেষ্টা করুন।" });
+      }
+
+      const normalEmail = tokenRow.email;
+      const newHash = hashPassword(newPassword);
+
+      // Update password
+      const [result] = await db.execute(
+        "UPDATE local_users SET passwordHash = ? WHERE email = ?",
+        [newHash, normalEmail]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "ব্যবহারকারী পাওয়া যায়নি।" });
+      }
+
+      // Mark token as used
+      await db.execute(
+        "UPDATE password_reset_tokens SET usedAt = NOW() WHERE token = ?",
+        [token.trim()]
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে! এখন লগইন করুন।",
+      });
+    } catch (err) {
+      console.error("[local-auth reset-password]", err);
+      return res.status(500).json({ error: "পাসওয়ার্ড পরিবর্তনে সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
+    }
   }
 
   // ── OWNER RESET PASSWORD ──────────────────────────────────────────────────

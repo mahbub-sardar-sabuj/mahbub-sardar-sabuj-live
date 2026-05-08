@@ -1327,7 +1327,11 @@ export default function AmiOLikhboBastobota() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showLocalAuth, setShowLocalAuth] = useState(false);
+  // Check for password reset token in URL
+  const resetTokenFromUrl = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("reset_token") || ""
+    : "";
+  const [showLocalAuth, setShowLocalAuth] = useState(() => Boolean(resetTokenFromUrl));
   const [localAuthMode, setLocalAuthMode] = useState<"login" | "register">("login");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchActive, setSearchActive] = useState(false);
@@ -1458,6 +1462,7 @@ export default function AmiOLikhboBastobota() {
           {showLocalAuth && (
             <LocalAuthModal
               defaultMode={localAuthMode}
+              resetToken={resetTokenFromUrl || undefined}
               onClose={() => setShowLocalAuth(false)}
               onSuccess={() => setShowLocalAuth(false)}
             />
