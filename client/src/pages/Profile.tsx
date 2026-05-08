@@ -134,7 +134,7 @@ export default function Profile() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { setAvatarError("ছবির সাইজ সর্বোচ্চ ২ MB"); return; }
+
     setAvatarUploading(true);
     setAvatarError("");
     try {

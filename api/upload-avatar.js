@@ -10,7 +10,7 @@ import mysql from "mysql2/promise";
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = Infinity; // কোনো সাইজ সীমা নেই
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 function getSecretKey() {
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   try {
     [fields, files] = await form.parse(req);
   } catch (err) {
-    if (err.code === 1009) return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ২ MB" });
+    if (err.code === 1009) return res.status(400).json({ error: "ছবি আপলোড সমস্যা" });
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
 

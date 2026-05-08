@@ -832,10 +832,6 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("ছবির সাইজ ৫ MB এর বেশি হতে পারবে না");
-      return;
-    }
     setUploading(true);
     setUploadError("");
     try {
@@ -1072,7 +1068,7 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setUploadError("ছবির সাইজ ৫ MB এর বেশি হতে পারবে না"); return; }
+
     setUploading(true); setUploadError("");
     try {
       const formData = new FormData();
