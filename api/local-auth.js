@@ -15,7 +15,7 @@ const APP_ID = process.env.APP_ID || process.env.VITE_APP_ID || "local-app";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
 const OWNER_BOOTSTRAP_PASSWORD_SHA256 =
   process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 ||
-  "fd336472ae35f647ae39f5bafc62ef5e52b7af47860e8786f9de536bc0195391";
+  "7ed1bc948ce36459e8fbdf9243fe0ab1c5c420ec3cc71c96b476e57cb4901305";
 const OWNER_BOOTSTRAP_NAME = process.env.OWNER_BOOTSTRAP_NAME || "মাহবুব সরদার সবুজ";
 
 // ── DB helper ─────────────────────────────────────────────────────────────────

@@ -17,7 +17,7 @@ import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 const OWNER_EMAIL = (process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com").toLowerCase().trim();
-const OWNER_BOOTSTRAP_PASSWORD_SHA256 = process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 || "fd336472ae35f647ae39f5bafc62ef5e52b7af47860e8786f9de536bc0195391";
+const OWNER_BOOTSTRAP_PASSWORD_SHA256 = process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 || "7ed1bc948ce36459e8fbdf9243fe0ab1c5c420ec3cc71c96b476e57cb4901305";
 const OWNER_BOOTSTRAP_NAME = process.env.OWNER_BOOTSTRAP_NAME || "মাহবুব সরদার সবুজ";
 
 /** Hash a password using scrypt */
