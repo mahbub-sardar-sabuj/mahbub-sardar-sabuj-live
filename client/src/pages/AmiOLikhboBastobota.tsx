@@ -1000,10 +1000,11 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
               </div>
             )}
 
-            {/* Upload error */}
+            {/* Upload error — only shows for image upload, does NOT block post */}
             {uploadError && (
-              <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem" }}>
-                {uploadError}
+              <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <span>ছবি আপলোড হয়নি — {uploadError}</span>
+                <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", lineHeight: 1, padding: 0 }}>✕</button>
               </div>
             )}
 
@@ -1011,7 +1012,7 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => { setUploadError(""); fileInputRef.current?.click(); }}
                 disabled={uploading}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
@@ -1178,10 +1179,12 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
               </div>
             )}
             {uploadError && (
-              <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem" }}>{uploadError}</div>
+              <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <span>ছবি আপলোড হয়নি — {uploadError}</span>
+                <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", lineHeight: 1, padding: 0 }}>✕</button>
+              </div>
             )}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
+              <button type="button" onClick={() => { setUploadError(""); fileInputRef.current?.click(); }} disabled={uploading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
                 {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ আছে" : "ছবি যোগ করুন"}
               </button>
