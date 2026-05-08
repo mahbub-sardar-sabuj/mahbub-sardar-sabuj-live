@@ -976,6 +976,7 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
                 required
                 rows={7}
                 autoFocus
+                maxLength={600000}
                 style={{ ...inputStyle, resize: "vertical", minHeight: 140 }}
               />
             </div>
@@ -1165,7 +1166,7 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
             <div>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="আপনার বাস্তবতার গল্প লিখুন..." rows={8} maxLength={20000} required style={{ ...inputStyle, resize: "vertical", minHeight: 160 }} />
+              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="আপনার বাস্তবতার গল্প লিখুন..." rows={8} maxLength={600000} required style={{ ...inputStyle, resize: "vertical", minHeight: 160 }} />
             </div>
             {/* Image preview */}
             {imageUrl && (

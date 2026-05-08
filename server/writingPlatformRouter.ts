@@ -43,7 +43,9 @@ async function ensureWritingPlatformTables(db: WritingDb) {
 
   if (!writingTablesReadyPromise) {
     writingTablesReadyPromise = (async () => {
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` text NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
+      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
+      // Upgrade existing content column to LONGTEXT if it's still TEXT
+      await db.execute(sql.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `content` longtext NOT NULL")).catch(() => {});
       await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))"));
       await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))"));
       writingTablesReady = true;
@@ -248,7 +250,7 @@ export const writingPlatformRouter = router({
 
   createPost: protectedProcedure
     .input(z.object({
-      content: z.string().min(1).max(20000),
+      content: z.string().min(1).max(600000),
       mediaUrl: z.string().url().max(2000).optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
     }))
@@ -309,7 +311,7 @@ export const writingPlatformRouter = router({
   editPost: protectedProcedure
     .input(z.object({
       postId: z.number().int().positive(),
-      content: z.string().min(1).max(20000),
+      content: z.string().min(1).max(600000),
       mediaUrl: z.string().url().max(2000).optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
     }))
