@@ -8,6 +8,9 @@
     "api/trpc-bundled.js": {
       "memory": 1024
     },
+    "api/upload-image.js": {
+      "memory": 512
+    },
     "api/audio-edit.js": {
       "maxDuration": 60,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"

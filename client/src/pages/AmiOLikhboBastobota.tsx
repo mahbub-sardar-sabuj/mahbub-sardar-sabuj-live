@@ -811,12 +811,12 @@ function PostCard({
 // ── Create Post Modal ─────────────────────────────────────────────────────────
 
 function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorName: string }) {
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState<Exclude<CategoryKey, "all">>("thought");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [mediaType, setMediaType] = useState<"none" | "image" | "video">("none");
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
 
   const createPost = trpc.writingPlatform.createPost.useMutation({
@@ -828,15 +828,36 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
     },
   });
 
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("ছবির সাইজ ৫ MB এর বেশি হতে পারবে না");
+      return;
+    }
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("/api/upload-image", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "আপলোড ব্যর্থ");
+      setImageUrl(data.url);
+    } catch (err: any) {
+      setUploadError(err.message || "ছবি আপলোড করতে সমস্যা হয়েছে");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+    if (!content.trim()) return;
     createPost.mutate({
-      title: title.trim(),
       content: content.trim(),
-      category,
-      mediaUrl: mediaUrl.trim() || undefined,
-      mediaType: mediaUrl.trim() ? mediaType : "none",
+      mediaUrl: imageUrl || undefined,
+      mediaType: imageUrl ? "image" : "none",
     });
   }
 
@@ -916,6 +937,15 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
           </button>
         </div>
 
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          style={{ display: "none" }}
+          onChange={handleImageSelect}
+        />
+
         {submitted ? (
           <div
             style={{
@@ -937,134 +967,77 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
-            {/* Category */}
-            <div>
-              <label style={labelStyle}>বিভাগ</label>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {CATEGORIES.filter((c) => c.key !== "all").map((cat) => (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => setCategory(cat.key as Exclude<CategoryKey, "all">)}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "0.35rem 0.75rem",
-                      borderRadius: 999,
-                      border:
-                        category === cat.key
-                          ? "1px solid rgba(247,213,111,0.7)"
-                          : "1px solid rgba(232,201,122,0.2)",
-                      background:
-                        category === cat.key
-                          ? "rgba(247,213,111,0.15)"
-                          : "rgba(255,255,255,0.04)",
-                      color: category === cat.key ? "#F7D56F" : "rgba(253,246,236,0.6)",
-                      fontFamily: adorshoFont,
-                      fontWeight: 700,
-                      fontSize: "0.82rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {cat.icon} {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Title */}
-            <div>
-              <label style={labelStyle}>শিরোনাম *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="পোস্টের শিরোনাম লিখুন..."
-                required
-                style={inputStyle}
-              />
-            </div>
-
             {/* Content */}
             <div>
-              <label style={labelStyle}>লেখা *</label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="আপনার বাস্তবতার গল্প, অভিজ্ঞতা বা ভাবনা লিখুন..."
                 required
-                rows={6}
-                style={{ ...inputStyle, resize: "vertical" }}
+                rows={7}
+                autoFocus
+                style={{ ...inputStyle, resize: "vertical", minHeight: 140 }}
               />
             </div>
 
-            {/* Media URL */}
-            <div>
-              <label style={labelStyle}>মিডিয়া লিংক (ঐচ্ছিক)</label>
-              <div style={{ display: "grid", gap: 8 }}>
-                <input
-                  type="url"
-                  value={mediaUrl}
-                  onChange={(e) => setMediaUrl(e.target.value)}
-                  placeholder="ছবি বা ভিডিওর URL..."
-                  style={inputStyle}
-                />
-                {mediaUrl && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {(["image", "video"] as const).map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setMediaType(t)}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "0.3rem 0.7rem",
-                          borderRadius: 999,
-                          border:
-                            mediaType === t
-                              ? "1px solid rgba(247,213,111,0.6)"
-                              : "1px solid rgba(232,201,122,0.2)",
-                          background:
-                            mediaType === t ? "rgba(247,213,111,0.12)" : "rgba(255,255,255,0.04)",
-                          color: mediaType === t ? "#F7D56F" : "rgba(253,246,236,0.55)",
-                          fontFamily: adorshoFont,
-                          fontWeight: 700,
-                          fontSize: "0.82rem",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t === "image" ? <Camera size={13} /> : <Film size={13} />}
-                        {t === "image" ? "ছবি" : "ভিডিও"}
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {/* Image preview */}
+            {imageUrl && (
+              <div style={{ position: "relative", borderRadius: 14, overflow: "hidden" }}>
+                <img src={imageUrl} alt="প্রিভিউ" style={{ width: "100%", maxHeight: 280, objectFit: "cover", display: "block" }} />
+                <button
+                  type="button"
+                  onClick={() => setImageUrl("")}
+                  style={{
+                    position: "absolute", top: 8, right: 8,
+                    width: 30, height: 30, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.6)", border: "none",
+                    color: "#fff", cursor: "pointer", display: "grid", placeItems: "center",
+                  }}
+                >
+                  <X size={14} />
+                </button>
               </div>
-            </div>
+            )}
 
-            {/* Submit */}
-            <ActionButton disabled={!title.trim() || !content.trim() || createPost.isPending}>
-              {createPost.isPending ? (
-                <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পাঠানো হচ্ছে...</>
-              ) : (
-                <><Send size={16} /> পোস্ট করুন</>
-              )}
-            </ActionButton>
+            {/* Upload error */}
+            {uploadError && (
+              <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem" }}>
+                {uploadError}
+              </div>
+            )}
 
-            {createPost.isError && (
-              <div
+            {/* Bottom bar: image upload + submit */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
                 style={{
-                  padding: "0.6rem 1rem",
-                  borderRadius: 12,
-                  background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  color: "#FCA5A5",
-                  fontSize: "0.85rem",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "0.55rem 1rem", borderRadius: 999,
+                  border: "1px solid rgba(232,201,122,0.3)",
+                  background: "rgba(255,255,255,0.05)",
+                  color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)",
+                  fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem",
+                  cursor: uploading ? "not-allowed" : "pointer",
+                  flexShrink: 0,
                 }}
               >
+                {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
+                {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
+              </button>
+              <div style={{ flex: 1 }} />
+              <ActionButton disabled={!content.trim() || createPost.isPending || uploading}>
+                {createPost.isPending ? (
+                  <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পাঠানো হচ্ছে...</>
+                ) : (
+                  <><Send size={16} /> পোস্ট করুন</>
+                )}
+              </ActionButton>
+            </div>
+
+            {createPost.isError && (
+              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>
                 পোস্ট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
               </div>
             )}
@@ -1077,12 +1050,12 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
 
 // ── Edit Post Modal ─────────────────────────────────────────────────────────
 function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onClose: () => void; authorName: string }) {
-  const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
-  const [category, setCategory] = useState<Exclude<CategoryKey, "all">>(post.category as Exclude<CategoryKey, "all">);
-  const [mediaUrl, setMediaUrl] = useState(post.mediaUrl ?? "");
-  const [mediaType, setMediaType] = useState<"none" | "image" | "video">(post.mediaType as "none" | "image" | "video");
+  const [imageUrl, setImageUrl] = useState(post.mediaType === "image" ? (post.mediaUrl ?? "") : "");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
   const editPost = trpc.writingPlatform.editPost.useMutation({
     onSuccess: () => {
@@ -1092,16 +1065,34 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
       setTimeout(() => onClose(), 2200);
     },
   });
+
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setUploadError("ছবির সাইজ ৫ MB এর বেশি হতে পারবে না"); return; }
+    setUploading(true); setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("/api/upload-image", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "আপলোড ব্যর্থ");
+      setImageUrl(data.url);
+    } catch (err: any) {
+      setUploadError(err.message || "ছবি আপলোড করতে সমস্যা হয়েছে");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
+    if (!content.trim()) return;
     editPost.mutate({
       postId: post.id,
-      title: title.trim(),
       content: content.trim(),
-      category,
-      mediaUrl: mediaUrl.trim() || undefined,
-      mediaType: mediaUrl.trim() ? mediaType : "none",
+      mediaUrl: imageUrl || undefined,
+      mediaType: imageUrl ? "image" : "none",
     });
   }
   const inputStyle: CSSProperties = {
@@ -1162,6 +1153,9 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
             <X size={16} />
           </button>
         </div>
+        {/* Hidden file input */}
+        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" style={{ display: "none" }} onChange={handleImageSelect} />
+
         {submitted ? (
           <div style={{ textAlign: "center", padding: "2rem", display: "grid", gap: "0.75rem" }}>
             <CheckCircle2 size={48} color="#86EFAC" style={{ margin: "0 auto" }} />
@@ -1171,40 +1165,34 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
             <div>
-              <label style={labelStyle}>শিরোনাম</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="পোস্টের শিরোনাম" maxLength={220} required style={inputStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>বিভাগ</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value as Exclude<CategoryKey, "all">)} style={{ ...inputStyle, cursor: "pointer" }}>
-                {CATEGORIES.filter((c) => c.key !== "all").map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>বিষয়বস্তু</label>
               <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="আপনার বাস্তবতার গল্প লিখুন..." rows={8} maxLength={20000} required style={{ ...inputStyle, resize: "vertical", minHeight: 160 }} />
             </div>
-            <div>
-              <label style={labelStyle}>মিডিয়া URL (ঐচ্ছিক)</label>
-              <input type="url" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="ছবি বা ভিডিওর লিংক" style={inputStyle} />
-              {mediaUrl.trim() && (
-                <select value={mediaType} onChange={(e) => setMediaType(e.target.value as "image" | "video")} style={{ ...inputStyle, marginTop: 8 }}>
-                  <option value="image">ছবি</option>
-                  <option value="video">ভিডিও</option>
-                </select>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            {/* Image preview */}
+            {imageUrl && (
+              <div style={{ position: "relative", borderRadius: 14, overflow: "hidden" }}>
+                <img src={imageUrl} alt="প্রিভিউ" style={{ width: "100%", maxHeight: 280, objectFit: "cover", display: "block" }} />
+                <button type="button" onClick={() => setImageUrl("")} style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", cursor: "pointer", display: "grid", placeItems: "center" }}>
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+            {uploadError && (
+              <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem" }}>{uploadError}</div>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
+                {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
+                {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ আছে" : "ছবি যোগ করুন"}
+              </button>
+              <div style={{ flex: 1 }} />
               <button type="button" onClick={onClose} style={{ padding: "0.6rem 1.2rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.25)", background: "transparent", color: "rgba(253,246,236,0.7)", fontFamily: adorshoFont, cursor: "pointer" }}>বাতিল</button>
-              <ActionButton type="submit" disabled={editPost.isPending || !title.trim() || !content.trim()}>
+              <ActionButton type="submit" disabled={editPost.isPending || !content.trim() || uploading}>
                 {editPost.isPending ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <CheckCircle2 size={15} />}
                 {editPost.isPending ? "আপডেট হচ্ছে..." : "আপডেট করুন"}
               </ActionButton>
             </div>
             {editPost.isError && (
-              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>
-                আপডেট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
-              </div>
+              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>আপডেট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।</div>
             )}
           </form>
         )}
