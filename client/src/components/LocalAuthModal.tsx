@@ -3,7 +3,7 @@
  * Used in "আমিও লিখবো বাস্তবতা" page when OAuth is not configured.
  */
 
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { KeyRound, UserPlus, X, Eye, EyeOff, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 
 const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
@@ -95,6 +95,15 @@ interface Props {
 
 export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "login" }: Props) {
   const [mode, setMode] = useState<Mode>(defaultMode);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

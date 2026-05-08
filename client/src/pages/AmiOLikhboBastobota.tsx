@@ -13,7 +13,6 @@ import {
   Film,
   Heart,
   KeyRound,
-  Laugh,
   Lightbulb,
   MessageCircle,
   PenLine,
@@ -232,17 +231,22 @@ function ReactionBar({
   myReaction,
   isAuthenticated,
   onLoginRequired,
+  postSlug,
 }: {
   postId: number;
   reactionCounts: Record<ReactionType, number>;
   myReaction: ReactionType | null;
   isAuthenticated: boolean;
   onLoginRequired: () => void;
+  postSlug?: string;
 }) {
   const [showPicker, setShowPicker] = useState(false);
   const utils = trpc.useUtils();
   const reactMutation = trpc.writingPlatform.reactToPost.useMutation({
-    onSuccess: () => utils.writingPlatform.listPosts.invalidate(),
+    onSuccess: () => {
+      utils.writingPlatform.listPosts.invalidate();
+      if (postSlug) utils.writingPlatform.getPostBySlug.invalidate({ slug: postSlug });
+    },
   });
 
   const totalReactions = Object.values(reactionCounts).reduce((a, b) => a + b, 0);
@@ -365,11 +369,6 @@ function CommentSection({
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const utils = trpc.useUtils();
-
-  const postDetail = trpc.writingPlatform.getPostBySlug.useQuery(
-    { slug: "" },
-    { enabled: false }
-  );
 
   const addComment = trpc.writingPlatform.addComment.useMutation({
     onSuccess: () => {
@@ -670,7 +669,7 @@ function PostCard({
           type="button"
           onClick={() => {
             if (navigator.share) {
-              navigator.share({ title: post.title, url: `/amio-likhbo-bastobota/${post.slug}` });
+              navigator.share({ title: post.title, url: `${window.location.origin}/amio-likhbo-bastobota/${post.slug}` });
             } else {
               navigator.clipboard.writeText(`${window.location.origin}/amio-likhbo-bastobota/${post.slug}`);
             }
@@ -712,6 +711,7 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
     onSuccess: () => {
       setSubmitted(true);
       utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.myPosts.invalidate();
       setTimeout(() => onClose(), 2200);
     },
   });
@@ -1112,7 +1112,19 @@ function PostDetail({
   onLoginRequired: () => void;
   onBack: () => void;
 }) {
+  const [commentText, setCommentText] = useState("");
+  const [commentSubmitted, setCommentSubmitted] = useState(false);
+  const utils = trpc.useUtils();
   const detail = trpc.writingPlatform.getPostBySlug.useQuery({ slug });
+  const addDetailComment = trpc.writingPlatform.addComment.useMutation({
+    onSuccess: () => {
+      setCommentText("");
+      setCommentSubmitted(true);
+      utils.writingPlatform.getPostBySlug.invalidate({ slug });
+      utils.writingPlatform.listPosts.invalidate();
+      setTimeout(() => setCommentSubmitted(false), 3000);
+    },
+  });
 
   if (detail.isLoading) {
     return (
@@ -1200,6 +1212,7 @@ function PostDetail({
             myReaction={post.myReaction}
             isAuthenticated={isAuthenticated}
             onLoginRequired={onLoginRequired}
+            postSlug={slug}
           />
         </div>
       </article>
@@ -1213,7 +1226,8 @@ function PostDetail({
         {/* Add comment */}
         <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
           <textarea
-            id={`comment-detail-${post.id}`}
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
             placeholder={isAuthenticated ? "মন্তব্য লিখুন..." : "মন্তব্য করতে লগইন করুন"}
             rows={2}
             style={{
@@ -1231,21 +1245,36 @@ function PostDetail({
           />
           <button
             type="button"
+            disabled={!commentText.trim() || addDetailComment.isPending}
             onClick={() => {
-              const ta = document.getElementById(`comment-detail-${post.id}`) as HTMLTextAreaElement;
-              if (!ta?.value.trim()) return;
               if (!isAuthenticated) { onLoginRequired(); return; }
+              if (!commentText.trim()) return;
+              addDetailComment.mutate({ postId: post.id, content: commentText.trim() });
             }}
             style={{
               width: 42, height: 42, borderRadius: "50%",
               background: "linear-gradient(135deg, #F7D56F, #D4A843)",
               border: "none", display: "grid", placeItems: "center",
-              color: "#071426", cursor: "pointer", flexShrink: 0,
+              color: "#071426",
+              cursor: commentText.trim() ? "pointer" : "not-allowed",
+              opacity: commentText.trim() ? 1 : 0.5,
+              flexShrink: 0,
             }}
           >
-            <Send size={16} />
+            {addDetailComment.isPending ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Send size={16} />}
           </button>
         </div>
+        {commentSubmitted && (
+          <div style={{
+            padding: "0.6rem 1rem", borderRadius: 12,
+            background: "rgba(34,197,94,0.12)",
+            border: "1px solid rgba(34,197,94,0.3)",
+            color: "#86EFAC", fontSize: "0.85rem",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <CheckCircle2 size={15} /> মন্তব্য পাঠানো হয়েছে। অনুমোদনের পর প্রকাশিত হবে।
+          </div>
+        )}
 
         {/* Comment list */}
         {comments.length === 0 ? (

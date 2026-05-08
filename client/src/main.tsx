@@ -5,7 +5,7 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getLoginUrl } from "./const";
+import { getLoginUrl, isLoginConfigured } from "./const";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -13,6 +13,8 @@ const queryClient = new QueryClient();
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
+  // Local auth mode: do not redirect to OAuth, let the page handle login prompt
+  if (!isLoginConfigured) return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
 
