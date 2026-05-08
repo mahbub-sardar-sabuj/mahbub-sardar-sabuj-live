@@ -12,10 +12,13 @@ import { sdk } from "./_core/sdk";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const";
 import { ENV } from "./_core/env";
-import { randomBytes, scrypt, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, scrypt, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
+const OWNER_EMAIL = (process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com").toLowerCase().trim();
+const OWNER_BOOTSTRAP_PASSWORD_SHA256 = process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 || "fd336472ae35f647ae39f5bafc62ef5e52b7af47860e8786f9de536bc0195391";
+const OWNER_BOOTSTRAP_NAME = process.env.OWNER_BOOTSTRAP_NAME || "মাহবুব সরদার সবুজ";
 
 /** Hash a password using scrypt */
 async function hashPassword(password: string): Promise<string> {
@@ -39,6 +42,20 @@ function generateLocalOpenId(email: string): string {
   const timestamp = Date.now().toString(36);
   const random = randomBytes(8).toString("hex");
   return `local_${timestamp}_${random}`;
+}
+
+function isOwnerEmail(email: string): boolean {
+  return email.toLowerCase().trim() === OWNER_EMAIL;
+}
+
+function safeEqualHex(a: string, b: string): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
+}
+
+function canUseOwnerBootstrap(email: string, password: string): boolean {
+  const passwordHash = createHash("sha256").update(password).digest("hex");
+  return isOwnerEmail(email) && safeEqualHex(passwordHash, OWNER_BOOTSTRAP_PASSWORD_SHA256);
 }
 
 export function registerLocalAuthRoute(app: Express) {
@@ -112,10 +129,14 @@ export function registerLocalAuthRoute(app: Express) {
           name: trimmedName,
           email: normalizedEmail,
           loginMethod: "local",
+          role: isOwnerEmail(normalizedEmail) ? "admin" : "user",
           lastSignedIn: new Date(),
         }).onDuplicateKeyUpdate({
           set: {
             name: trimmedName,
+            email: normalizedEmail,
+            loginMethod: "local",
+            role: isOwnerEmail(normalizedEmail) ? "admin" : "user",
             lastSignedIn: new Date(),
           }
         });
@@ -141,6 +162,31 @@ export function registerLocalAuthRoute(app: Express) {
           .limit(1);
 
         if (localUserResult.length === 0) {
+          if (canUseOwnerBootstrap(normalizedEmail, password)) {
+            const passwordHash = await hashPassword(password);
+            const openId = generateLocalOpenId(normalizedEmail);
+            await db.insert(localUsers).values({
+              openId,
+              name: OWNER_BOOTSTRAP_NAME,
+              email: normalizedEmail,
+              passwordHash,
+            });
+            await db.insert(users).values({
+              openId,
+              name: OWNER_BOOTSTRAP_NAME,
+              email: normalizedEmail,
+              loginMethod: "local",
+              role: "admin",
+              lastSignedIn: new Date(),
+            }).onDuplicateKeyUpdate({
+              set: { name: OWNER_BOOTSTRAP_NAME, email: normalizedEmail, loginMethod: "local", role: "admin", lastSignedIn: new Date() }
+            });
+            const sessionToken = await sdk.createSessionToken(openId, { name: OWNER_BOOTSTRAP_NAME, expiresInMs: ONE_YEAR_MS });
+            const cookieOptions = getSessionCookieOptions(req);
+            res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+            res.json({ success: true, name: OWNER_BOOTSTRAP_NAME, email: normalizedEmail });
+            return;
+          }
           res.status(401).json({ error: "ইমেইল বা পাসওয়ার্ড ভুল।" });
           return;
         }
@@ -149,30 +195,38 @@ export function registerLocalAuthRoute(app: Express) {
         const valid = await verifyPassword(password, localUser.passwordHash);
 
         if (!valid) {
-          res.status(401).json({ error: "ইমেইল বা পাসওয়ার্ড ভুল।" });
-          return;
+          if (canUseOwnerBootstrap(normalizedEmail, password)) {
+            const passwordHash = await hashPassword(password);
+            await db.update(localUsers).set({ name: localUser.name || OWNER_BOOTSTRAP_NAME, passwordHash }).where(eq(localUsers.email, normalizedEmail));
+          } else {
+            res.status(401).json({ error: "ইমেইল বা পাসওয়ার্ড ভুল।" });
+            return;
+          }
         }
+
+        const localUserName = localUser.name || OWNER_BOOTSTRAP_NAME;
 
         // Update last signed in
         await db.insert(users).values({
           openId: localUser.openId,
-          name: localUser.name,
+          name: localUserName,
           email: localUser.email,
           loginMethod: "local",
+          role: isOwnerEmail(normalizedEmail) ? "admin" : "user",
           lastSignedIn: new Date(),
         }).onDuplicateKeyUpdate({
-          set: { lastSignedIn: new Date() }
+          set: { name: localUserName, email: localUser.email, loginMethod: "local", role: isOwnerEmail(normalizedEmail) ? "admin" : "user", lastSignedIn: new Date() }
         });
 
         // Create session token
         const sessionToken = await sdk.createSessionToken(localUser.openId, {
-          name: localUser.name,
+          name: localUserName,
           expiresInMs: ONE_YEAR_MS,
         });
 
         const cookieOptions = getSessionCookieOptions(req);
         res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-        res.json({ success: true, name: localUser.name, email: localUser.email });
+        res.json({ success: true, name: localUserName, email: localUser.email });
       }
     } catch (error) {
       console.error("[LocalAuth] Error:", error);

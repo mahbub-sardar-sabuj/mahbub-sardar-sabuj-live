@@ -1,9 +1,9 @@
 /**
  * /api/local-auth — Custom email+password auth for "আমিও লিখবো বাস্তবতা"
- * Actions: register, login, logout
+ * Actions: register, login, logout, owner-reset
  */
 
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT } from "jose";
 import { createPool } from "mysql2/promise";
 import { nanoid } from "nanoid";
 import * as crypto from "crypto";
@@ -11,8 +11,12 @@ import * as crypto from "crypto";
 const COOKIE_NAME = "app_session_id";
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com";
 const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
-const APP_ID = process.env.VITE_APP_ID || "local-app";
-const JWT_SECRET = process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
+const APP_ID = process.env.APP_ID || process.env.VITE_APP_ID || "local-app";
+const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
+const OWNER_BOOTSTRAP_PASSWORD_SHA256 =
+  process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 ||
+  "fd336472ae35f647ae39f5bafc62ef5e52b7af47860e8786f9de536bc0195391";
+const OWNER_BOOTSTRAP_NAME = process.env.OWNER_BOOTSTRAP_NAME || "মাহবুব সরদার সবুজ";
 
 // ── DB helper ─────────────────────────────────────────────────────────────────
 
@@ -37,9 +41,30 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, stored) {
+  if (!stored || typeof stored !== "string") return false;
   const [salt, hash] = stored.split(":");
-  const hashBuf = crypto.scryptSync(password, salt, 64).toString("hex");
-  return hashBuf === hash;
+  if (!salt || !hash) return false;
+  const hashBuf = Buffer.from(crypto.scryptSync(password, salt, 64).toString("hex"), "hex");
+  const storedBuf = Buffer.from(hash, "hex");
+  if (hashBuf.length !== storedBuf.length) return false;
+  return crypto.timingSafeEqual(hashBuf, storedBuf);
+}
+
+function isOwnerEmail(email) {
+  return Boolean(OWNER_EMAIL && email === OWNER_EMAIL.toLowerCase().trim());
+}
+
+function sha256Hex(value) {
+  return crypto.createHash("sha256").update(String(value)).digest("hex");
+}
+
+function safeEqualHex(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
+}
+
+function canUseOwnerBootstrap(normalEmail, password) {
+  return isOwnerEmail(normalEmail) && safeEqualHex(sha256Hex(password), OWNER_BOOTSTRAP_PASSWORD_SHA256);
 }
 
 // ── JWT helpers ───────────────────────────────────────────────────────────────
@@ -67,10 +92,26 @@ function clearCookieHeader() {
   return `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=0`;
 }
 
+async function upsertMainUser(db, { openId, name, email }) {
+  const role = isOwnerEmail(email) ? "admin" : "user";
+  await db.execute(
+    `INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
+     VALUES (?, ?, ?, 'local', ?, NOW())
+     ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), loginMethod='local', role=VALUES(role), lastSignedIn=NOW()`,
+    [openId, name, email, role]
+  );
+}
+
+async function issueLoginResponse(res, db, user, email) {
+  await upsertMainUser(db, { openId: user.openId, name: user.name, email });
+  const token = await createSessionToken(user.openId, user.name);
+  res.setHeader("Set-Cookie", setCookieHeader(token));
+  return res.status(200).json({ success: true, name: user.name, email });
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
-  // CORS for same-origin
   res.setHeader("Content-Type", "application/json");
 
   if (req.method !== "POST") {
@@ -83,7 +124,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "action required" });
   }
 
-  // Check DATABASE_URL
   if (!process.env.DATABASE_URL) {
     console.error("[local-auth] DATABASE_URL is not set!");
     return res.status(500).json({ error: "ডেটাবেজ কনফিগারেশন সমস্যা। অ্যাডমিনকে জানান।" });
@@ -104,7 +144,6 @@ export default async function handler(req, res) {
     const normalName = name.trim();
 
     try {
-      // Check if email already exists
       const [existing] = await db.execute(
         "SELECT id FROM local_users WHERE email = ? LIMIT 1",
         [normalEmail]
@@ -116,25 +155,13 @@ export default async function handler(req, res) {
       const openId = `local_${nanoid(20)}`;
       const passwordHash = hashPassword(password);
 
-      // Insert into local_users
       await db.execute(
         "INSERT INTO local_users (openId, name, email, passwordHash) VALUES (?, ?, ?, ?)",
         [openId, normalName, normalEmail, passwordHash]
       );
 
-      // Also upsert into main users table so tRPC auth.me works
-      const ownerEmail = OWNER_EMAIL;
-      const registerRole = (ownerEmail && normalEmail === ownerEmail.toLowerCase()) ? 'admin' : 'user';
-      await db.execute(
-        `INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
-         VALUES (?, ?, ?, 'local', ?, NOW())
-         ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), role=VALUES(role), lastSignedIn=NOW()`,
-        [openId, normalName, normalEmail, registerRole]
-      );
-
-      const token = await createSessionToken(openId, normalName);
-      res.setHeader("Set-Cookie", setCookieHeader(token));
-      return res.status(200).json({ success: true, name: normalName });
+      const user = { openId, name: normalName };
+      return issueLoginResponse(res, db, user, normalEmail);
     } catch (err) {
       console.error("[local-auth register]", err);
       return res.status(500).json({ error: "রেজিস্ট্রেশনে সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
@@ -157,28 +184,34 @@ export default async function handler(req, res) {
       );
 
       if (rows.length === 0) {
+        if (canUseOwnerBootstrap(normalEmail, password)) {
+          const openId = `local_${nanoid(20)}`;
+          const passwordHash = hashPassword(password);
+          await db.execute(
+            "INSERT INTO local_users (openId, name, email, passwordHash) VALUES (?, ?, ?, ?)",
+            [openId, OWNER_BOOTSTRAP_NAME, normalEmail, passwordHash]
+          );
+          return issueLoginResponse(res, db, { openId, name: OWNER_BOOTSTRAP_NAME }, normalEmail);
+        }
         return res.status(401).json({ error: "ইমেইল বা পাসওয়ার্ড সঠিক নয়" });
       }
 
       const user = rows[0];
       const valid = verifyPassword(password, user.passwordHash);
       if (!valid) {
+        if (canUseOwnerBootstrap(normalEmail, password)) {
+          const passwordHash = hashPassword(password);
+          const ownerName = user.name || OWNER_BOOTSTRAP_NAME;
+          await db.execute(
+            "UPDATE local_users SET name = ?, passwordHash = ? WHERE email = ?",
+            [ownerName, passwordHash, normalEmail]
+          );
+          return issueLoginResponse(res, db, { openId: user.openId, name: ownerName }, normalEmail);
+        }
         return res.status(401).json({ error: "ইমেইল বা পাসওয়ার্ড সঠিক নয়" });
       }
 
-      // Update lastSignedIn in main users table
-      const ownerEmail = OWNER_EMAIL;
-      const loginRole = (ownerEmail && normalEmail === ownerEmail.toLowerCase()) ? 'admin' : 'user';
-      await db.execute(
-        `INSERT INTO users (openId, name, email, loginMethod, role, lastSignedIn)
-         VALUES (?, ?, ?, 'local', ?, NOW())
-         ON DUPLICATE KEY UPDATE role=VALUES(role), lastSignedIn=NOW()`,
-        [user.openId, user.name, normalEmail, loginRole]
-      );
-
-      const token = await createSessionToken(user.openId, user.name);
-      res.setHeader("Set-Cookie", setCookieHeader(token));
-      return res.status(200).json({ success: true, name: user.name });
+      return issueLoginResponse(res, db, user, normalEmail);
     } catch (err) {
       console.error("[local-auth login]", err);
       return res.status(500).json({ error: "লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
@@ -193,7 +226,7 @@ export default async function handler(req, res) {
   }
 
   // ── OWNER RESET PASSWORD ──────────────────────────────────────────────────
-  // Only allows owner email to reset their own password via a secret token
+
   if (action === "owner-reset") {
     const resetToken = process.env.OWNER_RESET_TOKEN;
     const { token, newPassword } = req.body || {};
@@ -204,7 +237,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
     }
     const ownerEmail = OWNER_EMAIL.toLowerCase();
-    const db = getPool();
     try {
       const newHash = hashPassword(newPassword);
       const [result] = await db.execute(
