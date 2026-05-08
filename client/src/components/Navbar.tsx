@@ -66,6 +66,7 @@ export default function Navbar() {
   const isEditorPage = location === "/editor";
   const isEBookReaderPage = location.startsWith("/ebooks/read/");
   const isWritingsPage = location === "/writings" || location === "/ebooks";
+  const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
   const navElevated = scrolled || isWritingsPage;
 
   useEffect(() => {
@@ -620,68 +621,70 @@ export default function Navbar() {
               </div>
 
               {/* Info tabs — 2×2 grid */}
-              <div style={{ margin: "0 2px" }}>
-                <p style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  color: "rgba(212,168,67,0.7)",
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.16em",
-                  textTransform: "uppercase",
-                  margin: "0 4px 10px",
-                }}>
-                  তথ্য ও নীতিমালা
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {infoTabs.map((tab) => {
-                    const active = isInfoTabActive(tab.href, location);
-                    return (
-                      <Link key={tab.href} href={tab.href}>
-                        <motion.span
-                          onClick={() => setMobileOpen(false)}
-                          whileTap={{ scale: 0.97 }}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.28, ease: "easeOut" }}
-                          style={{
-                            fontFamily: "'Noto Sans Bengali', sans-serif",
-                            color: active ? "#0D1B2A" : "#FDF6EC",
-                            background: active
-                              ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
-                              : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(212,168,67,0.04) 100%)",
-                            border: active
-                              ? "1px solid rgba(212,168,67,0.6)"
-                              : "1px solid rgba(212,168,67,0.18)",
-                            padding: "14px 13px",
-                            textDecoration: "none",
-                            borderRadius: 16,
-                            transition: "all 0.25s",
-                            cursor: "pointer",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 5,
-                            minHeight: 82,
-                            justifyContent: "center",
-                            boxShadow: active
-                              ? "0 8px 24px rgba(212,168,67,0.28)"
-                              : "0 4px 16px rgba(0,0,0,0.15)",
-                          }}
-                        >
-                          <span style={{ fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3 }}>
-                            {tab.titleBn}
-                          </span>
-                          <span style={{
-                            fontSize: "0.7rem",
-                            lineHeight: 1.45,
-                            color: active ? "rgba(10,22,40,0.75)" : "rgba(253,246,236,0.5)",
-                          }}>
-                            {tab.description}
-                          </span>
-                        </motion.span>
-                      </Link>
-                    );
-                  })}
+              {!isAmioLikhboPage && (
+                <div style={{ margin: "0 2px" }}>
+                  <p style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    color: "rgba(212,168,67,0.7)",
+                    fontSize: "0.7rem",
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    margin: "0 4px 10px",
+                  }}>
+                    তথ্য ও নীতিমালা
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {infoTabs.map((tab) => {
+                      const active = isInfoTabActive(tab.href, location);
+                      return (
+                        <Link key={tab.href} href={tab.href}>
+                          <motion.span
+                            onClick={() => setMobileOpen(false)}
+                            whileTap={{ scale: 0.97 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.28, ease: "easeOut" }}
+                            style={{
+                              fontFamily: "'Noto Sans Bengali', sans-serif",
+                              color: active ? "#0D1B2A" : "#FDF6EC",
+                              background: active
+                                ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
+                                : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(212,168,67,0.04) 100%)",
+                              border: active
+                                ? "1px solid rgba(212,168,67,0.6)"
+                                : "1px solid rgba(212,168,67,0.18)",
+                              padding: "14px 13px",
+                              textDecoration: "none",
+                              borderRadius: 16,
+                              transition: "all 0.25s",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 5,
+                              minHeight: 82,
+                              justifyContent: "center",
+                              boxShadow: active
+                                ? "0 8px 24px rgba(212,168,67,0.28)"
+                                : "0 4px 16px rgba(0,0,0,0.15)",
+                            }}
+                          >
+                            <span style={{ fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3 }}>
+                              {tab.titleBn}
+                            </span>
+                            <span style={{
+                              fontSize: "0.7rem",
+                              lineHeight: 1.45,
+                              color: active ? "rgba(10,22,40,0.75)" : "rgba(253,246,236,0.5)",
+                            }}>
+                              {tab.description}
+                            </span>
+                          </motion.span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
             </div>
           </motion.div>

@@ -36,6 +36,7 @@ export default function Footer() {
   const [location] = useLocation();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +73,7 @@ export default function Footer() {
         {/* ── MAIN GRID ── */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "1.8fr 1fr 1fr 1.2fr",
+          gridTemplateColumns: isAmioLikhboPage ? "1.8fr 1fr" : "1.8fr 1fr 1fr 1.2fr",
           gap: "3rem",
           marginBottom: "4rem",
         }} className="footer-grid">
@@ -203,119 +204,123 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Legal links */}
-          <div>
-            <div style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: "0.65rem", letterSpacing: "0.25em",
-              textTransform: "uppercase", color: "#C9A84C",
-              marginBottom: "1.5rem",
-            }}>তথ্য ও নীতিমালা</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {legalLinks.map((link) => {
-                const active = location === link.href;
-                return (
-                  <Link key={link.href} href={link.href}>
-                    <motion.span
-                      whileHover={{ x: 6, color: "#C9A84C" }}
-                      style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
-                        textDecoration: "none",
-                        fontSize: "0.875rem",
-                        cursor: "pointer",
-                        display: "flex", alignItems: "center", gap: 10,
-                        padding: "6px 0",
-                        transition: "color 0.2s",
-                      }}
-                    >
-                      <span style={{ color: active ? "#C9A84C" : "rgba(201,168,76,0.3)", fontSize: "0.7rem" }}>◆</span>
-                      {link.label}
-                    </motion.span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Social & contact */}
-          <div>
-            <div style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: "0.65rem", letterSpacing: "0.25em",
-              textTransform: "uppercase", color: "#C9A84C",
-              marginBottom: "1.5rem",
-            }}>সোশ্যাল মিডিয়া</div>
-
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "1.5rem" }}>
-              {socialLinks.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <motion.a
-                    key={s.label}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={s.label}
-                    whileHover={{ scale: 1.15, y: -3 }}
-                    whileTap={{ scale: 0.9 }}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      width: 44, height: 44, borderRadius: 12,
-                      background: "rgba(201,168,76,0.06)",
-                      border: "1px solid rgba(201,168,76,0.2)",
-                      color: "rgba(250,246,239,0.6)",
-                      textDecoration: "none",
-                      transition: "all 0.3s",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = s.color + "22";
-                      e.currentTarget.style.borderColor = s.color + "66";
-                      e.currentTarget.style.color = s.color;
-                      e.currentTarget.style.boxShadow = `0 8px 24px ${s.color}33`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(201,168,76,0.06)";
-                      e.currentTarget.style.borderColor = "rgba(201,168,76,0.2)";
-                      e.currentTarget.style.color = "rgba(250,246,239,0.6)";
-                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-                    }}
-                  >
-                    <Icon size={18} />
-                  </motion.a>
-                );
-              })}
-            </div>
-
-            <div style={{
-              background: "rgba(201,168,76,0.04)",
-              border: "1px solid rgba(201,168,76,0.1)",
-              borderRadius: 10, padding: "1rem",
-            }}>
-              <div style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "0.6rem", letterSpacing: "0.15em",
-                textTransform: "uppercase", color: "rgba(201,168,76,0.5)",
-                marginBottom: "0.5rem",
-              }}>ইমেইল</div>
-              <a
-                href="mailto:lekhokmahbubsardarsabuj@gmail.com"
-                style={{
+          {!isAmioLikhboPage && (
+            <>
+              {/* Legal links */}
+              <div>
+                <div style={{
                   fontFamily: "'Space Grotesk', sans-serif",
-                  color: "rgba(250,246,239,0.5)",
-                  fontSize: "0.75rem",
-                  textDecoration: "none",
-                  wordBreak: "break-all",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.color = "#C9A84C"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "rgba(250,246,239,0.5)"}
-              >
-                lekhokmahbubsardarsabuj@gmail.com
-              </a>
-            </div>
-          </div>
+                  fontSize: "0.65rem", letterSpacing: "0.25em",
+                  textTransform: "uppercase", color: "#C9A84C",
+                  marginBottom: "1.5rem",
+                }}>তথ্য ও নীতিমালা</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {legalLinks.map((link) => {
+                    const active = location === link.href;
+                    return (
+                      <Link key={link.href} href={link.href}>
+                        <motion.span
+                          whileHover={{ x: 6, color: "#C9A84C" }}
+                          style={{
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
+                            cursor: "pointer",
+                            display: "flex", alignItems: "center", gap: 10,
+                            padding: "6px 0",
+                            transition: "color 0.2s",
+                          }}
+                        >
+                          <span style={{ color: active ? "#C9A84C" : "rgba(201,168,76,0.3)", fontSize: "0.7rem" }}>◆</span>
+                          {link.label}
+                        </motion.span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Social & contact */}
+              <div>
+                <div style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: "0.65rem", letterSpacing: "0.25em",
+                  textTransform: "uppercase", color: "#C9A84C",
+                  marginBottom: "1.5rem",
+                }}>সোশ্যাল মিডিয়া</div>
+
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: "1.5rem" }}>
+                  {socialLinks.map((s) => {
+                    const Icon = s.icon;
+                    return (
+                      <motion.a
+                        key={s.label}
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={s.label}
+                        whileHover={{ scale: 1.15, y: -3 }}
+                        whileTap={{ scale: 0.9 }}
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          width: 44, height: 44, borderRadius: 12,
+                          background: "rgba(201,168,76,0.06)",
+                          border: "1px solid rgba(201,168,76,0.2)",
+                          color: "rgba(250,246,239,0.6)",
+                          textDecoration: "none",
+                          transition: "all 0.3s",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = s.color;
+                          e.currentTarget.style.borderColor = s.color;
+                          e.currentTarget.style.color = "#fff";
+                          e.currentTarget.style.boxShadow = `0 8px 24px ${s.color}33`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "rgba(201,168,76,0.06)";
+                          e.currentTarget.style.borderColor = "rgba(201,168,76,0.2)";
+                          e.currentTarget.style.color = "rgba(250,246,239,0.6)";
+                          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+                        }}
+                      >
+                        <Icon size={18} />
+                      </motion.a>
+                    );
+                  })}
+                </div>
+
+                <div style={{
+                  background: "rgba(201,168,76,0.04)",
+                  border: "1px solid rgba(201,168,76,0.1)",
+                  borderRadius: 10, padding: "1rem",
+                }}>
+                  <div style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontSize: "0.6rem", letterSpacing: "0.15em",
+                    textTransform: "uppercase", color: "rgba(201,168,76,0.5)",
+                    marginBottom: "0.5rem",
+                  }}>ইমেইল</div>
+                  <a
+                    href="mailto:lekhokmahbubsardarsabuj@gmail.com"
+                    style={{
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      color: "rgba(250,246,239,0.5)",
+                      fontSize: "0.75rem",
+                      textDecoration: "none",
+                      wordBreak: "break-all",
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#C9A84C"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "rgba(250,246,239,0.5)"}
+                  >
+                    lekhokmahbubsardarsabuj@gmail.com
+                  </a>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── BOTTOM BAR ── */}
