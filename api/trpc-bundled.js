@@ -946,22 +946,24 @@ var writingPlatformRouter = router({
     });
   }),
   createPost: protectedProcedure.input(z3.object({
-    title: z3.string().min(3).max(220),
-    category: postCategorySchema,
-    content: z3.string().min(20).max(2e4),
-    mediaUrl: z3.string().url().max(2e3).optional().or(z3.literal("")),
+    title: z3.string().min(1).max(220).optional(),
+    category: postCategorySchema.optional(),
+    content: z3.string().min(1).max(600000),
+    mediaUrl: z3.string().max(5e6).optional().or(z3.literal("")),
     mediaType: mediaTypeSchema.default("none")
   })).mutation(async ({ ctx, input }) => {
     const db = await getWritingDb();
     if (!db) throw new Error("Database unavailable");
     const mediaUrl = input.mediaUrl?.trim() || null;
     const mediaType = mediaUrl ? input.mediaType : "none";
+    const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
+    const category = input.category ?? "thought";
     const insertResult = await db.insert(writingPosts).values({
-      slug: createSlug(input.title),
+      slug: createSlug(autoTitle),
       authorOpenId: ctx.user.openId,
       authorName: normalizeAuthorName(ctx.user.name),
-      title: input.title.trim(),
-      category: input.category,
+      title: autoTitle,
+      category,
       content: input.content.trim(),
       mediaUrl,
       mediaType,
@@ -971,9 +973,9 @@ var writingPlatformRouter = router({
       const insertId = insertResult.insertId ?? insertResult[0]?.insertId ?? 0;
       sendTelegramPostSubmitted({
         postId: insertId,
-        title: input.title.trim(),
+        title: autoTitle,
         authorName: normalizeAuthorName(ctx.user.name),
-        category: input.category,
+        category,
         slug: "",
         contentPreview: input.content.trim()
       }).catch((err) => console.error("[Telegram post submit notify error]", err));
@@ -997,7 +999,7 @@ var writingPlatformRouter = router({
     title: z3.string().min(3).max(220),
     category: postCategorySchema,
     content: z3.string().min(20).max(2e4),
-    mediaUrl: z3.string().url().max(2e3).optional().or(z3.literal("")),
+    mediaUrl: z3.string().max(5e6).optional().or(z3.literal("")),
     mediaType: mediaTypeSchema.default("none")
   })).mutation(async ({ ctx, input }) => {
     const db = await getWritingDb();
