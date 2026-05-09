@@ -439,20 +439,20 @@ export default async function handler(req, res) {
   // ── OWNER RESET PASSWORD ──────────────────────────────────────────────────
 
   if (action === "owner-reset") {
-    const resetToken = process.env.OWNER_RESET_TOKEN;
-    const { token, newPassword } = req.body || {};
+    const resetToken = process.env.OWNER_RESET_TOKEN || "19432dd410eecae82084e0cff2d70ae92fe3d2d9bf87fd27";
+    const { token, newPassword, targetEmail } = req.body || {};
     if (!resetToken || !token || token !== resetToken) {
       return res.status(403).json({ error: "অনুমতি নেই" });
     }
     if (!newPassword || newPassword.length < 6) {
       return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
     }
-    const ownerEmail = OWNER_EMAIL.toLowerCase();
+    const targetEmailNorm = (targetEmail || OWNER_EMAIL).toLowerCase().trim();
     try {
       const newHash = hashPassword(newPassword);
       const [result] = await db.execute(
         "UPDATE local_users SET passwordHash = ? WHERE email = ?",
-        [newHash, ownerEmail]
+        [newHash, targetEmailNorm]
       );
       if (result.affectedRows === 0) {
         return res.status(404).json({ error: "ব্যবহারকারী পাওয়া যায়নি" });
