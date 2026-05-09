@@ -86,6 +86,51 @@ const REACTION_CONFIG = {
 
 type ReactionType = keyof typeof REACTION_CONFIG;
 
+type WritingPrompt = {
+  title: string;
+  description: string;
+  category: CategoryKey;
+};
+
+const FEATURE_STATS = [
+  { label: "লেখার ধরন", value: "৬টি", note: "গল্প, কবিতা, ভাবনা, ছবি" },
+  { label: "নিরাপদ প্রকাশ", value: "পর্যালোচনা", note: "অনুমোদনের পর পোস্ট দেখা যায়" },
+  { label: "পাঠকের অংশগ্রহণ", value: "রিঅ্যাকশন", note: "পছন্দ, ভালোবাসা ও মন্তব্য" },
+] as const;
+
+const WRITING_PROMPTS: WritingPrompt[] = [
+  {
+    title: "আজকের বাস্তব অভিজ্ঞতা",
+    description: "নিজের জীবনের এমন একটি ঘটনা লিখুন, যেটি আপনাকে বদলেছে বা ভাবিয়েছে।",
+    category: "experience",
+  },
+  {
+    title: "মানুষ ও সমাজের গল্প",
+    description: "গ্রাম, শহর, পরিবার, শ্রম, সম্পর্ক বা মানবতার কোনো সত্য ঘটনা তুলে ধরুন।",
+    category: "story",
+  },
+  {
+    title: "একটি ছোট ভাবনা",
+    description: "কোনো সমস্যা, শিক্ষা বা সমাধান নিয়ে সংক্ষিপ্ত কিন্তু অর্থবহ লেখা লিখুন।",
+    category: "thought",
+  },
+] as const;
+
+const COMMUNITY_GUIDELINES = [
+  "সত্য, সম্মান ও মানবিক ভাষা বজায় রাখুন।",
+  "ব্যক্তিগত আক্রমণ, ঘৃণা বা অপমানজনক শব্দ এড়িয়ে চলুন।",
+  "নিজের অভিজ্ঞতা হলে তা স্পষ্ট করুন; অন্যের লেখা কপি করবেন না।",
+  "ছবি যোগ করলে তা যেন লেখার বিষয়কে সহায়তা করে।",
+] as const;
+
+const QUALITY_CHECKLIST = [
+  "ঘটনার সময়, স্থান বা প্রেক্ষাপট সংক্ষেপে লিখুন।",
+  "সমস্যার সঙ্গে শেখা বা সমাধানের দিকটি যুক্ত করুন।",
+  "শিরোনাম দিলে পাঠক দ্রুত লেখার বিষয় বুঝবে।",
+] as const;
+
+const FORM_EXAMPLE_TEXT = "উদাহরণ: আজ বাজারে একজন পরিশ্রমী মানুষের সঙ্গে দেখা হলো। তাঁর কথায় বুঝলাম—জীবনের বাস্তবতা শুধু কষ্ট নয়, সাহসও শেখায়...";
+
 // ── Helper components ─────────────────────────────────────────────────────────
 
 function ActionButton({
@@ -219,6 +264,152 @@ function CategoryBadge({ category }: { category: string }) {
     >
       {cat.icon} {cat.label}
     </span>
+  );
+}
+
+function MiniMetricCard({ value, label, note }: { value: string; label: string; note: string }) {
+  return (
+    <div
+      style={{
+        padding: "0.8rem",
+        borderRadius: 18,
+        background: "rgba(255,255,255,0.055)",
+        border: "1px solid rgba(232,201,122,0.14)",
+        minWidth: 132,
+      }}
+    >
+      <div style={{ color: "#F7D56F", fontSize: "1.05rem", fontWeight: 900 }}>{value}</div>
+      <div style={{ color: "#FDF6EC", fontSize: "0.82rem", fontWeight: 800, marginTop: 2 }}>{label}</div>
+      <div style={{ color: "rgba(253,246,236,0.48)", fontSize: "0.75rem", lineHeight: 1.45, marginTop: 4 }}>{note}</div>
+    </div>
+  );
+}
+
+function GuidancePanel({ isAuthenticated, onWrite, onLogin }: { isAuthenticated: boolean; onWrite: () => void; onLogin: () => void }) {
+  return (
+    <section style={{ ...cardStyle, padding: "clamp(1rem, 4vw, 1.5rem)", display: "grid", gap: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+        <div>
+          <div style={{ color: "#F7D56F", fontSize: "0.82rem", fontWeight: 900, letterSpacing: "0.02em" }}>লেখা শুরু করার সহজ পথ</div>
+          <h2 style={{ margin: "0.25rem 0 0", color: "#FDF6EC", fontSize: "clamp(1.1rem, 3vw, 1.35rem)", lineHeight: 1.35 }}>বাস্তবতা লিখুন স্পষ্টভাবে, মানবিকভাবে, কার্যকরভাবে</h2>
+          <p style={{ margin: "0.45rem 0 0", color: "rgba(253,246,236,0.62)", fontSize: "0.9rem", lineHeight: 1.75 }}>
+            এই ট্যাবের লক্ষ্য হলো বাস্তব জীবনের অভিজ্ঞতা, সমাজের সত্য গল্প এবং মানুষের ভাবনাকে সুন্দরভাবে প্রকাশ করা। লেখা জমা দিলে তা পর্যালোচনার পর প্রকাশিত হবে।
+          </p>
+        </div>
+        <ActionButton onClick={isAuthenticated ? onWrite : onLogin} small>
+          {isAuthenticated ? <><Plus size={15} /> এখন লিখুন</> : <><KeyRound size={15} /> লিখতে লগইন</>}
+        </ActionButton>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
+        {WRITING_PROMPTS.map((prompt) => (
+          <button
+            key={prompt.title}
+            type="button"
+            onClick={isAuthenticated ? onWrite : onLogin}
+            style={{
+              textAlign: "left",
+              padding: "0.9rem",
+              borderRadius: 18,
+              border: "1px solid rgba(232,201,122,0.16)",
+              background: "linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025))",
+              color: "#FDF6EC",
+              fontFamily: adorshoFont,
+              cursor: "pointer",
+              display: "grid",
+              gap: 6,
+            }}
+          >
+            <CategoryBadge category={prompt.category} />
+            <span style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.95rem" }}>{prompt.title}</span>
+            <span style={{ color: "rgba(253,246,236,0.58)", lineHeight: 1.65, fontSize: "0.82rem" }}>{prompt.description}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WritingQualityBox() {
+  return (
+    <div
+      style={{
+        padding: "0.9rem",
+        borderRadius: 18,
+        background: "rgba(212,168,67,0.09)",
+        border: "1px solid rgba(212,168,67,0.22)",
+        display: "grid",
+        gap: "0.65rem",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#F7D56F", fontWeight: 900 }}>
+        <Lightbulb size={16} /> ভালো লেখার ছোট চেকলিস্ট
+      </div>
+      <div style={{ display: "grid", gap: "0.45rem" }}>
+        {QUALITY_CHECKLIST.map((item) => (
+          <div key={item} style={{ display: "flex", gap: 8, color: "rgba(253,246,236,0.66)", fontSize: "0.83rem", lineHeight: 1.65 }}>
+            <CheckCircle2 size={14} style={{ color: "#86EFAC", marginTop: 3, flexShrink: 0 }} />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthenticated, onWrite, onLogin }: { showMyPosts: boolean; searchActive: boolean; selectedCategory: CategoryKey; isAuthenticated: boolean; onWrite: () => void; onLogin: () => void }) {
+  const categoryLabel = CATEGORIES.find(c => c.key === selectedCategory)?.label ?? selectedCategory;
+  const title = showMyPosts
+    ? "আপনার লেখার ঘর এখনো খালি"
+    : searchActive
+    ? "এই অনুসন্ধানে কোনো লেখা পাওয়া যায়নি"
+    : selectedCategory !== "all"
+    ? `“${categoryLabel}” বিভাগে প্রথম লেখা হতে পারে আপনারটি`
+    : "বাস্তবতার প্রথম লেখা শুরু হোক আপনার হাতেই";
+  const description = showMyPosts
+    ? "নিজের অভিজ্ঞতা, গল্প বা ভাবনা লিখে জমা দিন। অনুমোদনের পর তা পাঠকদের সামনে দেখা যাবে।"
+    : searchActive
+    ? "অন্য শব্দ দিয়ে খুঁজে দেখুন, অথবা নতুন একটি বাস্তব অভিজ্ঞতা লিখে এই জায়গাটি সমৃদ্ধ করুন।"
+    : "একটি সত্য ঘটনা, একটি মানবিক শিক্ষা, অথবা সমাজের কোনো বাস্তব সমস্যার কথা লিখুন। ভালো লেখা অন্য মানুষকে ভাবতে ও শিখতে সাহায্য করে।";
+
+  return (
+    <div style={{ ...cardStyle, padding: "clamp(1.5rem, 6vw, 2.25rem)", textAlign: "left", display: "grid", gap: "1.1rem" }}>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div style={{ width: 58, height: 58, borderRadius: 22, display: "grid", placeItems: "center", background: "rgba(212,168,67,0.14)", border: "1px solid rgba(232,201,122,0.28)", color: "#F7D56F" }}>
+          <PenLine size={28} />
+        </div>
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <h3 style={{ margin: 0, color: "#FDF6EC", fontSize: "clamp(1.15rem, 4vw, 1.55rem)", lineHeight: 1.35, fontWeight: 900 }}>{title}</h3>
+          <p style={{ margin: "0.45rem 0 0", color: "rgba(253,246,236,0.62)", fontSize: "0.92rem", lineHeight: 1.8 }}>{description}</p>
+        </div>
+      </div>
+
+      {!searchActive && (
+        <div style={{ display: "grid", gap: "0.55rem" }}>
+          {WRITING_PROMPTS.map((prompt) => (
+            <div key={prompt.title} style={{ padding: "0.75rem 0.85rem", borderRadius: 16, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(232,201,122,0.12)", display: "grid", gap: 4 }}>
+              <div style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.88rem" }}>{prompt.title}</div>
+              <div style={{ color: "rgba(253,246,236,0.54)", fontSize: "0.8rem", lineHeight: 1.6 }}>{prompt.description}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {isAuthenticated ? (
+          <ActionButton onClick={onWrite} small>
+            <Plus size={15} /> প্রথম লেখা লিখুন
+          </ActionButton>
+        ) : (
+          <ActionButton onClick={onLogin} small>
+            <KeyRound size={15} /> লগইন করে লিখুন
+          </ActionButton>
+        )}
+        {searchActive && (
+          <span style={{ alignSelf: "center", color: "rgba(253,246,236,0.45)", fontSize: "0.84rem" }}>বানান বা শব্দ বদলে আবার খুঁজে দেখুন।</span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -980,9 +1171,12 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
                 style={inputStyle}
               />
             </div>
+            <WritingQualityBox />
+
             {/* Category */}
             <div>
               <label style={labelStyle}>বিভাগ</label>
+              <div style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.6, marginBottom: 8 }}>আপনার লেখার ধরন অনুযায়ী একটি বিভাগ বেছে নিন। এতে পাঠক সহজে লেখা খুঁজে পাবে।</div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
                   <button
@@ -1010,13 +1204,27 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="আপনার বাস্তবতার গল্প, অভিজ্ঞতা বা ভাবনা লিখুন..."
+                placeholder={FORM_EXAMPLE_TEXT}
                 required
                 rows={7}
                 autoFocus
                 maxLength={600000}
-                style={{ ...inputStyle, resize: "vertical", minHeight: 140 }}
+                style={{ ...inputStyle, resize: "vertical", minHeight: 160, lineHeight: 1.8 }}
               />
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6, color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.55 }}>
+                <span>বাস্তব ঘটনা, শেখা ও মানবিক বার্তা স্পষ্ট করে লিখুন।</span>
+                <span>{content.trim().length.toLocaleString("bn-BD")} অক্ষর</span>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "0.45rem", padding: "0.8rem", borderRadius: 16, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(232,201,122,0.12)" }}>
+              <div style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.86rem" }}>কমিউনিটি নির্দেশনা</div>
+              {COMMUNITY_GUIDELINES.map((item) => (
+                <div key={item} style={{ display: "flex", gap: 8, color: "rgba(253,246,236,0.58)", fontSize: "0.78rem", lineHeight: 1.55 }}>
+                  <CheckCircle2 size={13} style={{ color: "#86EFAC", marginTop: 3, flexShrink: 0 }} />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
 
             {/* Image preview */}
@@ -1220,9 +1428,12 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
                 style={inputStyle}
               />
             </div>
+            <WritingQualityBox />
+
             {/* Category */}
             <div>
               <label style={labelStyle}>বিভাগ</label>
+              <div style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.6, marginBottom: 8 }}>আপনার লেখার ধরন অনুযায়ী একটি বিভাগ বেছে নিন। এতে পাঠক সহজে লেখা খুঁজে পাবে।</div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
                   <button
@@ -1247,7 +1458,11 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
             {/* Content */}
             <div>
               <label style={labelStyle}>লেখা *</label>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="আপনার বাস্তবতার গল্প লিখুন..." rows={8} maxLength={600000} required style={{ ...inputStyle, resize: "vertical", minHeight: 160 }} />
+              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={FORM_EXAMPLE_TEXT} rows={8} maxLength={600000} required style={{ ...inputStyle, resize: "vertical", minHeight: 170, lineHeight: 1.8 }} />
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6, color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.55 }}>
+                <span>মূল বক্তব্য, শেখা ও ভাষা আরও পরিষ্কার করুন।</span>
+                <span>{content.trim().length.toLocaleString("bn-BD")} অক্ষর</span>
+              </div>
             </div>
             {/* Image preview */}
             {imageUrl && (
@@ -1590,6 +1805,7 @@ export default function AmiOLikhboBastobota() {
           .amio-mobile-stack > * { width: 100%; }
           .amio-hero-actions { width: 100%; max-width: 100%; flex-direction: column; overflow: hidden; }
           .amio-hero-actions > * { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box !important; }
+          .amio-hero-metrics { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -1611,22 +1827,30 @@ export default function AmiOLikhboBastobota() {
                 flexWrap: "wrap",
               }}
             >
-              <div>
+              <div style={{ flex: "1 1 360px", minWidth: 0 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0.28rem 0.7rem", borderRadius: 999, background: "rgba(212,168,67,0.13)", border: "1px solid rgba(232,201,122,0.25)", color: "#F7D56F", fontSize: "0.78rem", fontWeight: 900, marginBottom: "0.65rem" }}>
+                  <Sparkles size={14} /> বাংলা বাস্তব লেখার কমিউনিটি
+                </div>
                 <h1
                   style={{
                     margin: 0,
-                    fontSize: "clamp(1.6rem, 5vw, 2.6rem)",
+                    fontSize: "clamp(1.75rem, 5.5vw, 2.85rem)",
                     fontWeight: 900,
-                    lineHeight: 1.1,
+                    lineHeight: 1.12,
                     color: "#FDF6EC",
                   }}
                 >
                   আমিও লিখবো{" "}
                   <span style={{ color: "#D4A843" }}>বাস্তবতা</span>
                 </h1>
-                <p style={{ margin: "0.5rem 0 0", color: "rgba(253,246,236,0.6)", fontSize: "0.92rem" }}>
-                  বাস্তব জীবনের গল্প, অভিজ্ঞতা ও ভাবনা শেয়ার করুন
+                <p style={{ margin: "0.65rem 0 0", color: "rgba(253,246,236,0.68)", fontSize: "0.96rem", lineHeight: 1.8 }}>
+                  আপনার জীবনের সত্য গল্প, সমাজের অভিজ্ঞতা, কবিতা ও ভাবনাকে সম্মানজনকভাবে প্রকাশ করুন। এখানে প্রতিটি লেখা পাঠকের মনে প্রশ্ন, সহমর্মিতা ও সমাধানের ভাবনা তৈরি করতে পারে।
                 </p>
+                <div className="amio-hero-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.65rem", marginTop: "1rem" }}>
+                  {FEATURE_STATS.map((item) => (
+                    <MiniMetricCard key={item.label} {...item} />
+                  ))}
+                </div>
               </div>
 
               <div className="amio-hero-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1663,6 +1887,14 @@ export default function AmiOLikhboBastobota() {
                 )}
               </div>
             </div>
+          )}
+
+          {!slugFromUrl && (
+            <GuidancePanel
+              isAuthenticated={isAuthenticated}
+              onWrite={() => setShowCreateModal(true)}
+              onLogin={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }}
+            />
           )}
 
           {/* ── Local Auth Modal ── */}
@@ -1849,29 +2081,14 @@ export default function AmiOLikhboBastobota() {
                   </ActionButton>
                 </div>
               ) : displayPosts.length === 0 ? (
-                <div
-                  style={{
-                    ...cardStyle,
-                    padding: "3rem 1.5rem",
-                    textAlign: "center",
-                    display: "grid",
-                    gap: "0.75rem",
-                  }}
-                >
-                  <PenLine size={40} color="rgba(232,201,122,0.35)" style={{ margin: "0 auto" }} />
-                  <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "1rem" }}>
-                    {showMyPosts ? "আপনি এখনো কোনো পোস্ট লেখেননি।" : searchActive ? "খোঁজার ফলাফল পাওয়া যায়নি।" : selectedCategory !== "all" ? `“${CATEGORIES.find(c => c.key === selectedCategory)?.label ?? selectedCategory}” বিভাগে এখনো কোনো পোস্ট নেই।` : "এখনো কোনো পোস্ট নেই।"}
-                  </div>
-                  {showMyPosts ? (
-                    <ActionButton onClick={() => setShowCreateModal(true)} small>
-                      <Plus size={14} /> প্রথম পোস্ট লিখুন
-                    </ActionButton>
-                  ) : !searchActive && !isAuthenticated && (
-                    <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.88rem" }}>
-                      লগইন করে প্রথম পোস্ট লিখুন!
-                    </div>
-                  )}
-                </div>
+                <EmptyFeedState
+                  showMyPosts={showMyPosts}
+                  searchActive={searchActive}
+                  selectedCategory={selectedCategory}
+                  isAuthenticated={isAuthenticated}
+                  onWrite={() => setShowCreateModal(true)}
+                  onLogin={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }}
+                />
               ) : (
                 <div style={{ display: "grid", gap: "1rem" }}>
                   {searchActive && (

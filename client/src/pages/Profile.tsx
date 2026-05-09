@@ -173,7 +173,11 @@ export default function Profile() {
 
   return (
     <div style={shellStyle}>
-      <Seo title="আমার প্রোফাইল — মাহবুব সরদার সবুজ" />
+      <Seo
+        title="আমার প্রোফাইল — মাহবুব সরদার সবুজ"
+        description="আমিও লিখবো বাস্তবতা প্ল্যাটফর্মে নিজের প্রোফাইল, পরিচিতি এবং প্রকাশিত লেখাগুলো দেখুন ও সম্পাদনা করুন।"
+        path="/profile"
+      />
       <Navbar />
 
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "100px 16px 60px" }}>
