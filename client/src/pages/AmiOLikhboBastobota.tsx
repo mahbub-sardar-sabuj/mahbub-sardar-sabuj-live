@@ -812,6 +812,8 @@ function PostCard({
 // ── Create Post Modal ─────────────────────────────────────────────────────────
 
 function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorName: string }) {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<CategoryKey>("thought");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -842,7 +844,7 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
       if (!res.ok || !data.url) throw new Error(data.error || "আপলোড ব্যর্থ");
       setImageUrl(data.url);
     } catch (err: any) {
-      setUploadError(err.message || "ছবি আপলোড করতে সমস্যা হয়েছে");
+      setUploadError(err.message || "ছবি আপলোড করতে সমস্যা হয়েছে");
     } finally {
       setUploading(false);
     }
@@ -852,6 +854,8 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
     e.preventDefault();
     if (!content.trim()) return;
     createPost.mutate({
+      title: title.trim() || undefined,
+      category: category !== "all" ? category : undefined,
       content: content.trim(),
       mediaUrl: imageUrl || undefined,
       mediaType: imageUrl ? "image" : "none",
@@ -964,8 +968,45 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
+            {/* Title */}
+            <div>
+              <label style={labelStyle}>শিরোনাম (ঐচ্ছিক)</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="লেখার শিরোনাম দিন..."
+                maxLength={220}
+                style={inputStyle}
+              />
+            </div>
+            {/* Category */}
+            <div>
+              <label style={labelStyle}>বিভাগ</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => setCategory(cat.key as CategoryKey)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "0.35rem 0.75rem", borderRadius: 999,
+                      border: category === cat.key ? "1px solid rgba(247,213,111,0.7)" : "1px solid rgba(232,201,122,0.2)",
+                      background: category === cat.key ? "rgba(212,168,67,0.18)" : "rgba(255,255,255,0.05)",
+                      color: category === cat.key ? "#F7D56F" : "rgba(253,246,236,0.55)",
+                      fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.82rem",
+                      cursor: "pointer", transition: "all 0.12s",
+                    }}
+                  >
+                    {cat.icon} {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {/* Content */}
             <div>
+              <label style={labelStyle}>লেখা *</label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -1049,6 +1090,8 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
 
 // ── Edit Post Modal ─────────────────────────────────────────────────────────
 function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onClose: () => void; authorName: string }) {
+  const [title, setTitle] = useState(post.title);
+  const [category, setCategory] = useState<CategoryKey>((post.category as CategoryKey) || "thought");
   const [content, setContent] = useState(post.content);
   const [imageUrl, setImageUrl] = useState(post.mediaType === "image" ? (post.mediaUrl ?? "") : "");
   const [uploading, setUploading] = useState(false);
@@ -1089,6 +1132,8 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
     if (!content.trim()) return;
     editPost.mutate({
       postId: post.id,
+      title: title.trim() || undefined,
+      category: category !== "all" ? category : undefined,
       content: content.trim(),
       mediaUrl: imageUrl || undefined,
       mediaType: imageUrl ? "image" : "none",
@@ -1163,7 +1208,45 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
+            {/* Title */}
             <div>
+              <label style={labelStyle}>শিরোনাম (ঐচ্ছিক)</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="লেখার শিরোনাম..."
+                maxLength={220}
+                style={inputStyle}
+              />
+            </div>
+            {/* Category */}
+            <div>
+              <label style={labelStyle}>বিভাগ</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => setCategory(cat.key as CategoryKey)}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "0.35rem 0.75rem", borderRadius: 999,
+                      border: category === cat.key ? "1px solid rgba(247,213,111,0.7)" : "1px solid rgba(232,201,122,0.2)",
+                      background: category === cat.key ? "rgba(212,168,67,0.18)" : "rgba(255,255,255,0.05)",
+                      color: category === cat.key ? "#F7D56F" : "rgba(253,246,236,0.55)",
+                      fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.82rem",
+                      cursor: "pointer", transition: "all 0.12s",
+                    }}
+                  >
+                    {cat.icon} {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Content */}
+            <div>
+              <label style={labelStyle}>লেখা *</label>
               <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="আপনার বাস্তবতার গল্প লিখুন..." rows={8} maxLength={600000} required style={{ ...inputStyle, resize: "vertical", minHeight: 160 }} />
             </div>
             {/* Image preview */}
@@ -1177,10 +1260,12 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
             )}
             {uploadError && (
               <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                <span>ছবি আপলোড হয়নি — {uploadError}</span>
+                <span>ছবি আপলোড হয়নি — {uploadError}</span>
                 <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", lineHeight: 1, padding: 0 }}>✕</button>
               </div>
             )}
+            {/* Bottom bar */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button type="button" onClick={() => { setUploadError(""); fileInputRef.current?.click(); }} disabled={uploading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
                 {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ আছে" : "ছবি যোগ করুন"}
@@ -1440,9 +1525,10 @@ export default function AmiOLikhboBastobota() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [editingPost, setEditingPost] = useState<EnrichedPost | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
-    undefined,
+    selectedCategory !== "all" ? { category: selectedCategory } : undefined,
     { refetchInterval: 60000, enabled: !searchActive, retry: false }
   );
   const searchQuery_ = searchQuery.trim();
@@ -1696,6 +1782,50 @@ export default function AmiOLikhboBastobota() {
                   </button>
                 )}
               </div>
+              {/* ── Category filter row ── */}
+              {!searchActive && (
+                <div
+                  className="amio-category-row"
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    overflowX: "auto",
+                    paddingBottom: 4,
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat.key as CategoryKey)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "0.45rem 0.9rem",
+                        borderRadius: 999,
+                        border: selectedCategory === cat.key
+                          ? "1px solid rgba(247,213,111,0.7)"
+                          : "1px solid rgba(232,201,122,0.2)",
+                        background: selectedCategory === cat.key
+                          ? "rgba(212,168,67,0.18)"
+                          : "rgba(255,255,255,0.05)",
+                        color: selectedCategory === cat.key ? "#F7D56F" : "rgba(253,246,236,0.6)",
+                        fontFamily: adorshoFont,
+                        fontWeight: selectedCategory === cat.key ? 900 : 700,
+                        fontSize: "0.85rem",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {cat.icon} {cat.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               {/* ── Feed ── */}
               <>{searchActive && searchQuery_.length < 2 ? (
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
@@ -1730,7 +1860,7 @@ export default function AmiOLikhboBastobota() {
                 >
                   <PenLine size={40} color="rgba(232,201,122,0.35)" style={{ margin: "0 auto" }} />
                   <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "1rem" }}>
-                    {showMyPosts ? "আপনি এখনো কোনো পোস্ট লেখেননি।" : searchActive ? "খোঁজার ফলাফল পাওয়া যায়নি।" : "এখনো কোনো পোস্ট নেই।"}
+                    {showMyPosts ? "আপনি এখনো কোনো পোস্ট লেখেননি।" : searchActive ? "খোঁজার ফলাফল পাওয়া যায়নি।" : selectedCategory !== "all" ? `“${CATEGORIES.find(c => c.key === selectedCategory)?.label ?? selectedCategory}” বিভাগে এখনো কোনো পোস্ট নেই।` : "এখনো কোনো পোস্ট নেই।"}
                   </div>
                   {showMyPosts ? (
                     <ActionButton onClick={() => setShowCreateModal(true)} small>

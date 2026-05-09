@@ -250,6 +250,8 @@ export const writingPlatformRouter = router({
 
   createPost: protectedProcedure
     .input(z.object({
+      title: z.string().min(1).max(220).optional(),
+      category: postCategorySchema.optional(),
       content: z.string().min(1).max(600000),
       mediaUrl: z.string().url().max(2000).optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
@@ -260,15 +262,16 @@ export const writingPlatformRouter = router({
 
       const mediaUrl = input.mediaUrl?.trim() || null;
       const mediaType = mediaUrl ? input.mediaType : "none";
-      // Auto-generate title from first line of content (max 80 chars)
-      const autoTitle = input.content.trim().split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
+      // Use provided title or auto-generate from first line of content
+      const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
+      const category = input.category ?? "thought";
 
       const insertResult = await db.insert(writingPosts).values({
         slug: createSlug(autoTitle),
         authorOpenId: ctx.user.openId,
         authorName: normalizeAuthorName(ctx.user.name),
         title: autoTitle,
-        category: "thought",
+        category,
         content: input.content.trim(),
         mediaUrl,
         mediaType,
@@ -282,7 +285,7 @@ export const writingPlatformRouter = router({
           postId: insertId,
           title: autoTitle,
           authorName: normalizeAuthorName(ctx.user.name),
-          category: "thought",
+          category,
           slug: "",
         }).catch(err => console.error("[Telegram post submit notify error]", err));
       }
@@ -311,6 +314,8 @@ export const writingPlatformRouter = router({
   editPost: protectedProcedure
     .input(z.object({
       postId: z.number().int().positive(),
+      title: z.string().min(1).max(220).optional(),
+      category: postCategorySchema.optional(),
       content: z.string().min(1).max(600000),
       mediaUrl: z.string().url().max(2000).optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
@@ -330,11 +335,12 @@ export const writingPlatformRouter = router({
       }
       const mediaUrl = input.mediaUrl?.trim() || null;
       const mediaType = mediaUrl ? input.mediaType : "none";
-      // Auto-generate title from first line of content
-      const autoTitle = input.content.trim().split("\n")[0].slice(0, 80) || post.title;
+      // Use provided title or auto-generate from first line of content
+      const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || post.title;
+      const category = input.category ?? post.category;
       await db.update(writingPosts).set({
         title: autoTitle,
-        category: post.category,
+        category,
         content: input.content.trim(),
         mediaUrl,
         mediaType,
