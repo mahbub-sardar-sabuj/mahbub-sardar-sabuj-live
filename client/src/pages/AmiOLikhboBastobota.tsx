@@ -1174,7 +1174,6 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="ক্যাপশন লিখুন..."
-              required
               rows={5}
               autoFocus
               maxLength={600000}
@@ -1196,7 +1195,7 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
               </button>
               <div style={{ flex: 1 }} />
-              <ActionButton disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}>
+              <ActionButton type="submit" disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}>
                 {createPost.isPending ? <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পোস্ট হচ্ছে...</> : <><Send size={16} /> পোস্ট করুন</>}
               </ActionButton>
             </div>
@@ -1351,7 +1350,6 @@ function EditPostModal({ post, onClose, authorName, avatarUrl }: { post: Enriche
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="ক্যাপশন লিখুন..."
-              required
               rows={5}
               autoFocus
               maxLength={600000}
