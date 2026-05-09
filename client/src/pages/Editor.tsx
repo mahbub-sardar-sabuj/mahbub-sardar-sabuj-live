@@ -560,6 +560,7 @@ function UpscalePanel({ onClose }: { onClose: () => void }) {
   const [sharpness, setSharpness] = useState(70);
   const [denoise, setDenoise] = useState(25);
   const [processing, setProcessing] = useState(false);
+  const [upscaleError, setUpscaleError] = useState("");
   const [progress, setProgress] = useState(0);
   const [resultSrc, setResultSrc] = useState<string | null>(null);
   const [showAfter, setShowAfter] = useState(true);
@@ -621,7 +622,7 @@ function UpscalePanel({ onClose }: { onClose: () => void }) {
       setResultSrc(canvas.toDataURL(ext, 0.95));
       setProgress(100);
     } catch (err) {
-      console.error("Upscale error:", err);
+      setUpscaleError("ছবি প্রসেস করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setProcessing(false);
     }

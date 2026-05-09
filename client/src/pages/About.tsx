@@ -238,6 +238,7 @@ export default function About() {
                   src={PROFILE_1}
                   alt="মাহবুব সরদার সবুজ"
                   className="about-portrait-img"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/images/ebooks/dukkhovilash-cover.jpg"; }}
                   style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9)" }}
                 />
                 <div style={{

@@ -13,6 +13,7 @@ import {
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Seo from "../components/Seo";
+import { newsData as allNewsData } from "../data/newsData";
 import type { NewsItem } from "../data/newsData";
 interface Comment {
   id: number;
@@ -37,10 +38,7 @@ const breakingNews = [
 ];
 
 export default function News() {
-  const [newsData, setNewsData] = useState<NewsItem[]>([]);
-  useEffect(() => {
-    import('../data/newsData').then(m => setNewsData(m.newsData));
-  }, []);
+  const [newsData] = useState<NewsItem[]>(allNewsData);
   const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
@@ -343,6 +341,7 @@ export default function News() {
             <img
               src="/images/sardar-sangbad-logo-final.png"
               alt="সরদার সংবাদ"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               style={{
                 height: "auto",
                 maxWidth: "min(88vw, 640px)",

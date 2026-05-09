@@ -18,7 +18,7 @@ import Seo from "@/components/Seo";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
-const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile2_57482935.jpg";
+const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
 const BOOK_COVER = "/images/book-cover-20260328.jpg";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
@@ -378,6 +378,7 @@ export default function Home() {
                   <img
                     src={PROFILE_1}
                     alt="মাহবুব সরদার সবুজ"
+                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -474,7 +475,7 @@ export default function Home() {
                 <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
                 বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর
                 <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
-                AI চ্যাটবটে সরাসরি অডিও এডিটিং ও এডিটিং শেখার গাইডলাইন পাওয়া যায়
+                AI চ্যাটবটে লেখক সম্পর্কে যেকোনো প্রশ্ন করুন
                 <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
               </span>
             </div>
@@ -945,6 +946,7 @@ export default function Home() {
                 <img
                   src={PROFILE_2}
                   alt="মাহবুব সরদার সবুজ — লেখার মুহূর্তে"
+                  onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }}
                   style={{
                     width: "100%",
                     display: "block",

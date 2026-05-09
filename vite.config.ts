@@ -169,8 +169,26 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1500,
     minify: "esbuild",
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+            return "react-vendor";
+          }
+          if (id.includes("node_modules/framer-motion")) {
+            return "framer-motion";
+          }
+          if (id.includes("node_modules/lucide-react")) {
+            return "lucide";
+          }
+          if (id.includes("node_modules/@radix-ui") || id.includes("node_modules/cmdk")) {
+            return "radix-ui";
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,

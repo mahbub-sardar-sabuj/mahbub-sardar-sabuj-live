@@ -1032,15 +1032,17 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
   const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
 
+  const [postError, setPostError] = useState("");
   const createPost = trpc.writingPlatform.createPost.useMutation({
     onSuccess: () => {
       setSubmitted(true);
+      setPostError("");
       utils.writingPlatform.listPosts.invalidate();
       utils.writingPlatform.myPosts.invalidate();
       setTimeout(() => onClose(), 2200);
     },
     onError: (err) => {
-      console.error("[createPost error]", err);
+      setPostError(err.message || "পোস্ট প্রকাশ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     },
   });
 
