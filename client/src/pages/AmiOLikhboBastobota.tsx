@@ -1527,7 +1527,11 @@ function PostDetail({
       {/* Full post */}
       <article style={{ ...cardStyle, padding: "clamp(1.2rem, 4vw, 2rem)", display: "grid", gap: "1.2rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Avatar name={post.authorName} size={50} />
+          {post.authorAvatarUrl ? (
+            <div style={{ width: 50, height: 50, borderRadius: "50%", background: `url(${post.authorAvatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.35)", flexShrink: 0 }} />
+          ) : (
+            <Avatar name={post.authorName} size={50} />
+          )}
           <div>
             <div style={{ fontWeight: 900, color: "#F7D56F", fontSize: "1.05rem" }}>{post.authorName}</div>
             <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>

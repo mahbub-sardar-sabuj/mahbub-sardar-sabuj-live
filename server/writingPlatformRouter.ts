@@ -117,10 +117,8 @@ async function enrichPost(post: typeof writingPosts.$inferSelect, userOpenId?: s
     const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
     if (Array.isArray(rows) && rows.length > 0 && rows[0].avatarUrl) {
       const av = rows[0].avatarUrl as string;
-      // Only use non-base64 URLs to avoid sending large data
-      if (!av.startsWith("data:")) {
-        authorAvatarUrl = av;
-      }
+      // Accept both remote URLs and base64 data URLs
+      authorAvatarUrl = av;
     }
   } catch {
     // avatarUrl not critical, ignore errors

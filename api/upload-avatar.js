@@ -3,11 +3,27 @@
  * POST multipart/form-data with "avatar" field
  * Accepts ANY file size — no limit.
  * Stores as base64 data URL in DB (longtext column).
+ * If Forge storage is unavailable, resizes to 200x200 thumbnail before base64 encoding.
  */
 import { jwtVerify } from "jose";
 import formidable from "formidable";
 import fs from "fs";
 import mysql from "mysql2/promise";
+
+// Resize image to thumbnail using sharp (if available) or return original buffer
+async function resizeToThumbnail(buffer, mimeType) {
+  try {
+    const sharp = (await import("sharp")).default;
+    const resized = await sharp(buffer)
+      .resize(200, 200, { fit: "cover", position: "center" })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+    return { buffer: resized, mimeType: "image/jpeg" };
+  } catch {
+    // sharp not available, return original
+    return { buffer, mimeType };
+  }
+}
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
@@ -117,9 +133,10 @@ export default async function handler(req, res) {
       }
     }
 
-    // If storage failed or not configured → use base64 data URL
+    // If storage failed or not configured → resize to thumbnail then use base64 data URL
     if (!avatarUrl) {
-      avatarUrl = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+      const { buffer: thumbBuffer, mimeType: thumbMime } = await resizeToThumbnail(fileBuffer, mimeType);
+      avatarUrl = `data:${thumbMime};base64,${thumbBuffer.toString("base64")}`;
     }
 
     // Save to DB
