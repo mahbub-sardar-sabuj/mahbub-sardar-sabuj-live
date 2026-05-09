@@ -57,9 +57,9 @@ const glassStyle: CSSProperties = {
 
 const cardStyle: CSSProperties = {
   border: "1px solid rgba(232,201,122,0.18)",
-  background: "linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025))",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.28)",
-  backdropFilter: "blur(14px)",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.028))",
+  boxShadow: "0 8px 36px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
+  backdropFilter: "blur(16px)",
   borderRadius: 24,
 };
 
@@ -186,14 +186,14 @@ function ActionButton({
 
   if (href && !disabled) {
     return (
-      <a href={href} style={baseStyle}>
+      <a href={href} className="amio-action-btn" style={baseStyle}>
         {children}
       </a>
     );
   }
 
   return (
-    <button type={type} disabled={disabled} style={baseStyle} onClick={onClick}>
+    <button type={type} disabled={disabled} className="amio-action-btn" style={baseStyle} onClick={onClick}>
       {children}
     </button>
   );
@@ -206,6 +206,8 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  // Generate a consistent hue from the name
+  const hue = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
 
   return (
     <div
@@ -213,15 +215,15 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
         width: size,
         height: size,
         borderRadius: "50%",
-        background: "linear-gradient(135deg, #D4A843, #B98A24)",
+        background: `linear-gradient(135deg, hsl(${hue}, 55%, 42%), hsl(${(hue + 30) % 360}, 50%, 30%))`,
         display: "grid",
         placeItems: "center",
-        color: "#071426",
+        color: "#fff",
         fontWeight: 900,
         fontSize: size * 0.36,
         fontFamily: adorshoFont,
         flexShrink: 0,
-        border: "2px solid rgba(232,201,122,0.35)",
+        border: "2px solid rgba(255,255,255,0.18)",
       }}
     >
       {initials || "?"}
@@ -252,14 +254,15 @@ function CategoryBadge({ category }: { category: string }) {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 5,
-        padding: "0.22rem 0.65rem",
+        gap: 4,
+        padding: "0.2rem 0.65rem",
         borderRadius: 999,
-        background: "rgba(232,201,122,0.12)",
-        border: "1px solid rgba(232,201,122,0.25)",
+        background: "linear-gradient(135deg, rgba(212,168,67,0.16), rgba(212,168,67,0.08))",
+        border: "1px solid rgba(232,201,122,0.28)",
         color: "#F7D56F",
-        fontSize: "0.78rem",
+        fontSize: "0.76rem",
         fontWeight: 700,
+        letterSpacing: "0.01em",
       }}
     >
       {cat.icon} {cat.label}
@@ -293,7 +296,7 @@ function GuidancePanel({ isAuthenticated, onWrite, onLogin }: { isAuthenticated:
           <div style={{ color: "#F7D56F", fontSize: "0.82rem", fontWeight: 900, letterSpacing: "0.02em" }}>লেখা শুরু করার সহজ পথ</div>
           <h2 style={{ margin: "0.25rem 0 0", color: "#FDF6EC", fontSize: "clamp(1.1rem, 3vw, 1.35rem)", lineHeight: 1.35 }}>বাস্তবতা লিখুন স্পষ্টভাবে, মানবিকভাবে, কার্যকরভাবে</h2>
           <p style={{ margin: "0.45rem 0 0", color: "rgba(253,246,236,0.62)", fontSize: "0.9rem", lineHeight: 1.75 }}>
-            এই ট্যাবের লক্ষ্য হলো বাস্তব জীবনের অভিজ্ঞতা, সমাজের সত্য গল্প এবং মানুষের ভাবনাকে সুন্দরভাবে প্রকাশ করা। লেখা জমা দিলে তা পর্যালোচনার পর প্রকাশিত হবে।
+            এই ট্যাবের লক্ষ্য হলো বাস্তব জীবনের অভিজ্ঞতা, সমাজের সত্য গল্প এবং মানুষের ভাবনাকে সুন্দরভাবে প্রকাশ করা। লেখা জমা দিলে তা সাথে সাথে প্রকাশিত হবে।
           </p>
         </div>
         <ActionButton onClick={isAuthenticated ? onWrite : onLogin} small>
@@ -367,9 +370,9 @@ function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthent
     ? `“${categoryLabel}” বিভাগে প্রথম লেখা হতে পারে আপনারটি`
     : "বাস্তবতার প্রথম লেখা শুরু হোক আপনার হাতেই";
   const description = showMyPosts
-    ? "নিজের অভিজ্ঞতা, গল্প বা ভাবনা লিখে জমা দিন। অনুমোদনের পর তা পাঠকদের সামনে দেখা যাবে।"
+    ? "নিজের অভিজ্ঞতা, গল্প বা ভাবনা লিখুন। পোস্ট করলে তা সাথে সাথে পাঠকদের সামনে দেখা যাবে।"
     : searchActive
-    ? "অন্য শব্দ দিয়ে খুঁজে দেখুন, অথবা নতুন একটি বাস্তব অভিজ্ঞতা লিখে এই জায়গাটি সমৃদ্ধ করুন।"
+    ? "অন্য শব্দ দিয়ে খুঁজে দেখুন, অথবা নতুন একটি বাস্তব অভিজ্ঞতা লিখে এই জায়গাটি সমৃদ্ধ করুন।"
     : "একটি সত্য ঘটনা, একটি মানবিক শিক্ষা, অথবা সমাজের কোনো বাস্তব সমস্যার কথা লিখুন। ভালো লেখা অন্য মানুষকে ভাবতে ও শিখতে সাহায্য করে।";
 
   return (
@@ -458,6 +461,7 @@ function ReactionBar({
         {/* Main reaction button */}
         <button
           type="button"
+          className="amio-action-btn"
           onClick={() => setShowPicker((p) => !p)}
           style={{
             display: "inline-flex",
@@ -498,13 +502,14 @@ function ReactionBar({
             left: 0,
             display: "flex",
             gap: 6,
-            padding: "0.5rem 0.75rem",
-            borderRadius: 999,
-            background: "rgba(7,20,38,0.96)",
-            border: "1px solid rgba(232,201,122,0.25)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-            backdropFilter: "blur(20px)",
-            zIndex: 100,
+            padding: "0.5rem 0.65rem",
+            borderRadius: 20,
+            background: "rgba(7,20,38,0.95)",
+            border: "1px solid rgba(232,201,122,0.28)",
+            backdropFilter: "blur(24px)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
+            zIndex: 10,
+            animation: "slideDown 0.2s ease",
           }}
         >
           {(Object.entries(REACTION_CONFIG) as [ReactionType, typeof REACTION_CONFIG[ReactionType]][]).map(
@@ -512,27 +517,22 @@ function ReactionBar({
               <button
                 key={key}
                 type="button"
-                title={cfg.label}
                 onClick={() => handleReact(key)}
+                title={cfg.label}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 3,
-                  padding: "0.35rem 0.5rem",
+                  display: "grid",
+                  placeItems: "center",
+                  width: 40,
+                  height: 40,
                   borderRadius: 12,
                   border: myReaction === key ? `1px solid ${cfg.color}66` : "1px solid transparent",
-                  background: myReaction === key ? `${cfg.color}22` : "transparent",
-                  color: cfg.color,
+                  background: myReaction === key ? `${cfg.color}28` : "rgba(255,255,255,0.04)",
                   cursor: "pointer",
-                  transition: "transform 0.12s",
-                  fontFamily: adorshoFont,
-                  fontSize: "0.7rem",
-                  fontWeight: 700,
+                  fontSize: "1.35rem",
+                  transition: "transform 0.15s, background 0.12s, border-color 0.12s",
                 }}
               >
                 {cfg.icon}
-                <span>{cfg.label}</span>
               </button>
             )
           )}
@@ -580,25 +580,26 @@ function CommentSection({
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 7,
-          padding: "0.45rem 0.9rem",
-          borderRadius: 999,
-          border: "1px solid rgba(232,201,122,0.2)",
-          background: open ? "rgba(232,201,122,0.1)" : "rgba(255,255,255,0.05)",
-          color: open ? "#F7D56F" : "rgba(253,246,236,0.65)",
-          fontFamily: adorshoFont,
-          fontWeight: 700,
-          fontSize: "0.85rem",
-          cursor: "pointer",
-          transition: "all 0.15s",
-        }}
-      >
+        <button
+          type="button"
+          className="amio-action-btn"
+          onClick={() => setOpen((o) => !o)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 7,
+            padding: "0.45rem 0.9rem",
+            borderRadius: 999,
+            border: "1px solid rgba(232,201,122,0.2)",
+            background: open ? "rgba(232,201,122,0.1)" : "rgba(255,255,255,0.05)",
+            color: open ? "#F7D56F" : "rgba(253,246,236,0.65)",
+            fontFamily: adorshoFont,
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            cursor: "pointer",
+            transition: "all 0.15s",
+          }}
+        >
         <MessageCircle size={15} />
         মন্তব্য {commentCount > 0 && `(${commentCount})`}
         {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -662,7 +663,7 @@ function CommentSection({
                 gap: 8,
               }}
             >
-              <CheckCircle2 size={15} /> মন্তব্য পাঠানো হয়েছে। অনুমোদনের পর প্রকাশিত হবে।
+              <CheckCircle2 size={15} /> মন্তব্য প্রকাশিত হয়েছে।
             </div>
           )}
         </div>
@@ -722,7 +723,7 @@ function PostCard({
   const showTitle = post.title && post.title.trim() !== contentFirstLine.trim() && post.title !== "বাস্তবতার গল্প";
 
   return (
-    <article style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "1rem" }}>
+    <article className="amio-post-card" style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "1rem" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {post.authorAvatarUrl ? (
@@ -730,8 +731,8 @@ function PostCard({
         ) : (
           <Avatar name={post.authorName} size={46} />
         )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 900, fontSize: "1rem", color: "#F7D56F", lineHeight: 1.2 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 900, fontSize: "1rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em" }}>
             {post.authorName}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
@@ -813,7 +814,7 @@ function PostCard({
       )}
 
       {/* Content */}
-      <div style={{ color: "rgba(253,246,236,0.82)", lineHeight: 1.85, fontSize: "0.97rem" }}>
+      <div style={{ color: "rgba(253,246,236,0.85)", lineHeight: 1.9, fontSize: "1rem" }}>
         <p style={{ margin: 0, whiteSpace: "pre-wrap", cursor: "pointer" }} onClick={() => onOpenDetail(post.slug)}>{displayContent}</p>
         {isLong && (
           <button
@@ -866,8 +867,9 @@ function PostCard({
           display: "flex",
           alignItems: "center",
           gap: 14,
+          paddingTop: "0.25rem",
           paddingBottom: "0.75rem",
-          borderBottom: "1px solid rgba(232,201,122,0.1)",
+          borderBottom: "1px solid rgba(232,201,122,0.08)",
           flexWrap: "wrap",
         }}
       >
@@ -911,6 +913,7 @@ function PostCard({
         />
         <button
           type="button"
+          className="amio-action-btn"
           onClick={() => {
             if (navigator.share) {
               navigator.share({ title: post.title, url: `${window.location.origin}/amio-likhbo-bastobota/${post.slug}` });
@@ -1179,15 +1182,37 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
               </div>
             )}
 
+            {/* Category selector */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => setCategory(cat.key as CategoryKey)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "0.35rem 0.75rem", borderRadius: 999,
+                    border: category === cat.key ? "1px solid rgba(247,213,111,0.6)" : "1px solid rgba(232,201,122,0.18)",
+                    background: category === cat.key ? "rgba(247,213,111,0.15)" : "rgba(255,255,255,0.04)",
+                    color: category === cat.key ? "#F7D56F" : "rgba(253,246,236,0.55)",
+                    fontFamily: adorshoFont, fontWeight: category === cat.key ? 900 : 700,
+                    fontSize: "0.8rem", cursor: "pointer",
+                  }}
+                >
+                  {cat.icon} {cat.label}
+                </button>
+              ))}
+            </div>
+
             {/* Caption */}
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="ক্যাপশন লিখুন..."
+              placeholder="আপনার বাস্তব অভিজ্ঞতা, গল্প, ভাবনা বা কবিতা লিখুন..."
               rows={5}
               autoFocus
               maxLength={600000}
-              style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 14, padding: "0.8rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 130, lineHeight: 1.8 }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 16, padding: "0.9rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 140, lineHeight: 1.85 }}
             />
 
             {uploadError && (
@@ -1394,11 +1419,11 @@ function EditPostModal({ post, onClose, authorName, avatarUrl }: { post: Enriche
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="ক্যাপশন লিখুন..."
+              placeholder="আপনার বাস্তব অভিজ্ঞতা, গল্প, ভাবনা বা কবিতা লিখুন..."
               rows={5}
               autoFocus
               maxLength={600000}
-              style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 14, padding: "0.8rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 130, lineHeight: 1.8 }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 16, padding: "0.9rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 140, lineHeight: 1.85 }}
             />
 
             {uploadError && (
@@ -1706,9 +1731,12 @@ export default function AmiOLikhboBastobota() {
   const posts = (searchActive && searchQuery_.length >= 2
     ? (searchResultsQuery.data ?? [])
     : (postsQuery.data ?? [])) as EnrichedPost[];
+  const filteredPosts = selectedCategory === "all"
+    ? posts
+    : posts.filter((p) => p.category === selectedCategory);
   const displayPosts = showMyPosts
     ? ((myPostsQuery.data ?? []) as EnrichedPost[])
-    : posts;
+    : filteredPosts;
 
   useEffect(() => {
     if (!isAuthenticated && showMyPosts) {
@@ -1741,13 +1769,21 @@ export default function AmiOLikhboBastobota() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .post-card-enter { animation: fadeIn 0.35s ease forwards; }
-        .amio-topbar-avatar:hover { opacity: 0.85; }
-        .amio-post-btn:hover { opacity: 0.88; transform: scale(1.02); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .post-card-enter { animation: fadeIn 0.4s ease forwards; }
+        .amio-topbar-avatar:hover { opacity: 0.85; transform: scale(1.05); }
+        .amio-post-btn:hover { opacity: 0.9; transform: scale(1.03); }
+        .amio-post-card:hover { border-color: rgba(232,201,122,0.32) !important; box-shadow: 0 12px 48px rgba(0,0,0,0.38) !important; transform: translateY(-2px); }
+        .amio-post-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+        .amio-cat-btn:hover { background: rgba(232,201,122,0.14) !important; border-color: rgba(232,201,122,0.4) !important; }
+        .amio-cat-btn { transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .amio-action-btn:hover { background: rgba(255,255,255,0.1) !important; }
+        .amio-action-btn { transition: background 0.15s; }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 99px; }
       `}</style>
 
-      <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem" }}>
+      <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem", minHeight: "100vh" }}>
         <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gap: "1rem" }}>
 
           {/* ── Top Bar: Search + Post Button + Profile ── */}
@@ -1758,10 +1794,10 @@ export default function AmiOLikhboBastobota() {
               gap: 10,
               padding: "0.65rem 0.85rem",
               borderRadius: 20,
-              background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(232,201,122,0.18)",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.22)",
+              background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
+              border: "1px solid rgba(232,201,122,0.22)",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 4px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}>
               {/* Search bar */}
               <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
@@ -1887,6 +1923,73 @@ export default function AmiOLikhboBastobota() {
             </div>
           )}
 
+          {/* ── Category Filter + My Posts Toggle ── */}
+          {!slugFromUrl && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.key}
+                  type="button"
+                  className="amio-cat-btn"
+                  onClick={() => { setSelectedCategory(cat.key); setShowMyPosts(false); }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "0.42rem 0.85rem",
+                    borderRadius: 999,
+                    border: selectedCategory === cat.key && !showMyPosts
+                      ? "1px solid rgba(247,213,111,0.7)"
+                      : "1px solid rgba(232,201,122,0.2)",
+                    background: selectedCategory === cat.key && !showMyPosts
+                      ? "linear-gradient(135deg, rgba(247,213,111,0.2), rgba(212,168,67,0.12))"
+                      : "rgba(255,255,255,0.04)",
+                    color: selectedCategory === cat.key && !showMyPosts ? "#F7D56F" : "rgba(253,246,236,0.6)",
+                    fontFamily: adorshoFont,
+                    fontWeight: selectedCategory === cat.key && !showMyPosts ? 900 : 700,
+                    fontSize: "0.82rem",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    boxShadow: selectedCategory === cat.key && !showMyPosts ? "0 2px 12px rgba(212,168,67,0.18)" : "none",
+                  }}
+                >
+                  {cat.icon} {cat.label}
+                </button>
+              ))}
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  className="amio-cat-btn"
+                  onClick={() => setShowMyPosts((p) => !p)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "0.42rem 0.85rem",
+                    borderRadius: 999,
+                    border: showMyPosts
+                      ? "1px solid rgba(129,140,248,0.6)"
+                      : "1px solid rgba(232,201,122,0.2)",
+                    background: showMyPosts
+                      ? "rgba(129,140,248,0.15)"
+                      : "rgba(255,255,255,0.04)",
+                    color: showMyPosts ? "#A5B4FC" : "rgba(253,246,236,0.6)",
+                    fontFamily: adorshoFont,
+                    fontWeight: showMyPosts ? 900 : 700,
+                    fontSize: "0.82rem",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    marginLeft: "auto",
+                  }}
+                >
+                  <UserPlus size={13} /> আমার লেখা
+                </button>
+              )}
+            </div>
+          )}
+
           {/* ── Local Auth Modal ── */}
           {showLocalAuth && (
             <LocalAuthModal
@@ -1903,14 +2006,15 @@ export default function AmiOLikhboBastobota() {
               style={{
                 padding: "0.85rem 1.1rem",
                 borderRadius: 16,
-                background: "rgba(212,168,67,0.12)",
-                border: "1px solid rgba(212,168,67,0.35)",
+                background: "linear-gradient(135deg, rgba(212,168,67,0.14), rgba(212,168,67,0.08))",
+                border: "1px solid rgba(212,168,67,0.4)",
                 color: "#F7D56F",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 12,
-                animation: "fadeIn 0.25s ease",
+                animation: "slideDown 0.3s ease",
+                boxShadow: "0 4px 20px rgba(212,168,67,0.12)",
               }}
             >
               <span style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
@@ -1963,6 +2067,18 @@ export default function AmiOLikhboBastobota() {
             />
           ) : (
             <>
+              {/* ── Guidance Panel (shown when not searching and not in my-posts mode) ── */}
+              {!searchActive && !showMyPosts && !slugFromUrl && posts.length === 0 && !feedIsLoading && !feedHasError && (
+                <GuidancePanel
+                  isAuthenticated={isAuthenticated}
+                  onWrite={() => setShowCreateModal(true)}
+                  onLogin={() => {
+                    if (isLoginConfigured) { window.location.href = loginHref; }
+                    else { setLocalAuthMode("login"); setShowLocalAuth(true); }
+                  }}
+                />
+              )}
+
               {/* ── Feed ── */}
               <>{searchActive && searchQuery_.length < 2 ? (
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
@@ -1986,9 +2102,17 @@ export default function AmiOLikhboBastobota() {
                   </ActionButton>
                 </div>
               ) : displayPosts.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "3rem 1rem", color: "rgba(253,246,236,0.45)", fontSize: "0.95rem" }}>
-                  {searchActive ? `"${searchQuery}" এর জন্য কোনো পোস্ট পাওয়া যায়নি।` : showMyPosts ? "আপনার এখনো কোনো পোস্ট নেই।" : "এখনো কোনো পোস্ট নেই।"}
-                </div>
+                <EmptyFeedState
+                  showMyPosts={showMyPosts}
+                  searchActive={searchActive}
+                  selectedCategory={selectedCategory}
+                  isAuthenticated={isAuthenticated}
+                  onWrite={() => setShowCreateModal(true)}
+                  onLogin={() => {
+                    if (isLoginConfigured) { window.location.href = loginHref; }
+                    else { setLocalAuthMode("login"); setShowLocalAuth(true); }
+                  }}
+                />
               ) : (
                 <div style={{ display: "grid", gap: "1rem" }}>
                   {searchActive && (
