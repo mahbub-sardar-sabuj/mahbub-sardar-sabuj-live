@@ -1743,7 +1743,7 @@ export default function AmiOLikhboBastobota() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
-    selectedCategory !== "all" ? { category: selectedCategory } : undefined,
+    undefined,
     { refetchInterval: 60000, enabled: !searchActive, retry: false }
   );
   const searchQuery_ = searchQuery.trim();
@@ -1805,102 +1805,148 @@ export default function AmiOLikhboBastobota() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .post-card-enter { animation: fadeIn 0.35s ease forwards; }
-        .amio-category-row::-webkit-scrollbar { display: none; }
-        @media (max-width: 520px) {
-          .amio-mobile-stack { align-items: stretch !important; }
-          .amio-mobile-stack > * { width: 100%; }
-          .amio-hero-actions { width: 100%; max-width: 100%; flex-direction: column; overflow: hidden; }
-          .amio-hero-actions > * { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box !important; }
-          .amio-hero-metrics { grid-template-columns: 1fr !important; }
-        }
+        .amio-topbar-avatar:hover { opacity: 0.85; }
+        .amio-post-btn:hover { opacity: 0.88; transform: scale(1.02); }
       `}</style>
 
-      <main style={{ padding: "calc(var(--site-nav-offset, 98px) + clamp(1rem, 4vw, 2rem)) 0 3rem" }}>
-        <div style={{ width: "min(720px, calc(100% - clamp(1rem, 5vw, 2rem)))", margin: "0 auto", display: "grid", gap: "1.25rem" }}>
+      <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem" }}>
+        <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gap: "1rem" }}>
 
-          {/* ── Hero header ── */}
+          {/* ── Top Bar: Search + Post Button + Profile ── */}
           {!slugFromUrl && (
-            <div
-              className="amio-mobile-stack"
-              style={{
-                ...glassStyle,
-                borderRadius: 28,
-                padding: "clamp(1.2rem, 4vw, 2rem)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "1rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <div style={{ flex: "1 1 360px", minWidth: 0 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0.28rem 0.7rem", borderRadius: 999, background: "rgba(212,168,67,0.13)", border: "1px solid rgba(232,201,122,0.25)", color: "#F7D56F", fontSize: "0.78rem", fontWeight: 900, marginBottom: "0.65rem" }}>
-                  <Sparkles size={14} /> বাংলা বাস্তব লেখার কমিউনিটি
-                </div>
-                <h1
-                  style={{
-                    margin: 0,
-                    fontSize: "clamp(1.75rem, 5.5vw, 2.85rem)",
-                    fontWeight: 900,
-                    lineHeight: 1.12,
-                    color: "#FDF6EC",
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "0.65rem 0.85rem",
+              borderRadius: 20,
+              background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
+              border: "1px solid rgba(232,201,122,0.18)",
+              backdropFilter: "blur(16px)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.22)",
+            }}>
+              {/* Search bar */}
+              <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
+                <Search size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(253,246,236,0.38)", pointerEvents: "none" }} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSearchActive(e.target.value.trim().length >= 2);
                   }}
-                >
-                  আমিও লিখবো{" "}
-                  <span style={{ color: "#D4A843" }}>বাস্তবতা</span>
-                </h1>
-                <p style={{ margin: "0.65rem 0 0", color: "rgba(253,246,236,0.68)", fontSize: "0.96rem", lineHeight: 1.8 }}>
-                  আপনার জীবনের সত্য গল্প, সমাজের অভিজ্ঞতা, কবিতা ও ভাবনাকে সম্মানজনকভাবে প্রকাশ করুন। এখানে প্রতিটি লেখা পাঠকের মনে প্রশ্ন, সহমর্মিতা ও সমাধানের ভাবনা তৈরি করতে পারে।
-                </p>
-                <div className="amio-hero-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.65rem", marginTop: "1rem" }}>
-                  {FEATURE_STATS.map((item) => (
-                    <MiniMetricCard key={item.label} {...item} />
-                  ))}
-                </div>
-              </div>
-
-              <div className="amio-hero-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {isAuthenticated ? (
-                  <>
-                    <ActionButton onClick={() => setShowCreateModal(true)} small>
-                      <Plus size={15} /> নতুন লেখা
-                    </ActionButton>
-                    <ActionButton onClick={() => setShowMyPosts((p) => !p)} variant="ghost" small>
-                      <PenLine size={15} /> {showMyPosts ? "সব পোস্ট" : "আমার পোস্ট"}
-                    </ActionButton>
-                    <ActionButton href="/profile" variant="ghost" small>
-                      <User size={15} /> প্রোফাইল
-                    </ActionButton>
-                  </>
-                ) : isLoginConfigured ? (
-                  <>
-                    <ActionButton href={loginHref} small>
-                      <KeyRound size={15} /> লগইন
-                    </ActionButton>
-                    <ActionButton href={signupHref} variant="ghost" small>
-                      <UserPlus size={15} /> একাউন্ট খুলুন
-                    </ActionButton>
-                  </>
-                ) : (
-                  <>
-                    <ActionButton href="/amio-likhbo-login" small>
-                      <KeyRound size={15} /> লগইন
-                    </ActionButton>
-                    <ActionButton href="/amio-likhbo-login?mode=register" variant="ghost" small>
-                      <UserPlus size={15} /> একাউন্ট খুলুন
-                    </ActionButton>
-                  </>
+                  onFocus={() => searchQuery.trim().length >= 2 && setSearchActive(true)}
+                  placeholder="পোস্ট বা লেখক খুঁজুন..."
+                  style={{
+                    width: "100%",
+                    padding: "0.55rem 2rem 0.55rem 2.2rem",
+                    borderRadius: 999,
+                    border: searchActive ? "1px solid rgba(247,213,111,0.45)" : "1px solid rgba(232,201,122,0.18)",
+                    background: "rgba(255,255,255,0.055)",
+                    color: "#FDF6EC",
+                    fontFamily: adorshoFont,
+                    fontSize: "0.88rem",
+                    outline: "none",
+                    transition: "border 0.15s",
+                    boxSizing: "border-box",
+                  }}
+                />
+                {searchActive && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(""); setSearchActive(false); }}
+                    style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(253,246,236,0.45)", cursor: "pointer", padding: 2, display: "flex", alignItems: "center" }}
+                  >
+                    <X size={14} />
+                  </button>
                 )}
               </div>
-            </div>
-          )}
 
-          {!slugFromUrl && (
-            <GuidancePanel
-              isAuthenticated={isAuthenticated}
-              onWrite={() => setShowCreateModal(true)}
-              onLogin={() => { window.location.href = "/amio-likhbo-login"; }}
-            />
+              {/* Post button */}
+              {isAuthenticated ? (
+                <button
+                  className="amio-post-btn"
+                  type="button"
+                  onClick={() => setShowCreateModal(true)}
+                  title="নতুন পোস্ট লিখুন"
+                  style={{
+                    flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "0.52rem 0.95rem",
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%)",
+                    border: "1px solid rgba(255,235,166,0.6)",
+                    color: "#071426",
+                    fontFamily: adorshoFont,
+                    fontWeight: 900,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 16px rgba(212,168,67,0.28)",
+                    transition: "opacity 0.15s, transform 0.12s",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <Plus size={15} /> পোস্ট
+                </button>
+              ) : (
+                <a
+                  href={isLoginConfigured ? loginHref : "/amio-likhbo-login"}
+                  style={{
+                    flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "0.52rem 0.95rem",
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%)",
+                    border: "1px solid rgba(255,235,166,0.6)",
+                    color: "#071426",
+                    fontFamily: adorshoFont,
+                    fontWeight: 900,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 16px rgba(212,168,67,0.28)",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <KeyRound size={15} /> লগইন
+                </a>
+              )}
+
+              {/* Profile avatar / icon */}
+              <a
+                href="/profile"
+                className="amio-topbar-avatar"
+                title="প্রোফাইল"
+                style={{
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: isAuthenticated && (user as any)?.avatarUrl
+                    ? `url(${(user as any).avatarUrl}) center/cover no-repeat`
+                    : "linear-gradient(135deg, rgba(212,168,67,0.25), rgba(81,139,255,0.15))",
+                  border: "2px solid rgba(232,201,122,0.35)",
+                  textDecoration: "none",
+                  color: "#F7D56F",
+                  transition: "opacity 0.15s",
+                  overflow: "hidden",
+                }}
+              >
+                {!(isAuthenticated && (user as any)?.avatarUrl) && (
+                  isAuthenticated
+                    ? <span style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.85rem", fontFamily: adorshoFont }}>{(user?.name?.[0] || "?").toUpperCase()}</span>
+                    : <User size={16} color="rgba(253,246,236,0.6)" />
+                )}
+              </a>
+            </div>
           )}
 
           {/* ── Local Auth Modal ── */}
@@ -1979,90 +2025,6 @@ export default function AmiOLikhboBastobota() {
             />
           ) : (
             <>
-              {/* ── Search bar ── */}
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(253,246,236,0.4)", pointerEvents: "none" }} />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setSearchActive(e.target.value.trim().length >= 2);
-                    }}
-                    onFocus={() => searchQuery.trim().length >= 2 && setSearchActive(true)}
-                    placeholder="পোস্ট, লেখক বা বিষয় খুঁজুন..."
-                    style={{
-                      width: "100%",
-                      padding: "0.65rem 1rem 0.65rem 2.5rem",
-                      borderRadius: 999,
-                      border: searchActive ? "1px solid rgba(247,213,111,0.5)" : "1px solid rgba(232,201,122,0.22)",
-                      background: "rgba(255,255,255,0.06)",
-                      color: "#FDF6EC",
-                      fontFamily: adorshoFont,
-                      fontSize: "0.9rem",
-                      outline: "none",
-                      transition: "border 0.15s",
-                      boxSizing: "border-box",
-                    }}
-                  />
-                </div>
-                {searchActive && (
-                  <button
-                    type="button"
-                    aria-label="অনুসন্ধান মুছুন"
-                    onClick={() => { setSearchQuery(""); setSearchActive(false); }}
-                    style={{ background: "none", border: "none", color: "rgba(253,246,236,0.5)", cursor: "pointer", padding: "0.5rem", display: "flex", alignItems: "center" }}
-                  >
-                    <X size={16} aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-              {/* ── Category filter row ── */}
-              {!searchActive && (
-                <div
-                  className="amio-category-row"
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    overflowX: "auto",
-                    paddingBottom: 4,
-                    scrollbarWidth: "none",
-                  }}
-                >
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.key}
-                      type="button"
-                      onClick={() => setSelectedCategory(cat.key as CategoryKey)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        padding: "0.45rem 0.9rem",
-                        borderRadius: 999,
-                        border: selectedCategory === cat.key
-                          ? "1px solid rgba(247,213,111,0.7)"
-                          : "1px solid rgba(232,201,122,0.2)",
-                        background: selectedCategory === cat.key
-                          ? "rgba(212,168,67,0.18)"
-                          : "rgba(255,255,255,0.05)",
-                        color: selectedCategory === cat.key ? "#F7D56F" : "rgba(253,246,236,0.6)",
-                        fontFamily: adorshoFont,
-                        fontWeight: selectedCategory === cat.key ? 900 : 700,
-                        fontSize: "0.85rem",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      {cat.icon} {cat.label}
-                    </button>
-                  ))}
-                </div>
-              )}
               {/* ── Feed ── */}
               <>{searchActive && searchQuery_.length < 2 ? (
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
@@ -2089,7 +2051,7 @@ export default function AmiOLikhboBastobota() {
                 <EmptyFeedState
                   showMyPosts={showMyPosts}
                   searchActive={searchActive}
-                  selectedCategory={selectedCategory}
+                  selectedCategory="all"
                   isAuthenticated={isAuthenticated}
                   onWrite={() => setShowCreateModal(true)}
                   onLogin={() => { window.location.href = "/amio-likhbo-login"; }}
