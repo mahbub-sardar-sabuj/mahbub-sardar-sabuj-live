@@ -1133,161 +1133,63 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/gif,image/webp"
+          accept="image/*"
           style={{ display: "none" }}
           onChange={handleImageSelect}
         />
 
         {submitted ? (
-          <div
-            style={{
-              padding: "1.5rem",
-              borderRadius: 18,
-              background: "rgba(34,197,94,0.1)",
-              border: "1px solid rgba(34,197,94,0.3)",
-              color: "#86EFAC",
-              textAlign: "center",
-              display: "grid",
-              gap: 10,
-            }}
-          >
-            <CheckCircle2 size={32} style={{ margin: "0 auto", color: "#22C55E" }} />
-            <div style={{ fontWeight: 900, fontSize: "1.1rem" }}>পোস্ট পাঠানো হয়েছে!</div>
-            <div style={{ fontSize: "0.88rem", color: "rgba(134,239,172,0.8)" }}>
-              অনুমোদনের পর প্রকাশিত হবে।
-            </div>
+          <div style={{ padding: "2rem", borderRadius: 18, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", color: "#86EFAC", textAlign: "center", display: "grid", gap: 10 }}>
+            <CheckCircle2 size={36} style={{ margin: "0 auto", color: "#22C55E" }} />
+            <div style={{ fontWeight: 900, fontSize: "1.1rem" }}>পোস্ট হয়ে গেছে!</div>
+            <div style={{ fontSize: "0.85rem", color: "rgba(134,239,172,0.8)" }}>নিউজ ফিডে দেখা যাচ্ছে।</div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
-            {/* Title */}
-            <div>
-              <label style={labelStyle}>শিরোনাম (ঐচ্ছিক)</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="লেখার শিরোনাম দিন..."
-                maxLength={220}
-                style={inputStyle}
-              />
-            </div>
-            <WritingQualityBox />
-
-            {/* Category */}
-            <div>
-              <label style={labelStyle}>বিভাগ</label>
-              <div style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.6, marginBottom: 8 }}>আপনার লেখার ধরন অনুযায়ী একটি বিভাগ বেছে নিন। এতে পাঠক সহজে লেখা খুঁজে পাবে।</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => setCategory(cat.key as CategoryKey)}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 5,
-                      padding: "0.35rem 0.75rem", borderRadius: 999,
-                      border: category === cat.key ? "1px solid rgba(247,213,111,0.7)" : "1px solid rgba(232,201,122,0.2)",
-                      background: category === cat.key ? "rgba(212,168,67,0.18)" : "rgba(255,255,255,0.05)",
-                      color: category === cat.key ? "#F7D56F" : "rgba(253,246,236,0.55)",
-                      fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.82rem",
-                      cursor: "pointer", transition: "all 0.12s",
-                    }}
-                  >
-                    {cat.icon} {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Content */}
-            <div>
-              <label style={labelStyle}>লেখা *</label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={FORM_EXAMPLE_TEXT}
-                required
-                rows={7}
-                autoFocus
-                maxLength={600000}
-                style={{ ...inputStyle, resize: "vertical", minHeight: 160, lineHeight: 1.8 }}
-              />
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6, color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.55 }}>
-                <span>বাস্তব ঘটনা, শেখা ও মানবিক বার্তা স্পষ্ট করে লিখুন।</span>
-                <span>{content.trim().length.toLocaleString("bn-BD")} অক্ষর</span>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gap: "0.45rem", padding: "0.8rem", borderRadius: 16, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(232,201,122,0.12)" }}>
-              <div style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.86rem" }}>কমিউনিটি নির্দেশনা</div>
-              {COMMUNITY_GUIDELINES.map((item) => (
-                <div key={item} style={{ display: "flex", gap: 8, color: "rgba(253,246,236,0.58)", fontSize: "0.78rem", lineHeight: 1.55 }}>
-                  <CheckCircle2 size={13} style={{ color: "#86EFAC", marginTop: 3, flexShrink: 0 }} />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-
             {/* Image preview */}
             {imageUrl && (
-              <div style={{ position: "relative", borderRadius: 14, overflow: "hidden" }}>
-                <img src={imageUrl} alt="প্রিভিউ" style={{ width: "100%", maxHeight: 280, objectFit: "cover", display: "block" }} />
-                <button
-                  type="button"
-                  onClick={() => setImageUrl("")}
-                  style={{
-                    position: "absolute", top: 8, right: 8,
-                    width: 30, height: 30, borderRadius: "50%",
-                    background: "rgba(0,0,0,0.6)", border: "none",
-                    color: "#fff", cursor: "pointer", display: "grid", placeItems: "center",
-                  }}
-                >
+              <div style={{ position: "relative", borderRadius: 16, overflow: "hidden" }}>
+                <img src={imageUrl} alt="প্রিভিউ" style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block" }} />
+                <button type="button" onClick={() => setImageUrl("")} style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.65)", border: "none", color: "#fff", cursor: "pointer", display: "grid", placeItems: "center" }}>
                   <X size={14} />
                 </button>
               </div>
             )}
 
-            {/* Upload error — only shows for image upload, does NOT block post */}
+            {/* Caption */}
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="ক্যাপশন লিখুন..."
+              required
+              rows={5}
+              autoFocus
+              maxLength={600000}
+              style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 14, padding: "0.8rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 130, lineHeight: 1.8 }}
+            />
+
             {uploadError && (
               <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                <span>ছবি আপলোড হয়নি — {uploadError}</span>
-                <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", lineHeight: 1, padding: 0 }}>✕</button>
+                <span>{uploadError}</span>
+                <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", padding: 0 }}>✕</button>
               </div>
             )}
 
-            {/* Bottom bar: image upload + submit */}
+            {/* Bottom bar */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button
-                type="button"
-                onClick={() => { setUploadError(""); fileInputRef.current?.click(); }}
-                disabled={uploading}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "0.55rem 1rem", borderRadius: 999,
-                  border: "1px solid rgba(232,201,122,0.3)",
-                  background: "rgba(255,255,255,0.05)",
-                  color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)",
-                  fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem",
-                  cursor: uploading ? "not-allowed" : "pointer",
-                  flexShrink: 0,
-                }}
-              >
+              <button type="button" onClick={() => { setUploadError(""); fileInputRef.current?.click(); }} disabled={uploading}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
                 {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
               </button>
               <div style={{ flex: 1 }} />
               <ActionButton disabled={!content.trim() || createPost.isPending || uploading}>
-                {createPost.isPending ? (
-                  <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পাঠানো হচ্ছে...</>
-                ) : (
-                  <><Send size={16} /> পোস্ট করুন</>
-                )}
+                {createPost.isPending ? <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পোস্ট হচ্ছে...</> : <><Send size={16} /> পোস্ট করুন</>}
               </ActionButton>
             </div>
 
             {createPost.isError && (
-              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>
-                পোস্ট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
-              </div>
+              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>পোস্ট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।</div>
             )}
           </form>
         )}
@@ -1406,90 +1308,55 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
           </button>
         </div>
         {/* Hidden file input */}
-        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" style={{ display: "none" }} onChange={handleImageSelect} />
+        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageSelect} />
 
         {submitted ? (
           <div style={{ textAlign: "center", padding: "2rem", display: "grid", gap: "0.75rem" }}>
             <CheckCircle2 size={48} color="#86EFAC" style={{ margin: "0 auto" }} />
             <div style={{ color: "#86EFAC", fontWeight: 900, fontSize: "1.1rem" }}>পোস্ট আপডেট হয়েছে!</div>
-            <div style={{ color: "rgba(253,246,236,0.55)", fontSize: "0.88rem" }}>পর্যালোচনার পর প্রকাশিত হবে।</div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
-            {/* Title */}
-            <div>
-              <label style={labelStyle}>শিরোনাম (ঐচ্ছিক)</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="লেখার শিরোনাম..."
-                maxLength={220}
-                style={inputStyle}
-              />
-            </div>
-            <WritingQualityBox />
-
-            {/* Category */}
-            <div>
-              <label style={labelStyle}>বিভাগ</label>
-              <div style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.6, marginBottom: 8 }}>আপনার লেখার ধরন অনুযায়ী একটি বিভাগ বেছে নিন। এতে পাঠক সহজে লেখা খুঁজে পাবে।</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => setCategory(cat.key as CategoryKey)}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 5,
-                      padding: "0.35rem 0.75rem", borderRadius: 999,
-                      border: category === cat.key ? "1px solid rgba(247,213,111,0.7)" : "1px solid rgba(232,201,122,0.2)",
-                      background: category === cat.key ? "rgba(212,168,67,0.18)" : "rgba(255,255,255,0.05)",
-                      color: category === cat.key ? "#F7D56F" : "rgba(253,246,236,0.55)",
-                      fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.82rem",
-                      cursor: "pointer", transition: "all 0.12s",
-                    }}
-                  >
-                    {cat.icon} {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Content */}
-            <div>
-              <label style={labelStyle}>লেখা *</label>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={FORM_EXAMPLE_TEXT} rows={8} maxLength={600000} required style={{ ...inputStyle, resize: "vertical", minHeight: 170, lineHeight: 1.8 }} />
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 6, color: "rgba(253,246,236,0.45)", fontSize: "0.78rem", lineHeight: 1.55 }}>
-                <span>মূল বক্তব্য, শেখা ও ভাষা আরও পরিষ্কার করুন।</span>
-                <span>{content.trim().length.toLocaleString("bn-BD")} অক্ষর</span>
-              </div>
-            </div>
             {/* Image preview */}
             {imageUrl && (
-              <div style={{ position: "relative", borderRadius: 14, overflow: "hidden" }}>
-                <img src={imageUrl} alt="প্রিভিউ" style={{ width: "100%", maxHeight: 280, objectFit: "cover", display: "block" }} />
-                <button type="button" onClick={() => setImageUrl("")} style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", cursor: "pointer", display: "grid", placeItems: "center" }}>
+              <div style={{ position: "relative", borderRadius: 16, overflow: "hidden" }}>
+                <img src={imageUrl} alt="প্রিভিউ" style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block" }} />
+                <button type="button" onClick={() => setImageUrl("")} style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.65)", border: "none", color: "#fff", cursor: "pointer", display: "grid", placeItems: "center" }}>
                   <X size={14} />
                 </button>
               </div>
             )}
+
+            {/* Caption */}
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="ক্যাপশন লিখুন..."
+              required
+              rows={5}
+              autoFocus
+              maxLength={600000}
+              style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 14, padding: "0.8rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 130, lineHeight: 1.8 }}
+            />
+
             {uploadError && (
               <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                <span>ছবি আপলোড হয়নি — {uploadError}</span>
-                <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", lineHeight: 1, padding: 0 }}>✕</button>
+                <span>{uploadError}</span>
+                <button type="button" onClick={() => setUploadError("")} style={{ background: "none", border: "none", color: "#FCA5A5", cursor: "pointer", fontWeight: 900, fontSize: "1rem", padding: 0 }}>✕</button>
               </div>
             )}
+
             {/* Bottom bar */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button type="button" onClick={() => { setUploadError(""); fileInputRef.current?.click(); }} disabled={uploading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
+              <button type="button" onClick={() => { setUploadError(""); fileInputRef.current?.click(); }} disabled={uploading}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.55rem 1rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.3)", background: "rgba(255,255,255,0.05)", color: imageUrl ? "#86EFAC" : "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.85rem", cursor: uploading ? "not-allowed" : "pointer", flexShrink: 0 }}>
                 {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ আছে" : "ছবি যোগ করুন"}
               </button>
               <div style={{ flex: 1 }} />
               <button type="button" onClick={onClose} style={{ padding: "0.6rem 1.2rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.25)", background: "transparent", color: "rgba(253,246,236,0.7)", fontFamily: adorshoFont, cursor: "pointer" }}>বাতিল</button>
               <ActionButton type="submit" disabled={editPost.isPending || !content.trim() || uploading}>
-                {editPost.isPending ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <CheckCircle2 size={15} />}
-                {editPost.isPending ? "আপডেট হচ্ছে..." : "আপডেট করুন"}
+                {editPost.isPending ? <><RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> আপডেট...</> : <><CheckCircle2 size={15} /> আপডেট করুন</>}
               </ActionButton>
             </div>
             {editPost.isError && (
