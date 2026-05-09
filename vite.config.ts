@@ -171,20 +171,59 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 1500,
     minify: "esbuild",
+    // Enable CSS code splitting for better caching
+    cssCodeSplit: true,
+    // Target modern browsers for smaller output
+    target: ["es2020", "chrome80", "firefox78", "safari14"],
     rollupOptions: {
       output: {
+        // Better asset naming for long-term caching
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
         manualChunks: (id) => {
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+          // React core — smallest possible critical chunk
+          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
             return "react-vendor";
           }
+          // Framer Motion — large animation library, isolated
           if (id.includes("node_modules/framer-motion")) {
             return "framer-motion";
           }
+          // Lucide icons — large icon set
           if (id.includes("node_modules/lucide-react")) {
             return "lucide";
           }
+          // Radix UI + cmdk — UI primitives
           if (id.includes("node_modules/@radix-ui") || id.includes("node_modules/cmdk")) {
             return "radix-ui";
+          }
+          // TanStack Query + tRPC — data fetching layer
+          if (
+            id.includes("node_modules/@tanstack/react-query") ||
+            id.includes("node_modules/@trpc/") ||
+            id.includes("node_modules/superjson")
+          ) {
+            return "data-layer";
+          }
+          // Recharts — only used in specific pages
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
+            return "charts";
+          }
+          // Date utilities
+          if (id.includes("node_modules/date-fns")) {
+            return "date-utils";
+          }
+          // Embla carousel
+          if (id.includes("node_modules/embla-carousel")) {
+            return "carousel";
+          }
+          // Large data archives — keep in their own chunks
+          if (id.includes("writingsArchive")) {
+            return "writings-data";
+          }
+          if (id.includes("newsData")) {
+            return "news-data";
           }
         },
       },

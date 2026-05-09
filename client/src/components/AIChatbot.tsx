@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
-import LiveChatWidget from "./LiveChatWidget";
+// Lazy-load LiveChatWidget — only needed when user opens the live chat tab
+const LiveChatWidget = lazy(() => import("./LiveChatWidget"));
 
 interface Message {
   id: string;
@@ -1471,18 +1472,24 @@ export default function AIChatbot() {
     const abs = getAbsPos();
     dragStart.current = { x: e.clientX, y: e.clientY, bx: abs.x, by: abs.y };
 
+    let rafId: number | null = null;
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - dragStart.current.x;
       const dy = ev.clientY - dragStart.current.y;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      setBtnPos(clampPos(dragStart.current.bx + dx, dragStart.current.by + dy));
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        setBtnPos(clampPos(dragStart.current.bx + dx, dragStart.current.by + dy));
+        rafId = null;
+      });
     };
     const onUp = () => {
       isDragging.current = false;
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("mouseup", onUp);
     e.preventDefault();
   }, [getAbsPos, clampPos]);
@@ -2652,7 +2659,13 @@ export default function AIChatbot() {
               {/* ── Tab Content ── */}
               {activeTab === "live" ? (
                 <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                  <LiveChatWidget />
+                  <Suspense fallback={
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "rgba(212,168,67,0.6)", fontSize: "0.85rem" }}>
+                      লোড হচ্ছে...
+                    </div>
+                  }>
+                    <LiveChatWidget />
+                  </Suspense>
                 </div>
               ) : (
               <>

@@ -3,7 +3,7 @@
  * Navbar: Sticky top nav with navy background, gold accents
  * Responsive: JS-based window width detection (no Tailwind classes)
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu,
@@ -76,11 +76,22 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", checkWidth);
   }, []);
 
+  // Throttled scroll handler — fires at most once per 100ms to reduce re-renders
+  const scrollThrottleRef = useRef<number | null>(null);
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      if (scrollThrottleRef.current !== null) return;
+      scrollThrottleRef.current = window.setTimeout(() => {
+        setScrolled(window.scrollY > 50);
+        scrollThrottleRef.current = null;
+      }, 100);
+    };
     handleScroll();
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollThrottleRef.current !== null) clearTimeout(scrollThrottleRef.current);
+    };
   }, []);
 
   useEffect(() => {

@@ -240,6 +240,8 @@ export default function About() {
                   className="about-portrait-img"
                   onError={(e) => { (e.target as HTMLImageElement).src = "/images/ebooks/dukkhovilash-cover.jpg"; }}
                   style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9)" }}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div style={{
                   position: "absolute", inset: 0,

@@ -4,7 +4,7 @@
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  * Inspiration: Sarah Vaughan, Anthony Horowitz, luxury editorial magazines
  */
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import {
   BookOpen, PenLine, Mic2, Images, Newspaper, Mail,
@@ -49,16 +49,25 @@ export default function Home() {
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
   const quoteInView = useInView(quoteRef, { once: true, margin: "-100px" });
 
-  useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
+  // Throttled mousemove handler — fires at most once per 50ms to reduce re-renders
+  const mouseMoveThrottleRef = useRef<number | null>(null);
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (mouseMoveThrottleRef.current !== null) return;
+    mouseMoveThrottleRef.current = window.setTimeout(() => {
       setMousePos({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
         y: (e.clientY / window.innerHeight - 0.5) * 20,
       });
-    };
-    window.addEventListener("mousemove", handleMouse);
-    return () => window.removeEventListener("mousemove", handleMouse);
+      mouseMoveThrottleRef.current = null;
+    }, 50);
   }, []);
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (mouseMoveThrottleRef.current !== null) clearTimeout(mouseMoveThrottleRef.current);
+    };
+  }, [handleMouseMove]);
 
   const homeJsonLd = {
     "@context": "https://schema.org",

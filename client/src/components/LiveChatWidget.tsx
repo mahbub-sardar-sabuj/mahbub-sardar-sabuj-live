@@ -92,7 +92,12 @@ export default function LiveChatWidget({ onClose }: Props) {
     },
     {
       enabled: !!sessionId && !!visitorId,
-      refetchInterval: 4000,
+      // Poll every 6s; pause when tab is hidden to save resources
+      refetchInterval: (query) => {
+        if (typeof document !== "undefined" && document.visibilityState === "hidden") return false;
+        return 6000;
+      },
+      refetchIntervalInBackground: false,
     }
   );
 
@@ -178,7 +183,12 @@ export default function LiveChatWidget({ onClose }: Props) {
     },
     {
       enabled: !!sessionId && !!visitorId,
-      refetchInterval: 4000,
+      // Poll every 6s; pause when tab is hidden to save resources
+      refetchInterval: (query) => {
+        if (typeof document !== "undefined" && document.visibilityState === "hidden") return false;
+        return 6000;
+      },
+      refetchIntervalInBackground: false,
     }
   );
 

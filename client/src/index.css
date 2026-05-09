@@ -243,3 +243,18 @@ a, button, input, textarea, select {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* ── Performance: GPU-accelerated layers for animated elements ── */
+.chatbot-adorsho,
+[class*="chatbot-"] {
+  /* Promote to GPU composite layer for smoother animations */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ── Performance: Contain layout/paint for card grids ── */
+.wg2 > *,
+.wg2-l > *,
+.ebook-tile {
+  contain: layout style;
+}
