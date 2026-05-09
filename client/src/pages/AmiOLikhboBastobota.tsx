@@ -1915,14 +1915,9 @@ export default function AmiOLikhboBastobota() {
                   </ActionButton>
                 </div>
               ) : displayPosts.length === 0 ? (
-                <EmptyFeedState
-                  showMyPosts={showMyPosts}
-                  searchActive={searchActive}
-                  selectedCategory="all"
-                  isAuthenticated={isAuthenticated}
-                  onWrite={() => setShowCreateModal(true)}
-                  onLogin={() => { window.location.href = "/amio-likhbo-login"; }}
-                />
+                <div style={{ textAlign: "center", padding: "3rem 1rem", color: "rgba(253,246,236,0.45)", fontSize: "0.95rem" }}>
+                  {searchActive ? `"${searchQuery}" এর জন্য কোনো পোস্ট পাওয়া যায়নি।` : showMyPosts ? "আপনার এখনো কোনো পোস্ট নেই।" : "এখনো কোনো পোস্ট নেই।"}
+                </div>
               ) : (
                 <div style={{ display: "grid", gap: "1rem" }}>
                   {searchActive && (
