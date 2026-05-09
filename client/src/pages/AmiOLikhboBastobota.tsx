@@ -1002,7 +1002,7 @@ function PostCard({
 
 // ── Create Post Modal ─────────────────────────────────────────────────────────
 
-function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorName: string }) {
+function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => void; authorName: string; avatarUrl?: string }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<CategoryKey>("thought");
   const [content, setContent] = useState("");
@@ -1104,7 +1104,11 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
         {/* Modal header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Avatar name={authorName} size={38} />
+            {avatarUrl ? (
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: `url(${avatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.4)", flexShrink: 0 }} />
+            ) : (
+              <Avatar name={authorName} size={38} />
+            )}
             <div>
               <div style={{ fontWeight: 900, color: "#F7D56F" }}>{authorName}</div>
               <div style={{ fontSize: "0.78rem", color: "rgba(253,246,236,0.5)" }}>নতুন পোস্ট লিখুন</div>
@@ -1199,7 +1203,7 @@ function CreatePostModal({ onClose, authorName }: { onClose: () => void; authorN
 }
 
 // ── Edit Post Modal ─────────────────────────────────────────────────────────
-function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onClose: () => void; authorName: string }) {
+function EditPostModal({ post, onClose, authorName, avatarUrl }: { post: EnrichedPost; onClose: () => void; authorName: string; avatarUrl?: string }) {
   const [title, setTitle] = useState(post.title);
   const [category, setCategory] = useState<CategoryKey>((post.category as CategoryKey) || "thought");
   const [content, setContent] = useState(post.content);
@@ -1297,7 +1301,11 @@ function EditPostModal({ post, onClose, authorName }: { post: EnrichedPost; onCl
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Avatar name={authorName} size={38} />
+            {avatarUrl ? (
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: `url(${avatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.4)", flexShrink: 0 }} />
+            ) : (
+              <Avatar name={authorName} size={38} />
+            )}
             <div>
               <div style={{ fontWeight: 900, color: "#F7D56F" }}>{authorName}</div>
               <div style={{ fontSize: "0.78rem", color: "rgba(253,246,236,0.5)" }}>পোস্ট সম্পাদনা করুন</div>
@@ -1595,6 +1603,15 @@ export default function AmiOLikhboBastobota() {
   const [, setLocation] = useLocation();
   const slugFromUrl = params?.slug ?? null;
 
+  // Fetch profile avatarUrl from /api/profile (since users table doesn't store avatarUrl)
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState("");
+  useEffect(() => {
+    if (!isAuthenticated) { setProfileAvatarUrl(""); return; }
+    fetch("/api/profile").then(r => r.ok ? r.json() : null).then(d => {
+      if (d?.avatarUrl) setProfileAvatarUrl(d.avatarUrl);
+    }).catch(() => {});
+  }, [isAuthenticated]);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showMyPosts, setShowMyPosts] = useState(false);
@@ -1797,8 +1814,8 @@ export default function AmiOLikhboBastobota() {
                   width: 36,
                   height: 36,
                   borderRadius: "50%",
-                  background: isAuthenticated && (user as any)?.avatarUrl
-                    ? `url(${(user as any).avatarUrl}) center/cover no-repeat`
+                  background: isAuthenticated && profileAvatarUrl
+                    ? `url(${profileAvatarUrl}) center/cover no-repeat`
                     : "linear-gradient(135deg, rgba(212,168,67,0.25), rgba(81,139,255,0.15))",
                   border: "2px solid rgba(232,201,122,0.35)",
                   textDecoration: "none",
@@ -1807,7 +1824,7 @@ export default function AmiOLikhboBastobota() {
                   overflow: "hidden",
                 }}
               >
-                {!(isAuthenticated && (user as any)?.avatarUrl) && (
+                {!(isAuthenticated && profileAvatarUrl) && (
                   isAuthenticated
                     ? <span style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.85rem", fontFamily: adorshoFont }}>{(user?.name?.[0] || "?").toUpperCase()}</span>
                     : <User size={16} color="rgba(253,246,236,0.6)" />
@@ -1965,6 +1982,7 @@ export default function AmiOLikhboBastobota() {
         <CreatePostModal
           onClose={() => setShowCreateModal(false)}
           authorName={user?.name ?? "আপনি"}
+          avatarUrl={profileAvatarUrl}
         />
       )}
       {editingPost && (
@@ -1972,6 +1990,7 @@ export default function AmiOLikhboBastobota() {
           post={editingPost}
           onClose={() => setEditingPost(null)}
           authorName={user?.name ?? "আপনি"}
+          avatarUrl={profileAvatarUrl}
         />
       )}
     </div>
