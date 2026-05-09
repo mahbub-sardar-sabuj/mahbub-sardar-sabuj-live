@@ -12,8 +12,7 @@ import path from "path";
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB সীমা
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 
 function getSecretKey() {
   return new TextEncoder().encode(JWT_SECRET);
@@ -63,9 +62,9 @@ export default async function handler(req, res) {
   const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
   const USE_BASE64_FALLBACK = !FORGE_URL || !FORGE_KEY;
 
-  // Parse multipart form
+  // Parse multipart form — NO size limit
   const form = formidable({
-    maxFileSize: MAX_FILE_SIZE,
+    maxFileSize: Infinity,
     uploadDir: "/tmp",
     keepExtensions: true,
   });
@@ -74,9 +73,7 @@ export default async function handler(req, res) {
   try {
     [fields, files] = await form.parse(req);
   } catch (err) {
-    if (err.code === 1009) {
-      return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৫MB হতে হবে" });
-    }
+    console.error("[upload-image] parse error:", err);
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
 
@@ -85,10 +82,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "ছবি নির্বাচন করুন" });
   }
 
-  const mimeType = imageFile.mimetype || "";
-  if (!ALLOWED_TYPES.includes(mimeType)) {
+  const mimeType = imageFile.mimetype || "image/jpeg";
+  // Accept all image types
+  if (mimeType && !mimeType.startsWith("image/")) {
     try { fs.unlinkSync(imageFile.filepath); } catch {}
-    return res.status(400).json({ error: "শুধু JPG, PNG, GIF বা WebP ছবি আপলোড করা যাবে" });
+    return res.status(400).json({ error: "শুধু ছবি আপলোড করা যাবে" });
   }
 
   try {
