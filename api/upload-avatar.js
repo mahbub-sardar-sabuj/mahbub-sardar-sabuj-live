@@ -1,16 +1,16 @@
 /**
  * /api/upload-avatar — Profile picture upload
  * POST multipart/form-data with "avatar" field
- * Stores image as base64 data URL (no external storage needed)
+ * Stores image via Manus storage proxy (same as upload-image.js)
  */
 import { jwtVerify } from "jose";
 import formidable from "formidable";
 import fs from "fs";
+import path from "path";
 import mysql from "mysql2/promise";
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
-const MAX_FILE_SIZE = Infinity; // কোনো সাইজ সীমা নেই
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 function getSecretKey() {
@@ -56,8 +56,15 @@ export default async function handler(req, res) {
   const session = await verifySession(token);
   if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
 
+  // Storage config check
+  const FORGE_URL = process.env.BUILT_IN_FORGE_API_URL;
+  const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
+  if (!FORGE_URL || !FORGE_KEY) {
+    return res.status(500).json({ error: "Storage configuration missing" });
+  }
+
   // Parse multipart form
-  const form = formidable({ maxFileSize: MAX_FILE_SIZE, keepExtensions: true });
+  const form = formidable({ maxFileSize: 5 * 1024 * 1024, uploadDir: "/tmp", keepExtensions: true });
   let fields, files;
   try {
     [fields, files] = await form.parse(req);
@@ -68,35 +75,56 @@ export default async function handler(req, res) {
 
   const file = Array.isArray(files.avatar) ? files.avatar[0] : files.avatar;
   if (!file) return res.status(400).json({ error: "ছবি দিন" });
-  if (!ALLOWED_TYPES.includes(file.mimetype)) {
+  const mimeType = file.mimetype || "";
+  if (!ALLOWED_TYPES.includes(mimeType)) {
     return res.status(400).json({ error: "শুধু JPG, PNG, GIF, WebP ছবি আপলোড করা যাবে" });
   }
 
   try {
-    // ছবি base64 data URL হিসেবে সংরক্ষণ করা
-    const imageBuffer = fs.readFileSync(file.filepath);
-    const base64 = imageBuffer.toString("base64");
-    const dataUrl = `data:${file.mimetype};base64,${base64}`;
+    const fileBuffer = fs.readFileSync(file.filepath);
+    const ext = path.extname(file.originalFilename || file.newFilename || ".jpg") || ".jpg";
+    const key = `avatars/${session.openId}/${Date.now()}${ext}`;
 
-    // DB তে সেভ করা
+    // Upload to Manus storage proxy
+    const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
+    uploadUrl.searchParams.set("path", key);
+
+    const blob = new Blob([fileBuffer], { type: mimeType });
+    const formData = new FormData();
+    formData.append("file", blob, path.basename(key));
+
+    const uploadRes = await fetch(uploadUrl.toString(), {
+      method: "POST",
+      headers: { Authorization: `Bearer ${FORGE_KEY}` },
+      body: formData,
+    });
+
+    if (!uploadRes.ok) {
+      const msg = await uploadRes.text().catch(() => uploadRes.statusText);
+      console.error("[upload-avatar] Storage upload failed:", msg);
+      return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
+    }
+
+    const { url } = await uploadRes.json();
+
+    // temp file মুছে ফেলা
+    try { fs.unlinkSync(file.filepath); } catch {}
+
+    // DB তে URL সেভ করা
     const db = await getDb();
     try {
-      // bio এবং avatarUrl কলাম যোগ করা (যদি না থাকে)
       await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text").catch(() => {});
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl mediumtext").catch(() => {});
+      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl text").catch(() => {});
 
       await db.execute(
         "UPDATE local_users SET avatarUrl = ?, updatedAt = NOW() WHERE openId = ?",
-        [dataUrl, session.openId]
+        [url, session.openId]
       );
     } finally {
       await db.end().catch(() => {});
     }
 
-    // temp file মুছে ফেলা
-    fs.unlinkSync(file.filepath);
-
-    return res.status(200).json({ success: true, avatarUrl: dataUrl });
+    return res.status(200).json({ success: true, avatarUrl: url });
   } catch (err) {
     console.error("[upload-avatar]", err);
     return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
