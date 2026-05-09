@@ -2,6 +2,7 @@
  * /api/upload-image — Image upload for writing platform posts
  * Accepts multipart/form-data with a single "image" field
  * Uploads to Manus storage proxy and returns the public URL
+ * Falls back to base64 data URL if storage is not configured
  */
 
 import { jwtVerify } from "jose";
@@ -11,7 +12,7 @@ import path from "path";
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
-const MAX_FILE_SIZE = Infinity; // কোনো সাইজ সীমা নেই
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB সীমা
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 function getSecretKey() {
@@ -60,9 +61,7 @@ export default async function handler(req, res) {
   // Check storage config
   const FORGE_URL = process.env.BUILT_IN_FORGE_API_URL;
   const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
-  if (!FORGE_URL || !FORGE_KEY) {
-    return res.status(500).json({ error: "Storage configuration missing" });
-  }
+  const USE_BASE64_FALLBACK = !FORGE_URL || !FORGE_KEY;
 
   // Parse multipart form
   const form = formidable({
@@ -76,7 +75,7 @@ export default async function handler(req, res) {
     [fields, files] = await form.parse(req);
   } catch (err) {
     if (err.code === 1009) {
-      return res.status(400).json({ error: "ছবি আপলোড সমস্যা" });
+      return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৫MB হতে হবে" });
     }
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
@@ -88,12 +87,21 @@ export default async function handler(req, res) {
 
   const mimeType = imageFile.mimetype || "";
   if (!ALLOWED_TYPES.includes(mimeType)) {
-    fs.unlinkSync(imageFile.filepath).catch?.(() => {});
+    try { fs.unlinkSync(imageFile.filepath); } catch {}
     return res.status(400).json({ error: "শুধু JPG, PNG, GIF বা WebP ছবি আপলোড করা যাবে" });
   }
 
   try {
     const fileBuffer = fs.readFileSync(imageFile.filepath);
+
+    // Fallback: base64 data URL (when Forge storage not configured)
+    if (USE_BASE64_FALLBACK) {
+      const base64 = fileBuffer.toString("base64");
+      const dataUrl = `data:${mimeType};base64,${base64}`;
+      try { fs.unlinkSync(imageFile.filepath); } catch {}
+      return res.status(200).json({ success: true, url: dataUrl });
+    }
+
     const ext = path.extname(imageFile.originalFilename || imageFile.newFilename || ".jpg") || ".jpg";
     const key = `writing-posts/${session.openId}/${Date.now()}${ext}`;
 
@@ -114,7 +122,11 @@ export default async function handler(req, res) {
     if (!uploadRes.ok) {
       const msg = await uploadRes.text().catch(() => uploadRes.statusText);
       console.error("[upload-image] Storage upload failed:", msg);
-      return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
+      // Fallback to base64 on storage failure
+      const base64 = fileBuffer.toString("base64");
+      const dataUrl = `data:${mimeType};base64,${base64}`;
+      try { fs.unlinkSync(imageFile.filepath); } catch {}
+      return res.status(200).json({ success: true, url: dataUrl });
     }
 
     const { url } = await uploadRes.json();
