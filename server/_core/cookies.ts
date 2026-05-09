@@ -28,7 +28,12 @@ function isSecureRequest(req: IncomingMessage & { protocol?: string }) {
   const protoList = Array.isArray(forwardedProto)
     ? forwardedProto
     : forwardedProto.split(",");
-  return protoList.some((proto: string) => proto.trim().toLowerCase() === "https");
+  if (protoList.some((proto: string) => proto.trim().toLowerCase() === "https")) return true;
+  // Vercel and most CDN/proxy setups always serve over HTTPS in production.
+  // If host is not localhost/127.0.0.1, assume HTTPS to ensure SameSite=None cookies work.
+  const host = (req.headers["host"] || "").split(":")[0].toLowerCase();
+  if (!LOCAL_HOSTS.has(host) && !isIpAddress(host)) return true;
+  return false;
 }
 
 export function getSessionCookieOptions(
