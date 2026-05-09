@@ -678,6 +678,7 @@ type EnrichedPost = {
   slug: string;
   authorOpenId: string;
   authorName: string;
+  authorAvatarUrl?: string | null;
   title: string;
   category: string;
   content: string;
@@ -716,12 +717,19 @@ function PostCard({
   const isLong = post.content.length > 280;
   const displayContent = isLong && !expanded ? post.content.slice(0, 280) + "..." : post.content;
   const isOwner = Boolean(currentUserOpenId && post.authorOpenId === currentUserOpenId);
+  // টাইটেল শুধু দেখাবে যদি কন্টেন্টের প্রথম লাইন থেকে আলাদা হয়
+  const contentFirstLine = post.content.split("\n")[0].slice(0, 80);
+  const showTitle = post.title && post.title.trim() !== contentFirstLine.trim() && post.title !== "বাস্তবতার গল্প";
 
   return (
     <article style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "1rem" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Avatar name={post.authorName} size={46} />
+        {post.authorAvatarUrl ? (
+          <div style={{ width: 46, height: 46, borderRadius: "50%", background: `url(${post.authorAvatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.35)", flexShrink: 0 }} />
+        ) : (
+          <Avatar name={post.authorName} size={46} />
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 900, fontSize: "1rem", color: "#F7D56F", lineHeight: 1.2 }}>
             {post.authorName}
@@ -787,24 +795,26 @@ function PostCard({
         </div>
       </div>
 
-      {/* Title */}
-      <h2
-        style={{
-          margin: 0,
-          fontSize: "clamp(1.05rem, 3vw, 1.3rem)",
-          fontWeight: 900,
-          color: "#FDF6EC",
-          lineHeight: 1.4,
-          cursor: "pointer",
-        }}
-        onClick={() => onOpenDetail(post.slug)}
-      >
-        {post.title}
-      </h2>
+      {/* Title - only show if different from content first line */}
+      {showTitle && (
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "clamp(1.05rem, 3vw, 1.3rem)",
+            fontWeight: 900,
+            color: "#FDF6EC",
+            lineHeight: 1.4,
+            cursor: "pointer",
+          }}
+          onClick={() => onOpenDetail(post.slug)}
+        >
+          {post.title}
+        </h2>
+      )}
 
       {/* Content */}
       <div style={{ color: "rgba(253,246,236,0.82)", lineHeight: 1.85, fontSize: "0.97rem" }}>
-        <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{displayContent}</p>
+        <p style={{ margin: 0, whiteSpace: "pre-wrap", cursor: "pointer" }} onClick={() => onOpenDetail(post.slug)}>{displayContent}</p>
         {isLong && (
           <button
             type="button"
@@ -1968,7 +1978,7 @@ export default function AmiOLikhboBastobota() {
               )}
               </>
               {/* ── Refresh ── */}
-              {!searchActive && posts.length > 0 && (
+              {!searchActive && !showMyPosts && posts.length > 0 && (
                 <div style={{ textAlign: "center" }}>
                   <ActionButton
                     onClick={() => postsQuery.refetch()}

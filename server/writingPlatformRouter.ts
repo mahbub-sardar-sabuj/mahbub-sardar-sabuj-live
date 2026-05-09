@@ -81,6 +81,7 @@ async function enrichPost(post: typeof writingPosts.$inferSelect, userOpenId?: s
   if (!db) {
     return {
       ...post,
+      authorAvatarUrl: null as string | null,
       reactionCounts: { like: 0, love: 0, inspiring: 0, sad: 0 },
       commentCount: 0,
       myReaction: null as null | "like" | "love" | "inspiring" | "sad",
@@ -107,8 +108,27 @@ async function enrichPost(post: typeof writingPosts.$inferSelect, userOpenId?: s
     }
   });
 
+  // Fetch author avatar from local_users table
+  let authorAvatarUrl: string | null = null;
+  try {
+    const avatarRows = await db.execute(
+      sql.raw(`SELECT avatarUrl FROM local_users WHERE openId = '${post.authorOpenId.replace(/'/g, "''")}' LIMIT 1`)
+    ) as any;
+    const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
+    if (Array.isArray(rows) && rows.length > 0 && rows[0].avatarUrl) {
+      const av = rows[0].avatarUrl as string;
+      // Only use non-base64 URLs to avoid sending large data
+      if (!av.startsWith("data:")) {
+        authorAvatarUrl = av;
+      }
+    }
+  } catch {
+    // avatarUrl not critical, ignore errors
+  }
+
   return {
     ...post,
+    authorAvatarUrl,
     reactionCounts,
     commentCount: approvedComments.length,
     myReaction,

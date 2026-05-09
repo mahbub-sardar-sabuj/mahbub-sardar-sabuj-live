@@ -2,13 +2,29 @@
  * /api/upload-image — Image upload for writing platform posts
  * Accepts multipart/form-data with a single "image" field
  * Uploads to Manus storage proxy and returns the public URL
- * Falls back to base64 data URL if storage is not configured
+ * Falls back to compressed base64 data URL if storage is not configured
  */
 
 import { jwtVerify } from "jose";
 import formidable from "formidable";
 import fs from "fs";
 import path from "path";
+
+// Compress image using sharp if available, otherwise return original buffer
+async function compressImage(buffer, mimeType) {
+  try {
+    const sharp = (await import("sharp")).default;
+    // Resize to max 1200px wide and compress
+    const compressed = await sharp(buffer)
+      .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 75 })
+      .toBuffer();
+    return { buffer: compressed, mimeType: "image/jpeg" };
+  } catch {
+    // sharp not available, return original
+    return { buffer, mimeType };
+  }
+}
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
@@ -90,24 +106,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    const fileBuffer = fs.readFileSync(imageFile.filepath);
+    const rawBuffer = fs.readFileSync(imageFile.filepath);
+    // Compress image to reduce size
+    const { buffer: fileBuffer, mimeType: finalMimeType } = await compressImage(rawBuffer, mimeType);
 
-    // Fallback: base64 data URL (when Forge storage not configured)
+    // Fallback: compressed base64 data URL (when Forge storage not configured)
     if (USE_BASE64_FALLBACK) {
       const base64 = fileBuffer.toString("base64");
-      const dataUrl = `data:${mimeType};base64,${base64}`;
+      const dataUrl = `data:${finalMimeType};base64,${base64}`;
       try { fs.unlinkSync(imageFile.filepath); } catch {}
       return res.status(200).json({ success: true, url: dataUrl });
     }
 
-    const ext = path.extname(imageFile.originalFilename || imageFile.newFilename || ".jpg") || ".jpg";
+    const ext = finalMimeType === "image/jpeg" ? ".jpg" : (path.extname(imageFile.originalFilename || imageFile.newFilename || ".jpg") || ".jpg");
     const key = `writing-posts/${session.openId}/${Date.now()}${ext}`;
 
     // Upload to Manus storage proxy
     const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
     uploadUrl.searchParams.set("path", key);
 
-    const blob = new Blob([fileBuffer], { type: mimeType });
+    const blob = new Blob([fileBuffer], { type: finalMimeType });
     const formData = new FormData();
     formData.append("file", blob, path.basename(key));
 
@@ -120,9 +138,9 @@ export default async function handler(req, res) {
     if (!uploadRes.ok) {
       const msg = await uploadRes.text().catch(() => uploadRes.statusText);
       console.error("[upload-image] Storage upload failed:", msg);
-      // Fallback to base64 on storage failure
+      // Fallback to compressed base64 on storage failure
       const base64 = fileBuffer.toString("base64");
-      const dataUrl = `data:${mimeType};base64,${base64}`;
+      const dataUrl = `data:${finalMimeType};base64,${base64}`;
       try { fs.unlinkSync(imageFile.filepath); } catch {}
       return res.status(200).json({ success: true, url: dataUrl });
     }
