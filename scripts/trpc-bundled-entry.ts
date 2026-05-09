@@ -10,9 +10,12 @@ type CompatibleRequest = IncomingMessage & {
   query?: Record<string, unknown>;
   protocol?: string;
   hostname?: string;
+  body?: unknown;
 };
 type CompatibleResponse = ServerResponse & {
   clearCookie?: (name?: string, options?: Record<string, unknown>) => CompatibleResponse;
+  status?: (code: number) => CompatibleResponse;
+  json?: (data: unknown) => void;
 };
 
 function firstHeaderValue(value: HeaderValue): string | undefined {
@@ -63,6 +66,16 @@ function addExpressCompatibility(req: IncomingMessage, res: ServerResponse) {
         res.setHeader("Set-Cookie", [String(previous), nextCookie]);
       }
       return compatibleRes;
+    },
+    status(code: number) {
+      res.statusCode = code;
+      return compatibleRes;
+    },
+    json(data: unknown) {
+      if (!res.headersSent) {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify(data));
+      }
     },
   }) as CompatibleResponse;
 
@@ -115,7 +128,289 @@ function sendFunctionError(res: ServerResponse, error: unknown) {
   );
 }
 
+// ── Inline security helpers (replaces _utils/security.js dependency) ──────────
+function getClientIpInline(req: IncomingMessage): string {
+  function parseIp(v: unknown): string {
+    if (!v || typeof v !== "string") return "";
+    return v.split(",")[0]?.trim() || "";
+  }
+  return (
+    parseIp(req.headers["x-forwarded-for"]) ||
+    parseIp(req.headers["x-real-ip"]) ||
+    parseIp(req.headers["cf-connecting-ip"]) ||
+    (req.socket as { remoteAddress?: string })?.remoteAddress ||
+    "unknown"
+  );
+}
+
+function normalizeTextInline(value: unknown, maxLength = 2000): string {
+  return String(value ?? "")
+    .replace(/[<>]/g, "")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s{3,}/g, "  ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function isDisposableEmail(email: string): boolean {
+  const normalized = String(email || "").toLowerCase();
+  const blocked = ["10minutemail.com", "guerrillamail.com", "mailinator.com", "tempmail.com", "yopmail.com"];
+  return blocked.some((d) => normalized.endsWith(`@${d}`));
+}
+
+function isProbablySpam(value: string): boolean {
+  const text = String(value || "").toLowerCase();
+  const urlCount = (text.match(/https?:\/\//g) || []).length;
+  const repeatedChars = /(.)\1{12,}/.test(text);
+  const spamWords = ["casino", "loan", "crypto", "viagra", "porn", "betting"];
+  return urlCount > 3 || repeatedChars || spamWords.some((w) => text.includes(w));
+}
+
+// Simple in-memory rate limiter
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimitInline(
+  req: IncomingMessage,
+  res: CompatibleResponse,
+  opts: { keyPrefix: string; windowMs: number; max: number },
+): { limited: boolean; clientIp: string } {
+  const clientIp = getClientIpInline(req);
+  const key = `${opts.keyPrefix}:${clientIp}`;
+  const now = Date.now();
+  const current = rateBuckets.get(key);
+  if (!current || current.resetAt <= now) {
+    rateBuckets.set(key, { count: 1, resetAt: now + opts.windowMs });
+    return { limited: false, clientIp };
+  }
+  current.count += 1;
+  if (current.count > opts.max) {
+    res.statusCode = 429;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" }));
+    return { limited: true, clientIp };
+  }
+  return { limited: false, clientIp };
+}
+
+function parseJsonBody(req: IncomingMessage): Promise<unknown> {
+  return new Promise((resolve) => {
+    let data = "";
+    req.on("data", (chunk) => { data += chunk; });
+    req.on("end", () => {
+      try { resolve(JSON.parse(data)); } catch { resolve({}); }
+    });
+    req.on("error", () => resolve({}));
+  });
+}
+
+// ── /api/contact handler ───────────────────────────────────────────────────────
+async function handleContact(req: IncomingMessage, res: CompatibleResponse): Promise<void> {
+  res.setHeader("Access-Control-Allow-Origin", "https://www.mahbubsardarsabuj.com");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") { res.statusCode = 200; res.end(); return; }
+  if (req.method !== "POST") {
+    res.statusCode = 405;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "Method Not Allowed" }));
+    return;
+  }
+
+  const rate = checkRateLimitInline(req, res, { keyPrefix: "contact", windowMs: 15 * 60 * 1000, max: 5 });
+  if (rate.limited) return;
+
+  const body = (req as CompatibleRequest).body ?? (await parseJsonBody(req)) as Record<string, unknown>;
+  const b = body as Record<string, unknown>;
+
+  // Honeypot check
+  const honeypotFields = ["website", "company", "url", "homepage"];
+  if (honeypotFields.some((f) => typeof b[f] === "string" && (b[f] as string).trim().length > 0)) {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: true, message: "বার্তা সফলভাবে পাঠানো হয়েছে। শীঘ্রই উত্তর দেওয়া হবে।" }));
+    return;
+  }
+
+  const { name, email, subject, message } = b as { name?: string; email?: string; subject?: string; message?: string };
+  if (!name || !email || !message) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "নাম, ইমেইল এবং বার্তা আবশ্যক।" }));
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email) || isDisposableEmail(email)) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "সঠিক ইমেইল ঠিকানা দিন।" }));
+    return;
+  }
+
+  const safeName = normalizeTextInline(name, 120);
+  const safeEmail = normalizeTextInline(email, 254);
+  const safeSubject = normalizeTextInline(subject || "ওয়েবসাইট থেকে বার্তা", 180);
+  const safeMessage = normalizeTextInline(message, 3000);
+
+  if (safeName.length < 2 || safeMessage.length < 10) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "নাম এবং বার্তা আরও বিস্তারিতভাবে লিখুন।" }));
+    return;
+  }
+
+  if (isProbablySpam(`${safeSubject}\n${safeMessage}`)) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "বার্তাটি গ্রহণ করা যায়নি। অনুগ্রহ করে স্বাভাবিক বার্তা লিখুন।" }));
+    return;
+  }
+
+  const TO = process.env.CONTACT_EMAIL_TO || "lekhokmahbubsardarsabuj@gmail.com";
+  const FROM = process.env.CONTACT_EMAIL_FROM;
+  const PASS = process.env.GMAIL_APP_PASSWORD;
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+
+  if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
+    try {
+      const telegramText = `📩 <b>নতুন বার্তা — mahbubsardarsabuj.com</b>\n\n👤 <b>নাম:</b> ${safeName}\n📧 <b>ইমেইল:</b> ${safeEmail}\n📌 <b>বিষয়:</b> ${safeSubject}\n\n💬 <b>বার্তা:</b>\n${safeMessage.slice(0, 3000)}`;
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_ADMIN_CHAT_ID, text: telegramText, parse_mode: "HTML" }),
+      });
+    } catch (e) {
+      console.warn("[CONTACT] Telegram failed:", (e as Error).message);
+    }
+  }
+
+  if (FROM && PASS) {
+    try {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.default.createTransport({ service: "gmail", auth: { user: FROM, pass: PASS } });
+      await transporter.sendMail({
+        from: `"${safeName}" <${FROM}>`,
+        to: TO,
+        replyTo: safeEmail,
+        subject: `[mahbubsardarsabuj.com] ${safeSubject}`,
+        text: `নাম: ${safeName}\nইমেইল: ${safeEmail}\nবিষয়: ${safeSubject}\n\n${safeMessage}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#f9f9f9;border-radius:10px"><h2 style="color:#C9A84C;border-bottom:2px solid #C9A84C;padding-bottom:10px">নতুন বার্তা — mahbubsardarsabuj.com</h2><p><b>নাম:</b> ${safeName}</p><p><b>ইমেইল:</b> <a href="mailto:${safeEmail}">${safeEmail}</a></p><p><b>বিষয়:</b> ${safeSubject}</p><div style="margin-top:20px;padding:15px;background:#fff;border-left:4px solid #C9A84C;border-radius:5px"><p style="white-space:pre-wrap">${safeMessage}</p></div></div>`,
+      });
+    } catch (emailErr) {
+      console.error("[CONTACT] Email failed:", (emailErr as Error).message);
+      if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) throw emailErr;
+    }
+  }
+
+  console.log(`[CONTACT] From: ${safeName} <${safeEmail}> | IP: ${rate.clientIp}`);
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify({ success: true, message: "বার্তা সফলভাবে পাঠানো হয়েছে। শীঘ্রই উত্তর দেওয়া হবে।" }));
+}
+
+// ── /api/chatbot-notify handler ───────────────────────────────────────────────
+function escapeTg(value = ""): string {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function truncateTg(value = "", maxLength = 3200): string {
+  const text = String(value || "").trim();
+  return text.length <= maxLength ? text : text.slice(0, maxLength - 20) + "\n…[truncated]";
+}
+
+async function handleChatbotNotify(req: IncomingMessage, res: CompatibleResponse): Promise<void> {
+  if (req.method !== "POST") {
+    res.statusCode = 405;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ error: "Method not allowed" }));
+    return;
+  }
+
+  const rate = checkRateLimitInline(req, res, { keyPrefix: "chatbot-notify", windowMs: 60 * 1000, max: 20 });
+  if (rate.limited) return;
+
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+  if (!botToken || !adminChatId) {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ ok: false, skipped: true, reason: "missing_env" }));
+    return;
+  }
+
+  const payload = ((req as CompatibleRequest).body ?? (await parseJsonBody(req))) as Record<string, unknown>;
+  const title = (payload.title as string) || "AI Chatbot Activity";
+  const lines = [
+    `🤖 <b>${escapeTg(title)}</b>`,
+    "",
+    `<b>Type:</b> ${escapeTg((payload.type as string) || "chatbot_activity")}`,
+  ];
+  if (payload.userMessage) lines.push("", `<b>Visitor:</b> ${escapeTg(truncateTg(payload.userMessage as string, 1200))}`);
+  if (payload.aiResponse) lines.push("", `<b>AI Reply:</b> ${escapeTg(truncateTg(payload.aiResponse as string, 1500))}`);
+  lines.push(
+    "",
+    `<b>IP:</b> ${escapeTg(getClientIpInline(req))}`,
+    `<b>Time:</b> ${escapeTg(new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" }))}`,
+  );
+  const text = lines.join("\n");
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: adminChatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
+    });
+    const result = await response.json().catch(() => ({})) as { ok?: boolean; description?: string };
+    if (!response.ok || result.ok === false) throw new Error(result.description || `Telegram failed: ${response.status}`);
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ ok: true }));
+  } catch (error) {
+    console.error("Chatbot notify failed:", error);
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ ok: false, error: (error as Error)?.message || String(error) }));
+  }
+}
+
+// ── Main handler ──────────────────────────────────────────────────────────────
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  const url = req.url ? new URL(req.url, "https://local.invalid") : null;
+  const pathname = url?.pathname ?? "";
+
+  const { compatibleRes } = addExpressCompatibility(req, res);
+
+  // Route: /api/contact
+  if (pathname === "/api/contact" || pathname.startsWith("/api/contact?")) {
+    try {
+      await handleContact(req, compatibleRes);
+    } catch (err) {
+      console.error("[CONTACT ERROR]", err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify({ success: false, error: "বার্তা পাঠাতে সমস্যা হয়েছে।" }));
+      }
+    }
+    return;
+  }
+
+  // Route: /api/chatbot-notify
+  if (pathname === "/api/chatbot-notify" || pathname.startsWith("/api/chatbot-notify?")) {
+    try {
+      await handleChatbotNotify(req, compatibleRes);
+    } catch (err) {
+      console.error("[CHATBOT-NOTIFY ERROR]", err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify({ ok: false, error: "Internal error" }));
+      }
+    }
+    return;
+  }
+
+  // Default: tRPC handler
   try {
     await nodeHTTPRequestHandler({
       router: appRouter,

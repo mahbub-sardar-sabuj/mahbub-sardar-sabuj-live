@@ -70,6 +70,14 @@
       "dest": "/api/trpc-bundled?_telegram_webhook=1"
     },
     {
+      "src": "/api/contact",
+      "dest": "/api/trpc-bundled"
+    },
+    {
+      "src": "/api/chatbot-notify",
+      "dest": "/api/trpc-bundled"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },

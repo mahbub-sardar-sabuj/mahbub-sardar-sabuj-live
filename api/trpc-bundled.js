@@ -9,12 +9,20 @@ var UNAUTHED_ERR_MSG = "Please login (10001)";
 var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 
 // server/_core/cookies.ts
+var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
+function isIpAddress(host) {
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
+  return host.includes(":");
+}
 function isSecureRequest(req) {
   if (req.protocol === "https") return true;
   const forwardedProto = req.headers["x-forwarded-proto"];
   if (!forwardedProto) return false;
   const protoList = Array.isArray(forwardedProto) ? forwardedProto : forwardedProto.split(",");
-  return protoList.some((proto) => proto.trim().toLowerCase() === "https");
+  if (protoList.some((proto) => proto.trim().toLowerCase() === "https")) return true;
+  const host = (req.headers["host"] || "").split(":")[0].toLowerCase();
+  if (!LOCAL_HOSTS.has(host) && !isIpAddress(host)) return true;
+  return false;
 }
 function getSessionCookieOptions(req) {
   return {
@@ -751,6 +759,7 @@ async function enrichPost(post, userOpenId) {
   if (!db) {
     return {
       ...post,
+      authorAvatarUrl: null,
       reactionCounts: { like: 0, love: 0, inspiring: 0, sad: 0 },
       commentCount: 0,
       myReaction: null
@@ -766,8 +775,23 @@ async function enrichPost(post, userOpenId) {
       myReaction = reaction.type;
     }
   });
+  let authorAvatarUrl = null;
+  try {
+    const avatarRows = await db.execute(
+      sql.raw(`SELECT avatarUrl FROM local_users WHERE openId = '${post.authorOpenId.replace(/'/g, "''")}' LIMIT 1`)
+    );
+    const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
+    if (Array.isArray(rows) && rows.length > 0 && rows[0].avatarUrl) {
+      const av = rows[0].avatarUrl;
+      if (!av.startsWith("data:")) {
+        authorAvatarUrl = av;
+      }
+    }
+  } catch {
+  }
   return {
     ...post,
+    authorAvatarUrl,
     reactionCounts,
     commentCount: approvedComments.length,
     myReaction
@@ -1327,6 +1351,16 @@ function addExpressCompatibility(req, res) {
         res.setHeader("Set-Cookie", [String(previous), nextCookie]);
       }
       return compatibleRes;
+    },
+    status(code) {
+      res.statusCode = code;
+      return compatibleRes;
+    },
+    json(data) {
+      if (!res.headersSent) {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify(data));
+      }
     }
   });
   return { compatibleReq, compatibleRes };
@@ -1372,7 +1406,257 @@ function sendFunctionError(res, error) {
     })
   );
 }
+function getClientIpInline(req) {
+  function parseIp(v) {
+    if (!v || typeof v !== "string") return "";
+    return v.split(",")[0]?.trim() || "";
+  }
+  return parseIp(req.headers["x-forwarded-for"]) || parseIp(req.headers["x-real-ip"]) || parseIp(req.headers["cf-connecting-ip"]) || req.socket?.remoteAddress || "unknown";
+}
+function normalizeTextInline(value, maxLength = 2e3) {
+  return String(value ?? "").replace(/[<>]/g, "").replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s{3,}/g, "  ").trim().slice(0, maxLength);
+}
+function isDisposableEmail(email) {
+  const normalized = String(email || "").toLowerCase();
+  const blocked = ["10minutemail.com", "guerrillamail.com", "mailinator.com", "tempmail.com", "yopmail.com"];
+  return blocked.some((d) => normalized.endsWith(`@${d}`));
+}
+function isProbablySpam(value) {
+  const text2 = String(value || "").toLowerCase();
+  const urlCount = (text2.match(/https?:\/\//g) || []).length;
+  const repeatedChars = /(.)\1{12,}/.test(text2);
+  const spamWords = ["casino", "loan", "crypto", "viagra", "porn", "betting"];
+  return urlCount > 3 || repeatedChars || spamWords.some((w) => text2.includes(w));
+}
+var rateBuckets = /* @__PURE__ */ new Map();
+function checkRateLimitInline(req, res, opts) {
+  const clientIp = getClientIpInline(req);
+  const key = `${opts.keyPrefix}:${clientIp}`;
+  const now = Date.now();
+  const current = rateBuckets.get(key);
+  if (!current || current.resetAt <= now) {
+    rateBuckets.set(key, { count: 1, resetAt: now + opts.windowMs });
+    return { limited: false, clientIp };
+  }
+  current.count += 1;
+  if (current.count > opts.max) {
+    res.statusCode = 429;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "\u0985\u09A8\u09C7\u0995\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7\u0964 \u0995\u09BF\u099B\u09C1\u0995\u09CD\u09B7\u09A3 \u09AA\u09B0\u09C7 \u0986\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09C1\u09A8\u0964" }));
+    return { limited: true, clientIp };
+  }
+  return { limited: false, clientIp };
+}
+function parseJsonBody(req) {
+  return new Promise((resolve) => {
+    let data = "";
+    req.on("data", (chunk) => {
+      data += chunk;
+    });
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch {
+        resolve({});
+      }
+    });
+    req.on("error", () => resolve({}));
+  });
+}
+async function handleContact(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "https://www.mahbubsardarsabuj.com");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") {
+    res.statusCode = 200;
+    res.end();
+    return;
+  }
+  if (req.method !== "POST") {
+    res.statusCode = 405;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "Method Not Allowed" }));
+    return;
+  }
+  const rate = checkRateLimitInline(req, res, { keyPrefix: "contact", windowMs: 15 * 60 * 1e3, max: 5 });
+  if (rate.limited) return;
+  const body = req.body ?? await parseJsonBody(req);
+  const b = body;
+  const honeypotFields = ["website", "company", "url", "homepage"];
+  if (honeypotFields.some((f) => typeof b[f] === "string" && b[f].trim().length > 0)) {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: true, message: "\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u09B8\u09AB\u09B2\u09AD\u09BE\u09AC\u09C7 \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB \u09B9\u09AF\u09BC\u09C7\u099B\u09C7\u0964 \u09B6\u09C0\u0998\u09CD\u09B0\u0987 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AC\u09C7\u0964" }));
+    return;
+  }
+  const { name, email, subject, message } = b;
+  if (!name || !email || !message) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "\u09A8\u09BE\u09AE, \u0987\u09AE\u09C7\u0987\u09B2 \u098F\u09AC\u0982 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u0986\u09AC\u09B6\u09CD\u09AF\u0995\u0964" }));
+    return;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email) || isDisposableEmail(email)) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "\u09B8\u09A0\u09BF\u0995 \u0987\u09AE\u09C7\u0987\u09B2 \u09A0\u09BF\u0995\u09BE\u09A8\u09BE \u09A6\u09BF\u09A8\u0964" }));
+    return;
+  }
+  const safeName = normalizeTextInline(name, 120);
+  const safeEmail = normalizeTextInline(email, 254);
+  const safeSubject = normalizeTextInline(subject || "\u0993\u09AF\u09BC\u09C7\u09AC\u09B8\u09BE\u0987\u099F \u09A5\u09C7\u0995\u09C7 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE", 180);
+  const safeMessage = normalizeTextInline(message, 3e3);
+  if (safeName.length < 2 || safeMessage.length < 10) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "\u09A8\u09BE\u09AE \u098F\u09AC\u0982 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u0986\u09B0\u0993 \u09AC\u09BF\u09B8\u09CD\u09A4\u09BE\u09B0\u09BF\u09A4\u09AD\u09BE\u09AC\u09C7 \u09B2\u09BF\u0996\u09C1\u09A8\u0964" }));
+    return;
+  }
+  if (isProbablySpam(`${safeSubject}
+${safeMessage}`)) {
+    res.statusCode = 400;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ success: false, error: "\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE\u099F\u09BF \u0997\u09CD\u09B0\u09B9\u09A3 \u0995\u09B0\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF\u0964 \u0985\u09A8\u09C1\u0997\u09CD\u09B0\u09B9 \u0995\u09B0\u09C7 \u09B8\u09CD\u09AC\u09BE\u09AD\u09BE\u09AC\u09BF\u0995 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u09B2\u09BF\u0996\u09C1\u09A8\u0964" }));
+    return;
+  }
+  const TO = process.env.CONTACT_EMAIL_TO || "lekhokmahbubsardarsabuj@gmail.com";
+  const FROM = process.env.CONTACT_EMAIL_FROM;
+  const PASS = process.env.GMAIL_APP_PASSWORD;
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
+    try {
+      const telegramText = `\u{1F4E9} <b>\u09A8\u09A4\u09C1\u09A8 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u2014 mahbubsardarsabuj.com</b>
+
+\u{1F464} <b>\u09A8\u09BE\u09AE:</b> ${safeName}
+\u{1F4E7} <b>\u0987\u09AE\u09C7\u0987\u09B2:</b> ${safeEmail}
+\u{1F4CC} <b>\u09AC\u09BF\u09B7\u09AF\u09BC:</b> ${safeSubject}
+
+\u{1F4AC} <b>\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE:</b>
+${safeMessage.slice(0, 3e3)}`;
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_ADMIN_CHAT_ID, text: telegramText, parse_mode: "HTML" })
+      });
+    } catch (e) {
+      console.warn("[CONTACT] Telegram failed:", e.message);
+    }
+  }
+  if (FROM && PASS) {
+    try {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.default.createTransport({ service: "gmail", auth: { user: FROM, pass: PASS } });
+      await transporter.sendMail({
+        from: `"${safeName}" <${FROM}>`,
+        to: TO,
+        replyTo: safeEmail,
+        subject: `[mahbubsardarsabuj.com] ${safeSubject}`,
+        text: `\u09A8\u09BE\u09AE: ${safeName}
+\u0987\u09AE\u09C7\u0987\u09B2: ${safeEmail}
+\u09AC\u09BF\u09B7\u09AF\u09BC: ${safeSubject}
+
+${safeMessage}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#f9f9f9;border-radius:10px"><h2 style="color:#C9A84C;border-bottom:2px solid #C9A84C;padding-bottom:10px">\u09A8\u09A4\u09C1\u09A8 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u2014 mahbubsardarsabuj.com</h2><p><b>\u09A8\u09BE\u09AE:</b> ${safeName}</p><p><b>\u0987\u09AE\u09C7\u0987\u09B2:</b> <a href="mailto:${safeEmail}">${safeEmail}</a></p><p><b>\u09AC\u09BF\u09B7\u09AF\u09BC:</b> ${safeSubject}</p><div style="margin-top:20px;padding:15px;background:#fff;border-left:4px solid #C9A84C;border-radius:5px"><p style="white-space:pre-wrap">${safeMessage}</p></div></div>`
+      });
+    } catch (emailErr) {
+      console.error("[CONTACT] Email failed:", emailErr.message);
+      if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) throw emailErr;
+    }
+  }
+  console.log(`[CONTACT] From: ${safeName} <${safeEmail}> | IP: ${rate.clientIp}`);
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify({ success: true, message: "\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u09B8\u09AB\u09B2\u09AD\u09BE\u09AC\u09C7 \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB \u09B9\u09AF\u09BC\u09C7\u099B\u09C7\u0964 \u09B6\u09C0\u0998\u09CD\u09B0\u0987 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AC\u09C7\u0964" }));
+}
+function escapeTg(value = "") {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function truncateTg(value = "", maxLength = 3200) {
+  const text2 = String(value || "").trim();
+  return text2.length <= maxLength ? text2 : text2.slice(0, maxLength - 20) + "\n\u2026[truncated]";
+}
+async function handleChatbotNotify(req, res) {
+  if (req.method !== "POST") {
+    res.statusCode = 405;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ error: "Method not allowed" }));
+    return;
+  }
+  const rate = checkRateLimitInline(req, res, { keyPrefix: "chatbot-notify", windowMs: 60 * 1e3, max: 20 });
+  if (rate.limited) return;
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+  if (!botToken || !adminChatId) {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ ok: false, skipped: true, reason: "missing_env" }));
+    return;
+  }
+  const payload = req.body ?? await parseJsonBody(req);
+  const title = payload.title || "AI Chatbot Activity";
+  const lines = [
+    `\u{1F916} <b>${escapeTg(title)}</b>`,
+    "",
+    `<b>Type:</b> ${escapeTg(payload.type || "chatbot_activity")}`
+  ];
+  if (payload.userMessage) lines.push("", `<b>Visitor:</b> ${escapeTg(truncateTg(payload.userMessage, 1200))}`);
+  if (payload.aiResponse) lines.push("", `<b>AI Reply:</b> ${escapeTg(truncateTg(payload.aiResponse, 1500))}`);
+  lines.push(
+    "",
+    `<b>IP:</b> ${escapeTg(getClientIpInline(req))}`,
+    `<b>Time:</b> ${escapeTg((/* @__PURE__ */ new Date()).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" }))}`
+  );
+  const text2 = lines.join("\n");
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: adminChatId, text: text2, parse_mode: "HTML", disable_web_page_preview: true })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) throw new Error(result.description || `Telegram failed: ${response.status}`);
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ ok: true }));
+  } catch (error) {
+    console.error("Chatbot notify failed:", error);
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({ ok: false, error: error?.message || String(error) }));
+  }
+}
 async function handler(req, res) {
+  const url = req.url ? new URL(req.url, "https://local.invalid") : null;
+  const pathname = url?.pathname ?? "";
+  const { compatibleRes } = addExpressCompatibility(req, res);
+  if (pathname === "/api/contact" || pathname.startsWith("/api/contact?")) {
+    try {
+      await handleContact(req, compatibleRes);
+    } catch (err) {
+      console.error("[CONTACT ERROR]", err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify({ success: false, error: "\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u09AA\u09BE\u09A0\u09BE\u09A4\u09C7 \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7\u0964" }));
+      }
+    }
+    return;
+  }
+  if (pathname === "/api/chatbot-notify" || pathname.startsWith("/api/chatbot-notify?")) {
+    try {
+      await handleChatbotNotify(req, compatibleRes);
+    } catch (err) {
+      console.error("[CHATBOT-NOTIFY ERROR]", err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify({ ok: false, error: "Internal error" }));
+      }
+    }
+    return;
+  }
   try {
     await nodeHTTPRequestHandler({
       router: appRouter,
