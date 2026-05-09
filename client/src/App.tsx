@@ -28,6 +28,7 @@ const AIChatbot = lazy(() => import("./components/AIChatbot"));
 const AdminLiveChat = lazy(() => import("./pages/AdminLiveChat"));
 const AdminWritingModeration = lazy(() => import("./pages/AdminWritingModeration"));
 const Profile = lazy(() => import("./pages/Profile"));
+const AmiOLikhboLogin = lazy(() => import("./pages/AmiOLikhboLogin"));
 
 // Page loading fallback
 function PageLoader() {
@@ -77,6 +78,7 @@ function Router() {
         <Route path={"/gallery"} component={Gallery} />
         <Route path={"/amio-likhbo-bastobota"} component={AmiOLikhboBastobota} />
         <Route path={"/amio-likhbo-bastobota/:slug"} component={AmiOLikhboBastobota} />
+        <Route path={"/amio-likhbo-login"} component={AmiOLikhboLogin} />
         <Route path={"/profile"} component={Profile} />
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />
         <Route path={"/admin/writing"} component={AdminWritingModeration} />

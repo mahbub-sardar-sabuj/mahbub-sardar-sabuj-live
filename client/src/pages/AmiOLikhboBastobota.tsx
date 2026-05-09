@@ -1721,8 +1721,8 @@ export default function AmiOLikhboBastobota() {
   const auth = trpc.auth.me.useQuery(undefined, { retry: false });
   const user = auth.data;
   const isAuthenticated = Boolean(user);
-  const loginHref = isLoginConfigured ? getLoginUrl() : undefined;
-  const signupHref = isLoginConfigured ? getSignupUrl() : undefined;
+  const loginHref = isLoginConfigured ? getLoginUrl() : "/amio-likhbo-login";
+  const signupHref = isLoginConfigured ? getSignupUrl() : "/amio-likhbo-login?mode=register";
 
   const [, params] = useRoute("/amio-likhbo-bastobota/:slug");
   const [, setLocation] = useLocation();
@@ -1883,10 +1883,10 @@ export default function AmiOLikhboBastobota() {
                   </>
                 ) : (
                   <>
-                    <ActionButton onClick={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }} small>
+                    <ActionButton href="/amio-likhbo-login" small>
                       <KeyRound size={15} /> লগইন
                     </ActionButton>
-                    <ActionButton onClick={() => { setLocalAuthMode("register"); setShowLocalAuth(true); }} variant="ghost" small>
+                    <ActionButton href="/amio-likhbo-login?mode=register" variant="ghost" small>
                       <UserPlus size={15} /> একাউন্ট খুলুন
                     </ActionButton>
                   </>
@@ -1899,7 +1899,7 @@ export default function AmiOLikhboBastobota() {
             <GuidancePanel
               isAuthenticated={isAuthenticated}
               onWrite={() => setShowCreateModal(true)}
-              onLogin={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }}
+              onLogin={() => { window.location.href = "/amio-likhbo-login"; }}
             />
           )}
 
@@ -1949,9 +1949,8 @@ export default function AmiOLikhboBastobota() {
                   লগইন করুন
                 </a>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => { setLocalAuthMode("login"); setShowLocalAuth(true); setShowLoginPrompt(false); }}
+                <a
+                  href="/amio-likhbo-login"
                   style={{
                     padding: "0.3rem 0.75rem",
                     borderRadius: 999,
@@ -1961,11 +1960,11 @@ export default function AmiOLikhboBastobota() {
                     fontWeight: 900,
                     fontSize: "0.82rem",
                     fontFamily: adorshoFont,
-                    cursor: "pointer",
+                    textDecoration: "none",
                   }}
                 >
                   লগইন করুন
-                </button>
+                </a>
               )}
             </div>
           )}
@@ -2093,7 +2092,7 @@ export default function AmiOLikhboBastobota() {
                   selectedCategory={selectedCategory}
                   isAuthenticated={isAuthenticated}
                   onWrite={() => setShowCreateModal(true)}
-                  onLogin={() => { setLocalAuthMode("login"); setShowLocalAuth(true); }}
+                  onLogin={() => { window.location.href = "/amio-likhbo-login"; }}
                 />
               ) : (
                 <div style={{ display: "grid", gap: "1rem" }}>

@@ -1,12 +1,21 @@
+/**
+ * Profile — "আমিও লিখবো বাস্তবতা" User Profile Page
+ * Premium design: large avatar, stats cards, bio editing, post list.
+ */
 import { useState, useRef, useEffect, type CSSProperties } from "react";
 import {
   ArrowLeft,
   Camera,
   CheckCircle2,
   Edit3,
+  ExternalLink,
+  Feather,
   FileText,
   LogOut,
+  PenLine,
+  RefreshCw,
   Save,
+  Settings,
   X,
 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -25,55 +34,73 @@ const shellStyle: CSSProperties = {
   fontFamily: adorshoFont,
 };
 
-const glassStyle: CSSProperties = {
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(232,201,122,0.18)",
-  borderRadius: 16,
-  backdropFilter: "blur(12px)",
-};
-
-const goldBtn: CSSProperties = {
-  background: "linear-gradient(135deg, #D4A843 0%, #F7D56F 50%, #C89A2E 100%)",
-  color: "#071426",
-  border: "none",
-  borderRadius: 12,
-  padding: "10px 22px",
-  fontFamily: adorshoFont,
-  fontSize: 15,
-  fontWeight: 700,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  gap: 6,
-};
-
-const logoutBtn: CSSProperties = {
-  background: "rgba(255,107,107,0.13)",
-  color: "#ff8a8a",
-  border: "1px solid rgba(255,107,107,0.35)",
-  borderRadius: 12,
-  padding: "9px 14px",
-  fontFamily: adorshoFont,
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  gap: 6,
-  whiteSpace: "nowrap",
+const glassCard: CSSProperties = {
+  background: "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.03))",
+  border: "1px solid rgba(232,201,122,0.2)",
+  borderRadius: 24,
+  backdropFilter: "blur(18px)",
+  boxShadow: "0 16px 60px rgba(0,0,0,0.3)",
 };
 
 const inputStyle: CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.06)",
-  border: "1px solid rgba(232,201,122,0.25)",
-  borderRadius: 10,
-  padding: "10px 14px",
+  border: "1.5px solid rgba(232,201,122,0.22)",
+  borderRadius: 12,
+  padding: "0.75rem 1rem",
   color: "#FDF6EC",
   fontFamily: adorshoFont,
-  fontSize: 15,
+  fontSize: "0.96rem",
   outline: "none",
   boxSizing: "border-box",
+  transition: "border-color 0.2s",
+};
+
+const goldBtn: CSSProperties = {
+  background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 55%, #B98A24 100%)",
+  color: "#071426",
+  border: "1px solid rgba(255,235,166,0.6)",
+  borderRadius: 999,
+  padding: "0.65rem 1.4rem",
+  fontFamily: adorshoFont,
+  fontSize: "0.92rem",
+  fontWeight: 900,
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  boxShadow: "0 4px 18px rgba(212,168,67,0.3)",
+  transition: "opacity 0.15s",
+};
+
+const ghostBtn: CSSProperties = {
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(232,201,122,0.22)",
+  borderRadius: 999,
+  padding: "0.65rem 1.2rem",
+  color: "rgba(253,246,236,0.75)",
+  fontFamily: adorshoFont,
+  fontSize: "0.88rem",
+  fontWeight: 700,
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+};
+
+const dangerBtn: CSSProperties = {
+  background: "rgba(239,68,68,0.1)",
+  border: "1px solid rgba(239,68,68,0.3)",
+  borderRadius: 999,
+  padding: "0.65rem 1.2rem",
+  color: "#FCA5A5",
+  fontFamily: adorshoFont,
+  fontSize: "0.88rem",
+  fontWeight: 700,
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
 };
 
 export default function Profile() {
@@ -97,7 +124,6 @@ export default function Profile() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState("");
   const [logoutError, setLogoutError] = useState("");
-
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -105,15 +131,9 @@ export default function Profile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // প্রোফাইল লোড করা
   useEffect(() => {
     if (authLoading) return;
-
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+    if (!user) { setProfile(null); setLoading(false); return; }
 
     let cancelled = false;
     setLoading(true);
@@ -130,27 +150,18 @@ export default function Profile() {
           setEditBio(data.bio || "");
         }
       })
-      .catch(() => {
-        if (!cancelled) setError("প্রোফাইল লোড করতে সমস্যা হয়েছে");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .catch(() => { if (!cancelled) setError("প্রোফাইল লোড করতে সমস্যা হয়েছে"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [authLoading, user?.openId]);
 
-  // প্রোফাইল সেভ করা
   async function handleSave() {
     if (!editName.trim()) { setError("নাম দিন"); return; }
-    setSaving(true);
-    setError("");
+    setSaving(true); setError("");
     try {
       const res = await fetch("/api/profile", {
-        method: "POST",
-        credentials: "include",
+        method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName, bio: editBio, avatarUrl: profile?.avatarUrl }),
       });
@@ -159,68 +170,71 @@ export default function Profile() {
       setProfile((prev) => prev ? { ...prev, name: editName, bio: editBio } : prev);
       setEditing(false);
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setTimeout(() => setSaveSuccess(false), 3500);
       refresh();
-    } catch {
-      setError("সেভ করতে সমস্যা হয়েছে");
-    } finally {
-      setSaving(false);
-    }
+    } catch { setError("সেভ করতে সমস্যা হয়েছে"); }
+    finally { setSaving(false); }
   }
 
-  // ছবি আপলোড করা
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    setAvatarUploading(true);
-    setAvatarError("");
+    setAvatarUploading(true); setAvatarError("");
     try {
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await fetch("/api/upload-avatar", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
+      const res = await fetch("/api/upload-avatar", { method: "POST", credentials: "include", body: formData });
       const data = await res.json();
       if (data.error) { setAvatarError(data.error); return; }
       setProfile((prev) => prev ? { ...prev, avatarUrl: data.avatarUrl } : prev);
-    } catch {
-      setAvatarError("ছবি আপলোড করতে সমস্যা হয়েছে");
-    } finally {
-      setAvatarUploading(false);
-    }
+    } catch { setAvatarError("ছবি আপলোড করতে সমস্যা হয়েছে"); }
+    finally { setAvatarUploading(false); }
   }
 
   async function handleLogout() {
-    const confirmed = window.confirm("আপনি কি সত্যিই লগআউট করতে চান?");
-    if (!confirmed) return;
-
-    setLoggingOut(true);
-    setLogoutError("");
+    if (!window.confirm("আপনি কি সত্যিই লগআউট করতে চান?")) return;
+    setLoggingOut(true); setLogoutError("");
     try {
       await logout();
       setProfile(null);
       setLocation("/amio-likhbo-bastobota");
-    } catch {
-      setLogoutError("লগআউট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
-    } finally {
-      setLoggingOut(false);
-    }
+    } catch { setLogoutError("লগআউট করতে সমস্যা হয়েছে।"); }
+    finally { setLoggingOut(false); }
   }
 
+  // Not logged in
   if (!authLoading && !user) {
     return (
       <div style={shellStyle}>
         <Navbar />
-        <div style={{ maxWidth: 480, margin: "0 auto", padding: "120px 20px", textAlign: "center" }}>
-          <div style={{ fontSize: 60, marginBottom: 16 }}>🔒</div>
-          <h2 style={{ color: "#F7D56F", fontFamily: adorshoFont, marginBottom: 12 }}>লগইন করুন</h2>
-          <p style={{ color: "rgba(253,246,236,0.7)", marginBottom: 24 }}>প্রোফাইল দেখতে লগইন করতে হবে।</p>
-          <button style={goldBtn} onClick={() => setLocation("/amio-likhbo-bastobota")}>
-            <ArrowLeft size={16} /> ফিরে যান
-          </button>
+        <div style={{ maxWidth: 480, margin: "0 auto", padding: "140px 20px", textAlign: "center" }}>
+          <div
+            style={{
+              width: 80, height: 80, borderRadius: "50%",
+              background: "rgba(212,168,67,0.12)", border: "1px solid rgba(232,201,122,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 20px",
+            }}
+          >
+            <Feather size={32} color="#D4A843" />
+          </div>
+          <h2 style={{ color: "#F7D56F", fontFamily: adorshoFont, marginBottom: 10, fontSize: "1.4rem" }}>
+            লগইন করুন
+          </h2>
+          <p style={{ color: "rgba(253,246,236,0.6)", marginBottom: 28, lineHeight: 1.7 }}>
+            প্রোফাইল দেখতে ও পোস্ট করতে লগইন করতে হবে।
+          </p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <a
+              href="/amio-likhbo-login"
+              style={{ ...goldBtn, textDecoration: "none" }}
+            >
+              লগইন করুন
+            </a>
+            <button style={ghostBtn} onClick={() => setLocation("/amio-likhbo-bastobota")}>
+              <ArrowLeft size={15} /> ফিরে যান
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -229,58 +243,78 @@ export default function Profile() {
   return (
     <div style={shellStyle}>
       <Seo
-        title="আমার প্রোফাইল — মাহবুব সরদার সবুজ"
+        title="আমার প্রোফাইল — আমিও লিখবো বাস্তবতা"
         description="আমিও লিখবো বাস্তবতা প্ল্যাটফর্মে নিজের প্রোফাইল, পরিচিতি এবং প্রকাশিত লেখাগুলো দেখুন ও সম্পাদনা করুন।"
         path="/profile"
       />
       <Navbar />
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "100px 16px 60px" }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .profile-card { animation: fadeInUp 0.4s ease forwards; }
+        input:focus, textarea:focus { border-color: rgba(212,168,67,0.6) !important; }
+      `}</style>
+
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "calc(var(--site-nav-offset, 98px) + 1.5rem) 1rem 4rem" }}>
         {/* Back button */}
         <button
           onClick={() => setLocation("/amio-likhbo-bastobota")}
           style={{
-            background: "none", border: "none", color: "rgba(253,246,236,0.6)",
+            background: "none", border: "none", color: "rgba(253,246,236,0.55)",
             cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-            fontFamily: adorshoFont, fontSize: 14, marginBottom: 24, padding: 0,
+            fontFamily: adorshoFont, fontSize: "0.85rem", marginBottom: "1.5rem", padding: 0,
           }}
         >
-          <ArrowLeft size={16} /> বাস্তবতায় ফিরুন
+          <ArrowLeft size={15} /> বাস্তবতায় ফিরুন
         </button>
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(253,246,236,0.5)" }}>
-            লোড হচ্ছে...
+          <div style={{ display: "grid", placeItems: "center", minHeight: 280 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+              <RefreshCw size={28} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
+              <span style={{ color: "rgba(253,246,236,0.45)", fontFamily: adorshoFont }}>লোড হচ্ছে...</span>
+            </div>
           </div>
         ) : error && !profile ? (
-          <div style={{ ...glassStyle, padding: 24, textAlign: "center", color: "#ff6b6b" }}>
+          <div style={{ ...glassCard, padding: "2rem", textAlign: "center", color: "#FCA5A5" }}>
             {error}
           </div>
         ) : profile ? (
-          <>
-            {/* Success message */}
+          <div className="profile-card" style={{ display: "grid", gap: "1.25rem" }}>
+            {/* Success toast */}
             {saveSuccess && (
               <div style={{
-                background: "rgba(72,199,142,0.15)", border: "1px solid rgba(72,199,142,0.4)",
-                borderRadius: 10, padding: "10px 16px", marginBottom: 16,
-                display: "flex", alignItems: "center", gap: 8, color: "#48c78e",
-                fontFamily: adorshoFont,
+                background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)",
+                borderRadius: 14, padding: "0.85rem 1.1rem",
+                display: "flex", alignItems: "center", gap: 8, color: "#86efac",
+                fontFamily: adorshoFont, fontSize: "0.9rem",
               }}>
                 <CheckCircle2 size={16} /> প্রোফাইল সফলভাবে আপডেট হয়েছে!
               </div>
             )}
 
-            {/* Profile Card */}
-            <div style={{ ...glassStyle, padding: 28, marginBottom: 24 }}>
-              {/* Avatar */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 24 }}>
+            {/* ── Profile Hero Card ── */}
+            <div style={{ ...glassCard, padding: "clamp(1.5rem, 5vw, 2.2rem)" }}>
+              {/* Cover gradient strip */}
+              <div style={{
+                height: 80, borderRadius: "16px 16px 0 0", margin: "-clamp(1.5rem, 5vw, 2.2rem) -clamp(1.5rem, 5vw, 2.2rem) 0",
+                background: "linear-gradient(135deg, rgba(212,168,67,0.25) 0%, rgba(81,139,255,0.12) 50%, rgba(212,168,67,0.08) 100%)",
+                borderBottom: "1px solid rgba(232,201,122,0.15)",
+                marginBottom: "0",
+              }} />
+
+              {/* Avatar row */}
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginTop: "-40px", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <div style={{
-                    width: 90, height: 90, borderRadius: "50%",
+                    width: 88, height: 88, borderRadius: "50%",
                     background: "linear-gradient(135deg, #D4A843, #F7D56F)",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 36, fontWeight: 700, color: "#071426",
-                    overflow: "hidden", border: "3px solid rgba(232,201,122,0.4)",
+                    fontSize: 32, fontWeight: 900, color: "#071426",
+                    overflow: "hidden",
+                    border: "3px solid #0B1726",
+                    boxShadow: "0 0 0 2px rgba(232,201,122,0.4), 0 8px 24px rgba(0,0,0,0.4)",
                   }}>
                     {profile.avatarUrl ? (
                       <img src={profile.avatarUrl} alt="প্রোফাইল ছবি"
@@ -289,25 +323,24 @@ export default function Profile() {
                       (profile.name?.[0] || "?").toUpperCase()
                     )}
                   </div>
-                  {/* ছবি পরিবর্তন বাটন */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={avatarUploading}
-                    style={{
-                      position: "absolute", bottom: 0, right: 0,
-                      width: 28, height: 28, borderRadius: "50%",
-                      background: "linear-gradient(135deg, #D4A843, #F7D56F)",
-                      border: "2px solid #071426",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", padding: 0,
-                    }}
                     title="ছবি পরিবর্তন করুন"
+                    style={{
+                      position: "absolute", bottom: 2, right: 2,
+                      width: 26, height: 26, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #D4A843, #F7D56F)",
+                      border: "2px solid #0B1726",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: avatarUploading ? "not-allowed" : "pointer", padding: 0,
+                      opacity: avatarUploading ? 0.6 : 1,
+                    }}
                   >
-                    {avatarUploading ? (
-                      <span style={{ fontSize: 10, color: "#071426" }}>...</span>
-                    ) : (
-                      <Camera size={13} color="#071426" />
-                    )}
+                    {avatarUploading
+                      ? <RefreshCw size={11} color="#071426" style={{ animation: "spin 0.8s linear infinite" }} />
+                      : <Camera size={11} color="#071426" />
+                    }
                   </button>
                   <input
                     ref={fileInputRef}
@@ -318,139 +351,170 @@ export default function Profile() {
                   />
                 </div>
 
-                <div style={{ flex: 1 }}>
-                  {editing ? (
-                    <>
-                      <label style={{ color: "rgba(253,246,236,0.6)", fontSize: 13, display: "block", marginBottom: 4 }}>
-                        নাম *
-                      </label>
-                      <input
-                        style={{ ...inputStyle, marginBottom: 10 }}
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        maxLength={160}
-                        placeholder="আপনার নাম"
-                      />
-                    </>
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
-                      <div style={{ minWidth: 0 }}>
-                        <h2 style={{ margin: "0 0 4px", color: "#F7D56F", fontSize: 22, fontFamily: adorshoFont }}>
-                          {profile.name}
-                        </h2>
-                        <p style={{ margin: 0, color: "rgba(253,246,236,0.5)", fontSize: 13, wordBreak: "break-word" }}>
-                          {profile.email}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        disabled={loggingOut}
-                        style={{
-                          ...logoutBtn,
-                          opacity: loggingOut ? 0.65 : 1,
-                          cursor: loggingOut ? "not-allowed" : "pointer",
-                        }}
-                        title="এই অ্যাকাউন্ট থেকে লগআউট করুন"
-                      >
-                        <LogOut size={14} /> {loggingOut ? "লগআউট হচ্ছে..." : "লগআউট"}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Stats */}
-                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ color: "#F7D56F", fontWeight: 700, fontSize: 18 }}>{profile.approvedPostCount}</div>
-                      <div style={{ color: "rgba(253,246,236,0.5)", fontSize: 12 }}>প্রকাশিত</div>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ color: "#F7D56F", fontWeight: 700, fontSize: 18 }}>{profile.postCount}</div>
-                      <div style={{ color: "rgba(253,246,236,0.5)", fontSize: 12 }}>মোট লেখা</div>
-                    </div>
+                {/* Action buttons top-right */}
+                {!editing && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", paddingTop: "2.5rem" }}>
+                    <button style={goldBtn} onClick={() => setEditing(true)}>
+                      <Settings size={14} /> সম্পাদনা
+                    </button>
+                    <button
+                      style={{ ...dangerBtn, opacity: loggingOut ? 0.65 : 1 }}
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                    >
+                      <LogOut size={14} /> {loggingOut ? "লগআউট..." : "লগআউট"}
+                    </button>
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* Logout error */}
-              {logoutError && (
-                <div style={{ color: "#ff8a8a", fontSize: 13, marginBottom: 12, fontFamily: adorshoFont }}>
-                  {logoutError}
-                </div>
-              )}
 
               {/* Avatar error */}
               {avatarError && (
-                <div style={{ color: "#ff6b6b", fontSize: 13, marginBottom: 12, fontFamily: adorshoFont }}>
+                <div style={{ color: "#FCA5A5", fontSize: "0.82rem", marginBottom: "0.75rem", fontFamily: adorshoFont }}>
                   {avatarError}
                 </div>
               )}
 
+              {/* Name & email */}
+              {editing ? (
+                <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
+                  <div>
+                    <label style={{ color: "rgba(247,213,111,0.85)", fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 5 }}>
+                      নাম *
+                    </label>
+                    <input
+                      style={inputStyle}
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      maxLength={160}
+                      placeholder="আপনার নাম"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginBottom: "1rem" }}>
+                  <h2 style={{ margin: "0 0 4px", color: "#F7D56F", fontSize: "clamp(1.2rem, 4vw, 1.5rem)", fontFamily: adorshoFont, lineHeight: 1.2 }}>
+                    {profile.name}
+                  </h2>
+                  <p style={{ margin: 0, color: "rgba(253,246,236,0.45)", fontSize: "0.85rem" }}>
+                    {profile.email}
+                  </p>
+                </div>
+              )}
+
+              {/* Stats row */}
+              <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+                {[
+                  { value: profile.approvedPostCount, label: "প্রকাশিত লেখা", color: "#86efac" },
+                  { value: profile.postCount, label: "মোট জমা", color: "#F7D56F" },
+                  { value: profile.postCount - profile.approvedPostCount, label: "পর্যালোচনাধীন", color: "#93c5fd" },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    style={{
+                      flex: "1 1 90px",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(232,201,122,0.12)",
+                      borderRadius: 14,
+                      padding: "0.75rem 1rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div style={{ color: s.color, fontWeight: 900, fontSize: "1.3rem", lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ color: "rgba(253,246,236,0.45)", fontSize: "0.75rem", marginTop: 4, lineHeight: 1.3 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
               {/* Bio */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ color: "rgba(253,246,236,0.6)", fontSize: 13, display: "block", marginBottom: 6 }}>
+              <div style={{ marginBottom: "1.25rem" }}>
+                <label style={{ color: "rgba(247,213,111,0.8)", fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 6 }}>
                   পরিচিতি (বায়ো)
                 </label>
                 {editing ? (
-                  <textarea
-                    style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-                    value={editBio}
-                    onChange={(e) => setEditBio(e.target.value)}
-                    maxLength={500}
-                    placeholder="নিজের সম্পর্কে কিছু লিখুন... (সর্বোচ্চ ৫০০ অক্ষর)"
-                  />
+                  <>
+                    <textarea
+                      style={{ ...inputStyle, minHeight: 100, resize: "vertical", lineHeight: 1.7 }}
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      maxLength={500}
+                      placeholder="নিজের সম্পর্কে কিছু লিখুন... (সর্বোচ্চ ৫০০ অক্ষর)"
+                    />
+                    <div style={{ textAlign: "right", color: "rgba(253,246,236,0.35)", fontSize: "0.75rem", marginTop: 4 }}>
+                      {editBio.length}/500
+                    </div>
+                  </>
                 ) : (
                   <p style={{
-                    color: profile.bio ? "#FDF6EC" : "rgba(253,246,236,0.35)",
-                    fontSize: 15, lineHeight: 1.7, margin: 0, fontFamily: adorshoFont,
+                    color: profile.bio ? "rgba(253,246,236,0.85)" : "rgba(253,246,236,0.3)",
+                    fontSize: "0.95rem", lineHeight: 1.75, margin: 0, fontFamily: adorshoFont,
                   }}>
-                    {profile.bio || "এখনো কোনো পরিচিতি যোগ করা হয়নি।"}
+                    {profile.bio || "এখনো কোনো পরিচিতি যোগ করা হয়নি। সম্পাদনা করে যোগ করুন।"}
                   </p>
-                )}
-                {editing && (
-                  <div style={{ textAlign: "right", color: "rgba(253,246,236,0.4)", fontSize: 12, marginTop: 4 }}>
-                    {editBio.length}/500
-                  </div>
                 )}
               </div>
 
               {/* Error */}
               {error && (
-                <div style={{ color: "#ff6b6b", fontSize: 13, marginBottom: 12, fontFamily: adorshoFont }}>
+                <div style={{ color: "#FCA5A5", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
                   {error}
                 </div>
               )}
+              {logoutError && (
+                <div style={{ color: "#FCA5A5", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
+                  {logoutError}
+                </div>
+              )}
 
-              {/* Action buttons */}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {editing ? (
-                  <>
-                    <button style={goldBtn} onClick={handleSave} disabled={saving}>
-                      <Save size={15} /> {saving ? "সেভ হচ্ছে..." : "সেভ করুন"}
-                    </button>
-                    <button
-                      onClick={() => { setEditing(false); setEditName(profile.name); setEditBio(profile.bio || ""); setError(""); }}
-                      style={{
-                        background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-                        borderRadius: 12, padding: "10px 18px", color: "#FDF6EC",
-                        fontFamily: adorshoFont, fontSize: 14, cursor: "pointer",
-                        display: "flex", alignItems: "center", gap: 6,
-                      }}
-                    >
-                      <X size={14} /> বাতিল
-                    </button>
-                  </>
-                ) : (
-                  <button style={goldBtn} onClick={() => setEditing(true)}>
-                    <Edit3 size={15} /> প্রোফাইল সম্পাদনা
+              {/* Edit mode action buttons */}
+              {editing && (
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button style={{ ...goldBtn, opacity: saving ? 0.75 : 1 }} onClick={handleSave} disabled={saving}>
+                    <Save size={14} /> {saving ? "সেভ হচ্ছে..." : "সেভ করুন"}
                   </button>
-                )}
-              </div>
+                  <button
+                    style={ghostBtn}
+                    onClick={() => { setEditing(false); setEditName(profile.name); setEditBio(profile.bio || ""); setError(""); }}
+                  >
+                    <X size={14} /> বাতিল
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* My Posts Section */}
+            {/* ── Quick Links ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+              {[
+                { icon: <PenLine size={16} />, label: "নতুন লেখা", href: "/amio-likhbo-bastobota", action: () => setLocation("/amio-likhbo-bastobota") },
+                { icon: <ExternalLink size={16} />, label: "ফিড দেখুন", href: "/amio-likhbo-bastobota", action: () => setLocation("/amio-likhbo-bastobota") },
+              ].map((link) => (
+                <button
+                  key={link.label}
+                  onClick={link.action}
+                  style={{
+                    ...glassCard,
+                    padding: "0.9rem 1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    color: "rgba(247,213,111,0.8)",
+                    fontFamily: adorshoFont,
+                    fontWeight: 700,
+                    fontSize: "0.88rem",
+                    cursor: "pointer",
+                    border: "1px solid rgba(232,201,122,0.15)",
+                    background: "rgba(255,255,255,0.04)",
+                    transition: "background 0.15s",
+                  }}
+                >
+                  {link.icon} {link.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── My Posts ── */}
             <MyPostsList openId={user?.openId || ""} />
-          </>
+          </div>
         ) : null}
       </div>
     </div>
@@ -466,59 +530,96 @@ function MyPostsList({ openId }: { openId: string }) {
 
   const posts = myPostsQuery.data || [];
 
-  const statusLabel: Record<string, { label: string; color: string }> = {
-    pending:  { label: "পর্যালোচনাধীন", color: "#F7D56F" },
-    approved: { label: "প্রকাশিত",      color: "#48c78e" },
-    rejected: { label: "প্রকাশিত হয়নি", color: "#ff6b6b" },
-    removed:  { label: "সরানো হয়েছে",  color: "#aaa" },
+  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    pending:  { label: "পর্যালোচনাধীন", color: "#FCD34D", bg: "rgba(252,211,77,0.1)" },
+    approved: { label: "প্রকাশিত",      color: "#86efac", bg: "rgba(134,239,172,0.1)" },
+    rejected: { label: "প্রকাশিত হয়নি", color: "#FCA5A5", bg: "rgba(252,165,165,0.1)" },
+    removed:  { label: "সরানো হয়েছে",  color: "#94a3b8", bg: "rgba(148,163,184,0.1)" },
   };
 
   return (
-    <div style={{ ...glassStyle, padding: 24 } as CSSProperties}>
-      <h3 style={{ margin: "0 0 16px", color: "#F7D56F", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", fontSize: 18, display: "flex", alignItems: "center", gap: 8 }}>
+    <div style={{
+      background: "linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025))",
+      border: "1px solid rgba(232,201,122,0.18)",
+      borderRadius: 24,
+      backdropFilter: "blur(14px)",
+      padding: "clamp(1.2rem, 4vw, 1.8rem)",
+    }}>
+      <h3 style={{
+        margin: "0 0 1.1rem",
+        color: "#F7D56F",
+        fontFamily: adorshoFont,
+        fontSize: "1.05rem",
+        fontWeight: 900,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}>
         <FileText size={18} /> আমার লেখাসমূহ
       </h3>
 
       {myPostsQuery.isLoading ? (
-        <p style={{ color: "rgba(253,246,236,0.4)", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif" }}>লোড হচ্ছে...</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(253,246,236,0.4)", fontFamily: adorshoFont, padding: "1rem 0" }}>
+          <RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> লোড হচ্ছে...
+        </div>
       ) : posts.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "32px 0" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>✍️</div>
-          <p style={{ color: "rgba(253,246,236,0.5)", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif" }}>
+        <div style={{ textAlign: "center", padding: "2.5rem 0" }}>
+          <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>✍️</div>
+          <p style={{ color: "rgba(253,246,236,0.45)", fontFamily: adorshoFont, margin: 0, lineHeight: 1.7 }}>
             এখনো কোনো লেখা নেই।
+            <br />
+            <a href="/amio-likhbo-bastobota" style={{ color: "#F7D56F", textDecoration: "none", fontWeight: 700 }}>
+              প্রথম লেখাটি শুরু করুন →
+            </a>
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {posts.map((post: any) => {
-            const s = statusLabel[post.status] || { label: post.status, color: "#aaa" };
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          {(posts as any[]).map((post) => {
+            const s = statusConfig[post.status] || { label: post.status, color: "#aaa", bg: "rgba(170,170,170,0.1)" };
             return (
-              <div key={post.id} style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(232,201,122,0.12)",
-                borderRadius: 10, padding: "14px 16px",
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+              <a
+                key={post.id}
+                href={`/amio-likhbo-bastobota/${post.slug}`}
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(232,201,122,0.1)",
+                  borderRadius: 14,
+                  padding: "1rem 1.1rem",
+                  textDecoration: "none",
+                  display: "block",
+                  transition: "background 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                  e.currentTarget.style.borderColor = "rgba(232,201,122,0.22)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                  e.currentTarget.style.borderColor = "rgba(232,201,122,0.1)";
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                   <p style={{
-                    margin: 0, color: "#FDF6EC", fontSize: 15,
-                    fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif",
-                    lineHeight: 1.6, flex: 1,
+                    margin: 0, color: "#FDF6EC", fontSize: "0.95rem",
+                    fontFamily: adorshoFont, lineHeight: 1.55, flex: 1, fontWeight: 700,
                   }}>
-                    {post.title?.length > 80 ? post.title.slice(0, 80) + "..." : post.title}
+                    {post.title?.length > 90 ? post.title.slice(0, 90) + "..." : post.title}
                   </p>
                   <span style={{
-                    fontSize: 11, color: s.color, background: `${s.color}22`,
-                    border: `1px solid ${s.color}44`,
-                    borderRadius: 6, padding: "2px 8px", whiteSpace: "nowrap", flexShrink: 0,
-                    fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif",
+                    fontSize: "0.72rem", color: s.color,
+                    background: s.bg, border: `1px solid ${s.color}44`,
+                    borderRadius: 8, padding: "0.2rem 0.6rem",
+                    whiteSpace: "nowrap", flexShrink: 0,
+                    fontFamily: adorshoFont, fontWeight: 700,
                   }}>
                     {s.label}
                   </span>
                 </div>
-                <div style={{ marginTop: 6, color: "rgba(253,246,236,0.4)", fontSize: 12, fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif" }}>
+                <div style={{ marginTop: "0.4rem", color: "rgba(253,246,236,0.38)", fontSize: "0.78rem", fontFamily: adorshoFont }}>
                   {new Date(post.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" })}
                 </div>
-              </div>
+              </a>
             );
           })}
         </div>
