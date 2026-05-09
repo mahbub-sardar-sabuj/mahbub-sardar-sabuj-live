@@ -182,22 +182,6 @@ var systemRouter = router({
     return {
       success: delivered
     };
-  }),
-  registerTelegramWebhook: adminProcedure.mutation(async () => {
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!botToken) return { success: false, error: "TELEGRAM_BOT_TOKEN not set" };
-    const webhookUrl = "https://www.mahbubsardarsabuj.com/api/telegram/webhook";
-    try {
-      const res = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: webhookUrl, allowed_updates: ["message", "callback_query"] })
-      });
-      const data = await res.json();
-      return { success: data.ok, description: data.description || null };
-    } catch (err) {
-      return { success: false, error: String(err) };
-    }
   })
 });
 
@@ -211,7 +195,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 
 // drizzle/schema.ts
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, longtext } from "drizzle-orm/mysql-core";
 var users = mysqlTable("users", {
   /**
    * Surrogate primary key. Auto-incremented numeric value managed by the database.
@@ -288,8 +272,18 @@ var localUsers = mysqlTable("local_users", {
   name: varchar("name", { length: 160 }).notNull(),
   email: varchar("email", { length: 320 }).notNull().unique(),
   passwordHash: text("passwordHash").notNull(),
+  bio: text("bio"),
+  avatarUrl: longtext("avatarUrl"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+});
+var passwordResetTokens = mysqlTable("password_reset_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
 });
 
 // server/db.ts
@@ -335,10 +329,7 @@ async function upsertUser(user) {
     if (user.role !== void 0) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (
-      user.openId === ENV.ownerOpenId ||
-      (user.email && user.email === (process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com"))
-    ) {
+    } else if (user.openId === ENV.ownerOpenId || user.email && user.email === (process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com")) {
       values.role = "admin";
       updateSet.role = "admin";
     }
@@ -432,26 +423,22 @@ async function sendTelegramPostSubmitted(opts) {
     video: "\u09AD\u09BF\u09A1\u09BF\u0993"
   };
   const catLabel = categoryLabels[opts.category] ?? opts.category;
-  const contentPreview = opts.contentPreview
-    ? (opts.contentPreview.length > 300 ? opts.contentPreview.slice(0, 300) + "..." : opts.contentPreview)
-    : "";
   const text2 = `\u{1F4DD} *\u09A8\u09A4\u09C1\u09A8 \u09B2\u09C7\u0996\u09BE \u099C\u09AE\u09BE \u09AA\u09A1\u09BC\u09C7\u099B\u09C7 \u2014 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8\u09C7\u09B0 \u0985\u09AA\u09C7\u0995\u09CD\u09B7\u09BE\u09AF\u09BC*
 
 \u270D\uFE0F *\u09B2\u09C7\u0996\u0995:* ${escapeMarkdown(opts.authorName)}
 \u{1F4CC} *\u09B6\u09BF\u09B0\u09CB\u09A8\u09BE\u09AE:* ${escapeMarkdown(opts.title)}
 \u{1F3F7}\uFE0F *\u09AC\u09BF\u09AD\u09BE\u0997:* ${catLabel}
-\u{1F194} *Post ID:* ${opts.postId}${contentPreview ? `
-
-\u{1F4DC} *\u09B2\u09C7\u0996\u09BE\u09B0 \u0985\u0982\u09B6:*
-${escapeMarkdown(contentPreview)}` : ""}`;
+\u{1F194} *Post ID:* ${opts.postId}`;
   const inlineKeyboard = {
-    inline_keyboard: [[
-      { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_approve_${opts.postId}` },
-      { text: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_reject_${opts.postId}` }
-    ]]
+    inline_keyboard: [
+      [
+        { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_approve_${opts.postId}` },
+        { text: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_reject_${opts.postId}` }
+      ]
+    ]
   };
   try {
-    await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -461,6 +448,10 @@ ${escapeMarkdown(contentPreview)}` : ""}`;
         reply_markup: inlineKeyboard
       })
     });
+    const data = await res.json();
+    if (!data.ok) {
+      console.error("[Telegram] sendTelegramPostSubmitted failed:", data.description);
+    }
   } catch (err) {
     console.error("[Telegram] post submitted notification error:", err);
   }
@@ -504,123 +495,36 @@ async function sendTelegramCommentSubmitted(opts) {
 \u{1F194} *Comment ID:* ${opts.commentId}
 
 \u{1F4DD} *\u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF:*
-${escapeMarkdown(preview)}
-
-\u{1F449} \u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09AA\u09CD\u09AF\u09BE\u09A8\u09C7\u09B2\u09C7 \u0997\u09BF\u09AF\u09BC\u09C7 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u09AC\u09BE \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8\u0964`;
-  const inlineKeyboardComment = {
-    inline_keyboard: [[
-      { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `comment_approve_${opts.commentId}` },
-      { text: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `comment_reject_${opts.commentId}` }
-    ]]
+${escapeMarkdown(preview)}`;
+  const inlineKeyboard = {
+    inline_keyboard: [
+      [
+        { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `comment_approve_${opts.commentId}` },
+        { text: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `comment_reject_${opts.commentId}` }
+      ]
+    ]
   };
   try {
-    await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: ENV.telegramAdminChatId,
         text: text2,
         parse_mode: "Markdown",
-        reply_markup: inlineKeyboardComment
+        reply_markup: inlineKeyboard
       })
     });
+    const data = await res.json();
+    if (!data.ok) {
+      console.error("[Telegram] sendTelegramCommentSubmitted failed:", data.description);
+    }
   } catch (err) {
     console.error("[Telegram] comment submitted notification error:", err);
   }
 }
 function escapeMarkdown(text2) {
   return text2.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
-}
-
-// ── Telegram callback_query handler (inline button presses) ──────────────────
-async function handleTelegramCallbackQuery(callbackQuery) {
-  const callbackQueryId = callbackQuery.id;
-  const data = callbackQuery.data || "";
-  const messageId = callbackQuery.message?.message_id;
-  const chatId = callbackQuery.message?.chat?.id;
-
-  async function answerCallback(text3) {
-    try {
-      await fetch(`${TELEGRAM_API}/answerCallbackQuery`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ callback_query_id: callbackQueryId, text: text3, show_alert: false })
-      });
-    } catch (e) { console.error("[Telegram] answerCallbackQuery error:", e); }
-  }
-
-  async function removeButtons() {
-    if (!chatId || !messageId) return;
-    try {
-      await fetch(`${TELEGRAM_API}/editMessageReplyMarkup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, message_id: messageId, reply_markup: { inline_keyboard: [] } })
-      });
-    } catch (e) { console.error("[Telegram] removeButtons error:", e); }
-  }
-
-  // ── Post moderation ──────────────────────────────────────────────────────
-  const postApproveMatch = data.match(/^post_approve_(\d+)$/);
-  const postRejectMatch = data.match(/^post_reject_(\d+)$/);
-  if (postApproveMatch || postRejectMatch) {
-    const postId = parseInt((postApproveMatch || postRejectMatch)[1], 10);
-    const newStatus = postApproveMatch ? "approved" : "rejected";
-    const label = postApproveMatch ? "\u2705 \u09AA\u09CB\u09B8\u09CD\u099F \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7" : "\u274C \u09AA\u09CB\u09B8\u09CD\u099F \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7";
-    try {
-      const db2 = await getDb();
-      await db2.update(writingPosts).set({ status: newStatus, updatedAt: new Date() }).where(eq(writingPosts.id, postId));
-      await answerCallback(label);
-      await removeButtons();
-    } catch (err) {
-      console.error("[Telegram] post moderation callback error:", err);
-      await answerCallback("\u26A0\uFE0F \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7");
-    }
-    return;
-  }
-
-  // ── Comment moderation ───────────────────────────────────────────────────
-  const commentApproveMatch = data.match(/^comment_approve_(\d+)$/);
-  const commentRejectMatch = data.match(/^comment_reject_(\d+)$/);
-  if (commentApproveMatch || commentRejectMatch) {
-    const commentId = parseInt((commentApproveMatch || commentRejectMatch)[1], 10);
-    const newStatus2 = commentApproveMatch ? "approved" : "rejected";
-    const label2 = commentApproveMatch ? "\u2705 \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7" : "\u274C \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7";
-    try {
-      const db2 = await getDb();
-      await db2.update(writingComments).set({ status: newStatus2, updatedAt: new Date() }).where(eq(writingComments.id, commentId));
-      await answerCallback(label2);
-      await removeButtons();
-    } catch (err) {
-      console.error("[Telegram] comment moderation callback error:", err);
-      await answerCallback("\u26A0\uFE0F \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7");
-    }
-    return;
-  }
-
-  await answerCallback("\u2753 \u0985\u099C\u09BE\u09A8\u09BE \u0995\u09AE\u09BE\u09A8\u09CD\u09A1");
-}
-
-// ── Telegram webhook request handler ────────────────────────────────────────
-async function handleTelegramWebhookRequest(req, res) {
-  if (req.method !== "POST") {
-    res.statusCode = 405;
-    res.end(JSON.stringify({ error: "Method not allowed" }));
-    return;
-  }
-  try {
-    const body = req.body || {};
-    if (body.callback_query) {
-      await handleTelegramCallbackQuery(body.callback_query);
-    }
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ ok: true }));
-  } catch (err) {
-    console.error("[Telegram webhook] error:", err);
-    res.statusCode = 200;
-    res.end(JSON.stringify({ ok: true }));
-  }
 }
 
 // server/liveChatRouter.ts
@@ -812,7 +716,9 @@ async function ensureWritingPlatformTables(db) {
   if (writingTablesReady) return;
   if (!writingTablesReadyPromise) {
     writingTablesReadyPromise = (async () => {
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` text NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
+      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
+      await db.execute(sql.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `content` longtext NOT NULL")).catch(() => {
+      });
       await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))"));
       await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))"));
       writingTablesReady = true;
@@ -948,7 +854,7 @@ var writingPlatformRouter = router({
   createPost: protectedProcedure.input(z3.object({
     title: z3.string().min(1).max(220).optional(),
     category: postCategorySchema.optional(),
-    content: z3.string().min(1).max(600000),
+    content: z3.string().min(1).max(6e5),
     mediaUrl: z3.string().max(5e6).optional().or(z3.literal("")),
     mediaType: mediaTypeSchema.default("none")
   })).mutation(async ({ ctx, input }) => {
@@ -956,7 +862,7 @@ var writingPlatformRouter = router({
     if (!db) throw new Error("Database unavailable");
     const mediaUrl = input.mediaUrl?.trim() || null;
     const mediaType = mediaUrl ? input.mediaType : "none";
-    const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
+    const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || "\u09AC\u09BE\u09B8\u09CD\u09A4\u09AC\u09A4\u09BE\u09B0 \u0997\u09B2\u09CD\u09AA";
     const category = input.category ?? "thought";
     const insertResult = await db.insert(writingPosts).values({
       slug: createSlug(autoTitle),
@@ -967,17 +873,16 @@ var writingPlatformRouter = router({
       content: input.content.trim(),
       mediaUrl,
       mediaType,
-      status: ctx.user.role === "admin" ? "approved" : "pending"
+      status: "approved"
     });
-    if (ctx.user.role !== "admin") {
+    {
       const insertId = insertResult.insertId ?? insertResult[0]?.insertId ?? 0;
       sendTelegramPostSubmitted({
         postId: insertId,
         title: autoTitle,
         authorName: normalizeAuthorName(ctx.user.name),
         category,
-        slug: "",
-        contentPreview: input.content.trim()
+        slug: ""
       }).catch((err) => console.error("[Telegram post submit notify error]", err));
     }
     return { success: true };
@@ -996,9 +901,9 @@ var writingPlatformRouter = router({
   }),
   editPost: protectedProcedure.input(z3.object({
     postId: z3.number().int().positive(),
-    title: z3.string().min(3).max(220),
-    category: postCategorySchema,
-    content: z3.string().min(20).max(2e4),
+    title: z3.string().min(1).max(220).optional(),
+    category: postCategorySchema.optional(),
+    content: z3.string().min(1).max(6e5),
     mediaUrl: z3.string().max(5e6).optional().or(z3.literal("")),
     mediaType: mediaTypeSchema.default("none")
   })).mutation(async ({ ctx, input }) => {
@@ -1012,13 +917,15 @@ var writingPlatformRouter = router({
     }
     const mediaUrl = input.mediaUrl?.trim() || null;
     const mediaType = mediaUrl ? input.mediaType : "none";
+    const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || post.title;
+    const category = input.category ?? post.category;
     await db.update(writingPosts).set({
-      title: input.title.trim(),
-      category: input.category,
+      title: autoTitle,
+      category,
       content: input.content.trim(),
       mediaUrl,
       mediaType,
-      status: ctx.user.role === "admin" ? post.status : "pending"
+      status: "approved"
     }).where(eq4(writingPosts.id, input.postId));
     return { success: true };
   }),
@@ -1053,9 +960,9 @@ var writingPlatformRouter = router({
       authorOpenId: ctx.user.openId,
       authorName: normalizeAuthorName(ctx.user.name),
       content: input.content.trim(),
-      status: ctx.user.role === "admin" ? "approved" : "pending"
+      status: "approved"
     });
-    if (ctx.user.role !== "admin") {
+    {
       const commentId = commentInsert.insertId ?? commentInsert[0]?.insertId ?? 0;
       sendTelegramCommentSubmitted({
         commentId,
@@ -1460,13 +1367,6 @@ function sendFunctionError(res, error) {
   );
 }
 async function handler(req, res) {
-  // Handle telegram webhook requests routed here via vercel.json
-  const isTelegramWebhook = req.query?._telegram_webhook === "1" ||
-    (req.url && new URL(req.url, "https://local.invalid").searchParams.get("_telegram_webhook") === "1");
-  if (isTelegramWebhook) {
-    await handleTelegramWebhookRequest(req, res);
-    return;
-  }
   try {
     await nodeHTTPRequestHandler({
       router: appRouter,

@@ -112,6 +112,7 @@ export default function Profile() {
     email: string;
     bio: string;
     avatarUrl: string;
+    coverUrl: string;
     postCount: number;
     approvedPostCount: number;
     createdAt: string;
@@ -128,8 +129,11 @@ export default function Profile() {
   const [editBio, setEditBio] = useState("");
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverError, setCoverError] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -189,6 +193,21 @@ export default function Profile() {
       setProfile((prev) => prev ? { ...prev, avatarUrl: data.avatarUrl } : prev);
     } catch { setAvatarError("ছবি আপলোড করতে সমস্যা হয়েছে"); }
     finally { setAvatarUploading(false); }
+  }
+
+  async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverUploading(true); setCoverError("");
+    try {
+      const formData = new FormData();
+      formData.append("cover", file);
+      const res = await fetch("/api/upload-cover", { method: "POST", credentials: "include", body: formData });
+      const data = await res.json();
+      if (data.error) { setCoverError(data.error); return; }
+      setProfile((prev) => prev ? { ...prev, coverUrl: data.coverUrl } : prev);
+    } catch { setCoverError("কভার ছবি আপলোড করতে সমস্যা হয়েছে"); }
+    finally { setCoverUploading(false); if (e.target) e.target.value = ""; }
   }
 
   async function handleLogout() {
@@ -296,13 +315,56 @@ export default function Profile() {
 
             {/* ── Profile Hero Card ── */}
             <div style={{ ...glassCard, padding: "clamp(1.5rem, 5vw, 2.2rem)" }}>
-              {/* Cover gradient strip */}
+              {/* Cover Photo */}
               <div style={{
-                height: 80, borderRadius: "16px 16px 0 0", margin: "-clamp(1.5rem, 5vw, 2.2rem) -clamp(1.5rem, 5vw, 2.2rem) 0",
-                background: "linear-gradient(135deg, rgba(212,168,67,0.25) 0%, rgba(81,139,255,0.12) 50%, rgba(212,168,67,0.08) 100%)",
+                height: 140,
+                borderRadius: "16px 16px 0 0",
+                margin: "-clamp(1.5rem, 5vw, 2.2rem) -clamp(1.5rem, 5vw, 2.2rem) 0",
+                background: profile?.coverUrl
+                  ? `url(${profile.coverUrl}) center/cover no-repeat`
+                  : "linear-gradient(135deg, rgba(212,168,67,0.28) 0%, rgba(81,139,255,0.15) 50%, rgba(212,168,67,0.1) 100%)",
                 borderBottom: "1px solid rgba(232,201,122,0.15)",
-                marginBottom: "0",
-              }} />
+                marginBottom: 0,
+                position: "relative",
+                overflow: "hidden",
+              }}>
+                {/* Cover upload button */}
+                <button
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={coverUploading}
+                  title="কভার ছবি পরিবর্তন করুন"
+                  style={{
+                    position: "absolute", bottom: 10, right: 12,
+                    background: "rgba(0,0,0,0.55)",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                    borderRadius: 20,
+                    padding: "0.35rem 0.75rem",
+                    color: "#FDF6EC",
+                    fontFamily: adorshoFont,
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    cursor: coverUploading ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    backdropFilter: "blur(8px)",
+                    opacity: coverUploading ? 0.65 : 1,
+                    transition: "opacity 0.15s",
+                  }}
+                >
+                  {coverUploading
+                    ? <><RefreshCw size={12} style={{ animation: "spin 0.8s linear infinite" }} /> আপলোড...</>
+                    : <><Camera size={12} /> কভার পরিবর্তন</>
+                  }
+                </button>
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  style={{ display: "none" }}
+                  onChange={handleCoverChange}
+                />
+              </div>
 
               {/* Avatar row */}
               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginTop: "-40px", marginBottom: "1.25rem", flexWrap: "wrap" }}>
@@ -374,6 +436,12 @@ export default function Profile() {
                   {avatarError}
                 </div>
               )}
+              {/* Cover error */}
+              {coverError && (
+                <div style={{ color: "#FCA5A5", fontSize: "0.82rem", marginBottom: "0.75rem", fontFamily: adorshoFont }}>
+                  {coverError}
+                </div>
+              )}
 
               {/* Name & email */}
               {editing ? (
@@ -405,9 +473,8 @@ export default function Profile() {
               {/* Stats row */}
               <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 {[
-                  { value: profile.approvedPostCount, label: "প্রকাশিত লেখা", color: "#86efac" },
-                  { value: profile.postCount, label: "মোট জমা", color: "#F7D56F" },
-                  { value: profile.postCount - profile.approvedPostCount, label: "পর্যালোচনাধীন", color: "#93c5fd" },
+                  { value: profile.postCount, label: "প্রকাশিত লেখা", color: "#86efac" },
+                  { value: new Date(profile.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "short" }), label: "যোগদান", color: "#F7D56F" },
                 ].map((s) => (
                   <div
                     key={s.label}

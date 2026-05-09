@@ -42,12 +42,15 @@ async function getDb() {
 }
 
 async function ensureProfileColumns(db) {
-  // bio এবং avatarUrl কলাম যোগ করা (যদি না থাকে)
+  // bio, avatarUrl এবং coverUrl কলাম যোগ করা (যদি না থাকে)
   await db.execute(
     "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text"
   ).catch(() => {});
   await db.execute(
     "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext"
+  ).catch(() => {});
+  await db.execute(
+    "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS coverUrl longtext"
   ).catch(() => {});
 }
 
@@ -69,7 +72,7 @@ export default async function handler(req, res) {
       if (openId) {
         // অন্যের পাবলিক প্রোফাইল
         const [rows] = await db.execute(
-          "SELECT openId, name, bio, avatarUrl, createdAt FROM local_users WHERE openId = ? LIMIT 1",
+          "SELECT openId, name, bio, avatarUrl, coverUrl, createdAt FROM local_users WHERE openId = ? LIMIT 1",
           [openId]
         );
         if (!rows.length) return res.status(404).json({ error: "প্রোফাইল পাওয়া যায়নি" });
@@ -92,7 +95,7 @@ export default async function handler(req, res) {
       if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
 
       const [rows] = await db.execute(
-        "SELECT openId, name, email, bio, avatarUrl, createdAt FROM local_users WHERE openId = ? LIMIT 1",
+        "SELECT openId, name, email, bio, avatarUrl, coverUrl, createdAt FROM local_users WHERE openId = ? LIMIT 1",
         [session.openId]
       );
       if (!rows.length) return res.status(404).json({ error: "প্রোফাইল পাওয়া যায়নি" });
@@ -119,15 +122,15 @@ export default async function handler(req, res) {
       const session = await verifySession(token);
       if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
 
-      const { name, bio, avatarUrl } = req.body || {};
+      const { name, bio, avatarUrl, coverUrl } = req.body || {};
 
       if (!name?.trim()) return res.status(400).json({ error: "নাম দিন" });
       if (name.trim().length > 160) return res.status(400).json({ error: "নাম সর্বোচ্চ ১৬০ অক্ষর" });
       if (bio && bio.length > 500) return res.status(400).json({ error: "বায়ো সর্বোচ্চ ৫০০ অক্ষর" });
 
       await db.execute(
-        "UPDATE local_users SET name = ?, bio = ?, avatarUrl = ?, updatedAt = NOW() WHERE openId = ?",
-        [name.trim(), bio?.trim() || null, avatarUrl || null, session.openId]
+        "UPDATE local_users SET name = ?, bio = ?, avatarUrl = ?, coverUrl = ?, updatedAt = NOW() WHERE openId = ?",
+        [name.trim(), bio?.trim() || null, avatarUrl || null, coverUrl !== undefined ? (coverUrl || null) : null, session.openId]
       );
 
       // writing_posts এও authorName আপডেট করা

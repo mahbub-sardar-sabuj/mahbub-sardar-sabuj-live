@@ -1,7 +1,7 @@
 /**
- * /api/upload-avatar — Profile picture upload
- * POST multipart/form-data with "avatar" field
- * Stores image via Manus storage proxy (same as upload-image.js)
+ * /api/upload-cover — Profile cover photo upload
+ * POST multipart/form-data with "cover" field
+ * Stores image via Manus storage proxy; falls back to base64 data URL if storage unavailable.
  */
 import { jwtVerify } from "jose";
 import formidable from "formidable";
@@ -12,6 +12,7 @@ import mysql from "mysql2/promise";
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB for cover (wider image)
 
 function getSecretKey() {
   return new TextEncoder().encode(JWT_SECRET);
@@ -56,23 +57,24 @@ export default async function handler(req, res) {
   const session = await verifySession(token);
   if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
 
-  // Storage config check
+  // Storage config
   const FORGE_URL = process.env.BUILT_IN_FORGE_API_URL;
   const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
-  const USE_BASE64_FALLBACK = !FORGE_URL || !FORGE_KEY;
+  const hasStorage = FORGE_URL && FORGE_KEY;
 
   // Parse multipart form
-  const form = formidable({ maxFileSize: 5 * 1024 * 1024, uploadDir: "/tmp", keepExtensions: true });
-  let fields, files;
+  const form = formidable({ maxFileSize: MAX_FILE_SIZE, uploadDir: "/tmp", keepExtensions: true });
+  let files;
   try {
-    [fields, files] = await form.parse(req);
+    [, files] = await form.parse(req);
   } catch (err) {
-    if (err.code === 1009) return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৫MB হতে হবে" });
+    if (err.code === 1009) return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৮MB হতে হবে" });
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
 
-  const file = Array.isArray(files.avatar) ? files.avatar[0] : files.avatar;
-  if (!file) return res.status(400).json({ error: "ছবি দিন" });
+  const file = Array.isArray(files.cover) ? files.cover[0] : files.cover;
+  if (!file) return res.status(400).json({ error: "কভার ছবি দিন" });
+
   const mimeType = file.mimetype || "";
   if (!ALLOWED_TYPES.includes(mimeType)) {
     try { fs.unlinkSync(file.filepath); } catch {}
@@ -83,53 +85,54 @@ export default async function handler(req, res) {
     const fileBuffer = fs.readFileSync(file.filepath);
     let url = "";
 
-    if (USE_BASE64_FALLBACK) {
-      const base64 = fileBuffer.toString("base64");
-      url = `data:${mimeType};base64,${base64}`;
-    } else {
-      const ext = path.extname(file.originalFilename || file.newFilename || ".jpg") || ".jpg";
-      const key = `avatars/${session.openId}/${Date.now()}${ext}`;
-      // Upload to Manus storage proxy
-      const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
-      uploadUrl.searchParams.set("path", key);
-      const blob = new Blob([fileBuffer], { type: mimeType });
-      const formData = new FormData();
-      formData.append("file", blob, path.basename(key));
-      const uploadRes = await fetch(uploadUrl.toString(), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${FORGE_KEY}` },
-        body: formData,
-      });
-      if (!uploadRes.ok) {
-        // Storage failed → fallback to base64
-        console.warn("[upload-avatar] Storage upload failed, using base64 fallback");
+    if (hasStorage) {
+      try {
+        const ext = path.extname(file.originalFilename || file.newFilename || ".jpg") || ".jpg";
+        const key = `covers/${session.openId}/${Date.now()}${ext}`;
+        const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
+        uploadUrl.searchParams.set("path", key);
+        const blob = new Blob([fileBuffer], { type: mimeType });
+        const formData = new FormData();
+        formData.append("file", blob, path.basename(key));
+        const uploadRes = await fetch(uploadUrl.toString(), {
+          method: "POST",
+          headers: { Authorization: `Bearer ${FORGE_KEY}` },
+          body: formData,
+        });
+        if (uploadRes.ok) {
+          const data = await uploadRes.json();
+          url = data.url;
+        } else {
+          console.warn("[upload-cover] Storage failed, using base64 fallback");
+          url = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+        }
+      } catch (storageErr) {
+        console.warn("[upload-cover] Storage error, using base64 fallback:", storageErr?.message);
         url = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
-      } else {
-        const data = await uploadRes.json();
-        url = data.url;
       }
+    } else {
+      url = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
     }
 
-    // temp file মুছে ফেলা
+    // Cleanup temp file
     try { fs.unlinkSync(file.filepath); } catch {}
 
-    // DB তে URL সেভ করা
+    // Save coverUrl to DB
     const db = await getDb();
     try {
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text").catch(() => {});
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext").catch(() => {});
-
+      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS coverUrl longtext").catch(() => {});
       await db.execute(
-        "UPDATE local_users SET avatarUrl = ?, updatedAt = NOW() WHERE openId = ?",
+        "UPDATE local_users SET coverUrl = ?, updatedAt = NOW() WHERE openId = ?",
         [url, session.openId]
       );
     } finally {
       await db.end().catch(() => {});
     }
 
-    return res.status(200).json({ success: true, avatarUrl: url });
+    return res.status(200).json({ success: true, coverUrl: url });
   } catch (err) {
-    console.error("[upload-avatar]", err);
-    return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
+    console.error("[upload-cover]", err);
+    try { fs.unlinkSync(file.filepath); } catch {}
+    return res.status(500).json({ error: "কভার ছবি আপলোড করতে সমস্যা হয়েছে" });
   }
 }

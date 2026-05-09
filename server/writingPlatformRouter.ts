@@ -275,11 +275,10 @@ export const writingPlatformRouter = router({
         content: input.content.trim(),
         mediaUrl,
         mediaType,
-        status: ctx.user.role === "admin" ? "approved" : "pending",
+        status: "approved",
       });
-
-      // Send Telegram notification for pending posts (non-admin submissions)
-      if (ctx.user.role !== "admin") {
+      // Send Telegram notification for new posts
+      {
         const insertId = (insertResult as any).insertId ?? (insertResult as any)[0]?.insertId ?? 0;
         sendTelegramPostSubmitted({
           postId: insertId,
@@ -344,7 +343,7 @@ export const writingPlatformRouter = router({
         content: input.content.trim(),
         mediaUrl,
         mediaType,
-        status: ctx.user.role === "admin" ? post.status : "pending",
+        status: "approved",
       }).where(eq(writingPosts.id, input.postId));
       return { success: true };
     }),
@@ -404,11 +403,10 @@ export const writingPlatformRouter = router({
         authorOpenId: ctx.user.openId,
         authorName: normalizeAuthorName(ctx.user.name),
         content: input.content.trim(),
-        status: ctx.user.role === "admin" ? "approved" : "pending",
+        status: "approved",
       });
-
-      // Send Telegram notification for pending comments (non-admin)
-      if (ctx.user.role !== "admin") {
+      // Send Telegram notification for new comments
+      {
         const commentId = (commentInsert as any).insertId ?? (commentInsert as any)[0]?.insertId ?? 0;
         sendTelegramCommentSubmitted({
           commentId,
