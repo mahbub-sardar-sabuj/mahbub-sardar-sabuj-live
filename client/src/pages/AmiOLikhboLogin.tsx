@@ -750,39 +750,7 @@ export default function AmiOLikhboLogin() {
         </div>
       </div>
 
-      {/* Feature highlights below card */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "min(460px, 100%)",
-          marginTop: "1.2rem",
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "0.6rem",
-        }}
-      >
-        {[
-          { icon: "✍️", label: "গল্প ও কবিতা" },
-          { icon: "📸", label: "ছবি শেয়ার" },
-          { icon: "💬", label: "মন্তব্য ও রিঅ্যাকশন" },
-        ].map((f) => (
-          <div
-            key={f.label}
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(232,201,122,0.1)",
-              borderRadius: 12,
-              padding: "0.6rem 0.5rem",
-              textAlign: "center",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            <div style={{ fontSize: "1.1rem", marginBottom: 3 }}>{f.icon}</div>
-            <div style={{ fontSize: "0.72rem", color: "rgba(253,246,236,0.45)", fontFamily: adorshoFont }}>{f.label}</div>
-          </div>
-        ))}
-      </div>
+
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
