@@ -1,19 +1,19 @@
-import type { CSSProperties } from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type CSSProperties } from "react";
 import {
   ArrowLeft,
   Camera,
   CheckCircle2,
   Edit3,
   FileText,
+  LogOut,
   Save,
-  User,
   X,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
@@ -47,6 +47,22 @@ const goldBtn: CSSProperties = {
   gap: 6,
 };
 
+const logoutBtn: CSSProperties = {
+  background: "rgba(255,107,107,0.13)",
+  color: "#ff8a8a",
+  border: "1px solid rgba(255,107,107,0.35)",
+  borderRadius: 12,
+  padding: "9px 14px",
+  fontFamily: adorshoFont,
+  fontSize: 13,
+  fontWeight: 700,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
+  whiteSpace: "nowrap",
+};
+
 const inputStyle: CSSProperties = {
   width: "100%",
   background: "rgba(255,255,255,0.06)",
@@ -62,8 +78,7 @@ const inputStyle: CSSProperties = {
 
 export default function Profile() {
   const [, setLocation] = useLocation();
-  const auth = trpc.auth.me.useQuery(undefined, { retry: false });
-  const user = auth.data;
+  const { user, loading: authLoading, logout, refresh } = useAuth();
 
   const [profile, setProfile] = useState<{
     name: string;
@@ -78,8 +93,10 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [logoutError, setLogoutError] = useState("");
 
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -90,9 +107,22 @@ export default function Profile() {
 
   // প্রোফাইল লোড করা
   useEffect(() => {
+    if (authLoading) return;
+
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+
     fetch("/api/profile", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
+        if (cancelled) return;
         if (data.error) setError(data.error);
         else {
           setProfile(data);
@@ -100,9 +130,17 @@ export default function Profile() {
           setEditBio(data.bio || "");
         }
       })
-      .catch(() => setError("প্রোফাইল লোড করতে সমস্যা হয়েছে"))
-      .finally(() => setLoading(false));
-  }, []);
+      .catch(() => {
+        if (!cancelled) setError("প্রোফাইল লোড করতে সমস্যা হয়েছে");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user?.openId]);
 
   // প্রোফাইল সেভ করা
   async function handleSave() {
@@ -122,7 +160,7 @@ export default function Profile() {
       setEditing(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-      auth.refetch();
+      refresh();
     } catch {
       setError("সেভ করতে সমস্যা হয়েছে");
     } finally {
@@ -155,7 +193,24 @@ export default function Profile() {
     }
   }
 
-  if (!auth.isLoading && !user) {
+  async function handleLogout() {
+    const confirmed = window.confirm("আপনি কি সত্যিই লগআউট করতে চান?");
+    if (!confirmed) return;
+
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      await logout();
+      setProfile(null);
+      setLocation("/amio-likhbo-bastobota");
+    } catch {
+      setLogoutError("লগআউট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
+  if (!authLoading && !user) {
     return (
       <div style={shellStyle}>
         <Navbar />
@@ -278,14 +333,29 @@ export default function Profile() {
                       />
                     </>
                   ) : (
-                    <>
-                      <h2 style={{ margin: "0 0 4px", color: "#F7D56F", fontSize: 22, fontFamily: adorshoFont }}>
-                        {profile.name}
-                      </h2>
-                      <p style={{ margin: "0 0 8px", color: "rgba(253,246,236,0.5)", fontSize: 13 }}>
-                        {profile.email}
-                      </p>
-                    </>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <h2 style={{ margin: "0 0 4px", color: "#F7D56F", fontSize: 22, fontFamily: adorshoFont }}>
+                          {profile.name}
+                        </h2>
+                        <p style={{ margin: 0, color: "rgba(253,246,236,0.5)", fontSize: 13, wordBreak: "break-word" }}>
+                          {profile.email}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        style={{
+                          ...logoutBtn,
+                          opacity: loggingOut ? 0.65 : 1,
+                          cursor: loggingOut ? "not-allowed" : "pointer",
+                        }}
+                        title="এই অ্যাকাউন্ট থেকে লগআউট করুন"
+                      >
+                        <LogOut size={14} /> {loggingOut ? "লগআউট হচ্ছে..." : "লগআউট"}
+                      </button>
+                    </div>
                   )}
 
                   {/* Stats */}
@@ -301,6 +371,13 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
+
+              {/* Logout error */}
+              {logoutError && (
+                <div style={{ color: "#ff8a8a", fontSize: 13, marginBottom: 12, fontFamily: adorshoFont }}>
+                  {logoutError}
+                </div>
+              )}
 
               {/* Avatar error */}
               {avatarError && (
