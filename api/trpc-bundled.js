@@ -182,6 +182,22 @@ var systemRouter = router({
     return {
       success: delivered
     };
+  }),
+  registerTelegramWebhook: adminProcedure.mutation(async () => {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) return { success: false, error: "TELEGRAM_BOT_TOKEN not set" };
+    const webhookUrl = "https://www.mahbubsardarsabuj.com/api/telegram/webhook";
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: webhookUrl, allowed_updates: ["message", "callback_query"] })
+      });
+      const data = await res.json();
+      return { success: data.ok, description: data.description || null };
+    } catch (err) {
+      return { success: false, error: String(err) };
+    }
   })
 });
 
