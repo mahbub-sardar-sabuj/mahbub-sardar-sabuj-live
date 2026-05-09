@@ -432,14 +432,18 @@ async function sendTelegramPostSubmitted(opts) {
     video: "\u09AD\u09BF\u09A1\u09BF\u0993"
   };
   const catLabel = categoryLabels[opts.category] ?? opts.category;
+  const contentPreview = opts.contentPreview
+    ? (opts.contentPreview.length > 300 ? opts.contentPreview.slice(0, 300) + "..." : opts.contentPreview)
+    : "";
   const text2 = `\u{1F4DD} *\u09A8\u09A4\u09C1\u09A8 \u09B2\u09C7\u0996\u09BE \u099C\u09AE\u09BE \u09AA\u09A1\u09BC\u09C7\u099B\u09C7 \u2014 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8\u09C7\u09B0 \u0985\u09AA\u09C7\u0995\u09CD\u09B7\u09BE\u09AF\u09BC*
 
 \u270D\uFE0F *\u09B2\u09C7\u0996\u0995:* ${escapeMarkdown(opts.authorName)}
 \u{1F4CC} *\u09B6\u09BF\u09B0\u09CB\u09A8\u09BE\u09AE:* ${escapeMarkdown(opts.title)}
 \u{1F3F7}\uFE0F *\u09AC\u09BF\u09AD\u09BE\u0997:* ${catLabel}
-\u{1F194} *Post ID:* ${opts.postId}
+\u{1F194} *Post ID:* ${opts.postId}${contentPreview ? `
 
-\u{1F449} \u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09AA\u09CD\u09AF\u09BE\u09A8\u09C7\u09B2\u09C7 \u0997\u09BF\u09AF\u09BC\u09C7 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u09AC\u09BE \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8\u0964`;
+\u{1F4DC} *\u09B2\u09C7\u0996\u09BE\u09B0 \u0985\u0982\u09B6:*
+${escapeMarkdown(contentPreview)}` : ""}`;
   const inlineKeyboard = {
     inline_keyboard: [[
       { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_approve_${opts.postId}` },
@@ -970,7 +974,8 @@ var writingPlatformRouter = router({
         title: input.title.trim(),
         authorName: normalizeAuthorName(ctx.user.name),
         category: input.category,
-        slug: ""
+        slug: "",
+        contentPreview: input.content.trim()
       }).catch((err) => console.error("[Telegram post submit notify error]", err));
     }
     return { success: true };
