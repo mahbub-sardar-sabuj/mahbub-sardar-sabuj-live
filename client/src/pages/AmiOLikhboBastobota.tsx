@@ -1205,8 +1205,9 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
               </button>
               <div style={{ flex: 1 }} />
-              <ActionButton
+              <button
                 type="button"
+                disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}
                 onClick={() => {
                   const hasCaption = content.trim().length > 0;
                   const hasImage = imageUrl.length > 0;
@@ -1220,10 +1221,26 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
                     mediaType: imageUrl ? "image" : "none",
                   });
                 }}
-                disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: 999,
+                  border: "1px solid rgba(255,235,166,0.72)",
+                  background: ((!content.trim() && !imageUrl) || createPost.isPending || uploading)
+                    ? "rgba(212,168,67,0.4)"
+                    : "linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%)",
+                  color: "#071426",
+                  fontFamily: adorshoFont,
+                  fontWeight: 900,
+                  fontSize: "0.96rem",
+                  cursor: ((!content.trim() && !imageUrl) || createPost.isPending || uploading) ? "not-allowed" : "pointer",
+                  boxShadow: "0 12px 30px rgba(212,168,67,0.22)",
+                }}
               >
                 {createPost.isPending ? <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পোস্ট হচ্ছে...</> : <><Send size={16} /> পোস্ট করুন</>}
-              </ActionButton>
+              </button>
             </div>
 
             {createPost.isError && (
