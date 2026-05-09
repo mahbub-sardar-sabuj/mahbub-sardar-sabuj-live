@@ -11,8 +11,7 @@ import mysql from "mysql2/promise";
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB for cover (wider image)
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 
 function getSecretKey() {
   return new TextEncoder().encode(JWT_SECRET);
@@ -62,13 +61,13 @@ export default async function handler(req, res) {
   const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
   const hasStorage = FORGE_URL && FORGE_KEY;
 
-  // Parse multipart form
-  const form = formidable({ maxFileSize: MAX_FILE_SIZE, uploadDir: "/tmp", keepExtensions: true });
+  // Parse multipart form — NO size limit
+  const form = formidable({ maxFileSize: Infinity, uploadDir: "/tmp", keepExtensions: true });
   let files;
   try {
     [, files] = await form.parse(req);
   } catch (err) {
-    if (err.code === 1009) return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৮MB হতে হবে" });
+    console.error("[upload-cover] parse error:", err);
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
 

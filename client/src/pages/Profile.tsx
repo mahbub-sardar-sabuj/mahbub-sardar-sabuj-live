@@ -360,7 +360,7 @@ export default function Profile() {
                 <input
                   ref={coverInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  accept="image/*"
                   style={{ display: "none" }}
                   onChange={handleCoverChange}
                 />
@@ -407,7 +407,7 @@ export default function Profile() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    accept="image/*"
                     style={{ display: "none" }}
                     onChange={handleAvatarChange}
                   />

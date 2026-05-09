@@ -1,17 +1,17 @@
 /**
  * /api/upload-avatar — Profile picture upload
  * POST multipart/form-data with "avatar" field
- * Stores image via Manus storage proxy (same as upload-image.js)
+ * Accepts ANY file size — no limit.
+ * Stores as base64 data URL in DB (longtext column).
  */
 import { jwtVerify } from "jose";
 import formidable from "formidable";
 import fs from "fs";
-import path from "path";
 import mysql from "mysql2/promise";
 
 const COOKIE_NAME = "app_session_id";
 const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg"];
 
 function getSecretKey() {
   return new TextEncoder().encode(JWT_SECRET);
@@ -43,10 +43,12 @@ async function getDb() {
   return mysql.createConnection(url);
 }
 
+// No body size limit — accept any size
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -56,24 +58,25 @@ export default async function handler(req, res) {
   const session = await verifySession(token);
   if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
 
-  // Storage config check
-  const FORGE_URL = process.env.BUILT_IN_FORGE_API_URL;
-  const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
-  const USE_BASE64_FALLBACK = !FORGE_URL || !FORGE_KEY;
+  // Parse multipart form — NO maxFileSize limit
+  const form = formidable({
+    maxFileSize: Infinity,
+    uploadDir: "/tmp",
+    keepExtensions: true,
+  });
 
-  // Parse multipart form
-  const form = formidable({ maxFileSize: 5 * 1024 * 1024, uploadDir: "/tmp", keepExtensions: true });
-  let fields, files;
+  let files;
   try {
-    [fields, files] = await form.parse(req);
+    [, files] = await form.parse(req);
   } catch (err) {
-    if (err.code === 1009) return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৫MB হতে হবে" });
+    console.error("[upload-avatar] parse error:", err);
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
 
   const file = Array.isArray(files.avatar) ? files.avatar[0] : files.avatar;
-  if (!file) return res.status(400).json({ error: "ছবি দিন" });
-  const mimeType = file.mimetype || "";
+  if (!file) return res.status(400).json({ error: "ছবি দিন (field name: avatar)" });
+
+  const mimeType = (file.mimetype || "").toLowerCase();
   if (!ALLOWED_TYPES.includes(mimeType)) {
     try { fs.unlinkSync(file.filepath); } catch {}
     return res.status(400).json({ error: "শুধু JPG, PNG, GIF, WebP ছবি আপলোড করা যাবে" });
@@ -81,55 +84,66 @@ export default async function handler(req, res) {
 
   try {
     const fileBuffer = fs.readFileSync(file.filepath);
-    let url = "";
+    try { fs.unlinkSync(file.filepath); } catch {}
 
-    if (USE_BASE64_FALLBACK) {
-      const base64 = fileBuffer.toString("base64");
-      url = `data:${mimeType};base64,${base64}`;
-    } else {
-      const ext = path.extname(file.originalFilename || file.newFilename || ".jpg") || ".jpg";
-      const key = `avatars/${session.openId}/${Date.now()}${ext}`;
-      // Upload to Manus storage proxy
-      const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
-      uploadUrl.searchParams.set("path", key);
-      const blob = new Blob([fileBuffer], { type: mimeType });
-      const formData = new FormData();
-      formData.append("file", blob, path.basename(key));
-      const uploadRes = await fetch(uploadUrl.toString(), {
-        method: "POST",
-        headers: { Authorization: `Bearer ${FORGE_KEY}` },
-        body: formData,
-      });
-      if (!uploadRes.ok) {
-        // Storage failed → fallback to base64
-        console.warn("[upload-avatar] Storage upload failed, using base64 fallback");
-        url = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
-      } else {
-        const data = await uploadRes.json();
-        url = data.url;
+    // Try Manus storage first; fall back to base64 if unavailable
+    const FORGE_URL = process.env.BUILT_IN_FORGE_API_URL;
+    const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
+    let avatarUrl = "";
+
+    if (FORGE_URL && FORGE_KEY) {
+      try {
+        const ext = mimeType.split("/")[1] || "jpg";
+        const key = `avatars/${session.openId}/${Date.now()}.${ext}`;
+        const uploadUrl = new URL(
+          "v1/storage/upload",
+          FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/"
+        );
+        uploadUrl.searchParams.set("path", key);
+        const blob = new Blob([fileBuffer], { type: mimeType });
+        const formData = new FormData();
+        formData.append("file", blob, key.split("/").pop());
+        const uploadRes = await fetch(uploadUrl.toString(), {
+          method: "POST",
+          headers: { Authorization: `Bearer ${FORGE_KEY}` },
+          body: formData,
+        });
+        if (uploadRes.ok) {
+          const data = await uploadRes.json();
+          avatarUrl = data.url || "";
+        }
+      } catch (storageErr) {
+        console.warn("[upload-avatar] Storage error, using base64:", storageErr.message);
       }
     }
 
-    // temp file মুছে ফেলা
-    try { fs.unlinkSync(file.filepath); } catch {}
+    // If storage failed or not configured → use base64 data URL
+    if (!avatarUrl) {
+      avatarUrl = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+    }
 
-    // DB তে URL সেভ করা
+    // Save to DB
     const db = await getDb();
     try {
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text").catch(() => {});
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext").catch(() => {});
+      // Ensure column exists
+      await db.execute(
+        "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext"
+      ).catch(() => {});
+      await db.execute(
+        "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text"
+      ).catch(() => {});
 
       await db.execute(
         "UPDATE local_users SET avatarUrl = ?, updatedAt = NOW() WHERE openId = ?",
-        [url, session.openId]
+        [avatarUrl, session.openId]
       );
     } finally {
       await db.end().catch(() => {});
     }
 
-    return res.status(200).json({ success: true, avatarUrl: url });
+    return res.status(200).json({ success: true, avatarUrl });
   } catch (err) {
-    console.error("[upload-avatar]", err);
-    return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
+    console.error("[upload-avatar] error:", err);
+    return res.status(500).json({ error: "ছবি সেভ করতে সমস্যা হয়েছে: " + err.message });
   }
 }
