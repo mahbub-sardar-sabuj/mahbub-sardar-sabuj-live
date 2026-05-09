@@ -21433,7 +21433,7 @@ var writingPlatformRouter = router({
     title: external_exports.string().min(1).max(220).optional(),
     category: postCategorySchema.optional(),
     content: external_exports.string().min(1).max(6e5),
-    mediaUrl: external_exports.string().max(5e6).optional().or(external_exports.literal("")),
+    mediaUrl: external_exports.string().optional().or(external_exports.literal("")),
     mediaType: mediaTypeSchema.default("none")
   })).mutation(async ({ ctx, input }) => {
     const db = await getWritingDb();
@@ -21482,7 +21482,7 @@ var writingPlatformRouter = router({
     title: external_exports.string().min(1).max(220).optional(),
     category: postCategorySchema.optional(),
     content: external_exports.string().min(1).max(6e5),
-    mediaUrl: external_exports.string().max(5e6).optional().or(external_exports.literal("")),
+    mediaUrl: external_exports.string().optional().or(external_exports.literal("")),
     mediaType: mediaTypeSchema.default("none")
   })).mutation(async ({ ctx, input }) => {
     const db = await getWritingDb();

@@ -254,7 +254,7 @@ export const writingPlatformRouter = router({
       title: z.string().min(1).max(220).optional(),
       category: postCategorySchema.optional(),
       content: z.string().min(1).max(600000),
-      mediaUrl: z.string().max(5000000).optional().or(z.literal("")),
+      mediaUrl: z.string().optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -317,7 +317,7 @@ export const writingPlatformRouter = router({
       title: z.string().min(1).max(220).optional(),
       category: postCategorySchema.optional(),
       content: z.string().min(1).max(600000),
-      mediaUrl: z.string().max(5000000).optional().or(z.literal("")),
+      mediaUrl: z.string().optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
     }))
     .mutation(async ({ ctx, input }) => {
