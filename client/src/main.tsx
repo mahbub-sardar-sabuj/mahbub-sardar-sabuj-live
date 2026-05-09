@@ -17,8 +17,9 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!isLoginConfigured) return;
 
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+  const isPublicWritingPage = window.location.pathname.startsWith("/amio-likhbo-bastobota");
 
-  if (!isUnauthorized) return;
+  if (!isUnauthorized || isPublicWritingPage) return;
 
   window.location.href = getLoginUrl();
 };
