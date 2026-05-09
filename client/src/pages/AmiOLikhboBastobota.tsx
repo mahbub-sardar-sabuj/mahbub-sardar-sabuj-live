@@ -1208,7 +1208,9 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
               <button
                 type="button"
                 disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   const hasCaption = content.trim().length > 0;
                   const hasImage = imageUrl.length > 0;
                   if (!hasCaption && !hasImage) return;
