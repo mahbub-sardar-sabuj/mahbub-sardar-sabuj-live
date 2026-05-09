@@ -1772,6 +1772,12 @@ export default function AmiOLikhboBastobota() {
     ? ((myPostsQuery.data ?? []) as EnrichedPost[])
     : posts;
 
+  useEffect(() => {
+    if (!isAuthenticated && showMyPosts) {
+      setShowMyPosts(false);
+    }
+  }, [isAuthenticated, showMyPosts]);
+
   function handleLoginRequired() {
     setShowLoginPrompt(true);
     setTimeout(() => setShowLoginPrompt(false), 4000);
