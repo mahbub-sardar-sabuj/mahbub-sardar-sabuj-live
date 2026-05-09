@@ -29,7 +29,7 @@ const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 const pageStyle: CSSProperties = {
   minHeight: "100vh",
   background:
-    "radial-gradient(ellipse at 20% 10%, rgba(212,168,67,0.22) 0%, transparent 40%), radial-gradient(ellipse at 80% 80%, rgba(81,139,255,0.13) 0%, transparent 40%), linear-gradient(160deg, #060f1e 0%, #0a1628 50%, #060d1a 100%)",
+    "radial-gradient(ellipse at 18% 8%, rgba(212,168,67,0.26) 0%, transparent 38%), radial-gradient(ellipse at 82% 82%, rgba(81,139,255,0.15) 0%, transparent 38%), radial-gradient(ellipse at 50% 50%, rgba(212,168,67,0.06) 0%, transparent 60%), linear-gradient(160deg, #050B14 0%, #081220 50%, #050A12 100%)",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -43,87 +43,90 @@ const pageStyle: CSSProperties = {
 
 const glowOrb1: CSSProperties = {
   position: "fixed",
-  top: "-10%",
-  left: "-5%",
-  width: "45vw",
-  height: "45vw",
+  top: "-12%",
+  left: "-8%",
+  width: "50vw",
+  height: "50vw",
   borderRadius: "50%",
-  background: "radial-gradient(circle, rgba(212,168,67,0.12) 0%, transparent 70%)",
+  background: "radial-gradient(circle, rgba(212,168,67,0.15) 0%, transparent 70%)",
   pointerEvents: "none",
   zIndex: 0,
+  animation: "driftOrb1 8s ease-in-out infinite alternate",
 };
 
 const glowOrb2: CSSProperties = {
   position: "fixed",
-  bottom: "-15%",
-  right: "-8%",
-  width: "50vw",
-  height: "50vw",
+  bottom: "-18%",
+  right: "-10%",
+  width: "55vw",
+  height: "55vw",
   borderRadius: "50%",
-  background: "radial-gradient(circle, rgba(81,139,255,0.09) 0%, transparent 70%)",
+  background: "radial-gradient(circle, rgba(81,139,255,0.11) 0%, transparent 70%)",
   pointerEvents: "none",
   zIndex: 0,
+  animation: "driftOrb2 10s ease-in-out infinite alternate",
 };
 
 const cardStyle: CSSProperties = {
   position: "relative",
   zIndex: 1,
-  width: "min(460px, 100%)",
-  background: "linear-gradient(145deg, rgba(255,255,255,0.085) 0%, rgba(255,255,255,0.038) 100%)",
-  border: "1px solid rgba(232,201,122,0.28)",
-  borderRadius: 28,
-  boxShadow: "0 32px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset",
-  backdropFilter: "blur(24px)",
-  padding: "clamp(1.8rem, 6vw, 2.5rem)",
+  width: "min(480px, 100%)",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.042) 100%)",
+  border: "1px solid rgba(232,201,122,0.26)",
+  borderRadius: 32,
+  boxShadow: "0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05) inset, 0 0 60px rgba(212,168,67,0.06)",
+  backdropFilter: "blur(32px)",
+  padding: "clamp(1.8rem, 6vw, 2.8rem)",
   display: "grid",
-  gap: "1.2rem",
+  gap: "1.3rem",
+  animation: "loginCardIn 0.5s cubic-bezier(0.22,1,0.36,1) forwards",
 };
 
 const inputWrapStyle: CSSProperties = {
   position: "relative",
   display: "flex",
   flexDirection: "column",
-  gap: 6,
+  gap: 7,
 };
 
 const labelStyle: CSSProperties = {
-  color: "rgba(247,213,111,0.9)",
+  color: "rgba(247,213,111,0.92)",
   fontWeight: 700,
-  fontSize: "0.83rem",
+  fontSize: "0.84rem",
   letterSpacing: "0.03em",
 };
 
 const inputStyle: CSSProperties = {
   width: "100%",
-  background: "rgba(255,255,255,0.06)",
+  background: "rgba(255,255,255,0.065)",
   border: "1.5px solid rgba(232,201,122,0.22)",
-  borderRadius: 14,
-  padding: "0.78rem 1rem",
+  borderRadius: 16,
+  padding: "0.85rem 1rem",
   color: "#FDF6EC",
   fontFamily: adorshoFont,
-  fontSize: "0.97rem",
+  fontSize: "0.98rem",
   outline: "none",
   boxSizing: "border-box",
-  transition: "border-color 0.2s",
+  transition: "border-color 0.2s, box-shadow 0.2s, background 0.2s",
 };
 
 const btnPrimary: CSSProperties = {
   width: "100%",
-  minHeight: 52,
+  minHeight: 54,
   borderRadius: 999,
-  border: "1px solid rgba(255,235,166,0.65)",
+  border: "1px solid rgba(255,235,166,0.7)",
   background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 55%, #B98A24 100%)",
-  color: "#060f1e",
+  color: "#050B14",
   fontFamily: adorshoFont,
   fontWeight: 900,
-  fontSize: "1.02rem",
+  fontSize: "1.04rem",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   gap: 8,
-  transition: "opacity 0.15s, transform 0.1s",
-  boxShadow: "0 4px 20px rgba(212,168,67,0.35)",
+  transition: "opacity 0.15s, transform 0.12s, box-shadow 0.15s",
+  boxShadow: "0 6px 28px rgba(212,168,67,0.42), inset 0 1px 0 rgba(255,255,255,0.25)",
 };
 
 const btnGhost: CSSProperties = {
@@ -544,9 +547,8 @@ export default function AmiOLikhboLogin() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus={mode === "login" || mode === "forgot"}
+                  className="amio-login-input"
                   style={{ ...inputStyle, paddingLeft: "2.6rem" }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(212,168,67,0.6)"; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(232,201,122,0.22)"; }}
                 />
                 <Mail
                   size={15}
@@ -673,10 +675,9 @@ export default function AmiOLikhboLogin() {
           {/* Submit button */}
           <button
             type="submit"
+            className="amio-login-btn"
             style={{ ...btnPrimary, opacity: loading ? 0.75 : 1 }}
             disabled={loading}
-            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.opacity = "0.9"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = loading ? "0.75" : "1"; }}
           >
             {loading ? (
               <><RefreshCw size={17} style={{ animation: "spin 0.8s linear infinite" }} /> অপেক্ষা করুন...</>
@@ -754,12 +755,18 @@ export default function AmiOLikhboLogin() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes float0 { from { transform: translateY(0px); } to { transform: translateY(-12px); } }
-        @keyframes float1 { from { transform: translateY(0px); } to { transform: translateY(-18px); } }
-        @keyframes float2 { from { transform: translateY(0px); } to { transform: translateY(-8px); } }
-        @keyframes float3 { from { transform: translateY(0px); } to { transform: translateY(-15px); } }
-        @keyframes float4 { from { transform: translateY(0px); } to { transform: translateY(-10px); } }
-        @keyframes float5 { from { transform: translateY(0px); } to { transform: translateY(-20px); } }
+        @keyframes float0 { from { transform: translateY(0px) rotate(0deg); } to { transform: translateY(-14px) rotate(5deg); } }
+        @keyframes float1 { from { transform: translateY(0px) rotate(0deg); } to { transform: translateY(-20px) rotate(-4deg); } }
+        @keyframes float2 { from { transform: translateY(0px); } to { transform: translateY(-10px); } }
+        @keyframes float3 { from { transform: translateY(0px) rotate(0deg); } to { transform: translateY(-18px) rotate(6deg); } }
+        @keyframes float4 { from { transform: translateY(0px); } to { transform: translateY(-12px); } }
+        @keyframes float5 { from { transform: translateY(0px) rotate(0deg); } to { transform: translateY(-22px) rotate(-5deg); } }
+        @keyframes driftOrb1 { from { transform: translate(0,0) scale(1); } to { transform: translate(20px, 15px) scale(1.08); } }
+        @keyframes driftOrb2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-18px, -12px) scale(1.06); } }
+        @keyframes loginCardIn { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .amio-login-input:focus { border-color: rgba(247,213,111,0.6) !important; box-shadow: 0 0 0 3px rgba(212,168,67,0.14), 0 2px 16px rgba(212,168,67,0.12) !important; background: rgba(255,255,255,0.09) !important; }
+        .amio-login-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 10px 36px rgba(212,168,67,0.52) !important; }
+        .amio-login-btn:active { transform: translateY(0); }
       `}</style>
     </div>
   );

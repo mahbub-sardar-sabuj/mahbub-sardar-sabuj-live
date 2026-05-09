@@ -43,23 +43,23 @@ const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 const shellStyle: CSSProperties = {
   minHeight: "100vh",
   background:
-    "radial-gradient(circle at 16% 12%, rgba(212,168,67,0.18), transparent 28%), radial-gradient(circle at 85% 34%, rgba(81,139,255,0.10), transparent 30%), linear-gradient(180deg, #071426 0%, #0B1726 48%, #07111F 100%)",
+    "radial-gradient(ellipse at 15% 10%, rgba(212,168,67,0.22) 0%, transparent 35%), radial-gradient(ellipse at 85% 30%, rgba(81,139,255,0.13) 0%, transparent 35%), radial-gradient(ellipse at 50% 90%, rgba(212,168,67,0.08) 0%, transparent 40%), linear-gradient(180deg, #050B14 0%, #081220 48%, #050A12 100%)",
   color: "#FDF6EC",
   fontFamily: adorshoFont,
 };
 
 const glassStyle: CSSProperties = {
-  border: "1px solid rgba(232,201,122,0.22)",
-  background: "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035))",
-  boxShadow: "0 26px 90px rgba(0,0,0,0.32)",
-  backdropFilter: "blur(18px)",
+  border: "1px solid rgba(232,201,122,0.20)",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.085), rgba(255,255,255,0.038))",
+  boxShadow: "0 32px 100px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.07)",
+  backdropFilter: "blur(28px)",
 };
 
 const cardStyle: CSSProperties = {
-  border: "1px solid rgba(232,201,122,0.18)",
-  background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.028))",
-  boxShadow: "0 8px 36px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)",
-  backdropFilter: "blur(16px)",
+  border: "1px solid rgba(232,201,122,0.16)",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.030))",
+  boxShadow: "0 10px 44px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
+  backdropFilter: "blur(24px)",
   borderRadius: 24,
 };
 
@@ -519,17 +519,18 @@ function ReactionBar({
                 type="button"
                 onClick={() => handleReact(key)}
                 title={cfg.label}
+                className={`amio-reaction-btn${myReaction === key ? " reacted" : ""}`}
                 style={{
                   display: "grid",
                   placeItems: "center",
-                  width: 40,
-                  height: 40,
-                  borderRadius: 12,
-                  border: myReaction === key ? `1px solid ${cfg.color}66` : "1px solid transparent",
-                  background: myReaction === key ? `${cfg.color}28` : "rgba(255,255,255,0.04)",
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  border: myReaction === key ? `1px solid ${cfg.color}77` : "1px solid rgba(255,255,255,0.08)",
+                  background: myReaction === key ? `${cfg.color}30` : "rgba(255,255,255,0.05)",
                   cursor: "pointer",
                   fontSize: "1.35rem",
-                  transition: "transform 0.15s, background 0.12s, border-color 0.12s",
+                  boxShadow: myReaction === key ? `0 0 12px ${cfg.color}30` : "none",
                 }}
               >
                 {cfg.icon}
@@ -727,12 +728,12 @@ function PostCard({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {post.authorAvatarUrl ? (
-          <div style={{ width: 46, height: 46, borderRadius: "50%", background: `url(${post.authorAvatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.35)", flexShrink: 0 }} />
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: `url(${post.authorAvatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.45)", flexShrink: 0, boxShadow: "0 0 0 3px rgba(212,168,67,0.12)" }} />
         ) : (
-          <Avatar name={post.authorName} size={46} />
+          <Avatar name={post.authorName} size={48} />
         )}
           <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 900, fontSize: "1rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em" }}>
+          <div style={{ fontWeight: 900, fontSize: "1.02rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em", textShadow: "0 0 12px rgba(212,168,67,0.2)" }}>
             {post.authorName}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
@@ -801,20 +802,23 @@ function PostCard({
         <h2
           style={{
             margin: 0,
-            fontSize: "clamp(1.05rem, 3vw, 1.3rem)",
+            fontSize: "clamp(1.08rem, 3vw, 1.35rem)",
             fontWeight: 900,
             color: "#FDF6EC",
             lineHeight: 1.4,
             cursor: "pointer",
+            transition: "color 0.18s",
           }}
           onClick={() => onOpenDetail(post.slug)}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#F7D56F"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#FDF6EC"; }}
         >
           {post.title}
         </h2>
       )}
 
       {/* Content */}
-      <div style={{ color: "rgba(253,246,236,0.85)", lineHeight: 1.9, fontSize: "1rem" }}>
+      <div style={{ color: "rgba(253,246,236,0.88)", lineHeight: 1.95, fontSize: "1.02rem" }}>
         <p style={{ margin: 0, whiteSpace: "pre-wrap", cursor: "pointer" }} onClick={() => onOpenDetail(post.slug)}>{displayContent}</p>
         {isLong && (
           <button
@@ -841,17 +845,19 @@ function PostCard({
 
       {/* Media */}
       {post.mediaUrl && post.mediaType === "image" && (
-        <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,201,122,0.15)" }}>
+        <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
           <img
             src={post.mediaUrl}
             alt={post.title}
-            style={{ width: "100%", maxHeight: 420, objectFit: "cover", display: "block" }}
+            className="amio-media-img"
+            style={{ width: "100%", maxHeight: 440, objectFit: "cover", display: "block" }}
             loading="lazy"
+            onClick={() => onOpenDetail(post.slug)}
           />
         </div>
       )}
       {post.mediaUrl && post.mediaType === "video" && (
-        <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(232,201,122,0.15)", aspectRatio: "16/9" }}>
+        <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", aspectRatio: "16/9", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
           <iframe
             src={post.mediaUrl}
             style={{ width: "100%", height: "100%", border: "none" }}
@@ -1101,38 +1107,43 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(7,20,38,0.88)",
-        backdropFilter: "blur(12px)",
+        background: "rgba(5,11,20,0.92)",
+        backdropFilter: "blur(20px)",
         zIndex: 1000,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-end",
         justifyContent: "center",
-        padding: "1rem",
+        padding: "0",
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
         style={{
           ...glassStyle,
-          borderRadius: 28,
+          borderRadius: "28px 28px 0 0",
           padding: "clamp(1.2rem, 4vw, 2rem)",
-          width: "min(600px, 100%)",
-          maxHeight: "90vh",
+          width: "min(640px, 100%)",
+          maxHeight: "92vh",
           overflowY: "auto",
           display: "grid",
-          gap: "1.1rem",
+          gap: "1.2rem",
+          animation: "slideUp 0.32s cubic-bezier(0.22,1,0.36,1) forwards",
         }}
       >
+        {/* Drag handle */}
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "-0.4rem", marginBottom: "-0.4rem" }}>
+          <div style={{ width: 40, height: 4, borderRadius: 99, background: "rgba(232,201,122,0.25)" }} />
+        </div>
         {/* Modal header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {avatarUrl ? (
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: `url(${avatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.4)", flexShrink: 0 }} />
+              <div style={{ width: 42, height: 42, borderRadius: "50%", background: `url(${avatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.5)", flexShrink: 0, boxShadow: "0 0 0 3px rgba(212,168,67,0.12)" }} />
             ) : (
-              <Avatar name={authorName} size={38} />
+              <Avatar name={authorName} size={42} />
             )}
             <div>
-              <div style={{ fontWeight: 900, color: "#F7D56F" }}>{authorName}</div>
+              <div style={{ fontWeight: 900, color: "#F7D56F", fontSize: "1.02rem" }}>{authorName}</div>
               <div style={{ fontSize: "0.78rem", color: "rgba(253,246,236,0.5)" }}>নতুন পোস্ট লিখুন</div>
             </div>
           </div>
@@ -1140,18 +1151,19 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
             type="button"
             onClick={onClose}
             style={{
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               borderRadius: "50%",
-              border: "1px solid rgba(232,201,122,0.22)",
-              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(232,201,122,0.25)",
+              background: "rgba(255,255,255,0.07)",
               color: "rgba(253,246,236,0.7)",
               cursor: "pointer",
               display: "grid",
               placeItems: "center",
+              transition: "background 0.15s",
             }}
           >
-            <X size={16} />
+            <X size={17} />
           </button>
         </div>
 
@@ -1525,42 +1537,43 @@ function PostDetail({
       </button>
 
       {/* Full post */}
-      <article style={{ ...cardStyle, padding: "clamp(1.2rem, 4vw, 2rem)", display: "grid", gap: "1.2rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <article style={{ ...cardStyle, padding: "clamp(1.2rem, 4vw, 2rem)", display: "grid", gap: "1.4rem" }}>
+        {/* Hero header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "0.75rem", borderRadius: 18, background: "rgba(212,168,67,0.06)", border: "1px solid rgba(232,201,122,0.12)" }}>
           {post.authorAvatarUrl ? (
-            <div style={{ width: 50, height: 50, borderRadius: "50%", background: `url(${post.authorAvatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.35)", flexShrink: 0 }} />
+            <div style={{ width: 54, height: 54, borderRadius: "50%", background: `url(${post.authorAvatarUrl}) center/cover no-repeat`, border: "2px solid rgba(232,201,122,0.5)", flexShrink: 0, boxShadow: "0 0 0 4px rgba(212,168,67,0.12)" }} />
           ) : (
-            <Avatar name={post.authorName} size={50} />
+            <Avatar name={post.authorName} size={54} />
           )}
-          <div>
-            <div style={{ fontWeight: 900, color: "#F7D56F", fontSize: "1.05rem" }}>{post.authorName}</div>
-            <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 900, color: "#F7D56F", fontSize: "1.08rem", textShadow: "0 0 14px rgba(212,168,67,0.25)" }}>{post.authorName}</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
               <TimeAgo date={post.createdAt} />
               <CategoryBadge category={post.category} />
             </div>
           </div>
         </div>
 
-        <h1 style={{ margin: 0, fontSize: "clamp(1.3rem, 4vw, 2rem)", fontWeight: 900, color: "#FDF6EC", lineHeight: 1.35 }}>
+        <h1 style={{ margin: 0, fontSize: "clamp(1.35rem, 4vw, 2.1rem)", fontWeight: 900, color: "#FDF6EC", lineHeight: 1.38, letterSpacing: "0.01em" }}>
           {post.title}
         </h1>
 
-        <div style={{ color: "rgba(253,246,236,0.85)", lineHeight: 1.95, fontSize: "1rem", whiteSpace: "pre-wrap" }}>
+        <div style={{ color: "rgba(253,246,236,0.88)", lineHeight: 2.0, fontSize: "1.05rem", whiteSpace: "pre-wrap" }}>
           {post.content}
         </div>
 
         {post.mediaUrl && post.mediaType === "image" && (
-          <div style={{ borderRadius: 16, overflow: "hidden" }}>
-            <img src={post.mediaUrl} alt={post.title} style={{ width: "100%", display: "block" }} />
+          <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.4)", border: "1px solid rgba(232,201,122,0.18)" }}>
+            <img src={post.mediaUrl} alt={post.title} className="amio-media-img" style={{ width: "100%", display: "block" }} loading="lazy" />
           </div>
         )}
         {post.mediaUrl && post.mediaType === "video" && (
-          <div style={{ borderRadius: 16, overflow: "hidden", aspectRatio: "16/9" }}>
+          <div style={{ borderRadius: 20, overflow: "hidden", aspectRatio: "16/9", boxShadow: "0 8px 40px rgba(0,0,0,0.4)" }}>
             <iframe src={post.mediaUrl} style={{ width: "100%", height: "100%", border: "none" }} allowFullScreen title={post.title} />
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(253,246,236,0.4)", fontSize: "0.82rem", paddingBottom: "0.75rem", borderBottom: "1px solid rgba(232,201,122,0.1)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(253,246,236,0.42)", fontSize: "0.82rem", paddingBottom: "0.75rem", borderBottom: "1px solid rgba(232,201,122,0.1)" }}>
           <Eye size={13} /> {post.viewCount} বার দেখা হয়েছে
         </div>
 
@@ -1637,8 +1650,9 @@ function PostDetail({
 
         {/* Comment list */}
         {comments.length === 0 ? (
-          <div style={{ color: "rgba(253,246,236,0.4)", fontSize: "0.88rem", textAlign: "center", padding: "1rem" }}>
-            এখনো কোনো মন্তব্য নেই। প্রথম মন্তব্য করুন!
+          <div style={{ color: "rgba(253,246,236,0.38)", fontSize: "0.88rem", textAlign: "center", padding: "1.5rem 1rem", display: "grid", gap: 8 }}>
+            <MessageCircle size={28} color="rgba(212,168,67,0.3)" style={{ margin: "0 auto" }} />
+            <span>এখনো কোনো মন্তব্য নেই। প্রথম মন্তব্য করুন!</span>
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10 }}>
@@ -1648,19 +1662,20 @@ function PostDetail({
                 style={{
                   display: "flex",
                   gap: 10,
-                  padding: "0.75rem",
-                  borderRadius: 14,
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(232,201,122,0.1)",
+                  padding: "0.85rem 1rem",
+                  borderRadius: 18,
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025))",
+                  border: "1px solid rgba(232,201,122,0.12)",
+                  animation: "fadeInFast 0.3s ease forwards",
                 }}
               >
-                <Avatar name={comment.authorName} size={34} />
+                <Avatar name={comment.authorName} size={36} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 900, color: "#F7D56F", fontSize: "0.88rem" }}>{comment.authorName}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                    <span style={{ fontWeight: 900, color: "#F7D56F", fontSize: "0.9rem" }}>{comment.authorName}</span>
                     <TimeAgo date={comment.createdAt} />
                   </div>
-                  <p style={{ margin: 0, color: "rgba(253,246,236,0.82)", fontSize: "0.9rem", lineHeight: 1.7 }}>
+                  <p style={{ margin: 0, color: "rgba(253,246,236,0.85)", fontSize: "0.92rem", lineHeight: 1.75 }}>
                     {comment.content}
                   </p>
                 </div>
@@ -1773,68 +1788,87 @@ export default function AmiOLikhboBastobota() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        .post-card-enter { animation: fadeIn 0.4s ease forwards; }
-        .amio-topbar-avatar:hover { opacity: 0.85; transform: scale(1.05); }
-        .amio-post-btn:hover { opacity: 0.9; transform: scale(1.03); }
-        .amio-post-card:hover { border-color: rgba(232,201,122,0.32) !important; box-shadow: 0 12px 48px rgba(0,0,0,0.38) !important; transform: translateY(-2px); }
-        .amio-post-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
-        .amio-cat-btn:hover { background: rgba(232,201,122,0.14) !important; border-color: rgba(232,201,122,0.4) !important; }
-        .amio-cat-btn { transition: background 0.15s, border-color 0.15s, color 0.15s; }
-        .amio-action-btn:hover { background: rgba(255,255,255,0.1) !important; }
-        .amio-action-btn { transition: background 0.15s; }
-        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 99px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInFast { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 0% { transform: scale(0.88); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+        @keyframes pulseGold { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); } 50% { box-shadow: 0 0 0 6px rgba(212,168,67,0.18); } }
+        @keyframes reactionPop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 70% { transform: scale(0.92); } 100% { transform: scale(1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .post-card-enter { animation: fadeIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+        .amio-topbar-avatar { transition: opacity 0.15s, transform 0.18s; }
+        .amio-topbar-avatar:hover { opacity: 0.85; transform: scale(1.07); }
+        .amio-post-btn { transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s; }
+        .amio-post-btn:hover { opacity: 0.92; transform: scale(1.04); box-shadow: 0 8px 28px rgba(212,168,67,0.38) !important; }
+        .amio-post-card { transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s; }
+        .amio-post-card:hover { border-color: rgba(232,201,122,0.38) !important; box-shadow: 0 18px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(232,201,122,0.12) !important; transform: translateY(-3px); }
+        .amio-cat-btn { transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.15s; }
+        .amio-cat-btn:hover { background: rgba(232,201,122,0.16) !important; border-color: rgba(232,201,122,0.45) !important; transform: translateY(-1px); }
+        .amio-action-btn { transition: background 0.15s, transform 0.12s; }
+        .amio-action-btn:hover { background: rgba(255,255,255,0.12) !important; transform: translateY(-1px); }
+        .amio-reaction-btn { transition: background 0.15s, transform 0.15s, border-color 0.15s; }
+        .amio-reaction-btn:hover { transform: scale(1.12); }
+        .amio-reaction-btn.reacted { animation: reactionPop 0.35s cubic-bezier(0.22,1,0.36,1); }
+        .amio-media-img { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1); }
+        .amio-media-img:hover { transform: scale(1.025); }
+        .amio-sticky-bar { position: sticky; top: 0; z-index: 50; }
+        .amio-search-input:focus { border-color: rgba(247,213,111,0.55) !important; box-shadow: 0 0 0 3px rgba(212,168,67,0.12), 0 2px 12px rgba(212,168,67,0.10) !important; }
+        .amio-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%); background-size: 600px 100%; animation: shimmer 1.6s infinite linear; border-radius: 10px; }
+        .amio-gold-glow { box-shadow: 0 0 18px rgba(212,168,67,0.28), 0 4px 20px rgba(212,168,67,0.18); }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.28); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.5); }
       `}</style>
 
       <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem", minHeight: "100vh" }}>
         <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gap: "1rem" }}>
 
-          {/* ── Logo Header ── */}
+          {/* ── Logo Header + Sticky Topbar ── */}
           {!slugFromUrl && (
+            <div className="amio-sticky-bar" style={{ display: "grid", gap: 0 }}>
+            {/* Logo */}
             <div style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 10,
-              padding: "0.85rem 1rem 0.6rem",
-              borderRadius: "20px 20px 0 0",
-              background: "linear-gradient(180deg, rgba(212,168,67,0.10) 0%, rgba(255,255,255,0.04) 100%)",
+              padding: "0.9rem 1rem 0.65rem",
+              borderRadius: "22px 22px 0 0",
+              background: "linear-gradient(180deg, rgba(212,168,67,0.14) 0%, rgba(255,255,255,0.05) 100%)",
               border: "1px solid rgba(232,201,122,0.22)",
               borderBottom: "none",
-              backdropFilter: "blur(20px)",
+              backdropFilter: "blur(28px)",
             }}>
-              {/* Pen icon */}
-              <div style={{
-                width: 34,
-                height: 34,
+              <div className="amio-gold-glow" style={{
+                width: 36,
+                height: 36,
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%)",
+                background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 55%, #B98A24 100%)",
                 display: "grid",
                 placeItems: "center",
                 flexShrink: 0,
-                boxShadow: "0 4px 14px rgba(212,168,67,0.35)",
               }}>
-                <PenLine size={16} color="#071426" />
+                <PenLine size={17} color="#050B14" />
               </div>
-              {/* Title */}
               <div style={{ textAlign: "center" }}>
                 <div style={{
                   color: "#F7D56F",
                   fontFamily: adorshoFont,
                   fontWeight: 900,
-                  fontSize: "clamp(1rem, 3.5vw, 1.2rem)",
-                  letterSpacing: "0.02em",
+                  fontSize: "clamp(1.05rem, 3.5vw, 1.25rem)",
+                  letterSpacing: "0.025em",
                   lineHeight: 1.2,
+                  textShadow: "0 0 20px rgba(212,168,67,0.35)",
                 }}>আমিও লিখবো বাস্তবতা</div>
                 <div style={{
-                  color: "rgba(253,246,236,0.45)",
+                  color: "rgba(253,246,236,0.48)",
                   fontFamily: adorshoFont,
-                  fontSize: "0.72rem",
+                  fontSize: "0.73rem",
                   marginTop: 2,
-                  letterSpacing: "0.01em",
-                }}>বাস্তব গল্প • অভিজ্ঞতা • ভাবনা</div>
+                  letterSpacing: "0.02em",
+                }}>বাস্তব গল্প • অভিজ্ঞতা • ভাবনা • কবিতা</div>
               </div>
+            </div>
             </div>
           )}
 
@@ -1844,13 +1878,13 @@ export default function AmiOLikhboBastobota() {
               display: "flex",
               alignItems: "center",
               gap: 10,
-              padding: "0.65rem 0.85rem",
-              borderRadius: "0 0 20px 20px",
-              background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
+              padding: "0.7rem 0.9rem",
+              borderRadius: "0 0 22px 22px",
+              background: "linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.045))",
               border: "1px solid rgba(232,201,122,0.22)",
               borderTop: "none",
-              backdropFilter: "blur(20px)",
-              boxShadow: "0 4px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+              backdropFilter: "blur(28px)",
+              boxShadow: "0 8px 36px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.07)",
               marginTop: "-1rem",
             }}>
               {/* Search bar */}
@@ -1866,17 +1900,18 @@ export default function AmiOLikhboBastobota() {
                   }}
                   onFocus={() => searchQuery.trim().length >= 2 && setSearchActive(true)}
                   placeholder="পোস্ট বা লেখক খুঁজুন..."
+                  className="amio-search-input"
                   style={{
                     width: "100%",
-                    padding: "0.55rem 2rem 0.55rem 2.2rem",
+                    padding: "0.6rem 2rem 0.6rem 2.4rem",
                     borderRadius: 999,
-                    border: searchActive ? "1px solid rgba(247,213,111,0.45)" : "1px solid rgba(232,201,122,0.18)",
-                    background: "rgba(255,255,255,0.055)",
+                    border: searchActive ? "1px solid rgba(247,213,111,0.5)" : "1px solid rgba(232,201,122,0.20)",
+                    background: searchActive ? "rgba(255,255,255,0.075)" : "rgba(255,255,255,0.055)",
                     color: "#FDF6EC",
                     fontFamily: adorshoFont,
-                    fontSize: "0.88rem",
+                    fontSize: "0.9rem",
                     outline: "none",
-                    transition: "border 0.15s",
+                    transition: "border 0.2s, background 0.2s, box-shadow 0.2s",
                     boxSizing: "border-box",
                   }}
                 />
@@ -2139,8 +2174,27 @@ export default function AmiOLikhboBastobota() {
                   অনুসন্ধানের জন্য কমপক্ষে ২টি অক্ষর লিখুন।
                 </div>
               ) : (showMyPosts ? myPostsQuery.isLoading : feedIsLoading) ? (
-                <div style={{ display: "grid", placeItems: "center", minHeight: 240 }}>
-                  <RefreshCw size={32} color="#D4A843" style={{ animation: "spin 0.8s linear infinite" }} />
+                <div style={{ display: "grid", gap: "1rem" }}>
+                  {[1,2,3].map(i => (
+                    <div key={i} style={{ ...cardStyle, padding: "clamp(1rem,3vw,1.5rem)", display: "grid", gap: "0.9rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div className="amio-skeleton" style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0 }} />
+                        <div style={{ flex: 1, display: "grid", gap: 8 }}>
+                          <div className="amio-skeleton" style={{ height: 14, width: "45%" }} />
+                          <div className="amio-skeleton" style={{ height: 11, width: "28%" }} />
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gap: 7 }}>
+                        <div className="amio-skeleton" style={{ height: 13, width: "100%" }} />
+                        <div className="amio-skeleton" style={{ height: 13, width: "92%" }} />
+                        <div className="amio-skeleton" style={{ height: 13, width: "78%" }} />
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <div className="amio-skeleton" style={{ height: 32, width: 90, borderRadius: 999 }} />
+                        <div className="amio-skeleton" style={{ height: 32, width: 80, borderRadius: 999 }} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (!showMyPosts && feedHasError) ? (
                 <div style={{ ...cardStyle, padding: "clamp(1.5rem, 6vw, 2rem)", textAlign: "center", display: "grid", gap: "0.75rem" }}>
