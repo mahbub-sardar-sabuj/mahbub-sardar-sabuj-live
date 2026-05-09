@@ -205,7 +205,7 @@ const CSS = `
   .th {
     position: sticky;
     top: var(--site-nav-offset, 98px);
-    z-index: 45;
+    z-index: 20;
     background: rgba(6,8,14,.92);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
@@ -1475,7 +1475,7 @@ const CSS = `
   .writing-tools {
     position: sticky;
     top: var(--site-nav-offset, 98px);
-    z-index: 40;
+    z-index: 15;
     display: grid;
     grid-template-columns: minmax(220px, 360px) 1fr auto;
     gap: 10px;

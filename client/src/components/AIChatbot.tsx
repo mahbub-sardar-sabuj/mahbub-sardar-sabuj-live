@@ -2400,7 +2400,7 @@ export default function AIChatbot() {
               position: "fixed",
               bottom: 80,
               right: 12,
-              zIndex: 60,
+              zIndex: 150,
               width: 368,
               maxWidth: "calc(100vw - 16px)",
               height: "min(610px, calc(100vh - 108px))",

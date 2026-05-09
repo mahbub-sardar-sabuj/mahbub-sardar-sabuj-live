@@ -1854,7 +1854,7 @@ export default function AmiOLikhboBastobota() {
         .amio-reaction-btn.reacted { animation: reactionPop 0.35s cubic-bezier(0.22,1,0.36,1); }
         .amio-media-img { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1); }
         .amio-media-img:hover { transform: scale(1.025); }
-        .amio-sticky-bar { position: sticky; top: 0; z-index: 50; }
+        .amio-sticky-bar { position: sticky; top: 0; z-index: 10; }
         .amio-search-input:focus { border-color: rgba(247,213,111,0.55) !important; box-shadow: 0 0 0 3px rgba(212,168,67,0.12), 0 2px 12px rgba(212,168,67,0.10) !important; }
         .amio-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%); background-size: 600px 100%; animation: shimmer 1.6s infinite linear; border-radius: 10px; }
         .amio-gold-glow { box-shadow: 0 0 18px rgba(212,168,67,0.28), 0 4px 20px rgba(212,168,67,0.18); }

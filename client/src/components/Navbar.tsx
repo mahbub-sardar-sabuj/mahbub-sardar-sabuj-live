@@ -149,7 +149,7 @@ export default function Navbar() {
             style={{
               position: "fixed",
               top: 0, left: 0, right: 0,
-              zIndex: 55,
+              zIndex: 110,
               background: "linear-gradient(90deg, #0d1b2a 0%, #1a2e4a 50%, #0d1b2a 100%)",
               borderBottom: "1px solid rgba(212,168,67,0.25)",
               overflow: "hidden",
@@ -231,7 +231,7 @@ export default function Navbar() {
       style={{
         position: "fixed",
         top: (showBanner && !isEditorPage && !isEBookReaderPage) ? 28 : 0, left: 0, right: 0,
-        zIndex: 50,
+        zIndex: 100,
         transition: "all 0.5s",
         background: navElevated ? "rgba(6,14,26,0.92)" : "transparent",
         backdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
@@ -403,6 +403,7 @@ export default function Navbar() {
               WebkitOverflowScrolling: "touch",
               overscrollBehavior: "contain",
               touchAction: "pan-y",
+              zIndex: 300,
             }}
           >
             <div style={{
