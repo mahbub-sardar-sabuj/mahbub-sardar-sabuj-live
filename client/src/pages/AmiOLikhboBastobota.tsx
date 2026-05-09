@@ -1205,7 +1205,23 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
               </button>
               <div style={{ flex: 1 }} />
-              <ActionButton type="submit" disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}>
+              <ActionButton
+                type="button"
+                onClick={() => {
+                  const hasCaption = content.trim().length > 0;
+                  const hasImage = imageUrl.length > 0;
+                  if (!hasCaption && !hasImage) return;
+                  const finalContent = hasCaption ? content.trim() : " ";
+                  createPost.mutate({
+                    title: title.trim() || undefined,
+                    category: category !== "all" ? category : undefined,
+                    content: finalContent,
+                    mediaUrl: imageUrl || undefined,
+                    mediaType: imageUrl ? "image" : "none",
+                  });
+                }}
+                disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}
+              >
                 {createPost.isPending ? <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পোস্ট হচ্ছে...</> : <><Send size={16} /> পোস্ট করুন</>}
               </ActionButton>
             </div>
