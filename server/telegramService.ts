@@ -2,6 +2,7 @@
  * Telegram Bot Service
  * - Sends visitor messages as notifications to admin's Telegram
  * - Handles admin replies from Telegram → stores in DB → visitor sees in chat
+ * - Handles post/comment moderation via inline Approve/Reject buttons
  *
  * Bot: @MahbubLiveChat_bot
  * Token: stored in TELEGRAM_BOT_TOKEN env var
@@ -9,7 +10,7 @@
  */
 import { ENV } from "./_core/env";
 import { getDb } from "./db";
-import { liveChatMessages, liveChatSessions } from "../drizzle/schema";
+import { liveChatMessages, liveChatSessions, writingPosts, writingComments } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 const TELEGRAM_API = `https://api.telegram.org/bot${ENV.telegramBotToken}`;
@@ -77,6 +78,12 @@ export async function sendTelegramSessionClosed(sessionId: string, visitorName: 
 
 // ── Handle incoming Telegram webhook update ───────────────────────────────────
 export async function handleTelegramWebhook(body: TelegramUpdate): Promise<void> {
+  // Handle callback_query (inline button presses)
+  if (body.callback_query) {
+    await handleCallbackQuery(body.callback_query);
+    return;
+  }
+
   const message = body.message;
   if (!message || !message.text) return;
 
@@ -155,6 +162,149 @@ export async function handleTelegramWebhook(body: TelegramUpdate): Promise<void>
   );
 }
 
+// ── Handle inline button callback queries ────────────────────────────────────
+async function handleCallbackQuery(callbackQuery: TelegramCallbackQuery): Promise<void> {
+  const chatId = String(callbackQuery.message?.chat?.id);
+  const messageId = callbackQuery.message?.message_id;
+  const data = callbackQuery.data || "";
+
+  // Acknowledge the callback to remove the loading spinner
+  await answerCallbackQuery(callbackQuery.id);
+
+  const db = await getDb();
+  if (!db) {
+    await sendTelegramMessage(chatId, "❌ ডেটাবেজ সংযোগ ব্যর্থ হয়েছে।");
+    return;
+  }
+
+  // ── Post moderation: post_approve_ID or post_reject_ID ──────────────────
+  const postApproveMatch = data.match(/^post_approve_(\d+)$/);
+  const postRejectMatch = data.match(/^post_reject_(\d+)$/);
+
+  if (postApproveMatch || postRejectMatch) {
+    const postId = parseInt((postApproveMatch || postRejectMatch)![1]);
+    const newStatus = postApproveMatch ? "approved" : "rejected";
+    const actionLabel = postApproveMatch ? "✅ অনুমোদিত হয়েছে" : "❌ প্রত্যাখ্যাত হয়েছে";
+
+    const posts = await db
+      .select()
+      .from(writingPosts)
+      .where(eq(writingPosts.id, postId))
+      .limit(1);
+
+    if (posts.length === 0) {
+      await sendTelegramMessage(chatId, `❌ Post ID ${postId} পাওয়া যায়নি।`);
+      return;
+    }
+
+    const post = posts[0];
+
+    if (post.status !== "pending") {
+      const currentLabel = post.status === "approved" ? "অনুমোদিত" : post.status === "rejected" ? "প্রত্যাখ্যাত" : post.status;
+      await editMessageReplyMarkup(chatId, messageId);
+      await sendTelegramMessage(chatId, `ℹ️ এই পোস্টটি ইতিমধ্যে *${currentLabel}* অবস্থায় আছে।`);
+      return;
+    }
+
+    await db
+      .update(writingPosts)
+      .set({ status: newStatus as "approved" | "rejected", updatedAt: new Date() })
+      .where(eq(writingPosts.id, postId));
+
+    // Remove inline buttons after action
+    await editMessageReplyMarkup(chatId, messageId);
+
+    await sendTelegramMessage(
+      chatId,
+      `${actionLabel}\n\n` +
+      `📌 *শিরোনাম:* ${escapeMarkdown(post.title)}\n` +
+      `✍️ *লেখক:* ${escapeMarkdown(post.authorName)}\n` +
+      `🆔 *Post ID:* ${postId}`
+    );
+    return;
+  }
+
+  // ── Comment moderation: comment_approve_ID or comment_reject_ID ─────────
+  const commentApproveMatch = data.match(/^comment_approve_(\d+)$/);
+  const commentRejectMatch = data.match(/^comment_reject_(\d+)$/);
+
+  if (commentApproveMatch || commentRejectMatch) {
+    const commentId = parseInt((commentApproveMatch || commentRejectMatch)![1]);
+    const newStatus = commentApproveMatch ? "approved" : "rejected";
+    const actionLabel = commentApproveMatch ? "✅ মন্তব্য অনুমোদিত হয়েছে" : "❌ মন্তব্য প্রত্যাখ্যাত হয়েছে";
+
+    const comments = await db
+      .select()
+      .from(writingComments)
+      .where(eq(writingComments.id, commentId))
+      .limit(1);
+
+    if (comments.length === 0) {
+      await sendTelegramMessage(chatId, `❌ Comment ID ${commentId} পাওয়া যায়নি।`);
+      return;
+    }
+
+    const comment = comments[0];
+
+    if (comment.status !== "pending") {
+      const currentLabel = comment.status === "approved" ? "অনুমোদিত" : comment.status === "rejected" ? "প্রত্যাখ্যাত" : comment.status;
+      await editMessageReplyMarkup(chatId, messageId);
+      await sendTelegramMessage(chatId, `ℹ️ এই মন্তব্যটি ইতিমধ্যে *${currentLabel}* অবস্থায় আছে।`);
+      return;
+    }
+
+    await db
+      .update(writingComments)
+      .set({ status: newStatus as "approved" | "rejected", updatedAt: new Date() })
+      .where(eq(writingComments.id, commentId));
+
+    // Remove inline buttons after action
+    await editMessageReplyMarkup(chatId, messageId);
+
+    await sendTelegramMessage(
+      chatId,
+      `${actionLabel}\n\n` +
+      `✍️ *মন্তব্যকারী:* ${escapeMarkdown(comment.authorName)}\n` +
+      `🆔 *Comment ID:* ${commentId}`
+    );
+    return;
+  }
+
+  // Unknown callback
+  await sendTelegramMessage(chatId, "⚠️ অজানা অ্যাকশন।");
+}
+
+// ── Helper: answer callback query (removes loading spinner) ──────────────────
+async function answerCallbackQuery(callbackQueryId: string): Promise<void> {
+  try {
+    await fetch(`${TELEGRAM_API}/answerCallbackQuery`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ callback_query_id: callbackQueryId }),
+    });
+  } catch (err) {
+    console.error("[Telegram] answerCallbackQuery error:", err);
+  }
+}
+
+// ── Helper: remove inline keyboard from a message ────────────────────────────
+async function editMessageReplyMarkup(chatId: string, messageId?: number): Promise<void> {
+  if (!messageId) return;
+  try {
+    await fetch(`${TELEGRAM_API}/editMessageReplyMarkup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        reply_markup: { inline_keyboard: [] },
+      }),
+    });
+  } catch (err) {
+    console.error("[Telegram] editMessageReplyMarkup error:", err);
+  }
+}
+
 // ── Helper: send plain message ────────────────────────────────────────────────
 async function sendTelegramMessage(chatId: string, text: string): Promise<void> {
   try {
@@ -172,9 +322,9 @@ async function sendTelegramMessage(chatId: string, text: string): Promise<void> 
 async function sendHelpMessage(): Promise<void> {
   await sendTelegramMessage(
     ENV.telegramAdminChatId,
-    `ℹ️ *মাহবুব সরদার সবুজ — লাইভ চ্যাট বট*\n\n` +
-    `ভিজিটর মেসেজ দিলে এখানে নোটিফিকেশন আসবে।\n` +
-    `রিপ্লাই দিতে সেই মেসেজটি *Reply* করুন।`
+    `ℹ️ *মাহবুব সরদার সবুজ — অ্যাডমিন বট*\n\n` +
+    `📝 নতুন লেখা জমা পড়লে Approve/Reject বাটন সহ নোটিফিকেশন আসবে।\n` +
+    `💬 লাইভ চ্যাট বার্তা আসলে সেই মেসেজটি *Reply* করুন।`
   );
 }
 
@@ -203,19 +353,32 @@ export async function sendTelegramPostSubmitted(opts: {
     `✍️ *লেখক:* ${escapeMarkdown(opts.authorName)}\n` +
     `📌 *শিরোনাম:* ${escapeMarkdown(opts.title)}\n` +
     `🏷️ *বিভাগ:* ${catLabel}\n` +
-    `🆔 *Post ID:* ${opts.postId}\n\n` +
-    `👉 অ্যাডমিন প্যানেলে গিয়ে অনুমোদন বা প্রত্যাখ্যান করুন।`;
+    `🆔 *Post ID:* ${opts.postId}`;
+
+  const inlineKeyboard = {
+    inline_keyboard: [
+      [
+        { text: "✅ অনুমোদন করুন", callback_data: `post_approve_${opts.postId}` },
+        { text: "❌ প্রত্যাখ্যান করুন", callback_data: `post_reject_${opts.postId}` },
+      ],
+    ],
+  };
 
   try {
-    await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: ENV.telegramAdminChatId,
         text,
         parse_mode: "Markdown",
+        reply_markup: inlineKeyboard,
       }),
     });
+    const data = await res.json() as { ok: boolean; description?: string };
+    if (!data.ok) {
+      console.error("[Telegram] sendTelegramPostSubmitted failed:", data.description);
+    }
   } catch (err) {
     console.error("[Telegram] post submitted notification error:", err);
   }
@@ -276,19 +439,32 @@ export async function sendTelegramCommentSubmitted(opts: {
     `✍️ *মন্তব্যকারী:* ${escapeMarkdown(opts.authorName)}\n` +
     `📌 *পোস্ট:* ${escapeMarkdown(opts.postTitle)}\n` +
     `🆔 *Comment ID:* ${opts.commentId}\n\n` +
-    `📝 *মন্তব্য:*\n${escapeMarkdown(preview)}\n\n` +
-    `👉 অ্যাডমিন প্যানেলে গিয়ে অনুমোদন বা প্রত্যাখ্যান করুন।`;
+    `📝 *মন্তব্য:*\n${escapeMarkdown(preview)}`;
+
+  const inlineKeyboard = {
+    inline_keyboard: [
+      [
+        { text: "✅ অনুমোদন করুন", callback_data: `comment_approve_${opts.commentId}` },
+        { text: "❌ প্রত্যাখ্যান করুন", callback_data: `comment_reject_${opts.commentId}` },
+      ],
+    ],
+  };
 
   try {
-    await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: ENV.telegramAdminChatId,
         text,
         parse_mode: "Markdown",
+        reply_markup: inlineKeyboard,
       }),
     });
+    const data = await res.json() as { ok: boolean; description?: string };
+    if (!data.ok) {
+      console.error("[Telegram] sendTelegramCommentSubmitted failed:", data.description);
+    }
   } catch (err) {
     console.error("[Telegram] comment submitted notification error:", err);
   }
@@ -302,7 +478,10 @@ export async function registerTelegramWebhook(webhookUrl: string): Promise<void>
     const res = await fetch(`${TELEGRAM_API}/setWebhook`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: webhookUrl }),
+      body: JSON.stringify({
+        url: webhookUrl,
+        allowed_updates: ["message", "callback_query"],
+      }),
     });
     const data = await res.json() as { ok: boolean; description?: string };
     if (data.ok) {
@@ -324,6 +503,7 @@ function escapeMarkdown(text: string): string {
 interface TelegramUpdate {
   update_id: number;
   message?: TelegramMessage;
+  callback_query?: TelegramCallbackQuery;
 }
 
 interface TelegramMessage {
@@ -331,4 +511,15 @@ interface TelegramMessage {
   chat: { id: number; type: string };
   text?: string;
   reply_to_message?: TelegramMessage;
+}
+
+interface TelegramCallbackQuery {
+  id: string;
+  from: { id: number; username?: string };
+  message?: {
+    message_id: number;
+    chat: { id: number; type: string };
+    text?: string;
+  };
+  data?: string;
 }
