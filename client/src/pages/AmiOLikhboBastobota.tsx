@@ -1514,8 +1514,50 @@ function PostDetail({
 
   const { post, comments } = detail.data;
 
+  const SITE_URL = "https://www.mahbubsardarsabuj.com";
+  const postUrl = `${SITE_URL}/amio-likhbo-bastobota/${post.slug}`;
+  const postDescription = post.content.slice(0, 160).replace(/\n/g, " ").trim();
+  const categoryLabels: Record<string, string> = {
+    experience: "অভিজ্ঞতা", story: "গল্প", poem: "কবিতা",
+    thought: "ভাবনা", photo: "ছবি", video: "ভিডিও",
+  };
+  const categoryLabel = categoryLabels[post.category] || post.category;
+  const seoTitle = `${post.title} — ${post.authorName} | আমিও লিখবো বাস্তবতা`;
+  const seoKeywords = `${post.authorName}, ${categoryLabel}, আমিও লিখবো বাস্তবতা, বাস্তব গল্প, বাংলা লেখা, মাহবুব সরদার সবুজ`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": post.category === "poem" ? "Poem" : post.category === "story" ? "ShortStory" : "Article",
+    "headline": post.title,
+    "description": postDescription,
+    "url": postUrl,
+    "datePublished": new Date(post.createdAt).toISOString(),
+    "dateModified": new Date(post.updatedAt).toISOString(),
+    "author": {
+      "@type": "Person",
+      "name": post.authorName,
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "আমিও লিখবো বাস্তবতা | মাহবুব সরদার সবুজ",
+      "url": SITE_URL,
+    },
+    "inLanguage": "bn-BD",
+    "isAccessibleForFree": true,
+    "genre": categoryLabel,
+    ...(post.mediaUrl && post.mediaType === "image" ? { "image": post.mediaUrl } : {}),
+  };
+
   return (
     <div style={{ display: "grid", gap: "1.5rem" }}>
+      <Seo
+        title={seoTitle}
+        description={postDescription}
+        path={`/amio-likhbo-bastobota/${post.slug}`}
+        image={post.mediaUrl && post.mediaType === "image" ? post.mediaUrl : undefined}
+        keywords={seoKeywords}
+        type="article"
+        jsonLd={jsonLd}
+      />
       <button
         type="button"
         onClick={onBack}

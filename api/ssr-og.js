@@ -5273,6 +5273,25 @@ export default async function handler(req) {
     title = "সরদার ডিজাইন স্টুডিও | মাহবুব সরদার সবুজ";
     description = "সরদার ডিজাইন স্টুডিওতে অনলাইনে বাংলা ও ইংরেজি টেক্সট দিয়ে সুন্দর ডিজাইন তৈরি করুন। সামাজিক মাধ্যমের পোস্ট, কবিতার কার্ড ও আরও অনেক কিছু।";
     bodyContent = `<h1>সরদার ডিজাইন স্টুডিও — মাহবুব সরদার সবুজ</h1><p>সরদার ডিজাইন স্টুডিওতে অনলাইনে বাংলা ও ইংরেজি টেক্সট দিয়ে সুন্দর ডিজাইন তৈরি করুন। সামাজিক মাধ্যমের পোস্ট, কবিতার কার্ড ও আরও অনেক কিছু।</p>`;
+  } else if (path.startsWith("/amio-likhbo-bastobota/") && path.length > "/amio-likhbo-bastobota/".length) {
+    // Individual visitor post — served via dedicated SSR API for DB access
+    // Redirect bots to the dedicated SSR endpoint
+    const postSlug = path.replace("/amio-likhbo-bastobota/", "").split("?")[0];
+    title = "আমিও লিখবো বাস্তবতা | মাহবুব সরদার সবুজ";
+    description = "বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। আমিও লিখবো বাস্তবতা — একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম।";
+    // For bots, redirect to the DB-powered SSR endpoint
+    return new Response("", {
+      status: 302,
+      headers: { "Location":  },
+    });
+  } else if (path === "/amio-likhbo-bastobota") {
+    title = "আমিও লিখবো বাস্তবতা | মাহবুব সরদার সবুজ";
+    description = "বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। আমিও লিখবো বাস্তবতা — একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম।";
+    bodyContent = `
+      <h1>আমিও লিখবো বাস্তবতা</h1>
+      <p>বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। এটি একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম যেখানে যে কেউ নিজের বাস্তব অভিজ্ঞতা লিখতে পারেন।</p>
+      <p><a href="${SITE_URL}/amio-likhbo-bastobota">পোস্টগুলো দেখুন</a> | <a href="${SITE_URL}">মাহবুব সরদার সবুজ</a></p>
+    `;
   } else if (path === "/facebook-recitations") {
     title = "Facebook আবৃত্তি | মাহবুব সরদার সবুজ";
     description = "মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। কবিতার আবৃত্তির ভিডিওগুলো একসাথে দেখুন।";

@@ -1,11 +1,14 @@
 User-agent: *
 Allow: /
+Allow: /api/amio-post-seo
+Allow: /api/amio-sitemap
 Disallow: /api/
 Disallow: /.env
 
 # Sitemap location
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml
+Sitemap: https://www.mahbubsardarsabuj.com/api/amio-sitemap
 
 # Crawl delay
 Crawl-delay: 1
