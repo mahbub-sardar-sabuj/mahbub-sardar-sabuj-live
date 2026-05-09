@@ -1790,6 +1790,54 @@ export default function AmiOLikhboBastobota() {
       <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem", minHeight: "100vh" }}>
         <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gap: "1rem" }}>
 
+          {/* ── Logo Header ── */}
+          {!slugFromUrl && (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "0.85rem 1rem 0.6rem",
+              borderRadius: "20px 20px 0 0",
+              background: "linear-gradient(180deg, rgba(212,168,67,0.10) 0%, rgba(255,255,255,0.04) 100%)",
+              border: "1px solid rgba(232,201,122,0.22)",
+              borderBottom: "none",
+              backdropFilter: "blur(20px)",
+            }}>
+              {/* Pen icon */}
+              <div style={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%)",
+                display: "grid",
+                placeItems: "center",
+                flexShrink: 0,
+                boxShadow: "0 4px 14px rgba(212,168,67,0.35)",
+              }}>
+                <PenLine size={16} color="#071426" />
+              </div>
+              {/* Title */}
+              <div style={{ textAlign: "center" }}>
+                <div style={{
+                  color: "#F7D56F",
+                  fontFamily: adorshoFont,
+                  fontWeight: 900,
+                  fontSize: "clamp(1rem, 3.5vw, 1.2rem)",
+                  letterSpacing: "0.02em",
+                  lineHeight: 1.2,
+                }}>আমিও লিখবো বাস্তবতা</div>
+                <div style={{
+                  color: "rgba(253,246,236,0.45)",
+                  fontFamily: adorshoFont,
+                  fontSize: "0.72rem",
+                  marginTop: 2,
+                  letterSpacing: "0.01em",
+                }}>বাস্তব গল্প • অভিজ্ঞতা • ভাবনা</div>
+              </div>
+            </div>
+          )}
+
           {/* ── Top Bar: Search + Post Button + Profile ── */}
           {!slugFromUrl && (
             <div style={{
@@ -1797,11 +1845,13 @@ export default function AmiOLikhboBastobota() {
               alignItems: "center",
               gap: 10,
               padding: "0.65rem 0.85rem",
-              borderRadius: 20,
+              borderRadius: "0 0 20px 20px",
               background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
               border: "1px solid rgba(232,201,122,0.22)",
+              borderTop: "none",
               backdropFilter: "blur(20px)",
               boxShadow: "0 4px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+              marginTop: "-1rem",
             }}>
               {/* Search bar */}
               <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
