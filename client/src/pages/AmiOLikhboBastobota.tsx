@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -57,10 +57,11 @@ const glassStyle: CSSProperties = {
 
 const cardStyle: CSSProperties = {
   border: "1px solid rgba(232,201,122,0.16)",
-  background: "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.030))",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.045))",
   boxShadow: "0 10px 44px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
-  backdropFilter: "blur(24px)",
+  backdropFilter: "blur(12px)",
   borderRadius: 24,
+  willChange: "auto",
 };
 
 // ── Category config ───────────────────────────────────────────────────────────
@@ -697,7 +698,7 @@ type EnrichedPost = {
   myReaction: ReactionType | null;
 };
 
-function PostCard({
+const PostCard = memo(function PostCard({
   post,
   isAuthenticated,
   onLoginRequired,
@@ -1017,9 +1018,8 @@ function PostCard({
       </div>
     </article>
   );
-}
-
-// ── Create Post Modal ─────────────────────────────────────────────────────────
+});
+// ── Create Post Modal ──────────────────────────────────────────────────────────
 
 function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => void; authorName: string; avatarUrl?: string }) {
   const [title, setTitle] = useState("");
@@ -1770,7 +1770,13 @@ export default function AmiOLikhboBastobota() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
     undefined,
-    { refetchInterval: 60000, enabled: !searchActive, retry: false }
+    {
+      refetchInterval: 120000,
+      refetchIntervalInBackground: false,
+      enabled: !searchActive,
+      retry: false,
+      staleTime: 60000,
+    }
   );
   const searchQuery_ = searchQuery.trim();
   const searchResultsQuery = trpc.writingPlatform.searchPosts.useQuery(
@@ -1791,15 +1797,17 @@ export default function AmiOLikhboBastobota() {
   const activeFeedQuery = searchActive && searchQuery_.length >= 2 ? searchResultsQuery : postsQuery;
   const feedHasError = Boolean(activeFeedQuery.isError);
   const feedIsLoading = Boolean(activeFeedQuery.isLoading || activeFeedQuery.isFetching);
-  const posts = (searchActive && searchQuery_.length >= 2
-    ? (searchResultsQuery.data ?? [])
-    : (postsQuery.data ?? [])) as EnrichedPost[];
-  const filteredPosts = selectedCategory === "all"
-    ? posts
-    : posts.filter((p) => p.category === selectedCategory);
-  const displayPosts = showMyPosts
-    ? ((myPostsQuery.data ?? []) as EnrichedPost[])
-    : filteredPosts;
+  const posts = useMemo(() => (
+    (searchActive && searchQuery_.length >= 2
+      ? (searchResultsQuery.data ?? [])
+      : (postsQuery.data ?? [])) as EnrichedPost[]
+  ), [searchActive, searchQuery_, searchResultsQuery.data, postsQuery.data]);
+  const filteredPosts = useMemo(() => (
+    selectedCategory === "all" ? posts : posts.filter((p) => p.category === selectedCategory)
+  ), [posts, selectedCategory]);
+  const displayPosts = useMemo(() => (
+    showMyPosts ? ((myPostsQuery.data ?? []) as EnrichedPost[]) : filteredPosts
+  ), [showMyPosts, myPostsQuery.data, filteredPosts]);
 
   useEffect(() => {
     if (!isAuthenticated && showMyPosts) {
@@ -1807,18 +1815,18 @@ export default function AmiOLikhboBastobota() {
     }
   }, [isAuthenticated, showMyPosts]);
 
-  function handleLoginRequired() {
+    const handleLoginRequired = useCallback(() => {
     setShowLoginPrompt(true);
     setTimeout(() => setShowLoginPrompt(false), 4000);
-  }
-
-  function handleOpenDetail(slug: string) {
+  }, []);
+  const handleOpenDetail = useCallback((slug: string) => {
     setLocation(`/amio-likhbo-bastobota/${slug}`);
-  }
-
-  function handleBack() {
+  }, [setLocation]);
+  const handleBack = useCallback(() => {
     setLocation("/amio-likhbo-bastobota");
-  }
+  }, [setLocation]);
+  const handleEditPost = useCallback((p: EnrichedPost) => setEditingPost(p), []);
+  const handleDeletePost = useCallback((id: number) => deletePostMutation.mutate({ postId: id }), [deletePostMutation]);
 
   return (
     <div style={shellStyle}>
@@ -2280,8 +2288,8 @@ export default function AmiOLikhboBastobota() {
                         onLoginRequired={handleLoginRequired}
                         onOpenDetail={handleOpenDetail}
                         currentUserOpenId={user?.openId}
-                        onEdit={(p) => setEditingPost(p)}
-                        onDelete={(id) => deletePostMutation.mutate({ postId: id })}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
                       />
                     </div>
                   ))}

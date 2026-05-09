@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
@@ -34,6 +34,7 @@ function createSlug(title: string) {
 }
 
 type WritingDb = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+type WritingPost = typeof writingPosts.$inferSelect;
 
 let writingTablesReady = false;
 let writingTablesReadyPromise: Promise<void> | null = null;
@@ -76,61 +77,112 @@ async function safeWritingRead<T>(label: string, fallback: T, operation: () => P
   }
 }
 
-async function enrichPost(post: typeof writingPosts.$inferSelect, userOpenId?: string) {
+// ── OPTIMIZED: Batch-enrich multiple posts in 3 queries instead of 3N queries ──
+// Old approach: N posts × 3 queries each = 3N DB round-trips (N+1 problem)
+// New approach: 3 batch queries regardless of post count = O(1) DB round-trips
+async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string) {
+  if (posts.length === 0) return [];
+
   const db = await getWritingDb();
-  if (!db) {
-    return {
-      ...post,
-      authorAvatarUrl: null as string | null,
-      reactionCounts: { like: 0, love: 0, inspiring: 0, sad: 0 },
-      commentCount: 0,
-      myReaction: null as null | "like" | "love" | "inspiring" | "sad",
-    };
-  }
-
-  const reactions = await db
-    .select()
-    .from(writingReactions)
-    .where(eq(writingReactions.postId, post.id));
-
-  const approvedComments = await db
-    .select()
-    .from(writingComments)
-    .where(and(eq(writingComments.postId, post.id), eq(writingComments.status, "approved")));
-
-  const reactionCounts = { like: 0, love: 0, inspiring: 0, sad: 0 };
-  let myReaction: null | "like" | "love" | "inspiring" | "sad" = null;
-
-  reactions.forEach((reaction) => {
-    reactionCounts[reaction.type] += 1;
-    if (userOpenId && reaction.userOpenId === userOpenId) {
-      myReaction = reaction.type;
-    }
+  const emptyEnrich = (post: WritingPost) => ({
+    ...post,
+    authorAvatarUrl: null as string | null,
+    reactionCounts: { like: 0, love: 0, inspiring: 0, sad: 0 },
+    commentCount: 0,
+    myReaction: null as null | "like" | "love" | "inspiring" | "sad",
   });
 
-  // Fetch author avatar from local_users table
-  let authorAvatarUrl: string | null = null;
-  try {
-    const avatarRows = await db.execute(
-      sql.raw(`SELECT avatarUrl FROM local_users WHERE openId = '${post.authorOpenId.replace(/'/g, "''")}' LIMIT 1`)
-    ) as any;
-    const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
-    if (Array.isArray(rows) && rows.length > 0 && rows[0].avatarUrl) {
-      const av = rows[0].avatarUrl as string;
-      // Accept both remote URLs and base64 data URLs
-      authorAvatarUrl = av;
+  if (!db) return posts.map(emptyEnrich);
+
+  const postIds = posts.map((p) => p.id);
+  const authorOpenIds = [...new Set(posts.map((p) => p.authorOpenId))];
+
+  // ── 3 parallel batch queries instead of 3N sequential queries ──
+  const [allReactions, allComments, avatarRows] = await Promise.all([
+    // Batch query 1: all reactions for all posts at once
+    db
+      .select()
+      .from(writingReactions)
+      .where(inArray(writingReactions.postId, postIds)),
+
+    // Batch query 2: approved comment counts for all posts at once
+    db
+      .select({ postId: writingComments.postId })
+      .from(writingComments)
+      .where(
+        and(
+          inArray(writingComments.postId, postIds),
+          eq(writingComments.status, "approved")
+        )
+      ),
+
+    // Batch query 3: author avatars for all unique authors at once
+    authorOpenIds.length > 0
+      ? db.execute(
+          sql.raw(
+            `SELECT openId, avatarUrl FROM local_users WHERE openId IN (${authorOpenIds
+              .map((id) => `'${id.replace(/'/g, "''")}'`)
+              .join(",")}) LIMIT ${authorOpenIds.length}`
+          )
+        ).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
+  // Build lookup maps from batch results
+  // Reactions map: postId → { counts, myReaction }
+  const reactionsMap = new Map<number, { counts: Record<string, number>; myReaction: string | null }>();
+  for (const reaction of allReactions) {
+    if (!reactionsMap.has(reaction.postId)) {
+      reactionsMap.set(reaction.postId, {
+        counts: { like: 0, love: 0, inspiring: 0, sad: 0 },
+        myReaction: null,
+      });
     }
-  } catch {
-    // avatarUrl not critical, ignore errors
+    const entry = reactionsMap.get(reaction.postId)!;
+    entry.counts[reaction.type] = (entry.counts[reaction.type] || 0) + 1;
+    if (userOpenId && reaction.userOpenId === userOpenId) {
+      entry.myReaction = reaction.type;
+    }
   }
 
-  return {
-    ...post,
-    authorAvatarUrl,
-    reactionCounts,
-    commentCount: approvedComments.length,
-    myReaction,
-  };
+  // Comment count map: postId → count
+  const commentCountMap = new Map<number, number>();
+  for (const comment of allComments) {
+    commentCountMap.set(comment.postId, (commentCountMap.get(comment.postId) || 0) + 1);
+  }
+
+  // Avatar map: authorOpenId → avatarUrl
+  const avatarMap = new Map<string, string>();
+  if (avatarRows) {
+    const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
+    if (Array.isArray(rows)) {
+      for (const row of rows as any[]) {
+        if (row.openId && row.avatarUrl) {
+          avatarMap.set(row.openId, row.avatarUrl);
+        }
+      }
+    }
+  }
+
+  // Assemble enriched posts using lookup maps (no additional DB queries)
+  return posts.map((post) => {
+    const reactionData = reactionsMap.get(post.id);
+    return {
+      ...post,
+      authorAvatarUrl: avatarMap.get(post.authorOpenId) ?? null,
+      reactionCounts: (reactionData?.counts ?? { like: 0, love: 0, inspiring: 0, sad: 0 }) as {
+        like: number; love: number; inspiring: number; sad: number;
+      },
+      commentCount: commentCountMap.get(post.id) ?? 0,
+      myReaction: (reactionData?.myReaction ?? null) as null | "like" | "love" | "inspiring" | "sad",
+    };
+  });
+}
+
+// ── Single-post enrich (for getPostBySlug) — still uses 3 queries but only for 1 post ──
+async function enrichPost(post: WritingPost, userOpenId?: string) {
+  const results = await enrichPostsBatch([post], userOpenId);
+  return results[0];
 }
 
 export const writingPlatformRouter = router({
@@ -146,17 +198,18 @@ export const writingPlatformRouter = router({
         if (!db) return [];
 
         const conditions = [eq(writingPosts.status, "approved")];
-      if (input?.category) conditions.push(eq(writingPosts.category, input.category));
-      if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
+        if (input?.category) conditions.push(eq(writingPosts.category, input.category));
+        if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
 
-      const posts = await db
-        .select()
-        .from(writingPosts)
-        .where(and(...conditions))
-        .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
-        .limit(input?.limit ?? 20);
+        const posts = await db
+          .select()
+          .from(writingPosts)
+          .where(and(...conditions))
+          .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
+          .limit(input?.limit ?? 20);
 
-        return Promise.all(posts.map((post) => enrichPost(post, ctx.user?.openId)));
+        // OPTIMIZED: batch enrich — 3 queries total instead of 3N
+        return enrichPostsBatch(posts, ctx.user?.openId);
       });
     }),
 
@@ -171,21 +224,26 @@ export const writingPlatformRouter = router({
       return safeWritingRead("listPostsPaginated", { posts: [], hasMore: false }, async () => {
         const db = await getWritingDb();
         if (!db) return { posts: [], hasMore: false };
+
         const conditions = [eq(writingPosts.status, "approved")];
-      if (input?.category) conditions.push(eq(writingPosts.category, input.category));
-      if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
-      const limit = input?.limit ?? 10;
-      const posts = await db
-        .select()
-        .from(writingPosts)
-        .where(and(...conditions))
-        .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
-        .limit(limit)
-        .offset(input?.offset ?? 0);
-      const enriched = await Promise.all(posts.map((post) => enrichPost(post, ctx.user?.openId)));
+        if (input?.category) conditions.push(eq(writingPosts.category, input.category));
+        if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
+
+        const limit = input?.limit ?? 10;
+        const posts = await db
+          .select()
+          .from(writingPosts)
+          .where(and(...conditions))
+          .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
+          .limit(limit)
+          .offset(input?.offset ?? 0);
+
+        // OPTIMIZED: batch enrich
+        const enriched = await enrichPostsBatch(posts, ctx.user?.openId);
         return { posts: enriched, hasMore: posts.length === limit };
       });
     }),
+
   searchPosts: publicProcedure
     .input(z.object({
       query: z.string().min(1).max(200),
@@ -195,23 +253,27 @@ export const writingPlatformRouter = router({
       return safeWritingRead("searchPosts", [], async () => {
         const db = await getWritingDb();
         if (!db) return [];
+
         const searchTerm = `%${input.query.trim()}%`;
-      const posts = await db
-        .select()
-        .from(writingPosts)
-        .where(and(
-          eq(writingPosts.status, "approved"),
-          or(
-            like(writingPosts.title, searchTerm),
-            like(writingPosts.content, searchTerm),
-            like(writingPosts.authorName, searchTerm)
-          )
-        ))
-        .orderBy(desc(writingPosts.createdAt))
-        .limit(input.limit);
-        return Promise.all(posts.map((post) => enrichPost(post, ctx.user?.openId)));
+        const posts = await db
+          .select()
+          .from(writingPosts)
+          .where(and(
+            eq(writingPosts.status, "approved"),
+            or(
+              like(writingPosts.title, searchTerm),
+              like(writingPosts.content, searchTerm),
+              like(writingPosts.authorName, searchTerm)
+            )
+          ))
+          .orderBy(desc(writingPosts.createdAt))
+          .limit(input.limit);
+
+        // OPTIMIZED: batch enrich
+        return enrichPostsBatch(posts, ctx.user?.openId);
       });
     }),
+
   getPostBySlug: publicProcedure
     .input(z.object({ slug: z.string().min(1).max(180) }))
     .query(async ({ ctx, input }) => {
@@ -220,32 +282,34 @@ export const writingPlatformRouter = router({
         if (!db) return null;
 
         const posts = await db
-        .select()
-        .from(writingPosts)
-        .where(eq(writingPosts.slug, input.slug))
-        .limit(1);
+          .select()
+          .from(writingPosts)
+          .where(eq(writingPosts.slug, input.slug))
+          .limit(1);
 
-      if (posts.length === 0) return null;
-      const post = posts[0];
-      const canView = post.status === "approved" || ctx.user?.role === "admin" || ctx.user?.openId === post.authorOpenId;
-      if (!canView) return null;
+        if (posts.length === 0) return null;
+        const post = posts[0];
+        const canView = post.status === "approved" || ctx.user?.role === "admin" || ctx.user?.openId === post.authorOpenId;
+        if (!canView) return null;
 
-      if (post.status === "approved") {
-        await db
-          .update(writingPosts)
-          .set({ viewCount: post.viewCount + 1 })
-          .where(eq(writingPosts.id, post.id));
-      }
-
-      const comments = await db
-        .select()
-        .from(writingComments)
-        .where(and(eq(writingComments.postId, post.id), eq(writingComments.status, "approved")))
-        .orderBy(writingComments.createdAt)
-        .limit(100);
+        // Increment view count and fetch comments in parallel
+        const [comments] = await Promise.all([
+          db
+            .select()
+            .from(writingComments)
+            .where(and(eq(writingComments.postId, post.id), eq(writingComments.status, "approved")))
+            .orderBy(writingComments.createdAt)
+            .limit(100),
+          post.status === "approved"
+            ? db.update(writingPosts).set({ viewCount: post.viewCount + 1 }).where(eq(writingPosts.id, post.id))
+            : Promise.resolve(),
+        ]);
 
         return {
-          post: await enrichPost({ ...post, viewCount: post.status === "approved" ? post.viewCount + 1 : post.viewCount }, ctx.user?.openId),
+          post: await enrichPost(
+            { ...post, viewCount: post.status === "approved" ? post.viewCount + 1 : post.viewCount },
+            ctx.user?.openId
+          ),
           comments,
         };
       });
@@ -256,14 +320,15 @@ export const writingPlatformRouter = router({
       const db = await getWritingDb();
       if (!db) return [];
 
-    const posts = await db
-      .select()
-      .from(writingPosts)
-      .where(eq(writingPosts.authorOpenId, ctx.user.openId))
-      .orderBy(desc(writingPosts.createdAt))
-      .limit(50);
+      const posts = await db
+        .select()
+        .from(writingPosts)
+        .where(eq(writingPosts.authorOpenId, ctx.user.openId))
+        .orderBy(desc(writingPosts.createdAt))
+        .limit(50);
 
-      return Promise.all(posts.map((post) => enrichPost(post, ctx.user.openId)));
+      // OPTIMIZED: batch enrich
+      return enrichPostsBatch(posts, ctx.user.openId);
     });
   }),
 
@@ -319,6 +384,7 @@ export const writingPlatformRouter = router({
     .mutation(async ({ ctx, input }) => {
       const db = await getWritingDb();
       if (!db) throw new Error("Database unavailable");
+
       const posts = await db
         .select()
         .from(writingPosts)
@@ -332,6 +398,7 @@ export const writingPlatformRouter = router({
       await db.delete(writingPosts).where(eq(writingPosts.id, input.postId));
       return { success: true };
     }),
+
   editPost: protectedProcedure
     .input(z.object({
       postId: z.number().int().positive(),
@@ -344,6 +411,7 @@ export const writingPlatformRouter = router({
     .mutation(async ({ ctx, input }) => {
       const db = await getWritingDb();
       if (!db) throw new Error("Database unavailable");
+
       const posts = await db
         .select()
         .from(writingPosts)
@@ -371,6 +439,7 @@ export const writingPlatformRouter = router({
       }).where(eq(writingPosts.id, input.postId));
       return { success: true };
     }),
+
   reactToPost: protectedProcedure
     .input(z.object({ postId: z.number().int().positive(), type: reactionTypeSchema }))
     .mutation(async ({ ctx, input }) => {
@@ -456,7 +525,8 @@ export const writingPlatformRouter = router({
           ? await query.orderBy(desc(writingPosts.createdAt)).limit(100)
           : await query.where(eq(writingPosts.status, status)).orderBy(desc(writingPosts.createdAt)).limit(100);
 
-        return Promise.all(posts.map((post) => enrichPost(post)));
+        // OPTIMIZED: batch enrich
+        return enrichPostsBatch(posts);
       });
     }),
 
