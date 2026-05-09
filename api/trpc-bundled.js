@@ -424,6 +424,12 @@ async function sendTelegramPostSubmitted(opts) {
 \u{1F194} *Post ID:* ${opts.postId}
 
 \u{1F449} \u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09AA\u09CD\u09AF\u09BE\u09A8\u09C7\u09B2\u09C7 \u0997\u09BF\u09AF\u09BC\u09C7 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u09AC\u09BE \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8\u0964`;
+  const inlineKeyboard = {
+    inline_keyboard: [[
+      { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_approve_${opts.postId}` },
+      { text: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `post_reject_${opts.postId}` }
+    ]]
+  };
   try {
     await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: "POST",
@@ -431,7 +437,8 @@ async function sendTelegramPostSubmitted(opts) {
       body: JSON.stringify({
         chat_id: ENV.telegramAdminChatId,
         text: text2,
-        parse_mode: "Markdown"
+        parse_mode: "Markdown",
+        reply_markup: inlineKeyboard
       })
     });
   } catch (err) {
@@ -480,6 +487,12 @@ async function sendTelegramCommentSubmitted(opts) {
 ${escapeMarkdown(preview)}
 
 \u{1F449} \u0985\u09CD\u09AF\u09BE\u09A1\u09AE\u09BF\u09A8 \u09AA\u09CD\u09AF\u09BE\u09A8\u09C7\u09B2\u09C7 \u0997\u09BF\u09AF\u09BC\u09C7 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u09AC\u09BE \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8\u0964`;
+  const inlineKeyboardComment = {
+    inline_keyboard: [[
+      { text: "\u2705 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `comment_approve_${opts.commentId}` },
+      { text: "\u274C \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C1\u09A8", callback_data: `comment_reject_${opts.commentId}` }
+    ]]
+  };
   try {
     await fetch(`${TELEGRAM_API}/sendMessage`, {
       method: "POST",
@@ -487,7 +500,8 @@ ${escapeMarkdown(preview)}
       body: JSON.stringify({
         chat_id: ENV.telegramAdminChatId,
         text: text2,
-        parse_mode: "Markdown"
+        parse_mode: "Markdown",
+        reply_markup: inlineKeyboardComment
       })
     });
   } catch (err) {
@@ -496,6 +510,97 @@ ${escapeMarkdown(preview)}
 }
 function escapeMarkdown(text2) {
   return text2.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
+}
+
+// ── Telegram callback_query handler (inline button presses) ──────────────────
+async function handleTelegramCallbackQuery(callbackQuery) {
+  const callbackQueryId = callbackQuery.id;
+  const data = callbackQuery.data || "";
+  const messageId = callbackQuery.message?.message_id;
+  const chatId = callbackQuery.message?.chat?.id;
+
+  async function answerCallback(text3) {
+    try {
+      await fetch(`${TELEGRAM_API}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callback_query_id: callbackQueryId, text: text3, show_alert: false })
+      });
+    } catch (e) { console.error("[Telegram] answerCallbackQuery error:", e); }
+  }
+
+  async function removeButtons() {
+    if (!chatId || !messageId) return;
+    try {
+      await fetch(`${TELEGRAM_API}/editMessageReplyMarkup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, message_id: messageId, reply_markup: { inline_keyboard: [] } })
+      });
+    } catch (e) { console.error("[Telegram] removeButtons error:", e); }
+  }
+
+  // ── Post moderation ──────────────────────────────────────────────────────
+  const postApproveMatch = data.match(/^post_approve_(\d+)$/);
+  const postRejectMatch = data.match(/^post_reject_(\d+)$/);
+  if (postApproveMatch || postRejectMatch) {
+    const postId = parseInt((postApproveMatch || postRejectMatch)[1], 10);
+    const newStatus = postApproveMatch ? "approved" : "rejected";
+    const label = postApproveMatch ? "\u2705 \u09AA\u09CB\u09B8\u09CD\u099F \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7" : "\u274C \u09AA\u09CB\u09B8\u09CD\u099F \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7";
+    try {
+      const db2 = await getDb();
+      await db2.update(writingPosts).set({ status: newStatus, updatedAt: new Date() }).where(eq(writingPosts.id, postId));
+      await answerCallback(label);
+      await removeButtons();
+    } catch (err) {
+      console.error("[Telegram] post moderation callback error:", err);
+      await answerCallback("\u26A0\uFE0F \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7");
+    }
+    return;
+  }
+
+  // ── Comment moderation ───────────────────────────────────────────────────
+  const commentApproveMatch = data.match(/^comment_approve_(\d+)$/);
+  const commentRejectMatch = data.match(/^comment_reject_(\d+)$/);
+  if (commentApproveMatch || commentRejectMatch) {
+    const commentId = parseInt((commentApproveMatch || commentRejectMatch)[1], 10);
+    const newStatus2 = commentApproveMatch ? "approved" : "rejected";
+    const label2 = commentApproveMatch ? "\u2705 \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7" : "\u274C \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A4 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7";
+    try {
+      const db2 = await getDb();
+      await db2.update(writingComments).set({ status: newStatus2, updatedAt: new Date() }).where(eq(writingComments.id, commentId));
+      await answerCallback(label2);
+      await removeButtons();
+    } catch (err) {
+      console.error("[Telegram] comment moderation callback error:", err);
+      await answerCallback("\u26A0\uFE0F \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7");
+    }
+    return;
+  }
+
+  await answerCallback("\u2753 \u0985\u099C\u09BE\u09A8\u09BE \u0995\u09AE\u09BE\u09A8\u09CD\u09A1");
+}
+
+// ── Telegram webhook request handler ────────────────────────────────────────
+async function handleTelegramWebhookRequest(req, res) {
+  if (req.method !== "POST") {
+    res.statusCode = 405;
+    res.end(JSON.stringify({ error: "Method not allowed" }));
+    return;
+  }
+  try {
+    const body = req.body || {};
+    if (body.callback_query) {
+      await handleTelegramCallbackQuery(body.callback_query);
+    }
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ ok: true }));
+  } catch (err) {
+    console.error("[Telegram webhook] error:", err);
+    res.statusCode = 200;
+    res.end(JSON.stringify({ ok: true }));
+  }
 }
 
 // server/liveChatRouter.ts
@@ -1332,6 +1437,13 @@ function sendFunctionError(res, error) {
   );
 }
 async function handler(req, res) {
+  // Handle telegram webhook requests routed here via vercel.json
+  const isTelegramWebhook = req.query?._telegram_webhook === "1" ||
+    (req.url && new URL(req.url, "https://local.invalid").searchParams.get("_telegram_webhook") === "1");
+  if (isTelegramWebhook) {
+    await handleTelegramWebhookRequest(req, res);
+    return;
+  }
   try {
     await nodeHTTPRequestHandler({
       router: appRouter,
