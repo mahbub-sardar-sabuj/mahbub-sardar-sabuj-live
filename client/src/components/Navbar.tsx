@@ -61,7 +61,13 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(() => {
+    try {
+      return localStorage.getItem("ai-banner-dismissed") !== "1";
+    } catch {
+      return true;
+    }
+  });
   const [logoHovered, setLogoHovered] = useState(false);
   const isEditorPage = location === "/editor";
   const isEBookReaderPage = location.startsWith("/ebooks/read/");
@@ -216,7 +222,10 @@ export default function Navbar() {
               </button>
               {/* Close banner */}
               <button
-                onClick={() => setShowBanner(false)}
+                onClick={() => {
+                  setShowBanner(false);
+                  try { localStorage.setItem("ai-banner-dismissed", "1"); } catch {}
+                }}
                 style={{
                   position: "absolute",
                   right: 10,
