@@ -119,7 +119,10 @@ export default async function handler(req, res) {
     // Save coverUrl to DB
     const db = await getDb();
     try {
+      // Ensure coverUrl column exists as LONGTEXT
       await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS coverUrl longtext").catch(() => {});
+      // Upgrade existing column to longtext if it was created as text/mediumtext
+      await db.execute("ALTER TABLE local_users MODIFY COLUMN coverUrl longtext").catch(() => {});
       await db.execute(
         "UPDATE local_users SET coverUrl = ?, updatedAt = NOW() WHERE openId = ?",
         [url, session.openId]

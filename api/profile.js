@@ -49,8 +49,16 @@ async function ensureProfileColumns(db) {
   await db.execute(
     "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext"
   ).catch(() => {});
+  // Upgrade avatarUrl to longtext if it was previously created as text/mediumtext
+  await db.execute(
+    "ALTER TABLE local_users MODIFY COLUMN avatarUrl longtext"
+  ).catch(() => {});
   await db.execute(
     "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS coverUrl longtext"
+  ).catch(() => {});
+  // Upgrade coverUrl to longtext if it was previously created as text/mediumtext
+  await db.execute(
+    "ALTER TABLE local_users MODIFY COLUMN coverUrl longtext"
   ).catch(() => {});
 }
 

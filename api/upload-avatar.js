@@ -125,9 +125,13 @@ export default async function handler(req, res) {
     // Save to DB
     const db = await getDb();
     try {
-      // Ensure column exists
+      // Ensure avatarUrl column exists as LONGTEXT (handles both add and upgrade from text)
       await db.execute(
         "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext"
+      ).catch(() => {});
+      // If column already existed as text/mediumtext, upgrade it to longtext
+      await db.execute(
+        "ALTER TABLE local_users MODIFY COLUMN avatarUrl longtext"
       ).catch(() => {});
       await db.execute(
         "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text"
