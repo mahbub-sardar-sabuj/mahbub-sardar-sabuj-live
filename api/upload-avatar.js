@@ -59,9 +59,7 @@ export default async function handler(req, res) {
   // Storage config check
   const FORGE_URL = process.env.BUILT_IN_FORGE_API_URL;
   const FORGE_KEY = process.env.BUILT_IN_FORGE_API_KEY;
-  if (!FORGE_URL || !FORGE_KEY) {
-    return res.status(500).json({ error: "Storage configuration missing" });
-  }
+  const USE_BASE64_FALLBACK = !FORGE_URL || !FORGE_KEY;
 
   // Parse multipart form
   const form = formidable({ maxFileSize: 5 * 1024 * 1024, uploadDir: "/tmp", keepExtensions: true });
@@ -69,7 +67,7 @@ export default async function handler(req, res) {
   try {
     [fields, files] = await form.parse(req);
   } catch (err) {
-    if (err.code === 1009) return res.status(400).json({ error: "ছবি আপলোড সমস্যা" });
+    if (err.code === 1009) return res.status(400).json({ error: "ছবির সাইজ সর্বোচ্চ ৫MB হতে হবে" });
     return res.status(400).json({ error: "ফাইল পার্স করতে সমস্যা হয়েছে" });
   }
 
@@ -77,35 +75,39 @@ export default async function handler(req, res) {
   if (!file) return res.status(400).json({ error: "ছবি দিন" });
   const mimeType = file.mimetype || "";
   if (!ALLOWED_TYPES.includes(mimeType)) {
+    try { fs.unlinkSync(file.filepath); } catch {}
     return res.status(400).json({ error: "শুধু JPG, PNG, GIF, WebP ছবি আপলোড করা যাবে" });
   }
 
   try {
     const fileBuffer = fs.readFileSync(file.filepath);
-    const ext = path.extname(file.originalFilename || file.newFilename || ".jpg") || ".jpg";
-    const key = `avatars/${session.openId}/${Date.now()}${ext}`;
+    let url = "";
 
-    // Upload to Manus storage proxy
-    const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
-    uploadUrl.searchParams.set("path", key);
-
-    const blob = new Blob([fileBuffer], { type: mimeType });
-    const formData = new FormData();
-    formData.append("file", blob, path.basename(key));
-
-    const uploadRes = await fetch(uploadUrl.toString(), {
-      method: "POST",
-      headers: { Authorization: `Bearer ${FORGE_KEY}` },
-      body: formData,
-    });
-
-    if (!uploadRes.ok) {
-      const msg = await uploadRes.text().catch(() => uploadRes.statusText);
-      console.error("[upload-avatar] Storage upload failed:", msg);
-      return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
+    if (USE_BASE64_FALLBACK) {
+      const base64 = fileBuffer.toString("base64");
+      url = `data:${mimeType};base64,${base64}`;
+    } else {
+      const ext = path.extname(file.originalFilename || file.newFilename || ".jpg") || ".jpg";
+      const key = `avatars/${session.openId}/${Date.now()}${ext}`;
+      // Upload to Manus storage proxy
+      const uploadUrl = new URL("v1/storage/upload", FORGE_URL.endsWith("/") ? FORGE_URL : FORGE_URL + "/");
+      uploadUrl.searchParams.set("path", key);
+      const blob = new Blob([fileBuffer], { type: mimeType });
+      const formData = new FormData();
+      formData.append("file", blob, path.basename(key));
+      const uploadRes = await fetch(uploadUrl.toString(), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${FORGE_KEY}` },
+        body: formData,
+      });
+      if (!uploadRes.ok) {
+        const msg = await uploadRes.text().catch(() => uploadRes.statusText);
+        console.error("[upload-avatar] Storage upload failed:", msg);
+        return res.status(500).json({ error: "ছবি আপলোড করতে সমস্যা হয়েছে" });
+      }
+      const data = await uploadRes.json();
+      url = data.url;
     }
-
-    const { url } = await uploadRes.json();
 
     // temp file মুছে ফেলা
     try { fs.unlinkSync(file.filepath); } catch {}
@@ -114,7 +116,7 @@ export default async function handler(req, res) {
     const db = await getDb();
     try {
       await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text").catch(() => {});
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl text").catch(() => {});
+      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext").catch(() => {});
 
       await db.execute(
         "UPDATE local_users SET avatarUrl = ?, updatedAt = NOW() WHERE openId = ?",

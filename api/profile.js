@@ -47,7 +47,7 @@ async function ensureProfileColumns(db) {
     "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text"
   ).catch(() => {});
   await db.execute(
-    "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl text"
+    "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext"
   ).catch(() => {});
 }
 
