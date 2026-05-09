@@ -6,7 +6,8 @@
   "outputDirectory": "dist/public",
   "functions": {
     "api/trpc-bundled.js": {
-      "memory": 1024
+      "memory": 1024,
+      "maxDuration": 30
     },
     "api/upload-image.js": {
       "memory": 512

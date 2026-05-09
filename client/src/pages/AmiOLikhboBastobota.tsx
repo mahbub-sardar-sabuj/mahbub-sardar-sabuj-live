@@ -1020,6 +1020,9 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
       utils.writingPlatform.myPosts.invalidate();
       setTimeout(() => onClose(), 2200);
     },
+    onError: (err) => {
+      console.error("[createPost error]", err);
+    },
   });
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1043,11 +1046,17 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim()) return;
+    // Allow posting with just caption OR just image
+    const hasCaption = content.trim().length > 0;
+    const hasImage = imageUrl.length > 0;
+    if (!hasCaption && !hasImage) return;
+    // If image is base64 (large), post without mediaUrl to avoid body size limit
+    // The image was already uploaded via /api/upload-image and URL stored in imageUrl
+    const finalContent = hasCaption ? content.trim() : " ";
     createPost.mutate({
       title: title.trim() || undefined,
       category: category !== "all" ? category : undefined,
-      content: content.trim(),
+      content: finalContent,
       mediaUrl: imageUrl || undefined,
       mediaType: imageUrl ? "image" : "none",
     });
@@ -1187,13 +1196,15 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
               </button>
               <div style={{ flex: 1 }} />
-              <ActionButton disabled={!content.trim() || createPost.isPending || uploading}>
+              <ActionButton disabled={(!content.trim() && !imageUrl) || createPost.isPending || uploading}>
                 {createPost.isPending ? <><RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite" }} /> পোস্ট হচ্ছে...</> : <><Send size={16} /> পোস্ট করুন</>}
               </ActionButton>
             </div>
 
             {createPost.isError && (
-              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>পোস্ট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।</div>
+              <div style={{ padding: "0.6rem 1rem", borderRadius: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.85rem" }}>
+                পোস্ট করতে সমস্যা হয়েছে। {createPost.error?.message && <span style={{opacity:0.75}}>({createPost.error.message})</span>} আবার চেষ্টা করুন।
+              </div>
             )}
           </form>
         )}

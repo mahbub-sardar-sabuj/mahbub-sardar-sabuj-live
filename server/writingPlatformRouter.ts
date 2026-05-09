@@ -253,7 +253,7 @@ export const writingPlatformRouter = router({
     .input(z.object({
       title: z.string().min(1).max(220).optional(),
       category: postCategorySchema.optional(),
-      content: z.string().min(1).max(600000),
+      content: z.string().max(600000).optional().default(""),
       mediaUrl: z.string().optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
     }))
@@ -263,8 +263,11 @@ export const writingPlatformRouter = router({
 
       const mediaUrl = input.mediaUrl?.trim() || null;
       const mediaType = mediaUrl ? input.mediaType : "none";
+      const contentText = input.content?.trim() || "";
+      // Require at least caption or image
+      if (!contentText && !mediaUrl) throw new Error("ক্যাপশন বা ছবি যোগ করুন");
       // Use provided title or auto-generate from first line of content
-      const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
+      const autoTitle = input.title?.trim() || contentText.split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
       const category = input.category ?? "thought";
 
       const insertResult = await db.insert(writingPosts).values({
@@ -273,7 +276,7 @@ export const writingPlatformRouter = router({
         authorName: normalizeAuthorName(ctx.user.name),
         title: autoTitle,
         category,
-        content: input.content.trim(),
+        content: contentText,
         mediaUrl,
         mediaType,
         status: "approved",
@@ -316,7 +319,7 @@ export const writingPlatformRouter = router({
       postId: z.number().int().positive(),
       title: z.string().min(1).max(220).optional(),
       category: postCategorySchema.optional(),
-      content: z.string().min(1).max(600000),
+      content: z.string().max(600000).optional().default(""),
       mediaUrl: z.string().optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
     }))
@@ -335,13 +338,15 @@ export const writingPlatformRouter = router({
       }
       const mediaUrl = input.mediaUrl?.trim() || null;
       const mediaType = mediaUrl ? input.mediaType : "none";
+      const contentText = input.content?.trim() || "";
+      if (!contentText && !mediaUrl) throw new Error("ক্যাপশন বা ছবি যোগ করুন");
       // Use provided title or auto-generate from first line of content
-      const autoTitle = input.title?.trim() || input.content.trim().split("\n")[0].slice(0, 80) || post.title;
+      const autoTitle = input.title?.trim() || contentText.split("\n")[0].slice(0, 80) || post.title;
       const category = input.category ?? post.category;
       await db.update(writingPosts).set({
         title: autoTitle,
         category,
-        content: input.content.trim(),
+        content: contentText,
         mediaUrl,
         mediaType,
         status: "approved",
