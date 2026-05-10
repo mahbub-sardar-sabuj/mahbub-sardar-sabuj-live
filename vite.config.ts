@@ -174,7 +174,8 @@ export default defineConfig({
     // Enable CSS code splitting for better caching
     cssCodeSplit: true,
     // Target modern browsers for smaller output
-    target: ["es2020", "chrome80", "firefox78", "safari14"],
+    // Updated: chrome90+ required for lucide-react destructuring syntax
+    target: ["es2022", "chrome90", "firefox90", "safari15"],
     rollupOptions: {
       output: {
         // Better asset naming for long-term caching
