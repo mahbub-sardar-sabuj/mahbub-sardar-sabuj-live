@@ -512,6 +512,27 @@ export const writingPlatformRouter = router({
       return { success: true };
     }),
 
+  // ── ফিড কার্ড থেকে ভিউ ট্র্যাক করা (লগইন করা ইউজারের জন্য) ──
+  incrementView: protectedProcedure
+    .input(z.object({ postId: z.number().int().positive() }))
+    .mutation(async ({ input }) => {
+      return safeWritingRead("incrementView", { success: false }, async () => {
+        const db = await getWritingDb();
+        if (!db) return { success: false };
+        const posts = await db
+          .select({ id: writingPosts.id, viewCount: writingPosts.viewCount })
+          .from(writingPosts)
+          .where(and(eq(writingPosts.id, input.postId), eq(writingPosts.status, "approved")))
+          .limit(1);
+        if (posts.length === 0) return { success: false };
+        await db
+          .update(writingPosts)
+          .set({ viewCount: posts[0].viewCount + 1 })
+          .where(eq(writingPosts.id, input.postId));
+        return { success: true };
+      });
+    }),
+
   adminListPosts: adminProcedure
     .input(z.object({ status: postStatusSchema.or(z.literal("all")).default("pending") }).optional())
     .query(async ({ input }) => {
@@ -576,6 +597,67 @@ export const writingPlatformRouter = router({
       }
 
       return { success: true };
+    }),
+
+  // ── সব পোস্টে র‍্যান্ডম ভিউ বুস্ট করা (Admin only) ──
+  adminBulkBoostViews: adminProcedure
+    .mutation(async () => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db
+        .select({ id: writingPosts.id })
+        .from(writingPosts)
+        .where(eq(writingPosts.status, "approved"));
+      if (posts.length === 0) return { success: true, updated: 0 };
+      // প্রতিটি পোস্টে আলাদা র‍্যান্ডম ভিউ সেট করা (3000–4000)
+      for (const post of posts) {
+        const randomView = Math.floor(Math.random() * 1001) + 3000; // 3000 to 4000
+        await db
+          .update(writingPosts)
+          .set({ viewCount: randomView })
+          .where(eq(writingPosts.id, post.id));
+      }
+      return { success: true, updated: posts.length };
+    }),
+
+  // ── সব পোস্টে র‍্যান্ডম লাইক বুস্ট করা (Admin only) ──
+  adminBulkBoostLikes: adminProcedure
+    .mutation(async () => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db
+        .select({ id: writingPosts.id })
+        .from(writingPosts)
+        .where(eq(writingPosts.status, "approved"));
+      if (posts.length === 0) return { success: true, updated: 0 };
+      const reactionTypes: Array<"like" | "love" | "inspiring" | "sad"> = ["like", "love", "inspiring", "sad"];
+      // প্রতিটি পোস্টের জন্য ফেক রিঅ্যাকশন ইনসার্ট করা
+      for (const post of posts) {
+        // আগের ফেক রিঅ্যাকশন মুছে দেওয়া (boost_ prefix দিয়ে চেনা যাবে)
+        await db
+          .delete(writingReactions)
+          .where(
+            and(
+              eq(writingReactions.postId, post.id),
+              like(writingReactions.userOpenId, "boost_%")
+            )
+          );
+        // র‍্যান্ডম সংখ্যক লাইক দেওয়া (3000–4000)
+        const totalLikes = Math.floor(Math.random() * 1001) + 3000;
+        const batchSize = 500;
+        let inserted = 0;
+        while (inserted < totalLikes) {
+          const batch = Math.min(batchSize, totalLikes - inserted);
+          const values = Array.from({ length: batch }, (_, i) => ({
+            postId: post.id,
+            userOpenId: `boost_${post.id}_${inserted + i}`,
+            type: reactionTypes[Math.floor(Math.random() * reactionTypes.length)],
+          }));
+          await db.insert(writingReactions).values(values);
+          inserted += batch;
+        }
+      }
+      return { success: true, updated: posts.length };
     }),
 
   adminListComments: adminProcedure
