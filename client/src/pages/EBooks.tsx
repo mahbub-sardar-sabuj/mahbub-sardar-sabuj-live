@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import { Link } from "wouter";
+import AdSenseAd from "@/components/AdSenseAd";
 
 const ebooks = [
   {
@@ -585,6 +586,10 @@ export default function EBooks() {
         <BookModal book={selectedBook} onClose={() => setSelectedBook(null)} />
       )}
 
+      {/* AdSense Ad — ই-বুক পেজের নিচে */}
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
+        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+      </div>
       <Footer />
     </div>
   );

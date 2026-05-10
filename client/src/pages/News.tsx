@@ -15,6 +15,7 @@ import Footer from "../components/Footer";
 import Seo from "../components/Seo";
 import { newsData as allNewsData } from "../data/newsData";
 import type { NewsItem } from "../data/newsData";
+import AdSenseAd from "@/components/AdSenseAd";
 interface Comment {
   id: number;
   name: string;
@@ -1216,6 +1217,10 @@ export default function News() {
         )}
       </AnimatePresence>
 
+      {/* AdSense Ad — সংবাদ পেজের নিচে */}
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
+        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+      </div>
       <Footer />
     </div>
   );

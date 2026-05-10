@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
+import AdSenseAd from "@/components/AdSenseAd";
 
 const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C97A";
@@ -526,6 +527,10 @@ export default function Contact() {
           </div>
         </section>
 
+        {/* AdSense Ad */}
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
+          <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+        </div>
         <Footer />
       </div>
     </>

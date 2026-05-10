@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
+import AdSenseAd from "@/components/AdSenseAd";
 
 const sectionStyle: React.CSSProperties = {
   maxWidth: 920,
@@ -14,6 +15,17 @@ const cardStyle: React.CSSProperties = {
   borderRadius: 20,
   padding: "2rem",
   boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+  marginBottom: "1.5rem",
+};
+
+const h2Style: React.CSSProperties = {
+  fontFamily: "'Noto Sans Bengali', sans-serif",
+  color: "#FDF6EC",
+  fontSize: "1.1rem",
+  marginBottom: 14,
+  marginTop: 28,
+  borderLeft: "3px solid #D4A843",
+  paddingLeft: 12,
 };
 
 const pStyle: React.CSSProperties = {
@@ -50,39 +62,53 @@ export default function PrivacyPolicy() {
 
           <article style={cardStyle}>
             <h2 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
-              কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬
+              কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬ | সর্বশেষ আপডেট: ১০ মে ২০২৬
             </h2>
 
             <p style={pStyle}>
-              Mahbub Sardar Sabuj-এর অফিসিয়াল ওয়েবসাইটে আপনাকে স্বাগতম। আপনার গোপনীয়তা আমাদের কাছে গুরুত্বপূর্ণ। এই Privacy Policy-তে ব্যাখ্যা করা হয়েছে যে, আপনি এই ওয়েবসাইট ব্যবহার করলে কী ধরনের তথ্য সংগ্রহ হতে পারে, কীভাবে তা ব্যবহার করা হয়, এবং analytics, embedded content, অথবা advertising services-এর মতো third-party tools ভবিষ্যতে কীভাবে যুক্ত হতে পারে।
+              Mahbub Sardar Sabuj-এর অফিসিয়াল ওয়েবসাইটে আপনাকে স্বাগতম। আপনার গোপনীয়তা আমাদের কাছে অত্যন্ত গুরুত্বপূর্ণ। এই Privacy Policy-তে ব্যাখ্যা করা হয়েছে যে, আপনি এই ওয়েবসাইট ব্যবহার করলে কী ধরনের তথ্য সংগ্রহ হতে পারে, কীভাবে তা ব্যবহার করা হয়, এবং analytics, embedded content, অথবা advertising services-এর মতো third-party tools কীভাবে যুক্ত হতে পারে।
             </p>
 
+            <h2 style={h2Style}>১. তথ্য সংগ্রহ</h2>
             <p style={pStyle}>
-              আপনি যখন এই ওয়েবসাইটে প্রবেশ করেন, তখন কিছু non-personal technical data স্বয়ংক্রিয়ভাবে লগ হতে পারে। এর মধ্যে browser type, device type, operating system, referral source, visited pages, visit duration, এবং IP-related technical information অন্তর্ভুক্ত থাকতে পারে। এই তথ্য website performance বোঝা, security maintain করা, এবং visitor experience উন্নত করার কাজে ব্যবহার করা হতে পারে।
+              আপনি যখন এই ওয়েবসাইটে প্রবেশ করেন, তখন কিছু non-personal technical data স্বয়ংক্রিয়ভাবে লগ হতে পারে। এর মধ্যে browser type, device type, operating system, referral source, visited pages, visit duration, এবং IP-related technical information অন্তর্ভুক্ত থাকতে পারে। এই তথ্য website performance বোঝা, security maintain করা, এবং visitor experience উন্নত করার কাজে ব্যবহার করা হতে পারে।
+            </p>
+            <p style={pStyle}>
+              আপনি যদি ইমেইল, যোগাযোগ ফর্ম, social platform, বা অন্য কোনো মাধ্যমে লেখকের সঙ্গে যোগাযোগ করেন, তাহলে আপনার প্রদত্ত নাম, ইমেইল ঠিকানা, এবং বার্তার বিষয়বস্তু সংরক্ষিত হতে পারে। এই তথ্য শুধুমাত্র যোগাযোগের জবাব দেওয়া, প্রয়োজনীয় উত্তর পাঠানো, অথবা সম্পর্কিত অনুরোধ মূল্যায়নের জন্য ব্যবহার করা হবে। আপনার তথ্য অনুমতি ছাড়া তৃতীয় পক্ষের কাছে বিক্রি বা হস্তান্তর করা হবে না।
             </p>
 
+            <h2 style={h2Style}>২. Google AdSense বিজ্ঞাপন</h2>
             <p style={pStyle}>
-              আপনি যদি ইমেইল, যোগাযোগ ফর্ম, social platform, বা অন্য কোনো মাধ্যমে লেখকের সঙ্গে যোগাযোগ করেন, তাহলে আপনার প্রদত্ত নাম, ইমেইল ঠিকানা, এবং বার্তার বিষয়বস্তু সংরক্ষিত হতে পারে। এই তথ্য শুধুমাত্র যোগাযোগের জবাব দেওয়া, প্রয়োজনীয় উত্তর পাঠানো, অথবা সম্পর্কিত অনুরোধ মূল্যায়নের জন্য ব্যবহার করা হবে। আপনার তথ্য অনুমতি ছাড়া বিক্রি করা হবে না।
+              এই ওয়েবসাইটে <strong style={{ color: "#D4A843" }}>Google AdSense</strong> ব্যবহার করা হয়। Google AdSense হলো Google LLC-এর একটি বিজ্ঞাপন পরিষেবা যা ওয়েবসাইটে প্রাসঙ্গিক বিজ্ঞাপন প্রদর্শন করে। Publisher ID: <strong style={{ color: "#D4A843" }}>ca-pub-3350204114310360</strong>
+            </p>
+            <p style={pStyle}>
+              Google AdSense ব্যবহারের ফলে Google এবং তার বিজ্ঞাপন অংশীদাররা আপনার ব্রাউজারে cookies সেট করতে পারে। আপনার পূর্ববর্তী ব্রাউজিং কার্যকলাপের উপর ভিত্তি করে personalized বিজ্ঞাপন দেখানো হতে পারে। Google DoubleClick cookie ব্যবহার করে বিজ্ঞাপনের কার্যকারিতা পরিমাপ করতে পারে এবং আপনার IP address, browser information, ও device identifier সংগ্রহ করা হতে পারে।
+            </p>
+            <p style={pStyle}>
+              আপনি Google-এর বিজ্ঞাপন সেটিংস পরিবর্তন করতে পারেন:{" "}
+              <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" style={{ color: "#D4A843" }}>google.com/settings/ads</a>।
+              Google-এর Privacy Policy:{" "}
+              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#D4A843" }}>policies.google.com/privacy</a>
             </p>
 
+            <h2 style={h2Style}>৩. Cookies নীতি</h2>
             <p style={pStyle}>
-              এই ওয়েবসাইটে ভবিষ্যতে Google AdSense বা অন্য advertising partner ব্যবহার করা হলে, third-party vendors cookies, web beacons, IP addresses, বা অনুরূপ identifiers ব্যবহার করতে পারে, যাতে visitor behavior অনুযায়ী বিজ্ঞাপন প্রদর্শন, ad measurement, এবং performance analysis করা যায়। Google এবং তার partners আপনার browser-এ cookies সেট করতে পারে বা বিদ্যমান cookies পড়তে পারে, যাতে personalized বা non-personalized ads পরিবেশন করা যায়।
+              Cookies হলো ছোট data files, যা আপনার browser-এ সংরক্ষিত হয়। এই ওয়েবসাইটে প্রয়োজনীয় Cookies (মূল কার্যকারিতার জন্য), Analytics Cookies (Vercel Analytics), এবং বিজ্ঞাপন Cookies (Google AdSense) ব্যবহার করা হতে পারে। আপনি চাইলে আপনার browser settings থেকে cookies disable, restrict, বা delete করতে পারেন।
             </p>
 
+            <h2 style={h2Style}>৪. তৃতীয় পক্ষের সেবা</h2>
             <p style={pStyle}>
-              Cookies হলো ছোট data files, যা আপনার browser-এ সংরক্ষিত হয়। এগুলো user preferences মনে রাখা, analytics বোঝা, এবং advertisement delivery বা measurement উন্নত করার জন্য ব্যবহৃত হতে পারে। আপনি চাইলে আপনার browser settings থেকে cookies disable, restrict, বা delete করতে পারেন। তবে এতে website-এর কিছু feature বা experience সীমিত হতে পারে।
+              এই ওয়েবসাইটে Google AdSense (বিজ্ঞাপন), Vercel Analytics (পারফরম্যান্স বিশ্লেষণ), Google Fonts (ফন্ট), এবং YouTube Embeds (ভিডিও কন্টেন্ট) ব্যবহার করা হয়। External links-এ প্রবেশ করলে সংশ্লিষ্ট সাইটের নিজস্ব privacy policy প্রযোজ্য হবে।
             </p>
 
+            <h2 style={h2Style}>৫. শিশুদের গোপনীয়তা</h2>
             <p style={pStyle}>
-              এই ওয়েবসাইটে external links থাকতে পারে, যেমন social media profiles, online bookstores, video platforms, বা অন্য third-party websites। আপনি যখন এসব external service-এ প্রবেশ করবেন, তখন তাদের নিজস্ব privacy policy ও terms প্রযোজ্য হবে। তাই external website ব্যবহারের আগে সংশ্লিষ্ট policy পড়ে নেওয়া আপনার দায়িত্ব।
+              এই ওয়েবসাইট ১৩ বছরের কম বয়সী শিশুদের কাছ থেকে ইচ্ছাকৃতভাবে কোনো ব্যক্তিগত তথ্য সংগ্রহ করে না।
             </p>
 
+            <h2 style={h2Style}>৬. তথ্যের নিরাপত্তা ও নীতি পরিবর্তন</h2>
             <p style={pStyle}>
-              আমরা website security বজায় রাখতে যুক্তিসঙ্গত প্রযুক্তিগত ও প্রশাসনিক ব্যবস্থা অনুসরণ করার চেষ্টা করি। তবে internet-based transmission বা digital storage কোনো ক্ষেত্রেই শতভাগ নিরাপদ নয়। তাই ব্যবহারকারীদের অনুরোধ করা হচ্ছে যে, সংবেদনশীল ব্যক্তিগত তথ্য শেয়ার করার ক্ষেত্রে নিজ দায়িত্বে সতর্ক থাকুন।
-            </p>
-
-            <p style={pStyle}>
-              এই Privacy Policy সময় সময় পরিবর্তন করা হতে পারে। ভবিষ্যতে policy update হলে revised version এই পেজে প্রকাশ করা হবে। updated policy প্রকাশের পর তা কার্যকর বলে বিবেচিত হবে।
+              আমরা website security বজায় রাখতে যুক্তিসঙ্গত প্রযুক্তিগত ও প্রশাসনিক ব্যবস্থা অনুসরণ করার চেষ্টা করি। এই Privacy Policy সময় সময় পরিবর্তন করা হতে পারে। ভবিষ্যতে policy update হলে revised version এই পেজে প্রকাশ করা হবে।
             </p>
 
             <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid rgba(212,168,67,0.16)" }}>
@@ -94,9 +120,12 @@ export default function PrivacyPolicy() {
               <p style={{ ...pStyle, marginBottom: 0 }}><strong>ওয়েবসাইট:</strong> https://www.mahbubsardarsabuj.com/</p>
             </div>
           </article>
-        </section>
+         </section>
+        {/* AdSense Ad */}
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
+          <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+        </div>
       </main>
-
       <Footer />
     </div>
   );

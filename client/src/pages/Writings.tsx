@@ -8,6 +8,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo, { SITE_URL } from "@/components/Seo";
+import AdSenseAd from "@/components/AdSenseAd";
 import type { Writing } from "@/data/writingsArchive";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
@@ -2275,6 +2276,10 @@ export default function Writings() {
         </div>
       </div>
 
+      {/* AdSense Ad — লেখালেখি পেজের নিচে */}
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
+        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+      </div>
       <Footer/>
 
       <AnimatePresence>
