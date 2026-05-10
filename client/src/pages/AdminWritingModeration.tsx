@@ -2,7 +2,7 @@
  * AdminWritingModeration — Admin panel for moderating writing platform posts & comments
  * Route: /admin/writing (protected, admin only)
  */
-import React, { useState } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
@@ -85,24 +85,6 @@ export default function AdminWritingModeration() {
 
   const updateComment = trpc.writingPlatform.adminUpdateComment.useMutation({
     onSuccess: () => refetchComments(),
-  });
-
-  const [boostStatus, setBoostStatus] = React.useState<string>("");
-  const bulkBoostViews = trpc.writingPlatform.adminBulkBoostViews.useMutation({
-    onSuccess: (data: { updated: number }) => {
-      setBoostStatus(`✅ ${data.updated}টি পোস্টে ভিউ বুস্ট সম্পন্ন!`);
-      refetchPosts();
-      setTimeout(() => setBoostStatus(""), 5000);
-    },
-    onError: () => setBoostStatus("❌ ভিউ বুস্ট ব্যর্থ হয়েছে।"),
-  });
-  const bulkBoostLikes = trpc.writingPlatform.adminBulkBoostLikes.useMutation({
-    onSuccess: (data: { updated: number }) => {
-      setBoostStatus(`✅ ${data.updated}টি পোস্টে লাইক বুস্ট সম্পন্ন!`);
-      refetchPosts();
-      setTimeout(() => setBoostStatus(""), 5000);
-    },
-    onError: () => setBoostStatus("❌ লাইক বুস্ট ব্যর্থ হয়েছে।"),
   });
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -194,42 +176,6 @@ export default function AdminWritingModeration() {
           <p style={{ color: "#94a3b8", marginTop: 6, fontSize: 14 }}>
             ব্যবহারকারীদের জমা দেওয়া লেখা ও মন্তব্য পর্যালোচনা করুন
           </p>
-          {/* Bulk Boost Buttons */}
-          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
-            <button
-              style={{
-                padding: "8px 18px", borderRadius: 10, border: "1px solid rgba(96,165,250,0.5)",
-                background: "rgba(96,165,250,0.12)", color: "#93C5FD",
-                fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6,
-                opacity: bulkBoostViews.isPending ? 0.6 : 1,
-              }}
-              onClick={() => bulkBoostViews.mutate()}
-              disabled={bulkBoostViews.isPending || bulkBoostLikes.isPending}
-            >
-              {bulkBoostViews.isPending ? <RefreshCw size={13} style={{ animation: "spin 0.8s linear infinite" }} /> : <Eye size={13} />}
-              সব পোস্টে ভিউ বুস্ট (৩০০০–৪০০০)
-            </button>
-            <button
-              style={{
-                padding: "8px 18px", borderRadius: 10, border: "1px solid rgba(244,114,182,0.5)",
-                background: "rgba(244,114,182,0.12)", color: "#F9A8D4",
-                fontFamily: FONT, fontSize: 13, fontWeight: 700, cursor: "pointer",
-                display: "flex", alignItems: "center", gap: 6,
-                opacity: bulkBoostLikes.isPending ? 0.6 : 1,
-              }}
-              onClick={() => bulkBoostLikes.mutate()}
-              disabled={bulkBoostViews.isPending || bulkBoostLikes.isPending}
-            >
-              {bulkBoostLikes.isPending ? <RefreshCw size={13} style={{ animation: "spin 0.8s linear infinite" }} /> : <Star size={13} />}
-              সব পোস্টে লাইক বুস্ট (৩০০০–৪০০০)
-            </button>
-            {boostStatus && (
-              <span style={{ fontSize: 13, color: boostStatus.startsWith("✅") ? "#4ade80" : "#f87171", fontFamily: FONT }}>
-                {boostStatus}
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Tabs */}

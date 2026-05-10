@@ -15295,46 +15295,6 @@ var writingPlatformRouter = router({
     if (!db) throw new Error("Database unavailable");
     await db.update(writingComments).set({ status: input.status }).where(eq3(writingComments.id, input.commentId));
     return { success: true };
-  }),
-  adminRemoveBySlug: adminProcedure.input(external_exports.object({ slug: external_exports.string().min(1).max(180) })).mutation(async ({ input }) => {
-    const db = await getWritingDb();
-    if (!db) throw new Error("Database unavailable");
-    const posts = await db.select({ id: writingPosts.id, title: writingPosts.title, authorName: writingPosts.authorName }).from(writingPosts).where(eq3(writingPosts.slug, input.slug)).limit(1);
-    if (posts.length === 0) throw new Error("Post not found");
-    await db.update(writingPosts).set({ status: "removed" }).where(eq3(writingPosts.id, posts[0].id));
-    sendTelegramPostModerated({ postId: posts[0].id, title: posts[0].title, authorName: posts[0].authorName, action: "removed" }).catch(() => {});
-    return { success: true, postId: posts[0].id, title: posts[0].title };
-  }),
-  adminBulkBoostViews: adminProcedure.mutation(async () => {
-    const db = await getWritingDb();
-    if (!db) throw new Error("Database unavailable");
-    const posts2 = await db.select({ id: writingPosts.id }).from(writingPosts).where(eq3(writingPosts.status, "approved"));
-    if (posts2.length === 0) return { success: true, updated: 0 };
-    for (const post of posts2) {
-      const randomView = Math.floor(Math.random() * 1001) + 3000;
-      await db.update(writingPosts).set({ viewCount: randomView }).where(eq3(writingPosts.id, post.id));
-    }
-    return { success: true, updated: posts2.length };
-  }),
-  adminBulkBoostLikes: adminProcedure.mutation(async () => {
-    const db = await getWritingDb();
-    if (!db) throw new Error("Database unavailable");
-    const posts3 = await db.select({ id: writingPosts.id }).from(writingPosts).where(eq3(writingPosts.status, "approved"));
-    if (posts3.length === 0) return { success: true, updated: 0 };
-    const reactionTypes = ["like", "love", "inspiring", "sad"];
-    for (const post of posts3) {
-      await db.delete(writingReactions).where(and2(eq3(writingReactions.postId, post.id), like(writingReactions.userOpenId, "boost_%")));
-      const totalLikes = Math.floor(Math.random() * 1001) + 3000;
-      const batchSize = 500;
-      let inserted = 0;
-      while (inserted < totalLikes) {
-        const batch = Math.min(batchSize, totalLikes - inserted);
-        const values = Array.from({ length: batch }, (_, i) => ({ postId: post.id, userOpenId: `boost_${post.id}_${inserted + i}`, type: reactionTypes[Math.floor(Math.random() * reactionTypes.length)] }));
-        await db.insert(writingReactions).values(values);
-        inserted += batch;
-      }
-    }
-    return { success: true, updated: posts3.length };
   })
 });
 export {
