@@ -600,6 +600,31 @@ export const writingPlatformRouter = router({
     }),
 
   // ── সব পোস্টে র‍্যান্ডম ভিউ বুস্ট করা (Admin only) ──
+  // ── slug দিয়ে পোস্ট রিমুভ করা (Admin only) ──
+  adminRemoveBySlug: adminProcedure
+    .input(z.object({ slug: z.string().min(1).max(180) }))
+    .mutation(async ({ input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db
+        .select({ id: writingPosts.id, title: writingPosts.title, authorName: writingPosts.authorName })
+        .from(writingPosts)
+        .where(eq(writingPosts.slug, input.slug))
+        .limit(1);
+      if (posts.length === 0) throw new Error("Post not found");
+      await db
+        .update(writingPosts)
+        .set({ status: "removed" })
+        .where(eq(writingPosts.id, posts[0].id));
+      sendTelegramPostModerated({
+        postId: posts[0].id,
+        title: posts[0].title,
+        authorName: posts[0].authorName,
+        action: "removed",
+      }).catch(() => {});
+      return { success: true, postId: posts[0].id, title: posts[0].title };
+    }),
+
   adminBulkBoostViews: adminProcedure
     .mutation(async () => {
       const db = await getWritingDb();
