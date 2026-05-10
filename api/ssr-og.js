@@ -5282,7 +5282,7 @@ export default async function handler(req) {
     // For bots, redirect to the DB-powered SSR endpoint
     return new Response("", {
       status: 302,
-      headers: { "Location":  },
+      headers: { "Location": `${SITE_URL}/api/amio-post-seo?slug=${postSlug}` },
     });
   } else if (path === "/amio-likhbo-bastobota") {
     title = "আমিও লিখবো বাস্তবতা | মাহবুব সরদার সবুজ";
