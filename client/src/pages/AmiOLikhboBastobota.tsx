@@ -1054,7 +1054,7 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const res = await fetch("/api/upload-image", { method: "POST", body: formData });
+      const res = await fetch("/api/upload?type=image", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "আপলোড ব্যর্থ");
       setImageUrl(data.url);
@@ -1072,7 +1072,7 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
     const hasImage = imageUrl.length > 0;
     if (!hasCaption && !hasImage) return;
     // If image is base64 (large), post without mediaUrl to avoid body size limit
-    // The image was already uploaded via /api/upload-image and URL stored in imageUrl
+    // The image was already uploaded via /api/upload?type=image and URL stored in imageUrl
     const finalContent = hasCaption ? content.trim() : " ";
     createPost.mutate({
       title: title.trim() || undefined,
@@ -1324,7 +1324,7 @@ function EditPostModal({ post, onClose, authorName, avatarUrl }: { post: Enriche
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const res = await fetch("/api/upload-image", { method: "POST", body: formData });
+      const res = await fetch("/api/upload?type=image", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "আপলোড ব্যর্থ");
       setImageUrl(data.url);

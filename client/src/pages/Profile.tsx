@@ -187,7 +187,7 @@ export default function Profile() {
     try {
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await fetch("/api/upload-avatar", { method: "POST", credentials: "include", body: formData });
+      const res = await fetch("/api/upload?type=avatar", { method: "POST", credentials: "include", body: formData });
       const data = await res.json();
       if (data.error) { setAvatarError(data.error); return; }
       setProfile((prev) => prev ? { ...prev, avatarUrl: data.avatarUrl } : prev);
@@ -202,7 +202,7 @@ export default function Profile() {
     try {
       const formData = new FormData();
       formData.append("cover", file);
-      const res = await fetch("/api/upload-cover", { method: "POST", credentials: "include", body: formData });
+      const res = await fetch("/api/upload?type=cover", { method: "POST", credentials: "include", body: formData });
       const data = await res.json();
       if (data.error) { setCoverError(data.error); return; }
       setProfile((prev) => prev ? { ...prev, coverUrl: data.coverUrl } : prev);

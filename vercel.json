@@ -9,13 +9,7 @@
       "memory": 1024,
       "maxDuration": 30
     },
-    "api/upload-image.js": {
-      "memory": 512
-    },
-    "api/upload-avatar.js": {
-      "memory": 512
-    },
-    "api/upload-cover.js": {
+    "api/upload.js": {
       "memory": 512
     },
     "api/profile.js": {
