@@ -1,6 +1,6 @@
 export const config = { runtime: "edge" };
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
-const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
+const DEFAULT_IMAGE = `${SITE_URL}/images/og-home.jpg`;
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 const NEWS_PUBLISHER_NAME = "সরদার সংবাদ | Sardar Sangbad";
 const NEWS_PUBLISHER_LOGO = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;

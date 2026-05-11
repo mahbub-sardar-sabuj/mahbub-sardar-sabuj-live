@@ -281,7 +281,7 @@ export default function About() {
                 }}
                 className="hero-floating-card"
               >
-                <img src={BOOK_COVER} alt="বই" style={{ width: 36, height: 50, objectFit: "cover", borderRadius: 4 }} loading="lazy" decoding="async" />
+                <img src={BOOK_COVER} alt="আমি বিচ্ছেদকে বলি দুঃখবিলাস - মাহবুব সরদার সবুজের প্রথম বই" style={{ width: 36, height: 50, objectFit: "cover", borderRadius: 4 }} loading="lazy" decoding="async" />
                 <div>
                   <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#C9A84C", marginBottom: 3 }}>সর্বশেষ বই</div>
                   <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "#FAF6EF", fontWeight: 600, maxWidth: 110, lineHeight: 1.4 }}>দুঃখবিলাস</div>

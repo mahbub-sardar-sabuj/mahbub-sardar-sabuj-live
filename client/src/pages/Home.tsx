@@ -465,6 +465,7 @@ export default function Home() {
         <motion.div
           animate={{ x: [0, -1400] }}
           transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+          aria-hidden="true"
           style={{ display: "flex", gap: "5rem", whiteSpace: "nowrap", width: "max-content" }}
         >
           {[...Array(5)].map((_, i) => (

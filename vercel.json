@@ -80,6 +80,10 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/ads.txt",
+      "dest": "/ads.txt"
+    },
+    {
       "src": "/sitemap.xml",
       "dest": "/sitemap.xml"
     },
