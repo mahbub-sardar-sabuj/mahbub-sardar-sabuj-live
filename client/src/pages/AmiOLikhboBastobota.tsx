@@ -32,6 +32,7 @@ import {
 import { useRoute, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
+import AdSenseAd from "@/components/AdSenseAd";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl, getSignupUrl, isLoginConfigured } from "@/const";
 import LocalAuthModal from "@/components/LocalAuthModal";
@@ -2313,6 +2314,10 @@ export default function AmiOLikhboBastobota() {
             </>
           )}
         </div>
+      {/* AdSense Ad */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem" }}>
+        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+      </div>
       </main>
 
       {/* ── Create post modal ── */}

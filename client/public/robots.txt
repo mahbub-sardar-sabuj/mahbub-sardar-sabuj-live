@@ -4,6 +4,17 @@ Allow: /api/amio-post-seo
 Allow: /api/amio-sitemap
 Disallow: /api/
 Disallow: /.env
+Disallow: /admin/
+
+# Google AdSense crawlers — must be allowed for monetization
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
 
 # Sitemap location
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml

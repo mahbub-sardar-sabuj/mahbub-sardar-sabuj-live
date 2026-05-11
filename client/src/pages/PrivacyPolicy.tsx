@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
 
           <article style={cardStyle}>
             <h2 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
-              কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬ | সর্বশেষ আপডেট: ১০ মে ২০২৬
+              কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬ | সর্বশেষ আপডেট: ১১ মে ২০২৬
             </h2>
 
             <p style={pStyle}>

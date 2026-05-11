@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 interface AdSenseAdProps {
-  adSlot: string;
+  adSlot?: string;
   adFormat?: "auto" | "rectangle" | "vertical" | "horizontal";
   fullWidthResponsive?: boolean;
   style?: React.CSSProperties;
@@ -17,9 +17,12 @@ declare global {
 /**
  * AdSense Ad Unit Component
  * Publisher ID: ca-pub-3350204114310360
+ *
+ * যদি adSlot না দেওয়া হয়, Auto Ads মোডে কাজ করবে।
+ * AdSense অনুমোদনের পরে নির্দিষ্ট adSlot ID দিন।
  */
 export default function AdSenseAd({
-  adSlot,
+  adSlot = "",
   adFormat = "auto",
   fullWidthResponsive = true,
   style = {},
@@ -39,7 +42,7 @@ export default function AdSenseAd({
     } catch (e) {
       console.error("AdSense error:", e);
     }
-  }, []);
+  }, [adSlot]);
 
   return (
     <div
@@ -48,6 +51,7 @@ export default function AdSenseAd({
         display: "block",
         textAlign: "center",
         overflow: "hidden",
+        minHeight: 90,
         ...style,
       }}
     >

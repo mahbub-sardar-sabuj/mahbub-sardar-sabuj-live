@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
+import AdSenseAd from "@/components/AdSenseAd";
 
 const sectionStyle: React.CSSProperties = {
   maxWidth: 920,
@@ -82,6 +83,10 @@ export default function Terms() {
             </p>
           </article>
         </section>
+        {/* AdSense Ad */}
+        <div style={{ maxWidth: 920, margin: "0 auto", padding: "1.5rem 1rem" }}>
+          <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+        </div>
       </main>
 
       <Footer />

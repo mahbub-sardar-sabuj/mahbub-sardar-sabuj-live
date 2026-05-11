@@ -8,6 +8,7 @@ import { X, ChevronLeft, ChevronRight, Images, ZoomIn, Copy, Check, Share2 } fro
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
+import AdSenseAd from "@/components/AdSenseAd";
 import { useLocation } from "wouter";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
@@ -380,6 +381,10 @@ export default function Gallery() {
         )}
       </AnimatePresence>
 
+      {/* AdSense Ad */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem" }}>
+        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+      </div>
       <Footer />
 
       <style>{`

@@ -153,6 +153,10 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com"
         }
       ]
     },
