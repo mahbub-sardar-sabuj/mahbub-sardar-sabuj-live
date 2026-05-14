@@ -2026,6 +2026,55 @@ export default function AIChatbot() {
   }, []);
 
   // ── Send message ────────────────────────────────────────────────────────────────
+  // handleSendWithText: suggestion chip থেকে সরাসরি text পাঠানোর জন্য
+  // setInput + setTimeout এর race condition এড়াতে এই ফাংশন ব্যবহার করা হয়
+  const handleSendWithText = useCallback(async (chipText: string) => {
+    if (!chipText.trim() || isLoading) return;
+    const userMsg: Message = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content: chipText.trim(),
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+    setError(null);
+    const userContent: AIMessageContent = chipText.trim();
+    const cleanHistory = messages
+      .filter(m => m.role === "user" || m.role === "assistant")
+      .filter(m => {
+        const c = typeof m.content === "string" ? m.content : "";
+        if (c.startsWith("[PHOTO]") || c === "[CONTACT]" || c.startsWith("[LIVE_CHAT]")) return false;
+        if (m.audioUrl) return false;
+        return true;
+      })
+      .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
+    const payload = [...cleanHistory, { role: "user" as const, content: userContent }];
+    retryPayloadRef.current = payload;
+    try {
+      const reply = await callAI(payload);
+      setMessages(prev => [...prev, {
+        id: `ai-${Date.now()}`,
+        role: "assistant",
+        content: reply,
+        timestamp: new Date(),
+      }]);
+    } catch (err: any) {
+      const isTimeout = err?.name === "AbortError" || err?.message?.includes("timeout");
+      const isNetwork = err?.message?.includes("fetch") || err?.message?.includes("network");
+      if (isTimeout) {
+        setError("উত্তর পেতে বেশি সময় লাগছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      } else if (isNetwork) {
+        setError("ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।");
+      } else {
+        setError("সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, messages]);
+
   const handleSend = useCallback(async () => {
     // Case 1: Audio file already selected + any text = run edit immediately
     if (audioFile) {
@@ -2731,8 +2780,7 @@ export default function AIChatbot() {
                       <button
                         key={chip.label}
                         onClick={() => {
-                          setInput(chip.cmd);
-                          setTimeout(() => handleSend(), 120);
+                          handleSendWithText(chip.cmd);
                         }}
                         className="chatbot-suggestion-btn"
                         style={{
@@ -3016,8 +3064,7 @@ export default function AIChatbot() {
                         <button
                           key={preset.label}
                           onClick={() => {
-                            setInput(preset.cmd);
-                            setTimeout(() => handleSend(), 120);
+                            handleSendWithText(preset.cmd);
                           }}
                           className="chatbot-suggestion-btn"
                           style={{
