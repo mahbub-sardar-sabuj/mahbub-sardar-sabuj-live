@@ -361,7 +361,7 @@ export default function About() {
                 {[
                   { icon: MapPin, label: "জন্মস্থান", value: "আরিফপুর, বরুড়া, কুমিল্লা" },
                   { icon: Globe, label: "বর্তমান অবস্থান", value: "সৌদি আরব" },
-                  { icon: PenLine, label: "লেখালেখির শুরু", value: "২০১৫ সাল থেকে" },
+                  
                   { icon: BookOpen, label: "প্রকাশিত বই", value: "৫টি (৪টি ই-বুক + ১টি মুদ্রিত)" },
                   { icon: Calendar, label: "প্রথম মুদ্রিত বই", value: "২০২৬ — দুঃখবিলাস" },
                 ].map((item, i) => {
