@@ -65,7 +65,10 @@ async function callAI(
     }
 
     const data = await res.json();
-    return data.reply || "দুঃখিত, উত্তর দিতে পারছি না।";
+    // FIX: Handle fallback:true response gracefully — server returned a built-in reply
+    // This is a valid 200 response, not an error. Return it directly without retrying.
+    if (data.reply) return data.reply;
+    return "দুঃখিত, উত্তর দিতে পারছি না।";
 
   } catch (err: any) {
     clearTimeout(timeoutId);

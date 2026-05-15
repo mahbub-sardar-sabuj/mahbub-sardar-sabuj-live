@@ -128,26 +128,16 @@ import {
 } from "./_utils/security.js";
 
 // ── AI provider configuration ──────────────────────────────────────────────
+// Provider priority order:
+//   1. Forge (built-in, always available, no quota issues) — HIGHEST PRIORITY
+//   2. OpenAI (if OPENAI_API_KEY is set)
+//   3. Gemini (if GEMINI_API_KEY is set) — LAST RESORT (has free-tier quota limits)
+//
+// This order ensures Gemini 429 quota errors are only hit if all other providers fail.
 function resolveAiConfigs() {
   const configs = [];
 
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
-  if (openaiKey) {
-    const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
-    const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
-    configs.push({ source: "openai", apiKey: openaiKey, endpoint: `${baseUrl}/chat/completions`, model });
-  }
-
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  if (geminiKey) {
-    configs.push({
-      source: "gemini",
-      apiKey: geminiKey,
-      endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-      model: process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash",
-    });
-  }
-
+  // 1. Forge API — highest priority (built-in, no quota issues)
   const forgeKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
   if (forgeKey && forgeUrl) {
@@ -156,6 +146,29 @@ function resolveAiConfigs() {
       apiKey: forgeKey,
       endpoint: `${forgeUrl.replace(/\/$/, "")}/v1/chat/completions`,
       model: "gemini-2.5-flash",
+      skipOn429: false, // Forge should not hit 429
+    });
+  }
+
+  // 2. OpenAI-compatible API (second priority)
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  if (openaiKey) {
+    const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
+    const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+    configs.push({ source: "openai", apiKey: openaiKey, endpoint: `${baseUrl}/chat/completions`, model, skipOn429: false });
+  }
+
+  // 3. Gemini direct API — last resort (free tier has strict quota)
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  if (geminiKey) {
+    // Try flash-lite first (higher free quota), then fall back to flash
+    const primaryModel = process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash-lite";
+    configs.push({
+      source: "gemini",
+      apiKey: geminiKey,
+      endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      model: primaryModel,
+      skipOn429: true, // If quota exceeded, skip immediately to fallback reply
     });
   }
 
@@ -194,8 +207,18 @@ function extractUserText(messages = []) {
   return String(lastUserMsg.content || "").trim();
 }
 
-function buildFallbackReply(messages = []) {
+function buildFallbackReply(messages = [], originalError = null) {
   const userText = extractUserText(messages).toLowerCase();
+
+  // Greetings — always respond warmly even in fallback mode
+  if (/^(hi|hello|hey|হ্যালো|হ্যালো|হ্যাই|হাই|আস্সালামু|সালাম|নমস্কার|শুভেচ্ছা|কেমন আছ|কেমন আছেন|ভালো আছ|ভালো আছেন|শুভ সকাল|শুভ বিকাল|শুভ সন্ধ্যা|শুভ রাত|good morning|good evening|good night|good afternoon)/.test(userText.trim())) {
+    return "আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজের AI সহকারী।\n\nআপনাকে কীভাবে সাহায্য করতে পারি?\n• লেখক সম্পর্কে জানতে: [BUTTON:/about]\n• বই ও ই-বুক দেখতে: [BUTTON:/ebooks]\n• লেখালেখি পড়তে: [BUTTON:/writings]\n• যোগাযোগ করতে: [BUTTON:/contact]";
+  }
+
+  // Thank you messages
+  if (/ধন্যবাদ|thanks|thank you|শুক্রিয়া|আপনাকে ধন্যবাদ/.test(userText)) {
+    return "আপনাকেও ধন্যবাদ! আর কোনো প্রশ্ন থাকলে জানাবেন। 😊";
+  }
 
   if (/দুঃখবিলাস|বিচ্ছেদকে বলি/.test(userText)) {
     return "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" — মাহবুব সরদার সবুজের প্রথম ফিজিক্যাল বই (২০২৬)। রকমারি থেকে অর্ডার করুন: https://rkmri.co/TTMEoA3l3pM0/\n\nঅনলাইনে পড়তে: [BUTTON:/ebooks/read/dukkhovilash]";
@@ -231,7 +254,8 @@ function buildFallbackReply(messages = []) {
     return "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" বইটি রকমারি থেকে কিনুন: https://rkmri.co/TTMEoA3l3pM0/";
   }
 
-  return "দুঃখিত, এই মুহূর্তে AI সেবা সাময়িকভাবে অনুপলব্ধ। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।\n\nসরাসরি যোগাযোগ: [BUTTON:/contact]";
+  // Default: helpful navigation response instead of a dead-end error message
+  return "আপনার প্রশ্নটি বুঝতে পারিনি, কিন্তু আমি সাহায্য করতে পারি:\n\n• লেখক সম্পর্কে জানতে: [BUTTON:/about]\n• বই ও ই-বুক দেখতে: [BUTTON:/ebooks]\n• লেখালেখি পড়তে: [BUTTON:/writings]\n• সরাসরি যোগাযোগ: [BUTTON:/contact]\n\nবিস্তারিত প্রশ্ন থাকলে আবার জিজ্ঞেস করুন অথবা লাইভ চ্যাটে সরাসরি কথা বলুন।";
 }
 
 function sanitizeReply(reply) {
@@ -253,7 +277,23 @@ async function callAI(messages) {
       return await callAIWithConfig(messages, config);
     } catch (err) {
       lastError = err;
-      console.error(`AI provider ${config.source} failed:`, err.message);
+      const is429 = err.message?.includes("429");
+      const is503 = err.message?.includes("503") || err.message?.includes("overloaded");
+
+      if (is429 && config.skipOn429) {
+        // Quota exceeded — skip remaining providers and go straight to fallback
+        console.warn(`[AI] ${config.source} quota exceeded (429). Skipping to built-in fallback.`);
+        throw err;
+      }
+
+      if (is429 || is503) {
+        // Rate-limited or overloaded — try next provider
+        console.warn(`[AI] ${config.source} rate-limited/overloaded (${is429 ? 429 : 503}). Trying next provider...`);
+        continue;
+      }
+
+      console.error(`[AI] ${config.source} failed:`, err.message);
+      // For other errors (auth, network, etc.) also try next provider
     }
   }
   throw lastError || new Error("All AI providers failed");
@@ -387,16 +427,25 @@ export default async function handler(req, res) {
       }).catch((e) => console.error("Telegram notification failed:", e.message));
       return res.status(200).json({ reply: sanitizeReply(reply) });
     } catch (err) {
+      const is429 = err.message?.includes("429");
       console.error("AI API failed; returning built-in fallback reply:", err.message);
       const fallbackReply = buildFallbackReply(messages, err);
-      await notifyTelegram({
-        userMessage: userMsgText,
-        aiResponse: `${fallbackReply}\n\n[Fallback: ${err.message}]`,
-        clientIp: rate.clientIp,
-        userAgent: req.headers["user-agent"],
-        imageData: lastUserImgPart || null,
-      }).catch((e) => console.error("Telegram fallback notification failed:", e.message));
-      return res.status(200).json({ reply: fallbackReply, fallback: true });
+
+      // FIX: Don't spam Telegram on every 429 quota error — only notify for unexpected failures
+      // 429 = quota exceeded (expected, not actionable), so we skip Telegram notification
+      if (!is429) {
+        await notifyTelegram({
+          userMessage: userMsgText,
+          aiResponse: `${fallbackReply}\n\n[Fallback: ${err.message.slice(0, 120)}]`,
+          clientIp: rate.clientIp,
+          userAgent: req.headers["user-agent"],
+          imageData: lastUserImgPart || null,
+        }).catch((e) => console.error("Telegram fallback notification failed:", e.message));
+      } else {
+        console.warn("[AI] Skipping Telegram notification for 429 quota error (not actionable)");
+      }
+
+      return res.status(200).json({ reply: sanitizeReply(fallbackReply), fallback: true });
     }
   } catch (err) {
     console.error("Chat handler error:", err);
