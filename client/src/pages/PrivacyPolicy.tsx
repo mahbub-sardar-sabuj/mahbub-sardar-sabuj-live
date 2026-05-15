@@ -19,7 +19,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 const h2Style: React.CSSProperties = {
-  fontFamily: "'Noto Sans Bengali', sans-serif",
+  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
   color: "#FDF6EC",
   fontSize: "1.1rem",
   marginBottom: 14,
@@ -29,7 +29,7 @@ const h2Style: React.CSSProperties = {
 };
 
 const pStyle: React.CSSProperties = {
-  fontFamily: "'Noto Sans Bengali', sans-serif",
+  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
   color: "rgba(253,246,236,0.84)",
   fontSize: "1rem",
   lineHeight: 1.95,
@@ -52,7 +52,7 @@ export default function PrivacyPolicy() {
             <p style={{ color: "#D4A843", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.84rem", fontFamily: "'Space Grotesk', sans-serif", marginBottom: 12 }}>
               Legal Information
             </p>
-            <h1 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2rem, 4vw, 3.2rem)", marginBottom: 12 }}>
+            <h1 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2rem, 4vw, 3.2rem)", marginBottom: 12 }}>
               Privacy Policy
             </h1>
             <p style={{ ...pStyle, margin: "0 auto", maxWidth: 740 }}>
@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
           </div>
 
           <article style={cardStyle}>
-            <h2 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
+            <h2 style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
               কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬ | সর্বশেষ আপডেট: ১১ মে ২০২৬
             </h2>
 
@@ -112,7 +112,7 @@ export default function PrivacyPolicy() {
             </p>
 
             <div style={{ marginTop: 28, paddingTop: 24, borderTop: "1px solid rgba(212,168,67,0.16)" }}>
-              <h3 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#D4A843", marginBottom: 14, fontSize: "1rem" }}>
+              <h3 style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: "#D4A843", marginBottom: 14, fontSize: "1rem" }}>
                 যোগাযোগ
               </h3>
               <p style={pStyle}><strong>নাম:</strong> মাহবুব সরদার সবুজ</p>

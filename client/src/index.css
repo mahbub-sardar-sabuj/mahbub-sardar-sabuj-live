@@ -10,6 +10,25 @@
   font-display: swap;
 }
 
+/* SolaimanLipi — Primary Bengali Font */
+@font-face {
+  font-family: 'SolaimanLipi';
+  src: url('/fonts/SolaimanLipi.woff2') format('woff2'),
+       url('/fonts/SolaimanLipi.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SolaimanLipi';
+  src: url('/fonts/SolaimanLipiBold.woff2') format('woff2'),
+       url('/fonts/SolaimanLipiBold.ttf') format('truetype');
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -60,10 +79,10 @@
   --color-cream: oklch(0.97 0.005 80);
   --color-cream-dark: oklch(0.93 0.008 80);
 
-  --font-bengali: 'AdorshoLipi', 'Tiro Bangla', 'Noto Sans Bengali', serif;
-  --font-bengali-body: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-  --font-display: 'DM Serif Display', serif;
-  --font-body: 'Space Grotesk', sans-serif;
+  --font-bengali: 'SolaimanLipi', 'AdorshoLipi', 'Tiro Bangla', 'SolaimanLipi', 'Noto Sans Bengali', serif;
+  --font-bengali-body: 'SolaimanLipi', 'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+  --font-display: 'SolaimanLipi', 'DM Serif Display', serif;
+  --font-body: 'SolaimanLipi', 'Space Grotesk', sans-serif;
 }
 
 :root {
@@ -110,7 +129,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'AdorshoLipi', 'Noto Sans Bengali', 'Space Grotesk', sans-serif;
+    font-family: 'SolaimanLipi', 'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -166,7 +185,7 @@
 
   /* Section heading style */
   .section-heading {
-    font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
+    font-family: 'SolaimanLipi', 'AdorshoLipi', 'SolaimanLipi', 'Tiro Bangla', serif;
     position: relative;
     display: inline-block;
     padding-bottom: 12px;

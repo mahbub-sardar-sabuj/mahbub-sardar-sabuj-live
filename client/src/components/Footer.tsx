@@ -114,7 +114,7 @@ export default function Footer() {
               </div>
               <div>
                 <div style={{
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                   fontSize: "1.1rem", fontWeight: 700,
                   background: "linear-gradient(90deg, #E8C97A, #C9A84C)",
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
@@ -128,7 +128,7 @@ export default function Footer() {
             </div>
 
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               color: "rgba(250,246,239,0.45)",
               fontSize: "0.875rem", lineHeight: 1.9,
               margin: "0 0 2rem",
@@ -143,13 +143,13 @@ export default function Footer() {
               borderRadius: 12, padding: "1.25rem",
             }}>
               <div style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                 fontSize: "0.8rem", fontWeight: 600,
                 color: "#C9A84C", marginBottom: "0.75rem",
               }}>নতুন লেখার আপডেট পান</div>
               {subscribed ? (
                 <div style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.85rem", color: "#4ade80",
                   display: "flex", alignItems: "center", gap: 8,
                 }}>
@@ -167,7 +167,7 @@ export default function Footer() {
                       background: "rgba(255,255,255,0.04)",
                       border: "1px solid rgba(201,168,76,0.2)",
                       borderRadius: 6, color: "#FAF6EF",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.8rem", outline: "none",
                     }}
                   />
@@ -185,7 +185,7 @@ export default function Footer() {
                       opacity: subscribing ? 0.7 : 1,
                     }}
                   >
-                    {subscribing ? <span style={{ fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>...</span> : <ArrowRight size={16} />}
+                    {subscribing ? <span style={{ fontSize: "0.75rem", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif" }}>...</span> : <ArrowRight size={16} />}
                   </motion.button>
                 </form>
               )}
@@ -218,7 +218,7 @@ export default function Footer() {
                       transition: "all 0.25s",
                     }}
                   >
-                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.7)", fontWeight: 500, marginBottom: 3, lineHeight: 1.4 }}>{w.title}</div>
+                    <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.7)", fontWeight: 500, marginBottom: 3, lineHeight: 1.4 }}>{w.title}</div>
                     <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.6rem", color: "rgba(201,168,76,0.5)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{w.category}</div>
                   </motion.div>
                 </Link>
@@ -243,7 +243,7 @@ export default function Footer() {
                     <motion.span
                       whileHover={{ x: 6, color: "#C9A84C" }}
                       style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                         textDecoration: "none",
                         fontSize: "0.875rem",
@@ -280,7 +280,7 @@ export default function Footer() {
                         <motion.span
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
-                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                             color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                             textDecoration: "none",
                             fontSize: "0.875rem",
@@ -389,7 +389,7 @@ export default function Footer() {
           textAlign: "center",
         }}>
           <p style={{
-            fontFamily: "'Tiro Bangla', serif",
+            fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
             fontStyle: "italic",
             color: "rgba(201,168,76,0.4)",
             fontSize: "0.85rem",
@@ -410,7 +410,7 @@ export default function Footer() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               color: "rgba(250,246,239,0.3)",
               fontSize: "0.8rem",
               margin: 0,
@@ -420,7 +420,7 @@ export default function Footer() {
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <MapPin size={11} color="rgba(201,168,76,0.35)" />
-              <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.2)", fontSize: "0.75rem" }}>কুমিল্লা, বাংলাদেশ</span>
+              <span style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.2)", fontSize: "0.75rem" }}>কুমিল্লা, বাংলাদেশ</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <Globe size={11} color="rgba(201,168,76,0.35)" />
@@ -428,7 +428,7 @@ export default function Footer() {
             </div>
           </div>
           <p style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
             color: "rgba(250,246,239,0.25)",
             fontSize: "0.8rem",
             margin: 0,

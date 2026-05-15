@@ -20,6 +20,8 @@ import Seo from "@/components/Seo";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FONTS = [
+  // ── SolaimanLipi — Primary ──
+  { name: "সোলাইমান লিপি",              value: "SolaimanLipi" },
   // ── বিদ্যমান ফন্ট ──
   { name: "আদর্শ লিপি",              value: "AdorshoLipi" },
   { name: "চন্দ্রশীলা",              value: "ChandraSheela" },
@@ -73,17 +75,19 @@ const FONTS = [
 ];
 
 const FONT_CSS: Record<string, string> = {
+  // SolaimanLipi — Primary font
+  SolaimanLipi:                 "'SolaimanLipi', serif",
   // existing
   ChandraSheela:                "'ChandraSheela', serif",
   ChandraSheelaPremium:         "'ChandraSheelaPremium', serif",
   MahbubSardarSabujFont:        "'MahbubSardarSabujFont', serif",
   MasudNandanik:                "'MasudNandanik', serif",
-  AdorshoLipi:                  "'AdorshoLipi', serif",
+  AdorshoLipi:                  "'SolaimanLipi', 'AdorshoLipi', serif",
   BHSabitAdorshoLightUnicode:   "'BHSabitAdorshoLightUnicode', serif",
   BLABNorhaGramUnicode:         "'BLABNorhaGramUnicode', serif",
   AkhandBengali:                "'AkhandBengali', serif",
-  TiroBangla:                   "'Tiro Bangla', serif",
-  NotoSansBengali:              "'Noto Sans Bengali', sans-serif",
+  TiroBangla:                   "'SolaimanLipi', 'Tiro Bangla', serif",
+  NotoSansBengali:              "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
   // new BH series
   BHAparajito:                  "'BHAparajito', serif",
   BHHadaVoda:                   "'BHHadaVoda', serif",
@@ -126,6 +130,8 @@ const FONT_CSS: Record<string, string> = {
 };
 
 const FONT_URLS: Record<string, string> = {
+  // SolaimanLipi — Primary font
+  SolaimanLipi:               "/fonts/SolaimanLipi.ttf",
   // existing
   ChandraSheela:              "/fonts/ChandraSheela.ttf",
   ChandraSheelaPremium:       "/fonts/ChandraSheelaPremium.ttf",
@@ -464,17 +470,17 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
 function makeDefaultLayers(themeText: string): TextBlock[] {
   return [
     { id: "title",  kind: "title",  text: "",
-      x: 0.5, y: 0.22, fontSize: 52, baseFontSize: 52, fontKey: "AdorshoLipi",
+      x: 0.5, y: 0.22, fontSize: 52, baseFontSize: 52, fontKey: "SolaimanLipi",
       color: themeText, bold: true,  italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.3, opacity: 100, rotation: 0, letterSpacing: 0 },
     { id: "body",   kind: "body",   text: "",
-      x: 0.5, y: 0.52, fontSize: 36, baseFontSize: 36, fontKey: "AdorshoLipi",
+      x: 0.5, y: 0.52, fontSize: 36, baseFontSize: 36, fontKey: "SolaimanLipi",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.9, opacity: 100, rotation: 0, letterSpacing: 0 },
     { id: "author", kind: "author", text: "",
-      x: 0.5, y: 0.84, fontSize: 28, baseFontSize: 28, fontKey: "AdorshoLipi",
+      x: 0.5, y: 0.84, fontSize: 28, baseFontSize: 28, fontKey: "SolaimanLipi",
       color: themeText, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.4, opacity: 100, rotation: 0, letterSpacing: 0 },
@@ -969,7 +975,7 @@ export default function Editor() {
     const loadAllFonts = async () => {
       const fontKeys = Object.keys(FONT_URLS);
       // Load first 5 fonts immediately (most common ones)
-      const priority = ["AdorshoLipi", "ChandraSheela", "MahbubSardarSabujFont", "MasudNandanik", "ChandraSheelaPremium"];
+      const priority = ["SolaimanLipi", "AdorshoLipi", "ChandraSheela", "MahbubSardarSabujFont", "MasudNandanik", "ChandraSheelaPremium"];
       await Promise.all(priority.map(k => ensureFontLoaded(k)));
       // Load rest in background
       fontKeys.filter(k => !priority.includes(k)).forEach(k => ensureFontLoaded(k));
@@ -1156,7 +1162,7 @@ export default function Editor() {
     const id = uid();
     setTextLayers(prev => [...prev, {
       id, kind: "custom", text: "নতুন লেখা",
-      x: 0.5, y: 0.5, fontSize: 40, baseFontSize: 40, fontKey: "AdorshoLipi",
+      x: 0.5, y: 0.5, fontSize: 40, baseFontSize: 40, fontKey: "SolaimanLipi",
       color: theme.text, bold: false, italic: false, align: "center",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.6, opacity: 100, rotation: 0, letterSpacing: 0,
@@ -1175,7 +1181,7 @@ export default function Editor() {
     setTextLayers(prev => [...prev, {
       id, kind: "custom", text: inlineTextValue,
       x: inlineTextPos.x / cardW, y: inlineTextPos.y / cardH,
-      fontSize: 40, baseFontSize: 40, fontKey: "AdorshoLipi",
+      fontSize: 40, baseFontSize: 40, fontKey: "SolaimanLipi",
       color: theme.text, bold: false, italic: false, align: "left",
       shadow: false, outline: false, outlineColor: "#000000",
       visible: true, lineHeight: 1.6, opacity: 100, rotation: 0, letterSpacing: 0,
@@ -1525,7 +1531,7 @@ export default function Editor() {
       ctx.save();
       ctx.globalAlpha = (layer.opacity ?? 100) / 100;
       const fs = layer.fontSize;
-      ctx.font = `${layer.italic ? "italic " : ""}${layer.bold ? "bold " : ""}${fs}px ${FONT_CSS[layer.fontKey] || "'AdorshoLipi',serif"}`;
+      ctx.font = `${layer.italic ? "italic " : ""}${layer.bold ? "bold " : ""}${fs}px ${FONT_CSS[layer.fontKey] || "'SolaimanLipi','AdorshoLipi',serif"}`;
       ctx.fillStyle = layer.color;
       ctx.textAlign = layer.align;
       if (layer.shadow) { ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2; }
@@ -1814,7 +1820,7 @@ export default function Editor() {
           }}>সরদার ডিজাইন স্টুডিও</h1>
           {autoSaveStatus !== "idle" && (
             <p style={{
-              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali',sans-serif",
               fontSize: "0.6rem",
               color: autoSaveStatus === "saved" ? "#4ade80" : "#D4A843",
               margin: "1px 0 0",
@@ -1822,7 +1828,7 @@ export default function Editor() {
           )}
           {autoSaveStatus === "idle" && (
             <p style={{
-              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali',sans-serif",
               fontSize: "0.6rem", color: "rgba(212,168,67,0.4)",
               margin: "1px 0 0",
             }}>মাহবুব সরদার সবুজ</p>
@@ -2186,7 +2192,7 @@ export default function Editor() {
                           border: `${Math.ceil(2/scale)}px solid #D4A843`,
                           borderRadius: Math.ceil(8/scale),
                           color: layer.color, fontSize: layer.fontSize,
-                          fontFamily: FONT_CSS[layer.fontKey] || "'AdorshoLipi', serif",
+                          fontFamily: FONT_CSS[layer.fontKey] || "'SolaimanLipi', 'AdorshoLipi', serif",
                            fontWeight: layer.bold ? "bold" : "normal",
                            fontStyle: layer.italic ? "italic" : "normal",
                           lineHeight: layer.lineHeight,
@@ -2217,7 +2223,7 @@ export default function Editor() {
                   ) : (
                     <div style={{
                       fontSize: layer.fontSize,
-                      fontFamily: FONT_CSS[layer.fontKey] || "'AdorshoLipi', serif",
+                      fontFamily: FONT_CSS[layer.fontKey] || "'SolaimanLipi', 'AdorshoLipi', serif",
                       color: layer.color,
                       fontWeight: layer.bold ? "bold" : "normal",
                       fontStyle: layer.italic ? "italic" : "normal",
@@ -2365,7 +2371,7 @@ export default function Editor() {
                         textAlign: pip.captionAlign ?? "center",
                         color: pip.captionColor || "#ffffff",
                         fontSize: captionFontSize,
-                        fontFamily: "'AdorshoLipi', serif",
+                        fontFamily: "'SolaimanLipi', 'AdorshoLipi', serif",
                         fontWeight: 600,
                         lineHeight: 1.3,
                         padding: `${captionPad}px ${captionPad * 1.5}px`,
@@ -2403,7 +2409,7 @@ export default function Editor() {
                   style={{
                     background: "rgba(13,20,32,0.85)", border: "2px solid #D4A843",
                     borderRadius: 8, color: theme.text, fontSize: 40,
-                    fontFamily: "'AdorshoLipi', serif", padding: "8px 12px",
+                    fontFamily: "'SolaimanLipi', 'AdorshoLipi', serif", padding: "8px 12px",
                     minWidth: 300, maxWidth: cardW * 0.8, outline: "none",
                     resize: "both", lineHeight: 1.6,
                     boxShadow: "0 4px 24px rgba(0,0,0,0.6)",

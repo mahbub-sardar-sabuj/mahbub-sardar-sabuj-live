@@ -121,7 +121,7 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                   fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
                   fontWeight: 700, lineHeight: 1.15,
                   color: "#FAF6EF", margin: "0 0 0.2rem",
@@ -134,7 +134,7 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                   fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
                   fontWeight: 700, lineHeight: 1.15,
                   background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
@@ -150,7 +150,7 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.6 }}
                 style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "1rem", color: "rgba(250,246,239,0.6)",
                   lineHeight: 1.9, maxWidth: 460, margin: "0 0 2rem",
                 }}
@@ -173,7 +173,7 @@ export default function About() {
                       display: "inline-flex", alignItems: "center", gap: 8,
                       padding: "13px 26px", borderRadius: 4,
                       background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                      color: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: "#060E1A", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.9rem", fontWeight: 700, cursor: "pointer",
                       textDecoration: "none", boxShadow: "0 8px 24px rgba(201,168,76,0.25)",
                     }}
@@ -192,7 +192,7 @@ export default function About() {
                       background: "transparent",
                       border: "1px solid rgba(201,168,76,0.3)",
                       color: "rgba(250,246,239,0.75)",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
                       textDecoration: "none",
                     }}
@@ -259,7 +259,7 @@ export default function About() {
                     textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
                   }}>লেখক ও কবি</div>
                   <div style={{
-                    fontFamily: "'Tiro Bangla', serif",
+                    fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                     fontSize: "1.1rem", color: "#FAF6EF", fontWeight: 700,
                   }}>মাহবুব সরদার সবুজ</div>
                 </div>
@@ -283,8 +283,8 @@ export default function About() {
               >
                 <img src={BOOK_COVER} alt="আমি বিচ্ছেদকে বলি দুঃখবিলাস - মাহবুব সরদার সবুজের প্রথম বই" style={{ width: 36, height: 50, objectFit: "cover", borderRadius: 4 }} loading="lazy" decoding="async" />
                 <div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#C9A84C", marginBottom: 3 }}>সর্বশেষ বই</div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "#FAF6EF", fontWeight: 600, maxWidth: 110, lineHeight: 1.4 }}>দুঃখবিলাস</div>
+                  <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#C9A84C", marginBottom: 3 }}>সর্বশেষ বই</div>
+                  <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "#FAF6EF", fontWeight: 600, maxWidth: 110, lineHeight: 1.4 }}>দুঃখবিলাস</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -323,7 +323,7 @@ export default function About() {
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
               <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
+                fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                 fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
                 fontWeight: 700, color: "#FAF6EF", margin: 0,
               }}>
@@ -344,13 +344,13 @@ export default function About() {
                 borderRadius: 16, padding: "2.5rem",
                 height: "100%",
               }}>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.65)", lineHeight: 2, margin: "0 0 1.2rem" }}>
+                <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.65)", lineHeight: 2, margin: "0 0 1.2rem" }}>
                   মাহবুব সরদার সবুজ একজন বাংলা ভাষার লেখক ও কবি, যিনি ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম, স্মৃতি, এবং মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করে পাঠকের কাছে পরিচিত হয়েছেন।
                 </p>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.55)", lineHeight: 2, margin: "0 0 1.2rem" }}>
+                <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.55)", lineHeight: 2, margin: "0 0 1.2rem" }}>
                   তিনি কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে জন্মগ্রহণ করেন। কর্মসূত্রে সৌদি আরবে অবস্থান করলেও বাংলা ভাষা, সাহিত্য, এবং পাঠকের সঙ্গে তাঁর সম্পর্ক অটুট রয়েছে।
                 </p>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.5)", lineHeight: 2, margin: 0 }}>
+                <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.5)", lineHeight: 2, margin: 0 }}>
                   লেখালেখি তাঁর কাছে শুধু শখ নয়; এটি আত্মপ্রকাশ, সংবেদনশীল অভিজ্ঞতার প্রকাশ, এবং পাঠকের সঙ্গে মানসিক সংযোগ তৈরির এক অনন্য মাধ্যম।
                 </p>
               </div>
@@ -389,7 +389,7 @@ export default function About() {
                       </div>
                       <div>
                         <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.65rem", color: "rgba(201,168,76,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 3 }}>{item.label}</div>
-                        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", color: "rgba(250,246,239,0.8)", fontWeight: 500 }}>{item.value}</div>
+                        <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", color: "rgba(250,246,239,0.8)", fontWeight: 500 }}>{item.value}</div>
                       </div>
                     </motion.div>
                   );
@@ -420,7 +420,7 @@ export default function About() {
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
               <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
+                fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                 fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
                 fontWeight: 700, color: "#FAF6EF", margin: 0,
               }}>
@@ -461,8 +461,8 @@ export default function About() {
                           boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                         }}>
                           <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "#C9A84C", letterSpacing: "0.15em", marginBottom: 8 }}>{item.year}</div>
-                          <h3 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
-                          <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
+                          <h3 style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
+                          <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
                         </div>
                       )}
                     </div>
@@ -488,8 +488,8 @@ export default function About() {
                           boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                         }}>
                           <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "#C9A84C", letterSpacing: "0.15em", marginBottom: 8 }}>{item.year}</div>
-                          <h3 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
-                          <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
+                          <h3 style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
+                          <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
                         </div>
                       )}
                     </div>
@@ -516,7 +516,7 @@ export default function About() {
                 <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>প্রকাশিত বই</span>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0 }}>
+              <h2 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0 }}>
                 লেখকের সাহিত্যভাণ্ডার
               </h2>
             </div>
@@ -608,8 +608,8 @@ export default function About() {
                       }}>{book.badge}</span>
                       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.65rem", color: "rgba(250,246,239,0.3)" }}>{book.year}</span>
                     </div>
-                    <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.05rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 0.6rem", lineHeight: 1.4 }}>{book.title}</h3>
-                    <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.8, margin: "0 0 1rem" }}>{book.desc}</p>
+                    <h3 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", fontSize: "1.05rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 0.6rem", lineHeight: 1.4 }}>{book.title}</h3>
+                    <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.8, margin: "0 0 1rem" }}>{book.desc}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.6rem", color: "rgba(250,246,239,0.3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{book.type}</span>
                     </div>
@@ -639,7 +639,7 @@ export default function About() {
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
               <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
+                fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                 fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
                 fontWeight: 700, color: "#FAF6EF", margin: 0,
               }}>
@@ -672,7 +672,7 @@ export default function About() {
                     <Quote size={15} color="#C9A84C" />
                   </div>
                   <p style={{
-                    fontFamily: "'Tiro Bangla', serif",
+                    fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                     fontSize: "clamp(1rem, 2vw, 1.2rem)",
                     fontStyle: "italic",
                     color: "rgba(250,246,239,0.8)",
@@ -712,7 +712,7 @@ export default function About() {
               <Heart size={22} color="#C9A84C" />
             </div>
             <h2 style={{
-              fontFamily: "'Tiro Bangla', serif",
+              fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
               fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
               fontWeight: 700, color: "#FAF6EF",
               lineHeight: 1.3, margin: "0 0 1.2rem",
@@ -720,7 +720,7 @@ export default function About() {
               লেখকের সাথে যুক্ত থাকুন
             </h2>
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               fontSize: "1rem", color: "rgba(250,246,239,0.5)",
               lineHeight: 1.9, margin: "0 0 2.5rem",
             }}>
@@ -735,7 +735,7 @@ export default function About() {
                     display: "inline-flex", alignItems: "center", gap: 10,
                     padding: "14px 30px", borderRadius: 4,
                     background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                    color: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif",
+                    color: "#060E1A", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     fontSize: "0.95rem", fontWeight: 700, cursor: "pointer",
                     textDecoration: "none", boxShadow: "0 8px 24px rgba(201,168,76,0.3)",
                   }}
@@ -754,7 +754,7 @@ export default function About() {
                     background: "transparent",
                     border: "1px solid rgba(201,168,76,0.3)",
                     color: "rgba(250,246,239,0.75)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     fontSize: "0.95rem", fontWeight: 600, cursor: "pointer",
                     textDecoration: "none",
                   }}
