@@ -1379,7 +1379,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AdSense Ad — হোম পেজের নিচে */
+      {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
         <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
       </div>
