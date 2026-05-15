@@ -110,14 +110,13 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 - YouTube: https://youtube.com/@MahbubSardarSabuj
 
 ## উত্তর দেওয়ার নিয়মাবলি
-১. সবসময় বাংলায় উত্তর দাও।
-২. যেকোনো বিষয়ে প্রশ্ন করলে সঠিক ও সহায়ক উত্তর দাও — সাধারণ জ্ঞান, বিজ্ঞান, ইতিহাস, প্রযুক্তি, গণিত, রান্না, স্বাস্থ্য, যেকোনো বিষয়।
-৩. পাঠকদের সাথে আন্তরিক ও উষ্ণ ব্যবহার করো।
-৪. বই বা ই-বুকের কথা উল্লেখ করলে সংশ্লিষ্ট [BUTTON:...] লিংক দাও।
-৫. রকমারি থেকে "দুঃখবিলাস" বইটি কেনার লিংক: https://rkmri.co/TTMEoA3l3pM0/
-৬. ই-বুকগুলো সম্পূর্ণ বিনামূল্যে পড়া যায়।
-৭. উত্তর সংক্ষিপ্ত কিন্তু তথ্যবহুল রাখো।
-৮. প্রশ্নকর্তাকে "আপনি" বলে সম্বোধন করো।`;
+১. সবসময় বাংলায় উত্তর দাও এবং প্রশ্নকর্তাকে "আপনি" বলে সম্বোধন করো।
+২. মাহবুব সরদার সবুজ সম্পর্কে কেবল উপরের যাচাইকৃত ওয়েবসাইট-তথ্য ব্যবহার করো। জন্মতারিখ, পারিবারিক তথ্য, ব্যক্তিগত নম্বর, ঠিকানা, শিক্ষাজীবন বা অন্য কোনো অনিশ্চিত তথ্য বানিয়ে বলবে না। তথ্য না থাকলে স্পষ্ট করে বলবে: "এই তথ্যটি ওয়েবসাইটে নিশ্চিতভাবে দেওয়া নেই।"
+৩. বই, ই-বুক, আবৃত্তি, লেখা, যোগাযোগ বা পেজ সম্পর্কিত প্রশ্নে সংশ্লিষ্ট [BUTTON:...] লিংক দাও।
+৪. রকমারি থেকে "দুঃখবিলাস" বইটি কেনার লিংক: https://rkmri.co/TTMEoA3l3pM0/
+৫. ই-বুকগুলো সম্পূর্ণ বিনামূল্যে পড়া যায়।
+৬. সাধারণ জ্ঞান, বিজ্ঞান, ইতিহাস, প্রযুক্তি, গণিত, রান্না, স্বাস্থ্য বা অন্য বিষয়ে প্রশ্ন করলে নির্ভরযোগ্য সাধারণ জ্ঞান দিয়ে উত্তর দাও; তবে নিশ্চিত না হলে অনুমান না করে সতর্কভাবে বলো।
+৭. উত্তর সংক্ষিপ্ত, তথ্যবহুল, বিনয়ী ও প্রাসঙ্গিক রাখো।`;
 
 
 import {
@@ -129,15 +128,24 @@ import {
 
 // ── AI provider configuration ──────────────────────────────────────────────
 // Provider priority order:
-//   1. Forge (built-in, always available, no quota issues) — HIGHEST PRIORITY
-//   2. OpenAI (if OPENAI_API_KEY is set)
-//   3. Gemini (if GEMINI_API_KEY is set) — LAST RESORT (has free-tier quota limits)
+//   1. OpenAI-compatible API (primary, best instruction-following for factual site Q&A)
+//   2. Forge (built-in fallback, avoids downtime if OpenAI is unavailable)
+//   3. Gemini direct API (last resort; free tier can hit quota)
 //
-// This order ensures Gemini 429 quota errors are only hit if all other providers fail.
+// This order reduces wrong profile answers by using the strongest configured model first,
+// while still keeping robust fallback behavior for production visitors.
 function resolveAiConfigs() {
   const configs = [];
 
-  // 1. Forge API — highest priority (built-in, no quota issues)
+  // 1. OpenAI-compatible API — primary provider
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  if (openaiKey) {
+    const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
+    const model = process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini";
+    configs.push({ source: "openai", apiKey: openaiKey, endpoint: `${baseUrl}/chat/completions`, model, skipOn429: false });
+  }
+
+  // 2. Forge API — stable fallback
   const forgeKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
   if (forgeKey && forgeUrl) {
@@ -146,16 +154,8 @@ function resolveAiConfigs() {
       apiKey: forgeKey,
       endpoint: `${forgeUrl.replace(/\/$/, "")}/v1/chat/completions`,
       model: "gemini-2.5-flash",
-      skipOn429: false, // Forge should not hit 429
+      skipOn429: false,
     });
-  }
-
-  // 2. OpenAI-compatible API (second priority)
-  const openaiKey = process.env.OPENAI_API_KEY?.trim();
-  if (openaiKey) {
-    const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
-    const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
-    configs.push({ source: "openai", apiKey: openaiKey, endpoint: `${baseUrl}/chat/completions`, model, skipOn429: false });
   }
 
   // 3. Gemini direct API — last resort (free tier has strict quota)
@@ -207,7 +207,70 @@ function extractUserText(messages = []) {
   return String(lastUserMsg.content || "").trim();
 }
 
+
+function buildCanonicalReply(messages = []) {
+  const rawText = extractUserText(messages);
+  const userText = rawText.toLowerCase().replace(/\s+/g, " ").trim();
+  if (!userText) return null;
+
+  const wantsBook = /দুঃখবিলাস|বিচ্ছেদকে বলি|বই|ebook|ই-বুক|চাঁদফুল|স্মৃতির বসন্তে|সময়ের গহ্বরে|অনবদ্য|কিনব|কিনতে|পড়ব|পড়তে|রকমারি|rokomari|order/.test(userText);
+  const wantsContact = /যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|ইনস্টাগ্রাম|youtube|ইউটিউব|সোশ্যাল|social/.test(userText);
+  const wantsRecitation = /আবৃত্তি|recitation|জানেন বাবা|কাঁদলে মা|তবুও তাকে|বিবেকের আদালত|নারীকে ভালোবাসার আগে/.test(userText);
+  const wantsWriting = /লেখালেখি|writings|লেখা|ভালোবাসার লেখা|বিচ্ছেদের লেখা|জীবনদর্শন|ছোট লেখা|কবিতা পড়|কবিতা দেখ|archive|আর্কাইভ/.test(userText);
+  const wantsAuthor = /মাহবুব|সবুজ|লেখক|কবি|পরিচয়|about|জন্ম|জন্মস্থান|কোথায় থাকেন|বর্তমান অবস্থান|সৌদি|কুমিল্লা|আরিফপুর|খোশবাস|ফলোয়ার|পাঠকসংখ্যা|আপনি কে|তুমি কে|আপনার সম্পর্কে|তার সম্পর্কে|আমার সম্পর্কে/.test(userText);
+  const wantsSite = /ওয়েবসাইট|website|পেজ|লিংক|মেনু|কোথায় পাব|কোথায় আছে/.test(userText);
+
+  if (/দুঃখবিলাস|বিচ্ছেদকে বলি|রকমারি|rokomari|order|কিনতে/.test(userText)) {
+    return "**আমি বিচ্ছেদকে বলি দুঃখবিলাস** মাহবুব সরদার সবুজের প্রথম ফিজিক্যাল কাব্যগ্রন্থ। প্রকাশ: ২০২৬, পৃষ্ঠা: ১৫০+। বইটি বিচ্ছেদ, অপেক্ষা, হারানোর বেদনা ও ভালোবাসার গভীর অনুভূতি নিয়ে লেখা।\n\nরকমারি থেকে অর্ডার করুন: https://rkmri.co/TTMEoA3l3pM0/\n\nঅনলাইনে পড়তে: [BUTTON:/ebooks/read/dukkhovilash]\nসব বই দেখতে: [BUTTON:/ebooks]";
+  }
+
+  if (wantsBook) {
+    return "মাহবুব সরদার সবুজের যাচাইকৃত বই ও ই-বুক তালিকা:\n\n১. **আমি বিচ্ছেদকে বলি দুঃখবিলাস** — প্রথম ফিজিক্যাল কাব্যগ্রন্থ, ২০২৬, ১৫০+ পৃষ্ঠা। রকমারি: https://rkmri.co/TTMEoA3l3pM0/ এবং পাঠ: [BUTTON:/ebooks/read/dukkhovilash]\n২. **স্মৃতির বসন্তে তুমি** — ই-বুক, ২০২৪, ৮০+ পৃষ্ঠা। [BUTTON:/ebooks/read/smritir-boshonte]\n৩. **চাঁদফুল** — ই-বুক, ২০২৩, ৬০+ পৃষ্ঠা। [BUTTON:/ebooks/read/chand-phool]\n৪. **সময়ের গহ্বরে** — ই-বুক, ২০২৩, ১০০+ পৃষ্ঠা। [BUTTON:/ebooks/read/shomoyer-gohvore]\n৫. **মাহবুব সরদার সবুজের অনবদ্য লেখা** — ১০০টি জীবনমুখী ও অনুপ্রেরণামূলক লেখার সংকলন। [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব ই-বুক বিনামূল্যে পড়া যায়। সম্পূর্ণ সংগ্রহ: [BUTTON:/ebooks]";
+  }
+
+  if (wantsContact) {
+    return "লেখকের অফিসিয়াল যোগাযোগ তথ্য:\n\nইমেইল: lekhokmahbubsardarsabuj@gmail.com\nFacebook: https://facebook.com/MahbubSardarSabuj\nInstagram: https://instagram.com/mahbub_sardar_sabuj\nYouTube: https://youtube.com/@MahbubSardarSabuj\n\nযোগাযোগ ফর্ম ব্যবহার করতে পারেন: [BUTTON:/contact]\nসরাসরি কথা বলতে চাইলে চ্যাটবটের **সরাসরি চ্যাট** ট্যাব ব্যবহার করুন।";
+  }
+
+  if (wantsRecitation) {
+    return "মাহবুব সরদার সবুজের ৯টি জনপ্রিয় Facebook আবৃত্তি রয়েছে:\n\n১. জানেন বাবা\n২. আমি কাঁদলে মা আর কাঁদে না\n৩. তবুও তাকে ভালো\n৪. আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে\n৫. মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি\n৬. নারীকে ভালোবাসার আগে\n৭. মানুষটা তোমার প্রতি অন্ধ\n৮. এমনভাবে সরে যাবো একদিন\n৯. বিবেকের আদালত\n\nশুনতে/দেখতে যান: [BUTTON:/facebook-recitations]\nঅফিসিয়াল Facebook পেজ: https://www.facebook.com/MahbubSardarSabuj";
+  }
+
+  if (wantsWriting) {
+    return "ওয়েবসাইটে মাহবুব সরদার সবুজের মোট **১০৮৫টি লেখা** রয়েছে। বিভাগগুলো হলো: জীবনদর্শন ৫৭০টি, বিচ্ছেদ ২৫১টি, ভালোবাসা ১৬৮টি, ছোট লেখা ৫৫টি এবং কবিতা ৪০টি।\n\nলেখাগুলো পড়তে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\nআপনি চাইলে নির্দিষ্টভাবে বলতে পারেন—ভালোবাসা, বিচ্ছেদ, জীবনদর্শন বা কবিতা কোন ধরনের লেখা দেখতে চান।";
+  }
+
+  if (wantsAuthor) {
+    return "মাহবুব সরদার সবুজ বাংলা ভাষার একজন নিবেদিতপ্রাণ লেখক ও কবি। তিনি ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম, স্মৃতি ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন।\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি\n- বর্তমান অবস্থান: কর্মসূত্রে সৌদি আরব\n- লেখালেখি শুরু: ২০১৫ সাল থেকে সামাজিক মাধ্যমে\n- Facebook পেজ: ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার\n- পাঠকসংখ্যা: ৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।”\n\nআরও পড়ুন: [BUTTON:/about]";
+  }
+
+  if (/ডিজাইন|design|কার্ড|editor|এডিটর|স্টুডিও|পোস্টার/.test(userText)) {
+    return "সরদার ডিজাইন স্টুডিওতে কবিতা, উক্তি বা লেখার কার্ড তৈরি করা যায়। ছবি, টেক্সট, স্টিকার, ফিল্টার ও ব্যাকগ্রাউন্ডসহ ডিজাইন করতে এখানে যান: [BUTTON:/editor]";
+  }
+
+  if (/গ্যালারি|gallery|ছবি|ফটো/.test(userText)) {
+    return "মাহবুব সরদার সবুজের ছবি ও গ্যালারি দেখতে এই পেজে যান: [BUTTON:/gallery]";
+  }
+
+  if (/সংবাদ|news|খবর|সরদার সংবাদ/.test(userText)) {
+    return "সর্বশেষ আপডেট ও সংবাদ পড়তে সরদার সংবাদ পেজে যান: [BUTTON:/news]";
+  }
+
+  if (/আমিও লিখবো|লিখবো বাস্তবতা|amio|bastobota/.test(userText)) {
+    return "**আমিও লিখবো বাস্তবতা** হলো একটি সোশ্যাল ফিড, যেখানে পাঠকেরা নিজের বাস্তব অনুভূতি ও গল্প শেয়ার করতে পারেন। পেজ: [BUTTON:/amio-likhbo-bastobota]";
+  }
+
+  if (wantsSite) {
+    return "ওয়েবসাইটের গুরুত্বপূর্ণ পেজগুলো:\n\nপরিচিতি: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]\nআবৃত্তি: [BUTTON:/facebook-recitations]\nডিজাইন স্টুডিও: [BUTTON:/editor]\nগ্যালারি: [BUTTON:/gallery]\nসংবাদ: [BUTTON:/news]\nযোগাযোগ: [BUTTON:/contact]";
+  }
+
+  return null;
+}
+
 function buildFallbackReply(messages = [], originalError = null) {
+  const canonicalReply = buildCanonicalReply(messages);
+  if (canonicalReply) return canonicalReply;
+
   const userText = extractUserText(messages).toLowerCase();
 
   // Greetings — always respond warmly even in fallback mode
@@ -415,6 +478,18 @@ export default async function handler(req, res) {
     const userMsgText = lastUserMsg
       ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find((p) => p.type === "text")?.text || "[ছবি পাঠানো হয়েছে]" : lastUserMsg.content)
       : "(অজানা)";
+
+    const canonicalReply = buildCanonicalReply(messages);
+    if (canonicalReply) {
+      await notifyTelegram({
+        userMessage: userMsgText,
+        aiResponse: canonicalReply,
+        clientIp: rate.clientIp,
+        userAgent: req.headers["user-agent"],
+        imageData: lastUserImgPart || null,
+      }).catch((e) => console.error("Telegram notification failed:", e.message));
+      return res.status(200).json({ reply: sanitizeReply(canonicalReply), source: "canonical" });
+    }
 
     try {
       const reply = await callAI(allMessages);

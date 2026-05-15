@@ -1425,16 +1425,17 @@ export default function AIChatbot() {
     id: "welcome",
     role: "assistant",
     content: `আস্সালামু আলাইকুম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ।
-আমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI সহকারী।
+আমি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের AI সহকারী।
 
-আমি যেকোনো বিষয়ে সাহায্য করতে পারি:
-• লেখক ও তাঁর বই, কবিতা, আবৃত্তি সম্পর্কে যেকোনো প্রশ্ন
-• সাধারণ জ্ঞান, বিজ্ঞান, ইতিহাস, প্রযুক্তি ও যেকোনো বিষয়
-• অডিও এডিট ও ভয়েস বিউটিফাই ফিচার
-• ডিজাইন স্টুডিও ব্যবহারের গাইড
-• সরাসরি লাইভ চ্যাটে যোগাযোগ
+আমি এখন যাচাইকৃত তথ্য ধরে উত্তর দিই—লেখকের পরিচয়, বই, ই-বুক, আবৃত্তি, লেখা, যোগাযোগ ও ওয়েবসাইটের পেজ সম্পর্কে ভুল তথ্য বানিয়ে বলি না।
 
-যেকোনো প্রশ্ন করুন, আমি উত্তর দেব!`,
+আপনি চাইলে জিজ্ঞেস করতে পারেন:
+• মাহবুব সরদার সবুজ কে?
+• দুঃখবিলাস বই কোথায় পাওয়া যায়?
+• বিনামূল্যে ই-বুক পড়তে চাই
+• আবৃত্তির তালিকা দেখাও
+• লেখকের সাথে যোগাযোগ করতে চাই
+• অডিও এডিট বা ভয়েস ক্লিন করতে চাই`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2347,10 +2348,8 @@ export default function AIChatbot() {
       role: "assistant",
       content: `নতুন কথোপকথন শুরু হয়েছে।
 
-আপনাকে কীভাবে সাহায্য করতে পারি?
-• লেখক সম্পর্কে জানতে চাইলে বলুন
-• ই-বুক বা বই সম্পর্কে জানতে চাইলে বলুন
-• অডিও এডিট করতে চাইলে নিচের বাটন থেকে অডিও আপলোড করুন`,
+আমি যাচাইকৃত ওয়েবসাইট-তথ্য ধরে উত্তর দেব।
+আপনি লেখক, বই, ই-বুক, আবৃত্তি, লেখা, যোগাযোগ বা অডিও এডিট সম্পর্কে জিজ্ঞেস করতে পারেন।`,
       timestamp: new Date(),
     }]);
     setError(null);
@@ -2651,14 +2650,20 @@ export default function AIChatbot() {
                           boxShadow: "0 0 10px rgba(74,222,128,0.75)",
                           animation: "chatbot-glow-pulse 2.5s ease-in-out infinite",
                         }} />
-                        AI Agent
+                        Official AI
                       </span>
                       <span style={{
-                        color: "rgba(245,238,222,0.5)",
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "2px 7px",
+                        borderRadius: 999,
+                        color: "rgba(245,238,222,0.72)",
+                        background: "rgba(212,168,67,0.07)",
+                        border: "1px solid rgba(212,168,67,0.16)",
                         fontSize: "0.56rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         lineHeight: 1.2,
-                      }}>সাহিত্য ও অডিও AI</span>
+                        fontWeight: 700,
+                      }}>যাচাইকৃত তথ্যভিত্তিক</span>
                     </div>
                   </div>
                 </div>
@@ -2806,13 +2811,13 @@ export default function AIChatbot() {
                 const showChips = messages.length <= 1 ? true : contextChips.length > 0;
                 if (!showChips) return null;
                 const chips = messages.length <= 1 ? [
-                  { label: "📚 বই সম্পর্কে", cmd: "লেখকের বই সম্পর্কে বলুন" },
-                  { label: "✍️ লেখক কে?", cmd: "মাহবুব সরদার সবুজ কে?" },
-                  { label: "📖 ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
-                  { label: "🎤 আবৃত্তি শুনুন", cmd: "আবৃত্তির তালিকা দেখাও" },
-                  { label: "💬 কবিতা পড়ুন", cmd: "একটি সুন্দর কবিতা শোনাও" },
-                  { label: "📞 যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
-                  { label: "🌍 সাধারণ জ্ঞান", cmd: "বাংলাদেশ সম্পর্কে কিছু বলো" },
+                  { label: "লেখক পরিচয়", cmd: "মাহবুব সরদার সবুজ কে?" },
+                  { label: "দুঃখবিলাস", cmd: "দুঃখবিলাস বই কোথায় পাওয়া যায়?" },
+                  { label: "ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
+                  { label: "আবৃত্তি", cmd: "আবৃত্তির তালিকা দেখাও" },
+                  { label: "লেখালেখি", cmd: "লেখালেখি পেজে যেতে চাই" },
+                  { label: "যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
+                  { label: "অডিও এডিট", cmd: "অডিও এডিট করতে চাই" },
                 ] : contextChips;
                 return (
                 <div style={{
@@ -2838,12 +2843,13 @@ export default function AIChatbot() {
                         }}
                         className="chatbot-suggestion-btn"
                         style={{
-                          padding: "3px 9px",
-                          background: "rgba(212,168,67,0.05)",
-                          border: "1px solid rgba(212,168,67,0.18)",
+                          padding: "5px 10px",
+                          background: "linear-gradient(135deg, rgba(212,168,67,0.11), rgba(212,168,67,0.035))",
+                          border: "1px solid rgba(212,168,67,0.24)",
                           borderRadius: 999,
-                          color: "rgba(212,168,67,0.65)",
-                          fontSize: "0.58rem",
+                          color: "rgba(244,224,164,0.82)",
+                          boxShadow: "0 4px 14px rgba(0,0,0,0.16)",
+                          fontSize: "0.6rem",
                           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                           cursor: "pointer",
                           fontWeight: 600,
@@ -3360,7 +3366,7 @@ export default function AIChatbot() {
                     margin: 0,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
-                  }}>Enter = পাঠান তারপর Shift+Enter = নতুন লাইন</p>
+                  }}>যাচাইকৃত তথ্যভিত্তিক উত্তর • Enter = পাঠান • Shift+Enter = নতুন লাইন</p>
                   {input.length > 0 && (
                     <span style={{
                       color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
