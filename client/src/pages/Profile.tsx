@@ -24,7 +24,7 @@ import Seo from "@/components/Seo";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-const adorshoFont = "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif";
+const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
 const shellStyle: CSSProperties = {
   minHeight: "100vh",

@@ -161,7 +161,7 @@ export default function Gallery() {
             <div style={{ width: 50, height: 1, background: "rgba(201,168,76,0.4)" }} />
             <Images size={20} color="#C9A84C" />
             <span style={{
-              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'Noto Sans Bengali', sans-serif",
               color: "#C9A84C",
               fontSize: "0.75rem",
               letterSpacing: "0.22em",
@@ -170,14 +170,14 @@ export default function Gallery() {
             <div style={{ width: 50, height: 1, background: "rgba(201,168,76,0.4)" }} />
           </div>
           <h1 style={{
-            fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
+            fontFamily: "'Tiro Bangla', serif",
             color: "#FAF6EF",
             fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
             fontWeight: 400,
             margin: "0 0 0.75rem",
           }}>গ্যালারি</h1>
           <p style={{
-            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'Noto Sans Bengali', sans-serif",
             color: "rgba(250,246,239,0.55)",
             fontSize: "0.9rem",
             maxWidth: 440,
@@ -186,7 +186,7 @@ export default function Gallery() {
             মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম ও স্মৃতির সংগ্রহ
           </p>
           <p style={{
-            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'Noto Sans Bengali', sans-serif",
             color: "rgba(201,168,76,0.6)",
             fontSize: "0.78rem",
             marginTop: "0.6rem",
@@ -254,7 +254,7 @@ export default function Gallery() {
               >
                 <ZoomIn size={14} color="#C9A84C" style={{ marginBottom: 3 }} />
                 <span style={{
-                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
                   color: "rgba(250,246,239,0.9)",
                   fontSize: "0.68rem",
                   lineHeight: 1.4,
@@ -328,13 +328,13 @@ export default function Gallery() {
               {/* Caption + Share */}
               <div style={{ textAlign: "center", marginTop: "1rem" }}>
                 <p style={{
-                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
                   color: "rgba(250,246,239,0.85)",
                   fontSize: "0.95rem",
                   margin: "0 0 4px",
                 }}>{currentImg.caption}</p>
                 <p style={{
-                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
                   color: "rgba(201,168,76,0.5)",
                   fontSize: "0.75rem",
                   margin: "0 0 12px",
@@ -342,7 +342,7 @@ export default function Gallery() {
                 <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
                   <button
                     onClick={(e) => { e.stopPropagation(); const url = window.location.origin + "/gallery?photo=" + (lightboxIdx ?? 0); navigator.clipboard.writeText(url).catch(() => { const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }); setGalleryCopied(true); setTimeout(() => setGalleryCopied(false), 2000); }}
-                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: galleryCopied ? "rgba(52,211,153,0.15)" : "rgba(201,168,76,0.12)", border: galleryCopied ? "1px solid rgba(52,211,153,0.4)" : "1px solid rgba(201,168,76,0.3)", color: galleryCopied ? "#34D399" : "#C9A84C", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", cursor: "pointer" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: galleryCopied ? "rgba(52,211,153,0.15)" : "rgba(201,168,76,0.12)", border: galleryCopied ? "1px solid rgba(52,211,153,0.4)" : "1px solid rgba(201,168,76,0.3)", color: galleryCopied ? "#34D399" : "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", cursor: "pointer" }}
                   >
                     {galleryCopied ? <Check size={13}/> : <Copy size={13}/>}
                   </button>
@@ -350,7 +350,7 @@ export default function Gallery() {
                     href={"https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(window.location.origin + "/gallery?photo=" + (lightboxIdx ?? 0))}
                     target="_blank" rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: "rgba(24,119,242,0.12)", border: "1px solid rgba(24,119,242,0.3)", color: "#1877F2", fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", textDecoration: "none" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: "rgba(24,119,242,0.12)", border: "1px solid rgba(24,119,242,0.3)", color: "#1877F2", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", textDecoration: "none" }}
                   >
                     <Share2 size={13}/> শেয়ার
                   </a>

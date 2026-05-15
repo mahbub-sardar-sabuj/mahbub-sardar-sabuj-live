@@ -149,7 +149,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
           <div className="bg-[#0D1B2A] p-6 flex justify-between items-start">
             <div>
               <span className="text-[#D4A843] text-xs font-bold tracking-widest uppercase">{book.badge}</span>
-              <h2 className="text-white text-2xl mt-1 leading-tight" style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif" }}>
+              <h2 className="text-white text-2xl mt-1 leading-tight" style={{ fontFamily: "'Tiro Bangla', serif" }}>
                 {book.title}
               </h2>
               <p className="text-[#D4A843] text-sm mt-1">মাহবুব সরদার সবুজ</p>
@@ -325,7 +325,7 @@ export default function EBooks() {
             <p style={{ color: "#D4A843", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1rem" }}>
               Books & E-Books
             </p>
-            <h1 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2.5rem, 6vw, 4rem)", fontWeight: 400, lineHeight: 1.2, marginBottom: "1.25rem" }}>
+            <h1 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2.5rem, 6vw, 4rem)", fontWeight: 400, lineHeight: 1.2, marginBottom: "1.25rem" }}>
               বই সংগ্রহ
             </h1>
             <p style={{ color: "rgba(253,246,236,0.7)", fontSize: "1.05rem", maxWidth: 520, margin: "0 auto 2.5rem", lineHeight: 1.8 }}>
@@ -361,7 +361,7 @@ export default function EBooks() {
           <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Featured</span>
           <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
         </div>
-        <h2 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "1.5rem" }}>
           প্রধান বই
         </h2>
 
@@ -400,7 +400,7 @@ export default function EBooks() {
           {/* Info */}
           <div style={{ flex: 1, padding: "clamp(2rem, 5vw, 3.5rem)", display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 260 }}>
             <p style={{ color: "#D4A843", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.75rem" }}>মাহবুব সরদার সবুজ</p>
-            <h3 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 400, lineHeight: 1.3, marginBottom: "1rem" }}>
+            <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 400, lineHeight: 1.3, marginBottom: "1rem" }}>
               {featuredBook.title}
             </h3>
             <p style={{ color: "rgba(253,246,236,0.75)", fontSize: "1rem", lineHeight: 1.85, marginBottom: "1.5rem" }}>
@@ -460,7 +460,7 @@ export default function EBooks() {
           <span style={{ color: "#D4A843", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>E-Books</span>
           <div style={{ flex: 1, height: 1, background: "rgba(212,168,67,0.2)" }} />
         </div>
-        <h2 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "2rem" }}>
+        <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 400, marginBottom: "2rem" }}>
           ই-বুক সংগ্রহ
         </h2>
 
@@ -525,7 +525,7 @@ export default function EBooks() {
 
               {/* Info */}
               <div style={{ padding: "1.4rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.15rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
+                <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.15rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
                   {book.title}
                 </h3>
                 <p style={{ color: "rgba(201,168,76,0.6)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{book.genre} • {book.year}</p>

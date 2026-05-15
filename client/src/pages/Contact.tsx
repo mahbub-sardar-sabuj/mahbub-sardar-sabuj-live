@@ -48,7 +48,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: "14px 18px",
   color: TEXT,
-  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+  fontFamily: "'Noto Sans Bengali', sans-serif",
   fontSize: "0.95rem",
   outline: "none",
   boxSizing: "border-box",
@@ -171,11 +171,11 @@ export default function Contact() {
                 borderRadius: 50, padding: "6px 20px", marginBottom: "1.5rem",
               }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: GOLD, display: "inline-block", boxShadow: `0 0 8px ${GOLD}` }} />
-                <span style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: GOLD, fontSize: "0.75rem", letterSpacing: "0.18em" }}>যোগাযোগ</span>
+                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: GOLD, fontSize: "0.75rem", letterSpacing: "0.18em" }}>যোগাযোগ</span>
               </div>
 
               <h1 style={{
-                fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
+                fontFamily: "'Tiro Bangla', serif",
                 color: TEXT,
                 fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
                 fontWeight: 400,
@@ -187,7 +187,7 @@ export default function Contact() {
               </h1>
 
               <p style={{
-                fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'Noto Sans Bengali', sans-serif",
                 color: MUTED,
                 fontSize: "1rem",
                 lineHeight: 2,
@@ -240,7 +240,7 @@ export default function Contact() {
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem",
                   }}>✉️</div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>ইমেইল</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>ইমেইল</div>
                     <div className="contact-email-text" style={{ fontFamily: "'Space Grotesk', sans-serif", color: TEXT, fontSize: "0.82rem", fontWeight: 500, wordBreak: "break-all" }}>lekhokmahbubsardarsabuj@gmail.com</div>
                   </div>
                   <div className="email-arrow" style={{ marginLeft: "auto", color: GOLD, fontSize: "1.1rem", flexShrink: 0 }}>→</div>
@@ -263,8 +263,8 @@ export default function Contact() {
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem",
                   }}>📍</div>
                   <div>
-                    <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>অবস্থান</div>
-                    <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: TEXT, fontSize: "0.95rem" }}>সৌদি আরব</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>অবস্থান</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: TEXT, fontSize: "0.95rem" }}>সৌদি আরব</div>
                   </div>
                 </motion.div>
 
@@ -274,7 +274,7 @@ export default function Contact() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <div style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1rem" }}>সামাজিক মাধ্যম</div>
+                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.72rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1rem" }}>সামাজিক মাধ্যম</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                     {socialLinks.map((s, i) => (
                       <motion.a
@@ -325,10 +325,10 @@ export default function Contact() {
                     borderRadius: 16,
                   }}
                 >
-                  <p style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: GOLD, fontSize: "0.98rem", lineHeight: 1.9, margin: 0, fontStyle: "italic" }}>
+                  <p style={{ fontFamily: "'Tiro Bangla', serif", color: GOLD, fontSize: "0.98rem", lineHeight: 1.9, margin: 0, fontStyle: "italic" }}>
                     "পাঠকের ভালোবাসাই আমার লেখার শক্তি।"
                   </p>
-                  <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", marginTop: 8, marginBottom: 0 }}>— মাহবুব সরদার সবুজ</p>
+                  <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", marginTop: 8, marginBottom: 0 }}>— মাহবুব সরদার সবুজ</p>
                 </motion.div>
               </div>
 
@@ -369,15 +369,15 @@ export default function Contact() {
                         transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
                         style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}
                       >✅</motion.div>
-                      <h3 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: GOLD, fontSize: "1.5rem", marginBottom: "0.8rem" }}>বার্তা পাঠানো হয়েছে!</h3>
-                      <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.9rem", lineHeight: 1.9 }}>
+                      <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: GOLD, fontSize: "1.5rem", marginBottom: "0.8rem" }}>বার্তা পাঠানো হয়েছে!</h3>
+                      <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.9rem", lineHeight: 1.9 }}>
                         আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ আপনার বার্তার জন্য — আমি শীঘ্রই উত্তর দেব।
                       </p>
                     </motion.div>
                   ) : (
                     <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <h2 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: TEXT, fontSize: "1.7rem", marginBottom: "0.4rem" }}>বার্তা পাঠান</h2>
-                      <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.88rem", lineHeight: 1.8, marginBottom: "1.8rem" }}>
+                      <h2 style={{ fontFamily: "'Tiro Bangla', serif", color: TEXT, fontSize: "1.7rem", marginBottom: "0.4rem" }}>বার্তা পাঠান</h2>
+                      <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.88rem", lineHeight: 1.8, marginBottom: "1.8rem" }}>
                         আপনার বার্তা পাঠান — আমি যত দ্রুত সম্ভব উত্তর দেব।
                       </p>
 
@@ -399,7 +399,7 @@ export default function Contact() {
                           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
                         >
                           <div>
-                            <label style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>আপনার নাম *</label>
+                            <label style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>আপনার নাম *</label>
                             <input
                               type="text"
                               value={form.name}
@@ -412,7 +412,7 @@ export default function Contact() {
                             />
                           </div>
                           <div>
-                            <label style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>ইমেইল *</label>
+                            <label style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>ইমেইল *</label>
                             <input
                               type="email"
                               value={form.email}
@@ -428,7 +428,7 @@ export default function Contact() {
 
                         {/* Subject */}
                         <div>
-                          <label style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>বিষয় <span style={{ opacity: 0.5 }}>(ঐচ্ছিক)</span></label>
+                          <label style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>বিষয় <span style={{ opacity: 0.5 }}>(ঐচ্ছিক)</span></label>
                           <input
                             type="text"
                             value={form.subject}
@@ -442,7 +442,7 @@ export default function Contact() {
 
                         {/* Message */}
                         <div>
-                          <label style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>বার্তা *</label>
+                          <label style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>বার্তা *</label>
                           <textarea
                             value={form.message}
                             onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
@@ -474,7 +474,7 @@ export default function Contact() {
                             border: "none",
                             borderRadius: 50,
                             padding: "16px 40px",
-                            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
                             fontWeight: 700,
                             fontSize: "1rem",
                             cursor: status === "sending" ? "not-allowed" : "pointer",
@@ -508,14 +508,14 @@ export default function Contact() {
                             borderRadius: 10,
                             padding: "10px 14px",
                             color: "#ff6b6b",
-                            fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
                             fontSize: "0.85rem",
                             textAlign: "center",
                           }}>
                             ⚠️ {errorMsg}
                           </div>
                         )}
-                        <p style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.73rem", textAlign: "center", margin: 0 }}>
+                        <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: MUTED, fontSize: "0.73rem", textAlign: "center", margin: 0 }}>
                           * চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক
                         </p>
                       </form>
