@@ -18,7 +18,7 @@ import { nanoid } from "nanoid";
 
 const GOLD = "#D4A843";
 const NAVY = "#060E1A";
-const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
+const FONT = "'SolaimanLipi', 'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
 const STORAGE_KEY = "mss_live_chat_v5";
 

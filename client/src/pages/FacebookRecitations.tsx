@@ -130,7 +130,7 @@ export default function FacebookRecitations() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             style={{
-              fontFamily: "'Tiro Bangla', serif",
+              fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
               fontSize: "clamp(2.6rem, 6vw, 4rem)",
               fontWeight: 400,
               lineHeight: 1.25,
@@ -166,7 +166,7 @@ export default function FacebookRecitations() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
             style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               color: "rgba(250,246,239,0.55)",
               fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
               lineHeight: 1.75,
@@ -194,7 +194,7 @@ export default function FacebookRecitations() {
               color: "#060E1A",
               textDecoration: "none",
               borderRadius: 999,
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               fontSize: "0.95rem",
               fontWeight: 700,
               boxShadow: "0 12px 28px rgba(201,168,76,0.25)",
@@ -398,7 +398,7 @@ export default function FacebookRecitations() {
                     left: 16, right: 16, bottom: 16,
                   }}>
                     <h2 style={{
-                      fontFamily: "'Tiro Bangla', serif",
+                      fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif",
                       color: "#FAF6EF",
                       fontSize: "1.1rem",
                       fontWeight: 400,
@@ -422,7 +422,7 @@ export default function FacebookRecitations() {
                   borderTop: "1px solid rgba(201,168,76,0.1)",
                 }}>
                   <span style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     color: "#C9A84C",
                     fontSize: "0.88rem",
                     fontWeight: 700,

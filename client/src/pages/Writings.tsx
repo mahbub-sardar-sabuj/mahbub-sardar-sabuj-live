@@ -191,7 +191,7 @@ const CSS = `
     --gold2: #E8C87A;
     --bdr: rgba(255,255,255,.055);
     --bdr2: rgba(255,255,255,.09);
-    --f: 'Noto Serif Bengali', 'SolaimanLipi', serif;
+    --f: 'SolaimanLipi', 'Noto Serif Bengali', serif;
     --r: cubic-bezier(.25,.46,.45,.94);
   }
 

@@ -544,7 +544,7 @@ function ContactCard() {
     >
       <p style={{
         color: "rgba(245,238,222,0.9)",
-        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
         fontSize: "0.85rem",
         lineHeight: 1.8,
         marginBottom: 12,
@@ -583,8 +583,8 @@ function ContactCard() {
             <path d="M13.5 14.5l-2.5-2.667L6 14.5l5.5-5.833 2.5 2.666L18.5 9l-5 5.5z" fill="white"/>
           </svg>
           <div>
-            <div style={{ color: "#60a5fa", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>Messenger-এ মেসেজ করুন</div>
-            <div style={{ color: "rgba(150,180,220,0.65)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>MahbubSardarSabuj</div>
+            <div style={{ color: "#60a5fa", fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>Messenger-এ মেসেজ করুন</div>
+            <div style={{ color: "rgba(150,180,220,0.65)", fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>MahbubSardarSabuj</div>
           </div>
           <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(100,160,255,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -622,8 +622,8 @@ function ContactCard() {
             <polyline points="2,4 12,13 22,4" stroke="#D4A843" strokeWidth="1.5" fill="none"/>
           </svg>
           <div>
-            <div style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>ইমেইল করুন</div>
-            <div style={{ color: "rgba(212,168,67,0.55)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>lekhokmahbubsardarsabuj@gmail.com</div>
+            <div style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>ইমেইল করুন</div>
+            <div style={{ color: "rgba(212,168,67,0.55)", fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>lekhokmahbubsardarsabuj@gmail.com</div>
           </div>
           <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(212,168,67,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -690,7 +690,7 @@ if (!document.getElementById(STYLE_ID)) {
       font-display: swap;
     }
     .chatbot-adorsho, .chatbot-adorsho * {
-      font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+      font-family: 'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
     }
     @keyframes chatbot-ping {
       0% { transform: scale(1); opacity: 0.7; }
@@ -731,7 +731,7 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.45); }
     .chatbot-input::placeholder {
       color: rgba(160,140,100,0.38) !important;
-      font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+      font-family: 'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif !important;
       font-size: 0.78rem !important;
     }
     .chatbot-input:focus {
@@ -833,7 +833,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
           borderRadius: "16px 16px 3px 16px",
           padding: "8px 12px",
           maxWidth: "78%",
-          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+          fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
           fontSize: "0.78rem",
           lineHeight: 1.65,
           fontWeight: 600,
@@ -939,8 +939,8 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                 </svg>
               </div>
               <div style={{ textAlign: "left" }}>
-                <div style={{ color: "#22c55e", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", fontWeight: 700 }}>সরাসরি চ্যাট শুরু করুন</div>
-                <div style={{ color: "rgba(134,239,172,0.6)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>লাইভ চ্যাটে সরাসরি কথা বলুন</div>
+                <div style={{ color: "#22c55e", fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.83rem", fontWeight: 700 }}>সরাসরি চ্যাট শুরু করুন</div>
+                <div style={{ color: "rgba(134,239,172,0.6)", fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>লাইভ চ্যাটে সরাসরি কথা বলুন</div>
               </div>
               <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(34,197,94,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6"/>
@@ -989,7 +989,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                   borderRadius: 20,
                   color: "rgba(212,168,67,0.9)",
                   fontSize: "0.6rem",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontWeight: 700,
                   letterSpacing: "0.03em",
                 }}>
@@ -1035,7 +1035,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                   borderRadius: 20,
                   color: "rgba(165,180,252,0.85)",
                   fontSize: "0.6rem",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontWeight: 700,
                   letterSpacing: "0.03em",
                 }}>
@@ -1052,7 +1052,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
               <div style={{ marginBottom: 8 }}>
                 <div style={{
                   color: "rgba(212,168,67,0.45)",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.56rem",
                   fontWeight: 700,
                   marginBottom: 4,
@@ -1069,7 +1069,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                         borderRadius: 6,
                         color: "rgba(165,180,252,0.75)",
                         fontSize: "0.56rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       }}>{i + 1}. {step}</span>
                       {i < (message.audioPipeline?.length ?? 0) - 1 && (
                         <span style={{ color: "rgba(99,102,241,0.3)", fontSize: "0.5rem" }}>→</span>
@@ -1084,7 +1084,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
               <div style={{ marginBottom: 8 }}>
                 <div style={{
                   color: "rgba(74,222,128,0.45)",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.56rem",
                   fontWeight: 700,
                   marginBottom: 4,
@@ -1103,7 +1103,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                       borderRadius: 8,
                       color: "rgba(134,239,172,0.75)",
                       fontSize: "0.58rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     }}>
                       <span style={{ color: "rgba(74,222,128,0.8)", fontSize: "0.55rem" }}>✓</span>
                       {step}
@@ -1116,7 +1116,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
             {message.audioDescription && (
               <div style={{
                 color: "rgba(235,225,200,0.85)",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                 fontSize: "0.75rem",
                 lineHeight: 1.7,
                 marginBottom: 8,
@@ -1130,7 +1130,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
             {message.audioTechnicalNote && (
               <div style={{
                 color: "rgba(140,155,175,0.65)",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                 fontSize: "0.6rem",
                 lineHeight: 1.6,
                 marginBottom: 7,
@@ -1169,7 +1169,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                 borderRadius: 10,
                 color: "rgba(212,168,67,0.85)",
                 fontSize: "0.65rem",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                 fontWeight: 600,
                 textDecoration: "none",
                 cursor: "pointer",
@@ -1200,7 +1200,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                     borderRadius: 6,
                     color: "rgba(212,168,67,0.6)",
                     fontSize: "0.52rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     fontWeight: 700,
                     letterSpacing: "0.04em",
                   }}>⚙️ {message.processingVersion}</span>
@@ -1213,7 +1213,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                     borderRadius: 6,
                     color: "rgba(74,222,128,0.55)",
                     fontSize: "0.52rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     fontWeight: 600,
                   }}>📦 {message.outputSizeKB} KB</span>
                 )}
@@ -1225,7 +1225,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                     borderRadius: 6,
                     color: "rgba(165,180,252,0.55)",
                     fontSize: "0.52rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     fontWeight: 600,
                   }}>🔧 {message.operationsApplied.length} অপারেশন</span>
                 )}
@@ -1239,7 +1239,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
             borderRadius: "3px 14px 14px 14px",
             padding: "9px 12px",
             color: "rgba(238,230,210,0.92)",
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
             fontSize: "0.78rem",
             lineHeight: 1.75,
             whiteSpace: "pre-wrap",
@@ -1276,7 +1276,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                   borderRadius: 20,
                   padding: "4px 10px",
                   fontSize: "0.68rem",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   cursor: "pointer",
                   fontWeight: 600,
                   letterSpacing: "0.01em",
@@ -1310,7 +1310,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
                 padding: "1px 4px",
                 borderRadius: 4,
                 lineHeight: 1,
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                 transition: "color 0.2s",
               }}
               onMouseEnter={e => (e.currentTarget.style.color = "rgba(212,168,67,0.7)")}
@@ -1365,7 +1365,7 @@ function TypingIndicator({ stage }: { stage?: string | null }) {
             <span style={{
               color: "rgba(212,168,67,0.7)",
               fontSize: "0.62rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
               fontWeight: 600,
               marginLeft: 4,
               letterSpacing: "0.01em",
@@ -2543,14 +2543,14 @@ export default function AIChatbot() {
                 </svg>
                 <div style={{
                   color: "rgba(212,168,67,0.9)",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.85rem",
                   fontWeight: 700,
                   textAlign: "center",
                 }}>ফাইলটি এখানে ছেড়ে দিন</div>
                 <div style={{
                   color: "rgba(212,168,67,0.5)",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.65rem",
                   textAlign: "center",
                 }}>অডিও, ভিডিও বা ছবি</div>
@@ -2614,7 +2614,7 @@ export default function AIChatbot() {
                   <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
                     {/* Shimmer title */}
                     <div style={{
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontWeight: 800,
                       fontSize: "0.86rem",
                       letterSpacing: "0.01em",
@@ -2640,7 +2640,7 @@ export default function AIChatbot() {
                         border: "1px solid rgba(34,197,94,0.18)",
                         fontSize: "0.58rem",
                         fontWeight: 700,
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         letterSpacing: "0.02em",
                         lineHeight: 1.2,
                       }}>
@@ -2660,7 +2660,7 @@ export default function AIChatbot() {
                         background: "rgba(212,168,67,0.07)",
                         border: "1px solid rgba(212,168,67,0.16)",
                         fontSize: "0.56rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         lineHeight: 1.2,
                         fontWeight: 700,
                       }}>যাচাইকৃত তথ্যভিত্তিক</span>
@@ -2685,7 +2685,7 @@ export default function AIChatbot() {
                   <button onClick={clearChat} title="নতুন কথোপকথন"
                     className="chatbot-icon-btn"
                     style={{
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.62rem",
                       color: "rgba(212,168,67,0.65)",
                       background: "rgba(212,168,67,0.05)",
@@ -2741,7 +2741,7 @@ export default function AIChatbot() {
                       border: "none",
                       borderBottom: activeTab === tab ? "1.5px solid rgba(212,168,67,0.8)" : "1.5px solid transparent",
                       color: activeTab === tab ? "rgba(212,168,67,0.95)" : "rgba(160,140,100,0.4)",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.72rem",
                       fontWeight: activeTab === tab ? 700 : 500,
                       letterSpacing: "0.02em",
@@ -2829,7 +2829,7 @@ export default function AIChatbot() {
                   <div style={{
                     color: "rgba(212,168,67,0.35)",
                     fontSize: "0.52rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     fontWeight: 600,
                     letterSpacing: "0.04em",
                     marginBottom: 5,
@@ -2850,7 +2850,7 @@ export default function AIChatbot() {
                           color: "rgba(244,224,164,0.82)",
                           boxShadow: "0 4px 14px rgba(0,0,0,0.16)",
                           fontSize: "0.6rem",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                           cursor: "pointer",
                           fontWeight: 600,
                           whiteSpace: "nowrap",
@@ -2888,7 +2888,7 @@ export default function AIChatbot() {
                       borderRadius: 11,
                       padding: "9px 13px",
                       width: "100%",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     }}>
                       {error}
                     </div>
@@ -2902,7 +2902,7 @@ export default function AIChatbot() {
                         color: "#D4A843",
                         borderRadius: 13,
                         fontSize: "0.75rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontWeight: 600,
                         cursor: "pointer",
                         transition: "all 0.2s",
@@ -2972,14 +2972,14 @@ export default function AIChatbot() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
                         color: "rgba(99,102,241,0.9)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.6rem",
                         fontWeight: 700,
                         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                       }}>{videoFile.name}</div>
                       <div style={{
                         color: "rgba(99,102,241,0.55)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.54rem", marginTop: 1,
                         display: "flex", alignItems: "center", gap: 4,
                       }}>
@@ -3021,7 +3021,7 @@ export default function AIChatbot() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
                         color: "rgba(212,168,67,0.85)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.6rem",
                         fontWeight: 700,
                         overflow: "hidden",
@@ -3031,7 +3031,7 @@ export default function AIChatbot() {
                       }}>{audioFile.name}</div>
                       <div style={{
                         color: "rgba(212,168,67,0.4)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.54rem",
                         marginTop: 1,
                       }}>
@@ -3064,7 +3064,7 @@ export default function AIChatbot() {
                       <span style={{
                         color: "rgba(212,168,67,0.5)",
                         fontSize: "0.54rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         fontWeight: 600,
                         letterSpacing: "0.02em",
                       }}>⚡ দ্রুত প্রিসেট</span>
@@ -3076,7 +3076,7 @@ export default function AIChatbot() {
                           color: "rgba(212,168,67,0.4)",
                           fontSize: "0.54rem",
                           cursor: "pointer",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                           padding: "1px 4px",
                         }}
                       >{showPresets ? "▲ কম" : "▼ আরো"}</button>
@@ -3146,7 +3146,7 @@ export default function AIChatbot() {
                             borderRadius: 999,
                             color: "rgba(212,168,67,0.7)",
                             fontSize: "0.58rem",
-                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                             cursor: "pointer",
                             fontWeight: 600,
                             whiteSpace: "nowrap",
@@ -3191,7 +3191,7 @@ export default function AIChatbot() {
                     </div>
                     <span style={{
                       color: "rgba(212,168,67,0.65)",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.72rem",
                       lineHeight: 1.4,
                     }}>ছবি যুক্ত — পাঠাতে Send বাটনে চাপুন</span>
@@ -3292,7 +3292,7 @@ export default function AIChatbot() {
                         borderRadius: 12,
                         padding: "8px 11px",
                         fontSize: "0.76rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                         resize: "none",
                         minHeight: 36,
                         maxHeight: 88,
@@ -3364,7 +3364,7 @@ export default function AIChatbot() {
                     color: "rgba(80,100,120,0.3)",
                     fontSize: "0.52rem",
                     margin: 0,
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
                   }}>যাচাইকৃত তথ্যভিত্তিক উত্তর • Enter = পাঠান • Shift+Enter = নতুন লাইন</p>
                   {input.length > 0 && (
