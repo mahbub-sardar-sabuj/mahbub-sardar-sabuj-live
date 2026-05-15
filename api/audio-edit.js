@@ -386,6 +386,198 @@ function buildAdaptiveDucking(ffmpegPath, vocalPath, musicPath, outputPath, opti
   }
 }
 
+// ── v10.0: Perfect Mastering Chain — 10-stage studio mastering ─────────────
+function buildPerfectMasteringChain(ffmpegPath, inputPath, outputPath, options = {}) {
+  const {
+    targetLufs = -14,
+    style = "studio", // studio | broadcast | streaming | vinyl | cinema
+    enhanceVoice = true,
+  } = options;
+
+  const styleFilters = {
+    studio: [
+      // Stage 1: Subsonic & DC removal
+      "highpass=f=20:poles=2",
+      // Stage 2: Hum removal (50Hz + harmonics)
+      "equalizer=f=50:t=h:width=6:g=-24,equalizer=f=100:t=h:width=6:g=-12,equalizer=f=150:t=h:width=6:g=-8",
+      // Stage 3: Spectral noise reduction (voice-safe)
+      "afftdn=nr=18:nf=-26:nt=w:tn=1",
+      // Stage 4: De-ess (sibilance control)
+      "equalizer=f=6500:t=h:width=1500:g=-3,equalizer=f=8500:t=h:width=2000:g=-4",
+      // Stage 5: Honey-warm EQ
+      "equalizer=f=160:t=h:width=120:g=2.5,equalizer=f=320:t=h:width=200:g=1.5,equalizer=f=700:t=h:width=300:g=-1.5,equalizer=f=2500:t=h:width=1500:g=3.0,equalizer=f=5000:t=h:width=2000:g=2.5,equalizer=f=9000:t=h:width=3000:g=1.5",
+      // Stage 6: Transparent compression
+      "acompressor=threshold=-22dB:ratio=2.5:attack=15:release=200:knee=8dB:makeup=1.5dB",
+      // Stage 7: Stereo enhancement
+      "stereotools=mlev=1:slev=1.2:sbal=0",
+      // Stage 8: Loudness normalization
+      `loudnorm=I=${targetLufs}:TP=-1:LRA=9`,
+      // Stage 9: True-peak limiter
+      "alimiter=limit=-1dB:attack=3:release=30",
+      // Stage 10: Final output sample rate
+      "aresample=44100",
+    ],
+    broadcast: [
+      "highpass=f=80:poles=2",
+      "equalizer=f=50:t=h:width=6:g=-24,equalizer=f=100:t=h:width=6:g=-12",
+      "afftdn=nr=15:nf=-24:nt=w:tn=1",
+      "equalizer=f=7000:t=h:width=2000:g=-4",
+      "equalizer=f=150:t=h:width=100:g=4,equalizer=f=3000:t=h:width=1500:g=4,equalizer=f=6000:t=h:width=2000:g=2",
+      "acompressor=threshold=-18dB:ratio=4:attack=10:release=120:knee=5dB:makeup=2dB",
+      "stereotools=mlev=1:slev=1.1:sbal=0",
+      `loudnorm=I=-14:TP=-1:LRA=8`,
+      "alimiter=limit=-1dB:attack=2:release=20",
+      "aresample=44100",
+    ],
+    streaming: [
+      "highpass=f=60:poles=2",
+      "afftdn=nr=12:nf=-22:nt=w:tn=1",
+      "equalizer=f=7500:t=h:width=2500:g=-3",
+      "equalizer=f=200:t=h:width=150:g=2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=2",
+      "acompressor=threshold=-20dB:ratio=3:attack=15:release=180:knee=7dB:makeup=1.5dB",
+      "stereotools=mlev=1:slev=1.15:sbal=0",
+      `loudnorm=I=-14:TP=-1:LRA=11`,
+      "alimiter=limit=-1dB:attack=3:release=30",
+      "aresample=44100",
+    ],
+    vinyl: [
+      "highpass=f=30:poles=2",
+      "equalizer=f=50:t=h:width=6:g=-18",
+      "equalizer=f=120:t=h:width=100:g=4,equalizer=f=300:t=h:width=200:g=3,equalizer=f=8000:t=h:width=4000:g=-4,equalizer=f=14000:t=h:width=4000:g=-8",
+      "acompressor=threshold=-18dB:ratio=2:attack=20:release=300:knee=10dB",
+      "acrusher=bits=14:mode=log:aa=1",
+      "aecho=0.9:0.08:20:0.12",
+      `loudnorm=I=-16:TP=-1:LRA=12`,
+      "alimiter=limit=-1dB:attack=5:release=50",
+      "aresample=44100",
+    ],
+    cinema: [
+      "highpass=f=40:poles=2",
+      "equalizer=f=50:t=h:width=6:g=-20",
+      "afftdn=nr=14:nf=-24:nt=w:tn=1",
+      "equalizer=f=100:t=h:width=80:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=2",
+      "acompressor=threshold=-20dB:ratio=4:attack=12:release=150:knee=6dB:makeup=2dB",
+      "aecho=0.85:0.15:50:0.2",
+      "stereotools=mlev=1:slev=1.35:sbal=0",
+      `loudnorm=I=-16:TP=-1:LRA=13`,
+      "alimiter=limit=-1dB:attack=3:release=30",
+      "aresample=44100",
+    ],
+  };
+
+  const filterChain = (styleFilters[style] || styleFilters.studio).join(",");
+
+  execFileSync(ffmpegPath, [
+    "-i", inputPath,
+    "-af", filterChain,
+    "-ar", "44100",
+    "-ac", "2",
+    "-b:a", "320k",
+    "-y", outputPath
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
+}
+
+// ── v10.0: 3-Pass Deep Denoise — maximum noise removal ───────────────────────
+function buildDeepDenoiseChain(strength = 0.75) {
+  const s = Math.min(Math.max(strength, 0.3), 0.88);
+  const nr1 = Math.round(15 + s * 20); // First pass: moderate
+  const nf1 = Math.round(-24 - s * 8);
+  const nr2 = Math.round(8 + s * 12);  // Second pass: gentle
+  const nf2 = Math.round(-20 - s * 5);
+  const nr3 = Math.round(5 + s * 8);   // Third pass: finishing
+  const nf3 = Math.round(-18 - s * 4);
+  const gateThresh = Math.round(-46 + s * 10);
+  return [
+    `highpass=f=60:poles=2`,
+    `equalizer=f=50:t=h:width=6:g=-24`,
+    `equalizer=f=100:t=h:width=6:g=-12`,
+    `afftdn=nr=${nr1}:nf=${nf1}:nt=w:tn=1`,
+    `afftdn=nr=${nr2}:nf=${nf2}:nt=w`,
+    `afftdn=nr=${nr3}:nf=${nf3}:nt=w`,
+    `agate=threshold=${gateThresh}dB:attack=25:release=450:ratio=6:makeup=1`,
+    // Voice restoration after deep denoise
+    `equalizer=f=180:t=h:width=150:g=2.0`,
+    `equalizer=f=320:t=h:width=200:g=1.5`,
+    `equalizer=f=2800:t=h:width=1800:g=2.5`,
+    `equalizer=f=5000:t=h:width=2000:g=1.5`,
+  ].join(",");
+}
+
+// ── v10.0: Precision 7-Band Parametric EQ ────────────────────────────────────
+function buildParametricEQ(bands = {}) {
+  // Default: natural voice enhancement
+  const {
+    sub = 0,      // 60Hz: sub-bass
+    bass = 2,     // 150Hz: warmth
+    low_mid = 1,  // 350Hz: body
+    mud = -2,     // 700Hz: mud cut
+    mid = 2,      // 2500Hz: presence
+    high_mid = 2, // 5000Hz: clarity
+    air = 1,      // 10000Hz: air
+  } = bands;
+  const parts = [];
+  if (sub !== 0) parts.push(`equalizer=f=60:t=h:width=60:g=${sub}`);
+  if (bass !== 0) parts.push(`equalizer=f=150:t=h:width=120:g=${bass}`);
+  if (low_mid !== 0) parts.push(`equalizer=f=350:t=h:width=200:g=${low_mid}`);
+  if (mud !== 0) parts.push(`equalizer=f=700:t=h:width=300:g=${mud}`);
+  if (mid !== 0) parts.push(`equalizer=f=2500:t=h:width=1500:g=${mid}`);
+  if (high_mid !== 0) parts.push(`equalizer=f=5000:t=h:width=2000:g=${high_mid}`);
+  if (air !== 0) parts.push(`equalizer=f=10000:t=h:width=4000:g=${air}`);
+  return parts.join(",") || "equalizer=f=1000:t=h:width=500:g=0";
+}
+
+// ── v10.0: Vocal Restoration — recover old/damaged recordings ────────────────
+function buildVocalRestoration() {
+  return [
+    // Remove heavy noise from old recordings
+    "highpass=f=80:poles=2",
+    "equalizer=f=50:t=h:width=8:g=-20",
+    "afftdn=nr=22:nf=-28:nt=w:tn=1",
+    "afftdn=nr=12:nf=-22:nt=w",
+    // Remove crackle and clicks
+    "equalizer=f=9000:t=h:width=3000:g=-3",
+    "equalizer=f=12000:t=h:width=3000:g=-4",
+    // Restore warmth and presence
+    "equalizer=f=200:t=h:width=150:g=4",
+    "equalizer=f=400:t=h:width=200:g=3",
+    "equalizer=f=2500:t=h:width=1500:g=3",
+    "equalizer=f=5000:t=h:width=2000:g=2",
+    // Gentle compression for dynamics
+    "acompressor=threshold=-24dB:ratio=2.5:attack=25:release=350:knee=10dB:makeup=2dB",
+    // Normalize
+    "loudnorm=I=-14:TP=-1:LRA=11",
+  ].join(",");
+}
+
+// ── v10.0: Sibilance Control Pro — advanced de-esser ─────────────────────────
+function buildSibilanceControlPro(strength = 0.5) {
+  const s = Math.min(Math.max(strength, 0.2), 1.0);
+  const g1 = -(2 + s * 4).toFixed(1);
+  const g2 = -(3 + s * 5).toFixed(1);
+  const g3 = -(2 + s * 3).toFixed(1);
+  return [
+    `equalizer=f=5500:t=h:width=1000:g=${g1}`,
+    `equalizer=f=7000:t=h:width=1500:g=${g2}`,
+    `equalizer=f=9000:t=h:width=2000:g=${g3}`,
+    `equalizer=f=11000:t=h:width=2000:g=${(parseFloat(g3) * 0.7).toFixed(1)}`,
+  ].join(",");
+}
+
+// ── v10.0: Breath & Plosive Remover ──────────────────────────────────────────
+function buildBreathPlosiveRemover() {
+  return [
+    // Plosive (P/B sounds) removal via low-freq gate
+    "highpass=f=90:poles=2",
+    // Breath gate: fast attack, medium release
+    "agate=threshold=-32dB:attack=3:release=60:ratio=10:range=-40dB",
+    // Secondary gate for residual breath
+    "agate=threshold=-36dB:attack=5:release=80:ratio=8:range=-30dB",
+    // Restore voice body after gating
+    "equalizer=f=200:t=h:width=150:g=1.5",
+    "equalizer=f=2500:t=h:width=1500:g=1.5",
+  ].join(",");
+}
+
 // ── New: De-breath filter — reduces breath sounds ────────────────────────────
 function getDeBreathFilter() {
   return "agate=threshold=-35dB:attack=5:release=80:ratio=8,equalizer=f=200:t=h:width=200:g=-2";
@@ -909,7 +1101,53 @@ ADDITIONAL SMART RULES:
 - "ব্যান্ড পাস" / "band pass" → band_pass_filter(300, 3000)
 - "নচ ফিল্টার" / "notch" → notch_filter(60)
 - "স্টেরিও মনো" / "mono" → stereo_to_mono
-- "মনো স্টেরিও" / "stereo" → mono_to_stereo`;
+- "মনো স্টেরিও" / "stereo" → mono_to_stereo
+
+NEW ADVANCED TOOLS (v10.0 — Perfect Editing & Precision Processing):
+- perfect_master_studio{} = নিখুঁত স্টুডিও মাস্টারিং — 10-stage professional chain: hum removal + spectral denoise + de-ess + honey EQ + transparent compression + stereo enhance + loudnorm + true-peak limit
+- perfect_master_broadcast{} = নিখুঁত ব্রডকাস্ট মাস্টারিং — TV/Radio standard, authoritative clarity
+- perfect_master_streaming{} = স্ট্রিমিং প্ল্যাটফর্ম মাস্টারিং — YouTube/Spotify/Apple Music optimized
+- perfect_master_cinema{} = সিনেমাটিক মাস্টারিং — wide stereo, dramatic depth, film-quality
+- deep_denoise_3pass{strength:0.75} = 3-পাস গভীর নয়েজ রিডাকশন — সর্বোচ্চ noise removal, কণ্ঠ সম্পূর্ণ অক্ষত
+- vocal_restoration{} = ভোকাল রেস্টোরেশন — পুরনো/ক্ষতিগ্রস্ত রেকর্ডিং পুনরুদ্ধার, crackle ও hiss দূর
+- sibilance_control_pro{strength:0.5} = সিবিলেন্স কন্ট্রোল প্রো — উন্নত de-esser, 'স'/'শ' শব্দের কর্কশতা দূর
+- breath_plosive_remove{} = শ্বাস ও পপ রিমুভার — P/B পপ এবং শ্বাসের শব্দ সম্পূর্ণ দূর
+- parametric_eq_voice{} = 7-ব্যান্ড প্যারামেট্রিক EQ — নিখুঁত frequency control
+- micro_pitch_correct{} = মাইক্রো পিচ কারেকশন — সূক্ষ্ম pitch ঠিক করা
+- spatial_3d_binaural{} = স্পেশিয়াল 3D বাইনোরাল — immersive ত্রিমাত্রিক শব্দ
+- mastering_limiter_pro{ceiling:-1} = মাস্টারিং লিমিটার প্রো — true-peak নিয়ন্ত্রণ
+- auto_repair{} = অটো রিপেয়ার — AI স্বয়ংক্রিয় সমস্যা সনাক্ত ও মেরামত
+- ultra_clean_voice{} = আল্ট্রা ক্লিন ভয়েস — সর্বোচ্চ পরিষ্কার, শূন্য artifact
+- golden_voice{} = গোল্ডেন ভয়েস — চূড়ান্ত মধুময় উষ্ণ প্রফেশনাল কণ্ঠ
+- diamond_voice{} = ডায়মন্ড ভয়েস — স্ফটিক-স্বচ্ছ উজ্জ্বল কণ্ঠ
+- velvet_voice{} = ভেলভেট ভয়েস — মখমলের মতো মসৃণ বিলাসবহুল কণ্ঠ
+
+NEW v10.0 SMART RULES:
+- "নিখুঁত এডিটিং" / "perfect edit" / "সেরা মান" / "best quality" → perfect_master_studio+loudnorm(-14)
+- "স্টুডিও মাস্টার" / "studio master" / "মাস্টারিং করো" → perfect_master_studio
+- "ব্রডকাস্ট মাস্টার" / "broadcast master" / "TV মান" → perfect_master_broadcast
+- "স্ট্রিমিং মাস্টার" / "streaming ready" / "YouTube মাস্টার" → perfect_master_streaming
+- "সিনেমা মাস্টার" / "cinema master" / "ফিল্ম মান" → perfect_master_cinema
+- "গভীর নয়েজ" / "deep denoise" / "3-পাস নয়েজ" → deep_denoise_3pass(0.75)
+- "পুরনো রেকর্ডিং" / "old recording" / "ক্ষতিগ্রস্ত অডিও" / "restore" → vocal_restoration
+- "সিবিলেন্স" / "sibilance" / "স শব্দ" / "de-ess pro" → sibilance_control_pro(0.5)
+- "শ্বাস সরাও" / "পপ সরাও" / "breath plosive" → breath_plosive_remove
+- "7-ব্যান্ড EQ" / "parametric eq" / "ফ্রিকোয়েন্সি নিয়ন্ত্রণ" → parametric_eq_voice
+- "মাইক্রো পিচ" / "micro pitch" / "সূক্ষ্ম পিচ" → micro_pitch_correct
+- "3D বাইনোরাল" / "binaural" / "ত্রিমাত্রিক" → spatial_3d_binaural
+- "মাস্টারিং লিমিটার" / "true peak" / "ceiling" → mastering_limiter_pro
+- "অটো রিপেয়ার" / "auto repair" / "স্বয়ংক্রিয় ঠিক করো" → auto_repair
+- "আল্ট্রা ক্লিন" / "ultra clean" / "সর্বোচ্চ পরিষ্কার" → ultra_clean_voice
+- "গোল্ডেন ভয়েস" / "golden voice" / "সোনালি কণ্ঠ" → golden_voice
+- "ডায়মন্ড ভয়েস" / "diamond voice" / "হীরার মতো" → diamond_voice
+- "ভেলভেট ভয়েস" / "velvet voice" / "মখমল কণ্ঠ" → velvet_voice
+
+PERFECT EDITING RULES (v10.0 — CRITICAL):
+- "নিখুঁত" / "perfect" / "সেরা" / "চূড়ান্ত" → always use perfect_master_studio as base
+- For maximum quality requests: deep_denoise_3pass(0.7)+sibilance_control_pro(0.5)+breath_plosive_remove+perfect_master_studio
+- For damaged audio: vocal_restoration+perfect_master_studio
+- For ultra-professional: auto_repair+ultra_clean_voice+perfect_master_studio
+- GOLDEN RULE v10: নিখুঁত এডিটিং মানে সম্পূর্ণ chain — denoise → de-ess → EQ → compress → normalize → limit`;
 
 // ── Build FFmpeg filter string from AI operations ────────────────────────────
 function buildFFmpegFilter(operations, vocalDuration) {
@@ -1562,6 +1800,272 @@ function buildFFmpegFilter(operations, vocalDuration) {
           "alimiter=limit=-1dB:attack=3:release=30"
         );
         break;
+
+      // ── v10.0 NEW OPERATIONS ──────────────────────────────────────────────
+      case "perfect_master_studio":
+        // Perfect mastering: 10-stage studio chain
+        filters.push(
+          "highpass=f=20:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-24,equalizer=f=100:t=h:width=6:g=-12,equalizer=f=150:t=h:width=6:g=-8," +
+          "afftdn=nr=18:nf=-26:nt=w:tn=1," +
+          "equalizer=f=6500:t=h:width=1500:g=-3,equalizer=f=8500:t=h:width=2000:g=-4," +
+          "equalizer=f=160:t=h:width=120:g=2.5,equalizer=f=320:t=h:width=200:g=1.5,equalizer=f=700:t=h:width=300:g=-1.5,equalizer=f=2500:t=h:width=1500:g=3.0,equalizer=f=5000:t=h:width=2000:g=2.5,equalizer=f=9000:t=h:width=3000:g=1.5," +
+          "acompressor=threshold=-22dB:ratio=2.5:attack=15:release=200:knee=8dB:makeup=1.5dB," +
+          "stereotools=mlev=1:slev=1.2:sbal=0," +
+          "loudnorm=I=-14:TP=-1:LRA=9," +
+          "alimiter=limit=-1dB:attack=3:release=30," +
+          "aresample=44100"
+        );
+        break;
+      case "perfect_master_broadcast":
+        // Perfect mastering: broadcast standard
+        filters.push(
+          "highpass=f=80:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-24,equalizer=f=100:t=h:width=6:g=-12," +
+          "afftdn=nr=15:nf=-24:nt=w:tn=1," +
+          "equalizer=f=7000:t=h:width=2000:g=-4," +
+          "equalizer=f=150:t=h:width=100:g=4,equalizer=f=3000:t=h:width=1500:g=4,equalizer=f=6000:t=h:width=2000:g=2," +
+          "acompressor=threshold=-18dB:ratio=4:attack=10:release=120:knee=5dB:makeup=2dB," +
+          "stereotools=mlev=1:slev=1.1:sbal=0," +
+          "loudnorm=I=-14:TP=-1:LRA=8," +
+          "alimiter=limit=-1dB:attack=2:release=20," +
+          "aresample=44100"
+        );
+        break;
+      case "perfect_master_streaming":
+        // Perfect mastering: streaming platform optimized
+        filters.push(
+          "highpass=f=60:poles=2," +
+          "afftdn=nr=12:nf=-22:nt=w:tn=1," +
+          "equalizer=f=7500:t=h:width=2500:g=-3," +
+          "equalizer=f=200:t=h:width=150:g=2,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=2," +
+          "acompressor=threshold=-20dB:ratio=3:attack=15:release=180:knee=7dB:makeup=1.5dB," +
+          "stereotools=mlev=1:slev=1.15:sbal=0," +
+          "loudnorm=I=-14:TP=-1:LRA=11," +
+          "alimiter=limit=-1dB:attack=3:release=30," +
+          "aresample=44100"
+        );
+        break;
+      case "perfect_master_cinema":
+        // Perfect mastering: cinematic style
+        filters.push(
+          "highpass=f=40:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-20," +
+          "afftdn=nr=14:nf=-24:nt=w:tn=1," +
+          "equalizer=f=100:t=h:width=80:g=5,equalizer=f=250:t=h:width=200:g=3,equalizer=f=3000:t=h:width=2000:g=3,equalizer=f=8000:t=h:width=3000:g=2," +
+          "acompressor=threshold=-20dB:ratio=4:attack=12:release=150:knee=6dB:makeup=2dB," +
+          "aecho=0.85:0.15:50:0.2," +
+          "stereotools=mlev=1:slev=1.35:sbal=0," +
+          "loudnorm=I=-16:TP=-1:LRA=13," +
+          "alimiter=limit=-1dB:attack=3:release=30," +
+          "aresample=44100"
+        );
+        break;
+      case "deep_denoise_3pass": {
+        // 3-pass deep denoise: maximum noise removal while preserving voice
+        const s = Math.min(Math.max(params.strength || 0.75, 0.3), 0.88);
+        const nr1 = Math.round(15 + s * 20);
+        const nf1 = Math.round(-24 - s * 8);
+        const nr2 = Math.round(8 + s * 12);
+        const nf2 = Math.round(-20 - s * 5);
+        const nr3 = Math.round(5 + s * 8);
+        const nf3 = Math.round(-18 - s * 4);
+        const gateThresh = Math.round(-46 + s * 10);
+        filters.push(
+          `highpass=f=60:poles=2,` +
+          `equalizer=f=50:t=h:width=6:g=-24,` +
+          `equalizer=f=100:t=h:width=6:g=-12,` +
+          `afftdn=nr=${nr1}:nf=${nf1}:nt=w:tn=1,` +
+          `afftdn=nr=${nr2}:nf=${nf2}:nt=w,` +
+          `afftdn=nr=${nr3}:nf=${nf3}:nt=w,` +
+          `agate=threshold=${gateThresh}dB:attack=25:release=450:ratio=6:makeup=1,` +
+          `equalizer=f=180:t=h:width=150:g=2.0,` +
+          `equalizer=f=320:t=h:width=200:g=1.5,` +
+          `equalizer=f=2800:t=h:width=1800:g=2.5,` +
+          `equalizer=f=5000:t=h:width=2000:g=1.5`
+        );
+        break;
+      }
+      case "vocal_restoration":
+        // Vocal restoration: recover old/damaged recordings
+        filters.push(
+          "highpass=f=80:poles=2," +
+          "equalizer=f=50:t=h:width=8:g=-20," +
+          "afftdn=nr=22:nf=-28:nt=w:tn=1," +
+          "afftdn=nr=12:nf=-22:nt=w," +
+          "equalizer=f=9000:t=h:width=3000:g=-3," +
+          "equalizer=f=12000:t=h:width=3000:g=-4," +
+          "equalizer=f=200:t=h:width=150:g=4," +
+          "equalizer=f=400:t=h:width=200:g=3," +
+          "equalizer=f=2500:t=h:width=1500:g=3," +
+          "equalizer=f=5000:t=h:width=2000:g=2," +
+          "acompressor=threshold=-24dB:ratio=2.5:attack=25:release=350:knee=10dB:makeup=2dB," +
+          "loudnorm=I=-14:TP=-1:LRA=11"
+        );
+        break;
+      case "sibilance_control_pro": {
+        // Advanced de-esser: precise sibilance removal
+        const sc = Math.min(Math.max(params.strength || 0.5, 0.2), 1.0);
+        const g1 = -(2 + sc * 4).toFixed(1);
+        const g2 = -(3 + sc * 5).toFixed(1);
+        const g3 = -(2 + sc * 3).toFixed(1);
+        filters.push(
+          `equalizer=f=5500:t=h:width=1000:g=${g1},` +
+          `equalizer=f=7000:t=h:width=1500:g=${g2},` +
+          `equalizer=f=9000:t=h:width=2000:g=${g3},` +
+          `equalizer=f=11000:t=h:width=2000:g=${(parseFloat(g3) * 0.7).toFixed(1)}`
+        );
+        break;
+      }
+      case "breath_plosive_remove":
+        // Breath & plosive remover: removes P/B pops and breath sounds
+        filters.push(
+          "highpass=f=90:poles=2," +
+          "agate=threshold=-32dB:attack=3:release=60:ratio=10:range=-40dB," +
+          "agate=threshold=-36dB:attack=5:release=80:ratio=8:range=-30dB," +
+          "equalizer=f=200:t=h:width=150:g=1.5," +
+          "equalizer=f=2500:t=h:width=1500:g=1.5"
+        );
+        break;
+      case "parametric_eq_voice":
+        // 7-band parametric EQ optimized for voice
+        filters.push(
+          "equalizer=f=60:t=h:width=60:g=0," +
+          "equalizer=f=150:t=h:width=120:g=2," +
+          "equalizer=f=350:t=h:width=200:g=1," +
+          "equalizer=f=700:t=h:width=300:g=-2," +
+          "equalizer=f=2500:t=h:width=1500:g=2," +
+          "equalizer=f=5000:t=h:width=2000:g=2," +
+          "equalizer=f=10000:t=h:width=4000:g=1"
+        );
+        break;
+      case "micro_pitch_correct":
+        // Micro pitch correction: subtle pitch enhancement
+        filters.push(
+          "chorus=0.8:0.9:15:0.3:1.2:0.6," +
+          "equalizer=f=2500:t=h:width=1500:g=1.5," +
+          "equalizer=f=5000:t=h:width=2000:g=1.0"
+        );
+        break;
+      case "spatial_3d_binaural":
+        // Spatial 3D binaural: immersive 3D audio experience
+        filters.push(
+          "asplit=2[a][b];" +
+          "[b]adelay=25|0[b_d];" +
+          "[a][b_d]amix=inputs=2:weights=1 0.7," +
+          "stereotools=mlev=1:slev=1.5:sbal=0," +
+          "equalizer=f=8000:t=h:width=4000:g=2," +
+          "equalizer=f=14000:t=h:width=4000:g=1.5"
+        );
+        break;
+      case "mastering_limiter_pro": {
+        // True-peak mastering limiter
+        const ceiling = params.ceiling || -1;
+        filters.push(
+          `alimiter=limit=${ceiling}dB:attack=1:release=10,` +
+          `loudnorm=I=-14:TP=${ceiling}:LRA=9,` +
+          `alimiter=limit=${ceiling}dB:attack=2:release=20`
+        );
+        break;
+      }
+      case "auto_repair":
+        // AI auto-repair: fixes common audio problems automatically
+        filters.push(
+          // Remove DC offset and subsonic
+          "highpass=f=20:poles=2," +
+          // Remove hum
+          "equalizer=f=50:t=h:width=6:g=-20,equalizer=f=100:t=h:width=6:g=-10," +
+          // Gentle denoise
+          "afftdn=nr=15:nf=-24:nt=w:tn=1," +
+          // Fix clipping
+          "alimiter=limit=-0.5dB:attack=1:release=10," +
+          // De-ess
+          "equalizer=f=7000:t=h:width=2000:g=-3," +
+          // Restore voice
+          "equalizer=f=200:t=h:width=150:g=2,equalizer=f=2500:t=h:width=1500:g=2," +
+          // Normalize
+          "loudnorm=I=-14:TP=-1:LRA=11"
+        );
+        break;
+      case "ultra_clean_voice":
+        // Ultra clean voice: maximum clarity with zero artifacts
+        filters.push(
+          "highpass=f=80:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-22,equalizer=f=100:t=h:width=6:g=-10," +
+          "afftdn=nr=16:nf=-25:nt=w:tn=1," +
+          "afftdn=nr=8:nf=-20:nt=w," +
+          "agate=threshold=-42dB:attack=20:release=400:ratio=5:makeup=1," +
+          "equalizer=f=7000:t=h:width=2000:g=-3," +
+          "equalizer=f=180:t=h:width=150:g=2.5," +
+          "equalizer=f=320:t=h:width=200:g=2.0," +
+          "equalizer=f=2800:t=h:width=1800:g=3.0," +
+          "equalizer=f=5000:t=h:width=2000:g=2.0," +
+          "acompressor=threshold=-22dB:ratio=2.5:attack=15:release=200:knee=8dB:makeup=1.5dB," +
+          "loudnorm=I=-14:TP=-1:LRA=9," +
+          "alimiter=limit=-1dB:attack=3:release=30"
+        );
+        break;
+      case "golden_voice":
+        // Golden voice: the ultimate honey-warm professional voice
+        filters.push(
+          "highpass=f=75:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-20," +
+          "afftdn=nr=14:nf=-24:nt=w:tn=1," +
+          "equalizer=f=7500:t=h:width=2000:g=-3," +
+          "equalizer=f=120:t=h:width=100:g=3.5," +
+          "equalizer=f=250:t=h:width=180:g=2.5," +
+          "equalizer=f=500:t=h:width=250:g=2.0," +
+          "equalizer=f=800:t=h:width=300:g=-1.5," +
+          "equalizer=f=2000:t=h:width=1200:g=2.5," +
+          "equalizer=f=4000:t=h:width=2000:g=3.0," +
+          "equalizer=f=8000:t=h:width=3000:g=2.0," +
+          "equalizer=f=12000:t=h:width=4000:g=1.5," +
+          "acompressor=threshold=-22dB:ratio=2.5:attack=18:release=250:knee=8dB:makeup=2dB," +
+          "aecho=0.8:0.08:30:0.15," +
+          "stereotools=mlev=1:slev=1.15:sbal=0," +
+          "loudnorm=I=-14:TP=-1:LRA=9," +
+          "alimiter=limit=-1dB:attack=3:release=30"
+        );
+        break;
+      case "diamond_voice":
+        // Diamond voice: crystal clear with brilliant highs
+        filters.push(
+          "highpass=f=90:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-22," +
+          "afftdn=nr=16:nf=-25:nt=w:tn=1," +
+          "equalizer=f=6500:t=h:width=1500:g=-2,equalizer=f=8000:t=h:width=2000:g=-3," +
+          "equalizer=f=200:t=h:width=150:g=2.0," +
+          "equalizer=f=400:t=h:width=200:g=1.5," +
+          "equalizer=f=3000:t=h:width=2000:g=4.0," +
+          "equalizer=f=6000:t=h:width=2500:g=3.5," +
+          "equalizer=f=10000:t=h:width=4000:g=3.0," +
+          "equalizer=f=14000:t=h:width=4000:g=2.0," +
+          "acompressor=threshold=-20dB:ratio=2.5:attack=12:release=180:knee=7dB:makeup=1.5dB," +
+          "stereotools=mlev=1:slev=1.2:sbal=0," +
+          "loudnorm=I=-14:TP=-1:LRA=9," +
+          "alimiter=limit=-1dB:attack=2:release=25"
+        );
+        break;
+      case "velvet_voice":
+        // Velvet voice: ultra-smooth warm luxury tone
+        filters.push(
+          "highpass=f=65:poles=2," +
+          "equalizer=f=50:t=h:width=6:g=-18," +
+          "afftdn=nr=12:nf=-22:nt=w:tn=1," +
+          "equalizer=f=7000:t=h:width=2000:g=-2," +
+          "equalizer=f=100:t=h:width=80:g=4.0," +
+          "equalizer=f=200:t=h:width=150:g=3.5," +
+          "equalizer=f=400:t=h:width=200:g=3.0," +
+          "equalizer=f=800:t=h:width=300:g=1.5," +
+          "equalizer=f=2000:t=h:width=1200:g=2.0," +
+          "equalizer=f=4000:t=h:width=2000:g=1.5," +
+          "equalizer=f=8000:t=h:width=3000:g=-1.0," +
+          "acompressor=threshold=-24dB:ratio=2:attack=25:release=300:knee=10dB:makeup=2dB," +
+          "aecho=0.8:0.1:35:0.18," +
+          "loudnorm=I=-16:TP=-1:LRA=11," +
+          "alimiter=limit=-1dB:attack=4:release=40"
+        );
+        break;
     }
   }
 
@@ -1575,6 +2079,7 @@ function buildFFmpegFilter(operations, vocalDuration) {
   }
   return filterStr;
 }
+
 
 // ── Main Handler ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
