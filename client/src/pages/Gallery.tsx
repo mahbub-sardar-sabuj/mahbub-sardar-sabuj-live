@@ -83,6 +83,23 @@ export default function Gallery() {
       }
     }
   }, [location]);
+  // কীবোর্ড নেভিগেশন — ArrowLeft, ArrowRight, Escape
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setLightboxIdx(null);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("photo");
+        window.history.replaceState(null, "", url.toString());
+      } else if (e.key === "ArrowLeft") {
+        setLightboxIdx(prev => prev === null ? null : (prev - 1 + galleryImages.length) % galleryImages.length);
+      } else if (e.key === "ArrowRight") {
+        setLightboxIdx(prev => prev === null ? null : (prev + 1) % galleryImages.length);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
   const openLightbox = (idx: number) => {
     setLightboxIdx(idx);

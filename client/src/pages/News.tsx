@@ -46,7 +46,14 @@ export default function News() {
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
-  const [comments, setComments] = useState<Record<number, Comment[]>>({});
+  const [comments, setComments] = useState<Record<number, Comment[]>>(() => {
+    try {
+      const saved = localStorage.getItem("sardar-sangbad-comments");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
   const [copySuccessId, setCopySuccessId] = useState<number | null>(null);
   const [sharePopupId, setSharePopupId] = useState<number | null>(null);
   const [tickerIndex, setTickerIndex] = useState(0);
@@ -109,18 +116,26 @@ export default function News() {
       likes: 0,
       liked: false
     };
-    setComments(prev => ({ ...prev, [newsId]: [newComment, ...(prev[newsId] || [])] }));
+    setComments(prev => {
+      const updated = { ...prev, [newsId]: [newComment, ...(prev[newsId] || [])] };
+      try { localStorage.setItem("sardar-sangbad-comments", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
     setCommentName("");
     setCommentText("");
   };
 
   const handleLikeComment = (newsId: number, commentId: number) => {
-    setComments(prev => ({
-      ...prev,
-      [newsId]: (prev[newsId] || []).map(c =>
-        c.id === commentId ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
-      )
-    }));
+    setComments(prev => {
+      const updated = {
+        ...prev,
+        [newsId]: (prev[newsId] || []).map(c =>
+          c.id === commentId ? { ...c, likes: c.liked ? c.likes - 1 : c.likes + 1, liked: !c.liked } : c
+        ),
+      };
+      try { localStorage.setItem("sardar-sangbad-comments", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
 
   const getShareUrl = (newsId: number) => {

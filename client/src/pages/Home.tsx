@@ -19,7 +19,7 @@ import AdSenseAd from "@/components/AdSenseAd";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
-const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
+const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile2_57482935.jpg";
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
 const BOOK_COVER = "/images/book-cover-20260328.jpg";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
@@ -1057,7 +1057,7 @@ export default function Home() {
                     📖 বই কিনুন
                   </motion.button>
                 </a>
-                <a href="https://www.facebook.com/Lekhok.MahbubSardarSabuj" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer">
                   <motion.button
                     whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(201,168,76,0.2)" }}
                     whileTap={{ scale: 0.97 }}

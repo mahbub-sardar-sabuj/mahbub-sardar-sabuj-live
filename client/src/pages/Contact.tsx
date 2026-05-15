@@ -14,8 +14,8 @@ const MUTED = "rgba(250,246,239,0.55)";
 const socialLinks = [
   {
     name: "Facebook",
-    handle: "Lekhok.MahbubSardarSabuj",
-    url: "https://facebook.com/Lekhok.MahbubSardarSabuj",
+    handle: "MahbubSardarSabuj",
+    url: "https://facebook.com/MahbubSardarSabuj",
     icon: "f",
     color: "#1877F2",
     bg: "rgba(24,119,242,0.08)",

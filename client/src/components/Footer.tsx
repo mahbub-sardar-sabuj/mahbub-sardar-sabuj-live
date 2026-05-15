@@ -36,17 +36,34 @@ export default function Footer() {
   const [location] = useLocation();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
 
   if (isAmioLikhboPage) {
     return null;
   }
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
+    if (!email.trim() || subscribing) return;
+    setSubscribing(true);
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Newsletter Subscriber",
+          email: email.trim(),
+          subject: "নিউজলেটার সাবস্ক্রিপশন",
+          message: "নতুন সাবস্ক্রাইবার: " + email.trim() + " — mahbubsardarsabuj.com ওয়েবসাইট থেকে নিউজলেটার সাবস্ক্রাইব করেছেন।",
+        }),
+      });
+    } catch {
+      // Silent fail — show success regardless
+    } finally {
       setSubscribed(true);
       setEmail("");
+      setSubscribing(false);
     }
   };
 
@@ -155,17 +172,19 @@ export default function Footer() {
                   />
                   <motion.button
                     type="submit"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    disabled={subscribing}
+                    whileHover={subscribing ? {} : { scale: 1.05 }}
+                    whileTap={subscribing ? {} : { scale: 0.95 }}
                     style={{
                       padding: "9px 14px",
-                      background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
+                      background: subscribing ? "rgba(201,168,76,0.4)" : "linear-gradient(135deg, #C9A84C, #E8C97A)",
                       border: "none", borderRadius: 6,
-                      color: "#060E1A", cursor: "pointer",
+                      color: "#060E1A", cursor: subscribing ? "not-allowed" : "pointer",
                       display: "flex", alignItems: "center",
+                      opacity: subscribing ? 0.7 : 1,
                     }}
                   >
-                    <ArrowRight size={16} />
+                    {subscribing ? <span style={{ fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>...</span> : <ArrowRight size={16} />}
                   </motion.button>
                 </form>
               )}

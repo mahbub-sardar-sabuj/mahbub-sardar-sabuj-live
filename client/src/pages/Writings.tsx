@@ -2064,11 +2064,12 @@ export default function Writings() {
   const hasMoreWritings = visibleCount < filtered.length;
 
   useEffect(() => {
-    if (match && params?.slug) {
+    if (match && params?.slug && archiveReady) {
       const w = archive.find(wr => makeSlug(wr.title, wr.id) === params.slug);
       if (w) setSel(w);
+      // If archive is ready but writing not found, slug may be invalid — stay on page
     }
-  }, [archive, match, params?.slug]);
+  }, [archive, match, params?.slug, archiveReady]);
 
   const handleCardClick = useCallback((w: Writing) => {
     setSel(w);

@@ -105,7 +105,7 @@ const SYSTEM_PROMPT = `তুমি মাহবুব সরদার সবু
 
 ## যোগাযোগ তথ্য
 - ইমেইল: lekhokmahbubsardarsabuj@gmail.com
-- Facebook পেজ: https://facebook.com/Lekhok.MahbubSardarSabuj
+- Facebook পেজ: https://facebook.com/MahbubSardarSabuj
 - Instagram: https://instagram.com/mahbub_sardar_sabuj
 - YouTube: https://youtube.com/@MahbubSardarSabuj
 
@@ -204,7 +204,7 @@ function buildFallbackReply(messages = []) {
     return "মাহবুব সরদার সবুজের বই সংগ্রহ:\n\n📚 ফিজিক্যাল বই: \"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" — রকমারি: https://rkmri.co/TTMEoA3l3pM0/\n\n📖 বিনামূল্যে ই-বুক:\n• স্মৃতির বসন্তে তুমি: [BUTTON:/ebooks/read/smritir-boshonte]\n• চাঁদফুল: [BUTTON:/ebooks/read/chand-phool]\n• সময়ের গহ্বরে: [BUTTON:/ebooks/read/shomoyer-gohvore]\n• অনবদ্য লেখা: [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব বই দেখতে: [BUTTON:/ebooks]";
   }
   if (/যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|youtube/.test(userText)) {
-    return "লেখকের সাথে যোগাযোগ করুন:\n📧 ইমেইল: lekhokmahbubsardarsabuj@gmail.com\n📘 Facebook: https://facebook.com/Lekhok.MahbubSardarSabuj\n📸 Instagram: https://instagram.com/mahbub_sardar_sabuj\n▶️ YouTube: https://youtube.com/@MahbubSardarSabuj\n\nযোগাযোগ ফর্ম: [BUTTON:/contact]";
+    return "লেখকের সাথে যোগাযোগ করুন:\n📧 ইমেইল: lekhokmahbubsardarsabuj@gmail.com\n📘 Facebook: https://facebook.com/MahbubSardarSabuj\n📸 Instagram: https://instagram.com/mahbub_sardar_sabuj\n▶️ YouTube: https://youtube.com/@MahbubSardarSabuj\n\nযোগাযোগ ফর্ম: [BUTTON:/contact]";
   }
   if (/কে|পরিচয়|about|লেখক|কবি|জন্ম|কুমিল্লা|সৌদি|মাহবুব/.test(userText)) {
     return "মাহবুব সরদার সবুজ বাংলা ভাষার একজন লেখক ও কবি। কুমিল্লার বরুড়া উপজেলার আরিফপুর গ্রামে জন্মগ্রহণ করেন। ২০১৫ থেকে লেখালেখি শুরু, বর্তমানে সৌদি আরবে কর্মরত। ফেসবুকে ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার।\n\nবিস্তারিত: [BUTTON:/about]";

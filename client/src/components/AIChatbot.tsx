@@ -510,7 +510,7 @@ function ContactCard() {
       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         {/* Messenger button */}
         <a
-          href="https://m.me/Lekhok.MahbubSardarSabuj"
+          href="https://m.me/MahbubSardarSabuj"
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -540,7 +540,7 @@ function ContactCard() {
           </svg>
           <div>
             <div style={{ color: "#60a5fa", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", fontWeight: 700 }}>Messenger-এ মেসেজ করুন</div>
-            <div style={{ color: "rgba(150,180,220,0.65)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>Lekhok.MahbubSardarSabuj</div>
+            <div style={{ color: "rgba(150,180,220,0.65)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", marginTop: 1 }}>MahbubSardarSabuj</div>
           </div>
           <svg style={{ marginLeft: "auto", flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(100,160,255,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
