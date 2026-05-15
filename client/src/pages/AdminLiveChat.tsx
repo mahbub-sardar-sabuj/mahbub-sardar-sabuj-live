@@ -9,7 +9,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 
 const GOLD = "#D4A843";
 const NAVY = "#060E1A";
-const FONT = "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif";
+const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
 function formatTime(date: Date | string) {
   return new Date(date).toLocaleString("bn-BD", {

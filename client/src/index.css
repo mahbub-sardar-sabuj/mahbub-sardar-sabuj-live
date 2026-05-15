@@ -79,8 +79,8 @@
   --color-cream: oklch(0.97 0.005 80);
   --color-cream-dark: oklch(0.93 0.008 80);
 
-  --font-bengali: 'SolaimanLipi', 'AdorshoLipi', 'Tiro Bangla', 'SolaimanLipi', 'Noto Sans Bengali', serif;
-  --font-bengali-body: 'SolaimanLipi', 'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+  --font-bengali: 'SolaimanLipi', 'AdorshoLipi', 'Tiro Bangla', 'Noto Sans Bengali', serif;
+  --font-bengali-body: 'SolaimanLipi', 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
   --font-display: 'SolaimanLipi', 'DM Serif Display', serif;
   --font-body: 'SolaimanLipi', 'Space Grotesk', sans-serif;
 }
@@ -129,7 +129,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'SolaimanLipi', 'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
+    font-family: 'SolaimanLipi', 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -185,7 +185,7 @@
 
   /* Section heading style */
   .section-heading {
-    font-family: 'SolaimanLipi', 'AdorshoLipi', 'SolaimanLipi', 'Tiro Bangla', serif;
+    font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
     position: relative;
     display: inline-block;
     padding-bottom: 12px;

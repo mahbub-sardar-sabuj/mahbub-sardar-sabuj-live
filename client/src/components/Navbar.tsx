@@ -202,7 +202,7 @@ export default function Navbar() {
                   animation: "ping 1.5s ease-in-out infinite",
                 }} />
                 <span style={{
-                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
                   fontSize: "0.72rem",
                   color: "#D4A843",
                   fontWeight: 600,
@@ -212,7 +212,7 @@ export default function Navbar() {
                   আমাকে জিজ্ঞেস করুন
                 </span>
                 <span style={{
-                  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
                   fontSize: "0.65rem",
                   color: "rgba(212,168,67,0.55)",
                   whiteSpace: "nowrap",
@@ -284,7 +284,7 @@ export default function Navbar() {
             </span>
             <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
               <span style={{
-                fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Tiro Bangla', serif",
+                fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                 fontSize: isDesktop ? "1.12rem" : "1.02rem",
                 fontWeight: 800,
                 letterSpacing: "0.02em",
@@ -297,7 +297,7 @@ export default function Navbar() {
                 মাহবুব সরদার সবুজ
               </span>
               <span style={{
-                fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 fontSize: "0.65rem",
                 letterSpacing: "0.1em",
                 color: "rgba(212,168,67,0.55)",
@@ -316,7 +316,7 @@ export default function Navbar() {
                   <Link key={link.href} href={link.href}>
                     <span
                       style={{
-                        fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
                         color: location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)",
                         padding: "9px 14px",
                         textDecoration: "none",
@@ -353,7 +353,7 @@ export default function Navbar() {
                     href={link.href}
                     onClick={(e) => { e.preventDefault(); handleNavClick(link.href, link.type); }}
                     style={{
-                      fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
                       color: "rgba(253,246,236,0.9)",
                       padding: "9px 14px",
                       textDecoration: "none",
@@ -494,7 +494,7 @@ export default function Navbar() {
                 {/* Name display — single line */}
                 <div style={{ display: "flex", flexDirection: "column", position: "relative", flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Tiro Bangla', serif",
+                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                     fontSize: "1.25rem",
                     fontWeight: 800,
                     lineHeight: 1.2,
@@ -513,7 +513,7 @@ export default function Navbar() {
                     marginBottom: 6,
                   }} />
                   <div style={{
-                    fontFamily: "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     fontSize: "0.72rem",
                     color: "rgba(212,168,67,0.55)",
                     letterSpacing: "0.06em",
@@ -550,7 +550,7 @@ export default function Navbar() {
                         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                         whileTap={{ scale: 0.983 }}
                         style={{
-                          fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'Noto Sans Bengali', sans-serif",
                           color: active ? "#0D1B2A" : "#FDF6EC",
                           background: active
                             ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
@@ -666,7 +666,7 @@ export default function Navbar() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.28, ease: "easeOut" }}
                             style={{
-                              fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+                              fontFamily: "'Noto Sans Bengali', sans-serif",
                               color: active ? "#0D1B2A" : "#FDF6EC",
                               background: active
                                 ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"

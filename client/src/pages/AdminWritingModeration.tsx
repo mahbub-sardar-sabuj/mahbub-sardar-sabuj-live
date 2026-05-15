@@ -21,7 +21,7 @@ import {
 
 const GOLD = "#D4A843";
 const NAVY = "#060E1A";
-const FONT = "'AdorshoLipi', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif";
+const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
 const CATEGORY_LABELS: Record<string, string> = {
   experience: "অভিজ্ঞতা",

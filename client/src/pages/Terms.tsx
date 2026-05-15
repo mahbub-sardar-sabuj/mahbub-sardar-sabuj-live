@@ -18,7 +18,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 const pStyle: React.CSSProperties = {
-  fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif",
+  fontFamily: "'Noto Sans Bengali', sans-serif",
   color: "rgba(253,246,236,0.84)",
   fontSize: "1rem",
   lineHeight: 1.95,
@@ -41,7 +41,7 @@ export default function Terms() {
             <p style={{ color: "#D4A843", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.84rem", fontFamily: "'Space Grotesk', sans-serif", marginBottom: 12 }}>
               Website Terms
             </p>
-            <h1 style={{ fontFamily: "'SolaimanLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2rem, 4vw, 3.2rem)", marginBottom: 12 }}>
+            <h1 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2rem, 4vw, 3.2rem)", marginBottom: 12 }}>
               Terms and Conditions
             </h1>
             <p style={{ ...pStyle, margin: "0 auto", maxWidth: 740 }}>
@@ -50,7 +50,7 @@ export default function Terms() {
           </div>
 
           <article style={cardStyle}>
-            <h2 style={{ fontFamily: "'SolaimanLipi', 'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
+            <h2 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
               কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬
             </h2>
 
