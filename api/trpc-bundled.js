@@ -224,6 +224,8 @@ var liveChatSessions = mysqlTable("live_chat_sessions", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: varchar("sessionId", { length: 64 }).notNull().unique(),
   visitorName: varchar("visitorName", { length: 128 }).default("\u0985\u09A4\u09BF\u09A5\u09BF"),
+  visitorContact: varchar("visitorContact", { length: 200 }),
+  visitorContactType: mysqlEnum("visitorContactType", ["whatsapp", "gmail", "other"]),
   visitorId: varchar("visitorId", { length: 64 }).notNull(),
   status: mysqlEnum("status", ["active", "closed", "waiting"]).default("waiting").notNull(),
   adminRead: boolean("adminRead").default(false).notNull(),
@@ -373,9 +375,11 @@ async function sendTelegramNotification(opts) {
     console.warn("[Telegram] Bot token or admin chat ID not configured");
     return;
   }
+  const contactLine = opts.visitorContact ? `
+\u{1F4DE} *\u09AF\u09CB\u0997\u09BE\u09AF\u09CB\u0997:* ${opts.visitorContactType === "whatsapp" ? "\u{1F4F2} WhatsApp" : opts.visitorContactType === "gmail" ? "\u{1F4E7} Gmail" : "\u{1F4CC}"} ${escapeMarkdown(opts.visitorContact)}` : "";
   const text2 = `\u{1F4AC} *\u09A8\u09A4\u09C1\u09A8 \u09AC\u09BE\u09B0\u09CD\u09A4\u09BE \u2014 \u09B2\u09BE\u0987\u09AD \u099A\u09CD\u09AF\u09BE\u099F*
 
-\u{1F464} *\u09AD\u09BF\u099C\u09BF\u099F\u09B0:* ${escapeMarkdown(opts.visitorName)}
+\u{1F464} *\u09AD\u09BF\u099C\u09BF\u099F\u09B0:* ${escapeMarkdown(opts.visitorName)}${contactLine}
 \u{1F511} *Session:* \`${opts.sessionId}\`
 
 \u{1F4DD} *\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE:*
@@ -540,7 +544,9 @@ var liveChatRouter = router({
   // Visitor creates/resumes session
   startSession: publicProcedure.input(z2.object({
     visitorId: z2.string().min(1).max(64),
-    visitorName: z2.string().max(128).optional()
+    visitorName: z2.string().max(128).optional(),
+    visitorContact: z2.string().max(200).optional(),
+    visitorContactType: z2.enum(["whatsapp", "gmail", "other"]).optional()
   })).mutation(async ({ input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database unavailable");
@@ -551,6 +557,12 @@ var liveChatRouter = router({
       )
     ).limit(1);
     if (existing.length > 0) {
+      if (input.visitorContact) {
+        await db.update(liveChatSessions).set({
+          visitorContact: input.visitorContact,
+          visitorContactType: input.visitorContactType
+        }).where(eq3(liveChatSessions.sessionId, existing[0].sessionId));
+      }
       return { sessionId: existing[0].sessionId, isNew: false };
     }
     const waiting = await db.select().from(liveChatSessions).where(
@@ -560,6 +572,12 @@ var liveChatRouter = router({
       )
     ).limit(1);
     if (waiting.length > 0) {
+      if (input.visitorContact) {
+        await db.update(liveChatSessions).set({
+          visitorContact: input.visitorContact,
+          visitorContactType: input.visitorContactType
+        }).where(eq3(liveChatSessions.sessionId, waiting[0].sessionId));
+      }
       return { sessionId: waiting[0].sessionId, isNew: false };
     }
     const sessionId = nanoid(16);
@@ -567,6 +585,8 @@ var liveChatRouter = router({
       sessionId,
       visitorId: input.visitorId,
       visitorName: input.visitorName || "\u0985\u09A4\u09BF\u09A5\u09BF",
+      visitorContact: input.visitorContact,
+      visitorContactType: input.visitorContactType,
       status: "waiting",
       adminRead: false,
       lastMessageAt: /* @__PURE__ */ new Date()
@@ -596,9 +616,13 @@ var liveChatRouter = router({
       read: false
     });
     const visitorName = session[0].visitorName || "\u0985\u09A4\u09BF\u09A5\u09BF";
+    const visitorContact = session[0].visitorContact;
+    const visitorContactType = session[0].visitorContactType;
     sendTelegramNotification({
       sessionId: input.sessionId,
       visitorName,
+      visitorContact,
+      visitorContactType,
       message: input.content
     }).catch((err) => console.error("[Telegram notify error]", err));
     await db.update(liveChatSessions).set({
