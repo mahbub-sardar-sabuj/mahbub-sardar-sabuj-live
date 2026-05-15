@@ -30,6 +30,8 @@ export const liveChatSessions = mysqlTable("live_chat_sessions", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: varchar("sessionId", { length: 64 }).notNull().unique(),
   visitorName: varchar("visitorName", { length: 128 }).default("অতিথি"),
+  visitorContact: varchar("visitorContact", { length: 200 }),
+  visitorContactType: mysqlEnum("visitorContactType", ["whatsapp", "gmail", "other"]),
   visitorId: varchar("visitorId", { length: 64 }).notNull(),
   status: mysqlEnum("status", ["active", "closed", "waiting"]).default("waiting").notNull(),
   adminRead: boolean("adminRead").default(false).notNull(),

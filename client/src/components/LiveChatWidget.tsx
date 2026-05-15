@@ -2,6 +2,14 @@
  * LiveChatWidget — Visitor-facing Live Chat component
  * Migrated to tRPC/DB-backed flow (liveChat router)
  * Supports text messages in both directions
+ *
+ * Bug fixes (v2):
+ * 1. startSession now sends visitorContact + visitorContactType to server
+ * 2. visitorId is loaded from localStorage FIRST — generateVisitorId() only
+ *    called when no stored vid exists (prevents duplicate sessions on reload)
+ * 3. Removed duplicate allMessagesData polling query — single pollMessages
+ *    query with afterId=undefined for initial load, then incremental after
+ * 4. Messages accumulated in local state so history is never lost between polls
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,16 +22,21 @@ const FONT = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
 
 const STORAGE_KEY = "mss_live_chat_v5";
 
-function generateSessionId() {
-  return nanoid(16);
-}
-
 function generateVisitorId() {
   return nanoid(20);
 }
 
 function formatTime(date: Date | string | number) {
   return new Date(date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+}
+
+interface ChatMessage {
+  id: number;
+  sessionId: string;
+  sender: "visitor" | "admin";
+  content: string;
+  read: boolean;
+  createdAt: Date | string;
 }
 
 interface Props {
@@ -41,9 +54,11 @@ export default function LiveChatWidget({ onClose }: Props) {
   const [error, setError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [lastMsgId, setLastMsgId] = useState<number>(0);
+  // Accumulated messages — never reset between polls
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Detect contact type
+  // Detect contact type from input
   useEffect(() => {
     const val = contactInput.trim();
     if (!val) { setContactType(""); return; }
@@ -52,7 +67,7 @@ export default function LiveChatWidget({ onClose }: Props) {
     else setContactType("");
   }, [contactInput]);
 
-  // Restore session from localStorage
+  // ── FIX #2: Restore session from localStorage — use stored visitorId, do NOT generate new one ──
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -84,16 +99,18 @@ export default function LiveChatWidget({ onClose }: Props) {
   const startSessionMutation = trpc.liveChat.startSession.useMutation();
   const sendMessageMutation = trpc.liveChat.sendMessage.useMutation();
 
+  // ── FIX #3: Single polling query — no duplicate allMessagesData query ──
+  // First load: afterId=undefined to get full history
+  // Subsequent polls: afterId=lastMsgId to get only new messages
   const { data: pollData, refetch: refetchMessages } = trpc.liveChat.pollMessages.useQuery(
     {
       sessionId: sessionId ?? "",
       visitorId: visitorId ?? "",
-      afterId: lastMsgId || undefined,
+      afterId: lastMsgId > 0 ? lastMsgId : undefined,
     },
     {
       enabled: !!sessionId && !!visitorId,
-      // Poll every 6s; pause when tab is hidden to save resources
-      refetchInterval: (query) => {
+      refetchInterval: () => {
         if (typeof document !== "undefined" && document.visibilityState === "hidden") return false;
         return 6000;
       },
@@ -101,20 +118,27 @@ export default function LiveChatWidget({ onClose }: Props) {
     }
   );
 
-  // Track last message id for polling
+  // ── FIX #3 cont: Accumulate messages in local state ──
   useEffect(() => {
-    if (pollData?.messages && pollData.messages.length > 0) {
-      const maxId = Math.max(...pollData.messages.map((m) => m.id));
-      setLastMsgId((prev) => Math.max(prev, maxId));
-    }
+    if (!pollData?.messages || pollData.messages.length === 0) return;
+    setLocalMessages(prev => {
+      const existingIds = new Set(prev.map(m => m.id));
+      const newMsgs = pollData.messages.filter(m => !existingIds.has(m.id));
+      if (newMsgs.length === 0) return prev;
+      const maxId = Math.max(...pollData.messages.map(m => m.id));
+      setLastMsgId(cur => Math.max(cur, maxId));
+      return [...prev, ...newMsgs as ChatMessage[]];
+    });
   }, [pollData]);
+
+  const sessionStatus = pollData?.sessionStatus ?? "waiting";
 
   // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [pollData?.messages]);
+  }, [localMessages]);
 
-  // ── Start session ─────────────────────────────────────────────────────────
+  // ── FIX #1 + FIX #2: Start session — send contact info + use stored visitorId if available ──
   const startSession = async () => {
     if (!nameInput.trim()) return;
     if (!contactInput.trim() || !contactType) {
@@ -124,18 +148,36 @@ export default function LiveChatWidget({ onClose }: Props) {
     setIsStarting(true);
     setError("");
     try {
-      const vid = generateVisitorId();
       const name = nameInput.trim();
+      const contact = contactInput.trim();
 
+      // FIX #2: Check localStorage for existing visitorId before generating new one
+      let vid: string;
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          vid = parsed.vid || generateVisitorId();
+        } else {
+          vid = generateVisitorId();
+        }
+      } catch {
+        vid = generateVisitorId();
+      }
+
+      // FIX #1: Send visitorContact and visitorContactType to server
       const result = await startSessionMutation.mutateAsync({
         visitorId: vid,
         visitorName: name,
+        visitorContact: contact,
+        visitorContactType: contactType as "whatsapp" | "gmail",
       });
 
       setVisitorName(name);
       setSessionId(result.sessionId);
       setVisitorId(vid);
       setLastMsgId(0);
+      setLocalMessages([]);
     } catch (err) {
       setError("সংযোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -158,6 +200,7 @@ export default function LiveChatWidget({ onClose }: Props) {
       await refetchMessages();
     } catch {
       setError("বার্তা পাঠাতে সমস্যা হয়েছে।");
+      setInputText(text); // Restore input on failure
     }
   };
 
@@ -171,29 +214,9 @@ export default function LiveChatWidget({ onClose }: Props) {
     setSessionId(null);
     setVisitorId(null);
     setLastMsgId(0);
+    setLocalMessages([]);
     setError("");
   };
-
-  // ── Combine all messages for display ─────────────────────────────────────
-  // We get all messages from pollMessages (no afterId filter initially)
-  const { data: allMessagesData } = trpc.liveChat.pollMessages.useQuery(
-    {
-      sessionId: sessionId ?? "",
-      visitorId: visitorId ?? "",
-    },
-    {
-      enabled: !!sessionId && !!visitorId,
-      // Poll every 6s; pause when tab is hidden to save resources
-      refetchInterval: (query) => {
-        if (typeof document !== "undefined" && document.visibilityState === "hidden") return false;
-        return 6000;
-      },
-      refetchIntervalInBackground: false,
-    }
-  );
-
-  const messages = allMessagesData?.messages ?? [];
-  const sessionStatus = allMessagesData?.sessionStatus ?? "waiting";
 
   // ── Name + Contact entry screen ────────────────────────────────────────────
   if (!sessionId) {
@@ -477,7 +500,7 @@ export default function LiveChatWidget({ onClose }: Props) {
         </motion.div>
 
         <AnimatePresence initial={false}>
-          {messages.map(msg => (
+          {localMessages.map(msg => (
             <motion.div
               key={msg.id}
               initial={{ opacity: 0, y: 6 }}

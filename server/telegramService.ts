@@ -19,6 +19,8 @@ const TELEGRAM_API = `https://api.telegram.org/bot${ENV.telegramBotToken}`;
 export async function sendTelegramNotification(opts: {
   sessionId: string;
   visitorName: string;
+  visitorContact?: string | null;
+  visitorContactType?: string | null;
   message: string;
 }): Promise<void> {
   if (!ENV.telegramBotToken || !ENV.telegramAdminChatId) {
@@ -26,9 +28,13 @@ export async function sendTelegramNotification(opts: {
     return;
   }
 
+  const contactLine = opts.visitorContact
+    ? `\n📞 *যোগাযোগ:* ${opts.visitorContactType === "whatsapp" ? "📲 WhatsApp" : opts.visitorContactType === "gmail" ? "📧 Gmail" : "📌"} ${escapeMarkdown(opts.visitorContact)}`
+    : "";
+
   const text =
     `💬 *নতুন বার্তা — লাইভ চ্যাট*\n\n` +
-    `👤 *ভিজিটর:* ${escapeMarkdown(opts.visitorName)}\n` +
+    `👤 *ভিজিটর:* ${escapeMarkdown(opts.visitorName)}${contactLine}\n` +
     `🔑 *Session:* \`${opts.sessionId}\`\n\n` +
     `📝 *বার্তা:*\n${escapeMarkdown(opts.message)}\n\n` +
     `↩️ *রিপ্লাই দিতে:* এই মেসেজের Reply করুন`;

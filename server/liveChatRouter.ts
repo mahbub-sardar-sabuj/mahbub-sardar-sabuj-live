@@ -18,6 +18,8 @@ export const liveChatRouter = router({
     .input(z.object({
       visitorId: z.string().min(1).max(64),
       visitorName: z.string().max(128).optional(),
+      visitorContact: z.string().max(200).optional(),
+      visitorContactType: z.enum(["whatsapp", "gmail", "other"]).optional(),
     }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -36,6 +38,16 @@ export const liveChatRouter = router({
         .limit(1);
 
       if (existing.length > 0) {
+        // Update contact info if provided
+        if (input.visitorContact) {
+          await db
+            .update(liveChatSessions)
+            .set({
+              visitorContact: input.visitorContact,
+              visitorContactType: input.visitorContactType,
+            })
+            .where(eq(liveChatSessions.sessionId, existing[0].sessionId));
+        }
         return { sessionId: existing[0].sessionId, isNew: false };
       }
 
@@ -52,6 +64,16 @@ export const liveChatRouter = router({
         .limit(1);
 
       if (waiting.length > 0) {
+        // Update contact info if provided
+        if (input.visitorContact) {
+          await db
+            .update(liveChatSessions)
+            .set({
+              visitorContact: input.visitorContact,
+              visitorContactType: input.visitorContactType,
+            })
+            .where(eq(liveChatSessions.sessionId, waiting[0].sessionId));
+        }
         return { sessionId: waiting[0].sessionId, isNew: false };
       }
 
@@ -60,6 +82,8 @@ export const liveChatRouter = router({
         sessionId,
         visitorId: input.visitorId,
         visitorName: input.visitorName || "অতিথি",
+        visitorContact: input.visitorContact,
+        visitorContactType: input.visitorContactType,
         status: "waiting",
         adminRead: false,
         lastMessageAt: new Date(),
@@ -103,9 +127,13 @@ export const liveChatRouter = router({
 
       // Send Telegram notification to admin
       const visitorName = session[0].visitorName || "অতিথি";
+      const visitorContact = session[0].visitorContact;
+      const visitorContactType = session[0].visitorContactType;
       sendTelegramNotification({
         sessionId: input.sessionId,
         visitorName,
+        visitorContact,
+        visitorContactType,
         message: input.content,
       }).catch(err => console.error("[Telegram notify error]", err));
 

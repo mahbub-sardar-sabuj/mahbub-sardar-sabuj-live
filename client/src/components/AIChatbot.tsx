@@ -164,6 +164,31 @@ const PHOTO_KEYWORDS = [
 
 function isPhotoRequest(text: string): boolean {
   const lower = text.toLowerCase();
+
+  // FIX: Exclude image-edit requests — "ছবি এডিট", "ছবি ক্রপ" etc. should NOT trigger photo display
+  const imageEditExclusions = [
+    "ছবি এডিট", "ছবি এডিটিং", "ছবি সম্পাদনা",
+    "ফটো এডিট", "ফটো এডিটিং",
+    "image edit", "photo edit", "picture edit",
+    "ছবি ঠিক", "ছবি সুন্দর", "ছবি ক্রপ", "ছবি কাটো",
+    "ছবি রিটাচ", "ছবি রিসাইজ", "ছবি কম্প্রেস",
+    "ছবি বানাও", "ছবি তৈরি",
+    "image editor", "photo editor",
+    // Gallery/page navigation — should NOT show author photo
+    "গ্যালারি", "gallery",
+    // Analysis requests with image attached — handled separately
+    "ছবি বিশ্লেষণ", "ছবি দেখে", "ছবিতে", "ছবির মধ্যে",
+    "analyze image", "describe image", "what is in the image",
+  ];
+  if (imageEditExclusions.some(kw => lower.includes(kw))) return false;
+
+  // FIX: Require more specific context — "ছবি" alone is too broad
+  // Must be combined with "দেখাও"/"দেখান" or author-specific keywords
+  if (lower.includes("ছবি") || lower.includes("ফটো") || lower.includes("photo") || lower.includes("picture") || lower.includes("image")) {
+    const showKeywords = ["দেখাও", "দেখান", "দেখতে", "কেমন দেখতে", "মুখ", "face", "look", "চেহারা", "লেখকের ছবি", "লেখকের ফটো", "author photo", "author image"];
+    return showKeywords.some(kw => lower.includes(kw));
+  }
+
   return PHOTO_KEYWORDS.some(kw => lower.includes(kw));
 }
 
@@ -1633,19 +1658,23 @@ export default function AIChatbot() {
   const handleAudioSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // FIX: Validate BEFORE resetting e.target.value — so on hard-fail, the input is not cleared
     if (file.size > 50 * 1024 * 1024) {
+      e.target.value = "";
       setError("অডিও ফাইলের আকার সর্বোচ্চ ৫০ MB হতে পারবে।");
       return;
     }
-    // Vercel 4.5MB payload limit warning for large files
-    if (file.size > 3.5 * 1024 * 1024) {
-      setError(`সতর্কতা: ফাইলটি বড় (~${(file.size / 1024 / 1024).toFixed(1)} MB)। Vercel-এর সীমার কারণে প্রসেসিং ব্যর্থ হতে পারে। MP3 বা ছোট ফাইল ব্যবহার করুন।`);
-      // Don't return — still allow the user to try
-    }
     if (!file.type.startsWith("audio/") && !file.name.match(/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i)) {
-      setError("সমর্থিত ফরম্যাট: MP3, WAV, OGG, FLAC, AAC, M4A");
+      e.target.value = "";
+      setError("সমর্থিত ফর্ম্যাট: MP3, WAV, OGG, FLAC, AAC, M4A");
       return;
     }
+    // Vercel 4.5MB payload limit warning for large files (non-blocking)
+    if (file.size > 3.5 * 1024 * 1024) {
+      setError(`সতর্কতা: ফাইলটি বড় (~${(file.size / 1024 / 1024).toFixed(1)} MB)। Vercel-এর সীমার কারণে প্রসেসিং ব্যর্থ হতে পারে। MP3 বা ছোট ফাইল ব্যবহার করুন।`);
+      // Don't return — still allow the user to try
+    }
+    // Reset input AFTER all hard validations pass
     e.target.value = "";
 
     // Smart auto-run: if there's already a pending instruction in input or recent chat, run immediately
@@ -2083,7 +2112,8 @@ export default function AIChatbot() {
     }
 
     const text = input.trim();
-    if (!text && !imagePreview || isLoading) return;
+    // FIX: operator precedence — parentheses ensure correct evaluation
+    if ((!text && !imagePreview) || isLoading) return;
 
     // Case 1b: No new file, but lastAudioBlobRef exists + instruction = iterative edit
     if (isAudioEditRequest(text) && !audioFile && lastAudioBlobRef.current) {
@@ -2255,7 +2285,8 @@ export default function AIChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, imagePreview, audioFile, isAudioMode, handleAudioEdit, isAudioEditRequest]);
+  // FIX: Removed isAudioMode from deps — it is not used inside handleSend body
+  }, [input, isLoading, messages, imagePreview, audioFile, handleAudioEdit, isAudioEditRequest]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -2311,6 +2342,8 @@ export default function AIChatbot() {
     setIsAudioMode(false);
     setVideoFile(null);
     setVideoConverting(false);
+    // FIX: imagePreview was not reset on clearChat
+    setImagePreview(null);
   };
 
   return (

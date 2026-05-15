@@ -169,8 +169,25 @@ export default function AdminLiveChat() {
                         {sl.text}
                       </span>
                     </div>
-                    <div style={{ color: "rgba(180,160,120,0.45)", fontSize: "0.65rem" }}>
-                      {formatTime(session.lastMessageAt)}
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                      <span style={{ color: "rgba(180,160,120,0.45)", fontSize: "0.65rem" }}>
+                        {formatTime(session.lastMessageAt)}
+                      </span>
+                      {session.visitorContact && (
+                        <span style={{
+                          fontSize: "0.58rem",
+                          color: session.visitorContactType === "whatsapp" ? "rgba(74,222,128,0.7)" : session.visitorContactType === "gmail" ? "rgba(96,165,250,0.7)" : "rgba(180,160,120,0.5)",
+                          background: "rgba(255,255,255,0.04)",
+                          padding: "1px 5px",
+                          borderRadius: 4,
+                          maxWidth: 130,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}>
+                          {session.visitorContactType === "whatsapp" ? "📲" : session.visitorContactType === "gmail" ? "📧" : "📌"} {session.visitorContact}
+                        </span>
+                      )}
                     </div>
                     {!session.adminRead && session.status === "active" && (
                       <div style={{
@@ -226,6 +243,24 @@ export default function AdminLiveChat() {
                   <div style={{ color: GOLD, fontWeight: 700, fontSize: "0.9rem" }}>
                     {selectedSessionData?.visitorName || "অতিথি"}
                   </div>
+                  {selectedSessionData?.visitorContact && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                      <span style={{
+                        fontSize: "0.65rem",
+                        color: selectedSessionData.visitorContactType === "whatsapp" ? "#4ade80" : selectedSessionData.visitorContactType === "gmail" ? "#60a5fa" : "rgba(180,160,120,0.7)",
+                        background: selectedSessionData.visitorContactType === "whatsapp" ? "rgba(74,222,128,0.1)" : selectedSessionData.visitorContactType === "gmail" ? "rgba(96,165,250,0.1)" : "rgba(180,160,120,0.08)",
+                        padding: "1px 7px",
+                        borderRadius: 6,
+                        fontWeight: 600,
+                        border: `1px solid ${selectedSessionData.visitorContactType === "whatsapp" ? "rgba(74,222,128,0.25)" : selectedSessionData.visitorContactType === "gmail" ? "rgba(96,165,250,0.25)" : "rgba(180,160,120,0.15)"}`,
+                      }}>
+                        {selectedSessionData.visitorContactType === "whatsapp" ? "📲 WA" : selectedSessionData.visitorContactType === "gmail" ? "📧 Gmail" : "📌"}
+                      </span>
+                      <span style={{ color: "rgba(245,238,222,0.75)", fontSize: "0.72rem", fontFamily: FONT }}>
+                        {selectedSessionData.visitorContact}
+                      </span>
+                    </div>
+                  )}
                   <div style={{ color: "rgba(180,160,120,0.5)", fontSize: "0.7rem", marginTop: 2 }}>
                     সেশন: {selectedSession}
                   </div>
