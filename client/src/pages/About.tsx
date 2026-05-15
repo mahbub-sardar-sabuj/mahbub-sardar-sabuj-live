@@ -501,6 +501,126 @@ export default function About() {
         </div>
       </section>
 
+            {/* ══ PUBLISHED BOOKS ══════════════════════════════════════════════════ */}
+      <section style={{ padding: "6rem 2rem", background: "linear-gradient(180deg, #060E1A 0%, #0A1628 100%)", position: "relative", overflow: "hidden" }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(rgba(201,168,76,0.05) 1px, transparent 1px)",
+          backgroundSize: "28px 28px", pointerEvents: "none",
+        }} />
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          <FadeUp>
+            <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
+                <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>প্রকাশিত বই</span>
+                <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+              </div>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0 }}>
+                লেখকের সাহিত্যভাণ্ডার
+              </h2>
+            </div>
+          </FadeUp>
+          <div className="books-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2rem" }}>
+            {[
+              {
+                title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
+                type: "মুদ্রিত বই",
+                year: "২০২৬",
+                desc: "বিচ্ছেদের বেদনাকে যিনি দুঃখবিলাস বলেন, তাঁর কলমে উঠে আসে মানুষের অন্তরের সবচেয়ে গভীর অনুভূতি।",
+                badge: "পাঠক পছন্দের বই",
+                badgeColor: "#C9A84C",
+                link: "https://rkmri.co/TTMEoA3l3pM0/",
+                cover: "/images/book-cover-20260328.jpg",
+              },
+              {
+                title: "স্মৃতির বসন্তে তুমি",
+                type: "ই-বুক",
+                year: "২০২৪",
+                desc: "প্রবাসে থাকা এক লেখকের স্মৃতিময় কবিতার সংকলন। দেশ, প্রিয়জন ও স্মৃতির গল্প।",
+                badge: "বিনামূল্যে পড়ুন",
+                badgeColor: "#34D399",
+                link: "/writings",
+                cover: null,
+              },
+              {
+                title: "চাঁদফুল",
+                type: "ই-বুক",
+                year: "২০২৩",
+                desc: "ভালোবাসা ও বিচ্ছেদের অনুভূতিকে কেন্দ্র করে লেখা কবিতার সংকলন। হাজারো পাঠকের মন ছুঁয়েছে।",
+                badge: "বিনামূল্যে পড়ুন",
+                badgeColor: "#60A5FA",
+                link: "/writings",
+                cover: null,
+              },
+              {
+                title: "সময়ের গহ্বরে",
+                type: "ই-বুক",
+                year: "২০২৩",
+                desc: "জীবনের নানা প্রশ্ন, সময়ের সাথে সংঘাত ও মানবিক সম্পর্কের গভীর অনুসন্ধান।",
+                badge: "বিনামূল্যে পড়ুন",
+                badgeColor: "#F472B6",
+                link: "/writings",
+                cover: null,
+              },
+            ].map((book, i) => (
+              <FadeUp key={i} delay={i * 0.1}>
+                <motion.div
+                  whileHover={{ y: -4, borderColor: "rgba(201,168,76,0.3)" }}
+                  style={{
+                    background: "rgba(201,168,76,0.04)",
+                    border: "1px solid rgba(201,168,76,0.12)",
+                    borderRadius: 16,
+                    padding: "2rem",
+                    display: "flex",
+                    gap: "1.5rem",
+                    alignItems: "flex-start",
+                    transition: "all 0.3s ease",
+                    height: "100%",
+                  }}
+                >
+                  {book.cover ? (
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      style={{ width: 80, height: 110, objectFit: "cover", borderRadius: 8, flexShrink: 0, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 80, height: 110, borderRadius: 8, flexShrink: 0,
+                      background: "rgba(201,168,76,0.08)",
+                      border: "1px solid rgba(201,168,76,0.2)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <BookOpen size={28} color="rgba(201,168,76,0.4)" />
+                    </div>
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.75rem", flexWrap: "wrap" }}>
+                      <span style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontSize: "0.6rem", letterSpacing: "0.15em",
+                        textTransform: "uppercase",
+                        color: book.badgeColor,
+                        background: `${book.badgeColor}15`,
+                        padding: "3px 10px", borderRadius: 20,
+                        border: `1px solid ${book.badgeColor}30`,
+                      }}>{book.badge}</span>
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.65rem", color: "rgba(250,246,239,0.3)" }}>{book.year}</span>
+                    </div>
+                    <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.05rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 0.6rem", lineHeight: 1.4 }}>{book.title}</h3>
+                    <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.8, margin: "0 0 1rem" }}>{book.desc}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.6rem", color: "rgba(250,246,239,0.3)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{book.type}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ══ PHILOSOPHY QUOTES ═════════════════════════════════════════════════ */}
       <section style={{ padding: "7rem 2rem", background: "#060E1A", position: "relative", overflow: "hidden" }}>
         <div style={{
@@ -680,6 +800,10 @@ export default function About() {
           grid-template-columns: 1.1fr 0.9fr;
           gap: 3rem;
           align-items: start;
+        }
+        /* Books grid */
+        .books-grid {
+          grid-template-columns: repeat(2, 1fr) !important;
         }
 
         /* ── Timeline ── */

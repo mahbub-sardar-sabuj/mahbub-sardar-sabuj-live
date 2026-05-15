@@ -1,7 +1,8 @@
 /*
- * Desktop Premium Styles — World-Class Literary UX
+ * Desktop Premium Styles — World-Class Literary UX v2
  * Activates when min-width: 1024px (desktop mode)
  * Palette: Deep Navy #0A1628, Rich Gold #C9A84C, Warm Ivory #FAF6EF
+ * Updated: 2026 — New animations, glow effects, enhanced interactions
  */
 
 /* ── Global desktop enhancements ─────────────────────────────────────────── */
@@ -148,9 +149,24 @@
     height: 580px !important;
   }
 
-  /* Footer 4-column */
+  /* Footer 5-column (with recent writings) */
   .footer-grid {
-    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr 1.1fr !important;
+  }
+
+  /* Books grid — 2 columns on desktop */
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Recent writings grid — 3 columns on desktop */
+  .recent-writings-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Testimonials grid — 3 columns on desktop */
+  .testimonials-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 
@@ -382,3 +398,82 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }/* ── Global: Scrollbar for panels (dark theme) ───────────────────────────── */
+
+/* ── Global enhancements (all viewports) ─────────────────────────────────── */
+
+/* Smooth font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Gold text selection */
+::selection {
+  background: rgba(201,168,76,0.25);
+  color: #FAF6EF;
+}
+
+/* Gold border glow on focus */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: rgba(201,168,76,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.1) !important;
+}
+
+/* ── New: Testimonials responsive ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .books-grid { grid-template-columns: 1fr !important; }
+  .recent-writings-grid { grid-template-columns: 1fr !important; }
+  .testimonials-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .books-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .recent-writings-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .testimonials-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ── New: Card hover glow effect ─────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .card-glow:hover {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(201,168,76,0.1) !important;
+    border-color: rgba(201,168,76,0.25) !important;
+  }
+
+  /* Smooth link transitions */
+  a {
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+
+  /* Enhanced button hover */
+  button:not([disabled]):hover {
+    filter: brightness(1.05);
+  }
+
+  /* Section reveal animation */
+  @keyframes sectionReveal {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Floating badge animation */
+  @keyframes badgeFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .badge-float {
+    animation: badgeFloat 3s ease-in-out infinite;
+  }
+
+  /* Gold shimmer border */
+  @keyframes borderShimmer {
+    0% { border-color: rgba(201,168,76,0.1); }
+    50% { border-color: rgba(201,168,76,0.4); }
+    100% { border-color: rgba(201,168,76,0.1); }
+  }
+
+  .border-shimmer {
+    animation: borderShimmer 3s ease-in-out infinite;
+  }
+}

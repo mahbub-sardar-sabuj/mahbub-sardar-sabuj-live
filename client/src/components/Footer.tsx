@@ -1,10 +1,11 @@
 /**
- * Footer — Premium Edition
+ * Footer — Premium Edition v2
  * Design: Literary Avant-Garde | Deep Navy + Rich Gold
  * Features: Newsletter UI, animated social icons, hover effects, glassmorphism
+ * Updated: 2026 — New recent writings section, enhanced bottom bar
  */
 import { useState } from "react";
-import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart } from "lucide-react";
+import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart, MapPin, Globe } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 
@@ -94,7 +95,7 @@ export default function Footer() {
         {/* ── MAIN GRID ── */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: isAmioLikhboPage ? "1.8fr 1fr" : "1.8fr 1fr 1fr 1.2fr",
+          gridTemplateColumns: isAmioLikhboPage ? "1.8fr 1fr" : "1.6fr 1fr 1fr 1fr 1.1fr",
           gap: "3rem",
           marginBottom: "4rem",
         }} className="footer-grid">
@@ -132,7 +133,7 @@ export default function Footer() {
               fontSize: "0.875rem", lineHeight: 1.9,
               margin: "0 0 2rem",
             }}>
-              বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন।
+              বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন। সৌদি আরবে বসবাসরত এই লেখকের ১,১০,০০০+ পাঠক রয়েছেন।
             </p>
 
             {/* Newsletter */}
@@ -188,6 +189,40 @@ export default function Footer() {
                   </motion.button>
                 </form>
               )}
+            </div>
+          </div>
+
+          {/* Recent writings mini preview */}
+          <div>
+            <div style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "0.65rem", letterSpacing: "0.25em",
+              textTransform: "uppercase", color: "#C9A84C",
+              marginBottom: "1.5rem",
+            }}>সর্বশেষ লেখা</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                { title: "নিজের শান্তির জন্য সরে আসুন", category: "জীবনদর্শন" },
+                { title: "অবহেলা সম্পর্ক নষ্ট করে", category: "জীবনদর্শন" },
+                { title: "আচরণেই মানুষের আসল পরিচয়", category: "জীবনদর্শন" },
+              ].map((w, i) => (
+                <Link key={i} href="/writings">
+                  <motion.div
+                    whileHover={{ x: 4, borderColor: "rgba(201,168,76,0.25)" }}
+                    style={{
+                      padding: "10px 12px",
+                      background: "rgba(201,168,76,0.03)",
+                      border: "1px solid rgba(201,168,76,0.08)",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      transition: "all 0.25s",
+                    }}
+                  >
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.7)", fontWeight: 500, marginBottom: 3, lineHeight: 1.4 }}>{w.title}</div>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.6rem", color: "rgba(201,168,76,0.5)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{w.category}</div>
+                  </motion.div>
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -346,25 +381,52 @@ export default function Footer() {
           )}
         </div>
 
-        {/* ── BOTTOM BAR ── */}
+        {/* ── DIVIDER WITH QUOTE ── */}
         <div style={{
           borderTop: "1px solid rgba(201,168,76,0.08)",
           paddingTop: "2rem",
+          marginBottom: "1.5rem",
+          textAlign: "center",
+        }}>
+          <p style={{
+            fontFamily: "'Tiro Bangla', serif",
+            fontStyle: "italic",
+            color: "rgba(201,168,76,0.4)",
+            fontSize: "0.85rem",
+            margin: 0,
+            letterSpacing: "0.02em",
+          }}>
+            “কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি”
+          </p>
+        </div>
+
+        {/* ── BOTTOM BAR ── */}
+        <div style={{
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "1rem",
         }}>
-          <p style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            color: "rgba(250,246,239,0.3)",
-            fontSize: "0.8rem",
-            margin: 0,
-            display: "flex", alignItems: "center", gap: 6,
-          }}>
-            © ২০২৬ মাহবুব সরদার সবুজ। সর্বস্বত্ব সংরক্ষিত।
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <p style={{
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              color: "rgba(250,246,239,0.3)",
+              fontSize: "0.8rem",
+              margin: 0,
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              © ২০২৬ মাহবুব সরদার সবুজ। সর্বস্বত্ব সংরক্ষিত।
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <MapPin size={11} color="rgba(201,168,76,0.35)" />
+              <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.2)", fontSize: "0.75rem" }}>কুমিল্লা, বাংলাদেশ</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Globe size={11} color="rgba(201,168,76,0.35)" />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(250,246,239,0.2)", fontSize: "0.75rem" }}>mahbubsardarsabuj.com</span>
+            </div>
+          </div>
           <p style={{
             fontFamily: "'Noto Sans Bengali', sans-serif",
             color: "rgba(250,246,239,0.25)",
@@ -372,7 +434,7 @@ export default function Footer() {
             margin: 0,
             display: "flex", alignItems: "center", gap: 6,
           }}>
-            তৈরি করা হয়েছে <Heart size={12} color="rgba(201,168,76,0.4)" style={{ margin: "0 2px" }} /> দিয়ে — কুমিল্লা, বাংলাদেশ
+            তৈরি করা হয়েছে <Heart size={12} color="rgba(201,168,76,0.4)" style={{ margin: "0 2px" }} /> দিয়ে
           </p>
         </div>
       </div>

@@ -4,12 +4,12 @@
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  * Inspiration: Sarah Vaughan, Anthony Horowitz, luxury editorial magazines
  */
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
 import {
   BookOpen, PenLine, Mic2, Images, Newspaper, Mail,
   UserRound, Palette, ArrowRight, ChevronDown, ExternalLink,
-  Quote, Star
+  Quote, Star, Users, TrendingUp, Heart, Feather, Eye, Calendar
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -1099,7 +1099,287 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AdSense Ad — হোম পেজের নিচে */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          STATS COUNTER — সোশ্যাল স্ট্যাটস
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "5rem 2rem",
+        background: "linear-gradient(180deg, #060E1A 0%, #0A1628 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(rgba(201,168,76,0.05) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          pointerEvents: "none",
+        }} />
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            style={{ textAlign: "center", marginBottom: "3.5rem" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
+              <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>পরিসংখ্যান</span>
+              <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+            </div>
+            <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0 }}>
+              পাঠকের ভালোবাসায়
+            </h2>
+          </motion.div>
+          <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+            {[
+              { icon: Users, value: "১,১০,০০০+", label: "ফলোয়ার", sub: "ফেসবুক ও ইউটিউব", color: "#60A5FA" },
+              { icon: BookOpen, value: "৫টি", label: "প্রকাশিত বই", sub: "ই-বুক ও মুদ্রিত", color: "#C9A84C" },
+              { icon: Feather, value: "১০০০+", label: "লেখা ও কবিতা", sub: "প্রকাশিত রচনা", color: "#34D399" },
+              { icon: Heart, value: "লক্ষাধিক", label: "পাঠকের হৃদয়", sub: "বাংলাদেশ ও প্রবাস", color: "#F472B6" },
+            ].map((stat, i) => {
+              const Icon = stat.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  whileHover={{ y: -4, borderColor: "rgba(201,168,76,0.35)" }}
+                  style={{
+                    background: "rgba(201,168,76,0.04)",
+                    border: "1px solid rgba(201,168,76,0.12)",
+                    borderRadius: 16,
+                    padding: "2rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1.5rem",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <div style={{
+                    width: 56, height: 56, borderRadius: 14, flexShrink: 0,
+                    background: `${stat.color}15`,
+                    border: `1px solid ${stat.color}30`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Icon size={24} color={stat.color} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "#FAF6EF", lineHeight: 1.1, marginBottom: 4 }}>{stat.value}</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.95rem", color: "rgba(250,246,239,0.7)", fontWeight: 600, marginBottom: 2 }}>{stat.label}</div>
+                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "rgba(250,246,239,0.35)" }}>{stat.sub}</div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          RECENT WRITINGS — সাম্প্রতিক লেখা
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "7rem 2rem",
+        background: "#060E1A",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          pointerEvents: "none",
+        }} />
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            style={{ marginBottom: "3.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1rem" }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "1rem" }}>
+                <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>সাম্প্রতিক লেখা</span>
+              </div>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#FAF6EF", margin: 0 }}>
+                কলমের তাজা কথা
+              </h2>
+            </div>
+            <Link href="/writings">
+              <motion.span
+                whileHover={{ x: 4 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}
+              >
+                সব লেখা দেখুন <ArrowRight size={16} />
+              </motion.span>
+            </Link>
+          </motion.div>
+          <div className="recent-writings-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
+            {[
+              { id: 996, title: "নিজের শান্তির জন্য সরে আসুন", category: "জীবনদর্শন", excerpt: "নিজের শান্তির জন্য দূরে সরে যাওয়া কখনো স্বার্থপরতা নয়। জীবনটা আপনার, ব্যথাটাও আপনার, সিদ্ধান্তও আপনার হওয়া উচিত।", color: "#34D399" },
+              { id: 995, title: "অবহেলা সম্পর্ক নষ্ট করে", category: "জীবনদর্শন", excerpt: "মানুষের মন ভাঙে সবসময় বড় ঘটনার কারণে নয়। ছোট ছোট অবহেলাই ভেতরে ভেতরে মানুষকে দূরে সরিয়ে দেয়।", color: "#F472B6" },
+              { id: 986, title: "আচরণেই মানুষের আসল পরিচয়", category: "জীবনদর্শন", excerpt: "মানুষকে চেনা যায় তার বড় বড় প্রতিশ্রুতি দিয়ে নয়, ছোট ছোট আচরণ দিয়ে।", color: "#60A5FA" },
+            ].map((writing, i) => (
+              <motion.div
+                key={writing.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                whileHover={{ y: -6, borderColor: `${writing.color}40` }}
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(201,168,76,0.1)",
+                  borderRadius: 16,
+                  padding: "2rem",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{
+                  position: "absolute", top: 0, left: 0, right: 0, height: 3,
+                  background: `linear-gradient(90deg, ${writing.color}, transparent)`,
+                  borderRadius: "16px 16px 0 0",
+                }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontSize: "0.65rem",
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: writing.color,
+                    background: `${writing.color}15`,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `1px solid ${writing.color}30`,
+                  }}>{writing.category}</span>
+                  <Feather size={14} color="rgba(201,168,76,0.3)" />
+                </div>
+                <h3 style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                  color: "#FAF6EF",
+                  margin: 0,
+                  lineHeight: 1.4,
+                }}>{writing.title}</h3>
+                <p style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.875rem",
+                  color: "rgba(250,246,239,0.5)",
+                  lineHeight: 1.8,
+                  margin: 0,
+                  flex: 1,
+                }}>{writing.excerpt}</p>
+                <Link href="/writings">
+                  <motion.span
+                    whileHover={{ x: 4 }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}
+                  >
+                    পড়ুন <ArrowRight size={13} />
+                  </motion.span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          TESTIMONIALS — পাঠকের কথা
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "7rem 2rem",
+        background: "linear-gradient(180deg, #0A1628 0%, #060E1A 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: "5%", left: "3%",
+          fontFamily: "Georgia, serif", fontSize: "18rem",
+          color: "rgba(201,168,76,0.03)", lineHeight: 1,
+          pointerEvents: "none", userSelect: "none",
+        }}>&ldquo;</div>
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            style={{ textAlign: "center", marginBottom: "4rem" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
+              <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>পাঠকের কথা</span>
+              <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+            </div>
+            <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0 }}>
+              হৃদয় ছুঁয়ে যাওয়া প্রতিক্রিয়া
+            </h2>
+          </motion.div>
+          <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
+            {[
+              { name: "রাহেলা বেগম", location: "ঢাকা", text: "মাহবুব ভাইয়ের লেখা পড়লে মনে হয় নিজের কথাই লেখা আছে। প্রতিটি শব্দে আমার অনুভূতি খুঁজে পাই।", stars: 5 },
+              { name: "মোহাম্মদ রাফি", location: "চট্টগ্রাম", text: "'দুঃখবিলাস' বইটি পড়ে চোখে জল এসে গেছে। এত সুন্দর করে বিচ্ছেদের কথা আর কেউ লিখতে পারেন না।", stars: 5 },
+              { name: "সুমাইয়া আক্তার", location: "কুমিল্লা", text: "প্রবাসে থাকি, কিন্তু তাঁর লেখা পড়লে মনে হয় দেশের মাটির গন্ধ পাচ্ছি। অসাধারণ লেখনী।", stars: 5 },
+            ].map((review, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                whileHover={{ y: -4, borderColor: "rgba(201,168,76,0.3)" }}
+                style={{
+                  background: "rgba(201,168,76,0.04)",
+                  border: "1px solid rgba(201,168,76,0.1)",
+                  borderRadius: 16,
+                  padding: "2rem",
+                  transition: "all 0.3s ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1.2rem",
+                }}
+              >
+                <div style={{ display: "flex", gap: 4 }}>
+                  {[...Array(review.stars)].map((_, si) => (
+                    <Star key={si} size={14} fill="#C9A84C" color="#C9A84C" />
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                    background: "rgba(201,168,76,0.1)",
+                    border: "1px solid rgba(201,168,76,0.25)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Quote size={13} color="#C9A84C" />
+                  </div>
+                  <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "0.95rem", fontStyle: "italic", color: "rgba(250,246,239,0.75)", lineHeight: 1.8, margin: 0 }}>
+                    {review.text}
+                  </p>
+                </div>
+                <div style={{ borderTop: "1px solid rgba(201,168,76,0.08)", paddingTop: "1rem" }}>
+                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", fontWeight: 600, color: "rgba(250,246,239,0.8)" }}>{review.name}</div>
+                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "rgba(250,246,239,0.35)" }}>{review.location}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AdSense Ad — হোম পেজের নিচে */
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
         <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
       </div>
@@ -1199,6 +1479,18 @@ export default function Home() {
         .sections-grid {
           grid-template-columns: repeat(3, 1fr) !important;
         }
+        /* Stats grid */
+        .stats-grid {
+          grid-template-columns: repeat(4, 1fr) !important;
+        }
+        /* Recent writings grid */
+        .recent-writings-grid {
+          grid-template-columns: repeat(3, 1fr) !important;
+        }
+        /* Testimonials grid */
+        .testimonials-grid {
+          grid-template-columns: repeat(3, 1fr) !important;
+        }
 
         /* Author profile */
         .author-profile-grid {
@@ -1241,6 +1533,9 @@ export default function Home() {
         @media (max-width: 768px) {
           .hero-container { padding-top: 80px; padding-bottom: 60px; }
           .sections-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .recent-writings-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
           .hero-portrait { height: 320px; }
           .cta-row { gap: 5px; max-width: 100%; }
           .cta-btn {
@@ -1253,6 +1548,9 @@ export default function Home() {
 
         @media (max-width: 480px) {
           .sections-grid { grid-template-columns: 1fr !important; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .recent-writings-grid { grid-template-columns: 1fr !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
