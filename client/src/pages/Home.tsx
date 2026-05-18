@@ -8,7 +8,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
-  UserRound, Palette, ArrowRight, ExternalLink,
+  UserRound, Palette, ArrowRight,
   Quote, Star, Feather
 } from "lucide-react";
 import { Link } from "wouter";
@@ -20,7 +20,6 @@ import AdSenseAd from "@/components/AdSenseAd";
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile2_57482935.jpg";
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
-const BOOK_COVER = "/images/book-cover-20260328.jpg";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
 
 // ── Navigation sections ───────────────────────────────────────────────────────
@@ -485,63 +484,6 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          FEATURED BOOK — Elegant literary spotlight
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="featured-book-section" style={{
-        padding: "clamp(5rem, 9vw, 7.5rem) 1.25rem",
-        background: "radial-gradient(circle at 18% 18%, rgba(201,168,76,0.12), transparent 30%), radial-gradient(circle at 84% 76%, rgba(232,201,122,0.075), transparent 32%), linear-gradient(180deg, #060E1A 0%, #0A1628 52%, #071321 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(201,168,76,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.035) 1px, transparent 1px)", backgroundSize: "70px 70px", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", left: "50%", top: "10%", width: 520, height: 520, transform: "translateX(-50%)", borderRadius: "50%", background: "rgba(201,168,76,0.055)", filter: "blur(90px)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1120, margin: "0 auto" }}>
-          <div className="book-spotlight-grid">
-            <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} style={{ display: "flex", justifyContent: "center" }}>
-              <div className="book-cover-frame">
-                <div className="book-cover-glow" />
-                <div className="book-cover-badge">নির্বাচিত বই</div>
-                <img src={BOOK_COVER} alt="দুঃখবিলাস - মাহবুব সরদার সবুজের প্রকাশিত বাংলা কবিতা সংগ্রহ বই" className="featured-book-cover" loading="lazy" decoding="async" />
-              </div>
-            </motion.div>
-            <motion.div className="book-copy-panel" initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.12 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "8px 17px", borderRadius: 999, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", marginBottom: "1.45rem", boxShadow: "0 12px 35px rgba(0,0,0,0.18)" }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#E8C97A", boxShadow: "0 0 12px rgba(201,168,76,0.8)" }} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.66rem", letterSpacing: "0.24em", textTransform: "uppercase", color: "#E8C97A" }}>Featured Book</span>
-              </div>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2.15rem, 4.4vw, 3.45rem)", fontWeight: 700, color: "#FAF6EF", lineHeight: 1.2, margin: "0 0 1.25rem", letterSpacing: "-0.01em" }}>
-                বিচ্ছেদের নীরব ভাষা,<br />
-                <span style={{ background: "linear-gradient(135deg, #F5DE93, #C9A84C 55%, #FFF0B3)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>দুঃখবিলাস</span>
-              </h2>
-              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.1vw, 1.32rem)", color: "rgba(250,246,239,0.68)", lineHeight: 2.05, maxWidth: 590, margin: "0 0 1.45rem" }}>
-                যে বেদনা বলা যায় না, কবি তাকে শব্দের কোমল আশ্রয়ে তুলে ধরেছেন। <strong style={{ color: "#E8C97A", fontWeight: 700 }}>দুঃখবিলাস</strong> হলো প্রেম, বিচ্ছেদ ও স্মৃতির এমন এক কাব্যভুবন—যেখানে নীরব কান্নাও হয়ে ওঠে সাহিত্যের সৌন্দর্য।
-              </p>
-              <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.94rem", color: "rgba(250,246,239,0.48)", lineHeight: 1.9, maxWidth: 570, margin: "0 0 1.7rem" }}>
-                পাঠকের হৃদয়ের গভীরে জমে থাকা না-বলা অনুভূতিগুলোকে এই বই স্পর্শ করে মমতা, সংযম ও অনুপম ভাষার ভেতর দিয়ে।
-              </p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2rem" }}>
-                {["কাব্যগ্রন্থ", "প্রেম ও বিচ্ছেদ", "হৃদয়ের ভাষা"].map((tag) => (
-                  <span key={tag} style={{ padding: "8px 13px", borderRadius: 999, border: "1px solid rgba(201,168,76,0.2)", background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(201,168,76,0.05))", color: "rgba(250,246,239,0.68)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }}>{tag}</span>
-                ))}
-              </div>
-              <div className="featured-book-actions">
-                <Link href="/writings" style={{ textDecoration: "none" }}>
-                  <motion.span className="featured-book-btn featured-book-btn-primary" whileHover={{ scale: 1.035, y: -2 }} whileTap={{ scale: 0.97 }}>
-                    <BookOpen size={17} /> বই পড়ুন
-                  </motion.span>
-                </Link>
-                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                  <motion.span className="featured-book-btn featured-book-btn-secondary" whileHover={{ scale: 1.035, y: -2 }} whileTap={{ scale: 0.97 }}>
-                    <ExternalLink size={17} /> রকমারিতে কিনুন
-                  </motion.span>
-                </a>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="explore-app-section" style={{
@@ -718,112 +660,6 @@ export default function Home() {
           min-width: 180px;
         }
 
-        /* Book spotlight */
-        .book-spotlight-grid {
-          display: grid;
-          grid-template-columns: 0.92fr 1.18fr;
-          gap: clamp(3rem, 6vw, 5.6rem);
-          align-items: center;
-        }
-        .book-cover-frame {
-          position: relative;
-          padding: clamp(0.95rem, 2vw, 1.25rem);
-          border-radius: 34px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.075), rgba(201,168,76,0.065));
-          border: 1px solid rgba(201,168,76,0.22);
-          box-shadow: 0 46px 120px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.08);
-          overflow: hidden;
-        }
-        .book-cover-frame::before {
-          content: "";
-          position: absolute;
-          inset: 11px;
-          border-radius: 25px;
-          border: 1px solid rgba(232,201,122,0.13);
-          pointer-events: none;
-          z-index: 2;
-        }
-        .book-cover-glow {
-          position: absolute;
-          inset: -34px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(232,201,122,0.2), transparent 66%);
-          filter: blur(20px);
-          pointer-events: none;
-        }
-        .book-cover-badge {
-          position: absolute;
-          top: 22px;
-          left: 22px;
-          z-index: 3;
-          padding: 7px 12px;
-          border-radius: 999px;
-          border: 1px solid rgba(232,201,122,0.28);
-          background: rgba(6,14,26,0.72);
-          backdrop-filter: blur(12px);
-          color: #F5DE93;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.74rem;
-          box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-        }
-        .featured-book-cover {
-          position: relative;
-          z-index: 1;
-          width: clamp(205px, 27vw, 318px);
-          border-radius: 22px;
-          box-shadow: 0 30px 78px rgba(0,0,0,0.66);
-          display: block;
-        }
-        .book-copy-panel {
-          position: relative;
-          padding: clamp(1.2rem, 3vw, 2.15rem);
-          border-radius: 32px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.025));
-          border: 1px solid rgba(201,168,76,0.12);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.055);
-        }
-        .book-copy-panel::before {
-          content: "“";
-          position: absolute;
-          top: -0.35rem;
-          right: 1.4rem;
-          font-family: 'Tiro Bangla', serif;
-          font-size: 6.8rem;
-          line-height: 1;
-          color: rgba(201,168,76,0.12);
-          pointer-events: none;
-        }
-        .featured-book-actions {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-        }
-        .featured-book-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 9px;
-          min-height: 50px;
-          padding: 13px 26px;
-          border-radius: 999px;
-          font-family: 'Tiro Bangla', serif;
-          font-size: 1.04rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: box-shadow 0.25s ease, border-color 0.25s ease;
-        }
-        .featured-book-btn-primary {
-          background: linear-gradient(135deg, #C9A84C, #F5DE93 58%, #E8C97A);
-          color: #060E1A;
-          box-shadow: 0 16px 40px rgba(201,168,76,0.32);
-        }
-        .featured-book-btn-secondary {
-          background: rgba(201,168,76,0.055);
-          border: 1px solid rgba(201,168,76,0.36);
-          color: #F5DE93;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.045);
-        }
-
         /* App-style Explore launcher */
         .explore-app-heading {
           text-align: center;
@@ -963,13 +799,6 @@ export default function Home() {
           }
           .hero-portrait { height: 400px; }
           .floating-card { display: none; }
-          .book-spotlight-grid {
-            grid-template-columns: 1fr;
-            gap: 3rem;
-            text-align: center;
-          }
-          .book-copy-panel { max-width: 720px; margin: 0 auto; }
-          .featured-book-actions { justify-content: center; }
           .author-profile-grid {
             grid-template-columns: 1fr;
             gap: 3rem;
@@ -986,11 +815,6 @@ export default function Home() {
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 320px; }
-          .featured-book-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
-          .book-copy-panel { padding: 1.2rem 0.9rem 1.35rem; border-radius: 26px; }
-          .book-copy-panel::before { font-size: 4.8rem; right: 0.7rem; top: -0.2rem; }
-          .featured-book-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.72rem; }
-          .featured-book-btn { width: 100%; min-height: 54px; padding: 12px 10px; font-size: 0.98rem; }
           .cta-row { gap: 5px; max-width: 100%; }
           .cta-btn {
             font-size: 0.72rem;
@@ -1008,9 +832,6 @@ export default function Home() {
           .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.72rem; min-height: 2.55em; }
-          .book-cover-frame { border-radius: 28px; padding: 0.78rem; }
-          .book-cover-badge { top: 16px; left: 16px; font-size: 0.68rem; padding: 6px 10px; }
-          .featured-book-cover { width: min(78vw, 290px); border-radius: 19px; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
@@ -1041,8 +862,6 @@ export default function Home() {
           .app-launcher-card { min-height: 104px; }
           .app-icon-wrap { width: 40px; height: 40px; }
           .app-label { font-size: 0.66rem; }
-          .featured-book-actions { grid-template-columns: 1fr; }
-          .featured-book-btn { min-height: 50px; }
         }
       `}</style>
     </div>
