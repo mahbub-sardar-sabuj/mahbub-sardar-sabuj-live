@@ -66,7 +66,7 @@ export default function About() {
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
-          paddingTop: 80,
+          paddingTop: "var(--site-nav-offset, 98px)",
         }}
       >
         {/* Background */}

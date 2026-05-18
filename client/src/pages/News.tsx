@@ -340,7 +340,7 @@ export default function News() {
 
       {/* ── PAGE HEADER ── */}
       <div style={{
-        paddingTop: "70px",
+        paddingTop: "var(--site-nav-offset, 98px)",
         paddingBottom: "0",
         background: "linear-gradient(180deg, rgba(27,42,107,0.25) 0%, transparent 100%)",
       }}>

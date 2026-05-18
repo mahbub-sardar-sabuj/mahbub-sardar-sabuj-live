@@ -35,7 +35,7 @@ export default function Terms() {
       />
       <Navbar />
 
-      <main style={{ paddingTop: 120, paddingBottom: 72 }}>
+      <main style={{ paddingTop: "calc(var(--site-nav-offset, 98px) + 1.5rem)", paddingBottom: 72 }}>
         <section style={sectionStyle}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <p style={{ color: "#D4A843", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.84rem", fontFamily: "'Space Grotesk', sans-serif", marginBottom: 12 }}>

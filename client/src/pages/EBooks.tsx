@@ -292,7 +292,7 @@ export default function EBooks() {
       {/* Hero Section */}
       <section
         style={{
-          padding: "8rem 0 5rem",
+          padding: "calc(var(--site-nav-offset, 98px) + 3rem) 0 5rem",
           background: "linear-gradient(160deg, #0D1B2A 0%, #1a2e42 50%, #0D1B2A 100%)",
           position: "relative",
           overflow: "hidden",

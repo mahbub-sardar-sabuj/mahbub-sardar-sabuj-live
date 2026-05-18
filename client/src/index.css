@@ -450,6 +450,14 @@ body::after {
   }
 }
 
+/* Mobile scroll-margin-top fix */
+@media (max-width: 899px) {
+  .cinematic-site-shell main,
+  .cinematic-site-shell section {
+    scroll-margin-top: calc(var(--site-nav-offset, 98px) + 8px);
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     --cinema-radius: 22px;

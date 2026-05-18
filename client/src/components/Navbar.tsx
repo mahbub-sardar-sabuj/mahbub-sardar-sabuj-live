@@ -100,10 +100,13 @@ export default function Navbar() {
     };
   }, []);
 
+  const bannerVisible = showBanner && !isEditorPage && !isEBookReaderPage;
+  const bannerHeight = bannerVisible ? 28 : 0;
+  const navHeight = scrolled ? 58 : 70;
+  const totalNavOffset = bannerHeight + navHeight;
+
   useEffect(() => {
-    const bannerHeight = showBanner && !isEditorPage && !isEBookReaderPage ? 28 : 0;
-    const navHeight = scrolled ? 58 : 70;
-    document.documentElement.style.setProperty("--site-nav-offset", `${bannerHeight + navHeight}px`);
+    document.documentElement.style.setProperty("--site-nav-offset", `${totalNavOffset}px`);
     document.documentElement.style.setProperty("--site-nav-height", `${navHeight}px`);
     document.documentElement.style.setProperty("--site-banner-height", `${bannerHeight}px`);
     return () => {
@@ -111,7 +114,7 @@ export default function Navbar() {
       document.documentElement.style.removeProperty("--site-nav-height");
       document.documentElement.style.removeProperty("--site-banner-height");
     };
-  }, [showBanner, isEditorPage, isEBookReaderPage, scrolled]);
+  }, [bannerVisible, totalNavOffset, navHeight, bannerHeight]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -417,9 +420,9 @@ export default function Navbar() {
               background: "rgba(6,14,26,0.97)",
               borderTop: "1px solid rgba(212,168,67,0.18)",
               position: "fixed",
-              top: 70, left: 0, right: 0, bottom: 0,
-              height: "calc(100dvh - 70px)",
-              minHeight: "calc(100vh - 70px)",
+              top: totalNavOffset, left: 0, right: 0, bottom: 0,
+              height: `calc(100dvh - ${totalNavOffset}px)`,
+              minHeight: `calc(100vh - ${totalNavOffset}px)`,
               overflowY: "auto",
               WebkitOverflowScrolling: "touch",
               overscrollBehavior: "contain",

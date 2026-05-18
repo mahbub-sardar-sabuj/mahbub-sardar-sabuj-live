@@ -139,7 +139,7 @@ export default function Gallery() {
 
       {/* ── Hero Header ── */}
       <div style={{
-        paddingTop: "7rem",
+        paddingTop: "calc(var(--site-nav-offset, 98px) + 2rem)",
         paddingBottom: "2.5rem",
         textAlign: "center",
         background: "linear-gradient(180deg, #0A1628 0%, #060E1A 100%)",

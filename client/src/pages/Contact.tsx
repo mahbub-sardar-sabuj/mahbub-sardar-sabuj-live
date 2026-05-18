@@ -137,7 +137,7 @@ export default function Contact() {
         <section
           className="contact-hero"
           style={{
-            paddingTop: 140,
+            paddingTop: "calc(var(--site-nav-offset, 98px) + 42px)",
             paddingBottom: 60,
             position: "relative",
             overflow: "hidden",

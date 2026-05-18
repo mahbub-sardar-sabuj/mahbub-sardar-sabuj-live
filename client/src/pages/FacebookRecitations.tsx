@@ -59,7 +59,7 @@ export default function FacebookRecitations() {
           justifyContent: "center",
           overflow: "hidden",
           background: "#060E1A",
-          paddingTop: "6rem",
+          paddingTop: "calc(var(--site-nav-offset, 98px) + 1.5rem)",
           paddingBottom: "4rem",
         }}
       >
