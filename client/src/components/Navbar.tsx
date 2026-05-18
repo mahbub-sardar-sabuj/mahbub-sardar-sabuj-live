@@ -189,26 +189,26 @@ export default function Navbar() {
             <span style={{ display: "flex", flexDirection: isDesktop ? "column" : "row", justifyContent: "center", alignItems: isDesktop ? "flex-start" : "baseline", gap: isDesktop ? 0 : 5, lineHeight: 1.05, minWidth: 0 }}>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                fontSize: isDesktop ? "1.12rem" : "1.02rem",
+                fontSize: isDesktop ? "1.12rem" : "1.04rem",
                 fontWeight: 800,
                 letterSpacing: "0.01em",
-                color: isDesktop ? "#E8C97A" : "#F4D98B",
-                textShadow: isDesktop ? "none" : "0 1px 8px rgba(0,0,0,0.65), 0 0 10px rgba(232,201,122,0.22)",
+                color: isDesktop ? "#E8C97A" : "#FFE39A",
+                textShadow: isDesktop ? "none" : "0 2px 10px rgba(0,0,0,0.88), 0 0 14px rgba(255,227,154,0.28)",
                 whiteSpace: "nowrap",
                 background: isDesktop ? "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)" : "none",
                 WebkitBackgroundClip: isDesktop ? "text" : "border-box",
-                WebkitTextFillColor: isDesktop ? "transparent" : "#F4D98B",
+                WebkitTextFillColor: isDesktop ? "transparent" : "#FFE39A",
                 backgroundClip: isDesktop ? "text" : "border-box",
               }}>
                 মাহবুব সরদার সবুজ
               </span>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                fontSize: isDesktop ? "0.65rem" : "0.62rem",
-                letterSpacing: isDesktop ? "0.1em" : "0.02em",
-                color: isDesktop ? "rgba(232,201,122,0.78)" : "rgba(252,230,169,0.94)",
-                fontWeight: isDesktop ? 400 : 700,
-                textShadow: isDesktop ? "none" : "0 1px 7px rgba(0,0,0,0.72), 0 0 8px rgba(252,230,169,0.18)",
+                fontSize: isDesktop ? "0.65rem" : "0.66rem",
+                letterSpacing: isDesktop ? "0.1em" : "0.015em",
+                color: isDesktop ? "rgba(232,201,122,0.78)" : "#FFF0BE",
+                fontWeight: isDesktop ? 400 : 800,
+                textShadow: isDesktop ? "none" : "0 2px 9px rgba(0,0,0,0.9), 0 0 12px rgba(255,240,190,0.26)",
                 marginTop: isDesktop ? 2 : 0,
                 lineHeight: 1.05,
                 whiteSpace: "nowrap",
