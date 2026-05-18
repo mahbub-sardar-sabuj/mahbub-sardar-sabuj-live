@@ -504,7 +504,7 @@ export default function Home() {
         <div style={{ position: "relative", zIndex: 1, maxWidth: 1120, margin: "0 auto" }}>
           <div className="author-profile-grid">
             <motion.div initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} style={{ position: "relative" }}>
-              <div style={{ borderRadius: 28, overflow: "hidden", boxShadow: "0 42px 100px rgba(0,0,0,0.52)", position: "relative", border: "1px solid rgba(201,168,76,0.16)", padding: 6, background: "rgba(255,255,255,0.035)" }}>
+              <div className="author-photo-frame">
                 <img src={PROFILE_2} alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - লেখার মুহূর্তে প্রোফাইল ছবি" onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }} style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9) brightness(1.02)", borderRadius: 22 }} className="author-profile-img" loading="lazy" decoding="async" />
                 <div style={{ position: "absolute", inset: 6, borderRadius: 22, background: "linear-gradient(to bottom, transparent 55%, rgba(6,14,26,0.82) 100%)" }} />
               </div>
@@ -739,49 +739,65 @@ export default function Home() {
         .author-profile-grid {
           display: grid;
           grid-template-columns: 0.9fr 1.1fr;
-          gap: 5rem;
+          gap: clamp(2rem, 4vw, 4rem);
           align-items: center;
+          position: relative;
+          padding: clamp(1rem, 2.5vw, 1.55rem);
+          border: 1px solid rgba(201,168,76,0.24);
+          border-radius: 34px;
+          background:
+            radial-gradient(circle at 8% 15%, rgba(232,201,122,0.105), transparent 30%),
+            linear-gradient(145deg, rgba(255,255,255,0.05), rgba(6,14,26,0.56));
+          box-shadow: 0 36px 110px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.08);
+          overflow: hidden;
+        }
+        .author-profile-grid::before {
+          content: "";
+          position: absolute;
+          inset: 10px;
+          border: 1px solid rgba(232,201,122,0.105);
+          border-radius: 26px;
+          pointer-events: none;
+        }
+        .author-profile-grid > * {
+          position: relative;
+          z-index: 1;
+        }
+        .author-photo-frame {
+          border-radius: 28px;
+          overflow: hidden;
+          box-shadow: 0 34px 90px rgba(0,0,0,0.46);
+          position: relative;
+          border: 1px solid rgba(201,168,76,0.18);
+          padding: 6px;
+          background: rgba(255,255,255,0.035);
         }
         .author-profile-img {
           height: 520px;
           object-fit: cover;
         }
         .author-bio-card {
-          max-width: 640px;
+          max-width: 660px;
           position: relative;
-          padding: clamp(1.35rem, 3vw, 2rem);
-          border: 1px solid rgba(201,168,76,0.42);
-          border-radius: 28px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.055), rgba(201,168,76,0.025));
-          box-shadow: 0 28px 84px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
-          overflow: hidden;
-        }
-        .author-bio-card::before {
-          content: "";
-          position: absolute;
-          inset: 10px;
-          border: 1px solid rgba(232,201,122,0.13);
-          border-radius: 20px;
-          pointer-events: none;
-        }
-        .author-bio-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(circle at 12% 0%, rgba(232,201,122,0.12), transparent 34%);
-          pointer-events: none;
+          padding: 0.25rem 0.35rem 0.25rem 0;
+          background: transparent;
+          overflow: visible;
         }
         .author-bio-card p {
           position: relative;
           z-index: 1;
           font-family: 'Tiro Bangla', serif;
           font-size: clamp(1.02rem, 2.15vw, 1.18rem);
-          line-height: 2.02;
+          line-height: 1.9;
           color: rgba(250,246,239,0.68);
-          margin: 0 0 1.05rem;
-          letter-spacing: 0.01em;
-          text-align: justify;
-          text-justify: inter-word;
+          margin: 0 0 1.1rem;
+          letter-spacing: 0.005em;
+          word-spacing: normal;
+          text-align: left;
+          text-wrap: pretty;
+          word-break: keep-all;
+          overflow-wrap: normal;
+          font-variant-ligatures: common-ligatures;
         }
         .author-bio-card p:last-child {
           margin-bottom: 0;
@@ -806,10 +822,11 @@ export default function Home() {
           .floating-card { display: none; }
           .author-profile-grid {
             grid-template-columns: 1fr;
-            gap: 3rem;
+            gap: 2.35rem;
+            padding: 1.1rem;
           }
           .author-profile-img { height: 380px; }
-          .author-bio-card { max-width: 100%; }
+          .author-bio-card { max-width: 100%; padding: 0 0.15rem; }
         }
 
         /* Mobile */
@@ -828,9 +845,10 @@ export default function Home() {
             gap: 3px;
           }
           .cta-btn svg { width: 13px; height: 13px; }
-          .author-bio-card { padding: 1.15rem; border-radius: 24px; }
-          .author-bio-card::before { inset: 8px; border-radius: 18px; }
-          .author-bio-card p { font-size: 1rem; line-height: 1.92; text-align: left; }
+          .author-profile-grid { border-radius: 28px; }
+          .author-profile-grid::before { inset: 8px; border-radius: 22px; }
+          .author-bio-card { padding: 0 0.05rem; }
+          .author-bio-card p { font-size: 1rem; line-height: 1.88; text-align: left; word-spacing: normal; word-break: keep-all; }
         }
 
         @media (max-width: 480px) {
@@ -841,8 +859,10 @@ export default function Home() {
           .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.72rem; min-height: 2.55em; }
-          .author-bio-card { padding: 1rem; border-radius: 22px; }
-          .author-bio-card p { font-size: 0.96rem; line-height: 1.86; }
+          .author-profile-grid { padding: 0.85rem; border-radius: 24px; }
+          .author-photo-frame { border-radius: 22px; }
+          .author-bio-card { padding: 0 0.05rem; }
+          .author-bio-card p { font-size: 0.96rem; line-height: 1.82; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
