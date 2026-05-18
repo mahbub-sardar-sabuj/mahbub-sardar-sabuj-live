@@ -1019,57 +1019,67 @@ export default function Home() {
               </h2>
 
               <p style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                fontSize: "1rem",
-                color: "rgba(250,246,239,0.55)",
-                lineHeight: 1.95,
+                fontFamily: "'Tiro Bangla', serif",
+                fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)",
+                color: "rgba(250,246,239,0.62)",
+                lineHeight: 2.05,
                 margin: "0 0 1.2rem",
-                maxWidth: 500,
+                maxWidth: 540,
+                letterSpacing: "0.01em",
               }}>
                 মাহবুব সরদার সবুজ বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। তাঁর লেখায় মানবিক সম্পর্ক, প্রকৃতি, বিচ্ছেদ ও আশার গল্প উঠে আসে অনন্য ভাষায়।
               </p>
               <p style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                fontSize: "1rem",
-                color: "rgba(250,246,239,0.45)",
-                lineHeight: 1.95,
+                fontFamily: "'Tiro Bangla', serif",
+                fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)",
+                color: "rgba(250,246,239,0.54)",
+                lineHeight: 2.05,
                 margin: "0 0 2.5rem",
-                maxWidth: 500,
+                maxWidth: 540,
+                letterSpacing: "0.01em",
               }}>
                 সৌদি আরবে বসবাসরত এই লেখক তাঁর কবিতা ও গদ্যে দেশ, প্রবাস ও মানুষের জীবনের নানা রঙ তুলে ধরেন।
               </p>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: "1.5rem" }}>
-                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: "1.5rem" }}>
+                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
                   <motion.button
-                    whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(201,168,76,0.45)" }}
+                    whileHover={{ scale: 1.04, y: -3, boxShadow: "0 18px 45px rgba(201,168,76,0.42)" }}
                     whileTap={{ scale: 0.97 }}
                     style={{
-                      display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "12px 24px", borderRadius: 50,
-                      background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                      border: "none", cursor: "pointer",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem", fontWeight: 700, color: "#060E1A",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9,
+                      minWidth: 150,
+                      padding: "13px 26px", borderRadius: 999,
+                      background: "linear-gradient(135deg, #B88B2E 0%, #E8C97A 52%, #C9A84C 100%)",
+                      border: "1px solid rgba(255,255,255,0.18)", cursor: "pointer",
+                      fontFamily: "'Tiro Bangla', serif",
+                      fontSize: "1.02rem", fontWeight: 700, color: "#060E1A",
+                      boxShadow: "0 10px 30px rgba(201,168,76,0.28), inset 0 1px 0 rgba(255,255,255,0.28)",
+                      letterSpacing: "0.01em",
                     }}
                   >
-                    📖 বই কিনুন
+                    <BookOpen size={17} />
+                    বই কিনুন
                   </motion.button>
                 </a>
-                <a href="https://www.facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
                   <motion.button
-                    whileHover={{ scale: 1.04, boxShadow: "0 8px 30px rgba(201,168,76,0.2)" }}
+                    whileHover={{ scale: 1.04, y: -3, boxShadow: "0 16px 38px rgba(201,168,76,0.22)", background: "rgba(201,168,76,0.08)" }}
                     whileTap={{ scale: 0.97 }}
                     style={{
-                      display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "12px 24px", borderRadius: 50,
-                      background: "transparent",
-                      border: "1.5px solid rgba(201,168,76,0.5)", cursor: "pointer",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem", fontWeight: 600, color: "#C9A84C",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9,
+                      minWidth: 162,
+                      padding: "13px 26px", borderRadius: 999,
+                      background: "rgba(201,168,76,0.035)",
+                      border: "1.5px solid rgba(201,168,76,0.56)", cursor: "pointer",
+                      fontFamily: "'Tiro Bangla', serif",
+                      fontSize: "1.02rem", fontWeight: 700, color: "#D8B760",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                      letterSpacing: "0.01em",
                     }}
                   >
-                    ❤️ সাপোর্ট করুন
+                    <Star size={16} />
+                    সাপোর্ট করুন
                   </motion.button>
                 </a>
               </div>
