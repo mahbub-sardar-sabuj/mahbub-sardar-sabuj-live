@@ -151,8 +151,6 @@ export default function Home() {
         }} />
 
         <div className="cinema-vignette" />
-        <div className="cinema-letterbox cinema-letterbox-top" />
-        <div className="cinema-letterbox cinema-letterbox-bottom" />
         <div className="cinema-scanline" />
         <div className="cinema-orb cinema-orb-left" />
         <div className="cinema-orb cinema-orb-right" />
@@ -217,16 +215,6 @@ export default function Home() {
                   color: "#C9A84C",
                   fontWeight: 400,
                 }}>লেখক ও কবি</span>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.22 }}
-                className="hero-editorial-line"
-              >
-                <span />
-                অফিসিয়াল সাহিত্যিক পোর্টফোলিও
               </motion.div>
 
               {/* Main name */}
@@ -365,26 +353,6 @@ export default function Home() {
                 </Link>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.95 }}
-                className="hero-proof-row"
-                aria-label="লেখকের কাজের সংক্ষিপ্ত পরিচিতি"
-              >
-                <div className="hero-proof-card">
-                  <strong>১০০০+</strong>
-                  <span>কবিতা ও লেখা</span>
-                </div>
-                <div className="hero-proof-card">
-                  <strong>৪+</strong>
-                  <span>প্রকাশিত বই</span>
-                </div>
-                <div className="hero-proof-card">
-                  <strong>Official</strong>
-                  <span>Author Website</span>
-                </div>
-              </motion.div>
 
             </div>
 
@@ -426,7 +394,7 @@ export default function Home() {
                 }} />
 
                 {/* Main portrait — suit photo */}
-                <div className="hero-portrait-frame" style={{
+                <div style={{
                   position: "relative",
                   borderRadius: 28,
                   overflow: "hidden",
@@ -435,8 +403,6 @@ export default function Home() {
                   background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(201,168,76,0.04))",
                   padding: 6,
                 }}>
-                  <div className="portrait-premium-chip portrait-premium-chip-top">বাংলা সাহিত্য</div>
-                  <div className="portrait-premium-chip portrait-premium-chip-bottom">Poetry · Prose · Emotion</div>
                   <img
                     src={PROFILE_1}
                     alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - অফিসিয়াল প্রোফাইল ছবি"
@@ -747,12 +713,6 @@ export default function Home() {
                 বিচ্ছেদের বেদনাকে যিনি দুঃখবিলাস বলেন, তাঁর কলমে উঠে আসে মানুষের অন্তরের সবচেয়ে গভীর অনুভূতি। এই বইটি সেই অনুভূতিরই এক অনন্য প্রকাশ।
               </p>
 
-              <div className="book-meta-strip">
-                <span>কাব্যগ্রন্থ</span>
-                <span>বিচ্ছেদ</span>
-                <span>মানবিক অনুভূতি</span>
-              </div>
-
               {/* Rating */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "2rem" }}>
                 {[1,2,3,4,5].map(i => (
@@ -871,9 +831,6 @@ export default function Home() {
             }}>
               অন্বেষণ করুন
             </h2>
-            <p className="section-intro-copy">
-              লেখকের পরিচিতি, বই, আবৃত্তি, ডিজাইন টুল, গ্যালারি ও সংবাদ—সবকিছু এক জায়গায় আরও সহজভাবে সাজানো।
-            </p>
           </motion.div>
 
           {/* Sections grid */}
@@ -1251,132 +1208,6 @@ export default function Home() {
           transition: opacity 0.3s ease;
         }
         .section-card:hover::before { opacity: 1; }
-        .cinema-letterbox {
-          position: absolute;
-          left: 0;
-          right: 0;
-          height: clamp(34px, 5vw, 78px);
-          pointer-events: none;
-          z-index: 2;
-          opacity: 0.62;
-        }
-        .cinema-letterbox-top {
-          top: 0;
-          background: linear-gradient(to bottom, rgba(0,0,0,0.72), transparent);
-        }
-        .cinema-letterbox-bottom {
-          bottom: 0;
-          background: linear-gradient(to top, rgba(0,0,0,0.72), transparent);
-        }
-        .hero-editorial-line {
-          display: inline-flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 0.85rem;
-          font-family: 'Space Grotesk', sans-serif;
-          font-size: 0.68rem;
-          letter-spacing: 0.28em;
-          text-transform: uppercase;
-          color: rgba(232,201,122,0.72);
-        }
-        .hero-editorial-line span {
-          width: 42px;
-          height: 1px;
-          background: linear-gradient(90deg, rgba(232,201,122,0.9), transparent);
-        }
-        .hero-proof-row {
-          width: min(100%, 620px);
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 10px;
-          margin-top: 1.1rem;
-        }
-        .hero-proof-card {
-          padding: 0.95rem 0.85rem;
-          border-radius: 18px;
-          border: 1px solid rgba(232,201,122,0.14);
-          background: linear-gradient(145deg, rgba(255,255,255,0.055), rgba(201,168,76,0.026));
-          box-shadow: 0 18px 55px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.055);
-          backdrop-filter: blur(16px) saturate(1.2);
-        }
-        .hero-proof-card strong {
-          display: block;
-          font-family: 'Space Grotesk', 'Noto Sans Bengali', sans-serif;
-          font-size: 1rem;
-          line-height: 1.1;
-          color: #E8C97A;
-          margin-bottom: 0.35rem;
-        }
-        .hero-proof-card span {
-          display: block;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.72rem;
-          color: rgba(250,246,239,0.55);
-          line-height: 1.45;
-        }
-        .hero-portrait-frame::before {
-          content: "";
-          position: absolute;
-          inset: 6px;
-          z-index: 2;
-          pointer-events: none;
-          border-radius: 22px;
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: inset 0 0 42px rgba(201,168,76,0.08);
-        }
-        .portrait-premium-chip {
-          position: absolute;
-          z-index: 4;
-          border: 1px solid rgba(232,201,122,0.22);
-          background: rgba(4,10,19,0.58);
-          color: rgba(250,246,239,0.82);
-          backdrop-filter: blur(14px);
-          box-shadow: 0 16px 45px rgba(0,0,0,0.28);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          pointer-events: none;
-        }
-        .portrait-premium-chip-top {
-          top: 22px;
-          left: 22px;
-          padding: 7px 13px;
-          border-radius: 999px;
-          font-size: 0.72rem;
-          color: #E8C97A;
-        }
-        .portrait-premium-chip-bottom {
-          right: 20px;
-          bottom: 80px;
-          padding: 8px 12px;
-          border-radius: 12px;
-          font-family: 'Space Grotesk', sans-serif;
-          font-size: 0.66rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: rgba(250,246,239,0.62);
-        }
-        .section-intro-copy {
-          max-width: 650px;
-          margin: 1rem 0 0;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.95rem;
-          line-height: 1.9;
-          color: rgba(250,246,239,0.52);
-        }
-        .book-meta-strip {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin: -0.45rem 0 1.6rem;
-        }
-        .book-meta-strip span {
-          padding: 6px 11px;
-          border-radius: 999px;
-          border: 1px solid rgba(232,201,122,0.18);
-          background: rgba(255,255,255,0.04);
-          color: rgba(250,246,239,0.58);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.74rem;
-        }
 
         /* CTA row — one line, equal boxes */
         .cta-row {
@@ -1507,13 +1338,6 @@ export default function Home() {
             gap: 3px;
           }
           .cta-btn svg { width: 13px; height: 13px; }
-          .hero-proof-row { grid-template-columns: 1fr; gap: 8px; }
-          .hero-proof-card { padding: 0.75rem 0.9rem; }
-          .hero-proof-card strong, .hero-proof-card span { display: inline; }
-          .hero-proof-card strong { margin-right: 8px; }
-          .portrait-premium-chip-bottom { display: none; }
-          .hero-editorial-line { justify-content: center; font-size: 0.58rem; letter-spacing: 0.18em; }
-          .section-intro-copy { font-size: 0.86rem; }
         }
 
         @media (max-width: 480px) {
@@ -1525,8 +1349,6 @@ export default function Home() {
             gap: 2px;
           }
           .cta-btn svg { width: 12px; height: 12px; }
-          .portrait-premium-chip-top { top: 16px; left: 16px; font-size: 0.66rem; }
-          .cinema-panel { border-radius: 22px; }
         }
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
