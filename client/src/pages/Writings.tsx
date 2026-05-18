@@ -361,6 +361,7 @@ const CSS = `
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: .8rem;
     margin-bottom: clamp(1.2rem,2.5vw,2rem);
     padding-bottom: .9rem;
     border-bottom: 1px solid var(--bdr);
@@ -372,6 +373,7 @@ const CSS = `
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
   }
   .rb2-n {
     color: var(--gold);
@@ -423,8 +425,8 @@ const CSS = `
   /* ── WRITING CARDS GRID ── */
   .wg2 {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: clamp(14px,2vw,20px);
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: clamp(12px,1.8vw,18px);
   }
   .wg2-l {
     display: flex;
@@ -435,18 +437,19 @@ const CSS = `
   /* ── WRITING CARD ── */
   .wc2 {
     position: relative;
-    background: var(--bg2);
+    background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012)), var(--bg2);
     border: 1px solid var(--bdr);
     border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform .28s var(--r), box-shadow .28s var(--r), border-color .28s;
-    animation: fadeUp .4s var(--r) both;
+    min-height: 218px;
+    transition: transform .24s var(--r), box-shadow .24s var(--r), border-color .24s;
+    animation: fadeUp .34s var(--r) both;
   }
   .wc2:hover {
-    transform: translateY(-6px) scale(1.012);
-    border-color: var(--bdr2);
-    box-shadow: 0 18px 50px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06);
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--ca, var(--gold)) 28%, rgba(255,255,255,.1));
+    box-shadow: 0 18px 44px rgba(0,0,0,.38), 0 0 0 1px rgba(255,255,255,.045);
   }
   .wc2-top {
     position: absolute;
@@ -471,7 +474,10 @@ const CSS = `
   }
   .wc2:hover .wc2-glow { opacity: 1; }
   .wc2-body {
-    padding: clamp(1rem,2.5vw,1.4rem);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1rem,2.2vw,1.28rem);
   }
   .wc2-tags {
     display: flex;
@@ -521,9 +527,9 @@ const CSS = `
   }
   .wc2-preview {
     font-family: var(--f);
-    font-size: .82rem;
+    font-size: .81rem;
     color: var(--t2);
-    line-height: 1.85;
+    line-height: 1.78;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -534,6 +540,8 @@ const CSS = `
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: .65rem;
+    margin-top: auto;
     padding-top: .85rem;
     border-top: 1px solid var(--bdr);
   }
@@ -558,6 +566,7 @@ const CSS = `
 
   /* List mode card */
   .wc2-l {
+    min-height: 0;
     border-radius: 14px;
     padding: 0;
   }
@@ -1363,9 +1372,86 @@ const CSS = `
     margin: 0;
     min-width: min(430px, 100%);
   }
+  .book-shelf {
+    display: grid;
+    grid-template-columns: minmax(280px, .9fr) minmax(0, 1.35fr);
+    gap: clamp(1rem, 2.4vw, 1.5rem);
+    align-items: stretch;
+  }
+  .featured-book {
+    --book-accent: var(--gold);
+    position: relative;
+    overflow: hidden;
+    min-height: 100%;
+    border-radius: 28px;
+    border: 1px solid color-mix(in srgb, var(--book-accent) 34%, rgba(255,255,255,.08));
+    background:
+      radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--book-accent) 18%, transparent), transparent 44%),
+      linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.018)),
+      #090D19;
+    box-shadow: 0 28px 80px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.075);
+    cursor: pointer;
+  }
+  .featured-book-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(1rem, 3vw, 1.6rem);
+    text-align: center;
+  }
+  .featured-cover {
+    width: min(188px, 58vw);
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 28px 60px rgba(0,0,0,.52), -10px 0 20px rgba(0,0,0,.22);
+    transform: rotateY(-8deg) rotateZ(-1deg);
+    transition: transform .28s var(--r);
+  }
+  .featured-book:hover .featured-cover { transform: rotateY(-2deg) translateY(-5px); }
+  .featured-book h3 {
+    margin: .35rem 0 .35rem;
+    color: var(--t0);
+    font-family: var(--f);
+    font-size: clamp(1.12rem, 2.5vw, 1.55rem);
+    line-height: 1.45;
+  }
+  .featured-book-meta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--t3);
+    font-family: var(--f);
+    font-size: .76rem;
+  }
+  .featured-book-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 9px;
+  }
+  .featured-book-actions > * {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,.08);
+    font-family: var(--f);
+    font-size: .8rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
   .ebook-row {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(.9rem, 2vw, 1.25rem);
     perspective: 1200px;
   }
@@ -1373,7 +1459,7 @@ const CSS = `
     --book-accent: var(--gold);
     position: relative;
     overflow: hidden;
-    min-height: 420px;
+    min-height: 365px;
     display: flex;
     flex-direction: column;
     border-radius: 26px;
@@ -1413,13 +1499,13 @@ const CSS = `
     position: relative;
     display: flex;
     justify-content: center;
-    padding: 1.15rem 1rem .75rem;
-    min-height: 205px;
+    padding: 1rem .9rem .6rem;
+    min-height: 172px;
   }
   .ebook-cover {
     position: relative;
     z-index: 1;
-    width: min(142px, 54vw);
+    width: min(118px, 48vw);
     aspect-ratio: 3 / 4;
     object-fit: cover;
     border-radius: 14px;
@@ -1474,7 +1560,7 @@ const CSS = `
     font-size: .78rem;
     line-height: 1.75;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -1611,6 +1697,7 @@ const CSS = `
     .library-showcase { min-height: 310px; }
     .ebook-stage-head, .writing-head { flex-direction: column; }
     .bk-sum-cinema { width: 100%; }
+    .book-shelf { grid-template-columns: 1fr; }
     .ebook-row {
       display: flex;
       overflow-x: auto;
@@ -1619,7 +1706,7 @@ const CSS = `
       scrollbar-width: none;
     }
     .ebook-row::-webkit-scrollbar { display: none; }
-    .ebook-tile { min-width: min(78vw, 310px); scroll-snap-align: start; }
+    .ebook-tile { min-width: min(72vw, 285px); scroll-snap-align: start; }
     .writing-tools { grid-template-columns: 1fr auto; }
     .wt-cats { grid-column: 1 / -1; }
   }
@@ -1630,6 +1717,7 @@ const CSS = `
     .sf-cats { display: none; }
     .wt-cats { display: flex; }
     .wg2 { grid-template-columns: 1fr; }
+    .rb2 { align-items: flex-start; flex-direction: column; }
     .bk-sum { grid-template-columns: 1fr; }
     .bk-sum-cinema { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .bg2 { grid-template-columns: repeat(2, 1fr); }
@@ -1664,12 +1752,18 @@ const CSS = `
     .ebook-stage-head, .writing-head { gap: .7rem; margin-bottom: .8rem; }
     .ebook-stage-head h2, .writing-head h2 { font-size: 1.28rem; }
     .ebook-stage-head p, .writing-head p { font-size: .78rem; line-height: 1.65; }
-    .ebook-tile { min-width: 82vw; min-height: 360px; }
-    .ebook-cover-wrap { min-height: 170px; padding: .85rem .75rem .45rem; }
-    .ebook-cover { width: 118px; }
+    .featured-book-inner { padding: .9rem; }
+    .featured-cover { width: min(136px, 48vw); }
+    .featured-book-actions { grid-template-columns: 1fr; }
+    .ebook-tile { min-width: 74vw; min-height: 330px; }
+    .ebook-cover-wrap { min-height: 150px; padding: .85rem .75rem .45rem; }
+    .ebook-cover { width: 104px; }
     .ebook-copy h3 { font-size: .96rem; }
     .ebook-copy p { -webkit-line-clamp: 2; font-size: .74rem; }
-    .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; }
+    .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 8px; }
+    .wc2 { min-height: 202px; }
+    .wc2-l .wc2-body { flex-direction: column; align-items: flex-start; gap: .7rem; }
+    .wc2-l .wc2-foot { width: 100%; margin-left: 0; justify-content: space-between; }
     .wt-view { justify-self: end; }
     .wc-count { width: 100%; }
   }
@@ -2068,63 +2162,100 @@ function LiteraryHero({ writingCount }: { writingCount: number }) {
   );
 }
 
+function BookTile({ book, index }: { book: typeof ebooks[0]; index: number }) {
+  const [, setLocation] = useLocation();
+
+  return (
+    <motion.article
+      key={book.id}
+      className={`ebook-tile${book.isFeatured ? " featured" : ""}`}
+      style={{ "--book-accent": book.accentColor } as React.CSSProperties}
+      initial={{ opacity: 0, y: 24, rotateX: 5 }}
+      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+      transition={{ delay: index * .06, duration: .42, ease: [.25,.46,.45,.94] }}
+      onClick={() => setLocation(`/ebooks/read/${book.slug}`)}
+      role="article"
+      tabIndex={0}
+      aria-label={`${book.title} দেখুন`}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${book.slug}`); } }}
+    >
+      <div className="ebook-glow"/>
+      <div className="ebook-cover-wrap">
+        <img src={book.cover} alt={`${book.title} - ${book.genre} বাংলা ই-বুক - মাহবুব সরদার সবুজ`} className="ebook-cover" loading="lazy" decoding="async"
+          onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
+        <span className="ebook-badge">{book.isFeatured && <Crown size={10}/>} {book.badge}</span>
+      </div>
+      <div className="ebook-copy">
+        <span className="ebook-genre">{book.genre}</span>
+        <h3>{book.title}</h3>
+        <p>{book.description}</p>
+        <div className="ebook-meta"><Calendar size={10}/>{book.year} · {book.pages} পৃষ্ঠা</div>
+        <div className="ebook-actions">
+          <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-preview" style={{ display: "flex", alignItems: "center", gap: 5, textDecoration: "none" }}><Eye size={12}/> দেখুন</Link>
+          {book.canRead && (
+            <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-read">
+              <BookOpen size={12}/> পড়ুন
+            </Link>
+          )}
+          {book.buyLink && (
+            <a href={book.buyLink} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="ebook-buy">
+              <ShoppingCart size={12}/> কিনুন
+            </a>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
 function BooksTab() {
   const [, setLocation] = useLocation();
+  const featured = ebooks[0];
+  const remaining = ebooks.slice(1);
 
   return (
     <section className="bs ebook-stage" aria-labelledby="ebook-stage-title">
       <div className="ebook-stage-head">
         <div>
-          <div className="wc-kicker"><Library size={14}/> প্রথম সারি</div>
+          <div className="wc-kicker"><Library size={14}/> বই</div>
           <h2 id="ebook-stage-title">ই-বুক ও প্রকাশনা সংগ্রহ</h2>
         </div>
       </div>
 
-      <div className="ebook-row">
-        {ebooks.map((book, i) => (
-          <motion.article
-            key={book.id}
-            className={`ebook-tile${book.isFeatured ? " featured" : ""}`}
-            style={{ "--book-accent": book.accentColor } as React.CSSProperties}
-            initial={{ opacity: 0, y: 28, rotateX: 8 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ delay: i * .08, duration: .48, ease: [.25,.46,.45,.94] }}
-            onClick={() => setLocation(`/ebooks/read/${book.slug}`)}
-            role="article"
-            tabIndex={0}
-            aria-label={`${book.title} দেখুন`}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${book.slug}`); } }}
-          >
-            <div className="ebook-glow"/>
-            <div className="ebook-cover-wrap">
-              <img src={book.cover} alt={`${book.title} - ${book.genre} বাংলা ই-বুক - মাহবুব সরদার সবুজ`} className="ebook-cover" loading={i === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={i === 0 ? "high" : "auto"}
-                onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
-              <span className="ebook-badge">{book.isFeatured && <Crown size={10}/>} {book.badge}</span>
+      <div className="book-shelf">
+        <motion.article
+          className="featured-book"
+          style={{ "--book-accent": featured.accentColor } as React.CSSProperties}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: .42, ease: [.25,.46,.45,.94] }}
+          onClick={() => setLocation(`/ebooks/read/${featured.slug}`)}
+          role="article"
+          tabIndex={0}
+          aria-label={`${featured.title} দেখুন`}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${featured.slug}`); } }}
+        >
+          <div className="ebook-glow"/>
+          <div className="featured-book-inner">
+            <img src={featured.cover} alt={`${featured.title} - ${featured.genre} বই - মাহবুব সরদার সবুজ`} className="featured-cover" loading="eager" decoding="async" fetchPriority="high" />
+            <div>
+              <span className="ebook-badge" style={{ position: "static" }}><Crown size={10}/> {featured.badge}</span>
+              <h3>{featured.title}</h3>
+              <div className="featured-book-meta"><Calendar size={11}/>{featured.year} · {featured.pages} পৃষ্ঠা · {featured.genre}</div>
             </div>
-            <div className="ebook-copy">
-              <span className="ebook-genre">{book.genre}</span>
-              <h3>{book.title}</h3>
-              <p>{book.description}</p>
-              <div className="ebook-meta"><Calendar size={10}/>{book.year} · {book.pages} পৃষ্ঠা</div>
-              <div className="ebook-actions">
-                <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-preview" style={{ display: "flex", alignItems: "center", gap: 5, textDecoration: "none" }}><Eye size={12}/> দেখুন</Link>
-                {book.canRead && (
-                  <Link href={`/ebooks/read/${book.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-read">
-                    <BookOpen size={12}/> পড়ুন
-                  </Link>
-                )}
-                {book.buyLink && (
-                  <a href={book.buyLink} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="ebook-buy">
-                    <ShoppingCart size={12}/> কিনুন
-                  </a>
-                )}
-              </div>
+            <div className="featured-book-actions">
+              <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="ebook-read"><BookOpen size={13}/> পড়ুন</Link>
+              {featured.buyLink && (
+                <a href={featured.buyLink} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="ebook-buy"><ShoppingCart size={13}/> কিনুন</a>
+              )}
             </div>
-          </motion.article>
-        ))}
+          </div>
+        </motion.article>
+
+        <div className="ebook-row">
+          {remaining.map((book, i) => <BookTile key={book.id} book={book} index={i + 1} />)}
+        </div>
       </div>
-
-
     </section>
   );
 }
