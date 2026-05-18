@@ -11,3 +11,19 @@ Description: Official website for Mahbub Sardar Sabuj, containing biography, Ben
 AI summary: https://www.mahbubsardarsabuj.com/llms.txt
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 News sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml
+
+/* TRUST AND POLICY */
+About: https://www.mahbubsardarsabuj.com/about
+Contact: https://www.mahbubsardarsabuj.com/contact
+Privacy Policy: https://www.mahbubsardarsabuj.com/privacy-policy
+Terms: https://www.mahbubsardarsabuj.com/terms
+
+/* SEARCH COLLECTIONS */
+Bangla Poetry: https://www.mahbubsardarsabuj.com/bangla-kobita
+Love Poems: https://www.mahbubsardarsabuj.com/valobashar-kobita
+Separation Poems: https://www.mahbubsardarsabuj.com/bichched-kobita
+Bangla Status: https://www.mahbubsardarsabuj.com/bangla-status
+Bangla Quotes: https://www.mahbubsardarsabuj.com/bangla-quotes
+Koster Kobita: https://www.mahbubsardarsabuj.com/koster-kobita
+Romantic Bangla Kobita: https://www.mahbubsardarsabuj.com/romantic-bangla-kobita
+Bangla Golpo: https://www.mahbubsardarsabuj.com/bangla-golpo

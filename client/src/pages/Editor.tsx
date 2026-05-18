@@ -1761,7 +1761,9 @@ export default function Editor() {
       overflow: "hidden",
     }}>
       <Seo title="ডিজাইন ফরম্যাট | মাহবুব সরদার সবুজ"
-        description="প্রিমিয়াম বাংলা লেখার কার্ড ডিজাইন করুন" />
+        description="প্রিমিয়াম বাংলা লেখার কার্ড ডিজাইন করুন"
+        path="/editor"
+        robots="noindex, nofollow" />
       <Navbar />
 
       {/* ── Top bar ── */}

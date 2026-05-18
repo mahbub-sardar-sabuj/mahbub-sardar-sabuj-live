@@ -77,6 +77,56 @@ const landingPages = {
     match: (w: typeof writings[number]) => /বই|ই-বুক|কাব্যগ্রন্থ|সংকলন|দুঃখবিলাস|চাঁদফুল|স্মৃতি/.test(`${w.title} ${w.content}`),
     guide: "বাংলা বই ও ই-বুকের জন্য আলাদা landing page থাকলে search engine বই-সংক্রান্ত intent সহজে ধরতে পারে এবং পাঠকেরা সরাসরি relevant সংগ্রহে যেতে পারে।",
   },
+  "/bangla-status": {
+    icon: Sparkles,
+    title: "বাংলা স্ট্যাটাস ও ক্যাপশন — মাহবুব সরদার সবুজ",
+    h1: "বাংলা স্ট্যাটাস ও ক্যাপশন",
+    intro: "মন ছুঁয়ে যাওয়া বাংলা স্ট্যাটাস, ক্যাপশন, ছোট উক্তি এবং সামাজিক মাধ্যমে শেয়ারযোগ্য অনুভূতির লেখা।",
+    description: "বাংলা স্ট্যাটাস, ক্যাপশন, ছোট উক্তি ও শেয়ারযোগ্য অনুভূতির লেখা পড়ুন মাহবুব সরদার সবুজের সাহিত্য সংগ্রহে।",
+    keywords: "বাংলা স্ট্যাটাস, Bangla status, বাংলা ক্যাপশন, বাংলা উক্তি, facebook caption bangla",
+    match: (w: typeof writings[number]) => /স্ট্যাটাস|ক্যাপশন|উক্তি|মন|তুমি|জীবন|ভালোবাসা|স্মৃতি|অভিমান/.test(`${w.title} ${w.content}`),
+    guide: "বাংলা স্ট্যাটাস ও ক্যাপশন বিষয়ে পাঠকেরা ছোট, অর্থবহ এবং শেয়ারযোগ্য লেখা খোঁজেন। এই পেজ সেই search intent পূরণ করার জন্য নির্বাচিত ছোট লেখা ও কবিতাকে একত্র করেছে।",
+  },
+  "/bangla-quotes": {
+    icon: PenLine,
+    title: "বাংলা উক্তি ও জীবন কথা — মাহবুব সরদার সবুজ",
+    h1: "বাংলা উক্তি ও জীবন কথা",
+    intro: "জীবন, সম্পর্ক, বাস্তবতা, স্বপ্ন ও আত্মবিশ্বাস নিয়ে সংক্ষিপ্ত বাংলা উক্তি এবং ভাবনার লেখা।",
+    description: "বাংলা উক্তি, জীবন কথা, বাস্তবতা ও অনুপ্রেরণামূলক ছোট লেখা পড়ুন মাহবুব সরদার সবুজের সংগ্রহে।",
+    keywords: "বাংলা উক্তি, bangla quotes, জীবন কথা, বাস্তবতা, অনুপ্রেরণামূলক উক্তি",
+    match: (w: typeof writings[number]) => /উক্তি|জীবন|বাস্তবতা|মানুষ|স্বপ্ন|বিশ্বাস|শিক্ষা|আত্মবিশ্বাস|সম্পর্ক/.test(`${w.title} ${w.content}`),
+    guide: "উক্তি ও জীবন কথার মতো long-tail keyword নতুন পাঠক আনার জন্য কার্যকর, কারণ এগুলো দ্রুত পড়া যায় এবং social sharing-এর সম্ভাবনা বেশি।",
+  },
+  "/koster-kobita": {
+    icon: Heart,
+    title: "কষ্টের কবিতা ও দুঃখের লেখা — মাহবুব সরদার সবুজ",
+    h1: "কষ্টের কবিতা ও দুঃখের লেখা",
+    intro: "কষ্ট, অভিমান, হারানো স্মৃতি, নীরবতা এবং একাকিত্বের গভীর অনুভূতি নিয়ে লেখা বাংলা কবিতা।",
+    description: "কষ্টের কবিতা, দুঃখের লেখা, অভিমান ও একাকিত্বের বাংলা সাহিত্য পড়ুন মাহবুব সরদার সবুজের লেখায়।",
+    keywords: "কষ্টের কবিতা, দুঃখের কবিতা, koster kobita, sad bangla status, অভিমানের লেখা",
+    match: (w: typeof writings[number]) => /কষ্ট|দুঃখ|অভিমান|একাকী|নীরব|হারানো|চোখের জল|ব্যথা|বিচ্ছেদ/.test(`${w.title} ${w.content}`),
+    guide: "কষ্টের কবিতা ও sad Bangla status সার্চে নিয়মিত চাহিদা থাকে। এখানে related লেখা সাজানো থাকায় পাঠক দ্রুত নিজের অনুভূতির সঙ্গে মিল খুঁজে নিতে পারবেন।",
+  },
+  "/romantic-bangla-kobita": {
+    icon: Heart,
+    title: "রোমান্টিক বাংলা কবিতা — মাহবুব সরদার সবুজ",
+    h1: "রোমান্টিক বাংলা কবিতা",
+    intro: "প্রেম, মায়া, অপেক্ষা, প্রিয় মানুষ এবং সম্পর্কের কোমল অনুভূতি নিয়ে রোমান্টিক বাংলা কবিতা ও লেখা।",
+    description: "রোমান্টিক বাংলা কবিতা, প্রেমের লেখা, ভালোবাসার ক্যাপশন ও অনুভূতির বাংলা সাহিত্য পড়ুন।",
+    keywords: "রোমান্টিক বাংলা কবিতা, romantic bangla kobita, প্রেমের কবিতা, ভালোবাসার ক্যাপশন",
+    match: (w: typeof writings[number]) => /প্রেম|ভালোবাসা|রোমান্টিক|মায়া|তুমি|প্রিয়|অপেক্ষা|হৃদয়|সম্পর্ক/.test(`${w.title} ${w.content}`),
+    guide: "রোমান্টিক কবিতা পেজটি প্রেম-ভিত্তিক search intent আলাদাভাবে ধরতে সাহায্য করবে এবং ভালোবাসা বিষয়ক existing content-কে আরও সহজে discoverable করবে।",
+  },
+  "/bangla-golpo": {
+    icon: BookOpen,
+    title: "বাংলা গল্প ও বাস্তব লেখা — মাহবুব সরদার সবুজ",
+    h1: "বাংলা গল্প ও বাস্তব লেখা",
+    intro: "বাস্তবতা, সম্পর্ক, অভিজ্ঞতা, স্মৃতি এবং জীবনঘনিষ্ঠ অনুভূতি নিয়ে বাংলা গল্পধর্মী লেখা।",
+    description: "বাংলা গল্প, বাস্তব লেখা, সম্পর্ক ও জীবনের অভিজ্ঞতা নিয়ে মাহবুব সরদার সবুজের সাহিত্য পড়ুন।",
+    keywords: "বাংলা গল্প, bangla golpo, বাস্তব গল্প, ছোট গল্প, জীবনঘনিষ্ঠ লেখা",
+    match: (w: typeof writings[number]) => /গল্প|বাস্তব|ঘটনা|অভিজ্ঞতা|মানুষ|সম্পর্ক|স্মৃতি|জীবন|সময়/.test(`${w.title} ${w.content}`),
+    guide: "বাংলা গল্প ও বাস্তব লেখা পেজটি narrative content খোঁজা পাঠকদের জন্য তৈরি। এতে সাহিত্য, অভিজ্ঞতা ও জীবনঘনিষ্ঠ লেখাকে একত্র করে organic discovery বাড়ানো যায়।",
+  },
 } as const;
 
 const relatedLinks = [
@@ -85,6 +135,11 @@ const relatedLinks = [
   { href: "/bichched-kobita", label: "বিচ্ছেদ কবিতা" },
   { href: "/jibon-dorshon", label: "জীবনদর্শন" },
   { href: "/bangla-ebook", label: "বাংলা ই-বুক" },
+  { href: "/bangla-status", label: "বাংলা স্ট্যাটাস" },
+  { href: "/bangla-quotes", label: "বাংলা উক্তি" },
+  { href: "/koster-kobita", label: "কষ্টের কবিতা" },
+  { href: "/romantic-bangla-kobita", label: "রোমান্টিক কবিতা" },
+  { href: "/bangla-golpo", label: "বাংলা গল্প" },
   { href: "/writings", label: "সব লেখা" },
   { href: "/ebooks", label: "ই-বুক লাইব্রেরি" },
 ];
@@ -188,10 +243,26 @@ export default function SeoKeywordLanding() {
           </div>
         </section>
 
+        <section className="sl-trust" aria-labelledby="trust-title">
+          <div>
+            <p className="sl-kicker">Author Trust</p>
+            <h2 id="trust-title">লেখক, নীতিমালা ও পাঠকের আস্থা</h2>
+            <p>
+              এই সংগ্রহের লেখা মাহবুব সরদার সবুজের অফিসিয়াল সাহিত্যভিত্তিক ওয়েবসাইটে প্রকাশিত। পাঠক সহজে লেখক পরিচিতি, যোগাযোগ এবং নীতিমালা দেখতে পারেন—যা সার্চ ইঞ্জিন ও AdSense review-এর জন্য বিশ্বাসযোগ্যতার গুরুত্বপূর্ণ সংকেত তৈরি করে।
+            </p>
+          </div>
+          <div className="sl-trust-links" aria-label="বিশ্বাসযোগ্যতা ও নীতিমালা লিংক">
+            <Link href="/about">লেখক পরিচিতি</Link>
+            <Link href="/contact">যোগাযোগ</Link>
+            <Link href="/privacy-policy">প্রাইভেসি পলিসি</Link>
+            <Link href="/terms">শর্তাবলি</Link>
+          </div>
+        </section>
+
         <section className="sl-related" aria-labelledby="related-title">
           <h2 id="related-title"><Search size={20} /> সম্পর্কিত বিষয়</h2>
           <div className="sl-related-links">
-            {relatedLinks.map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
+            {relatedLinks.filter((link) => link.href !== location).map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
           </div>
         </section>
       </main>
@@ -209,10 +280,10 @@ export default function SeoKeywordLanding() {
         .sl-primary { background: #C9A84C; color: #070A12; font-weight: 700; }
         .sl-secondary { color: #EEEAE2; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.04); }
         .sl-primary:hover, .sl-secondary:hover { transform: translateY(-2px); }
-        .sl-guide, .sl-grid-section, .sl-related { max-width: 1120px; margin: 0 auto 2rem; padding: 1.4rem; }
+        .sl-guide, .sl-grid-section, .sl-trust, .sl-related { max-width: 1120px; margin: 0 auto 2rem; padding: 1.4rem; }
         .sl-guide { border: 1px solid rgba(201,168,76,.16); border-radius: 28px; background: linear-gradient(135deg, rgba(201,168,76,.09), rgba(255,255,255,.025)); }
-        .sl-guide h2, .sl-section-head h2, .sl-related h2 { margin: 0 0 .7rem; font-size: clamp(1.35rem, 3vw, 2rem); }
-        .sl-guide p, .sl-section-head p { color: rgba(238,234,226,.72); line-height: 1.9; margin: 0; }
+        .sl-guide h2, .sl-section-head h2, .sl-trust h2, .sl-related h2 { margin: 0 0 .7rem; font-size: clamp(1.35rem, 3vw, 2rem); }
+        .sl-guide p, .sl-section-head p, .sl-trust p { color: rgba(238,234,226,.72); line-height: 1.9; margin: 0; }
         .sl-tags { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1rem; }
         .sl-tags span { border: 1px solid rgba(201,168,76,.2); background: rgba(201,168,76,.08); color: #E6CA82; border-radius: 999px; padding: .42rem .72rem; font-size: .86rem; }
         .sl-section-head { display: flex; justify-content: space-between; gap: 1rem; align-items: end; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -223,10 +294,15 @@ export default function SeoKeywordLanding() {
         .sl-card h3 a { color: #FFF8E7; text-decoration: none; }
         .sl-card p { color: rgba(238,234,226,.68); line-height: 1.8; margin: 0 0 1rem; }
         .sl-read { margin-top: auto; color: #D8B45E; display: inline-flex; align-items: center; gap: .35rem; text-decoration: none; font-weight: 600; }
+        .sl-trust { display: grid; grid-template-columns: 1.35fr .9fr; gap: 1rem; align-items: center; border: 1px solid rgba(255,255,255,.08); border-radius: 28px; background: rgba(255,255,255,.028); }
+        .sl-trust .sl-kicker { margin: 0 0 .4rem; }
+        .sl-trust-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+        .sl-trust-links a { color: #070A12; background: #D8B45E; border-radius: 14px; text-decoration: none; padding: .78rem .9rem; font-weight: 700; text-align: center; }
         .sl-related { padding-bottom: 4rem; }
         .sl-related h2 { display: flex; align-items: center; gap: .55rem; }
         .sl-related-links { display: flex; flex-wrap: wrap; gap: .7rem; }
         .sl-related-links a { color: #EEEAE2; text-decoration: none; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); border-radius: 999px; padding: .65rem .9rem; }
+        @media (max-width: 760px) { .sl-trust { grid-template-columns: 1fr; } .sl-trust-links { grid-template-columns: 1fr; } }
         @media (max-width: 640px) { .sl-hero { text-align: left; } .sl-icon { margin-left: 0; } .sl-actions { justify-content: flex-start; } }
       `}</style>
     </div>

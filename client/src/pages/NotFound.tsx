@@ -12,6 +12,7 @@ export default function NotFound() {
         description="আপনি যে পেজটি খুঁজছেন তা পাওয়া যায়নি। মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের হোম পেজে ফিরে যান।"
         path="/404"
         keywords="404, পেজ পাওয়া যায়নি, মাহবুব সরদার সবুজ"
+        robots="noindex, follow"
       />
       <Navbar />
 

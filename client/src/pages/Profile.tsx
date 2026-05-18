@@ -265,6 +265,7 @@ export default function Profile() {
         title="আমার প্রোফাইল — আমিও লিখবো বাস্তবতা"
         description="আমিও লিখবো বাস্তবতা প্ল্যাটফর্মে নিজের প্রোফাইল, পরিচিতি এবং প্রকাশিত লেখাগুলো দেখুন ও সম্পাদনা করুন।"
         path="/profile"
+        robots="noindex, nofollow"
       />
       <Navbar />
 

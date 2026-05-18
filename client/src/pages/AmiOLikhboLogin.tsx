@@ -307,6 +307,8 @@ export default function AmiOLikhboLogin() {
       <Seo
         title="লগইন — আমিও লিখবো বাস্তবতা"
         description="আমিও লিখবো বাস্তবতা প্ল্যাটফর্মে লগইন করুন এবং আপনার বাস্তব অনুভূতি, গল্প ও কবিতা প্রকাশ করুন।"
+        path="/amio-likhbo-login"
+        robots="noindex, nofollow"
       />
       {/* Background orbs */}
       <div style={glowOrb1} />

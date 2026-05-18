@@ -72,6 +72,11 @@ function Router() {
         <Route path={"/bichched-kobita"} component={SeoKeywordLanding} />
         <Route path={"/jibon-dorshon"} component={SeoKeywordLanding} />
         <Route path={"/bangla-ebook"} component={SeoKeywordLanding} />
+        <Route path={"/bangla-status"} component={SeoKeywordLanding} />
+        <Route path={"/bangla-quotes"} component={SeoKeywordLanding} />
+        <Route path={"/koster-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/romantic-bangla-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/bangla-golpo"} component={SeoKeywordLanding} />
         <Route path={"/privacy-policy"} component={PrivacyPolicy} />
         <Route path={"/terms"} component={Terms} />
         <Route path={"/about"} component={About} />

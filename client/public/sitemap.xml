@@ -33,9 +33,17 @@
   <!-- ── আবৃত্তি ── -->
   <url><loc>https://www.mahbubsardarsabuj.com/facebook-recitations</loc><lastmod>2026-05-18</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 
-  <!-- ── ডিজাইন স্টুডিও ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/editor</loc><lastmod>2026-05-18</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-
+  <!-- ── SEO collection pages: high-intent Bengali literature searches ── -->
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-kobita</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/valobashar-kobita</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bichched-kobita</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/jibon-dorshon</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-ebook</loc><lastmod>2026-05-18</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-status</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-quotes</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/koster-kobita</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/romantic-bangla-kobita</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-golpo</loc><lastmod>2026-05-18</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
 
   <!-- ── লেখালেখি — ৭৮৯টি কবিতা ও লেখা ── -->
   <url>

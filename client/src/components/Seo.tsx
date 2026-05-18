@@ -21,6 +21,8 @@ interface SeoProps {
   type?: string;
   jsonLd?: JsonLd;
   newsArticle?: NewsArticleSeo;
+  robots?: string;
+  imageAlt?: string;
 }
 
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
@@ -70,6 +72,8 @@ export default function Seo({
   type = "website",
   jsonLd,
   newsArticle,
+  robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  imageAlt = "মাহবুব সরদার সবুজ অফিসিয়াল ওয়েবসাইটের প্রিভিউ ছবি",
 }: SeoProps) {
   useEffect(() => {
     const canonicalUrl = new URL(path, SITE_URL).toString();
@@ -88,12 +92,18 @@ export default function Seo({
     upsertMeta('meta[property="og:site_name"]', { property: "og:site_name", content: SITE_NAME });
     upsertMeta('meta[property="og:locale"]', { property: "og:locale", content: "bn_BD" });
     upsertMeta('meta[property="og:image"]', { property: "og:image", content: absoluteImage });
+    upsertMeta('meta[property="og:image:alt"]', { property: "og:image:alt", content: imageAlt });
     upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
     upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: title });
     upsertMeta('meta[name="twitter:description"]', { name: "twitter:description", content: description });
     upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: absoluteImage });
-    upsertMeta('meta[name="robots"]', { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" });
+    upsertMeta('meta[name="twitter:image:alt"]', { name: "twitter:image:alt", content: imageAlt });
+    upsertMeta('meta[name="robots"]', { name: "robots", content: robots });
+    upsertMeta('meta[name="googlebot"]', { name: "googlebot", content: robots });
+    upsertMeta('meta[name="theme-color"]', { name: "theme-color", content: "#060E1A" });
     upsertLink('link[rel="canonical"]', { rel: "canonical", href: canonicalUrl });
+    upsertLink('link[rel="alternate"][hreflang="bn-BD"]', { rel: "alternate", hreflang: "bn-BD", href: canonicalUrl });
+    upsertLink('link[rel="alternate"][hreflang="x-default"]', { rel: "alternate", hreflang: "x-default", href: canonicalUrl });
 
     const newsArticleJsonLd = newsArticle ? {
       "@context": "https://schema.org",
@@ -131,6 +141,7 @@ export default function Seo({
 
     let jsonLdScript: HTMLScriptElement | null = null;
     if (structuredData) {
+      document.head.querySelectorAll('script[data-seo-jsonld]').forEach((element) => element.remove());
       jsonLdScript = document.createElement("script");
       jsonLdScript.type = "application/ld+json";
       jsonLdScript.setAttribute("data-seo-jsonld", canonicalUrl);
@@ -144,7 +155,7 @@ export default function Seo({
         jsonLdScript.parentNode.removeChild(jsonLdScript);
       }
     };
-  }, [title, description, path, image, keywords, type, jsonLd, newsArticle]);
+  }, [title, description, path, image, keywords, type, jsonLd, newsArticle, robots, imageAlt]);
 
   return null;
 }

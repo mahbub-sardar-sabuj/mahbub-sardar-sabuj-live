@@ -32,6 +32,15 @@ const legalLinks = [
   { label: "শর্তাবলি", href: "/terms" },
 ];
 
+const collectionLinks = [
+  { label: "বাংলা কবিতা", href: "/bangla-kobita" },
+  { label: "ভালোবাসার কবিতা", href: "/valobashar-kobita" },
+  { label: "কষ্টের কবিতা", href: "/koster-kobita" },
+  { label: "বাংলা স্ট্যাটাস", href: "/bangla-status" },
+  { label: "বাংলা উক্তি", href: "/bangla-quotes" },
+  { label: "বাংলা ই-বুক", href: "/bangla-ebook" },
+];
+
 export default function Footer() {
   const [location] = useLocation();
   const [email, setEmail] = useState("");
@@ -94,7 +103,7 @@ export default function Footer() {
         {/* ── MAIN GRID ── */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: isAmioLikhboPage ? "1.8fr 1fr" : "1.8fr 1fr 1fr 1.2fr",
+          gridTemplateColumns: isAmioLikhboPage ? "1.8fr 1fr" : "1.6fr 1fr 1fr 1fr 1.2fr",
           gap: "3rem",
           marginBottom: "4rem",
         }} className="footer-grid">
@@ -229,6 +238,41 @@ export default function Footer() {
 
           {!isAmioLikhboPage && (
             <>
+              {/* SEO collection links */}
+              <div>
+                <div style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: "0.65rem", letterSpacing: "0.25em",
+                  textTransform: "uppercase", color: "#C9A84C",
+                  marginBottom: "1.5rem",
+                }}>জনপ্রিয় সংগ্রহ</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {collectionLinks.map((link) => {
+                    const active = location === link.href;
+                    return (
+                      <Link key={link.href} href={link.href}>
+                        <motion.span
+                          whileHover={{ x: 6, color: "#C9A84C" }}
+                          style={{
+                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
+                            textDecoration: "none",
+                            fontSize: "0.875rem",
+                            cursor: "pointer",
+                            display: "flex", alignItems: "center", gap: 10,
+                            padding: "6px 0",
+                            transition: "color 0.2s",
+                          }}
+                        >
+                          <span style={{ color: active ? "#C9A84C" : "rgba(201,168,76,0.3)", fontSize: "0.7rem" }}>◆</span>
+                          {link.label}
+                        </motion.span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Legal links */}
               <div>
                 <div style={{

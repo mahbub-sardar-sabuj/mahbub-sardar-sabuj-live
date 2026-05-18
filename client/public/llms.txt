@@ -70,4 +70,9 @@ The website allows public search engines and public AI crawlers to access public
 - বিচ্ছেদের কবিতা: https://www.mahbubsardarsabuj.com/bichched-kobita
 - জীবনদর্শন ও বাস্তবতার লেখা: https://www.mahbubsardarsabuj.com/jibon-dorshon
 - বাংলা ই-বুক: https://www.mahbubsardarsabuj.com/bangla-ebook
+- বাংলা স্ট্যাটাস: https://www.mahbubsardarsabuj.com/bangla-status
+- বাংলা উক্তি: https://www.mahbubsardarsabuj.com/bangla-quotes
+- কষ্টের কবিতা: https://www.mahbubsardarsabuj.com/koster-kobita
+- রোমান্টিক বাংলা কবিতা: https://www.mahbubsardarsabuj.com/romantic-bangla-kobita
+- বাংলা গল্প: https://www.mahbubsardarsabuj.com/bangla-golpo
 

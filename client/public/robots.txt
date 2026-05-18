@@ -5,6 +5,10 @@ Allow: /api/amio-sitemap
 Disallow: /api/
 Disallow: /.env
 Disallow: /admin/
+Disallow: /editor
+Disallow: /profile
+Disallow: /amio-likhbo-login
+Disallow: /404
 
 # Google AdSense crawlers — must be allowed for monetization
 User-agent: Mediapartners-Google
