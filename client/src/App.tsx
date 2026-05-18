@@ -7,18 +7,18 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
-// Eagerly load Home and NotFound for instant first render
+// Eagerly load primary entry pages for instant first render
 import Home from "./pages/Home";
+import Writings from "./pages/Writings";
+import EBooks from "./pages/EBooks";
 import NotFound from "@/pages/NotFound";
 
 // Lazy load all other pages to reduce initial bundle size
 const FacebookRecitations = lazy(() => import("./pages/FacebookRecitations"));
-const Writings = lazy(() => import("./pages/Writings"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
-const EBooks = lazy(() => import("./pages/EBooks"));
 const EBookReader = lazy(() => import("./pages/EBookReader"));
 const Editor = lazy(() => import("./pages/Editor"));
 const News = lazy(() => import("./pages/News"));
