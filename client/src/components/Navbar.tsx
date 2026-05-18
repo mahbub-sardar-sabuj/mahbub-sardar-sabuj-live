@@ -186,10 +186,10 @@ export default function Navbar() {
             }}>
               <Feather size={16} color="#D4A843" />
             </span>
-            <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", lineHeight: 1.05, minWidth: 0 }}>
+            <span style={{ display: "flex", flexDirection: isDesktop ? "column" : "row", justifyContent: "center", alignItems: isDesktop ? "flex-start" : "baseline", gap: isDesktop ? 0 : 5, lineHeight: 1.05, minWidth: 0 }}>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                fontSize: isDesktop ? "1.12rem" : "1.08rem",
+                fontSize: isDesktop ? "1.12rem" : "1.02rem",
                 fontWeight: 800,
                 letterSpacing: "0.01em",
                 color: "#E8C97A",
@@ -203,10 +203,10 @@ export default function Navbar() {
               </span>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                fontSize: isDesktop ? "0.65rem" : "0.72rem",
-                letterSpacing: isDesktop ? "0.1em" : "0.08em",
-                color: "rgba(232,201,122,0.78)",
-                marginTop: isDesktop ? 2 : 4,
+                fontSize: isDesktop ? "0.65rem" : "0.62rem",
+                letterSpacing: isDesktop ? "0.1em" : "0.02em",
+                color: "rgba(232,201,122,0.76)",
+                marginTop: isDesktop ? 2 : 0,
                 lineHeight: 1.05,
                 whiteSpace: "nowrap",
                 textAlign: "center",
