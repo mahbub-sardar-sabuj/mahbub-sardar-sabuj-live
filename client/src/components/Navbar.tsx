@@ -186,7 +186,7 @@ export default function Navbar() {
             }}>
               <Feather size={16} color="#D4A843" />
             </span>
-            <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.05, minWidth: 0 }}>
+            <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", lineHeight: 1.05, minWidth: 0 }}>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                 fontSize: isDesktop ? "1.12rem" : "1.08rem",
@@ -207,10 +207,9 @@ export default function Navbar() {
                 letterSpacing: isDesktop ? "0.1em" : "0.08em",
                 color: "rgba(232,201,122,0.78)",
                 marginTop: isDesktop ? 2 : 4,
-                paddingTop: isDesktop ? 0 : 3,
-                borderTop: isDesktop ? "none" : "1px solid rgba(212,168,67,0.24)",
                 lineHeight: 1.05,
                 whiteSpace: "nowrap",
+                textAlign: "center",
               }}>
                 লেখক ও কবি
               </span>
