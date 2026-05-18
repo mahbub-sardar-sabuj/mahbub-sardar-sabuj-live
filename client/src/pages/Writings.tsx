@@ -16,7 +16,7 @@ import { Link, useRoute, useLocation } from "wouter";
 import {
   Feather, ArrowLeft, BookOpen, Heart, Star, Calendar, X, Search, Share2, Copy,
   ChevronLeft, ChevronRight, Facebook, Check, AArrowUp, AArrowDown, PenLine,
-  ShoppingCart, BookMarked, Eye, Sparkles, Quote, Library, TrendingUp, Award,
+  ShoppingCart, BookMarked, Eye, Quote, Library, TrendingUp, Award,
   Layers, Filter, SortAsc, Grid3X3, List, Bookmark, ExternalLink, ArrowRight,
   Pen, BookText, Flame, Crown, Zap, Moon, Sun, Scroll, Glasses, Hash,
   ChevronDown, Play, Pause, Volume2, BookCopy, GalleryVerticalEnd, Wand2,
@@ -1273,40 +1273,6 @@ const CSS = `
     align-items: stretch;
   }
   .library-hero-copy { align-self: center; }
-  .library-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .75rem;
-    margin-top: 1.45rem;
-  }
-  .library-action {
-    min-height: 46px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: .52rem;
-    padding: .78rem 1.05rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,.085);
-    color: var(--t1);
-    background: rgba(255,255,255,.04);
-    text-decoration: none;
-    font-family: var(--f);
-    font-size: .9rem;
-    transition: transform .22s var(--r), border-color .22s var(--r), background .22s var(--r), box-shadow .22s var(--r);
-  }
-  .library-action.primary {
-    color: #080C14;
-    background: linear-gradient(135deg, var(--gold2), var(--gold));
-    border-color: rgba(232,200,122,.45);
-    box-shadow: 0 18px 38px rgba(201,168,76,.22);
-  }
-  .library-action:hover {
-    transform: translateY(-2px);
-    border-color: rgba(201,168,76,.28);
-    background: rgba(255,255,255,.07);
-  }
-  .library-action.primary:hover { background: linear-gradient(135deg, #F4D98C, var(--gold)); }
   .library-showcase {
     position: relative;
     min-height: 360px;
@@ -1329,7 +1295,7 @@ const CSS = `
   }
   .hero-book-stack {
     position: absolute;
-    inset: 32px 24px 76px;
+    inset: 32px 24px 32px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -1350,38 +1316,6 @@ const CSS = `
   .hero-book:nth-child(1) { --rot: -10deg; --lift: 14px; }
   .hero-book:nth-child(2) { --rot: -3deg; --lift: -6px; width: clamp(78px, 9vw, 112px); }
   .hero-book:nth-child(3) { --rot: 7deg; --lift: 18px; }
-  .hero-mini-panel {
-    position: absolute;
-    left: 18px; right: 18px; bottom: 18px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .hero-mini-card {
-    min-height: 66px;
-    padding: .8rem;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,.075);
-    background: rgba(6,8,14,.62);
-    backdrop-filter: blur(14px);
-    font-family: var(--f);
-  }
-  .hero-mini-card strong { display: block; color: var(--gold); font-size: 1.08rem; line-height: 1; }
-  .hero-mini-card span { display: block; margin-top: .38rem; color: var(--t3); font-size: .7rem; line-height: 1.45; }
-  .section-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: .45rem;
-    padding: .55rem .8rem;
-    border-radius: 999px;
-    color: var(--gold2);
-    background: rgba(201,168,76,.07);
-    border: 1px solid rgba(201,168,76,.16);
-    font-family: var(--f);
-    font-size: .82rem;
-    text-decoration: none;
-    white-space: nowrap;
-  }
   .ebook-stage, .writing-cinema {
     position: relative;
     margin-bottom: clamp(1.6rem,4vw,3rem);
@@ -1705,9 +1639,6 @@ const CSS = `
     .bm2-cv { width: clamp(100px,35vw,140px); }
     .rm2-nt { max-width: 120px; }
     .library-hero, .ebook-stage, .writing-cinema { border-radius: 24px; }
-    .library-actions { width: 100%; }
-    .library-action { flex: 1 1 160px; }
-    .section-cta { align-self: flex-start; }
     .writing-tools { top: var(--site-nav-offset, 98px); border-radius: 18px; }
   }
   @media (max-width: 480px) {
@@ -1718,15 +1649,9 @@ const CSS = `
     .library-hero { padding: 1rem; margin-bottom: .85rem; }
     .library-hero-grid { gap: .9rem; }
     .library-showcase { min-height: 245px; border-radius: 22px; }
-    .hero-book-stack { inset: 20px 12px 72px; gap: 7px; }
+    .hero-book-stack { inset: 20px 12px; gap: 7px; }
     .hero-book { width: 66px; border-radius: 10px; }
     .hero-book:nth-child(2) { width: 78px; }
-    .hero-mini-panel { left: 10px; right: 10px; bottom: 10px; gap: 7px; }
-    .hero-mini-card { min-height: 58px; padding: .65rem; border-radius: 15px; }
-    .hero-mini-card strong { font-size: .92rem; }
-    .hero-mini-card span { font-size: .61rem; }
-    .library-actions { gap: .55rem; margin-top: 1rem; }
-    .library-action { min-height: 42px; padding: .66rem .8rem; font-size: .78rem; }
     .lh-kicker { margin-bottom: .55rem; font-size: .66rem; letter-spacing: .12em; }
     .lh-title { font-size: clamp(1.55rem, 9vw, 2.2rem); line-height: 1.18; margin-bottom: .65rem; }
     .lh-copy { font-size: .86rem; line-height: 1.75; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -2124,19 +2049,11 @@ function LiteraryHero({ writingCount }: { writingCount: number }) {
     <section className="library-hero" aria-labelledby="literary-library-title">
       <div className="library-hero-grid">
         <div className="library-hero-copy">
-          <div className="lh-kicker"><Sparkles size={15}/> বিশ্বমানের সাহিত্য সংগ্রহ</div>
-          <h1 id="literary-library-title" className="lh-title">লেখালেখি ও বই — এক জায়গায় পূর্ণাঙ্গ পাঠ অভিজ্ঞতা</h1>
-          <p className="lh-copy">
-            মাহবুব সরদার সবুজের কবিতা, ভালোবাসা, বিচ্ছেদ, জীবনদর্শন ও প্রকাশিত বইগুলো এখন আরও পরিষ্কার, দ্রুত এবং মোবাইল–ডেস্কটপ সব ডিভাইসে আরামদায়কভাবে পড়ার জন্য সাজানো হয়েছে।
-          </p>
+          <h1 id="literary-library-title" className="lh-title">লেখালেখি ও বই</h1>
           <div className="lh-stats" aria-label="সাহিত্য সংগ্রহের সংক্ষিপ্ত পরিসংখ্যান">
             <div><strong>{writingCount || "৭৮৯+"}</strong><span>লেখা ও কবিতা</span></div>
             <div><strong>{ebooks.length}</strong><span>বই ও ই-বুক</span></div>
             <div><strong>৫</strong><span>সাহিত্য বিভাগ</span></div>
-          </div>
-          <div className="library-actions">
-            <a className="library-action primary" href="#all-writings"><Feather size={16}/> লেখা পড়ুন</a>
-            <a className="library-action" href="#ebook-stage-title"><Library size={16}/> বই দেখুন</a>
           </div>
         </div>
         <div className="library-showcase" aria-label="নির্বাচিত বইয়ের প্রদর্শনী">
@@ -2144,10 +2061,6 @@ function LiteraryHero({ writingCount }: { writingCount: number }) {
             {heroBooks.map((book) => (
               <img key={book.id} src={book.cover} alt="" className="hero-book" loading="eager" decoding="async" />
             ))}
-          </div>
-          <div className="hero-mini-panel">
-            <div className="hero-mini-card"><strong>স্বচ্ছ</strong><span>সার্চ, ফিল্টার ও রিডিং মোড</span></div>
-            <div className="hero-mini-card"><strong>বন্ধুত্বপূর্ণ</strong><span>সব স্ক্রিনে স্পর্শ–সহায়ক UI</span></div>
           </div>
         </div>
       </div>
@@ -2164,9 +2077,7 @@ function BooksTab() {
         <div>
           <div className="wc-kicker"><Library size={14}/> প্রথম সারি</div>
           <h2 id="ebook-stage-title">ই-বুক ও প্রকাশনা সংগ্রহ</h2>
-          <p>প্রকাশিত ফিজিক্যাল বই, পাঠযোগ্য ই-বুক এবং নির্বাচিত সাহিত্য সংকলন—প্রতিটি কার্ডে কভার, ধরণ, পৃষ্ঠা ও দ্রুত পড়ার সুবিধা রাখা হয়েছে।</p>
         </div>
-        <a className="section-cta" href="#all-writings"><Feather size={13}/> লেখাগুলো দেখুন</a>
       </div>
 
       <div className="ebook-row">
@@ -2389,7 +2300,6 @@ export default function Writings() {
               <div>
                 <div className="wc-kicker"><Feather size={14}/> লেখালেখি</div>
                 <h2>নির্বাচিত অনুভূতির আর্কাইভ</h2>
-                <p>বিভাগভিত্তিক ফিল্টার, দ্রুত সার্চ, গ্রিড/লিস্ট ভিউ এবং আরামদায়ক রিডিং মোড দিয়ে প্রতিটি লেখা সহজে পড়ুন।</p>
               </div>
               <div className="wc-count"><span>{filtered.length}</span> টি লেখা</div>
             </div>
