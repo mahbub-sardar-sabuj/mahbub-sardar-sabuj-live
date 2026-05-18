@@ -16,6 +16,19 @@ Allow: /
 User-agent: AdsBot-Google-Mobile
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+
 # Sitemap location
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml

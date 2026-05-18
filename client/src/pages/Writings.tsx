@@ -2170,7 +2170,7 @@ export default function Writings() {
         title={seoTitle}
         description={seoDescription}
         path={seoPath}
-        keywords="মাহবুব সরদার সবুজ লেখা, বাংলা কবিতা, বাংলা ই-বুক, বাংলা বই, ভালোবাসার লেখা, বিচ্ছেদের লেখা, জীবনদর্শন, Mahbub Sardar Sabuj writings"
+        keywords="মাহবুব সরদার সবুজ লেখা, বাংলা কবিতা, বাংলা ই-বুক, বাংলা বই, ভালোবাসার লেখা, বিচ্ছেদের লেখা, জীবনদর্শন, Mahbub Sardar Sabuj writings, bangla kobita, bangla poem collection, বাংলা কবিতা পড়ুন, বাংলা সাহিত্য, বাংলাদেশি কবির লেখা"
         jsonLd={writingsJsonLd}
       />
       <Navbar/>

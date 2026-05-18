@@ -5168,6 +5168,7 @@ export default async function handler(req) {
   let publishedTime = "";
   let modifiedTime = "";
   let articleSection = "";
+  let keywords = "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা কবি, বাংলা লেখক, বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, বাংলা সাহিত্য, বাংলাদেশি লেখক";
 
   // News Detail Page
   if (path.startsWith("/news/")) {
@@ -5175,6 +5176,7 @@ export default async function handler(req) {
     const news = newsData.find((n) => n.id === id);
     if (news) {
       title = `${news.title} | সরদার সংবাদ | Sardar Sangbad`;
+      keywords = news.keywords || `${news.title}, সরদার সংবাদ, মাহবুব সরদার সবুজ, বাংলা সাহিত্য`;
       description = news.excerpt;
       image = news.image && news.image.startsWith("http") ? news.image : new URL(news.image || DEFAULT_IMAGE, SITE_URL).toString();
       imageType = /\.jpe?g(?:$|[?#])/i.test(image) ? "image/jpeg" : /\.webp(?:$|[?#])/i.test(image) ? "image/webp" : /\.gif(?:$|[?#])/i.test(image) ? "image/gif" : "image/png";
@@ -5250,8 +5252,9 @@ export default async function handler(req) {
       description = "এই লেখাটি পাওয়া যায়নি।";
     }
   } else if (path === "/writings") {
-    title = "বাংলা কবিতা ও লেখা | মাহবুব সরদার সবুজ";
-    description = "মাহবুব সরদার সবুজের ৭৮৯+ বাংলা কবিতা ও লেখার সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শনের ছোট লেখা — সবই এক জায়গায়।";
+    title = "বাংলা কবিতা ও লেখা | মাহবুব সরদার সবুজ | ১০৮৪+ কবিতা সংগ্রহ";
+    keywords = "বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, মাহবুব সরদার সবুজ কবিতা, bangla kobita, bangla poem, বাংলা সাহিত্য, জীবনদর্শন";
+    description = "মাহবুব সরদার সবুজের ১০৮৪+ বাংলা কবিতা ও লেখার সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শনের ছোট লেখা — সবই এক জায়গায়। বিনামূল্যে পড়ুন।";
     bodyContent = `<h1>বাংলা কবিতা ও লেখা — মাহবুব সরদার সবুজ</h1>
       <p>মাহবুব সরদার সবুজের ৭৮৯+ বাংলা কবিতা ও লেখার সংগ্রহ। ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, জীবনদর্শনের ছোট লেখা — সবই এক জায়গায়।</p>
       <ul>${writingsData.map(w => `<li><a href="${SITE_URL}/writings/${w.slug}">${w.title}</a> — ${w.category}</li>`).join("")}</ul>`;
@@ -5299,8 +5302,9 @@ export default async function handler(req) {
       <p>মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। এই পেজে আবৃত্তির ভিডিওগুলো একসাথে দেখা ও খোলা যাবে।</p>
       <p><a href="${SITE_URL}/writings">কবিতা পড়ুন</a> | <a href="${SITE_URL}">হোম পেজে ফিরুন</a></p>`;
   } else if (path === "/" || path === "") {
-    title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি | অফিসিয়াল ওয়েবসাইট";
-    description = "মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ১৯০+ ভালোবাসার কবিতা ও বিচ্ছেদের লেখা, বিনামূল্যে বাংলা ই-বুক ও সাহিত্য সংবাদ।";
+    title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - বাংলা কবি ও লেখক | অফিসিয়াল ওয়েবসাইট";
+    keywords = "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা কবি, বাংলা লেখক, বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, বাংলা ই-বুক, দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি, বাংলা সাহিত্য, বাংলাদেশি লেখক, mahbub sardar sabuj kobita, bangla kobita, bangla sahitya, bangladeshi poet, bangla ebook free, সরদার সংবাদ";
+    description = "মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ৯৮৫+ ভালোবাসার কবিতা ও বিচ্ছেদের লেখা, বিনামূল্যে বাংলা ই-বুক (দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি) ও সরদার সংবাদ।";
     bodyContent = `<h1>মাহবুব সরদার সবুজ — লেখক ও কবি</h1>
       <p>বাংলাদেশের জনপ্রিয় কবি ও লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে স্বাগতম।</p>
       <nav>
@@ -5322,6 +5326,7 @@ export default async function handler(req) {
       <meta charset="UTF-8">
       <title>${title}</title>
       <meta name="description" content="${description}">
+      <meta name="keywords" content="${keywords}">
       <link rel="canonical" href="${url}">
       
       <!-- Open Graph / Facebook -->

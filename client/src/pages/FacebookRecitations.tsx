@@ -38,8 +38,8 @@ export default function FacebookRecitations() {
   return (
     <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
-        title="Facebook আবৃত্তি | মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। এই পেজে আবৃত্তির ভিডিওগুলো একসাথে দেখা ও খোলা যাবে।"
+        title="Facebook আবৃত্তি | মাহবুব সরদার সবুজের কবিতা আবৃত্তি সংগ্রহ"
+        description="মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। বাংলা কবিতার আবৃত্তির ভিডিওগুলো একসাথে দেখুন ও শুনুন।"
         path="/facebook-recitations"
         keywords="মাহবুব সরদার সবুজ আবৃত্তি, Mahbub Sardar Sabuj recitation, Facebook আবৃত্তি, বাংলা আবৃত্তি"
         jsonLd={recitationsJsonLd}

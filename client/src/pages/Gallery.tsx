@@ -131,8 +131,9 @@ export default function Gallery() {
   return (
     <div style={{ minHeight: "100vh", background: "#060E1A" }}>
       <Seo
-        title="গ্যালারি — মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম ও স্মৃতির ফটো গ্যালারি।"
+        title="গ্যালারি | মাহবুব সরদার সবুজের ছবি সংগ্রহ | Mahbub Sardar Sabuj Gallery"
+        description="মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো গ্যালারি। বাংলাদেশের জনপ্রিয় কবি ও লেখকের ছবি সংগ্রহ।"
+        keywords="মাহবুব সরদার সবুজ গ্যালারি, Mahbub Sardar Sabuj photos, বাংলা লেখক ছবি, বাংলাদেশি কবির ছবি"
       />
       <Navbar />
 

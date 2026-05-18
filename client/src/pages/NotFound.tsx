@@ -9,8 +9,9 @@ export default function NotFound() {
     <div style={{ background: "#060E1A", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Seo
         title="পেজ পাওয়া যায়নি (404) | মাহবুব সরদার সবুজ"
-        description="আপনি যে পেজটি খুঁজছেন তা পাওয়া যায়নি। হোম পেজে ফিরে যান।"
+        description="আপনি যে পেজটি খুঁজছেন তা পাওয়া যায়নি। মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের হোম পেজে ফিরে যান।"
         path="/404"
+        keywords="404, পেজ পাওয়া যায়নি, মাহবুব সরদার সবুজ"
       />
       <Navbar />
 

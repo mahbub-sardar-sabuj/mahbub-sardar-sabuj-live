@@ -126,8 +126,8 @@ export default function Contact() {
 
       <div style={{ background: BG, minHeight: "100vh" }}>
         <Seo
-          title="যোগাযোগ | মাহবুব সরদার সবুজ"
-          description="লেখক মাহবুব সরদার সবুজ-এর সঙ্গে যোগাযোগের জন্য ইমেইল, সামাজিক মাধ্যম এবং বার্তা পাঠানোর ফর্ম।"
+          title="যোগাযোগ | মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj Contact"
+          description="বাংলাদেশের জনপ্রিয় কবি ও লেখক মাহবুব সরদার সবুজ-এর সঙ্গে যোগাযোগ করুন। ইমেইল, সামাজিক মাধ্যম এবং বার্তা পাঠানোর ফর্ম।"
           path="/contact"
           keywords="মাহবুব সরদার সবুজ যোগাযোগ, Mahbub Sardar Sabuj contact"
         />

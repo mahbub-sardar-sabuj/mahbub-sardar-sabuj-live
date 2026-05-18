@@ -15,12 +15,12 @@
     <meta name="apple-mobile-web-app-title" content="মাহবুব সবুজ" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি | অফিসিয়াল ওয়েবসাইট</title>
-  <meta name="description" content="মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। অসংখ্য ভালোবাসার কবিতা ও বিচ্ছেদের লেখা, বিনামূল্যে বাংলা ই-বুক (দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি) ও সাহিত্য সংবাদ। বাংলা সাহিত্যের সর্ববৃহৎ সংগ্রহ।" />    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="description" content="মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ১০৮৪+ ভালোবাসার কবিতা ও বিচ্ছেদের লেখা, বিনামূল্যে বাংলা ই-বুক (দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি) ও সরদার সংবাদ। বাংলা সাহিত্যের বিশাল সংগ্রহ।" />    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="google-site-verification" content="N5n5dwjgsAXuexqzz1ZWCsEilMGB9BE2wT0MWKYbbUg" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3350204114310360" crossorigin="anonymous"></script>
     <link rel="canonical" href="https://www.mahbubsardarsabuj.com/" />
     <meta property="og:title" content="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি" />
-    <meta property="og:description" content="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। অসংখ্য কবিতা, গল্প ও প্রকাশিত বই 'আমি বিচ্ছেদকে বলি দুঃখবিলাস'।" />
+    <meta property="og:description" content="মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ৯৮৫+ ভালোবাসার কবিতা, বিনামূল্যে বাংলা ই-বুক ও সরদার সংবাদ। বাংলা সাহিত্যের বিশাল সংগ্রহ।" />
     <meta property="og:type" content="profile" />
     <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:image:width" content="1200" />
@@ -35,7 +35,7 @@
     <meta property="og:image" content="https://www.mahbubsardarsabuj.com/images/og-home.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি" />
-    <meta name="twitter:description" content="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। কবিতা, গল্প ও প্রকাশিত বই সংগ্রহ।" />
+    <meta name="twitter:description" content="মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ৯৮৫+ কবিতা, বিনামূল্যে ই-বুক ও সাহিত্য সংবাদ।" />
     <meta name="twitter:image:alt" content="মাহবুব সরদার সবুজ" />
     <meta name="twitter:creator" content="@MahbubSardarSabuj" />
     <meta name="twitter:site" content="@MahbubSardarSabuj" />
@@ -216,7 +216,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Analytics: configure VITE_ANALYTICS_ENDPOINT and VITE_ANALYTICS_WEBSITE_ID in Vercel env vars to enable -->
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "G-XXXXXXXXXX", {
+        page_path: window.location.pathname,
+        send_page_view: true
+      });
+    </script>
   </body>
 
 </html>
