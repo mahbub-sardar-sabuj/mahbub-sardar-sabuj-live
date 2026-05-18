@@ -5353,7 +5353,7 @@ export default async function handler(req) {
       <meta property="twitter:image" content="${image}">
 
       <!-- Redirect human users to main site, keep bots here -->
-      <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|facebookexternalhit|facebot|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot|discordbot|pinterest|applebot/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>
+      <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|facebookexternalhit|facebot|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot|discordbot|pinterest|applebot|gptbot|chatgpt-user|oai-searchbot|claudebot|claude-searchbot|claude-user|anthropic-ai|perplexitybot|perplexity-user|youbot|ccbot|bytespider|meta-externalagent|meta-externalfetcher|amazonbot|diffbot|cohere-ai|mistralai-user|ai2bot|omgili|omgilibot/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>
     </head>
     <body>
       <header><a href="${SITE_URL}">মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj</a></header>
