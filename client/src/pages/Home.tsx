@@ -88,14 +88,7 @@ export default function Home() {
   };
 
   return (
-    <div style={{
-      background: "radial-gradient(circle at 18% 8%, rgba(201,168,76,0.12), transparent 32%), radial-gradient(circle at 86% 18%, rgba(46,84,132,0.18), transparent 30%), linear-gradient(180deg, #040A13 0%, #07111F 42%, #050B14 100%)",
-      minHeight: "100vh",
-      overflowX: "hidden",
-      color: "#FAF6EF",
-      position: "relative",
-      isolation: "isolate",
-    }}>
+    <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
         title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি"
         description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। লেখকের পরিচিতি, বাংলা কবিতা, লেখালেখি, বই, ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।"
@@ -112,12 +105,11 @@ export default function Home() {
         ref={heroRef}
         style={{
           position: "relative",
-          minHeight: "min(1040px, 104vh)",
+          minHeight: "100vh",
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
-          background: "linear-gradient(135deg, #040A13 0%, #09182A 46%, #050B14 100%)",
-          isolation: "isolate",
+          background: "#060E1A",
         }}
       >
         {/* Full-bleed background image with parallax */}
@@ -135,11 +127,11 @@ export default function Home() {
         {/* Multi-layer gradient overlay */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(110deg, rgba(4,10,19,0.98) 0%, rgba(6,14,26,0.92) 42%, rgba(6,14,26,0.52) 100%)",
+          background: "linear-gradient(105deg, rgba(6,14,26,0.97) 0%, rgba(6,14,26,0.88) 45%, rgba(6,14,26,0.4) 100%)",
         }} />
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(4,10,19,1) 0%, rgba(6,14,26,0.72) 28%, transparent 62%)",
+          background: "linear-gradient(to top, rgba(6,14,26,1) 0%, transparent 40%)",
         }} />
 
         {/* Animated grain texture */}
@@ -149,11 +141,6 @@ export default function Home() {
           opacity: 0.4,
           pointerEvents: "none",
         }} />
-
-        <div className="cinema-vignette" />
-        <div className="cinema-scanline" />
-        <div className="cinema-orb cinema-orb-left" />
-        <div className="cinema-orb cinema-orb-right" />
 
         {/* Gold radial glow — top right */}
         <motion.div
@@ -174,7 +161,7 @@ export default function Home() {
           style={{ position: "relative", zIndex: 2, width: "100%", opacity: heroOpacity }}
           className="hero-container"
         >
-          <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 2rem" }} className="hero-inner">
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem" }} className="hero-inner">
 
             {/* Left column — text */}
             <div className="hero-left">
@@ -188,14 +175,14 @@ export default function Home() {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 10,
-                  marginBottom: "1.9rem",
+                  marginBottom: "1.8rem",
                   marginTop: "0.6rem",
-                  padding: "7px 16px 7px 12px",
+                  padding: "5px 14px 5px 11px",
                   borderRadius: 40,
-                  border: "1px solid rgba(232,201,122,0.32)",
-                  background: "linear-gradient(135deg, rgba(201,168,76,0.13), rgba(255,255,255,0.035))",
-                  backdropFilter: "blur(16px) saturate(1.35)",
-                  boxShadow: "0 18px 55px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 28px rgba(201,168,76,0.08)",
+                  border: "1px solid rgba(201,168,76,0.35)",
+                  background: "rgba(201,168,76,0.06)",
+                  backdropFilter: "blur(8px)",
+                  boxShadow: "0 0 20px rgba(201,168,76,0.08), inset 0 1px 0 rgba(201,168,76,0.15)",
                 }}
               >
                 {/* Pulsing dot */}
@@ -283,21 +270,17 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "2rem 0 2.35rem", maxWidth: 540 }}
+                style={{ margin: "2rem 0 2.5rem", maxWidth: 480 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
-                  color: "rgba(250,246,239,0.74)",
+                  color: "rgba(250,246,239,0.65)",
                   lineHeight: 2,
                   margin: 0,
                   letterSpacing: "0.02em",
-                  borderLeft: "2px solid rgba(232,201,122,0.58)",
-                  padding: "1rem 1.15rem",
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.055), rgba(201,168,76,0.035))",
-                  borderRadius: 16,
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 20px 70px rgba(0,0,0,0.18)",
-                  backdropFilter: "blur(14px)",
+                  borderLeft: "2px solid rgba(201,168,76,0.4)",
+                  paddingLeft: 16,
                 }}>
                   বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
                 </p>
@@ -396,12 +379,10 @@ export default function Home() {
                 {/* Main portrait — suit photo */}
                 <div style={{
                   position: "relative",
-                  borderRadius: 28,
+                  borderRadius: 12,
                   overflow: "hidden",
-                  boxShadow: "0 50px 120px rgba(0,0,0,0.72), 0 0 0 1px rgba(232,201,122,0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  boxShadow: "0 40px 100px rgba(0,0,0,0.65), 0 0 0 1px rgba(201,168,76,0.18)",
                   zIndex: 1,
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(201,168,76,0.04))",
-                  padding: 6,
                 }}>
                   <img
                     src={PROFILE_1}
@@ -413,8 +394,7 @@ export default function Home() {
                       objectFit: "cover",
                       objectPosition: "center top",
                       display: "block",
-                      filter: "contrast(1.08) saturate(0.92) brightness(0.98)",
-                      borderRadius: 22,
+                      filter: "contrast(1.05) saturate(0.88)",
                     }}
                     className="hero-portrait"
                     fetchPriority="high"
@@ -423,8 +403,7 @@ export default function Home() {
                   {/* Gradient overlay */}
                   <div style={{
                     position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, rgba(6,14,26,0.03) 0%, transparent 42%, rgba(4,10,19,0.88) 100%)",
-                    borderRadius: 22,
+                    background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.8) 100%)",
                   }} />
                   {/* Name tag at bottom */}
                   <div style={{
@@ -470,10 +449,10 @@ export default function Home() {
           MARQUEE — Gold band
       ══════════════════════════════════════════════════════════════════════ */}
       <div style={{
-        background: "linear-gradient(90deg, #040A13 0%, #0B1A2D 24%, rgba(201,168,76,0.12) 50%, #0B1A2D 76%, #040A13 100%)",
-        borderTop: "1px solid rgba(232,201,122,0.18)",
-        borderBottom: "1px solid rgba(232,201,122,0.18)",
-        padding: "12px 0",
+        background: "linear-gradient(90deg, #060E1A 0%, #0A1628 20%, #0d1e35 50%, #0A1628 80%, #060E1A 100%)",
+        borderTop: "1px solid rgba(201,168,76,0.2)",
+        borderBottom: "1px solid rgba(201,168,76,0.2)",
+        padding: "14px 0",
         overflow: "hidden",
         position: "relative",
       }}>
@@ -521,9 +500,9 @@ export default function Home() {
         ref={quoteRef}
         style={{
           position: "relative",
-          padding: "7rem 2rem",
+          padding: "8rem 2rem",
           overflow: "hidden",
-          background: "linear-gradient(180deg, #050B14 0%, #09182A 48%, #050B14 100%)",
+          background: "#060E1A",
         }}
       >
         {/* Background image with heavy overlay */}
@@ -547,7 +526,7 @@ export default function Home() {
           userSelect: "none",
         }}>"</div>
 
-        <div className="cinema-panel" style={{ position: "relative", zIndex: 1, maxWidth: 940, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={quoteInView ? { opacity: 1, scale: 1 } : {}}
@@ -607,7 +586,7 @@ export default function Home() {
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "7rem 2rem",
-        background: "radial-gradient(circle at 20% 20%, rgba(201,168,76,0.13), transparent 28%), linear-gradient(180deg, #081526 0%, #0B1D34 50%, #050B14 100%)",
+        background: "linear-gradient(180deg, #0A1628 0%, #0d1e35 100%)",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -790,7 +769,7 @@ export default function Home() {
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "7rem 2rem 8rem",
-        background: "linear-gradient(180deg, #050B14 0%, #071321 100%)",
+        background: "#060E1A",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -837,11 +816,11 @@ export default function Home() {
           <div className="sections-grid" style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1rem",
-            background: "transparent",
-            border: "0",
-            borderRadius: 24,
-            overflow: "visible",
+            gap: "1px",
+            background: "rgba(201,168,76,0.08)",
+            border: "1px solid rgba(201,168,76,0.08)",
+            borderRadius: 12,
+            overflow: "hidden",
           }}>
             {sections.map((sec, i) => {
               const Icon = sec.icon;
@@ -855,23 +834,18 @@ export default function Home() {
                 >
                   <Link href={sec.href} style={{ textDecoration: "none", display: "block" }}>
                     <motion.div
-                      whileHover={{ y: -6, background: "rgba(201,168,76,0.075)", borderColor: "rgba(232,201,122,0.32)" }}
-                      className="section-card"
+                      whileHover={{ background: "rgba(201,168,76,0.06)" }}
                       style={{
                         padding: "2rem 1.75rem",
-                        background: "linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.026))",
+                        background: "#060E1A",
                         cursor: "pointer",
-                        transition: "background 0.3s, border-color 0.3s, transform 0.3s",
+                        transition: "background 0.3s",
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
                         gap: 0,
                         position: "relative",
                         overflow: "hidden",
-                        border: "1px solid rgba(232,201,122,0.14)",
-                        borderRadius: 20,
-                        boxShadow: "0 24px 70px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.045)",
-                        backdropFilter: "blur(16px)",
                       }}
                     >
                       {/* Hover accent line */}
@@ -959,7 +933,7 @@ export default function Home() {
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "7rem 2rem",
-        background: "radial-gradient(circle at 80% 20%, rgba(201,168,76,0.12), transparent 28%), linear-gradient(180deg, #071321 0%, #040A13 100%)",
+        background: "linear-gradient(180deg, #0A1628 0%, #060E1A 100%)",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -974,9 +948,9 @@ export default function Home() {
               style={{ position: "relative" }}
             >
               <div style={{
-                borderRadius: 28,
+                borderRadius: 12,
                 overflow: "hidden",
-                boxShadow: "0 46px 100px rgba(0,0,0,0.58), 0 0 0 1px rgba(232,201,122,0.18)",
+                boxShadow: "0 40px 80px rgba(0,0,0,0.5)",
                 position: "relative",
               }}>
                 <img
@@ -1079,7 +1053,7 @@ export default function Home() {
                       fontSize: "0.9rem", fontWeight: 700, color: "#060E1A",
                     }}
                   >
-                    <BookOpen size={16} /> বই কিনুন
+                    📖 বই কিনুন
                   </motion.button>
                 </a>
                 <a href="https://www.facebook.com/MahbubSardarSabuj" target="_blank" rel="noopener noreferrer">
@@ -1095,7 +1069,7 @@ export default function Home() {
                       fontSize: "0.9rem", fontWeight: 600, color: "#C9A84C",
                     }}
                   >
-                    <Star size={15} /> সাপোর্ট করুন
+                    ❤️ সাপোর্ট করুন
                   </motion.button>
                 </a>
               </div>
@@ -1126,7 +1100,7 @@ export default function Home() {
 
 
       {/* AdSense Ad — হোম পেজের নিচে */}
-      <div style={{ maxWidth: 820, margin: "0 auto", padding: "1.75rem 1rem 2.5rem", opacity: 0.92 }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
         <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
       </div>
 
@@ -1145,69 +1119,6 @@ export default function Home() {
           0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C; }
           50% { opacity: 0.6; transform: scale(1.5); box-shadow: 0 0 16px rgba(201,168,76,0.8); }
         }
-        @keyframes floatAura {
-          0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.65; }
-          50% { transform: translate3d(0, -18px, 0) scale(1.05); opacity: 0.95; }
-        }
-        .cinema-vignette {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 1;
-          background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.12) 48%, rgba(0,0,0,0.62) 100%);
-          mix-blend-mode: multiply;
-        }
-        .cinema-scanline {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 1;
-          opacity: 0.18;
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
-          background-size: 100% 7px;
-          mask-image: linear-gradient(to bottom, transparent, black 18%, black 74%, transparent);
-        }
-        .cinema-orb {
-          position: absolute;
-          pointer-events: none;
-          z-index: 1;
-          border-radius: 999px;
-          filter: blur(34px);
-          animation: floatAura 7s ease-in-out infinite;
-        }
-        .cinema-orb-left {
-          width: 280px;
-          height: 280px;
-          left: -100px;
-          top: 18%;
-          background: rgba(201,168,76,0.13);
-        }
-        .cinema-orb-right {
-          width: 360px;
-          height: 360px;
-          right: -130px;
-          top: 8%;
-          background: rgba(50,92,146,0.22);
-          animation-delay: -2.5s;
-        }
-        .cinema-panel {
-          padding: clamp(2rem, 4vw, 4rem);
-          border: 1px solid rgba(232,201,122,0.14);
-          border-radius: 30px;
-          background: linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.025));
-          box-shadow: 0 34px 100px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.055);
-          backdrop-filter: blur(18px) saturate(1.25);
-        }
-        .section-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background: radial-gradient(circle at 20% 0%, rgba(232,201,122,0.12), transparent 34%);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        .section-card:hover::before { opacity: 1; }
 
         /* CTA row — one line, equal boxes */
         .cta-row {
@@ -1225,8 +1136,8 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           gap: 6px;
-          padding: 14px 10px;
-          border-radius: 999px;
+          padding: 13px 8px;
+          border-radius: 6px;
           font-family: 'Noto Sans Bengali', sans-serif;
           font-size: 0.82rem;
           font-weight: 700;
@@ -1241,15 +1152,14 @@ export default function Home() {
           background: linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%);
           background-size: 200% 100%;
           color: #060E1A;
-          box-shadow: 0 12px 34px rgba(201,168,76,0.34), inset 0 1px 0 rgba(255,255,255,0.22);
+          box-shadow: 0 8px 28px rgba(201,168,76,0.35);
           animation: goldShimmer 3s ease-in-out infinite;
         }
         .cta-secondary {
-          background: linear-gradient(135deg, rgba(255,255,255,0.055), rgba(201,168,76,0.035));
-          border: 1px solid rgba(232,201,122,0.22);
+          background: rgba(201,168,76,0.04);
+          border: 1px solid rgba(201,168,76,0.3);
           color: rgba(250,246,239,0.85);
-          backdrop-filter: blur(14px) saturate(1.2);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+          backdrop-filter: blur(10px);
         }
         .cta-secondary:hover {
           background: rgba(201,168,76,0.08);
@@ -1264,11 +1174,11 @@ export default function Home() {
         .hero-inner {
           display: grid;
           grid-template-columns: 1.1fr 0.9fr;
-          gap: 4.5rem;
+          gap: 5rem;
           align-items: center;
         }
         .hero-portrait {
-          height: 570px;
+          height: 560px;
           width: 100%;
           object-fit: cover;
         }
@@ -1331,10 +1241,10 @@ export default function Home() {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 60px; }
           .sections-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .hero-portrait { height: 320px; }
-          .cta-row { gap: 7px; max-width: 100%; }
+          .cta-row { gap: 5px; max-width: 100%; }
           .cta-btn {
             font-size: 0.72rem;
-            padding: 11px 6px;
+            padding: 11px 4px;
             gap: 3px;
           }
           .cta-btn svg { width: 13px; height: 13px; }
