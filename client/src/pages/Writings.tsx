@@ -375,10 +375,6 @@ const CSS = `
     gap: 6px;
     flex-wrap: wrap;
   }
-  .rb2-n {
-    color: var(--gold);
-    font-size: .9rem;
-  }
   .rb2-clr {
     display: flex; align-items: center; gap: 5px;
     padding: 4px 10px;
@@ -1246,33 +1242,6 @@ const CSS = `
     font-size: clamp(1rem, 2.1vw, 1.22rem);
     line-height: 1.9;
   }
-  .lh-stats {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 1.5rem;
-  }
-  .lh-stats div {
-    min-width: 128px;
-    padding: .85rem 1rem;
-    border: 1px solid rgba(255,255,255,.075);
-    border-radius: 18px;
-    background: rgba(255,255,255,.035);
-  }
-  .lh-stats strong {
-    display: block;
-    color: var(--gold);
-    font-size: 1.35rem;
-    line-height: 1;
-    font-family: var(--f);
-  }
-  .lh-stats span {
-    display: block;
-    margin-top: .35rem;
-    color: var(--t3);
-    font-family: var(--f);
-    font-size: .78rem;
-  }
   .library-hero-grid {
     position: relative;
     z-index: 1;
@@ -1599,18 +1568,6 @@ const CSS = `
   .ebook-actions > *:hover { transform: translateY(-2px); filter: brightness(1.08); }
   .writing-cinema { padding: clamp(1rem,3vw,2rem); }
   .writing-head { align-items: center; }
-  .wc-count {
-    flex-shrink: 0;
-    min-width: 112px;
-    padding: .9rem 1rem;
-    border-radius: 20px;
-    border: 1px solid rgba(201,168,76,.18);
-    background: rgba(201,168,76,.07);
-    color: var(--t2);
-    font-family: var(--f);
-    text-align: center;
-  }
-  .wc-count span { display: block; color: var(--gold); font-size: 1.35rem; line-height: 1; }
   .seo-clusters {
     display: flex;
     flex-wrap: wrap;
@@ -1743,10 +1700,6 @@ const CSS = `
     .lh-kicker { margin-bottom: .55rem; font-size: .66rem; letter-spacing: .12em; }
     .lh-title { font-size: clamp(1.55rem, 9vw, 2.2rem); line-height: 1.18; margin-bottom: .65rem; }
     .lh-copy { font-size: .86rem; line-height: 1.75; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .lh-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: .9rem; }
-    .lh-stats div { min-width: 0; padding: .65rem .42rem; border-radius: 15px; }
-    .lh-stats strong { font-size: 1rem; }
-    .lh-stats span { font-size: .6rem; }
     .bk-sum-cinema { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
     .ebook-stage, .writing-cinema { padding: .85rem; margin-bottom: 1rem; }
     .ebook-stage-head, .writing-head { gap: .7rem; margin-bottom: .8rem; }
@@ -1765,7 +1718,6 @@ const CSS = `
     .wc2-l .wc2-body { flex-direction: column; align-items: flex-start; gap: .7rem; }
     .wc2-l .wc2-foot { width: 100%; margin-left: 0; justify-content: space-between; }
     .wt-view { justify-self: end; }
-    .wc-count { width: 100%; }
   }
 `;
 
@@ -2135,7 +2087,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
 }
 
 // ── Cinematic E-Book Shelf ───────────────────────────────────────────────────────────────────
-function LiteraryHero({ writingCount }: { writingCount: number }) {
+function LiteraryHero() {
   const featuredBooks = ebooks.filter((book) => book.isFeatured).slice(0, 3);
   const heroBooks = featuredBooks.length >= 3 ? featuredBooks : ebooks.slice(0, 3);
 
@@ -2144,11 +2096,9 @@ function LiteraryHero({ writingCount }: { writingCount: number }) {
       <div className="library-hero-grid">
         <div className="library-hero-copy">
           <h1 id="literary-library-title" className="lh-title">লেখালেখি ও বই</h1>
-          <div className="lh-stats" aria-label="সাহিত্য সংগ্রহের সংক্ষিপ্ত পরিসংখ্যান">
-            <div><strong>{writingCount || "৭৮৯+"}</strong><span>লেখা ও কবিতা</span></div>
-            <div><strong>{ebooks.length}</strong><span>বই ও ই-বুক</span></div>
-            <div><strong>৫</strong><span>সাহিত্য বিভাগ</span></div>
-          </div>
+          <p className="lh-copy">
+            মাহবুব সরদার সবুজের কবিতা, অনুভূতির লেখা এবং বইয়ের নির্বাচিত সংগ্রহ—পাঠকের জন্য সাজানো এক নান্দনিক সাহিত্যভুবন।
+          </p>
         </div>
         <div className="library-showcase" aria-label="নির্বাচিত বইয়ের প্রদর্শনী">
           <div className="hero-book-stack" aria-hidden="true">
@@ -2370,7 +2320,6 @@ export default function Writings() {
         "@type": "ItemList",
         "@id": siteUrl("/writings#latest-writings"),
         "name": "নির্বাচিত অনুভূতির আর্কাইভ",
-        "numberOfItems": archive.length,
         "itemListElement": archive.slice(0, 24).map((writing, index) => ({
           "@type": "ListItem",
           "position": index + 1,
@@ -2423,7 +2372,7 @@ export default function Writings() {
       <div className="wp wp-cinema">
         <div className="cinema-aurora" aria-hidden="true"/>
         <div className="mc mc-cinema">
-          <LiteraryHero writingCount={archive.length || filtered.length} />
+          <LiteraryHero />
           <BooksTab/>
 
           <section className="writing-cinema" id="all-writings">
@@ -2432,7 +2381,6 @@ export default function Writings() {
                 <div className="wc-kicker"><Feather size={14}/> লেখালেখি</div>
                 <h2>নির্বাচিত অনুভূতির আর্কাইভ</h2>
               </div>
-              <div className="wc-count"><span>{filtered.length}</span> টি লেখা</div>
             </div>
 
             <nav className="seo-clusters" aria-label="জনপ্রিয় বাংলা সাহিত্য বিষয়">
@@ -2480,18 +2428,18 @@ export default function Writings() {
               </div>
             </div>
 
-            <div className="rb2 rb2-cinema">
-              <div className="rb2-t">
-                <span className="rb2-n">{filtered.length}</span> টি লেখা{filtered.length > visibleWritings.length && <span>· প্রথমে {visibleWritings.length}টি দেখানো হচ্ছে</span>}
-                {cat !== "all" && <span>· {CATS.find(c2 => c2.id === cat)?.label}</span>}
-                {deferredQuery && <span>· “{deferredQuery}”</span>}
-              </div>
-              {(cat !== "all" || q) && (
+            {(cat !== "all" || q) && (
+              <div className="rb2 rb2-cinema">
+                <div className="rb2-t">
+                  {cat !== "all" && <span>{CATS.find(c2 => c2.id === cat)?.label}</span>}
+                  {cat !== "all" && deferredQuery && <span>·</span>}
+                  {deferredQuery && <span>“{deferredQuery}”</span>}
+                </div>
                 <button className="rb2-clr" aria-label="সব ফিল্টার সরান" onClick={() => { setCat("all"); setQ(""); }}>
                   <X size={10}/> সরান
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {!archiveReady ? (
               <div className="wc2-em" aria-live="polite">
@@ -2516,7 +2464,6 @@ export default function Writings() {
                     <button className="lm2-btn" aria-label="আরও লেখা দেখুন" onClick={() => setVisibleCount((n) => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))}>
                       <ChevronDown size={15}/> আরও লেখা দেখুন
                     </button>
-                    <div className="lm2-note">{visibleWritings.length} / {filtered.length} টি লেখা দেখা যাচ্ছে</div>
                   </div>
                 )}
               </>
