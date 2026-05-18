@@ -27,7 +27,7 @@ interface SeoProps {
 
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
-const DEFAULT_IMAGE = "https://www.mahbubsardarsabuj.com/images/og-home.jpg";
+const DEFAULT_IMAGE = "https://www.mahbubsardarsabuj.com/images/og-home-suit.jpg";
 const DEFAULT_PUBLISHER_LOGO = "https://www.mahbubsardarsabuj.com/images/sardar-sangbad-logo-final.png";
 
 function toIsoDateTime(date: string) {

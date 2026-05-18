@@ -94,8 +94,8 @@ export default function Home() {
   return (
     <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
-        title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - বাংলা কবি ও লেখক | অফিসিয়াল ওয়েবসাইট"
-        description="মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ১০৮৪+ ভালোবাসার কবিতা ও বিচ্ছেদের লেখা, বিনামূল্যে বাংলা ই-বুক (দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি) ও সরদার সংবাদ।"
+        title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি"
+        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। লেখকের পরিচিতি, বাংলা কবিতা, লেখালেখি, বই, ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।"
         path="/"
         keywords="মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা কবি, বাংলা লেখক, বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, বাংলা ই-বুক, দুঃখবিলাস, স্মৃতির বসন্তে তুমি, চাঁদফুল, সময়ের গহ্বরে, বাংলা সাহিত্য, বাংলাদেশি লেখক, mahbub sardar sabuj kobita, bangla kobita, bangla sahitya, bangladeshi poet, bangla ebook free, সরদার সংবাদ"
         jsonLd={homeJsonLd}

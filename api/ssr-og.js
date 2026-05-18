@@ -1,6 +1,6 @@
 export const config = { runtime: "edge" };
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
-const DEFAULT_IMAGE = `${SITE_URL}/images/og-home.jpg`;
+const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 const NEWS_PUBLISHER_NAME = "সরদার সংবাদ | Sardar Sangbad";
 const NEWS_PUBLISHER_LOGO = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
@@ -5577,9 +5577,9 @@ export default async function handler(req) {
       <p>মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। এই পেজে আবৃত্তির ভিডিওগুলো একসাথে দেখা ও খোলা যাবে।</p>
       <p><a href="${SITE_URL}/writings">কবিতা পড়ুন</a> | <a href="${SITE_URL}">হোম পেজে ফিরুন</a></p>`;
   } else if (path === "/" || path === "") {
-    title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - বাংলা কবি ও লেখক | অফিসিয়াল ওয়েবসাইট";
+    title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
     keywords = "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা কবি, বাংলা লেখক, বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, বাংলা ই-বুক, দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি, বাংলা সাহিত্য, বাংলাদেশি লেখক, mahbub sardar sabuj kobita, bangla kobita, bangla sahitya, bangladeshi poet, bangla ebook free, সরদার সংবাদ";
-    description = "মাহবুব সরদার সবুজ — বাংলাদেশের জনপ্রিয় কবি ও লেখক। ৯৮৫+ ভালোবাসার কবিতা ও বিচ্ছেদের লেখা, বিনামূল্যে বাংলা ই-বুক (দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি) ও সরদার সংবাদ।";
+    description = "মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। লেখকের পরিচিতি, বাংলা কবিতা, লেখালেখি, বই, ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।";
     bodyContent = `<h1>মাহবুব সরদার সবুজ — লেখক ও কবি</h1>
       <p>বাংলাদেশের জনপ্রিয় কবি ও লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে স্বাগতম।</p>
       <nav>
@@ -5614,8 +5614,8 @@ export default async function handler(req) {
       <meta property="og:image" content="${image}">
       <meta property="og:image:secure_url" content="${image}">
       <meta property="og:image:type" content="${imageType}">
-      <meta property="og:image:width" content="1200">
-      <meta property="og:image:height" content="630">
+      <meta property="og:image:width" content="1024">
+      <meta property="og:image:height" content="1024">
       <meta property="og:site_name" content="${ogType === 'article' ? NEWS_PUBLISHER_NAME : SITE_NAME}">
       ${publishedTime ? `<meta property="article:published_time" content="${publishedTime}">` : ""}
       ${modifiedTime ? `<meta property="article:modified_time" content="${modifiedTime}">` : ""}
