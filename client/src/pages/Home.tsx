@@ -793,10 +793,10 @@ export default function Home() {
           margin: 0 0 1.1rem;
           letter-spacing: 0;
           word-spacing: normal;
-          text-align: justify;
-          text-align-last: left;
+          text-align: left;
+          text-align-last: auto;
           text-justify: auto;
-          text-wrap: pretty;
+          text-wrap: auto;
           word-break: normal;
           overflow-wrap: break-word;
           hyphens: none;
@@ -851,7 +851,7 @@ export default function Home() {
           .author-profile-grid { border-radius: 28px; }
           .author-profile-grid::before { inset: 8px; border-radius: 22px; }
           .author-bio-card { padding: 0 0.05rem; }
-          .author-bio-card p { font-size: 1rem; line-height: 1.82; text-align: left; text-align-last: left; text-justify: auto; word-spacing: normal; letter-spacing: 0; word-break: normal; overflow-wrap: break-word; hyphens: none; }
+          .author-bio-card p { font-size: 0.98rem; line-height: 1.72; text-align: left; text-align-last: auto; text-justify: auto; word-spacing: normal; letter-spacing: 0; word-break: normal; overflow-wrap: break-word; hyphens: none; }
         }
 
         @media (max-width: 480px) {
@@ -865,7 +865,7 @@ export default function Home() {
           .author-profile-grid { padding: 0.85rem; border-radius: 24px; }
           .author-photo-frame { border-radius: 22px; }
           .author-bio-card { padding: 0 0.05rem; }
-          .author-bio-card p { font-size: 0.96rem; line-height: 1.78; text-align: left; text-align-last: left; text-justify: auto; word-spacing: normal; letter-spacing: 0; overflow-wrap: break-word; }
+          .author-bio-card p { font-size: 0.94rem; line-height: 1.68; text-align: left; text-align-last: auto; text-justify: auto; word-spacing: normal; letter-spacing: 0; overflow-wrap: break-word; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
