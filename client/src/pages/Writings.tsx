@@ -1800,9 +1800,15 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(); }}
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    if (typeof onClick === 'function') {
+                      onClick();
+                    }
+                  }}
                   className="wc2-read"
-                  style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                  style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0, font: "inherit" }}
                   aria-label={`${writing.title} পড়ুন`}
                 >
                   পড়ুন <ArrowRight size={11}/>
@@ -1835,9 +1841,15 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(); }}
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    if (typeof onClick === 'function') {
+                      onClick();
+                    }
+                  }}
                   className="wc2-read"
-                  style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                  style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0, font: "inherit" }}
                   aria-label={`${writing.title} পড়ুন`}
                 >
                   পড়ুন <ArrowRight size={11}/>
