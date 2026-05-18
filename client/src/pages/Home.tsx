@@ -5,11 +5,11 @@
  * Inspiration: Sarah Vaughan, Anthony Horowitz, luxury editorial magazines
  */
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette, ArrowRight,
-  Quote, Star, Feather
+  Star, Feather
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -34,19 +34,14 @@ const sections = [
   { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", icon: Mail },
 ];
 
-// ── Quote ─────────────────────────────────────────────────────────────────────
-const authorQuote = "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।";
-
 // ═════════════════════════════════════════════════════════════════════════════════
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const quoteRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
-  const quoteInView = useInView(quoteRef, { once: true, margin: "-100px" });
 
   // Throttled mousemove handler — fires at most once per 50ms to reduce re-renders
   const mouseMoveThrottleRef = useRef<number | null>(null);
@@ -442,45 +437,6 @@ export default function Home() {
             }} />
           </div>
         </motion.div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          AUTHOR QUOTE — Premium editorial glass panel
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section
-        ref={quoteRef}
-        style={{
-          position: "relative",
-          padding: "7rem 2rem",
-          overflow: "hidden",
-          background: "radial-gradient(circle at 20% 10%, rgba(201,168,76,0.08), transparent 32%), linear-gradient(180deg, #071321 0%, #060E1A 100%)",
-        }}
-      >
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${ABOUT_BG})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.055 }} />
-        <div style={{ position: "absolute", inset: "12% 8%", border: "1px solid rgba(201,168,76,0.08)", borderRadius: 36, pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 980, margin: "0 auto", textAlign: "center", padding: "clamp(2rem, 5vw, 4rem)", borderRadius: 30, border: "1px solid rgba(201,168,76,0.16)", background: "linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.026))", boxShadow: "0 35px 100px rgba(0,0,0,0.28)", backdropFilter: "blur(16px)" }}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={quoteInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.55 }}
-            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: "50%", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", marginBottom: "2rem" }}
-          >
-            <Quote size={20} color="#C9A84C" />
-          </motion.div>
-          <motion.blockquote
-            initial={{ opacity: 0, y: 35 }}
-            animate={quoteInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.12 }}
-            style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.45rem, 3.4vw, 2.35rem)", fontStyle: "italic", color: "rgba(250,246,239,0.9)", lineHeight: 1.75, margin: "0 0 2rem" }}
-          >
-            “{authorQuote}”
-          </motion.blockquote>
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16 }}>
-            <span style={{ width: 48, height: 1, background: "rgba(201,168,76,0.45)" }} />
-            <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "#C9A84C", letterSpacing: "0.08em" }}>মাহবুব সরদার সবুজ</span>
-            <span style={{ width: 48, height: 1, background: "rgba(201,168,76,0.45)" }} />
-          </div>
-        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
