@@ -11,7 +11,8 @@ import Seo, { SITE_URL } from "@/components/Seo";
 import AdSenseAd from "@/components/AdSenseAd";
 import type { Writing } from "@/data/writingsArchive";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
-import { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue, createPortal } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
+import { createPortal } from "react-dom";
 import { Link, useRoute, useLocation } from "wouter";
 import {
   Feather, ArrowLeft, BookOpen, Heart, Star, Calendar, X, Search, Share2, Copy,
