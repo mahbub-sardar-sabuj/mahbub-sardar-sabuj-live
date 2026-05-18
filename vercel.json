@@ -26,6 +26,11 @@
   },
   "redirects": [
     {
+      "source": "/ebooks",
+      "destination": "/ebooks/",
+      "permanent": true
+    },
+    {
       "source": "/(.*)",
       "has": [
         {
