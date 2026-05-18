@@ -1877,8 +1877,10 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             <span style={{ color: T.bdr }}>·</span>
             <span style={{ color: T.txt, fontSize: ".72rem", fontFamily: "var(--f)" }}>{writing.category}</span>
           </div>
-          <div className="rm2-txt" style={{ color: T.txt, fontSize: `${fontSize}rem` }}>
-            {writing.content}
+            <div className="rm2-txt" style={{ color: T.txt, fontSize: `${fontSize}rem`, whiteSpace: 'pre-line' }}>
+            {writing.content.split(/\n\n+/).map((para, i) => (
+              para.trim() ? <p key={i} style={{ marginBottom: '1.5rem', lineHeight: '1.8' }}>{para.trim()}</p> : null
+            ))}
           </div>
           <div className="rm2-sig" style={{ borderColor: T.bdr, color: T.txt }}>
             — মাহবুব সরদার সবুজ · {writing.date}

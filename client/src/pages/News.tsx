@@ -921,10 +921,11 @@ export default function News() {
                     fontSize: "1.05rem",
                     lineHeight: 1.9,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    whiteSpace: "pre-wrap",
                     marginBottom: 36,
                   }}>
-                    {selectedNews.content}
+                    {selectedNews.content.split(/\n\n+/).map((para, i) => (
+                      para.trim() ? <p key={i} style={{ marginBottom: '1.2rem' }}>{para.trim()}</p> : null
+                    ))}
                   </div>
 
                   {/* Share section — improved */}
