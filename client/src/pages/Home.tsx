@@ -197,156 +197,28 @@ export default function Home() {
                 }}>লেখক ও কবি</span>
               </motion.div>
 
-              {/* ═══════════════════════════════════════════════════════
-                  UNIQUE TYPOGRAPHY — মাহবুব সরদার সবুজ
-                  Design: Letter-reveal + Calligraphic SVG + Neon Glow
-              ═══════════════════════════════════════════════════════ */}
-
-              {/* ── Line 1: মাহবুব — Ivory with letter-by-letter reveal + ink glow ── */}
-              <div style={{ position: "relative", marginBottom: "0.15rem" }}>
-                {/* Ambient ink-glow blob behind the name */}
-                <div style={{
-                  position: "absolute",
-                  top: "50%", left: "-8%",
-                  transform: "translateY(-50%)",
-                  width: "110%", height: "160%",
-                  background: "radial-gradient(ellipse 70% 55% at 40% 50%, rgba(201,168,76,0.07) 0%, transparent 70%)",
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }} />
-
+              {/* Main name */}
+              <div style={{ position: "relative", marginBottom: "0.2rem" }}>
                 <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.1, delay: 0.25 }}
+                  initial={{ opacity: 0, y: 60 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'Tiro Bangla', serif",
                     fontSize: "clamp(3.4rem, 8vw, 7rem)",
                     fontWeight: 700,
                     lineHeight: 1.0,
                     margin: 0,
-                    position: "relative",
-                    zIndex: 1,
+                    color: "#FAF6EF",
                     letterSpacing: "-0.02em",
-                    display: "flex",
-                    gap: "0.04em",
-                    flexWrap: "nowrap",
+                    textShadow: "0 2px 40px rgba(201,168,76,0.18), 0 0 80px rgba(201,168,76,0.08)",
                   }}
                 >
-                  {/* Letter-by-letter animated spans for মাহবুব */}
-                  {["মা", "হ", "বু", "ব"].map((char, i) => (
-                    <motion.span
-                      key={i}
-                      initial={{ opacity: 0, y: 50, rotateX: -90 }}
-                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                      transition={{
-                        duration: 0.75,
-                        delay: 0.3 + i * 0.12,
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      style={{
-                        display: "inline-block",
-                        color: "#FAF6EF",
-                        textShadow: "0 0 40px rgba(201,168,76,0.22), 0 2px 20px rgba(201,168,76,0.12), 0 0 2px rgba(250,246,239,0.3)",
-                        transformOrigin: "bottom center",
-                        animation: `nameLetterFloat${i} ${3.5 + i * 0.4}s ease-in-out infinite`,
-                        animationDelay: `${i * 0.25}s`,
-                      }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                  মাহবুব
                 </motion.h1>
-
-                {/* Calligraphic SVG ink-stroke under মাহবুব */}
-                <motion.svg
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 1.6, delay: 0.9, ease: "easeInOut" }}
-                  viewBox="0 0 380 18"
-                  style={{
-                    position: "absolute",
-                    bottom: -8,
-                    left: 0,
-                    width: "clamp(200px, 55vw, 380px)",
-                    height: 18,
-                    overflow: "visible",
-                    zIndex: 2,
-                  }}
-                >
-                  <motion.path
-                    d="M4 12 Q40 4 80 10 Q120 16 160 8 Q200 2 240 10 Q280 16 320 7 Q350 2 376 9"
-                    fill="none"
-                    stroke="url(#inkGrad1)"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1.6, delay: 0.9, ease: "easeInOut" }}
-                  />
-                  <motion.path
-                    d="M4 14 Q80 18 160 13 Q240 8 376 14"
-                    fill="none"
-                    stroke="rgba(201,168,76,0.2)"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1.8, delay: 1.1, ease: "easeInOut" }}
-                  />
-                  <defs>
-                    <linearGradient id="inkGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#C9A84C" stopOpacity="0.9" />
-                      <stop offset="50%" stopColor="#F0D98A" stopOpacity="1" />
-                      <stop offset="100%" stopColor="rgba(201,168,76,0.3)" stopOpacity="0.3" />
-                    </linearGradient>
-                  </defs>
-                </motion.svg>
               </div>
 
-              {/* ── Line 2: সরদার সবুজ — Layered gold + glitch shadow + neon glow ── */}
-              <div style={{ position: "relative", marginBottom: "0.6rem", marginTop: "0.25rem" }}>
-
-                {/* Deep glow layer behind সরদার সবুজ */}
-                <div style={{
-                  position: "absolute",
-                  top: "50%", left: "-5%",
-                  transform: "translateY(-50%)",
-                  width: "110%", height: "200%",
-                  background: "radial-gradient(ellipse 80% 60% at 45% 50%, rgba(201,168,76,0.13) 0%, rgba(201,168,76,0.04) 50%, transparent 70%)",
-                  pointerEvents: "none",
-                  zIndex: 0,
-                  animation: "deepGlowPulse 3s ease-in-out infinite",
-                }} />
-
-                {/* Ghost/glitch layer — offset copy */}
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.55 }}
-                  aria-hidden="true"
-                  style={{
-                    fontFamily: "'Tiro Bangla', serif",
-                    fontSize: "clamp(3.4rem, 8vw, 7rem)",
-                    fontWeight: 700,
-                    lineHeight: 1.0,
-                    margin: 0,
-                    position: "absolute",
-                    top: 0, left: 0,
-                    zIndex: 1,
-                    letterSpacing: "-0.02em",
-                    color: "transparent",
-                    WebkitTextStroke: "1px rgba(201,168,76,0.18)",
-                    transform: "translate(3px, 2px)",
-                    animation: "glitchShift 6s ease-in-out infinite",
-                    pointerEvents: "none",
-                    userSelect: "none",
-                  }}
-                >
-                  সরদার সবুজ
-                </motion.h1>
-
-                {/* Main সরদার সবুজ — premium gold with shimmer */}
+              <div style={{ position: "relative", marginBottom: "0.6rem" }}>
                 <motion.h1
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -357,78 +229,33 @@ export default function Home() {
                     fontWeight: 700,
                     lineHeight: 1.0,
                     margin: 0,
-                    position: "relative",
-                    zIndex: 2,
-                    background: "linear-gradient(110deg, #7A5010 0%, #B8922A 12%, #C9A84C 25%, #F0D98A 40%, #FFE9A0 50%, #F0D98A 60%, #C9A84C 75%, #B8922A 88%, #7A5010 100%)",
-                    backgroundSize: "300% 100%",
+                    background: "linear-gradient(110deg, #9A6E1A 0%, #C9A84C 20%, #F0D98A 45%, #E8C97A 60%, #C9A84C 80%, #9A6E1A 100%)",
+                    backgroundSize: "250% 100%",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                     letterSpacing: "-0.02em",
-                    filter: "drop-shadow(0 0 18px rgba(201,168,76,0.55)) drop-shadow(0 4px 28px rgba(201,168,76,0.3))",
-                    animation: "goldShimmer 3.5s ease-in-out infinite",
+                    filter: "drop-shadow(0 4px 24px rgba(201,168,76,0.4))",
+                    animation: "goldShimmer 4s ease-in-out infinite",
                   }}
                 >
                   সরদার সবুজ
                 </motion.h1>
-
-                {/* Decorative double underline */}
+                {/* Underline glow */}
                 <motion.div
                   initial={{ scaleX: 0, opacity: 0 }}
                   animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: 1.3, delay: 0.85, ease: [0.16,1,0.3,1] }}
+                  transition={{ duration: 1.2, delay: 0.8, ease: [0.16,1,0.3,1] }}
                   style={{
-                    position: "absolute", bottom: -8, left: 0,
-                    width: "80%",
+                    position: "absolute", bottom: -6, left: 0,
+                    height: 2,
+                    width: "70%",
+                    background: "linear-gradient(90deg, #C9A84C, rgba(201,168,76,0.3), transparent)",
                     transformOrigin: "left",
-                    zIndex: 3,
+                    borderRadius: 2,
+                    boxShadow: "0 0 12px rgba(201,168,76,0.5)",
                   }}
-                >
-                  {/* Primary gold line */}
-                  <div style={{
-                    height: 2.5,
-                    background: "linear-gradient(90deg, #C9A84C 0%, #F0D98A 40%, rgba(201,168,76,0.4) 80%, transparent 100%)",
-                    borderRadius: 2,
-                    boxShadow: "0 0 14px rgba(201,168,76,0.7), 0 0 28px rgba(201,168,76,0.3)",
-                    animation: "lineGlow 2.5s ease-in-out infinite",
-                  }} />
-                  {/* Secondary dim line */}
-                  <div style={{
-                    height: 1,
-                    marginTop: 3,
-                    background: "linear-gradient(90deg, rgba(201,168,76,0.35) 0%, rgba(201,168,76,0.15) 60%, transparent 100%)",
-                    borderRadius: 2,
-                    width: "65%",
-                  }} />
-                </motion.div>
-
-                {/* Floating ink particles */}
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={`particle-${i}`}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: [0, 0.7, 0], scale: [0, 1, 0], y: [0, -30 - i * 8], x: [0, (i % 2 === 0 ? 1 : -1) * (10 + i * 5)] }}
-                    transition={{
-                      duration: 2.5 + i * 0.4,
-                      delay: 1.2 + i * 0.3,
-                      repeat: Infinity,
-                      repeatDelay: 1.5 + i * 0.5,
-                      ease: "easeOut",
-                    }}
-                    style={{
-                      position: "absolute",
-                      bottom: 10,
-                      left: `${15 + i * 18}%`,
-                      width: 3 + (i % 3),
-                      height: 3 + (i % 3),
-                      borderRadius: "50%",
-                      background: i % 2 === 0 ? "#C9A84C" : "#F0D98A",
-                      boxShadow: `0 0 ${6 + i * 2}px rgba(201,168,76,0.8)`,
-                      pointerEvents: "none",
-                      zIndex: 4,
-                    }}
-                  />
-                ))}
+                />
               </div>
 
               {/* Tagline */}
@@ -628,54 +455,12 @@ export default function Home() {
         * { box-sizing: border-box; }
 
         @keyframes goldShimmer {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
         @keyframes pulseDot {
           0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C; }
           50% { opacity: 0.6; transform: scale(1.5); box-shadow: 0 0 16px rgba(201,168,76,0.8); }
-        }
-
-        /* ── Unique Typography Animations ─────────────────────────────── */
-
-        /* Letter float — subtle vertical oscillation per letter */
-        @keyframes nameLetterFloat0 {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-4px); }
-        }
-        @keyframes nameLetterFloat1 {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-6px); }
-        }
-        @keyframes nameLetterFloat2 {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-3px); }
-        }
-        @keyframes nameLetterFloat3 {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-5px); }
-        }
-
-        /* Deep glow pulse behind সরদার সবুজ */
-        @keyframes deepGlowPulse {
-          0%, 100% { opacity: 0.7; transform: translateY(-50%) scale(1); }
-          50%       { opacity: 1;   transform: translateY(-50%) scale(1.06); }
-        }
-
-        /* Glitch shift — ghost layer offset */
-        @keyframes glitchShift {
-          0%, 90%, 100% { transform: translate(3px, 2px); opacity: 0.12; }
-          92%            { transform: translate(-2px, -1px) skewX(-1deg); opacity: 0.22; }
-          94%            { transform: translate(4px, 1px) skewX(0.5deg); opacity: 0.08; }
-          96%            { transform: translate(-1px, 3px); opacity: 0.18; }
-          98%            { transform: translate(2px, -2px) skewX(-0.5deg); opacity: 0.14; }
-        }
-
-        /* Underline glow pulse */
-        @keyframes lineGlow {
-          0%, 100% { box-shadow: 0 0 14px rgba(201,168,76,0.7), 0 0 28px rgba(201,168,76,0.3); }
-          50%       { box-shadow: 0 0 22px rgba(201,168,76,1),   0 0 44px rgba(201,168,76,0.5); }
         }
 
         /* Hero layout */
