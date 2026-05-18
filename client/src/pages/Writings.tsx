@@ -1803,9 +1803,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                   onClick={(e) => { 
                     e.preventDefault(); 
                     e.stopPropagation(); 
-                    if (typeof onClick === 'function') {
-                      onClick();
-                    }
+                    onClick();
                   }}
                   className="wc2-read"
                   style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0, font: "inherit" }}
@@ -1844,9 +1842,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                   onClick={(e) => { 
                     e.preventDefault(); 
                     e.stopPropagation(); 
-                    if (typeof onClick === 'function') {
-                      onClick();
-                    }
+                    onClick();
                   }}
                   className="wc2-read"
                   style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0, font: "inherit" }}
