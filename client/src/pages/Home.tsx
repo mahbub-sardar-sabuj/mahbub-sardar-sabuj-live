@@ -24,14 +24,14 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
-  { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "/about", icon: UserRound },
-  { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", icon: Mic2 },
-  { label: "লেখালেখি ও বই", subtitle: "কবিতা, লেখা ও প্রকাশিত বই সংগ্রহ", href: "/writings", icon: BookOpen },
-  { label: "আমিও লিখবো বাস্তবতা", subtitle: "সৃজনশীল লেখালেখির নতুন কমিউনিটি", href: "/amio-likhbo-bastobota", icon: Feather },
-  { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "/gallery", icon: Images },
+  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
+  { label: "আবৃত্তি", subtitle: "কণ্ঠে কবিতা, অনুভবে উচ্চারণ", href: "/facebook-recitations", icon: Mic2 },
+  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
+  { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
+  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
   { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
-  { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", icon: Mail },
+  { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════════
@@ -264,7 +264,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "2rem 0 2.5rem", maxWidth: 480 }}
+                style={{ margin: "2.1rem 0 2.65rem", maxWidth: 540 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
@@ -276,7 +276,7 @@ export default function Home() {
                   borderLeft: "2px solid rgba(201,168,76,0.4)",
                   paddingLeft: 16,
                 }}>
-                  বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
+                  কবিতা, গদ্য ও মানবিক অনুভূতির ভেতর দিয়ে জীবনের নীরব সত্যকে উচ্চারণ করেন মাহবুব সরদার সবুজ।
                 </p>
               </motion.div>
 
@@ -294,7 +294,7 @@ export default function Home() {
                     className="cta-btn cta-primary"
                   >
                     <BookOpen size={17} />
-                    বই পড়ুন
+                    বই পড়ুন
                     <ArrowRight size={15} />
                   </motion.span>
                 </Link>
@@ -305,7 +305,7 @@ export default function Home() {
                     className="cta-btn cta-secondary"
                   >
                     <UserRound size={17} />
-                    পরিচিতি
+                    লেখককে জানুন
                   </motion.span>
                 </Link>
                 <Link href="/editor" style={{ flex: 1 }}>
@@ -315,7 +315,7 @@ export default function Home() {
                     className="cta-btn cta-secondary"
                   >
                     <Palette size={17} />
-                    ডিজাইন করুন
+                    লেখা সাজান
                   </motion.span>
                 </Link>
                 <Link href="/news" style={{ flex: 1 }}>
@@ -458,8 +458,8 @@ export default function Home() {
               <div style={{ width: 42, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
             <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3.05rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.18 }}>অন্বেষণ করুন</h2>
-            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 650, color: "rgba(250,246,239,0.54)", lineHeight: 1.75, margin: "1rem auto 0", fontSize: "0.92rem" }}>
-              ওয়েবসাইটের সব গুরুত্বপূর্ণ ট্যাব এখন ফোনের অ্যাপের মতো এক জায়গায়—ট্যাপ করলেই দ্রুত খুলে যাবে।
+            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 650, color: "rgba(250,246,239,0.54)", lineHeight: 1.75, margin: "1rem auto 0", fontSize: "0.98rem" }}>
+              লেখক, লেখা, বই, আবৃত্তি, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
             </p>
           </motion.div>
 
@@ -519,10 +519,10 @@ export default function Home() {
                 <span style={{ background: "linear-gradient(135deg, #C9A84C, #E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>মানুষের কলম</span>
               </h2>
               <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.62)", lineHeight: 2.05, margin: "0 0 1.2rem", maxWidth: 560, letterSpacing: "0.01em" }}>
-                মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের একজন অনুভূতিশীল লেখক ও কবি। তাঁর কলমে ভালোবাসা, বিচ্ছেদ, মানবিক সম্পর্ক ও জীবনের নীরব সত্যগুলো সহজ অথচ হৃদয়স্পর্শী ভাষায় ফুটে ওঠে।
+                মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের একজন অনুভূতিশীল লেখক ও কবি। তাঁর লেখায় ভালোবাসা, বিচ্ছেদ, স্মৃতি, প্রবাস, মানবিক সম্পর্ক ও জীবনের নীরব সত্যগুলো সহজ ভাষায় গভীর অনুভূতির সঙ্গে উঠে আসে।
               </p>
               <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.54)", lineHeight: 2.05, margin: 0, maxWidth: 560, letterSpacing: "0.01em" }}>
-                প্রবাসের দূরত্বে থেকেও তিনি বাংলা ভাষা, মাটি ও মানুষের সঙ্গে গভীর আত্মিক বন্ধন বহন করেন। তাই তাঁর কবিতা ও গদ্যে ফিরে আসে দেশ, স্মৃতি, প্রবাসজীবন এবং মানুষের অন্তর্গত আলোর গল্প।
+                প্রবাসে থেকেও তিনি বাংলা ভাষা, মাটি ও মানুষের সঙ্গে এক নিবিড় আত্মিক বন্ধন বহন করেন। তাই তাঁর কবিতা ও গদ্যে ব্যক্তিগত বেদনা যেমন থাকে, তেমনি থাকে মানুষের প্রতি মমতা, সময়ের প্রতি প্রশ্ন এবং জীবনের প্রতি গভীর বিশ্বাস।
               </p>
             </motion.div>
           </div>
@@ -626,7 +626,7 @@ export default function Home() {
           border-radius: 34px;
           padding: clamp(1.05rem, 3vw, 1.55rem);
           background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(201,168,76,0.035));
-          box-shadow: 0 36px 110px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08);
+          box-shadow: 0 42px 120px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.09);
           backdrop-filter: blur(18px);
           max-width: 820px;
           margin: 0 auto;
@@ -673,7 +673,7 @@ export default function Home() {
           height: 100%;
         }
         .app-launcher-card {
-          min-height: 138px;
+          min-height: 142px;
           height: 100%;
           display: flex;
           flex-direction: column;
@@ -723,7 +723,7 @@ export default function Home() {
           font-family: 'Noto Sans Bengali', sans-serif;
           font-size: 0.66rem;
           line-height: 1.35;
-          color: rgba(250,246,239,0.42);
+          color: rgba(250,246,239,0.48);
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
