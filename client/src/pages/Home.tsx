@@ -263,13 +263,13 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "1.55rem 0 1.1rem", maxWidth: 480 }}
+                style={{ margin: "0.9rem 0 0.7rem", maxWidth: 440 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
                   color: "rgba(250,246,239,0.65)",
-                  lineHeight: 2,
+                  lineHeight: 1.7,
                   margin: 0,
                   letterSpacing: "0.02em",
                   borderLeft: "2px solid rgba(201,168,76,0.4)",
@@ -297,12 +297,13 @@ export default function Home() {
                   y: mousePos.y * 0.3,
                 }}
                 transition={{ type: "spring", stiffness: 60, damping: 20 }}
+                className="hero-frame-wrap"
                 style={{ position: "relative" }}
               >
                 {/* Decorative frame lines */}
                 <div style={{
                   position: "absolute",
-                  top: -20, right: -20,
+                  top: "var(--hero-frame-offset, -20px)", right: "var(--hero-frame-offset, -20px)",
                   width: "60%", height: "60%",
                   border: "1px solid rgba(201,168,76,0.25)",
                   borderRadius: 4,
@@ -311,7 +312,7 @@ export default function Home() {
                 }} />
                 <div style={{
                   position: "absolute",
-                  bottom: -20, left: -20,
+                  bottom: "var(--hero-frame-offset, -20px)", left: "var(--hero-frame-offset, -20px)",
                   width: "60%", height: "60%",
                   border: "1px solid rgba(201,168,76,0.15)",
                   borderRadius: 4,
@@ -364,6 +365,7 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <motion.div
+          className="scroll-indicator"
           style={{
             position: "absolute", bottom: 40, left: "50%",
             transform: "translateX(-50%)", zIndex: 3,
@@ -392,7 +394,7 @@ export default function Home() {
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="explore-app-section" style={{
-        padding: "clamp(4.2rem, 8vw, 6.5rem) 1.25rem",
+        padding: "clamp(2.8rem, 6vw, 4.5rem) 1.25rem",
         background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.1), transparent 30%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.055), transparent 28%), #060E1A",
         position: "relative",
         overflow: "hidden",
@@ -407,7 +409,7 @@ export default function Home() {
               <div style={{ width: 42, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
             <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3.05rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.18 }}>অন্বেষণ করুন</h2>
-            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 650, color: "rgba(250,246,239,0.54)", lineHeight: 1.75, margin: "1rem auto 0", fontSize: "0.98rem" }}>
+            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 650, color: "rgba(250,246,239,0.54)", lineHeight: 1.6, margin: "1rem auto 0", fontSize: "0.98rem" }}>
               লেখক, লেখা, বই, আবৃত্তি, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
             </p>
           </motion.div>
@@ -464,7 +466,7 @@ export default function Home() {
         /* Hero layout */
         .hero-container {
           padding-top: calc(var(--site-nav-offset, 98px) + 20px);
-          padding-bottom: 80px;
+          padding-bottom: 48px;
         }
         .hero-inner {
           display: grid;
@@ -484,7 +486,7 @@ export default function Home() {
         /* App-style Explore launcher */
         .explore-app-heading {
           text-align: center;
-          margin-bottom: 2.2rem;
+          margin-bottom: 1.6rem;
         }
         .app-launcher-shell {
           border: 1px solid rgba(201,168,76,0.18);
@@ -538,7 +540,7 @@ export default function Home() {
           height: 100%;
         }
         .app-launcher-card {
-          min-height: 142px;
+          min-height: 130px;
           height: 100%;
           display: flex;
           flex-direction: column;
@@ -612,11 +614,13 @@ export default function Home() {
 
         /* Mobile */
         @media (max-width: 768px) {
-          .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 60px; }
+          .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
+          .hero-frame-wrap { --hero-frame-offset: -10px; }
+          .scroll-indicator { display: none; }
           .hero-inner { gap: 0.95rem; }
           .app-launcher-shell { border-radius: 28px; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.62rem; }
-          .app-launcher-card { min-height: 124px; border-radius: 20px; padding: 0.85rem 0.35rem 0.7rem; }
+          .app-launcher-card { min-height: 112px; border-radius: 20px; padding: 0.85rem 0.35rem 0.7rem; }
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 320px; }
@@ -626,7 +630,7 @@ export default function Home() {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
           .app-launcher-shell { padding: 0.82rem; border-radius: 26px; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.52rem; }
-          .app-launcher-card { min-height: 112px; padding: 0.72rem 0.22rem 0.62rem; border-radius: 18px; }
+          .app-launcher-card { min-height: 100px; padding: 0.72rem 0.22rem 0.62rem; border-radius: 18px; }
           .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.72rem; min-height: 2.55em; }
