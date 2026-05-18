@@ -11,6 +11,7 @@
     "security:secrets": "node scripts/scan-secrets.cjs",
     "news:sync": "node scripts/sync-news-seo.cjs",
     "news:check": "node scripts/sync-news-seo.cjs --check",
+    "indexnow:submit": "node scripts/submit-indexnow.cjs",
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
