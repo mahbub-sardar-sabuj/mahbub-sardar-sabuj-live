@@ -130,20 +130,45 @@ export default function EBookReader() {
   const [pageInput, setPageInput] = useState("1");
   const [pdfJsLoaded, setPdfJsLoaded] = useState(false);
 
-  // PDF.js লোড করা
+  // PDF.js লোড করা — CDN ব্যর্থ হলে infinite loading না দেখিয়ে পাঠককে fallback দেখানো
   useEffect(() => {
     if ((window as any).pdfjsLib) {
       setPdfJsLoaded(true);
       return;
     }
+
+    let cancelled = false;
     const script = document.createElement("script");
+    const timeout = window.setTimeout(() => {
+      if (!cancelled && !(window as any).pdfjsLib) {
+        setIsLoading(false);
+        setError("রিডার চালু হতে বেশি সময় লাগছে। অনুগ্রহ করে পেজটি রিফ্রেশ করুন অথবা নিচের বইয়ের তথ্য থেকে আবার চেষ্টা করুন।");
+      }
+    }, 20000);
+
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    script.async = true;
     script.onload = () => {
+      window.clearTimeout(timeout);
+      if (cancelled) return;
       (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       setPdfJsLoaded(true);
     };
+    script.onerror = () => {
+      window.clearTimeout(timeout);
+      if (cancelled) return;
+      setIsLoading(false);
+      setError("PDF রিডার লোড করা যায়নি। ইন্টারনেট সংযোগ যাচাই করে পুনরায় চেষ্টা করুন।");
+    };
     document.head.appendChild(script);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      script.onerror = null;
+      script.onload = null;
+    };
   }, []);
 
   // PDF লোড করা
@@ -153,6 +178,7 @@ export default function EBookReader() {
     setIsLoading(true);
     setError("");
     setPdfReady(false);
+    setTotalPages(book.totalPages || 0);
 
     const loadingTask = pdfjsLib.getDocument({
       url: book.pdfUrl,
@@ -160,19 +186,37 @@ export default function EBookReader() {
       disableStream: false,
     });
 
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) {
+        setIsLoading(false);
+        setError("PDF লোড হতে বেশি সময় লাগছে। মোবাইল ডেটা/নেটওয়ার্ক ধীর হলে পেজটি রিফ্রেশ করুন।");
+      }
+    }, 25000);
+
     loadingTask.promise
       .then((pdf: any) => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
         pdfRef.current = pdf;
-        setTotalPages(pdf.numPages);
+        setTotalPages(pdf.numPages || book.totalPages || 0);
         setIsLoading(false);
         setPdfReady(true);
       })
       .catch((err: any) => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
         console.error("PDF load error:", err);
         setError("PDF লোড করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।");
         setIsLoading(false);
       });
-  }, [pdfJsLoaded, slug]);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      try { loadingTask.destroy?.(); } catch (_) {}
+    };
+  }, [pdfJsLoaded, slug, book]);
 
   // ── renderPage: zoom সঠিকভাবে কাজ করে, high-DPI (retina) সাপোর্ট ──────────
   const renderPage = useCallback(async (pageNum: number) => {
@@ -191,8 +235,8 @@ export default function EBookReader() {
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      // কন্টেইনারের প্রস্থ বের করো (padding বাদ দিয়ে)
-      const containerWidth = containerRef.current.clientWidth - 32;
+      // কন্টেইনারের প্রস্থ বের করো (padding বাদ দিয়ে); mobile viewport-এ negative/zero width এড়ানো
+      const containerWidth = Math.max(280, containerRef.current.clientWidth - 24);
 
       // PDF পেজের স্বাভাবিক মাপ (scale=1)
       const baseViewport = page.getViewport({ scale: 1 });
@@ -351,8 +395,8 @@ export default function EBookReader() {
         </div>
 
         {/* Reader Header — Mobile: single clean row; Desktop: full info */}
-        <div className={`sticky top-0 z-[60] ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border-b shadow-sm`}>
-          <div className="max-w-5xl mx-auto px-3 py-2 flex items-center gap-2">
+        <div className={`sticky top-0 z-[60] ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"} border-b shadow-sm overflow-x-hidden`}>
+          <div className="max-w-5xl mx-auto px-2 sm:px-3 py-2 flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2">
 
             {/* Back button — always visible */}
             <Link href="/ebooks" className="flex-shrink-0">
@@ -374,7 +418,7 @@ export default function EBookReader() {
             </div>
 
             {/* Page navigation — centered, takes remaining space */}
-            <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1 min-w-0">
+            <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1 min-w-[128px] order-2 sm:order-none">
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1}
@@ -403,7 +447,7 @@ export default function EBookReader() {
             </div>
 
             {/* Zoom & Controls — always visible */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex w-full sm:w-auto items-center justify-center gap-0.5 sm:gap-1 flex-wrap flex-shrink-0 order-3 sm:order-none max-w-full">
               <button
                 onClick={zoomOut}
                 onTouchEnd={(e) => { e.preventDefault(); zoomOut(); }}
@@ -413,7 +457,7 @@ export default function EBookReader() {
               >
                 <ZoomOut size={18} />
               </button>
-              <span className="text-xs font-medium text-gray-600 w-10 text-center select-none" style={{ minWidth: 36 }}>
+              <span className="hidden min-[380px]:inline-block text-xs font-medium text-gray-600 w-9 sm:w-10 text-center select-none" style={{ minWidth: 32 }}>
                 {Math.round(userScale * 100)}%
               </span>
               <button
@@ -476,8 +520,8 @@ export default function EBookReader() {
         </div>
 
         {/* Main Reader Area */}
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="flex gap-6">
+        <div className="max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-6 overflow-x-hidden">
+          <div className="flex gap-4 lg:gap-6 min-w-0">
 
             {/* PDF Canvas */}
             <div className="flex-1 min-w-0" ref={containerRef}>
@@ -493,15 +537,25 @@ export default function EBookReader() {
 
               {/* Error State */}
               {error && (
-                <div className="text-center py-16">
-                  <BookOpen size={48} className="mx-auto mb-4 text-red-400" />
+                <div className={`mx-auto max-w-2xl text-center py-12 px-4 rounded-2xl shadow-lg ${isDarkMode ? "bg-gray-900" : "bg-white"}`}>
+                  <img src={book.cover} alt={`${book.title} প্রচ্ছদ`} className="w-28 h-40 object-cover rounded-xl shadow mx-auto mb-4" />
+                  <BookOpen size={42} className="mx-auto mb-3 text-red-400" />
                   <p className="text-red-400 font-medium">{error}</p>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="mt-4 bg-[#D4A843] text-[#0D1B2A] px-6 py-2 rounded-full font-bold"
-                  >
-                    পুনরায় চেষ্টা করুন
-                  </button>
+                  <h2 className="mt-4 text-xl font-bold">{book.title}</h2>
+                  <p className="mt-2 text-sm text-gray-500 leading-relaxed">{book.description}</p>
+                  <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="w-full sm:w-auto bg-[#D4A843] text-[#0D1B2A] px-6 py-2.5 rounded-full font-bold"
+                    >
+                      পুনরায় চেষ্টা করুন
+                    </button>
+                    <Link href="/ebooks" className="w-full sm:w-auto">
+                      <button className={`w-full px-6 py-2.5 rounded-full font-bold border ${isDarkMode ? "border-gray-700 text-gray-200" : "border-[#D4A843]/50 text-[#0D1B2A]"}`}>
+                        ই-বুক তালিকায় ফিরুন
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               )}
 
@@ -521,7 +575,7 @@ export default function EBookReader() {
 
                   {/* Canvas wrapper — overflow-x-auto so user can scroll if zoomed in */}
                   <div
-                    className={`w-full overflow-x-auto shadow-2xl rounded-lg ${isDarkMode ? "shadow-black" : "shadow-gray-400"}`}
+                    className={`w-full max-w-full overflow-x-auto overscroll-x-contain shadow-2xl rounded-lg ${isDarkMode ? "shadow-black" : "shadow-gray-400"}`}
                     style={{ userSelect: "none", WebkitUserSelect: "none", touchAction: "pan-x pan-y" }}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
@@ -541,11 +595,11 @@ export default function EBookReader() {
                   </div>
 
                   {/* Bottom navigation */}
-                  <div className="flex items-center gap-4 mt-6">
+                  <div className="flex flex-col min-[420px]:flex-row items-stretch min-[420px]:items-center gap-3 sm:gap-4 mt-6 w-full sm:w-auto">
                     <button
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage <= 1}
-                      className="flex items-center gap-2 px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
+                      className="flex items-center justify-center gap-2 px-5 sm:px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
                     >
                       <ChevronLeft size={18} />
                       আগের পাতা
@@ -553,7 +607,7 @@ export default function EBookReader() {
                     <button
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage >= totalPages}
-                      className="flex items-center gap-2 px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
+                      className="flex items-center justify-center gap-2 px-5 sm:px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
                     >
                       পরের পাতা
                       <ChevronRight size={18} />
@@ -593,7 +647,7 @@ export default function EBookReader() {
               <BookOpen size={20} className="text-[#D4A843]" />
               আরও পড়ুন
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(ebookData)
                 .filter(([s]) => s !== slug)
                 .map(([s, b]) => (
