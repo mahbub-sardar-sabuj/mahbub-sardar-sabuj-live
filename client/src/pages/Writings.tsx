@@ -1698,8 +1698,12 @@ const CSS = `
     .ebook-cover { width: 104px; }
     .ebook-copy h3 { font-size: .96rem; }
     .ebook-copy p { -webkit-line-clamp: 2; font-size: .74rem; }
-    .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 8px; }
-    .wc2 { min-height: 202px; }
+    .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 8px; margin: 0.5rem 0 1.5rem; }
+    .wc2 { min-height: 180px; }
+    .rm2-box { border-radius: 20px 20px 0 0; }
+    .rm2-body { padding: 1.5rem 1.2rem; }
+    .rm2-ttl { font-size: 1.5rem; margin-bottom: 1.2rem; }
+    .rm2-txt { font-size: 1rem; line-height: 1.8; }
     .wc2-l .wc2-body { flex-direction: column; align-items: flex-start; gap: .7rem; }
     .wc2-l .wc2-foot { width: 100%; margin-left: 0; justify-content: space-between; }
     .wt-view { justify-self: end; }
@@ -1724,6 +1728,25 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
     setLiked(next);
     if (next) localStorage.setItem(likeKey, "1");
     else localStorage.removeItem(likeKey);
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const shareUrl = window.location.origin + "/writings/" + slug;
+    if (navigator.share) {
+      navigator.share({
+        title: writing.title,
+        text: writing.content.substring(0, 100) + "...",
+        url: shareUrl,
+      }).catch(() => {
+        navigator.clipboard.writeText(shareUrl);
+        alert("লিঙ্ক কপি করা হয়েছে!");
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      alert("লিঙ্ক কপি করা হয়েছে!");
+    }
   };
 
   return (
@@ -1771,6 +1794,10 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                   style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: liked ? 1 : 0.45, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.2)" : "scale(1)" }}>
                   {liked ? "❤️" : "🤍"}
                 </button>
+                <button onClick={handleShare} title="শেয়ার করুন"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: 0.45, transition: "opacity .15s" }}>
+                  <Share2 size={11}/>
+                </button>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(); }}
@@ -1801,6 +1828,10 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                 <button onClick={handleLike} title="ভালো লেগেছে"
                   style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: liked ? 1 : 0.45, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.2)" : "scale(1)" }}>
                   {liked ? "❤️" : "🤍"}
+                </button>
+                <button onClick={handleShare} title="শেয়ার করুন"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: 0.45, transition: "opacity .15s" }}>
+                  <Share2 size={11}/>
                 </button>
                 <button
                   type="button"

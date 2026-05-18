@@ -142,7 +142,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
           exit={{ opacity: 0, scale: 0.9, y: 30 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative bg-[#FDF6EC] rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          className="relative bg-[#0D1120] rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/10"
           style={{ boxShadow: "0 40px 80px rgba(13,27,42,0.5)" }}
         >
           {/* Header */}
@@ -178,13 +178,13 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                   { label: "পৃষ্ঠা", value: book.pages },
                   { label: "প্রকাশ", value: book.year },
                 ].map((item) => (
-                  <div key={item.label} className="px-3 py-2 rounded-lg" style={{ background: "rgba(13,27,42,0.06)", border: "1px solid rgba(13,27,42,0.1)" }}>
+                  <div key={item.label} className="px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
                     <div className="text-[#D4A843] text-xs mb-0.5">{item.label}</div>
-                    <div className="text-[#0D1B2A] text-sm font-semibold">{item.value}</div>
+                    <div className="text-white text-sm font-semibold">{item.value}</div>
                   </div>
                 ))}
               </div>
-              <p className="text-[#0D1B2A] text-sm leading-relaxed mb-5">{book.description}</p>
+              <p className="text-white/80 text-sm leading-relaxed mb-5">{book.description}</p>
               <div className="flex flex-wrap gap-3">
                 {book.canRead && (
                   <Link href={`/ebooks/read/${book.slug}`}>
@@ -216,7 +216,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   className={`flex items-center gap-2 px-4 py-3 rounded-full font-bold border-2 transition-colors ${
-                    copied ? "border-green-500 text-green-600 bg-green-50" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                    copied ? "border-green-500 text-green-400 bg-green-500/10" : "border-white/20 text-white/70 hover:bg-white/5"
                   }`}
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -226,7 +226,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                   onClick={handleShare}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-2 px-4 py-3 rounded-full font-bold border-2 border-blue-300 text-blue-600 hover:bg-blue-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-3 rounded-full font-bold border-2 border-blue-400/30 text-blue-400 hover:bg-blue-400/10 transition-colors"
                 >
                   <Share2 size={16} />
                   শেয়ার
