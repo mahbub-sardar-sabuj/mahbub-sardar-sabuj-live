@@ -2,7 +2,7 @@
  * Premium E-Books Page — Mahbub Sardar Sabuj
  * Design: Literary Avant-Garde — Navy #0D1B2A, Gold #D4A843, Cream #FDF6EC
  */
-import { useState } from "react";
+import { useState, createPortal } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Eye, X, Star, ShoppingCart, BookMarked, Sparkles, Copy, Check, Share2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -126,7 +126,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
       handleCopy();
     }
   };
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -236,7 +236,8 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 
