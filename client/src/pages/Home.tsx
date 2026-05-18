@@ -27,11 +27,16 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 const sections = [
   { label: "পরিচিতি", subtitle: "লেখক পরিচয়", href: "/about", icon: UserRound },
   { label: "লেখালেখি ও বই", subtitle: "কবিতা ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
+  { label: "ই-বুক", subtitle: "অনলাইন বই পড়ুন", href: "/ebooks", icon: BookOpen },
   { label: "আবৃত্তি", subtitle: "ভিডিও সংগ্রহ", href: "/facebook-recitations", icon: Mic2 },
-
   { label: "ডিজাইন", subtitle: "কার্ড তৈরি করুন", href: "/editor", icon: Palette },
   { label: "গ্যালারি", subtitle: "ছবির সংগ্রহ", href: "/gallery", icon: Images },
   { label: "সরদার সংবাদ", subtitle: "সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { label: "বাংলা কবিতা", subtitle: "নির্বাচিত কবিতার সংগ্রহ", href: "/bangla-kobita", icon: Quote },
+  { label: "ভালোবাসার কবিতা", subtitle: "প্রেম ও অনুভূতির লেখা", href: "/valobashar-kobita", icon: Star },
+  { label: "কষ্টের কবিতা", subtitle: "বিরহ ও বেদনার ভাষা", href: "/koster-kobita", icon: Quote },
+  { label: "বাংলা স্ট্যাটাস", subtitle: "ছোট ভাবনার প্রকাশ", href: "/bangla-status", icon: Palette },
+  { label: "বাংলা উক্তি", subtitle: "জীবনঘনিষ্ঠ বাণী", href: "/bangla-quotes", icon: Star },
   { label: "যোগাযোগ", subtitle: "যোগাযোগ করুন", href: "/contact", icon: Mail },
 ];
 
@@ -446,316 +451,129 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          MARQUEE — Gold band
+          WELCOME BAND — Clean editorial divider
       ══════════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        background: "linear-gradient(90deg, #060E1A 0%, #0A1628 20%, #0d1e35 50%, #0A1628 80%, #060E1A 100%)",
-        borderTop: "1px solid rgba(201,168,76,0.2)",
-        borderBottom: "1px solid rgba(201,168,76,0.2)",
-        padding: "14px 0",
-        overflow: "hidden",
+      <section style={{
         position: "relative",
+        padding: "3rem 2rem",
+        background: "linear-gradient(180deg, #060E1A 0%, #071321 100%)",
+        borderTop: "1px solid rgba(201,168,76,0.14)",
+        borderBottom: "1px solid rgba(201,168,76,0.1)",
+        overflow: "hidden",
       }}>
-        {/* subtle gold glow line */}
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent)",
-        }} />
-        <motion.div
-          animate={{ x: [0, -1400] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-          aria-hidden="true"
-          style={{ display: "flex", gap: "5rem", whiteSpace: "nowrap", width: "max-content" }}
-        >
-          {[...Array(5)].map((_, i) => (
-            <div key={i} style={{ display: "flex", gap: "5rem", alignItems: "center" }}>
-              <span style={{
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                color: "#C9A84C",
-                fontSize: "1rem",
-                fontWeight: 400,
-                letterSpacing: "0.04em",
-                display: "flex",
-                alignItems: "center",
-                gap: 20,
-              }}>
-                আপনাকে স্বাগতম
-                <Star size={9} fill="#C9A84C" color="#C9A84C" />
-                মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে
-                <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
-                বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর
-                <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
-                AI চ্যাটবটে লেখক সম্পর্কে যেকোনো প্রশ্ন করুন
-                <Star size={9} fill="rgba(201,168,76,0.4)" color="rgba(201,168,76,0.4)" />
-              </span>
-            </div>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px)", backgroundSize: "30px 30px", opacity: 0.45, pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
+          {[
+            ["কবিতা", "অনুভূতির ভাষা"],
+            ["গদ্য", "জীবনের গল্প"],
+            ["ই-বুক", "ডিজিটাল পাঠ"],
+            ["আবৃত্তি", "কণ্ঠের প্রকাশ"],
+          ].map(([title, desc]) => (
+            <motion.div
+              key={title}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55 }}
+              style={{
+                border: "1px solid rgba(201,168,76,0.16)",
+                borderRadius: 18,
+                padding: "1.25rem",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.045), rgba(201,168,76,0.035))",
+                boxShadow: "0 18px 50px rgba(0,0,0,0.18)",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.25rem", color: "#E8C97A", marginBottom: 6 }}>{title}</div>
+              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.52)" }}>{desc}</div>
+            </motion.div>
           ))}
-        </motion.div>
-      </div>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          AUTHOR QUOTE — Full-width editorial
+          AUTHOR QUOTE — Premium editorial glass panel
       ══════════════════════════════════════════════════════════════════════ */}
       <section
         ref={quoteRef}
         style={{
           position: "relative",
-          padding: "8rem 2rem",
+          padding: "7rem 2rem",
           overflow: "hidden",
-          background: "#060E1A",
+          background: "radial-gradient(circle at 20% 10%, rgba(201,168,76,0.08), transparent 32%), linear-gradient(180deg, #071321 0%, #060E1A 100%)",
         }}
       >
-        {/* Background image with heavy overlay */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url(${ABOUT_BG})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.06,
-        }} />
-
-        {/* Decorative large quote mark */}
-        <div style={{
-          position: "absolute",
-          top: "10%", left: "5%",
-          fontFamily: "Georgia, serif",
-          fontSize: "20rem",
-          color: "rgba(201,168,76,0.04)",
-          lineHeight: 1,
-          pointerEvents: "none",
-          userSelect: "none",
-        }}>"</div>
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${ABOUT_BG})`, backgroundSize: "cover", backgroundPosition: "center", opacity: 0.055 }} />
+        <div style={{ position: "absolute", inset: "12% 8%", border: "1px solid rgba(201,168,76,0.08)", borderRadius: 36, pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 980, margin: "0 auto", textAlign: "center", padding: "clamp(2rem, 5vw, 4rem)", borderRadius: 30, border: "1px solid rgba(201,168,76,0.16)", background: "linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.026))", boxShadow: "0 35px 100px rgba(0,0,0,0.28)", backdropFilter: "blur(16px)" }}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={quoteInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5 }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 48, height: 48,
-              borderRadius: "50%",
-              background: "rgba(201,168,76,0.1)",
-              border: "1px solid rgba(201,168,76,0.3)",
-              marginBottom: "2.5rem",
-            }}
+            transition={{ duration: 0.55 }}
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: "50%", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.28)", marginBottom: "2rem" }}
           >
             <Quote size={20} color="#C9A84C" />
           </motion.div>
-
           <motion.blockquote
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 35 }}
             animate={quoteInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              fontFamily: "'Tiro Bangla', serif",
-              fontSize: "clamp(1.4rem, 3.5vw, 2.2rem)",
-              fontWeight: 400,
-              fontStyle: "italic",
-              color: "rgba(250,246,239,0.9)",
-              lineHeight: 1.7,
-              margin: "0 0 2.5rem",
-              letterSpacing: "0.01em",
-            }}
+            transition={{ duration: 0.8, delay: 0.12 }}
+            style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.45rem, 3.4vw, 2.35rem)", fontStyle: "italic", color: "rgba(250,246,239,0.9)", lineHeight: 1.75, margin: "0 0 2rem" }}
           >
-            "{authorQuote}"
+            “{authorQuote}”
           </motion.blockquote>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={quoteInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}
-          >
-            <div style={{ width: 40, height: 1, background: "rgba(201,168,76,0.4)" }} />
-            <span style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              fontSize: "0.85rem",
-              color: "#C9A84C",
-              letterSpacing: "0.1em",
-            }}>মাহবুব সরদার সবুজ</span>
-            <div style={{ width: 40, height: 1, background: "rgba(201,168,76,0.4)" }} />
-          </motion.div>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16 }}>
+            <span style={{ width: 48, height: 1, background: "rgba(201,168,76,0.45)" }} />
+            <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "#C9A84C", letterSpacing: "0.08em" }}>মাহবুব সরদার সবুজ</span>
+            <span style={{ width: 48, height: 1, background: "rgba(201,168,76,0.45)" }} />
+          </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          FEATURED BOOK — Editorial spotlight
+          FEATURED BOOK — Clean premium spotlight
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "7rem 2rem",
-        background: "linear-gradient(180deg, #0A1628 0%, #0d1e35 100%)",
+        background: "linear-gradient(180deg, #060E1A 0%, #0A1628 52%, #071321 100%)",
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Decorative grid lines */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-          pointerEvents: "none",
-        }} />
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(201,168,76,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.035) 1px, transparent 1px)", backgroundSize: "70px 70px", pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1120, margin: "0 auto" }}>
           <div className="book-spotlight-grid">
-            {/* Book cover */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-              style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-            >
-              <div style={{ position: "relative" }}>
-                {/* Glow behind book */}
-                <div style={{
-                  position: "absolute",
-                  inset: -30,
-                  background: "radial-gradient(ellipse, rgba(201,168,76,0.2) 0%, transparent 70%)",
-                  borderRadius: "50%",
-                  filter: "blur(20px)",
-                }} />
-                <motion.div
-                  animate={{ y: [0, -12, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ position: "relative" }}
-                >
-                  <img
-                    src={BOOK_COVER}
-                    alt="দুঃখবিলাস - মাহবুব সরদার সবুজের প্রকাশিত বাংলা কবিতা সংগ্রহ বই"
-                    style={{
-                      width: "clamp(180px, 25vw, 280px)",
-                      borderRadius: 8,
-                      boxShadow: "0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.2), 8px 8px 0 rgba(201,168,76,0.08)",
-                      display: "block",
-                    }}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </motion.div>
+            <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} style={{ display: "flex", justifyContent: "center" }}>
+              <div style={{ position: "relative", padding: "1rem", borderRadius: 28, background: "linear-gradient(135deg, rgba(201,168,76,0.1), rgba(255,255,255,0.035))", border: "1px solid rgba(201,168,76,0.18)", boxShadow: "0 40px 110px rgba(0,0,0,0.45)" }}>
+                <div style={{ position: "absolute", inset: -25, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,168,76,0.18), transparent 68%)", filter: "blur(20px)", pointerEvents: "none" }} />
+                <img src={BOOK_COVER} alt="দুঃখবিলাস - মাহবুব সরদার সবুজের প্রকাশিত বাংলা কবিতা সংগ্রহ বই" style={{ position: "relative", width: "clamp(190px, 26vw, 300px)", borderRadius: 16, boxShadow: "0 28px 70px rgba(0,0,0,0.65)", display: "block" }} loading="lazy" decoding="async" />
               </div>
             </motion.div>
-
-            {/* Book info */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "5px 14px",
-                borderRadius: 2,
-                background: "rgba(201,168,76,0.1)",
-                border: "1px solid rgba(201,168,76,0.25)",
-                marginBottom: "1.5rem",
-              }}>
-                <span style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: "0.65rem",
-                  letterSpacing: "0.25em",
-                  textTransform: "uppercase",
-                  color: "#C9A84C",
-                }}>সর্বশেষ প্রকাশনা</span>
+            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.12 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "7px 15px", borderRadius: 999, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.22)", marginBottom: "1.5rem" }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C9A84C", boxShadow: "0 0 10px rgba(201,168,76,0.7)" }} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.66rem", letterSpacing: "0.23em", textTransform: "uppercase", color: "#C9A84C" }}>Featured Book</span>
               </div>
-
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                fontSize: "clamp(1.8rem, 4vw, 3rem)",
-                fontWeight: 700,
-                color: "#FAF6EF",
-                lineHeight: 1.25,
-                margin: "0 0 1.2rem",
-              }}>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4vw, 3.15rem)", fontWeight: 700, color: "#FAF6EF", lineHeight: 1.25, margin: "0 0 1.25rem" }}>
                 আমি বিচ্ছেদকে বলি<br />
-                <span style={{
-                  background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}>দুঃখবিলাস</span>
+                <span style={{ background: "linear-gradient(135deg, #C9A84C, #E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>দুঃখবিলাস</span>
               </h2>
-
-              <p style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                fontSize: "1rem",
-                color: "rgba(250,246,239,0.55)",
-                lineHeight: 1.9,
-                maxWidth: 480,
-                margin: "0 0 2rem",
-              }}>
-                বিচ্ছেদের বেদনাকে যিনি দুঃখবিলাস বলেন, তাঁর কলমে উঠে আসে মানুষের অন্তরের সবচেয়ে গভীর অনুভূতি। এই বইটি সেই অনুভূতিরই এক অনন্য প্রকাশ।
+              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.05rem, 2vw, 1.25rem)", color: "rgba(250,246,239,0.58)", lineHeight: 2, maxWidth: 560, margin: "0 0 1.8rem" }}>
+                বিচ্ছেদের বেদনাকে যিনি দুঃখবিলাস বলেন, তাঁর কলমে উঠে আসে মানুষের অন্তরের সবচেয়ে গভীর অনুভূতি। এই বইটি সেই নীরব অনুভূতির এক অনন্য সাহিত্যিক প্রকাশ।
               </p>
-
-              {/* Rating */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "2rem" }}>
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} size={16} fill="#C9A84C" color="#C9A84C" />
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2rem" }}>
+                {["কাব্যগ্রন্থ", "বিচ্ছেদ", "মানবিক অনুভূতি"].map((tag) => (
+                  <span key={tag} style={{ padding: "7px 12px", borderRadius: 999, border: "1px solid rgba(201,168,76,0.18)", background: "rgba(255,255,255,0.035)", color: "rgba(250,246,239,0.56)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem" }}>{tag}</span>
                 ))}
-                <span style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.8rem",
-                  color: "rgba(250,246,239,0.4)",
-                  marginLeft: 8,
-                }}>পাঠক পছন্দের বই</span>
               </div>
-
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-                <Link href="/writings">
-                  <motion.span
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "13px 28px",
-                      borderRadius: 4,
-                      background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                      color: "#060E1A",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      textDecoration: "none",
-                      boxShadow: "0 8px 24px rgba(201,168,76,0.3)",
-                    }}
-                  >
-                    <BookOpen size={16} />
-                    বই পড়ুন
+                <Link href="/writings" style={{ textDecoration: "none" }}>
+                  <motion.span whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "13px 26px", borderRadius: 999, background: "linear-gradient(135deg, #C9A84C, #E8C97A)", color: "#060E1A", fontFamily: "'Tiro Bangla', serif", fontSize: "1.02rem", fontWeight: 700, cursor: "pointer", boxShadow: "0 12px 30px rgba(201,168,76,0.28)" }}>
+                    <BookOpen size={16} /> বই পড়ুন
                   </motion.span>
                 </Link>
-                <a
-                  href="https://rkmri.co/TTMEoA3l3pM0/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <motion.span
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "13px 28px",
-                      borderRadius: 4,
-                      background: "transparent",
-                      border: "1px solid rgba(201,168,76,0.3)",
-                      color: "rgba(250,246,239,0.75)",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      textDecoration: "none",
-                    }}
-                  >
-                    <ExternalLink size={16} />
-                    রকমারিতে কিনুন
+                <a href="https://rkmri.co/TTMEoA3l3pM0/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                  <motion.span whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "13px 26px", borderRadius: 999, background: "rgba(201,168,76,0.04)", border: "1px solid rgba(201,168,76,0.32)", color: "#D8B760", fontFamily: "'Tiro Bangla', serif", fontSize: "1.02rem", fontWeight: 700, cursor: "pointer" }}>
+                    <ExternalLink size={16} /> রকমারিতে কিনুন
                   </motion.span>
                 </a>
               </div>
@@ -765,160 +583,44 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          SECTIONS GRID — Magazine-style navigation
+          SECTIONS GRID — Expanded explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "7rem 2rem 8rem",
-        background: "#060E1A",
+        background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.08), transparent 30%), #060E1A",
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Subtle dot grid */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          pointerEvents: "none",
-        }} />
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto" }}>
-          {/* Section header */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            style={{ marginBottom: "4rem" }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: "1rem" }}>
-              <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "0.68rem",
-                letterSpacing: "0.3em",
-                textTransform: "uppercase",
-                color: "#C9A84C",
-              }}>সকল বিভাগ</span>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none", opacity: 0.55 }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto" }}>
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ marginBottom: "3.4rem", display: "flex", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", alignItems: "end" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: "1rem" }}>
+                <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>Explore</span>
+              </div>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4.5vw, 3.2rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.2 }}>অন্বেষণ করুন</h2>
             </div>
-            <h2 style={{
-              fontFamily: "'Tiro Bangla', serif",
-              fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
-              fontWeight: 700,
-              color: "#FAF6EF",
-              margin: 0,
-              lineHeight: 1.2,
-            }}>
-              অন্বেষণ করুন
-            </h2>
+            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 440, color: "rgba(250,246,239,0.48)", lineHeight: 1.8, margin: 0, fontSize: "0.92rem" }}>
+              লেখকের পরিচিতি, কবিতা, বই, ই-বুক, আবৃত্তি, গ্যালারি, সংবাদ ও বিষয়ভিত্তিক সংগ্রহগুলো দ্রুত খুঁজে নিন।
+            </p>
           </motion.div>
-
-          {/* Sections grid */}
-          <div className="sections-grid" style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1px",
-            background: "rgba(201,168,76,0.08)",
-            border: "1px solid rgba(201,168,76,0.08)",
-            borderRadius: 12,
-            overflow: "hidden",
-          }}>
+          <div className="sections-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
             {sections.map((sec, i) => {
               const Icon = sec.icon;
               return (
-                <motion.div
-                  key={sec.href + sec.label}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.06 }}
-                >
+                <motion.div key={sec.href + sec.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.42, delay: i * 0.035 }}>
                   <Link href={sec.href} style={{ textDecoration: "none", display: "block" }}>
-                    <motion.div
-                      whileHover={{ background: "rgba(201,168,76,0.06)" }}
-                      style={{
-                        padding: "2rem 1.75rem",
-                        background: "#060E1A",
-                        cursor: "pointer",
-                        transition: "background 0.3s",
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 0,
-                        position: "relative",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {/* Hover accent line */}
-                      <motion.div
-                        initial={{ scaleX: 0 }}
-                        whileHover={{ scaleX: 1 }}
-                        style={{
-                          position: "absolute",
-                          top: 0, left: 0, right: 0,
-                          height: 2,
-                          background: "linear-gradient(90deg, #C9A84C, #E8C97A)",
-                          transformOrigin: "left",
-                        }}
-                      />
-
-                      {/* Number */}
-                      <div style={{
-                        fontFamily: "'Space Grotesk', sans-serif",
-                        fontSize: "0.65rem",
-                        color: "rgba(201,168,76,0.3)",
-                        letterSpacing: "0.2em",
-                        marginBottom: "1rem",
-                      }}>
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-
-                      {/* Icon */}
-                      <div style={{
-                        width: 42, height: 42,
-                        borderRadius: 10,
-                        background: "rgba(201,168,76,0.08)",
-                        border: "1px solid rgba(201,168,76,0.15)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: "1.2rem",
-                      }}>
+                    <motion.div whileHover={{ y: -6, borderColor: "rgba(201,168,76,0.42)", background: "rgba(201,168,76,0.075)" }} style={{ padding: "1.35rem", background: "linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.025))", border: "1px solid rgba(201,168,76,0.14)", borderRadius: 20, cursor: "pointer", minHeight: 170, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden", boxShadow: "0 22px 60px rgba(0,0,0,0.2)" }}>
+                      <span style={{ position: "absolute", top: 14, right: 16, fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", color: "rgba(201,168,76,0.28)", letterSpacing: "0.16em" }}>{String(i + 1).padStart(2, "0")}</span>
+                      <div style={{ width: 42, height: 42, borderRadius: 14, background: "rgba(201,168,76,0.09)", border: "1px solid rgba(201,168,76,0.18)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.1rem" }}>
                         <Icon size={19} color="#C9A84C" />
                       </div>
-
-                      {/* Label */}
-                      <h3 style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontSize: "1.05rem",
-                        fontWeight: 700,
-                        color: "#FAF6EF",
-                        margin: "0 0 0.4rem",
-                        lineHeight: 1.3,
-                      }}>
-                        {sec.label}
-                      </h3>
-
-                      {/* Subtitle */}
-                      <p style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.78rem",
-                        color: "rgba(250,246,239,0.38)",
-                        margin: "0 0 1.2rem",
-                        lineHeight: 1.5,
-                        flex: 1,
-                      }}>
-                        {sec.subtitle}
-                      </p>
-
-                      {/* Arrow */}
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        color: "rgba(201,168,76,0.5)",
-                      }}>
-                        <ArrowRight size={15} />
-                      </div>
+                      <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.18rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 0.45rem", lineHeight: 1.35 }}>{sec.label}</h3>
+                      <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", color: "rgba(250,246,239,0.42)", margin: "0 0 1rem", lineHeight: 1.55, flex: 1 }}>{sec.subtitle}</p>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "rgba(201,168,76,0.7)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", fontWeight: 600 }}>
+                        খুলুন <ArrowRight size={14} />
+                      </span>
                     </motion.div>
                   </Link>
                 </motion.div>
@@ -929,7 +631,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          AUTHOR PROFILE — Cinematic split
+          AUTHOR PROFILE — Redesigned clean split
       ══════════════════════════════════════════════════════════════════════ */}
       <section style={{
         padding: "7rem 2rem",
@@ -937,115 +639,34 @@ export default function Home() {
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 20%, rgba(201,168,76,0.11), transparent 32%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1120, margin: "0 auto" }}>
           <div className="author-profile-grid">
-            {/* Left: image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9 }}
-              style={{ position: "relative" }}
-            >
-              <div style={{
-                borderRadius: 12,
-                overflow: "hidden",
-                boxShadow: "0 40px 80px rgba(0,0,0,0.5)",
-                position: "relative",
-              }}>
-                <img
-                  src={PROFILE_2}
-                  alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - লেখার মুহূর্তে প্রোফাইল ছবি"
-                  onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }}
-                  style={{
-                    width: "100%",
-                    display: "block",
-                    filter: "contrast(1.05) saturate(0.9) brightness(1.02)",
-                  }}
-                  className="author-profile-img"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(to bottom, transparent 60%, rgba(6,14,26,0.8) 100%)",
-                }} />
+            <motion.div initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} style={{ position: "relative" }}>
+              <div style={{ borderRadius: 28, overflow: "hidden", boxShadow: "0 42px 100px rgba(0,0,0,0.52)", position: "relative", border: "1px solid rgba(201,168,76,0.16)", padding: 6, background: "rgba(255,255,255,0.035)" }}>
+                <img src={PROFILE_2} alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - লেখার মুহূর্তে প্রোফাইল ছবি" onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }} style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9) brightness(1.02)", borderRadius: 22 }} className="author-profile-img" loading="lazy" decoding="async" />
+                <div style={{ position: "absolute", inset: 6, borderRadius: 22, background: "linear-gradient(to bottom, transparent 55%, rgba(6,14,26,0.82) 100%)" }} />
               </div>
-
-              {/* Gold accent border */}
-              <div style={{
-                position: "absolute",
-                top: 20, left: -20,
-                width: "30%", height: "50%",
-                border: "1px solid rgba(201,168,76,0.2)",
-                borderRadius: 8,
-                pointerEvents: "none",
-              }} />
             </motion.div>
-
-            {/* Right: text */}
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, delay: 0.2 }}
-            >
+            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "2rem" }}>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
-                <span style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: "0.68rem",
-                  letterSpacing: "0.3em",
-                  textTransform: "uppercase",
-                  color: "#C9A84C",
-                }}>লেখক পরিচয়</span>
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>লেখক পরিচয়</span>
               </div>
-
-              <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                fontWeight: 700,
-                color: "#FAF6EF",
-                lineHeight: 1.25,
-                margin: "0 0 1.5rem",
-              }}>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#FAF6EF", lineHeight: 1.25, margin: "0 0 1.5rem" }}>
                 কলমের মানুষ,<br />
-                <span style={{
-                  background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}>মানুষের কলম</span>
+                <span style={{ background: "linear-gradient(135deg, #C9A84C, #E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>মানুষের কলম</span>
               </h2>
-
-              <p style={{
-                fontFamily: "'Tiro Bangla', serif",
-                fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)",
-                color: "rgba(250,246,239,0.62)",
-                lineHeight: 2.05,
-                margin: "0 0 1.2rem",
-                maxWidth: 540,
-                letterSpacing: "0.01em",
-              }}>
+              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.62)", lineHeight: 2.05, margin: "0 0 1.2rem", maxWidth: 560, letterSpacing: "0.01em" }}>
                 মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের একজন অনুভূতিশীল লেখক ও কবি। তাঁর কলমে ভালোবাসা, বিচ্ছেদ, মানবিক সম্পর্ক ও জীবনের নীরব সত্যগুলো সহজ অথচ হৃদয়স্পর্শী ভাষায় ফুটে ওঠে।
               </p>
-              <p style={{
-                fontFamily: "'Tiro Bangla', serif",
-                fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)",
-                color: "rgba(250,246,239,0.54)",
-                lineHeight: 2.05,
-                margin: "0 0 2.5rem",
-                maxWidth: 540,
-                letterSpacing: "0.01em",
-              }}>
+              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.54)", lineHeight: 2.05, margin: 0, maxWidth: 560, letterSpacing: "0.01em" }}>
                 প্রবাসের দূরত্বে থেকেও তিনি বাংলা ভাষা, মাটি ও মানুষের সঙ্গে গভীর আত্মিক বন্ধন বহন করেন। তাই তাঁর কবিতা ও গদ্যে ফিরে আসে দেশ, স্মৃতি, প্রবাসজীবন এবং মানুষের অন্তর্গত আলোর গল্প।
               </p>
-
             </motion.div>
           </div>
         </div>
       </section>
-
 
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
