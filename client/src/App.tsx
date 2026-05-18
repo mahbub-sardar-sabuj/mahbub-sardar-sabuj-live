@@ -107,7 +107,9 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <div className="cinematic-site-shell">
+            <Router />
+          </div>
           <Suspense fallback={null}>
             <AIChatbot />
           </Suspense>

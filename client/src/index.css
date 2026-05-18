@@ -258,3 +258,372 @@ a, button, input, textarea, select {
 .ebook-tile {
   contain: layout style;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Site-wide Cinematic Design System — Mahbub Sardar Sabuj
+   Applied globally through .cinematic-site-shell so every page feels premium.
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --cinema-bg: #050914;
+  --cinema-bg-2: #08101f;
+  --cinema-ink: #0d1728;
+  --cinema-panel: rgba(10, 18, 32, 0.72);
+  --cinema-panel-soft: rgba(255, 255, 255, 0.045);
+  --cinema-gold: #c9a84c;
+  --cinema-gold-2: #efd27d;
+  --cinema-cream: #f3eadb;
+  --cinema-muted: rgba(243, 234, 219, 0.68);
+  --cinema-faint: rgba(243, 234, 219, 0.38);
+  --cinema-line: rgba(255, 255, 255, 0.095);
+  --cinema-line-gold: rgba(201, 168, 76, 0.28);
+  --cinema-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+  --cinema-radius: clamp(22px, 3vw, 38px);
+  --cinema-ease: cubic-bezier(.25,.46,.45,.94);
+}
+
+html,
+body,
+#root {
+  background:
+    radial-gradient(circle at 15% -10%, rgba(201, 168, 76, 0.14), transparent 34%),
+    radial-gradient(circle at 86% 8%, rgba(76, 135, 201, 0.10), transparent 30%),
+    linear-gradient(180deg, var(--cinema-bg), #070b14 45%, #05070d);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 20%, rgba(201,168,76,.035) 32%, transparent 48% 100%),
+    radial-gradient(circle at 50% 0%, rgba(232,200,122,.08), transparent 34%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .18;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(circle at 50% 0%, black, transparent 72%);
+}
+
+.cinematic-site-shell {
+  position: relative;
+  min-height: 100vh;
+  color: var(--cinema-cream);
+  isolation: isolate;
+}
+
+.cinematic-site-shell::before,
+.cinematic-site-shell::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(54px);
+  opacity: .48;
+}
+.cinematic-site-shell::before {
+  width: 42vw;
+  height: 42vw;
+  left: -12vw;
+  top: 10vh;
+  background: rgba(201,168,76,.13);
+}
+.cinematic-site-shell::after {
+  width: 38vw;
+  height: 38vw;
+  right: -12vw;
+  top: 42vh;
+  background: rgba(79,140,210,.11);
+}
+
+.cinematic-site-shell > div,
+.cinematic-site-shell > main,
+.cinematic-site-shell > section {
+  position: relative;
+}
+
+.cinematic-site-shell h1,
+.cinematic-site-shell h2,
+.cinematic-site-shell h3 {
+  text-wrap: balance;
+}
+
+.cinematic-site-shell h1:not([class*="sr-only"]),
+.cinematic-site-shell h2:not([class*="sr-only"]) {
+  letter-spacing: -0.035em;
+}
+
+.cinematic-site-shell p,
+.cinematic-site-shell li {
+  text-wrap: pretty;
+}
+
+.cinematic-site-shell section:not([style*="min-height: 100vh"]):not([class*="hero"]),
+.cinematic-site-shell main > div,
+.cinematic-site-shell article,
+.cinematic-site-shell .card,
+.cinematic-site-shell [class*="Card"],
+.cinematic-site-shell [class*="card"],
+.cinematic-site-shell [class*="-card"],
+.cinematic-site-shell [class*="tile"],
+.cinematic-site-shell [class*="panel"] {
+  border-color: var(--cinema-line) !important;
+}
+
+.cinematic-site-shell article,
+.cinematic-site-shell [class*="card"],
+.cinematic-site-shell [class*="Card"],
+.cinematic-site-shell [class*="tile"],
+.cinematic-site-shell [class*="panel"] {
+  transition: transform .24s var(--cinema-ease), box-shadow .24s var(--cinema-ease), border-color .24s var(--cinema-ease), background .24s var(--cinema-ease);
+}
+
+.cinematic-site-shell article:hover,
+.cinematic-site-shell [class*="card"]:hover,
+.cinematic-site-shell [class*="Card"]:hover,
+.cinematic-site-shell [class*="tile"]:hover,
+.cinematic-site-shell [class*="panel"]:hover {
+  border-color: var(--cinema-line-gold) !important;
+}
+
+.cinematic-site-shell a:not([class]),
+.cinematic-site-shell a[class=""] {
+  color: var(--cinema-gold-2);
+  text-decoration-color: rgba(201,168,76,.35);
+  text-underline-offset: 4px;
+}
+
+.cinematic-site-shell button,
+.cinematic-site-shell a[href] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cinematic-site-shell input,
+.cinematic-site-shell textarea,
+.cinematic-site-shell select {
+  background: rgba(7, 12, 22, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  color: var(--cinema-cream) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.cinematic-site-shell input::placeholder,
+.cinematic-site-shell textarea::placeholder {
+  color: rgba(243,234,219,.42) !important;
+}
+
+.cinematic-site-shell img {
+  image-rendering: auto;
+}
+
+.cinematic-site-shell .container,
+.cinematic-site-shell [class*="container"],
+.cinematic-site-shell [class*="Container"] {
+  position: relative;
+}
+
+.cinema-section-shell {
+  border: 1px solid var(--cinema-line);
+  border-radius: var(--cinema-radius);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.018)),
+    var(--cinema-panel);
+  box-shadow: var(--cinema-shadow), inset 0 1px 0 rgba(255,255,255,.075);
+  backdrop-filter: blur(18px) saturate(145%);
+}
+
+@media (min-width: 900px) {
+  .cinematic-site-shell {
+    --cinema-page-pad: clamp(1rem, 2.4vw, 2rem);
+  }
+  .cinematic-site-shell main,
+  .cinematic-site-shell section {
+    scroll-margin-top: calc(var(--site-nav-offset, 96px) + 18px);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --cinema-radius: 22px;
+  }
+  body::after {
+    background-size: 64px 64px;
+    opacity: .12;
+  }
+  .cinematic-site-shell::before,
+  .cinematic-site-shell::after {
+    opacity: .28;
+    filter: blur(42px);
+  }
+  .cinematic-site-shell h1 {
+    letter-spacing: -0.025em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-site-shell *,
+  .cinematic-site-shell *::before,
+  .cinematic-site-shell *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* ── Cinematic page-level override for every routed page ───────────────────── */
+.cinematic-site-shell > div:not([data-radix-popper-content-wrapper]) {
+  background:
+    radial-gradient(circle at 16% 0%, rgba(201,168,76,.13), transparent 30%),
+    radial-gradient(circle at 88% 14%, rgba(73,132,205,.10), transparent 32%),
+    linear-gradient(180deg, #050914 0%, #071020 42%, #050812 100%) !important;
+}
+
+.cinematic-site-shell > div > section:first-of-type,
+.cinematic-site-shell > div > main:first-of-type,
+.cinematic-site-shell main > section:first-child {
+  position: relative;
+  overflow: hidden;
+}
+
+.cinematic-site-shell > div > section:first-of-type::before,
+.cinematic-site-shell > div > main:first-of-type::before,
+.cinematic-site-shell main > section:first-child::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(201,168,76,.13), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,.045), transparent 42%);
+}
+
+.cinematic-site-shell > div > section:first-of-type > *,
+.cinematic-site-shell > div > main:first-of-type > *,
+.cinematic-site-shell main > section:first-child > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cinematic-site-shell section:not(:first-of-type) {
+  position: relative;
+}
+
+.cinematic-site-shell section:not(:first-of-type)::after {
+  content: "";
+  position: absolute;
+  left: max(1rem, 8vw);
+  right: max(1rem, 8vw);
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,.22), transparent);
+  opacity: .6;
+}
+
+.cinematic-site-shell :is(h1, h2) {
+  color: var(--cinema-cream);
+  text-shadow: 0 18px 70px rgba(0,0,0,.34);
+}
+
+.cinematic-site-shell :is(h1, h2) strong,
+.cinematic-site-shell .gold-underline,
+.cinematic-site-shell [style*="C9A84C"],
+.cinematic-site-shell [style*="D4A843"] {
+  filter: drop-shadow(0 10px 24px rgba(201,168,76,.16));
+}
+
+.cinematic-site-shell :is(.container, [class*="container"], [class*="Container"]) > :is(div, article, section):not(:empty) {
+  border-radius: inherit;
+}
+
+.cinematic-site-shell :is(article, [class*="card"], [class*="Card"], [class*="tile"], [class*="panel"]):not([style*="position: fixed"]) {
+  box-shadow: 0 18px 54px rgba(0,0,0,.24);
+}
+
+.cinematic-site-shell :is(article, [class*="card"], [class*="Card"], [class*="tile"], [class*="panel"]):not([style*="position: fixed"]):hover {
+  box-shadow: 0 26px 82px rgba(0,0,0,.36), 0 0 0 1px rgba(201,168,76,.08) inset;
+}
+
+.cinematic-site-shell :is(a, button)[class*="btn"],
+.cinematic-site-shell :is(a, button)[class*="Button"],
+.cinematic-site-shell :is(a, button)[style*="borderRadius"] {
+  transition: transform .22s var(--cinema-ease), filter .22s var(--cinema-ease), box-shadow .22s var(--cinema-ease);
+}
+
+.cinematic-site-shell :is(a, button)[class*="btn"]:hover,
+.cinematic-site-shell :is(a, button)[class*="Button"]:hover,
+.cinematic-site-shell :is(a, button)[style*="borderRadius"]:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .cinematic-site-shell > div:not([data-radix-popper-content-wrapper]) {
+    background:
+      radial-gradient(circle at 16% 0%, rgba(201,168,76,.11), transparent 34%),
+      linear-gradient(180deg, #050914 0%, #071020 48%, #050812 100%) !important;
+  }
+  .cinematic-site-shell section:not(:first-of-type)::after {
+    left: 1rem;
+    right: 1rem;
+  }
+}
+
+/* ── Final cinematic polish: readability, mobile safety, print safety ───────── */
+.cinematic-site-shell :is(p, li, span) {
+  -webkit-font-smoothing: antialiased;
+}
+
+.cinematic-site-shell :is(button, a[href], input, textarea, select) {
+  min-height: 36px;
+}
+
+.cinematic-site-shell :is(button, a[href]):focus-visible,
+.cinematic-site-shell :is(input, textarea, select):focus-visible {
+  outline: 2px solid rgba(239,210,125,.78) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(201,168,76,.14) !important;
+}
+
+.cinematic-site-shell :is([class*="grid"], [class*="Grid"], [class*="row"], [class*="Row"]) {
+  min-width: 0;
+}
+
+@media (hover: none) {
+  .cinematic-site-shell :is(article, [class*="card"], [class*="Card"], [class*="tile"], [class*="panel"]):hover,
+  .cinematic-site-shell :is(a, button)[style*="borderRadius"]:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .cinematic-site-shell :is(button, a[href], input, textarea, select) {
+    min-height: 40px;
+  }
+}
+
+@media print {
+  body::before,
+  body::after,
+  .cinematic-site-shell::before,
+  .cinematic-site-shell::after {
+    display: none !important;
+  }
+  .cinematic-site-shell,
+  .cinematic-site-shell > div {
+    background: white !important;
+    color: #111827 !important;
+  }
+}
