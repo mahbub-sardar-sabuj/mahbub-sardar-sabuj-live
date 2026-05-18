@@ -409,17 +409,14 @@ body::after {
   -webkit-tap-highlight-color: transparent;
 }
 
-.cinematic-site-shell input,
-.cinematic-site-shell textarea,
-.cinematic-site-shell select {
+.cinematic-site-shell :is(input, textarea, select):not([type="color"]):not([type="range"]) {
   background: rgba(7, 12, 22, 0.72) !important;
   border-color: rgba(255, 255, 255, 0.11) !important;
   color: var(--cinema-cream) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.045);
 }
 
-.cinematic-site-shell input::placeholder,
-.cinematic-site-shell textarea::placeholder {
+.cinematic-site-shell :is(input, textarea):not([type="color"]):not([type="range"])::placeholder {
   color: rgba(243,234,219,.42) !important;
 }
 
@@ -586,7 +583,8 @@ body::after {
   -webkit-font-smoothing: antialiased;
 }
 
-.cinematic-site-shell :is(button, a[href], input, textarea, select) {
+.cinematic-site-shell :is(button, input, textarea, select),
+.cinematic-site-shell a[href]:is([class*="btn"], [class*="Button"], [style*="borderRadius"], [role="button"]) {
   min-height: 36px;
 }
 
@@ -609,7 +607,8 @@ body::after {
 }
 
 @media (max-width: 420px) {
-  .cinematic-site-shell :is(button, a[href], input, textarea, select) {
+  .cinematic-site-shell :is(button, input, textarea, select),
+  .cinematic-site-shell a[href]:is([class*="btn"], [class*="Button"], [style*="borderRadius"], [role="button"]) {
     min-height: 40px;
   }
 }
