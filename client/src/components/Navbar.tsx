@@ -92,7 +92,7 @@ export default function Navbar() {
     };
   }, []);
 
-  const navHeight = scrolled ? 58 : 70;
+  const navHeight = scrolled ? (isDesktop ? 58 : 64) : (isDesktop ? 70 : 76);
   const totalNavOffset = navHeight;
 
   useEffect(() => {
@@ -165,12 +165,12 @@ export default function Navbar() {
       }}
     >
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: isDesktop ? "0 1.5rem" : "0 1rem", position: "relative", zIndex: 2 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: scrolled ? 58 : 70, transition: "height 0.4s ease" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: navHeight, transition: "height 0.4s ease" }}>
 
           {/* ── PREMIUM LOGO (original) ── */}
           <Link
             href="/"
-            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}
+            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: isDesktop ? 10 : 12, flexShrink: 0, minWidth: 0 }}
           >
             <span style={{
               display: "inline-flex",
@@ -186,13 +186,14 @@ export default function Navbar() {
             }}>
               <Feather size={16} color="#D4A843" />
             </span>
-            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+            <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", lineHeight: 1.05, minWidth: 0 }}>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                fontSize: isDesktop ? "1.12rem" : "1.02rem",
+                fontSize: isDesktop ? "1.12rem" : "1.08rem",
                 fontWeight: 800,
-                letterSpacing: "0.02em",
+                letterSpacing: "0.01em",
                 color: "#E8C97A",
+                whiteSpace: "nowrap",
                 background: isDesktop ? "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)" : "none",
                 WebkitBackgroundClip: isDesktop ? "text" : "border-box",
                 WebkitTextFillColor: isDesktop ? "transparent" : "#E8C97A",
@@ -202,10 +203,14 @@ export default function Navbar() {
               </span>
               <span style={{
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                fontSize: "0.65rem",
-                letterSpacing: "0.1em",
-                color: "rgba(212,168,67,0.55)",
-                marginTop: 2,
+                fontSize: isDesktop ? "0.65rem" : "0.72rem",
+                letterSpacing: isDesktop ? "0.1em" : "0.08em",
+                color: "rgba(232,201,122,0.78)",
+                marginTop: isDesktop ? 2 : 4,
+                paddingTop: isDesktop ? 0 : 3,
+                borderTop: isDesktop ? "none" : "1px solid rgba(212,168,67,0.24)",
+                lineHeight: 1.05,
+                whiteSpace: "nowrap",
               }}>
                 লেখক ও কবি
               </span>
