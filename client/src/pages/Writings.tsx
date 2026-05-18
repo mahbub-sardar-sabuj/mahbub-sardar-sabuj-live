@@ -11,7 +11,7 @@ import Seo, { SITE_URL } from "@/components/Seo";
 import AdSenseAd from "@/components/AdSenseAd";
 import type { Writing } from "@/data/writingsArchive";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
-import { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue, createPortal } from "react";
 import { Link, useRoute, useLocation } from "wouter";
 import {
   Feather, ArrowLeft, BookOpen, Heart, Star, Calendar, X, Search, Share2, Copy,
@@ -1926,7 +1926,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
     return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  return (
+  return createPortal(
     <motion.div
       className="rm2"
       initial={{ opacity: 0 }}
@@ -2045,12 +2045,12 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             </span>
             <ChevronRight size={16} style={{ color: next ? c.accent : T.sub, flexShrink: 0 }}/>
           </button>
-        </div>
+                </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
-
 // ── Book Modal v7 ─────────────────────────────────────────────────────────────
 function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
   useEffect(() => {
@@ -2059,7 +2059,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
     return () => window.removeEventListener("keydown", fn);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <motion.div className="bm2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div className="bm2-box"
@@ -2105,11 +2105,11 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+            </motion.div>
+    </motion.div>,
+    document.body
   );
 }
-
 // ── Cinematic E-Book Shelf ───────────────────────────────────────────────────────────────────
 function LiteraryHero() {
   const featuredBooks = ebooks.filter((book) => book.isFeatured).slice(0, 3);
