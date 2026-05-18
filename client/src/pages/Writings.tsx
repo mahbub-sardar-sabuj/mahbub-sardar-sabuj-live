@@ -36,11 +36,21 @@ const BENGALI_TRANS: Record<string, string> = {
   'ং':'ng','ঃ':'h','ঁ':'n','্':'',
   ' ':'-','?':'','!':'',',':'','.':'','"':'',"'":'','—':'-','–':'-',
 };
-function makeSlug(title: string, id: number): string {
+function makeLegacySlug(title: string, id: number): string {
   let slug = '';
   for (const ch of title) { slug += BENGALI_TRANS[ch] ?? ''; }
   slug = slug.replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
   return slug.length >= 3 ? slug : `writing-${id}`;
+}
+
+function makeSlug(title: string, id: number): string {
+  const base = makeLegacySlug(title, id);
+  return `${base}-${id}`;
+}
+
+function matchesWritingSlug(writing: Writing, slug?: string): boolean {
+  if (!slug) return false;
+  return makeSlug(writing.title, writing.id) === slug || makeLegacySlug(writing.title, writing.id) === slug;
 }
 
 function makeExcerpt(text: string, maxLength = 170): string {
@@ -1568,31 +1578,6 @@ const CSS = `
   .ebook-actions > *:hover { transform: translateY(-2px); filter: brightness(1.08); }
   .writing-cinema { padding: clamp(1rem,3vw,2rem); }
   .writing-head { align-items: center; }
-  .seo-clusters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .6rem;
-    margin: .9rem 0 1.1rem;
-  }
-  .seo-clusters a {
-    display: inline-flex;
-    align-items: center;
-    gap: .38rem;
-    padding: .52rem .78rem;
-    border: 1px solid rgba(200,164,90,.18);
-    border-radius: 999px;
-    background: rgba(200,164,90,.055);
-    color: #E8C87A;
-    text-decoration: none;
-    font-size: .84rem;
-    transition: transform .2s var(--r), border-color .2s var(--r), background .2s var(--r);
-  }
-  .seo-clusters a:hover {
-    transform: translateY(-1px);
-    border-color: rgba(200,164,90,.32);
-    background: rgba(200,164,90,.1);
-  }
-
   .writing-tools {
     position: sticky;
     top: var(--site-nav-offset, 98px);
@@ -1786,15 +1771,15 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                   style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: liked ? 1 : 0.45, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.2)" : "scale(1)" }}>
                   {liked ? "❤️" : "🤍"}
                 </button>
-                <Link
-                  href={`/writings/${slug}`}
-                  onClick={(e) => { e.stopPropagation(); onClick(); }}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(); }}
                   className="wc2-read"
                   style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
                   aria-label={`${writing.title} পড়ুন`}
                 >
                   পড়ুন <ArrowRight size={11}/>
-                </Link>
+                </button>
               </div>
             </div>
           </>
@@ -1817,15 +1802,15 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                   style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".82rem", opacity: liked ? 1 : 0.45, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.2)" : "scale(1)" }}>
                   {liked ? "❤️" : "🤍"}
                 </button>
-                <Link
-                  href={`/writings/${slug}`}
-                  onClick={(e) => { e.stopPropagation(); onClick(); }}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick(); }}
                   className="wc2-read"
                   style={{ color: c.accent, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
                   aria-label={`${writing.title} পড়ুন`}
                 >
                   পড়ুন <ArrowRight size={11}/>
-                </Link>
+                </button>
               </div>
             </div>
           </>
@@ -2259,11 +2244,15 @@ export default function Writings() {
 
   useEffect(() => {
     if (match && params?.slug && archiveReady) {
-      const w = archive.find(wr => makeSlug(wr.title, wr.id) === params.slug);
-      if (w) setSel(w);
-      // If archive is ready but writing not found, slug may be invalid — stay on page
+      const w = archive.find(wr => matchesWritingSlug(wr, params.slug));
+      if (w) {
+        setSel(w);
+      } else {
+        setSel(null);
+        setLocation('/writings', { replace: true });
+      }
     }
-  }, [archive, match, params?.slug, archiveReady]);
+  }, [archive, match, params?.slug, archiveReady, setLocation]);
 
   const handleCardClick = useCallback((w: Writing) => {
     setSel(w);
@@ -2382,14 +2371,6 @@ export default function Writings() {
                 <h2>নির্বাচিত অনুভূতির আর্কাইভ</h2>
               </div>
             </div>
-
-            <nav className="seo-clusters" aria-label="জনপ্রিয় বাংলা সাহিত্য বিষয়">
-              <Link href="/bangla-kobita">বাংলা কবিতা</Link>
-              <Link href="/valobashar-kobita">ভালোবাসার কবিতা</Link>
-              <Link href="/bichched-kobita">বিচ্ছেদ কবিতা</Link>
-              <Link href="/jibon-dorshon">জীবনদর্শন</Link>
-              <Link href="/bangla-ebook">বাংলা ই-বুক</Link>
-            </nav>
 
             <div className="writing-tools">
               <div className="sf-s wt-search">
