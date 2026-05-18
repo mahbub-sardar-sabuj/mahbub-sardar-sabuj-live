@@ -264,7 +264,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "2.1rem 0 2.65rem", maxWidth: 540 }}
+                style={{ margin: "2rem 0 2.5rem", maxWidth: 480 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
@@ -276,7 +276,7 @@ export default function Home() {
                   borderLeft: "2px solid rgba(201,168,76,0.4)",
                   paddingLeft: 16,
                 }}>
-                  কবিতা, গদ্য ও মানবিক অনুভূতির ভেতর দিয়ে জীবনের নীরব সত্যকে উচ্চারণ করেন মাহবুব সরদার সবুজ।
+                  বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
                 </p>
               </motion.div>
 
@@ -294,7 +294,7 @@ export default function Home() {
                     className="cta-btn cta-primary"
                   >
                     <BookOpen size={17} />
-                    বই পড়ুন
+                    বই পড়ুন
                     <ArrowRight size={15} />
                   </motion.span>
                 </Link>
@@ -305,7 +305,7 @@ export default function Home() {
                     className="cta-btn cta-secondary"
                   >
                     <UserRound size={17} />
-                    লেখককে জানুন
+                    পরিচিতি
                   </motion.span>
                 </Link>
                 <Link href="/editor" style={{ flex: 1 }}>
@@ -315,7 +315,7 @@ export default function Home() {
                     className="cta-btn cta-secondary"
                   >
                     <Palette size={17} />
-                    লেখা সাজান
+                    ডিজাইন করুন
                   </motion.span>
                 </Link>
                 <Link href="/news" style={{ flex: 1 }}>
