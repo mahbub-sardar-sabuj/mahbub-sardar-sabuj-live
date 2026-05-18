@@ -1027,7 +1027,7 @@ export default function Home() {
                 maxWidth: 540,
                 letterSpacing: "0.01em",
               }}>
-                মাহবুব সরদার সবুজ বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। তাঁর লেখায় মানবিক সম্পর্ক, প্রকৃতি, বিচ্ছেদ ও আশার গল্প উঠে আসে অনন্য ভাষায়।
+                মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের একজন অনুভূতিশীল লেখক ও কবি। তাঁর কলমে ভালোবাসা, বিচ্ছেদ, মানবিক সম্পর্ক ও জীবনের নীরব সত্যগুলো সহজ অথচ হৃদয়স্পর্শী ভাষায় ফুটে ওঠে।
               </p>
               <p style={{
                 fontFamily: "'Tiro Bangla', serif",
@@ -1038,7 +1038,7 @@ export default function Home() {
                 maxWidth: 540,
                 letterSpacing: "0.01em",
               }}>
-                সৌদি আরবে বসবাসরত এই লেখক তাঁর কবিতা ও গদ্যে দেশ, প্রবাস ও মানুষের জীবনের নানা রঙ তুলে ধরেন।
+                প্রবাসের দূরত্বে থেকেও তিনি বাংলা ভাষা, মাটি ও মানুষের সঙ্গে গভীর আত্মিক বন্ধন বহন করেন। তাই তাঁর কবিতা ও গদ্যে ফিরে আসে দেশ, স্মৃতি, প্রবাসজীবন এবং মানুষের অন্তর্গত আলোর গল্প।
               </p>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: "1.5rem" }}>
@@ -1111,7 +1111,7 @@ export default function Home() {
                   <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
                     <span>সম্পূর্ণ পরিচয় পড়ুন</span>
                     <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", fontWeight: 500, color: "rgba(250,246,239,0.45)", marginTop: 4 }}>
-                      লেখকের জীবন ও সাহিত্য পথ
+                      জীবন, প্রবাস ও সাহিত্যযাত্রা
                     </span>
                   </span>
                   <span style={{
