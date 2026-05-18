@@ -263,7 +263,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "2rem 0 2.5rem", maxWidth: 480 }}
+                style={{ margin: "1.55rem 0 1.1rem", maxWidth: 480 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
@@ -599,7 +599,7 @@ export default function Home() {
         @media (max-width: 1024px) {
           .hero-inner {
             grid-template-columns: 1fr;
-            gap: 3rem;
+            gap: 1.7rem;
             text-align: center;
           }
           .hero-right {
@@ -613,6 +613,7 @@ export default function Home() {
         /* Mobile */
         @media (max-width: 768px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 60px; }
+          .hero-inner { gap: 0.95rem; }
           .app-launcher-shell { border-radius: 28px; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.62rem; }
           .app-launcher-card { min-height: 124px; border-radius: 20px; padding: 0.85rem 0.35rem 0.7rem; }
@@ -633,6 +634,7 @@ export default function Home() {
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
+          .hero-inner { gap: 0.75rem; }
           .app-launcher-grid { gap: 0.42rem; }
           .app-launcher-card { min-height: 104px; }
           .app-icon-wrap { width: 40px; height: 40px; }
