@@ -446,47 +446,6 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          WELCOME BAND — Clean editorial divider
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section style={{
-        position: "relative",
-        padding: "3rem 2rem",
-        background: "linear-gradient(180deg, #060E1A 0%, #071321 100%)",
-        borderTop: "1px solid rgba(201,168,76,0.14)",
-        borderBottom: "1px solid rgba(201,168,76,0.1)",
-        overflow: "hidden",
-      }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px)", backgroundSize: "30px 30px", opacity: 0.45, pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
-          {[
-            ["পরিচিতি", "লেখকের জীবনপথ"],
-            ["লেখালেখি", "কবিতা ও বই"],
-            ["ডিজাইন", "কার্ড ফরম্যাট"],
-            ["সংবাদ", "সাম্প্রতিক আপডেট"],
-          ].map(([title, desc]) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55 }}
-              style={{
-                border: "1px solid rgba(201,168,76,0.16)",
-                borderRadius: 18,
-                padding: "1.25rem",
-                background: "linear-gradient(135deg, rgba(255,255,255,0.045), rgba(201,168,76,0.035))",
-                boxShadow: "0 18px 50px rgba(0,0,0,0.18)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.25rem", color: "#E8C97A", marginBottom: 6 }}>{title}</div>
-              <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.52)" }}>{desc}</div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
           AUTHOR QUOTE — Premium editorial glass panel
       ══════════════════════════════════════════════════════════════════════ */}
       <section
