@@ -8,7 +8,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
-  UserRound, Palette, ArrowRight,
+  UserRound, Palette,
   Star, Feather
 } from "lucide-react";
 import { Link } from "wouter";
@@ -279,56 +279,6 @@ export default function Home() {
                 </p>
               </motion.div>
 
-              {/* CTA buttons — one row */}
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.8 }}
-                className="cta-row"
-              >
-                <Link href="/writings" style={{ flex: 1 }}>
-                  <motion.span
-                    whileHover={{ scale: 1.05, y: -3, boxShadow: "0 20px 50px rgba(201,168,76,0.55)" }}
-                    whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-primary"
-                  >
-                    <BookOpen size={17} />
-                    বই পড়ুন
-                    <ArrowRight size={15} />
-                  </motion.span>
-                </Link>
-                <Link href="/about" style={{ flex: 1 }}>
-                  <motion.span
-                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
-                    whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-secondary"
-                  >
-                    <UserRound size={17} />
-                    পরিচিতি
-                  </motion.span>
-                </Link>
-                <Link href="/editor" style={{ flex: 1 }}>
-                  <motion.span
-                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
-                    whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-secondary"
-                  >
-                    <Palette size={17} />
-                    ডিজাইন করুন
-                  </motion.span>
-                </Link>
-                <Link href="/news" style={{ flex: 1 }}>
-                  <motion.span
-                    whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(201,168,76,0.9)", background: "rgba(201,168,76,0.1)" }}
-                    whileTap={{ scale: 0.96 }}
-                    className="cta-btn cta-secondary"
-                  >
-                    <Newspaper size={17} />
-                    সরদার সংবাদ
-                  </motion.span>
-                </Link>
-              </motion.div>
-
 
             </div>
 
@@ -511,52 +461,6 @@ export default function Home() {
           50% { opacity: 0.6; transform: scale(1.5); box-shadow: 0 0 16px rgba(201,168,76,0.8); }
         }
 
-        /* CTA row — one line, equal boxes */
-        .cta-row {
-          display: flex;
-          gap: 8px;
-          width: 100%;
-          max-width: 680px;
-        }
-        .cta-row a {
-          flex: 1;
-          text-decoration: none;
-        }
-        .cta-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 13px 8px;
-          border-radius: 6px;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 700;
-          cursor: pointer;
-          text-decoration: none;
-          width: 100%;
-          white-space: nowrap;
-          transition: all 0.25s ease;
-          letter-spacing: 0.01em;
-        }
-        .cta-primary {
-          background: linear-gradient(135deg, #C9A84C 0%, #E8C97A 50%, #C9A84C 100%);
-          background-size: 200% 100%;
-          color: #060E1A;
-          box-shadow: 0 8px 28px rgba(201,168,76,0.35);
-          animation: goldShimmer 3s ease-in-out infinite;
-        }
-        .cta-secondary {
-          background: rgba(201,168,76,0.04);
-          border: 1px solid rgba(201,168,76,0.3);
-          color: rgba(250,246,239,0.85);
-          backdrop-filter: blur(10px);
-        }
-        .cta-secondary:hover {
-          background: rgba(201,168,76,0.08);
-          border-color: rgba(201,168,76,0.7);
-        }
-
         /* Hero layout */
         .hero-container {
           padding-top: calc(var(--site-nav-offset, 98px) + 20px);
@@ -715,13 +619,6 @@ export default function Home() {
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 320px; }
-          .cta-row { gap: 5px; max-width: 100%; }
-          .cta-btn {
-            font-size: 0.72rem;
-            padding: 11px 4px;
-            gap: 3px;
-          }
-          .cta-btn svg { width: 13px; height: 13px; }
         }
 
         @media (max-width: 480px) {
@@ -732,32 +629,10 @@ export default function Home() {
           .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.72rem; min-height: 2.55em; }
-          .cta-row { gap: 4px; }
-          .cta-btn {
-            font-size: 0.68rem;
-            padding: 10px 3px;
-            gap: 2px;
-          }
-          .cta-btn svg { width: 12px; height: 12px; }
         }
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
-          .cta-row {
-            flex-wrap: wrap;
-            gap: 6px;
-          }
-          .cta-row a {
-            flex: 1 1 calc(50% - 3px);
-            min-width: 0;
-          }
-          .cta-btn {
-            font-size: 0.6rem;
-            padding: 9px 4px;
-            gap: 2px;
-            justify-content: center;
-          }
-          .cta-btn svg { width: 10px; height: 10px; }
           .app-launcher-grid { gap: 0.42rem; }
           .app-launcher-card { min-height: 104px; }
           .app-icon-wrap { width: 40px; height: 40px; }
