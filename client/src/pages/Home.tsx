@@ -5,12 +5,10 @@
  * Inspiration: Sarah Vaughan, Anthony Horowitz, luxury editorial magazines
  */
 import { useRef, useState, useEffect, useCallback } from "react";
-import { newsData } from "@/data/newsData";
-import { writings } from "@/data/writingsArchive";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
-  BookOpen, PenLine, Mic2, Images, Newspaper, Mail,
-  UserRound, Palette, ArrowRight, ChevronDown, ExternalLink,
+  BookOpen, Mic2, Images, Newspaper, Mail,
+  UserRound, Palette, ArrowRight, ExternalLink,
   Quote, Star
 } from "lucide-react";
 import { Link } from "wouter";
@@ -18,7 +16,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import AdSenseAd from "@/components/AdSenseAd";
-import FAQSection from "@/components/FAQSection";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
@@ -1102,140 +1099,6 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          LATEST NEWS — সাম্প্রতিক সংবাদ
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section style={{
-        padding: "6rem 2rem",
-        background: "linear-gradient(180deg, #060E1A 0%, #0A1628 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.05) 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto" }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ marginBottom: "3rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: "1rem" }}>
-              <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>সরদার সংবাদ</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.2 }}>সাম্প্রতিক সংবাদ</h2>
-              <Link href="/news">
-                <motion.span whileHover={{ x: 4 }} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", fontWeight: 600, textDecoration: "none", cursor: "pointer" }}>
-                  সব সংবাদ দেখুন <ArrowRight size={16} />
-                </motion.span>
-              </Link>
-            </div>
-          </motion.div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
-            {newsData.slice(0, 3).map((item, i) => (
-              <motion.div key={item.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.1 }}>
-                <Link href={`/news/${item.id}`} style={{ textDecoration: "none", display: "block" }}>
-                  <motion.div whileHover={{ y: -4, boxShadow: "0 20px 50px rgba(0,0,0,0.4)" }} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(201,168,76,0.12)", borderRadius: 12, overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.3s" }}>
-                    {item.image && (
-                      <div style={{ height: 180, overflow: "hidden", position: "relative" }}>
-                        <img src={item.image} alt={`${item.title} - সরদার সংবাদ`} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }} onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.05)")} onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
-                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.7) 100%)" }} />
-                        <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(201,168,76,0.9)", color: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>{item.category}</span>
-                      </div>
-                    )}
-                    <div style={{ padding: "1.25rem" }}>
-                      <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.05rem", fontWeight: 600, color: "#FAF6EF", margin: "0 0 0.6rem", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h3>
-                      <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.55)", margin: "0 0 1rem", lineHeight: 1.7, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.excerpt}</p>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "rgba(201,168,76,0.7)" }}>{item.date}</span>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", fontWeight: 600 }}>পড়ুন <ArrowRight size={13} /></span>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          LATEST WRITINGS — সাম্প্রতিক লেখা
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section style={{
-        padding: "6rem 2rem",
-        background: "#060E1A",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto" }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ marginBottom: "3rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: "1rem" }}>
-              <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>লেখালেখি</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.2 }}>সাম্প্রতিক লেখা</h2>
-              <Link href="/writings">
-                <motion.span whileHover={{ x: 4 }} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", fontWeight: 600, textDecoration: "none", cursor: "pointer" }}>
-                  সব লেখা দেখুন <ArrowRight size={16} />
-                </motion.span>
-              </Link>
-            </div>
-          </motion.div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.25rem" }}>
-            {writings.slice(0, 4).map((writing, i) => {
-              const TRANS: Record<string, string> = {'অ':'o','আ':'a','ই':'i','ঈ':'i','উ':'u','ঊ':'u','এ':'e','ঐ':'oi','ও':'o','ঔ':'ou','ক':'k','খ':'kh','গ':'g','ঘ':'gh','ঙ':'ng','চ':'ch','ছ':'chh','জ':'j','ঝ':'jh','ঞ':'n','ট':'t','ঠ':'th','ড':'d','ঢ':'dh','ণ':'n','ত':'t','থ':'th','দ':'d','ধ':'dh','ন':'n','প':'p','ফ':'ph','ব':'b','ভ':'bh','ম':'m','য':'j','র':'r','ল':'l','শ':'sh','ষ':'sh','স':'s','হ':'h','ড়':'r','ঢ়':'rh','য়':'y','ৎ':'t','া':'a','ি':'i','ী':'i','ু':'u','ূ':'u','ে':'e','ৈ':'oi','ো':'o','ৌ':'ou','ং':'ng','ঃ':'h','ঁ':'n','্':'',' ':'-','?':'','!':'',',':'','.':'','"':'',"'":'','—':'-','–':'-'};
-              let slug = '';
-              for (const ch of writing.title) { slug += TRANS[ch] ?? ''; }
-              slug = slug.replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
-              const writingSlug = slug.length >= 3 ? slug : `writing-${writing.id}`;
-              const categoryColors: Record<string, string> = { "কবিতা": "#8B5CF6", "ভালোবাসা": "#EC4899", "বিচ্ছেদ": "#EF4444", "জীবনদর্শন": "#10B981", "ছোট লেখা": "#3B82F6" };
-              const catColor = categoryColors[writing.category] || "#C9A84C";
-              return (
-                <motion.div key={writing.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }}>
-                  <Link href={`/writings/${writingSlug}`} style={{ textDecoration: "none", display: "block" }}>
-                    <motion.div whileHover={{ y: -3, borderColor: "rgba(201,168,76,0.35)" }} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(201,168,76,0.1)", borderRadius: 10, padding: "1.5rem", cursor: "pointer", height: "100%", transition: "border-color 0.3s", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                      <span style={{ display: "inline-block", background: `${catColor}22`, color: catColor, fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", fontWeight: 700, padding: "3px 10px", borderRadius: 20, alignSelf: "flex-start" }}>{writing.category}</span>
-                      <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1rem", fontWeight: 600, color: "#FAF6EF", margin: 0, lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{writing.title}</h3>
-                      <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.5)", margin: 0, lineHeight: 1.7, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden", flex: 1 }}>{writing.content.slice(0, 120)}...</p>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#C9A84C", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", fontWeight: 600, marginTop: "auto" }}>পড়ুন <ArrowRight size={13} /></span>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section for SEO */}
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "2rem 1rem" }}>
-        <FAQSection 
-          faqs={[
-            {
-              question: "মাহবুব সরদার সবুজ কে?",
-              answer: "মাহবুব সরদার সবুজ বাংলাদেশের একজন জনপ্রিয় কবি ও লেখক। তিনি ভালোবাসা, বিচ্ছেদ এবং মানবিক অনুভূতি নিয়ে লেখেন। তার রচিত হাজারেরও বেশি কবিতা এবং একাধিক প্রকাশিত ই-বুক রয়েছে।"
-            },
-            {
-              question: "তার প্রকাশিত বই কোনগুলো?",
-              answer: "মাহবুব সরদার সবুজের প্রকাশিত বইগুলো হল: দুঃখবিলাস (প্রথম মুদ্রিত কাব্যগ্রন্থ), চাঁদফুল, সময়ের গহ্বরে, এবং স্মৃতির বসন্তে তুমি। এই বইগুলো তার ওয়েবসাইটে বিনামূল্যে বা ক্রয়ের জন্য উপলব্ধ।"
-            },
-            {
-              question: "আমি তার কবিতা কোথায় পড়তে পারি?",
-              answer: "আপনি এই ওয়েবসাইটের লেখালেখি সেকশনে তার সমস্ত কবিতা এবং লেখা পড়তে পারেন। এছাড়াও তার ই-বুকগুলো বিনামূল্যে ডাউনলোড করতে পারেন অথবা অনলাইনে পড়তে পারেন।"
-            },
-            {
-              question: "তার সাথে যোগাযোগ করতে পারি?",
-              answer: "হ্যাঁ, আপনি এই ওয়েবসাইটের যোগাযোগ পেজে ফর্ম পূরণ করে সরাসরি তার সাথে যোগাযোগ করতে পারেন। তিনি সাধারণত দ্রুত উত্তর দেন।"
-            },
-            {
-              question: "তিনি কি সোশ্যাল মিডিয়ায় আছেন?",
-              answer: "হ্যাঁ, মাহবুব সরদার সবুজ ফেসবুক, ইনস্টাগ্রাম এবং ইউটিউবে সক্রিয়। আপনি তার সাথে এই প্ল্যাটফর্মগুলোতে সংযুক্ত হতে পারেন এবং তার সর্বশেষ কাজ অনুসরণ করতে পারেন।"
-            }
-          ]}
-          title="সাধারণ প্রশ্ন"
-          description="মাহবুব সরদার সবুজ এবং তার সাহিত্য কর্ম সম্পর্কে সাধারণ প্রশ্নের উত্তর"
-        />
-      </div>
 
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>

@@ -61,15 +61,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
-  const [showBanner, setShowBanner] = useState(() => {
-    try {
-      return localStorage.getItem("ai-banner-dismissed") !== "1";
-    } catch {
-      return true;
-    }
-  });
   const [logoHovered, setLogoHovered] = useState(false);
-  const isEditorPage = location === "/editor";
   const isEBookReaderPage = location.startsWith("/ebooks/read/");
   const isWritingsPage = location === "/writings" || location === "/ebooks";
   const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
@@ -100,21 +92,19 @@ export default function Navbar() {
     };
   }, []);
 
-  const bannerVisible = showBanner && !isEditorPage && !isEBookReaderPage;
-  const bannerHeight = bannerVisible ? 28 : 0;
   const navHeight = scrolled ? 58 : 70;
-  const totalNavOffset = bannerHeight + navHeight;
+  const totalNavOffset = navHeight;
 
   useEffect(() => {
     document.documentElement.style.setProperty("--site-nav-offset", `${totalNavOffset}px`);
     document.documentElement.style.setProperty("--site-nav-height", `${navHeight}px`);
-    document.documentElement.style.setProperty("--site-banner-height", `${bannerHeight}px`);
+    document.documentElement.style.setProperty("--site-banner-height", "0px");
     return () => {
       document.documentElement.style.removeProperty("--site-nav-offset");
       document.documentElement.style.removeProperty("--site-nav-height");
       document.documentElement.style.removeProperty("--site-banner-height");
     };
-  }, [bannerVisible, totalNavOffset, navHeight, bannerHeight]);
+  }, [totalNavOffset, navHeight]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -158,102 +148,13 @@ export default function Navbar() {
         }
       `}</style>
 
-      {/* ── TOP BANNER: আমাকে জিজ্ঞেস করুন ── */}
-      <AnimatePresence>
-        {showBanner && !isEditorPage && !isEBookReaderPage && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            style={{
-              position: "fixed",
-              top: 0, left: 0, right: 0,
-              zIndex: 110,
-              background: "linear-gradient(90deg, #0d1b2a 0%, #1a2e4a 50%, #0d1b2a 100%)",
-              borderBottom: "1px solid rgba(212,168,67,0.25)",
-              overflow: "hidden",
-            }}
-          >
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              padding: "5px 16px",
-              position: "relative",
-            }}>
-              {/* Clickable text */}
-              <button
-                onClick={() => { openChatbot(); }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                  padding: 0,
-                }}
-              >
-                <span style={{
-                  width: 6, height: 6, borderRadius: "50%",
-                  background: "#4ade80",
-                  boxShadow: "0 0 6px #4ade80",
-                  display: "inline-block",
-                  flexShrink: 0,
-                  animation: "ping 1.5s ease-in-out infinite",
-                }} />
-                <span style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.72rem",
-                  color: "#D4A843",
-                  fontWeight: 600,
-                  letterSpacing: "0.04em",
-                  whiteSpace: "nowrap",
-                }}>
-                  আমাকে জিজ্ঞেস করুন
-                </span>
-                <span style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.65rem",
-                  color: "rgba(212,168,67,0.55)",
-                  whiteSpace: "nowrap",
-                }}>
-                  — AI সহকারী সক্রিয়
-                </span>
-              </button>
-              {/* Close banner */}
-              <button
-                onClick={() => {
-                  setShowBanner(false);
-                  try { localStorage.setItem("ai-banner-dismissed", "1"); } catch {}
-                }}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "rgba(212,168,67,0.45)",
-                  fontSize: "0.75rem",
-                  lineHeight: 1,
-                  padding: "2px 4px",
-                }}
-                title="বন্ধ করুন"
-              >✕</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       style={{
         position: "fixed",
-        top: (showBanner && !isEditorPage && !isEBookReaderPage) ? 28 : 0, left: 0, right: 0,
+        top: 0, left: 0, right: 0,
         zIndex: 100,
         transition: "all 0.5s",
         background: navElevated ? "rgba(6,14,26,0.92)" : "transparent",
