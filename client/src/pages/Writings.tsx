@@ -1323,6 +1323,7 @@ const CSS = `
     left: 8%; right: 8%; bottom: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(201,168,76,.55), transparent);
+    pointer-events: none;
   }
   .ebook-stage-head, .writing-head {
     display: flex;
@@ -1414,6 +1415,8 @@ const CSS = `
     display: grid;
     grid-template-columns: repeat(2, minmax(0,1fr));
     gap: 9px;
+    position: relative;
+    z-index: 2;
   }
   .featured-book-actions > * {
     min-height: 40px;
@@ -1427,7 +1430,9 @@ const CSS = `
     font-size: .8rem;
     text-decoration: none;
     cursor: pointer;
+    transition: all .2s ease;
   }
+  .featured-book-actions > *:hover { transform: translateY(-2px); filter: brightness(1.08); }
   .ebook-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1449,11 +1454,10 @@ const CSS = `
       #090D19;
     box-shadow: 0 24px 60px rgba(0,0,0,.35);
     cursor: pointer;
-    transform-style: preserve-3d;
     transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease;
   }
   .ebook-tile:hover {
-    transform: translateY(-8px) rotateX(2deg);
+    transform: translateY(-8px) scale(1.015);
     border-color: color-mix(in srgb, var(--book-accent) 52%, rgba(255,255,255,.12));
     box-shadow: 0 34px 90px rgba(0,0,0,.48), 0 0 42px color-mix(in srgb, var(--book-accent) 18%, transparent);
   }
@@ -1468,14 +1472,17 @@ const CSS = `
   }
   .ebook-glow {
     position: absolute;
-    inset: auto 12% 38% 12%;
+    inset: auto 12% 50% 12%;
     height: 64px;
     background: color-mix(in srgb, var(--book-accent) 30%, transparent);
     filter: blur(30px);
     opacity: .75;
+    pointer-events: none;
+    z-index: 0;
   }
   .ebook-cover-wrap {
     position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
     padding: 1rem .9rem .6rem;
@@ -1558,6 +1565,8 @@ const CSS = `
     gap: 8px;
     margin-top: auto;
     padding-top: 1rem;
+    position: relative;
+    z-index: 2;
   }
   .ebook-actions > * {
     min-height: 34px;

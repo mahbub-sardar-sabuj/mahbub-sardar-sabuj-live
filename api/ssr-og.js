@@ -145,7 +145,7 @@ function getSeoKeywordItems(path) {
   if (path === "/bangla-ebook") {
     return ebookData.slice(0, 12).map((item, index) => ({
       title: item.title,
-      url: `${SITE_URL}/ebooks/${item.slug}`,
+      url: `${SITE_URL}/ebooks/read/${item.slug}`,
       category: "বাংলা ই-বুক",
       description: item.description || page.description,
       position: index + 1,
@@ -211,7 +211,7 @@ function buildCollectionItems(path) {
       item: {
         "@type": "Book",
         name: item.title,
-        url: `${SITE_URL}/ebooks/${item.slug}`,
+        url: `${SITE_URL}/ebooks/read/${item.slug}`,
         author: { "@id": `${SITE_URL}/#person` },
         image: item.image,
         inLanguage: "bn-BD",
@@ -5458,8 +5458,8 @@ export default async function handler(req) {
     }
   }
   // E-book Detail Page
-  else if (path.startsWith("/ebooks/")) {
-    const slug = path.replace("/ebooks/", "");
+  else if (path.startsWith("/ebooks/read/")) {
+    const slug = path.replace("/ebooks/read/", "");
     const ebook = ebookData.find((e) => e.slug === slug);
     if (ebook) {
       title = `${ebook.title} | ই-বুক - মাহবুব সরদার সবুজ`;
@@ -5483,7 +5483,7 @@ export default async function handler(req) {
   } else if (path === "/ebooks") {
     title = "ই-বুক সংগ্রহ | মাহবুব সরদার সবুজ";
     description = "লেখক মাহবুব সরদার সবুজের প্রকাশিত সকল কাব্যগ্রন্থ ও উপন্যাসের ই-বুক সংস্করণ সংগ্রহ করুন।";
-    bodyContent = `<h1>ই-বুক সংগ্রহ</h1><ul>${ebookData.map(e => `<li><a href="${SITE_URL}/ebooks/${e.slug}">${e.title}</a> — ${e.description}</li>`).join("")}</ul>`;
+    bodyContent = `<h1>ই-বুক সংগ্রহ</h1><ul>${ebookData.map(e => `<li><a href="${SITE_URL}/ebooks/read/${e.slug}">${e.title}</a> — ${e.description}</li>`).join("")}</ul>`;
   } else if (path === "/gallery") {
     title = "গ্যালারি | মাহবুব সরদার সবুজ";
     description = "লেখকের বিভিন্ন অনুষ্ঠান, সাহিত্য আড্ডা এবং ব্যক্তিগত মুহূর্তের আলোকচিত্র।";
