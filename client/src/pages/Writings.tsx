@@ -1946,7 +1946,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
         </div>
         <div className="bm2-in">
           <div className="bm2-cw">
-            <img src={book.cover} alt={book.title} className="bm2-cv" loading="lazy" decoding="async"
+            <img src={book.cover} alt={`${book.title} - ${book.genre} ই-বুক কভার - মাহবুব সরদার সবুজ`} className="bm2-cv" loading="lazy" decoding="async"
               onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='213' viewBox='0 0 160 213'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
           </div>
           <div className="bm2-cnt">
@@ -2009,7 +2009,7 @@ function BooksTab() {
           >
             <div className="ebook-glow"/>
             <div className="ebook-cover-wrap">
-              <img src={book.cover} alt={book.title} className="ebook-cover" loading={i === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={i === 0 ? "high" : "auto"}
+              <img src={book.cover} alt={`${book.title} - ${book.genre} বাংলা ই-বুক - মাহবুব সরদার সবুজ`} className="ebook-cover" loading={i === 0 ? "eager" : "lazy"} decoding="async" fetchPriority={i === 0 ? "high" : "auto"}
                 onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C8A45A' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
               <span className="ebook-badge">{book.isFeatured && <Crown size={10}/>} {book.badge}</span>
             </div>

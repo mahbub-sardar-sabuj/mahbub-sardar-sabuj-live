@@ -227,7 +227,7 @@ export default function Gallery() {
             >
               <img
                 src={img.src}
-                alt={img.caption}
+                alt={`${img.caption || 'মাহবুব সরদার সবুজ গ্যালারি ছবি'} - গ্যালারি`}
                 loading="lazy"
                 decoding="async"
                 style={{
@@ -315,7 +315,7 @@ export default function Gallery() {
             >
               <img
                 src={currentImg.src}
-                alt={currentImg.caption}
+                alt={`${currentImg.caption || 'মাহবুব সরদার সবুজ গ্যালারি ছবি'} - মাহবুব সরদার সবুজের গ্যালারি`}
                 decoding="async"
                 style={{
                   width: "100%",

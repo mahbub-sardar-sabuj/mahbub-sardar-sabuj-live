@@ -389,7 +389,7 @@ export default function Home() {
                 }}>
                   <img
                     src={PROFILE_1}
-                    alt="মাহবুব সরদার সবুজ"
+                    alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - অফিসিয়াল প্রোফাইল ছবি"
                     onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
                     style={{
                       width: "100%",
@@ -627,7 +627,7 @@ export default function Home() {
                 >
                   <img
                     src={BOOK_COVER}
-                    alt="আমি বিচ্ছেদকে বলি দুঃখবিলাস"
+                    alt="দুঃখবিলাস - মাহবুব সরদার সবুজের প্রকাশিত বাংলা কবিতা সংগ্রহ বই"
                     style={{
                       width: "clamp(180px, 25vw, 280px)",
                       borderRadius: 8,
@@ -958,7 +958,7 @@ export default function Home() {
               }}>
                 <img
                   src={PROFILE_2}
-                  alt="মাহবুব সরদার সবুজ — লেখার মুহূর্তে"
+                  alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - লেখার মুহূর্তে প্রোফাইল ছবি"
                   onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }}
                   style={{
                     width: "100%",
@@ -1134,7 +1134,7 @@ export default function Home() {
                   <motion.div whileHover={{ y: -4, boxShadow: "0 20px 50px rgba(0,0,0,0.4)" }} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(201,168,76,0.12)", borderRadius: 12, overflow: "hidden", cursor: "pointer", transition: "box-shadow 0.3s" }}>
                     {item.image && (
                       <div style={{ height: 180, overflow: "hidden", position: "relative" }}>
-                        <img src={item.image} alt={item.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }} onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.05)")} onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
+                        <img src={item.image} alt={`${item.title} - সরদার সংবাদ`} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }} onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.05)")} onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")} />
                         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.7) 100%)" }} />
                         <span style={{ position: "absolute", top: 12, left: 12, background: "rgba(201,168,76,0.9)", color: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.7rem", fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>{item.category}</span>
                       </div>

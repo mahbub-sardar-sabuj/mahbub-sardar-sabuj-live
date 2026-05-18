@@ -356,7 +356,7 @@ export default function News() {
           >
             <img
               src="/images/sardar-sangbad-logo-final.png"
-              alt="সরদার সংবাদ"
+              alt="সরদার সংবাদ - মাহবুব সরদার সবুজের সাহিত্য ও সংবাদ পোর্টাল"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
               style={{
                 height: "auto",
@@ -574,7 +574,7 @@ export default function News() {
                     <div className="news-thumb">
                       <img
                         src={item.image}
-                        alt={item.title}
+                        alt={`${item.title} - সরদার সংবাদ`}
                         className="card-img"
                         loading={idx < 6 ? "eager" : "lazy"}
                         decoding="async"
@@ -812,7 +812,7 @@ export default function News() {
                   <div className="news-modal-hero">
                     <img
                       src={selectedNews.image}
-                      alt={selectedNews.title}
+                      alt={`${selectedNews.title} - সরদার সংবাদ সাহিত্য পোর্টাল`}
                       loading="eager"
                       decoding="async"
                       onError={(e) => {

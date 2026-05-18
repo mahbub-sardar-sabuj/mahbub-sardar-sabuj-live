@@ -124,25 +124,12 @@ export default function About() {
                   fontFamily: "'Tiro Bangla', serif",
                   fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
                   fontWeight: 700, lineHeight: 1.15,
-                  color: "#FAF6EF", margin: "0 0 0.2rem",
-                }}
-              >
-                মাহবুব সরদার
-              </motion.h1>
-              <motion.h1
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  fontFamily: "'Tiro Bangla', serif",
-                  fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
-                  fontWeight: 700, lineHeight: 1.15,
                   background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                   backgroundClip: "text", margin: "0 0 1.5rem",
                 }}
               >
-                সবুজ
+                মাহবুব সরদার সবুজ
               </motion.h1>
 
               <motion.p
@@ -237,7 +224,7 @@ export default function About() {
               }}>
                 <img
                   src={PROFILE_1}
-                  alt="মাহবুব সরদার সবুজ"
+                  alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - অফিসিয়াল পরিচিতি পৃষ্ঠা"
                   className="about-portrait-img"
                   onError={(e) => { (e.target as HTMLImageElement).src = "/images/ebooks/dukkhovilash-cover.jpg"; }}
                   style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9)" }}
@@ -281,7 +268,7 @@ export default function About() {
                 }}
                 className="hero-floating-card"
               >
-                <img src={BOOK_COVER} alt="আমি বিচ্ছেদকে বলি দুঃখবিলাস - মাহবুব সরদার সবুজের প্রথম বই" style={{ width: 36, height: 50, objectFit: "cover", borderRadius: 4 }} loading="lazy" decoding="async" />
+                <img src={BOOK_COVER} alt="দুঃখবিলাস - মাহবুব সরদার সবুজের প্রথম প্রকাশিত বাংলা কবিতা সংগ্রহ বই" style={{ width: 36, height: 50, objectFit: "cover", borderRadius: 4 }} loading="lazy" decoding="async" />
                 <div>
                   <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#C9A84C", marginBottom: 3 }}>সর্বশেষ বই</div>
                   <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "#FAF6EF", fontWeight: 600, maxWidth: 110, lineHeight: 1.4 }}>দুঃখবিলাস</div>
