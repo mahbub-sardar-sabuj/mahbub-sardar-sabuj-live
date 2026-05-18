@@ -537,50 +537,54 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          SECTIONS GRID — Expanded explore tabs
+          APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
-      <section style={{
-        padding: "7rem 2rem 8rem",
-        background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.08), transparent 30%), #060E1A",
+      <section className="explore-app-section" style={{
+        padding: "clamp(4.2rem, 8vw, 6.5rem) 1.25rem",
+        background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.1), transparent 30%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.055), transparent 28%), #060E1A",
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none", opacity: 0.55 }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto" }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ marginBottom: "3.4rem", display: "flex", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", alignItems: "end" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: "1rem" }}>
-                <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>Explore</span>
-              </div>
-              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4.5vw, 3.2rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.2 }}>অন্বেষণ করুন</h2>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none", opacity: 0.45 }} />
+        <div style={{ position: "absolute", inset: "12% auto auto 50%", width: 420, height: 420, transform: "translateX(-50%)", borderRadius: "50%", background: "rgba(201,168,76,0.055)", filter: "blur(95px)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 980, margin: "0 auto" }}>
+          <motion.div className="explore-app-heading" initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "0.95rem" }}>
+              <div style={{ width: 42, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
+              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.66rem", letterSpacing: "0.32em", textTransform: "uppercase", color: "#C9A84C" }}>Explore</span>
+              <div style={{ width: 42, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
-            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 440, color: "rgba(250,246,239,0.48)", lineHeight: 1.8, margin: 0, fontSize: "0.92rem" }}>
-              ওয়েবসাইটের বিদ্যমান সব ট্যাব—পরিচিতি, আবৃত্তি, লেখালেখি, কমিউনিটি, ডিজাইন, গ্যালারি, সংবাদ ও যোগাযোগ—দ্রুত খুঁজে নিন।
+            <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3.05rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.18 }}>অন্বেষণ করুন</h2>
+            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 650, color: "rgba(250,246,239,0.54)", lineHeight: 1.75, margin: "1rem auto 0", fontSize: "0.92rem" }}>
+              ওয়েবসাইটের সব গুরুত্বপূর্ণ ট্যাব এখন ফোনের অ্যাপের মতো এক জায়গায়—ট্যাপ করলেই দ্রুত খুলে যাবে।
             </p>
           </motion.div>
-          <div className="sections-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
-            {sections.map((sec, i) => {
-              const Icon = sec.icon;
-              return (
-                <motion.div key={sec.href + sec.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.42, delay: i * 0.035 }}>
-                  <Link href={sec.href} style={{ textDecoration: "none", display: "block" }}>
-                    <motion.div whileHover={{ y: -6, borderColor: "rgba(201,168,76,0.42)", background: "rgba(201,168,76,0.075)" }} style={{ padding: "1.35rem", background: "linear-gradient(145deg, rgba(255,255,255,0.045), rgba(201,168,76,0.025))", border: "1px solid rgba(201,168,76,0.14)", borderRadius: 20, cursor: "pointer", minHeight: 170, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden", boxShadow: "0 22px 60px rgba(0,0,0,0.2)" }}>
-                      <span style={{ position: "absolute", top: 14, right: 16, fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", color: "rgba(201,168,76,0.28)", letterSpacing: "0.16em" }}>{String(i + 1).padStart(2, "0")}</span>
-                      <div style={{ width: 42, height: 42, borderRadius: 14, background: "rgba(201,168,76,0.09)", border: "1px solid rgba(201,168,76,0.18)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.1rem" }}>
-                        <Icon size={19} color="#C9A84C" />
-                      </div>
-                      <h3 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1.18rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 0.45rem", lineHeight: 1.35 }}>{sec.label}</h3>
-                      <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", color: "rgba(250,246,239,0.42)", margin: "0 0 1rem", lineHeight: 1.55, flex: 1 }}>{sec.subtitle}</p>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "rgba(201,168,76,0.7)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", fontWeight: 600 }}>
-                        খুলুন <ArrowRight size={14} />
-                      </span>
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
+
+          <motion.div className="app-launcher-shell" initial={{ opacity: 0, y: 30, scale: 0.98 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.72, delay: 0.08 }}>
+            <div className="app-launcher-topbar">
+              <span />
+              <strong>সব ট্যাব</strong>
+              <span />
+            </div>
+            <div className="app-launcher-grid">
+              {sections.map((sec, i) => {
+                const Icon = sec.icon;
+                return (
+                  <motion.div key={sec.href + sec.label} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.38, delay: i * 0.035 }}>
+                    <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
+                      <motion.div className="app-launcher-card" whileHover={{ y: -5, scale: 1.025 }} whileTap={{ scale: 0.96 }}>
+                        <div className="app-icon-wrap">
+                          <Icon size={23} strokeWidth={1.9} />
+                        </div>
+                        <span className="app-label">{sec.label}</span>
+                        <span className="app-subtitle">{sec.subtitle}</span>
+                      </motion.div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -717,9 +721,118 @@ export default function Home() {
           align-items: center;
         }
 
-        /* Sections grid */
-        .sections-grid {
-          grid-template-columns: repeat(3, 1fr) !important;
+        /* App-style Explore launcher */
+        .explore-app-heading {
+          text-align: center;
+          margin-bottom: 2.2rem;
+        }
+        .app-launcher-shell {
+          border: 1px solid rgba(201,168,76,0.18);
+          border-radius: 34px;
+          padding: clamp(1.05rem, 3vw, 1.55rem);
+          background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(201,168,76,0.035));
+          box-shadow: 0 36px 110px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08);
+          backdrop-filter: blur(18px);
+          max-width: 820px;
+          margin: 0 auto;
+          position: relative;
+          overflow: hidden;
+        }
+        .app-launcher-shell::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.13), transparent 42%);
+          pointer-events: none;
+        }
+        .app-launcher-topbar {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin: 0 0 1rem;
+          color: rgba(232,201,122,0.78);
+          font-family: 'Noto Sans Bengali', sans-serif;
+          font-size: 0.76rem;
+          letter-spacing: 0.08em;
+        }
+        .app-launcher-topbar span {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(201,168,76,0.46);
+          box-shadow: 0 0 14px rgba(201,168,76,0.42);
+        }
+        .app-launcher-grid {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: clamp(0.72rem, 2.4vw, 1.05rem);
+        }
+        .app-launcher-link {
+          display: block;
+          text-decoration: none;
+          height: 100%;
+        }
+        .app-launcher-card {
+          min-height: 138px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          text-align: center;
+          gap: 0.48rem;
+          padding: 1rem 0.6rem 0.85rem;
+          border-radius: 24px;
+          border: 1px solid rgba(201,168,76,0.14);
+          background: linear-gradient(180deg, rgba(8,20,34,0.86), rgba(11,25,42,0.68));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 16px 38px rgba(0,0,0,0.22);
+          color: #FAF6EF;
+          cursor: pointer;
+          transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        }
+        .app-launcher-card:hover {
+          border-color: rgba(201,168,76,0.42);
+          background: linear-gradient(180deg, rgba(201,168,76,0.115), rgba(9,22,38,0.82));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 22px 50px rgba(0,0,0,0.28);
+        }
+        .app-icon-wrap {
+          width: clamp(48px, 7vw, 58px);
+          height: clamp(48px, 7vw, 58px);
+          border-radius: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #E8C97A;
+          background: linear-gradient(145deg, rgba(201,168,76,0.18), rgba(250,246,239,0.04));
+          border: 1px solid rgba(201,168,76,0.24);
+          box-shadow: 0 10px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+          margin-bottom: 0.18rem;
+        }
+        .app-label {
+          font-family: 'Tiro Bangla', serif;
+          font-size: clamp(0.86rem, 2.2vw, 1.02rem);
+          font-weight: 700;
+          line-height: 1.22;
+          color: #FAF6EF;
+          min-height: 2.45em;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .app-subtitle {
+          font-family: 'Noto Sans Bengali', sans-serif;
+          font-size: 0.66rem;
+          line-height: 1.35;
+          color: rgba(250,246,239,0.42);
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         /* Author profile */
@@ -762,7 +875,11 @@ export default function Home() {
         /* Mobile */
         @media (max-width: 768px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 60px; }
-          .sections-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .app-launcher-shell { border-radius: 28px; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.62rem; }
+          .app-launcher-card { min-height: 124px; border-radius: 20px; padding: 0.85rem 0.35rem 0.7rem; }
+          .app-icon-wrap { border-radius: 16px; }
+          .app-subtitle { display: none; }
           .hero-portrait { height: 320px; }
           .cta-row { gap: 5px; max-width: 100%; }
           .cta-btn {
@@ -774,7 +891,13 @@ export default function Home() {
         }
 
         @media (max-width: 480px) {
-          .sections-grid { grid-template-columns: 1fr !important; }
+          .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
+          .app-launcher-shell { padding: 0.82rem; border-radius: 26px; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.52rem; }
+          .app-launcher-card { min-height: 112px; padding: 0.72rem 0.22rem 0.62rem; border-radius: 18px; }
+          .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
+          .app-icon-wrap svg { width: 20px; height: 20px; }
+          .app-label { font-size: 0.72rem; min-height: 2.55em; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
@@ -801,7 +924,10 @@ export default function Home() {
             justify-content: center;
           }
           .cta-btn svg { width: 10px; height: 10px; }
-          .sections-grid { grid-template-columns: 1fr !important; }
+          .app-launcher-grid { gap: 0.42rem; }
+          .app-launcher-card { min-height: 104px; }
+          .app-icon-wrap { width: 40px; height: 40px; }
+          .app-label { font-size: 0.66rem; }
         }
       `}</style>
     </div>
