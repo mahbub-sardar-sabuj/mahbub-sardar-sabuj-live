@@ -75,8 +75,9 @@ Allow: /
 User-agent: Amazonbot
 Allow: /
 
-# AI-readable site summary
+# AI-readable site summary and ownership signal
 # https://www.mahbubsardarsabuj.com/llms.txt
+# https://www.mahbubsardarsabuj.com/humans.txt
 
 # Sitemap location
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml

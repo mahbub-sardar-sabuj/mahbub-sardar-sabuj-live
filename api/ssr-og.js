@@ -21,6 +21,153 @@ function escapeHtml(value = "") {
     .replace(/'/g, "&#39;");
 }
 
+
+function buildSiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    name: SITE_NAME,
+    alternateName: ["Mahbub Sardar Sabuj", "মাহবুব সরদার সবুজ"],
+    url: SITE_URL,
+    inLanguage: "bn-BD",
+    publisher: { "@id": `${SITE_URL}/#person` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/writings?search={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+function buildPersonJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${SITE_URL}/#person`,
+    name: "মাহবুব সরদার সবুজ",
+    alternateName: ["Mahbub Sardar Sabuj", "লেখক মাহবুব সরদার সবুজ"],
+    url: SITE_URL,
+    image: DEFAULT_IMAGE,
+    jobTitle: ["বাংলা কবি", "বাংলা লেখক"],
+    nationality: { "@type": "Country", name: "Bangladesh" },
+    knowsAbout: ["বাংলা সাহিত্য", "বাংলা কবিতা", "ভালোবাসার কবিতা", "বিচ্ছেদের কবিতা", "বাংলা ই-বুক"],
+    sameAs: [SITE_URL],
+  };
+}
+
+function buildBreadcrumbJsonLd(path, url) {
+  const names = {
+    "/about": "পরিচিতি",
+    "/writings": "কবিতা ও লেখা",
+    "/ebooks": "ই-বুক",
+    "/news": "সরদার সংবাদ",
+    "/contact": "যোগাযোগ",
+    "/gallery": "গ্যালারি",
+    "/facebook-recitations": "Facebook আবৃত্তি",
+    "/amio-likhbo-bastobota": "আমিও লিখবো বাস্তবতা",
+    "/editor": "সরদার ডিজাইন স্টুডিও",
+  };
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: names[path] || "Page", item: url },
+    ],
+  };
+}
+
+function buildCollectionItems(path) {
+  if (path === "/writings") {
+    return writingsData.slice(0, 25).map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "CreativeWork",
+        name: item.title,
+        url: `${SITE_URL}/writings/${item.slug}`,
+        author: { "@id": `${SITE_URL}/#person` },
+        genre: item.category,
+        inLanguage: "bn-BD",
+        description: item.preview,
+      },
+    }));
+  }
+  if (path === "/ebooks") {
+    return ebookData.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Book",
+        name: item.title,
+        url: `${SITE_URL}/ebooks/${item.slug}`,
+        author: { "@id": `${SITE_URL}/#person` },
+        image: item.image,
+        inLanguage: "bn-BD",
+        description: item.description,
+      },
+    }));
+  }
+  if (path === "/news") {
+    return newsData.slice(0, 10).map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "NewsArticle",
+        headline: item.title,
+        url: `${SITE_URL}/news/${item.id}`,
+        datePublished: toIsoDateTime(item.date),
+        image: item.image,
+        articleSection: item.category,
+        description: item.excerpt,
+      },
+    }));
+  }
+  return [];
+}
+
+function buildRouteJsonLd(path, url, title, description) {
+  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota"]);
+  const contactRoutes = new Set(["/contact"]);
+  const pageType = contactRoutes.has(path) ? "ContactPage" : collectionRoutes.has(path) ? "CollectionPage" : "WebPage";
+  const graph = [
+    buildSiteJsonLd(),
+    buildPersonJsonLd(),
+    {
+      "@context": "https://schema.org",
+      "@type": pageType,
+      "@id": `${url}#webpage`,
+      url,
+      name: title,
+      headline: title,
+      description,
+      inLanguage: "bn-BD",
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      about: { "@id": `${SITE_URL}/#person` },
+      primaryImageOfPage: { "@type": "ImageObject", url: DEFAULT_IMAGE },
+    },
+  ];
+  if (path !== "/" && path !== "") graph.push(buildBreadcrumbJsonLd(path, url));
+  const items = buildCollectionItems(path);
+  if (items.length) {
+    graph.push({
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "@id": `${url}#itemlist`,
+      name: title,
+      itemListElement: items,
+    });
+  }
+  return graph;
+}
+
+function normalizeJsonLd(jsonLd, path, url, title, description) {
+  const base = buildRouteJsonLd(path, url, title, description);
+  if (!jsonLd) return base;
+  return Array.isArray(jsonLd) ? [...base, ...jsonLd] : [...base, jsonLd];
+}
+
 function buildNewsArticleJsonLd(news, url, image) {
   return {
     "@context": "https://schema.org",
@@ -5318,6 +5465,8 @@ export default async function handler(req) {
         </ul>
       </nav>`;
   }
+
+  jsonLd = normalizeJsonLd(jsonLd, path, url, title, description);
 
   const html = `
     <!DOCTYPE html>
