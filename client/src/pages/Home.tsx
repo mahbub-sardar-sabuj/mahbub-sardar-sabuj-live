@@ -1,8 +1,8 @@
 /*
- * Design: "Ink & Gold" — World-Class Literary Premium
+ * Home Page — হোমপেজ
+ * Design: "Ink & Gold" — World-Class Literary Premium v2
  * Concept: Cinematic dark luxury author portfolio
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
- * Inspiration: Sarah Vaughan, Anthony Horowitz, luxury editorial magazines
  */
 import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -117,14 +117,20 @@ export default function Home() {
           }}
         />
 
-        {/* Multi-layer gradient overlay */}
+        {/* Multi-layer gradient overlay — richer depth */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(105deg, rgba(6,14,26,0.97) 0%, rgba(6,14,26,0.88) 45%, rgba(6,14,26,0.4) 100%)",
+          background: "linear-gradient(105deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,0.92) 42%, rgba(6,14,26,0.45) 100%)",
         }} />
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(6,14,26,1) 0%, transparent 40%)",
+          background: "linear-gradient(to top, rgba(4,10,20,1) 0%, rgba(6,14,26,0.6) 30%, transparent 60%)",
+        }} />
+        {/* Side vignette */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to right, rgba(4,10,20,0.55) 0%, transparent 40%, transparent 60%, rgba(4,10,20,0.35) 100%)",
+          pointerEvents: "none",
         }} />
 
         {/* Animated grain texture */}
@@ -135,19 +141,41 @@ export default function Home() {
           pointerEvents: "none",
         }} />
 
-        {/* Gold radial glow — top right */}
+        {/* Gold radial glow — top right, more intense */}
         <motion.div
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.35, 0.65, 0.35], scale: [1, 1.08, 1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           style={{
             position: "absolute",
-            top: "-10%", right: "-5%",
-            width: "50vw", height: "50vw",
+            top: "-15%", right: "-8%",
+            width: "55vw", height: "55vw",
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 65%)",
+            background: "radial-gradient(circle, rgba(201,168,76,0.16) 0%, rgba(201,168,76,0.06) 40%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
+        {/* Secondary blue-teal glow — bottom left */}
+        <motion.div
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          style={{
+            position: "absolute",
+            bottom: "-10%", left: "-5%",
+            width: "40vw", height: "40vw",
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(60,120,200,0.1) 0%, transparent 65%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Horizontal light streak */}
+        <div style={{
+          position: "absolute",
+          top: "38%", left: 0, right: 0,
+          height: 1,
+          background: "linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.12) 30%, rgba(201,168,76,0.22) 50%, rgba(201,168,76,0.12) 70%, transparent 100%)",
+          pointerEvents: "none",
+        }} />
 
         {/* Content */}
         <motion.div
@@ -170,29 +198,29 @@ export default function Home() {
                   gap: 10,
                   marginBottom: "1.8rem",
                   marginTop: "0.6rem",
-                  padding: "5px 14px 5px 11px",
+                  padding: "6px 16px 6px 12px",
                   borderRadius: 40,
-                  border: "1px solid rgba(201,168,76,0.35)",
-                  background: "rgba(201,168,76,0.06)",
-                  backdropFilter: "blur(8px)",
-                  boxShadow: "0 0 20px rgba(201,168,76,0.08), inset 0 1px 0 rgba(201,168,76,0.15)",
+                  border: "1px solid rgba(201,168,76,0.4)",
+                  background: "rgba(201,168,76,0.08)",
+                  backdropFilter: "blur(12px)",
+                  boxShadow: "0 0 28px rgba(201,168,76,0.12), inset 0 1px 0 rgba(201,168,76,0.2), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
                 {/* Pulsing dot */}
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <span style={{
-                    width: 6, height: 6, borderRadius: "50%",
+                    width: 7, height: 7, borderRadius: "50%",
                     background: "#C9A84C",
                     display: "block",
-                    boxShadow: "0 0 6px #C9A84C",
+                    boxShadow: "0 0 8px #C9A84C, 0 0 16px rgba(201,168,76,0.5)",
                     animation: "pulseDot 2s ease-in-out infinite",
                   }} />
                 </span>
                 <span style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "0.82rem",
-                  letterSpacing: "0.2em",
-                  color: "#C9A84C",
+                  fontSize: "0.84rem",
+                  letterSpacing: "0.22em",
+                  color: "#E8C97A",
                   fontWeight: 400,
                 }}>লেখক ও কবি</span>
               </motion.div>
@@ -211,7 +239,7 @@ export default function Home() {
                     margin: 0,
                     color: "#FAF6EF",
                     letterSpacing: "-0.02em",
-                    textShadow: "0 2px 40px rgba(201,168,76,0.18), 0 0 80px rgba(201,168,76,0.08)",
+                    textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
                   }}
                 >
                   মাহবুব
@@ -229,31 +257,31 @@ export default function Home() {
                     fontWeight: 700,
                     lineHeight: 1.0,
                     margin: 0,
-                    background: "linear-gradient(110deg, #9A6E1A 0%, #C9A84C 20%, #F0D98A 45%, #E8C97A 60%, #C9A84C 80%, #9A6E1A 100%)",
-                    backgroundSize: "250% 100%",
+                    background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
+                    backgroundSize: "280% 100%",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                     letterSpacing: "-0.02em",
-                    filter: "drop-shadow(0 4px 24px rgba(201,168,76,0.4))",
-                    animation: "goldShimmer 4s ease-in-out infinite",
+                    filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
+                    animation: "goldShimmer 4.5s ease-in-out infinite",
                   }}
                 >
                   সরদার সবুজ
                 </motion.h1>
-                {/* Underline glow */}
+                {/* Underline glow — wider & softer */}
                 <motion.div
                   initial={{ scaleX: 0, opacity: 0 }}
                   animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: 1.2, delay: 0.8, ease: [0.16,1,0.3,1] }}
+                  transition={{ duration: 1.4, delay: 0.85, ease: [0.16,1,0.3,1] }}
                   style={{
-                    position: "absolute", bottom: -6, left: 0,
+                    position: "absolute", bottom: -8, left: 0,
                     height: 2,
-                    width: "70%",
-                    background: "linear-gradient(90deg, #C9A84C, rgba(201,168,76,0.3), transparent)",
+                    width: "75%",
+                    background: "linear-gradient(90deg, #C9A84C 0%, rgba(201,168,76,0.5) 60%, transparent 100%)",
                     transformOrigin: "left",
                     borderRadius: 2,
-                    boxShadow: "0 0 12px rgba(201,168,76,0.5)",
+                    boxShadow: "0 0 16px rgba(201,168,76,0.6), 0 0 32px rgba(201,168,76,0.25)",
                   }}
                 />
               </div>
@@ -263,22 +291,21 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "0.9rem 0 0.7rem", maxWidth: 440 }}
+                style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
-                  color: "rgba(250,246,239,0.65)",
-                  lineHeight: 1.7,
+                  color: "rgba(250,246,239,0.68)",
+                  lineHeight: 1.75,
                   margin: 0,
                   letterSpacing: "0.02em",
-                  borderLeft: "2px solid rgba(201,168,76,0.4)",
-                  paddingLeft: 16,
+                  borderLeft: "2px solid rgba(201,168,76,0.5)",
+                  paddingLeft: 18,
                 }}>
                   বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
                 </p>
               </motion.div>
-
 
             </div>
 
@@ -300,32 +327,47 @@ export default function Home() {
                 className="hero-frame-wrap"
                 style={{ position: "relative" }}
               >
-                {/* Decorative frame lines */}
+                {/* Decorative frame lines — more visible */}
                 <div style={{
                   position: "absolute",
-                  top: "var(--hero-frame-offset, -20px)", right: "var(--hero-frame-offset, -20px)",
-                  width: "60%", height: "60%",
-                  border: "1px solid rgba(201,168,76,0.25)",
-                  borderRadius: 4,
+                  top: "var(--hero-frame-offset, -22px)", right: "var(--hero-frame-offset, -22px)",
+                  width: "62%", height: "62%",
+                  border: "1px solid rgba(201,168,76,0.32)",
+                  borderRadius: 6,
                   pointerEvents: "none",
                   zIndex: 0,
                 }} />
                 <div style={{
                   position: "absolute",
-                  bottom: "var(--hero-frame-offset, -20px)", left: "var(--hero-frame-offset, -20px)",
-                  width: "60%", height: "60%",
-                  border: "1px solid rgba(201,168,76,0.15)",
-                  borderRadius: 4,
+                  bottom: "var(--hero-frame-offset, -22px)", left: "var(--hero-frame-offset, -22px)",
+                  width: "62%", height: "62%",
+                  border: "1px solid rgba(201,168,76,0.2)",
+                  borderRadius: 6,
                   pointerEvents: "none",
                   zIndex: 0,
+                }} />
+                {/* Corner accent dots */}
+                <div style={{
+                  position: "absolute", top: "var(--hero-frame-offset, -22px)", right: "var(--hero-frame-offset, -22px)",
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: "rgba(201,168,76,0.7)",
+                  boxShadow: "0 0 10px rgba(201,168,76,0.5)",
+                  zIndex: 2, pointerEvents: "none",
+                }} />
+                <div style={{
+                  position: "absolute", bottom: "var(--hero-frame-offset, -22px)", left: "var(--hero-frame-offset, -22px)",
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: "rgba(201,168,76,0.5)",
+                  boxShadow: "0 0 10px rgba(201,168,76,0.4)",
+                  zIndex: 2, pointerEvents: "none",
                 }} />
 
                 {/* Main portrait — suit photo */}
                 <div style={{
                   position: "relative",
-                  borderRadius: 12,
+                  borderRadius: 16,
                   overflow: "hidden",
-                  boxShadow: "0 40px 100px rgba(0,0,0,0.65), 0 0 0 1px rgba(201,168,76,0.18)",
+                  boxShadow: "0 50px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.22), 0 0 60px rgba(201,168,76,0.08)",
                   zIndex: 1,
                 }}>
                   <img
@@ -338,24 +380,39 @@ export default function Home() {
                       objectFit: "cover",
                       objectPosition: "center top",
                       display: "block",
-                      filter: "contrast(1.05) saturate(0.88)",
+                      filter: "contrast(1.06) saturate(0.88) brightness(0.97)",
                     }}
                     className="hero-portrait"
                     fetchPriority="high"
                     decoding="async"
                   />
-                  {/* Gradient overlay */}
+                  {/* Gradient overlay — richer */}
                   <div style={{
                     position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.8) 100%)",
+                    background: "linear-gradient(to bottom, transparent 45%, rgba(4,10,20,0.85) 100%)",
+                  }} />
+                  {/* Side glow on portrait */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(to right, rgba(201,168,76,0.06) 0%, transparent 30%)",
+                    pointerEvents: "none",
                   }} />
                   {/* Name tag at bottom */}
                   <div style={{
                     position: "absolute", bottom: 0, left: 0, right: 0,
-                    padding: "1.2rem 1.5rem",
+                    padding: "1.4rem 1.6rem",
+                    background: "linear-gradient(to top, rgba(4,10,20,0.9) 0%, transparent 100%)",
                   }}>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "#C9A84C", marginBottom: 3 }}>লেখক ও কবি</div>
-                    <div style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "1rem", color: "#FAF6EF", fontWeight: 700 }}>মাহবুব সরদার সবুজ</div>
+                    <div style={{
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontSize: "0.6rem", letterSpacing: "0.22em",
+                      textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
+                    }}>লেখক ও কবি</div>
+                    <div style={{
+                      fontFamily: "'Tiro Bangla', serif",
+                      fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
+                      textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                    }}>মাহবুব সরদার সবুজ</div>
                   </div>
                 </div>
               </motion.div>
@@ -383,8 +440,9 @@ export default function Home() {
               textTransform: "uppercase",
             }}>Scroll</span>
             <div style={{
-              width: 1, height: 40,
-              background: "linear-gradient(to bottom, rgba(201,168,76,0.6), transparent)",
+              width: 1, height: 44,
+              background: "linear-gradient(to bottom, rgba(201,168,76,0.7), transparent)",
+              boxShadow: "0 0 8px rgba(201,168,76,0.3)",
             }} />
           </div>
         </motion.div>
@@ -394,27 +452,77 @@ export default function Home() {
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="explore-app-section" style={{
-        padding: "clamp(2.8rem, 6vw, 4.5rem) 1.25rem",
-        background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.1), transparent 30%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.055), transparent 28%), #060E1A",
+        padding: "clamp(3rem, 6.5vw, 5rem) 1.25rem",
+        background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.12), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.07), transparent 30%), #060E1A",
         position: "relative",
         overflow: "hidden",
       }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none", opacity: 0.45 }} />
-        <div style={{ position: "absolute", inset: "12% auto auto 50%", width: 420, height: 420, transform: "translateX(-50%)", borderRadius: "50%", background: "rgba(201,168,76,0.055)", filter: "blur(95px)", pointerEvents: "none" }} />
+        {/* Dot grid */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(rgba(201,168,76,0.08) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          pointerEvents: "none", opacity: 0.5,
+        }} />
+        {/* Central glow */}
+        <div style={{
+          position: "absolute", inset: "8% auto auto 50%",
+          width: 480, height: 480,
+          transform: "translateX(-50%)",
+          borderRadius: "50%",
+          background: "rgba(201,168,76,0.065)",
+          filter: "blur(100px)",
+          pointerEvents: "none",
+        }} />
+        {/* Top separator line */}
+        <div style={{
+          position: "absolute", top: 0, left: "10%", right: "10%",
+          height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent)",
+          pointerEvents: "none",
+        }} />
+
         <div style={{ position: "relative", zIndex: 1, maxWidth: 980, margin: "0 auto" }}>
-          <motion.div className="explore-app-heading" initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+          <motion.div
+            className="explore-app-heading"
+            initial={{ opacity: 0, y: 26 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
             <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "0.95rem" }}>
-              <div style={{ width: 42, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.66rem", letterSpacing: "0.32em", textTransform: "uppercase", color: "#C9A84C" }}>Explore</span>
-              <div style={{ width: 42, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
+              <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
+              <span style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: "0.66rem", letterSpacing: "0.34em",
+                textTransform: "uppercase", color: "#C9A84C",
+              }}>Explore</span>
+              <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
-            <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3.05rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.18 }}>অন্বেষণ করুন</h2>
-            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 650, color: "rgba(250,246,239,0.54)", lineHeight: 1.6, margin: "1rem auto 0", fontSize: "0.98rem" }}>
-              লেখক, লেখা, বই, আবৃত্তি, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
+            <h2 style={{
+              fontFamily: "'Tiro Bangla', serif",
+              fontSize: "clamp(2rem, 5vw, 3.1rem)",
+              fontWeight: 700, color: "#FAF6EF",
+              margin: 0, lineHeight: 1.18,
+              textShadow: "0 4px 24px rgba(0,0,0,0.4)",
+            }}>অন্বেষণ করুন</h2>
+            <p style={{
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              maxWidth: 650, color: "rgba(250,246,239,0.52)",
+              lineHeight: 1.65, margin: "1rem auto 0",
+              fontSize: "0.98rem",
+            }}>
+              লেখক, লেখা, বই, আবৃত্তি, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
             </p>
           </motion.div>
 
-          <motion.div className="app-launcher-shell" initial={{ opacity: 0, y: 30, scale: 0.98 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.72, delay: 0.08 }}>
+          <motion.div
+            className="app-launcher-shell"
+            initial={{ opacity: 0, y: 32, scale: 0.97 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.75, delay: 0.1 }}
+          >
             <div className="app-launcher-topbar">
               <span />
               <strong>সব ট্যাব</strong>
@@ -424,11 +532,21 @@ export default function Home() {
               {sections.map((sec, i) => {
                 const Icon = sec.icon;
                 return (
-                  <motion.div key={sec.href + sec.label} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.38, delay: i * 0.035 }}>
+                  <motion.div
+                    key={sec.href + sec.label}
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.04 }}
+                  >
                     <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
-                      <motion.div className="app-launcher-card" whileHover={{ y: -5, scale: 1.025 }} whileTap={{ scale: 0.96 }}>
+                      <motion.div
+                        className="app-launcher-card"
+                        whileHover={{ y: -6, scale: 1.03 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
                         <div className="app-icon-wrap">
-                          <Icon size={23} strokeWidth={1.9} />
+                          <Icon size={23} strokeWidth={1.8} />
                         </div>
                         <span className="app-label">{sec.label}</span>
                         <span className="app-subtitle">{sec.subtitle}</span>
@@ -459,8 +577,8 @@ export default function Home() {
           50% { background-position: 100% 50%; }
         }
         @keyframes pulseDot {
-          0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C; }
-          50% { opacity: 0.6; transform: scale(1.5); box-shadow: 0 0 16px rgba(201,168,76,0.8); }
+          0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C, 0 0 16px rgba(201,168,76,0.5); }
+          50% { opacity: 0.65; transform: scale(1.6); box-shadow: 0 0 18px rgba(201,168,76,0.9), 0 0 32px rgba(201,168,76,0.4); }
         }
 
         /* Hero layout */
@@ -486,16 +604,19 @@ export default function Home() {
         /* App-style Explore launcher */
         .explore-app-heading {
           text-align: center;
-          margin-bottom: 1.6rem;
+          margin-bottom: 2rem;
         }
         .app-launcher-shell {
-          border: 1px solid rgba(201,168,76,0.18);
-          border-radius: 34px;
-          padding: clamp(1.05rem, 3vw, 1.55rem);
-          background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(201,168,76,0.035));
-          box-shadow: 0 42px 120px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.09);
-          backdrop-filter: blur(18px);
-          max-width: 820px;
+          border: 1px solid rgba(201,168,76,0.22);
+          border-radius: 36px;
+          padding: clamp(1.1rem, 3vw, 1.65rem);
+          background: linear-gradient(145deg, rgba(255,255,255,0.075) 0%, rgba(201,168,76,0.04) 60%, rgba(8,18,32,0.6) 100%);
+          box-shadow:
+            0 50px 130px rgba(0,0,0,0.45),
+            0 0 0 1px rgba(255,255,255,0.04) inset,
+            inset 0 1px 0 rgba(255,255,255,0.1);
+          backdrop-filter: blur(22px) saturate(140%);
+          max-width: 840px;
           margin: 0 auto;
           position: relative;
           overflow: hidden;
@@ -504,7 +625,15 @@ export default function Home() {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.13), transparent 42%);
+          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.15), transparent 45%);
+          pointer-events: none;
+        }
+        .app-launcher-shell::after {
+          content: "";
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.18), transparent);
           pointer-events: none;
         }
         .app-launcher-topbar {
@@ -514,25 +643,25 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           gap: 10px;
-          margin: 0 0 1rem;
-          color: rgba(232,201,122,0.78);
+          margin: 0 0 1.1rem;
+          color: rgba(232,201,122,0.82);
           font-family: 'Noto Sans Bengali', sans-serif;
           font-size: 0.76rem;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.1em;
         }
         .app-launcher-topbar span {
-          width: 6px;
-          height: 6px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
-          background: rgba(201,168,76,0.46);
-          box-shadow: 0 0 14px rgba(201,168,76,0.42);
+          background: rgba(201,168,76,0.5);
+          box-shadow: 0 0 16px rgba(201,168,76,0.5);
         }
         .app-launcher-grid {
           position: relative;
           z-index: 1;
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: clamp(0.72rem, 2.4vw, 1.05rem);
+          gap: clamp(0.75rem, 2.5vw, 1.1rem);
         }
         .app-launcher-link {
           display: block;
@@ -540,40 +669,71 @@ export default function Home() {
           height: 100%;
         }
         .app-launcher-card {
-          min-height: 130px;
+          min-height: 136px;
           height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: flex-start;
           text-align: center;
-          gap: 0.48rem;
-          padding: 1rem 0.6rem 0.85rem;
-          border-radius: 24px;
-          border: 1px solid rgba(201,168,76,0.14);
-          background: linear-gradient(180deg, rgba(8,20,34,0.86), rgba(11,25,42,0.68));
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 16px 38px rgba(0,0,0,0.22);
+          gap: 0.5rem;
+          padding: 1.1rem 0.65rem 0.9rem;
+          border-radius: 26px;
+          border: 1px solid rgba(201,168,76,0.16);
+          background: linear-gradient(160deg, rgba(12,24,42,0.9) 0%, rgba(8,18,32,0.75) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.065),
+            0 18px 42px rgba(0,0,0,0.28),
+            0 2px 8px rgba(0,0,0,0.2);
           color: #FAF6EF;
           cursor: pointer;
-          transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+          transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        .app-launcher-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.08), transparent 55%);
+          opacity: 0;
+          transition: opacity 0.28s ease;
+          pointer-events: none;
         }
         .app-launcher-card:hover {
-          border-color: rgba(201,168,76,0.42);
-          background: linear-gradient(180deg, rgba(201,168,76,0.115), rgba(9,22,38,0.82));
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 22px 50px rgba(0,0,0,0.28);
+          border-color: rgba(201,168,76,0.48);
+          background: linear-gradient(160deg, rgba(201,168,76,0.13) 0%, rgba(10,22,38,0.88) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.09),
+            0 24px 56px rgba(0,0,0,0.35),
+            0 0 0 1px rgba(201,168,76,0.1) inset;
+        }
+        .app-launcher-card:hover::before {
+          opacity: 1;
         }
         .app-icon-wrap {
-          width: clamp(48px, 7vw, 58px);
-          height: clamp(48px, 7vw, 58px);
+          width: clamp(50px, 7vw, 60px);
+          height: clamp(50px, 7vw, 60px);
           border-radius: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: #E8C97A;
-          background: linear-gradient(145deg, rgba(201,168,76,0.18), rgba(250,246,239,0.04));
-          border: 1px solid rgba(201,168,76,0.24);
-          box-shadow: 0 10px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
-          margin-bottom: 0.18rem;
+          background: linear-gradient(145deg, rgba(201,168,76,0.2), rgba(250,246,239,0.05));
+          border: 1px solid rgba(201,168,76,0.28);
+          box-shadow:
+            0 12px 28px rgba(0,0,0,0.28),
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            0 0 20px rgba(201,168,76,0.1);
+          margin-bottom: 0.2rem;
+          transition: box-shadow 0.28s ease, transform 0.28s ease;
+        }
+        .app-launcher-card:hover .app-icon-wrap {
+          box-shadow:
+            0 14px 32px rgba(0,0,0,0.32),
+            inset 0 1px 0 rgba(255,255,255,0.12),
+            0 0 28px rgba(201,168,76,0.22);
+          transform: scale(1.06);
         }
         .app-label {
           font-family: 'Tiro Bangla', serif;
@@ -589,8 +749,8 @@ export default function Home() {
         .app-subtitle {
           font-family: 'Noto Sans Bengali', sans-serif;
           font-size: 0.66rem;
-          line-height: 1.35;
-          color: rgba(250,246,239,0.48);
+          line-height: 1.38;
+          color: rgba(250,246,239,0.46);
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -618,9 +778,9 @@ export default function Home() {
           .hero-frame-wrap { --hero-frame-offset: -10px; }
           .scroll-indicator { display: none; }
           .hero-inner { gap: 0.95rem; }
-          .app-launcher-shell { border-radius: 28px; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.62rem; }
-          .app-launcher-card { min-height: 112px; border-radius: 20px; padding: 0.85rem 0.35rem 0.7rem; }
+          .app-launcher-shell { border-radius: 30px; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.65rem; }
+          .app-launcher-card { min-height: 116px; border-radius: 22px; padding: 0.9rem 0.38rem 0.75rem; }
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 320px; }
@@ -628,18 +788,18 @@ export default function Home() {
 
         @media (max-width: 480px) {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
-          .app-launcher-shell { padding: 0.82rem; border-radius: 26px; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.52rem; }
-          .app-launcher-card { min-height: 100px; padding: 0.72rem 0.22rem 0.62rem; border-radius: 18px; }
-          .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
-          .app-icon-wrap svg { width: 20px; height: 20px; }
-          .app-label { font-size: 0.72rem; min-height: 2.55em; }
+          .app-launcher-shell { padding: 0.85rem; border-radius: 28px; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
+          .app-launcher-card { min-height: 104px; padding: 0.75rem 0.24rem 0.65rem; border-radius: 20px; }
+          .app-icon-wrap { width: 46px; height: 46px; border-radius: 15px; }
+          .app-icon-wrap svg { width: 21px; height: 21px; }
+          .app-label { font-size: 0.74rem; min-height: 2.55em; }
         }
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
           .hero-inner { gap: 0.75rem; }
-          .app-launcher-grid { gap: 0.42rem; }
+          .app-launcher-grid { gap: 0.44rem; }
           .app-launcher-card { min-height: 104px; }
           .app-icon-wrap { width: 40px; height: 40px; }
           .app-label { font-size: 0.66rem; }
