@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import AdSenseAd from "@/components/AdSenseAd";
 
@@ -1104,7 +1103,6 @@ export default function Home() {
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
         <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
       </div>
-      <Footer />
 
       {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
       <style>{`
