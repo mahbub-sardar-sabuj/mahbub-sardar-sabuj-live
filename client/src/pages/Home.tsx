@@ -1083,24 +1083,51 @@ export default function Home() {
                   </motion.button>
                 </a>
               </div>
-              <Link href="/about">
+              <Link href="/about" style={{ textDecoration: "none", display: "inline-block" }}>
                 <motion.span
-                  whileHover={{ scale: 1.03, x: 4 }}
+                  whileHover={{ scale: 1.03, y: -3, borderColor: "rgba(232,201,122,0.55)", boxShadow: "0 18px 45px rgba(0,0,0,0.35), 0 0 28px rgba(201,168,76,0.12)" }}
+                  whileTap={{ scale: 0.97 }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 10,
-                    color: "#C9A84C",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
+                    justifyContent: "space-between",
+                    gap: 18,
+                    minWidth: 250,
+                    padding: "14px 18px 14px 22px",
+                    borderRadius: 18,
+                    color: "#E8C97A",
+                    fontFamily: "'Tiro Bangla', serif",
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
                     textDecoration: "none",
                     cursor: "pointer",
-                    letterSpacing: "0.05em",
+                    letterSpacing: "0.01em",
+                    background: "linear-gradient(135deg, rgba(201,168,76,0.11), rgba(255,255,255,0.035))",
+                    border: "1px solid rgba(201,168,76,0.28)",
+                    boxShadow: "0 12px 34px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.07)",
+                    backdropFilter: "blur(12px)",
                   }}
                 >
-                  সম্পূর্ণ পরিচয় পড়ুন
-                  <ArrowRight size={16} />
+                  <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
+                    <span>সম্পূর্ণ পরিচয় পড়ুন</span>
+                    <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.68rem", fontWeight: 500, color: "rgba(250,246,239,0.45)", marginTop: 4 }}>
+                      লেখকের জীবন ও সাহিত্য পথ
+                    </span>
+                  </span>
+                  <span style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: "50%",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
+                    color: "#060E1A",
+                    flexShrink: 0,
+                    boxShadow: "0 8px 20px rgba(201,168,76,0.25)",
+                  }}>
+                    <ArrowRight size={16} />
+                  </span>
                 </motion.span>
               </Link>
             </motion.div>
