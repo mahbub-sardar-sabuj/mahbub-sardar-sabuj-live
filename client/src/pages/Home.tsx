@@ -9,7 +9,7 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette, ArrowRight, ExternalLink,
-  Quote, Star
+  Quote, Star, Feather
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -25,19 +25,14 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
-  { label: "পরিচিতি", subtitle: "লেখক পরিচয়", href: "/about", icon: UserRound },
-  { label: "লেখালেখি ও বই", subtitle: "কবিতা ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
-  { label: "ই-বুক", subtitle: "অনলাইন বই পড়ুন", href: "/ebooks", icon: BookOpen },
-  { label: "আবৃত্তি", subtitle: "ভিডিও সংগ্রহ", href: "/facebook-recitations", icon: Mic2 },
-  { label: "ডিজাইন", subtitle: "কার্ড তৈরি করুন", href: "/editor", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবির সংগ্রহ", href: "/gallery", icon: Images },
-  { label: "সরদার সংবাদ", subtitle: "সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
-  { label: "বাংলা কবিতা", subtitle: "নির্বাচিত কবিতার সংগ্রহ", href: "/bangla-kobita", icon: Quote },
-  { label: "ভালোবাসার কবিতা", subtitle: "প্রেম ও অনুভূতির লেখা", href: "/valobashar-kobita", icon: Star },
-  { label: "কষ্টের কবিতা", subtitle: "বিরহ ও বেদনার ভাষা", href: "/koster-kobita", icon: Quote },
-  { label: "বাংলা স্ট্যাটাস", subtitle: "ছোট ভাবনার প্রকাশ", href: "/bangla-status", icon: Palette },
-  { label: "বাংলা উক্তি", subtitle: "জীবনঘনিষ্ঠ বাণী", href: "/bangla-quotes", icon: Star },
-  { label: "যোগাযোগ", subtitle: "যোগাযোগ করুন", href: "/contact", icon: Mail },
+  { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "/about", icon: UserRound },
+  { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", icon: Mic2 },
+  { label: "লেখালেখি ও বই", subtitle: "কবিতা, লেখা ও প্রকাশিত বই সংগ্রহ", href: "/writings", icon: BookOpen },
+  { label: "আমিও লিখবো বাস্তবতা", subtitle: "সৃজনশীল লেখালেখির নতুন কমিউনিটি", href: "/amio-likhbo-bastobota", icon: Feather },
+  { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", icon: Palette },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "/gallery", icon: Images },
+  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", icon: Mail },
 ];
 
 // ── Quote ─────────────────────────────────────────────────────────────────────
@@ -464,10 +459,10 @@ export default function Home() {
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px)", backgroundSize: "30px 30px", opacity: 0.45, pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
           {[
-            ["কবিতা", "অনুভূতির ভাষা"],
-            ["গদ্য", "জীবনের গল্প"],
-            ["ই-বুক", "ডিজিটাল পাঠ"],
-            ["আবৃত্তি", "কণ্ঠের প্রকাশ"],
+            ["পরিচিতি", "লেখকের জীবনপথ"],
+            ["লেখালেখি", "কবিতা ও বই"],
+            ["ডিজাইন", "কার্ড ফরম্যাট"],
+            ["সংবাদ", "সাম্প্রতিক আপডেট"],
           ].map(([title, desc]) => (
             <motion.div
               key={title}
@@ -602,7 +597,7 @@ export default function Home() {
               <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4.5vw, 3.2rem)", fontWeight: 700, color: "#FAF6EF", margin: 0, lineHeight: 1.2 }}>অন্বেষণ করুন</h2>
             </div>
             <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", maxWidth: 440, color: "rgba(250,246,239,0.48)", lineHeight: 1.8, margin: 0, fontSize: "0.92rem" }}>
-              লেখকের পরিচিতি, কবিতা, বই, ই-বুক, আবৃত্তি, গ্যালারি, সংবাদ ও বিষয়ভিত্তিক সংগ্রহগুলো দ্রুত খুঁজে নিন।
+              ওয়েবসাইটের বিদ্যমান সব ট্যাব—পরিচিতি, আবৃত্তি, লেখালেখি, কমিউনিটি, ডিজাইন, গ্যালারি, সংবাদ ও যোগাযোগ—দ্রুত খুঁজে নিন।
             </p>
           </motion.div>
           <div className="sections-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
