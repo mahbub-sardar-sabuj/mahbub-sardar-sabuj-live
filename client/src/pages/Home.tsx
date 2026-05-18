@@ -791,14 +791,14 @@ export default function Home() {
           line-height: 1.9;
           color: rgba(250,246,239,0.68);
           margin: 0 0 1.1rem;
-          letter-spacing: 0.005em;
-          word-spacing: 0.04em;
+          letter-spacing: 0;
+          word-spacing: normal;
           text-align: justify;
           text-align-last: left;
-          text-justify: inter-word;
+          text-justify: auto;
           text-wrap: pretty;
           word-break: normal;
-          overflow-wrap: normal;
+          overflow-wrap: break-word;
           hyphens: none;
           font-variant-ligatures: common-ligatures;
         }
@@ -851,7 +851,7 @@ export default function Home() {
           .author-profile-grid { border-radius: 28px; }
           .author-profile-grid::before { inset: 8px; border-radius: 22px; }
           .author-bio-card { padding: 0 0.05rem; }
-          .author-bio-card p { font-size: 1rem; line-height: 1.88; text-align: justify; text-align-last: left; text-justify: inter-word; word-spacing: 0.035em; word-break: normal; hyphens: none; }
+          .author-bio-card p { font-size: 1rem; line-height: 1.82; text-align: left; text-align-last: left; text-justify: auto; word-spacing: normal; letter-spacing: 0; word-break: normal; overflow-wrap: break-word; hyphens: none; }
         }
 
         @media (max-width: 480px) {
@@ -865,7 +865,7 @@ export default function Home() {
           .author-profile-grid { padding: 0.85rem; border-radius: 24px; }
           .author-photo-frame { border-radius: 22px; }
           .author-bio-card { padding: 0 0.05rem; }
-          .author-bio-card p { font-size: 0.96rem; line-height: 1.82; text-align: justify; text-align-last: left; text-justify: inter-word; word-spacing: 0.03em; }
+          .author-bio-card p { font-size: 0.96rem; line-height: 1.78; text-align: left; text-align-last: left; text-justify: auto; word-spacing: normal; letter-spacing: 0; overflow-wrap: break-word; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
