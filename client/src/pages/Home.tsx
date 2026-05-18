@@ -18,8 +18,9 @@ import AdSenseAd from "@/components/AdSenseAd";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
-const ABOUT_PROFILE = "/images/profile/author-reading.jpeg";
+const PROFILE_2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile2_57482935.jpg";
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
+const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
@@ -493,41 +494,36 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════
           AUTHOR PROFILE — Redesigned clean split
       ══════════════════════════════════════════════════════════════════════ */}
-      <section className="author-profile-section">
-        <div className="author-profile-ambient author-profile-ambient-one" />
-        <div className="author-profile-ambient author-profile-ambient-two" />
-        <div className="author-profile-shell">
+      <section style={{
+        padding: "7rem 2rem",
+        background: "linear-gradient(180deg, #0A1628 0%, #060E1A 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 20%, rgba(201,168,76,0.11), transparent 32%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1120, margin: "0 auto" }}>
           <div className="author-profile-grid">
-            <motion.div initial={{ opacity: 0, scale: 0.96, y: 18 }} whileInView={{ opacity: 1, scale: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="author-visual-wrap">
-              <div className="author-portrait-card">
-                <div className="author-portrait-glow" />
-                <img src={ABOUT_PROFILE} alt="মাহবুব সরদার সবুজ - বই হাতে লেখক ও কবি" onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }} className="author-profile-img" loading="lazy" decoding="async" />
-                <div className="author-portrait-shade" />
-                <div className="author-portrait-note">
-                  <span>লেখক</span>
-                  <strong>কবি</strong>
-                </div>
+            <motion.div initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} style={{ position: "relative" }}>
+              <div style={{ borderRadius: 28, overflow: "hidden", boxShadow: "0 42px 100px rgba(0,0,0,0.52)", position: "relative", border: "1px solid rgba(201,168,76,0.16)", padding: 6, background: "rgba(255,255,255,0.035)" }}>
+                <img src={PROFILE_2} alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - লেখার মুহূর্তে প্রোফাইল ছবি" onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_1; }} style={{ width: "100%", display: "block", filter: "contrast(1.05) saturate(0.9) brightness(1.02)", borderRadius: 22 }} className="author-profile-img" loading="lazy" decoding="async" />
+                <div style={{ position: "absolute", inset: 6, borderRadius: 22, background: "linear-gradient(to bottom, transparent 55%, rgba(6,14,26,0.82) 100%)" }} />
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.12 }} className="author-copy-card">
-              <div className="author-eyebrow">
-                <span />
-                <em>পরিচিতি</em>
+            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: "2rem" }}>
+                <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>লেখক পরিচয়</span>
               </div>
-              <h2 className="author-title">
-                শব্দের ভেতর মানুষ,<br />
-                <strong>মানুষের ভেতর কবিতা</strong>
+              <h2 style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, color: "#FAF6EF", lineHeight: 1.25, margin: "0 0 1.5rem" }}>
+                কলমের মানুষ,<br />
+                <span style={{ background: "linear-gradient(135deg, #C9A84C, #E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>মানুষের কলম</span>
               </h2>
-              <p className="author-lead">
-                মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের এক নিবেদিতপ্রাণ লেখক ও কবি। তাঁর লেখার কেন্দ্রে থাকে মানুষ, স্মৃতি, ভালোবাসা, বিচ্ছেদ এবং জীবনের নীরব অথচ গভীর সত্য। সহজ ভাষার ভেতর তিনি অনুভূতির সূক্ষ্ম আলো জ্বালাতে জানেন।
+              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.62)", lineHeight: 2.05, margin: "0 0 1.2rem", maxWidth: 560, letterSpacing: "0.01em" }}>
+                মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের একজন অনুভূতিশীল লেখক ও কবি। তাঁর কলমে ভালোবাসা, বিচ্ছেদ, মানবিক সম্পর্ক ও জীবনের নীরব সত্যগুলো সহজ অথচ হৃদয়স্পর্শী ভাষায় ফুটে ওঠে।
               </p>
-              <p className="author-body-text">
-                প্রবাসে থেকেও বাংলা ভাষা, মাটি ও মানুষের সঙ্গে তাঁর সম্পর্ক অটুট। তাই তাঁর কবিতা ও গদ্যে ফিরে আসে দেশ, আত্মপরিচয়, হৃদয়ের টানাপোড়েন এবং মানবিকতার কোমল স্পর্শ—যা পাঠকের মনে দীর্ঘক্ষণ অনুরণন তোলে।
+              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.54)", lineHeight: 2.05, margin: 0, maxWidth: 560, letterSpacing: "0.01em" }}>
+                প্রবাসের দূরত্বে থেকেও তিনি বাংলা ভাষা, মাটি ও মানুষের সঙ্গে গভীর আত্মিক বন্ধন বহন করেন। তাই তাঁর কবিতা ও গদ্যে ফিরে আসে দেশ, স্মৃতি, প্রবাসজীবন এবং মানুষের অন্তর্গত আলোর গল্প।
               </p>
-              <div className="author-signature-row">
-                <span>মাহবুব সরদার সবুজ</span>
-                <Link href="/about" className="author-profile-link">পূর্ণ পরিচিতি <ArrowRight size={15} /></Link>
-              </div>
             </motion.div>
           </div>
         </div>
@@ -735,206 +731,15 @@ export default function Home() {
         }
 
         /* Author profile */
-        .author-profile-section {
-          position: relative;
-          overflow: hidden;
-          padding: 7.5rem 2rem;
-          background:
-            linear-gradient(135deg, rgba(10,22,40,0.96) 0%, rgba(6,14,26,0.98) 48%, rgba(3,9,18,1) 100%),
-            radial-gradient(circle at 20% 20%, rgba(201,168,76,0.16), transparent 34%);
-        }
-        .author-profile-section::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.045) 1px, transparent 1px);
-          background-size: 120px 120px;
-          opacity: 0.28;
-          mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
-          pointer-events: none;
-        }
-        .author-profile-ambient {
-          position: absolute;
-          border-radius: 999px;
-          filter: blur(42px);
-          pointer-events: none;
-          opacity: 0.56;
-        }
-        .author-profile-ambient-one {
-          width: 260px;
-          height: 260px;
-          left: -90px;
-          top: 12%;
-          background: rgba(201,168,76,0.16);
-        }
-        .author-profile-ambient-two {
-          width: 320px;
-          height: 320px;
-          right: -130px;
-          bottom: 6%;
-          background: rgba(232,201,122,0.10);
-        }
-        .author-profile-shell {
-          position: relative;
-          z-index: 1;
-          max-width: 1160px;
-          margin: 0 auto;
-        }
         .author-profile-grid {
           display: grid;
-          grid-template-columns: minmax(330px, 0.92fr) minmax(0, 1.08fr);
-          gap: clamp(2.5rem, 6vw, 5.25rem);
+          grid-template-columns: 0.9fr 1.1fr;
+          gap: 5rem;
           align-items: center;
-        }
-        .author-visual-wrap {
-          position: relative;
-        }
-        .author-portrait-card {
-          position: relative;
-          overflow: hidden;
-          padding: 8px;
-          border-radius: 34px;
-          border: 1px solid rgba(201,168,76,0.28);
-          background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.018));
-          box-shadow: 0 40px 110px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-        .author-portrait-glow {
-          position: absolute;
-          inset: -1px;
-          background: linear-gradient(135deg, rgba(201,168,76,0.32), transparent 34%, rgba(232,201,122,0.14));
-          opacity: 0.78;
-          pointer-events: none;
         }
         .author-profile-img {
-          position: relative;
-          z-index: 1;
-          width: 100%;
-          height: 560px;
-          display: block;
+          height: 520px;
           object-fit: cover;
-          object-position: center center;
-          border-radius: 27px;
-          filter: contrast(1.05) saturate(0.92) brightness(0.98);
-        }
-        .author-portrait-shade {
-          position: absolute;
-          z-index: 2;
-          inset: 8px;
-          border-radius: 27px;
-          background: linear-gradient(to bottom, transparent 44%, rgba(6,14,26,0.86) 100%);
-          pointer-events: none;
-        }
-        .author-portrait-note {
-          position: absolute;
-          z-index: 3;
-          left: 28px;
-          bottom: 26px;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 0.72rem 1rem;
-          border: 1px solid rgba(201,168,76,0.35);
-          border-radius: 999px;
-          background: rgba(6,14,26,0.62);
-          backdrop-filter: blur(14px);
-          color: #E8C97A;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.82rem;
-          letter-spacing: 0.04em;
-        }
-        .author-portrait-note strong {
-          color: #FAF6EF;
-          font-weight: 600;
-        }
-        .author-copy-card {
-          position: relative;
-          padding: clamp(1.5rem, 3vw, 2.5rem);
-          border-left: 1px solid rgba(201,168,76,0.18);
-        }
-        .author-eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          margin-bottom: 1.35rem;
-        }
-        .author-eyebrow span {
-          width: 46px;
-          height: 1px;
-          background: linear-gradient(90deg, #C9A84C, rgba(201,168,76,0.1));
-        }
-        .author-eyebrow em {
-          font-family: 'Space Grotesk', 'Noto Sans Bengali', sans-serif;
-          font-style: normal;
-          font-size: 0.72rem;
-          letter-spacing: 0.32em;
-          text-transform: uppercase;
-          color: #C9A84C;
-        }
-        .author-title {
-          margin: 0 0 1.45rem;
-          font-family: 'Tiro Bangla', serif;
-          font-size: clamp(2.15rem, 4.7vw, 3.65rem);
-          font-weight: 700;
-          line-height: 1.18;
-          color: #FAF6EF;
-          letter-spacing: -0.02em;
-        }
-        .author-title strong {
-          display: inline-block;
-          background: linear-gradient(135deg, #C9A84C 0%, #F1D98C 55%, #C9A84C 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        .author-lead,
-        .author-body-text {
-          max-width: 620px;
-          font-family: 'Tiro Bangla', serif;
-          font-size: clamp(1.08rem, 2.35vw, 1.3rem);
-          line-height: 2.08;
-          letter-spacing: 0.01em;
-        }
-        .author-lead {
-          margin: 0 0 1.05rem;
-          color: rgba(250,246,239,0.72);
-        }
-        .author-body-text {
-          margin: 0;
-          color: rgba(250,246,239,0.58);
-        }
-        .author-signature-row {
-          margin-top: 1.8rem;
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-        .author-signature-row > span {
-          font-family: 'Tiro Bangla', serif;
-          font-size: 1.05rem;
-          color: #E8C97A;
-        }
-        .author-profile-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 0.72rem 1rem;
-          border-radius: 999px;
-          border: 1px solid rgba(201,168,76,0.32);
-          background: rgba(201,168,76,0.06);
-          color: rgba(250,246,239,0.88);
-          text-decoration: none;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.86rem;
-          font-weight: 600;
-          transition: all 0.25s ease;
-        }
-        .author-profile-link:hover {
-          background: rgba(201,168,76,0.12);
-          border-color: rgba(201,168,76,0.65);
-          transform: translateY(-2px);
         }
 
         /* Tablet */
@@ -954,9 +759,7 @@ export default function Home() {
             grid-template-columns: 1fr;
             gap: 3rem;
           }
-          .author-profile-section { padding: 6rem 1.35rem; }
-          .author-copy-card { border-left: 0; padding: 0; }
-          .author-profile-img { height: 460px; }
+          .author-profile-img { height: 380px; }
         }
 
         /* Mobile */
@@ -968,16 +771,6 @@ export default function Home() {
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 320px; }
-          .author-profile-section { padding: 4.8rem 1rem; }
-          .author-profile-grid { gap: 2.4rem; }
-          .author-profile-img { height: 360px; border-radius: 24px; }
-          .author-portrait-card { border-radius: 30px; padding: 6px; }
-          .author-portrait-shade { inset: 6px; border-radius: 24px; }
-          .author-portrait-note { left: 20px; bottom: 20px; padding: 0.62rem 0.86rem; font-size: 0.78rem; }
-          .author-eyebrow { margin-bottom: 1rem; }
-          .author-title { font-size: clamp(2.05rem, 10vw, 2.75rem); margin-bottom: 1.2rem; }
-          .author-lead, .author-body-text { font-size: 1.08rem; line-height: 2; }
-          .author-signature-row { margin-top: 1.5rem; }
           .cta-row { gap: 5px; max-width: 100%; }
           .cta-btn {
             font-size: 0.72rem;
@@ -995,10 +788,6 @@ export default function Home() {
           .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.72rem; min-height: 2.55em; }
-          .author-profile-img { height: 320px; }
-          .author-title { font-size: 2rem; }
-          .author-lead, .author-body-text { font-size: 1rem; line-height: 1.92; }
-          .author-profile-link { width: 100%; justify-content: center; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
