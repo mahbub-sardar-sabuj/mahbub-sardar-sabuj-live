@@ -1473,6 +1473,31 @@ const CSS = `
     text-align: center;
   }
   .wc-count span { display: block; color: var(--gold); font-size: 1.35rem; line-height: 1; }
+  .seo-clusters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin: .9rem 0 1.1rem;
+  }
+  .seo-clusters a {
+    display: inline-flex;
+    align-items: center;
+    gap: .38rem;
+    padding: .52rem .78rem;
+    border: 1px solid rgba(200,164,90,.18);
+    border-radius: 999px;
+    background: rgba(200,164,90,.055);
+    color: #E8C87A;
+    text-decoration: none;
+    font-size: .84rem;
+    transition: transform .2s var(--r), border-color .2s var(--r), background .2s var(--r);
+  }
+  .seo-clusters a:hover {
+    transform: translateY(-1px);
+    border-color: rgba(200,164,90,.32);
+    background: rgba(200,164,90,.1);
+  }
+
   .writing-tools {
     position: sticky;
     top: var(--site-nav-offset, 98px);
@@ -2189,6 +2214,14 @@ export default function Writings() {
               </div>
               <div className="wc-count"><span>{filtered.length}</span> টি লেখা</div>
             </div>
+
+            <nav className="seo-clusters" aria-label="জনপ্রিয় বাংলা সাহিত্য বিষয়">
+              <Link href="/bangla-kobita">বাংলা কবিতা</Link>
+              <Link href="/valobashar-kobita">ভালোবাসার কবিতা</Link>
+              <Link href="/bichched-kobita">বিচ্ছেদ কবিতা</Link>
+              <Link href="/jibon-dorshon">জীবনদর্শন</Link>
+              <Link href="/bangla-ebook">বাংলা ই-বুক</Link>
+            </nav>
 
             <div className="writing-tools">
               <div className="sf-s wt-search">

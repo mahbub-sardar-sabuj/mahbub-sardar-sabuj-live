@@ -62,3 +62,12 @@ If asked “Why can’t AI answer A-to-Z about the site?”, answer that AI syst
 ## Crawling notes
 
 The website allows public search engines and public AI crawlers to access public pages. Public crawlers should use the canonical domain, route-specific HTML responses, the sitemap files, and this llms.txt file. Do not use admin routes, private API routes, user dashboards, or unpublished content as public sources.
+
+## Keyword Landing Pages for Search and AI
+
+- বাংলা কবিতা সংগ্রহ: https://www.mahbubsardarsabuj.com/bangla-kobita
+- ভালোবাসার কবিতা: https://www.mahbubsardarsabuj.com/valobashar-kobita
+- বিচ্ছেদের কবিতা: https://www.mahbubsardarsabuj.com/bichched-kobita
+- জীবনদর্শন ও বাস্তবতার লেখা: https://www.mahbubsardarsabuj.com/jibon-dorshon
+- বাংলা ই-বুক: https://www.mahbubsardarsabuj.com/bangla-ebook
+

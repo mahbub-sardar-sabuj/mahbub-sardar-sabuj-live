@@ -29,6 +29,7 @@ const AdminLiveChat = lazy(() => import("./pages/AdminLiveChat"));
 const AdminWritingModeration = lazy(() => import("./pages/AdminWritingModeration"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AmiOLikhboLogin = lazy(() => import("./pages/AmiOLikhboLogin"));
+const SeoKeywordLanding = lazy(() => import("./pages/SeoKeywordLanding"));
 
 // Page loading fallback
 function PageLoader() {
@@ -66,6 +67,11 @@ function Router() {
         <Route path={"/facebook-recitations"} component={FacebookRecitations} />
         <Route path={"/writings"} component={Writings} />
         <Route path={"/writings/:slug"} component={Writings} />
+        <Route path={"/bangla-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/valobashar-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/bichched-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/jibon-dorshon"} component={SeoKeywordLanding} />
+        <Route path={"/bangla-ebook"} component={SeoKeywordLanding} />
         <Route path={"/privacy-policy"} component={PrivacyPolicy} />
         <Route path={"/terms"} component={Terms} />
         <Route path={"/about"} component={About} />

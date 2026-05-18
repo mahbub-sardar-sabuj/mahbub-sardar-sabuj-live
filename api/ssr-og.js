@@ -56,6 +56,76 @@ function buildPersonJsonLd() {
   };
 }
 
+
+const seoKeywordPages = {
+  "/bangla-kobita": {
+    title: "বাংলা কবিতা সংগ্রহ | মাহবুব সরদার সবুজ",
+    description: "মাহবুব সরদার সবুজের নির্বাচিত বাংলা কবিতা, জীবনদর্শন, প্রেম, বিরহ ও বাস্তবতা-ভিত্তিক কবিতা এক জায়গায় পড়ুন।",
+    keywords: "বাংলা কবিতা, bangla kobita, বাংলা কবিতা সংগ্রহ, মাহবুব সরদার সবুজ কবিতা, বাংলা সাহিত্য",
+    heading: "বাংলা কবিতা সংগ্রহ",
+    intro: "বাংলা কবিতা পাঠকদের জন্য মাহবুব সরদার সবুজের নির্বাচিত কবিতা, ছোট লেখা, জীবনবোধ এবং বাস্তবতার ভাষ্য একত্র করা হয়েছে।",
+    filterTerms: ["কবিতা", "প্রেম", "জীবন", "বাস্তবতা", "মায়া"],
+  },
+  "/valobashar-kobita": {
+    title: "ভালোবাসার কবিতা | প্রেমের বাংলা কবিতা | মাহবুব সরদার সবুজ",
+    description: "ভালোবাসা, মায়া, সম্পর্ক, অপেক্ষা ও অনুভূতির বাংলা কবিতা পড়ুন মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে।",
+    keywords: "ভালোবাসার কবিতা, প্রেমের কবিতা, love poem bangla, ভালোবাসা বাংলা লেখা, মাহবুব সরদার সবুজ",
+    heading: "ভালোবাসার কবিতা",
+    intro: "ভালোবাসা, মায়া, অপেক্ষা, সম্পর্ক এবং হৃদয়ের কোমল অনুভূতি নিয়ে লেখা বাংলা কবিতার curated সংগ্রহ।",
+    filterTerms: ["ভালোবাসা", "প্রেম", "মায়া", "হৃদয়", "অপেক্ষা"],
+  },
+  "/bichched-kobita": {
+    title: "বিচ্ছেদের কবিতা | বিরহের বাংলা কবিতা | মাহবুব সরদার সবুজ",
+    description: "বিচ্ছেদ, বিরহ, কষ্ট, স্মৃতি ও হারানোর অনুভূতি নিয়ে লেখা বাংলা কবিতা ও ছোট লেখা পড়ুন।",
+    keywords: "বিচ্ছেদের কবিতা, বিরহের কবিতা, কষ্টের কবিতা, sad bangla poem, মাহবুব সরদার সবুজ বিচ্ছেদ",
+    heading: "বিচ্ছেদের কবিতা",
+    intro: "বিচ্ছেদ, বিরহ, স্মৃতি, নীরব কষ্ট এবং হারানোর অভিজ্ঞতা নিয়ে মাহবুব সরদার সবুজের বাংলা কবিতা ও লেখা।",
+    filterTerms: ["বিচ্ছেদ", "বিরহ", "কষ্ট", "স্মৃতি", "হারানো"],
+  },
+  "/jibon-dorshon": {
+    title: "জীবনদর্শন ও বাস্তবতার লেখা | মাহবুব সরদার সবুজ",
+    description: "জীবন, বাস্তবতা, মানুষ, সময়, সম্পর্ক ও আত্মঅন্বেষণ নিয়ে মাহবুব সরদার সবুজের জীবনদর্শনমূলক বাংলা লেখা।",
+    keywords: "জীবনদর্শন, বাস্তবতার লেখা, বাংলা জীবনমুখী লেখা, জীবন নিয়ে কবিতা, মাহবুব সরদার সবুজ",
+    heading: "জীবনদর্শন ও বাস্তবতার লেখা",
+    intro: "জীবন, সময়, সম্পর্ক, মানুষের মন এবং বাস্তবতার অভিজ্ঞতা নিয়ে জীবনমুখী বাংলা লেখা ও কবিতা।",
+    filterTerms: ["জীবন", "বাস্তবতা", "সময়", "মানুষ", "সম্পর্ক"],
+  },
+  "/bangla-ebook": {
+    title: "বাংলা ই-বুক ও সাহিত্য বই | মাহবুব সরদার সবুজ",
+    description: "মাহবুব সরদার সবুজের বাংলা ই-বুক, কবিতার বই, প্রকাশিত গ্রন্থ ও সাহিত্যকর্মের তথ্য এক জায়গায় দেখুন।",
+    keywords: "বাংলা ই-বুক, bangla ebook, বাংলা কবিতার বই, মাহবুব সরদার সবুজ বই, বাংলা সাহিত্য বই",
+    heading: "বাংলা ই-বুক ও সাহিত্য বই",
+    intro: "মাহবুব সরদার সবুজের প্রকাশিত বই ও ই-বুক সম্পর্কে জানতে এবং পড়ার পথ খুঁজে পেতে এই পেজ।",
+    filterTerms: ["ই-বুক", "বই", "কবিতা", "সাহিত্য", "গ্রন্থ"],
+  },
+};
+function getSeoKeywordItems(path) {
+  const page = seoKeywordPages[path];
+  if (!page) return [];
+  if (path === "/bangla-ebook") {
+    return ebookData.slice(0, 12).map((item, index) => ({
+      title: item.title,
+      url: `${SITE_URL}/ebooks/${item.slug}`,
+      category: "বাংলা ই-বুক",
+      description: item.description || page.description,
+      position: index + 1,
+    }));
+  }
+  const terms = page.filterTerms || [];
+  const matched = writingsData.filter((item) => {
+    const haystack = `${item.title} ${item.category} ${item.preview} ${item.content}`;
+    return terms.some((term) => haystack.includes(term));
+  });
+  const source = matched.length >= 6 ? matched : writingsData;
+  return source.slice(0, 24).map((item, index) => ({
+    title: item.title,
+    url: `${SITE_URL}/writings/${item.slug}`,
+    category: item.category || "বাংলা লেখা",
+    description: item.preview || page.description,
+    position: index + 1,
+  }));
+}
+
 function buildBreadcrumbJsonLd(path, url) {
   const names = {
     "/about": "পরিচিতি",
@@ -128,7 +198,7 @@ function buildCollectionItems(path) {
 }
 
 function buildRouteJsonLd(path, url, title, description) {
-  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota"]);
+  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota", ...Object.keys(seoKeywordPages)]);
   const contactRoutes = new Set(["/contact"]);
   const pageType = contactRoutes.has(path) ? "ContactPage" : collectionRoutes.has(path) ? "CollectionPage" : "WebPage";
   const graph = [
@@ -5398,6 +5468,24 @@ export default async function handler(req) {
       title = "লেখা পাওয়া যায়নি | মাহবুব সরদার সবুজ";
       description = "এই লেখাটি পাওয়া যায়নি।";
     }
+  } else if (seoKeywordPages[path]) {
+    const page = seoKeywordPages[path];
+    const items = getSeoKeywordItems(path);
+    title = page.title;
+    description = page.description;
+    keywords = page.keywords;
+    const links = items.map((item) => `<li><a href="${item.url}">${escapeHtml(item.title)}</a> — ${escapeHtml(item.category)}<p>${escapeHtml(item.description)}</p></li>`).join("");
+    const relatedLinks = Object.entries(seoKeywordPages)
+      .filter(([route]) => route !== path)
+      .map(([route, related]) => `<li><a href="${SITE_URL}${route}">${escapeHtml(related.heading)}</a></li>`)
+      .join("");
+    bodyContent = `<main itemscope itemtype="https://schema.org/CollectionPage">
+      <h1 itemprop="name">${escapeHtml(page.heading)}</h1>
+      <p itemprop="description">${escapeHtml(page.intro)}</p>
+      <section aria-label="নির্বাচিত লেখা"><h2>নির্বাচিত লেখা ও রিসোর্স</h2><ul>${links}</ul></section>
+      <section aria-label="সম্পর্কিত SEO topic"><h2>সম্পর্কিত বাংলা সাহিত্য topic</h2><ul>${relatedLinks}</ul></section>
+      <p><a href="${SITE_URL}/writings">সব বাংলা কবিতা ও লেখা পড়ুন</a> | <a href="${SITE_URL}/ebooks">বাংলা ই-বুক দেখুন</a></p>
+    </main>`;
   } else if (path === "/writings") {
     title = "বাংলা কবিতা ও লেখা | মাহবুব সরদার সবুজ | ১০৮৪+ কবিতা সংগ্রহ";
     keywords = "বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, মাহবুব সরদার সবুজ কবিতা, bangla kobita, bangla poem, বাংলা সাহিত্য, জীবনদর্শন";
