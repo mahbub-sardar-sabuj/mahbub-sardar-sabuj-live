@@ -805,10 +805,17 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-drag-over {
       border-color: rgba(212,168,67,0.7) !important;
       background: rgba(212,168,67,0.06) !important;
-      box-shadow: 0 0 0 2px rgba(212,168,67,0.2), 0 32px 80px rgba(0,0,0,0.85) !important;
+      box-shadow: 0 0 0 2px rgba(212,168,67,0.2), 0 40px 100px rgba(0,0,0,0.92) !important;
     }
     .chatbot-msg-animate {
       animation: chatbot-slide-up 0.3s ease-out;
+    }
+    @keyframes chatbot-shimmer-new {
+      0% { background-position: -300% center; }
+      100% { background-position: 300% center; }
+    }
+    .chatbot-input:focus {
+      box-shadow: 0 0 0 2px rgba(212,168,67,0.12), 0 4px 20px rgba(212,168,67,0.08) !important;
     }
   `;
   document.head.appendChild(style);
@@ -828,16 +835,16 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
         style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}
       >
         <div style={{
-          background: "linear-gradient(135deg, #C9A84C 0%, #D4A843 50%, #C0983C 100%)",
+          background: "linear-gradient(135deg, #D4A843 0%, #C9A84C 50%, #B8923A 100%)",
           color: "#0A1628",
-          borderRadius: "16px 16px 3px 16px",
-          padding: "8px 12px",
-          maxWidth: "78%",
+          borderRadius: "18px 18px 4px 18px",
+          padding: "10px 14px",
+          maxWidth: "80%",
           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-          fontSize: "0.78rem",
-          lineHeight: 1.65,
+          fontSize: "0.8rem",
+          lineHeight: 1.7,
           fontWeight: 600,
-          boxShadow: "0 3px 14px rgba(212,168,67,0.25), 0 1px 4px rgba(0,0,0,0.2)",
+          boxShadow: "0 4px 18px rgba(212,168,67,0.3), 0 2px 6px rgba(0,0,0,0.25)",
           wordBreak: "break-word",
         }}>
           {message.imageUrl && (
@@ -882,13 +889,13 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
     >
       {/* Small avatar */}
       <div style={{
-        width: 28, height: 28,
+        width: 32, height: 32,
         borderRadius: "50%",
         overflow: "hidden",
         flexShrink: 0,
         marginTop: 3,
-        border: "1px solid rgba(212,168,67,0.5)",
-        boxShadow: "0 0 8px rgba(212,168,67,0.25)",
+        border: "1.5px solid rgba(212,168,67,0.6)",
+        boxShadow: "0 0 12px rgba(212,168,67,0.3)",
       }}>
         <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => {
@@ -1424,18 +1431,16 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ।
-আমি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের AI সহকারী।
+    content: `আস্সালামু আলাইকুম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ! 🌟
 
-আমি এখন যাচাইকৃত তথ্য ধরে উত্তর দিই—লেখকের পরিচয়, বই, ই-বুক, আবৃত্তি, লেখা, যোগাযোগ ও ওয়েবসাইটের পেজ সম্পর্কে ভুল তথ্য বানিয়ে বলি না।
+আমি মাহবুব সরদার সবুজের অফিসিয়াল AI সহকারী। আমি আপনাকে সাহায্য করতে পারি:
 
-আপনি চাইলে জিজ্ঞেস করতে পারেন:
-• মাহবুব সরদার সবুজ কে?
-• দুঃখবিলাস বই কোথায় পাওয়া যায়?
-• বিনামূল্যে ই-বুক পড়তে চাই
-• আবৃত্তির তালিকা দেখাও
-• লেখকের সাথে যোগাযোগ করতে চাই
-• অডিও এডিট বা ভয়েস ক্লিন করতে চাই`,
+📚 লেখক ও ওয়েবসাইট সম্পর্কে যেকোনো তথ্য
+📖 বই, ই-বুক (১১৯৮+ লেখা) ও আবৃত্তি
+🎙️ অডিও এডিটিং — ভয়েস ক্লিন, মিউজিক মিক্স, ইকো
+💬 যেকোনো সাধারণ প্রশ্নের উত্তর
+
+জিজ্ঞেস করুন যা মনে চায়! [BUTTON:/about]`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2402,10 +2407,10 @@ export default function AIChatbot() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.92 }}
               style={{
-                width: 54, height: 54,
+                width: 58, height: 58,
                 borderRadius: "50%",
                 overflow: "hidden",
-                background: "#0d1b2a",
+                background: "linear-gradient(145deg, #0d1b2a, #0a1220)",
                 flexShrink: 0,
                 cursor: "pointer",
                 display: "flex",
@@ -2413,7 +2418,7 @@ export default function AIChatbot() {
                 justifyContent: "center",
                 position: "relative",
                 zIndex: 2,
-                border: "2px solid #D4A843",
+                border: "2.5px solid #D4A843",
                 animation: !isOpen ? "chatbot-glow-pulse 2.5s ease-in-out infinite" : "none",
               }}
             >
@@ -2508,18 +2513,18 @@ export default function AIChatbot() {
               bottom: 80,
               right: 12,
               zIndex: 150,
-              width: 368,
+              width: 420,
               maxWidth: "calc(100vw - 16px)",
-              height: "min(610px, calc(100vh - 108px))",
-              borderRadius: 20,
+              height: "min(680px, calc(100vh - 100px))",
+              borderRadius: 24,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              background: "rgba(5,10,19,0.98)",
-              backdropFilter: "blur(32px)",
-              WebkitBackdropFilter: "blur(32px)",
-              border: "1px solid rgba(212,168,67,0.22)",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(212,168,67,0.08), inset 0 1px 0 rgba(212,168,67,0.08)",
+              background: "linear-gradient(160deg, rgba(8,14,28,0.99) 0%, rgba(4,8,18,0.99) 100%)",
+              backdropFilter: "blur(40px)",
+              WebkitBackdropFilter: "blur(40px)",
+              border: "1px solid rgba(212,168,67,0.28)",
+              boxShadow: "0 40px 100px rgba(0,0,0,0.92), 0 0 0 1px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.12), 0 0 60px rgba(212,168,67,0.04)",
               animation: "chatbot-border-glow 4s ease-in-out infinite",
               transition: "border-color 0.2s, box-shadow 0.2s",
             }}
@@ -2581,28 +2586,28 @@ export default function AIChatbot() {
 
               {/* ── Header ── */}
               <div style={{
-                padding: "9px 11px",
+                padding: "11px 14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 8,
-                background: "radial-gradient(circle at 18% 0%, rgba(212,168,67,0.16), transparent 38%), linear-gradient(180deg, rgba(9,16,29,0.99) 0%, rgba(4,9,18,0.97) 100%)",
-                borderBottom: "1px solid rgba(212,168,67,0.18)",
-                boxShadow: "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.36)",
+                background: "radial-gradient(circle at 20% 0%, rgba(212,168,67,0.22), transparent 45%), radial-gradient(circle at 80% 100%, rgba(100,150,255,0.06), transparent 40%), linear-gradient(180deg, rgba(10,18,34,0.99) 0%, rgba(5,10,22,0.98) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.22)",
+                boxShadow: "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 30px rgba(0,0,0,0.45)",
                 flexShrink: 0,
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
                   {/* Header avatar with premium glow */}
                   <div style={{
-                    width: 40, height: 40,
-                    borderRadius: "16px",
+                    width: 46, height: 46,
+                    borderRadius: "18px",
                     overflow: "hidden",
                     flexShrink: 0,
                     padding: 2,
-                    background: "linear-gradient(135deg, rgba(244,213,125,0.95), rgba(201,168,76,0.22), rgba(244,213,125,0.7))",
-                    boxShadow: "0 0 0 1px rgba(212,168,67,0.22), 0 10px 24px rgba(212,168,67,0.16)",
+                    background: "linear-gradient(135deg, rgba(244,213,125,0.98), rgba(201,168,76,0.3), rgba(244,213,125,0.8))",
+                    boxShadow: "0 0 0 1px rgba(212,168,67,0.3), 0 12px 28px rgba(212,168,67,0.22), 0 0 20px rgba(212,168,67,0.1)",
                   }}>
-                    <div style={{ width: "100%", height: "100%", borderRadius: 14, overflow: "hidden", background: "rgba(4,9,18,0.85)" }}>
+                    <div style={{ width: "100%", height: "100%", borderRadius: 16, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
                       <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         onError={(e) => {
                           const t = e.currentTarget;
@@ -2725,9 +2730,9 @@ export default function AIChatbot() {
               <div style={{
                 display: "flex",
                 borderBottom: "1px solid rgba(212,168,67,0.1)",
-                background: "rgba(4,8,16,0.8)",
+                background: "rgba(5,10,20,0.9)",
                 flexShrink: 0,
-                padding: "0 4px",
+                padding: "0 6px",
               }}>
                 {(["ai", "live"] as const).map(tab => (
                   <button
@@ -2736,13 +2741,13 @@ export default function AIChatbot() {
                     className={`chatbot-tab-btn${activeTab === tab ? " active" : ""}`}
                     style={{
                       flex: 1,
-                      padding: "7px 8px",
-                      background: activeTab === tab ? "rgba(212,168,67,0.07)" : "transparent",
+                      padding: "8px 10px",
+                      background: activeTab === tab ? "rgba(212,168,67,0.09)" : "transparent",
                       border: "none",
-                      borderBottom: activeTab === tab ? "1.5px solid rgba(212,168,67,0.8)" : "1.5px solid transparent",
-                      color: activeTab === tab ? "rgba(212,168,67,0.95)" : "rgba(160,140,100,0.4)",
+                      borderBottom: activeTab === tab ? "2px solid rgba(212,168,67,0.9)" : "2px solid transparent",
+                      color: activeTab === tab ? "rgba(212,168,67,1.0)" : "rgba(160,140,100,0.45)",
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.72rem",
+                      fontSize: "0.74rem",
                       fontWeight: activeTab === tab ? 700 : 500,
                       letterSpacing: "0.02em",
                       cursor: "pointer",
@@ -3286,12 +3291,12 @@ export default function AIChatbot() {
                       style={{
                         width: "100%",
                         boxSizing: "border-box",
-                        background: "rgba(10,18,32,0.95)",
-                        color: "rgba(240,232,212,0.92)",
-                        border: "1px solid rgba(35,50,68,0.9)",
-                        borderRadius: 12,
-                        padding: "8px 11px",
-                        fontSize: "0.76rem",
+                        background: "rgba(8,15,28,0.97)",
+                        color: "rgba(240,232,212,0.95)",
+                        border: "1px solid rgba(40,60,90,0.9)",
+                        borderRadius: 14,
+                        padding: "10px 13px",
+                        fontSize: "0.78rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         resize: "none",
                         minHeight: 36,
@@ -3318,8 +3323,8 @@ export default function AIChatbot() {
                       : ((!input.trim() && !imagePreview) || isLoading)
                     }
                     style={{
-                      width: 36, height: 36,
-                      borderRadius: 10,
+                      width: 40, height: 40,
+                      borderRadius: 12,
                       background: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
                         ? "linear-gradient(135deg, #D8B84E 0%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.1)",
@@ -3366,7 +3371,7 @@ export default function AIChatbot() {
                     margin: 0,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
-                  }}>যাচাইকৃত তথ্যভিত্তিক উত্তর • Enter = পাঠান • Shift+Enter = নতুন লাইন</p>
+                  }}>AI সহকারী • অডিও এডিটিং সক্ষম • Enter = পাঠান</p>
                   {input.length > 0 && (
                     <span style={{
                       color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
