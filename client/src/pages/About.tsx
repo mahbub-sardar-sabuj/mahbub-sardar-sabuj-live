@@ -1,6 +1,7 @@
 /*
  * About Page — পরিচিতি
  * Design: World-class premium literary author profile
+ * Font: AdorshoLipi throughout
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF
  */
 import { useRef } from "react";
@@ -18,9 +19,10 @@ import AdSenseAd from "@/components/AdSenseAd";
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 const BOOK_COVER = "/images/book-cover-20260328.jpg";
 
+const AL = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
+
 const timeline = [
   { year: "শৈশব", icon: MapPin, title: "কুমিল্লার মাটিতে জন্ম", desc: "কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামে জন্মগ্রহণ করেন।" },
-  
   { year: "২০২৩", icon: BookOpen, title: "প্রথম ই-বুক প্রকাশ", desc: "\"চাঁদফুল\" ও \"সময়ের গহ্বরে\" প্রকাশিত হয়। হাজার হাজার পাঠক বিনামূল্যে পড়ার সুযোগ পান।" },
   { year: "২০২৪", icon: Feather, title: "আরও দুটি ই-বুক", desc: "\"স্মৃতির বসন্তে তুমি\" প্রকাশিত হয়। পাঠকসংখ্যা ৫০ হাজার ছাড়িয়ে যায়।" },
   { year: "২০২৬", icon: Award, title: "প্রথম ফিজিক্যাল বই", desc: "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" — প্রথম মুদ্রিত কাব্যগ্রন্থ প্রকাশিত হয়। রকমারিতে পাওয়া যাচ্ছে।" },
@@ -110,8 +112,8 @@ export default function About() {
               >
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
                 <span style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: "0.68rem", letterSpacing: "0.3em",
+                  fontFamily: AL,
+                  fontSize: "0.78rem", letterSpacing: "0.22em",
                   textTransform: "uppercase", color: "#C9A84C", fontWeight: 600,
                 }}>Author Profile</span>
               </motion.div>
@@ -121,7 +123,7 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: AL,
                   fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
                   fontWeight: 700, lineHeight: 1.15,
                   background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
@@ -137,12 +139,12 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.6 }}
                 style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
-                  fontSize: "1rem", color: "rgba(250,246,239,0.6)",
-                  lineHeight: 1.9, maxWidth: 460, margin: "0 0 2rem",
+                  fontFamily: AL,
+                  fontSize: "1.05rem", color: "rgba(250,246,239,0.65)",
+                  lineHeight: 1.9, maxWidth: 480, margin: "0 0 2rem",
                 }}
               >
-                বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন।
+                বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি — যাঁর কলমে ধরা দেয় জীবনের অদেখা রূপ, মানুষের অনাবিষ্কৃত অনুভূতি আর সময়ের নির্মম সত্য।
               </motion.p>
 
               {/* CTA buttons */}
@@ -160,8 +162,8 @@ export default function About() {
                       display: "inline-flex", alignItems: "center", gap: 8,
                       padding: "13px 26px", borderRadius: 4,
                       background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                      color: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem", fontWeight: 700, cursor: "pointer",
+                      color: "#060E1A", fontFamily: AL,
+                      fontSize: "0.95rem", fontWeight: 700, cursor: "pointer",
                       textDecoration: "none", boxShadow: "0 8px 24px rgba(201,168,76,0.25)",
                     }}
                   >
@@ -179,8 +181,8 @@ export default function About() {
                       background: "transparent",
                       border: "1px solid rgba(201,168,76,0.3)",
                       color: "rgba(250,246,239,0.75)",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem", fontWeight: 600, cursor: "pointer",
+                      fontFamily: AL,
+                      fontSize: "0.95rem", fontWeight: 600, cursor: "pointer",
                       textDecoration: "none",
                     }}
                   >
@@ -241,12 +243,12 @@ export default function About() {
                   padding: "1.5rem",
                 }}>
                   <div style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: AL,
                     fontSize: "0.65rem", letterSpacing: "0.2em",
                     textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
                   }}>লেখক ও কবি</div>
                   <div style={{
-                    fontFamily: "'Tiro Bangla', serif",
+                    fontFamily: AL,
                     fontSize: "1.1rem", color: "#FAF6EF", fontWeight: 700,
                   }}>মাহবুব সরদার সবুজ</div>
                 </div>
@@ -270,8 +272,8 @@ export default function About() {
               >
                 <img src={BOOK_COVER} alt="দুঃখবিলাস - মাহবুব সরদার সবুজের প্রথম প্রকাশিত বাংলা কবিতা সংগ্রহ বই" style={{ width: 36, height: 50, objectFit: "cover", borderRadius: 4 }} loading="lazy" decoding="async" />
                 <div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.62rem", color: "#C9A84C", marginBottom: 3 }}>সর্বশেষ বই</div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "#FAF6EF", fontWeight: 600, maxWidth: 110, lineHeight: 1.4 }}>দুঃখবিলাস</div>
+                  <div style={{ fontFamily: AL, fontSize: "0.62rem", color: "#C9A84C", marginBottom: 3 }}>সর্বশেষ বই</div>
+                  <div style={{ fontFamily: AL, fontSize: "0.75rem", color: "#FAF6EF", fontWeight: 600, maxWidth: 110, lineHeight: 1.4 }}>দুঃখবিলাস</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -289,7 +291,7 @@ export default function About() {
             display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
           }}
         >
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", color: "rgba(250,246,239,0.2)", fontSize: "0.6rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>Scroll</span>
+          <span style={{ fontFamily: AL, color: "rgba(250,246,239,0.2)", fontSize: "0.6rem", letterSpacing: "0.25em", textTransform: "uppercase" }}>Scroll</span>
           <div style={{ width: 1, height: 36, background: "linear-gradient(to bottom, rgba(201,168,76,0.5), transparent)" }} />
         </motion.div>
       </section>
@@ -306,11 +308,11 @@ export default function About() {
             <div style={{ textAlign: "center", marginBottom: "4rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>পরিচয়</span>
+                <span style={{ fontFamily: AL, fontSize: "0.72rem", letterSpacing: "0.28em", textTransform: "uppercase", color: "#C9A84C" }}>পরিচয়</span>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
               <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
+                fontFamily: AL,
                 fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
                 fontWeight: 700, color: "#FAF6EF", margin: 0,
               }}>
@@ -327,18 +329,37 @@ export default function About() {
             <FadeUp delay={0.1}>
               <div style={{
                 background: "rgba(201,168,76,0.04)",
-                border: "1px solid rgba(201,168,76,0.12)",
-                borderRadius: 16, padding: "2.5rem",
+                border: "1px solid rgba(201,168,76,0.14)",
+                borderRadius: 20, padding: "2.8rem",
                 height: "100%",
+                boxShadow: "0 30px 80px rgba(0,0,0,0.25)",
+                position: "relative", overflow: "hidden",
               }}>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.65)", lineHeight: 2, margin: "0 0 1.2rem" }}>
-                  মাহবুব সরদার সবুজ একজন বাংলা ভাষার লেখক ও কবি, যিনি ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম, স্মৃতি, এবং মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করে পাঠকের কাছে পরিচিত হয়েছেন।
+                {/* Subtle top glow */}
+                <div style={{
+                  position: "absolute", top: 0, left: 0, right: 0, height: 1,
+                  background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)",
+                }} />
+
+                {/* উদ্ধৃতি চিহ্ন */}
+                <div style={{
+                  fontFamily: "Georgia, serif", fontSize: "5rem",
+                  color: "rgba(201,168,76,0.12)", lineHeight: 1,
+                  marginBottom: "-1.5rem", marginLeft: "-0.5rem",
+                  userSelect: "none",
+                }}>"</div>
+
+                <p style={{ fontFamily: AL, fontSize: "1.08rem", color: "rgba(250,246,239,0.82)", lineHeight: 2.1, margin: "0 0 1.5rem" }}>
+                  মাহবুব সরদার সবুজ — এক নাম, যার কলমে ধরা দেয় জীবনের অদেখা রূপ, মানুষের অনাবিষ্কৃত অনুভূতি আর সময়ের নির্মম সত্য।
                 </p>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.55)", lineHeight: 2, margin: "0 0 1.2rem" }}>
-                  তিনি কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে জন্মগ্রহণ করেন। কর্মসূত্রে সৌদি আরবে অবস্থান করলেও বাংলা ভাষা, সাহিত্য, এবং পাঠকের সঙ্গে তাঁর সম্পর্ক অটুট রয়েছে।
+                <p style={{ fontFamily: AL, fontSize: "1.05rem", color: "rgba(250,246,239,0.72)", lineHeight: 2.1, margin: "0 0 1.5rem" }}>
+                  কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে জন্মগ্রহণ করেছেন তিনি। পিতা ফানাউল্লাহ সরদার ও মাতা আহামালী বিনতে মাসুরার স্নেহে বেড়ে ওঠা এই লেখক শৈশব থেকেই শব্দকে বেছে নিয়েছেন আত্মার আশ্রয় হিসেবে।
                 </p>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", color: "rgba(250,246,239,0.5)", lineHeight: 2, margin: 0 }}>
-                  লেখালেখি তাঁর কাছে শুধু শখ নয়; এটি আত্মপ্রকাশ, সংবেদনশীল অভিজ্ঞতার প্রকাশ, এবং পাঠকের সঙ্গে মানসিক সংযোগ তৈরির এক অনন্য মাধ্যম।
+                <p style={{ fontFamily: AL, fontSize: "1.05rem", color: "rgba(250,246,239,0.65)", lineHeight: 2.1, margin: "0 0 1.5rem" }}>
+                  তাঁর লেখায় আছে ন্যায় ও সত্যের দৃঢ় উচ্চারণ, আছে প্রেম ও মানবিকতার মমত্ব, আছে সমাজ ও জীবনের বাস্তবতার স্বতঃস্ফূর্ত প্রকাশ। সরল অথচ হৃদয়গ্রাহী ভাষায় তিনি নির্মাণ করেন এমনসব লেখা, যা পাঠকের মনে শুধু দাগ কাটে না, বরং ভেতর থেকে আলোড়িত করে।
+                </p>
+                <p style={{ fontFamily: AL, fontSize: "1.05rem", color: "rgba(250,246,239,0.58)", lineHeight: 2.1, margin: 0 }}>
+                  মাহবুব সরদার সবুজের কলম কেবল লেখা নয় — এ যেন মানুষের আত্মাকে ছুঁয়ে দেওয়া এক সেতু, যা ভাঙা মনকে জাগায়, অবসন্ন মানুষকে প্রেরণা দেয়, আর পথহারা মানুষকে দেখায় ইতিবাচক জীবনের পথচিহ্ন।
                 </p>
               </div>
             </FadeUp>
@@ -348,7 +369,6 @@ export default function About() {
                 {[
                   { icon: MapPin, label: "জন্মস্থান", value: "আরিফপুর, বরুড়া, কুমিল্লা" },
                   { icon: Globe, label: "বর্তমান অবস্থান", value: "সৌদি আরব" },
-                  
                   { icon: BookOpen, label: "প্রকাশিত বই", value: "৫টি (৪টি ই-বুক + ১টি মুদ্রিত)" },
                   { icon: Calendar, label: "প্রথম মুদ্রিত বই", value: "২০২৬ — দুঃখবিলাস" },
                 ].map((item, i) => {
@@ -362,12 +382,12 @@ export default function About() {
                         padding: "1rem 1.4rem",
                         background: "rgba(201,168,76,0.04)",
                         border: "1px solid rgba(201,168,76,0.1)",
-                        borderRadius: 10,
+                        borderRadius: 12,
                         transition: "border-color 0.3s, transform 0.2s",
                       }}
                     >
                       <div style={{
-                        width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
+                        width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
                         background: "rgba(201,168,76,0.1)",
                         border: "1px solid rgba(201,168,76,0.2)",
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -375,8 +395,8 @@ export default function About() {
                         <Icon size={16} color="#C9A84C" />
                       </div>
                       <div>
-                        <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.65rem", color: "rgba(201,168,76,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 3 }}>{item.label}</div>
-                        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.9rem", color: "rgba(250,246,239,0.8)", fontWeight: 500 }}>{item.value}</div>
+                        <div style={{ fontFamily: AL, fontSize: "0.65rem", color: "rgba(201,168,76,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 3 }}>{item.label}</div>
+                        <div style={{ fontFamily: AL, fontSize: "0.95rem", color: "#FAF6EF", fontWeight: 600 }}>{item.value}</div>
                       </div>
                     </motion.div>
                   );
@@ -403,11 +423,11 @@ export default function About() {
             <div style={{ textAlign: "center", marginBottom: "4rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>সাহিত্যিক যাত্রা</span>
+                <span style={{ fontFamily: AL, fontSize: "0.72rem", letterSpacing: "0.28em", textTransform: "uppercase", color: "#C9A84C" }}>সাহিত্যিক যাত্রা</span>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
               <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
+                fontFamily: AL,
                 fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
                 fontWeight: 700, color: "#FAF6EF", margin: 0,
               }}>
@@ -447,9 +467,9 @@ export default function About() {
                           borderRadius: 12, padding: "1.5rem",
                           boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                         }}>
-                          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "#C9A84C", letterSpacing: "0.15em", marginBottom: 8 }}>{item.year}</div>
-                          <h3 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
-                          <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
+                          <div style={{ fontFamily: AL, fontSize: "0.72rem", color: "#C9A84C", letterSpacing: "0.15em", marginBottom: 8 }}>{item.year}</div>
+                          <h3 style={{ fontFamily: AL, fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
+                          <p style={{ fontFamily: AL, fontSize: "0.88rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.8, margin: 0 }}>{item.desc}</p>
                         </div>
                       )}
                     </div>
@@ -474,9 +494,9 @@ export default function About() {
                           borderRadius: 12, padding: "1.5rem",
                           boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                         }}>
-                          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "#C9A84C", letterSpacing: "0.15em", marginBottom: 8 }}>{item.year}</div>
-                          <h3 style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
-                          <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.85rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
+                          <div style={{ fontFamily: AL, fontSize: "0.72rem", color: "#C9A84C", letterSpacing: "0.15em", marginBottom: 8 }}>{item.year}</div>
+                          <h3 style={{ fontFamily: AL, fontSize: "1rem", fontWeight: 700, color: "#FAF6EF", margin: "0 0 8px" }}>{item.title}</h3>
+                          <p style={{ fontFamily: AL, fontSize: "0.88rem", color: "rgba(250,246,239,0.5)", lineHeight: 1.8, margin: 0 }}>{item.desc}</p>
                         </div>
                       )}
                     </div>
@@ -502,11 +522,11 @@ export default function About() {
             <div style={{ textAlign: "center", marginBottom: "4rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
-                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.68rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#C9A84C" }}>দর্শন ও বিশ্বাস</span>
+                <span style={{ fontFamily: AL, fontSize: "0.72rem", letterSpacing: "0.28em", textTransform: "uppercase", color: "#C9A84C" }}>দর্শন ও বিশ্বাস</span>
                 <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
               </div>
               <h2 style={{
-                fontFamily: "'Tiro Bangla', serif",
+                fontFamily: AL,
                 fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
                 fontWeight: 700, color: "#FAF6EF", margin: 0,
               }}>
@@ -524,7 +544,7 @@ export default function About() {
                     background: "rgba(201,168,76,0.04)",
                     backdropFilter: "blur(20px)",
                     border: "1px solid rgba(201,168,76,0.12)",
-                    borderRadius: 12, padding: "2rem 2.5rem",
+                    borderRadius: 14, padding: "2rem 2.5rem",
                     display: "flex", gap: "1.5rem", alignItems: "flex-start",
                     transition: "border-color 0.3s",
                   }}
@@ -539,11 +559,11 @@ export default function About() {
                     <Quote size={15} color="#C9A84C" />
                   </div>
                   <p style={{
-                    fontFamily: "'Tiro Bangla', serif",
-                    fontSize: "clamp(1rem, 2vw, 1.2rem)",
+                    fontFamily: AL,
+                    fontSize: "clamp(1rem, 2vw, 1.18rem)",
                     fontStyle: "italic",
-                    color: "rgba(250,246,239,0.8)",
-                    lineHeight: 1.8, margin: 0,
+                    color: "rgba(250,246,239,0.82)",
+                    lineHeight: 1.9, margin: 0,
                   }}>
                     {q}
                   </p>
@@ -579,7 +599,7 @@ export default function About() {
               <Heart size={22} color="#C9A84C" />
             </div>
             <h2 style={{
-              fontFamily: "'Tiro Bangla', serif",
+              fontFamily: AL,
               fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
               fontWeight: 700, color: "#FAF6EF",
               lineHeight: 1.3, margin: "0 0 1.2rem",
@@ -587,8 +607,8 @@ export default function About() {
               লেখকের সাথে যুক্ত থাকুন
             </h2>
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              fontSize: "1rem", color: "rgba(250,246,239,0.5)",
+              fontFamily: AL,
+              fontSize: "1.05rem", color: "rgba(250,246,239,0.5)",
               lineHeight: 1.9, margin: "0 0 2.5rem",
             }}>
               নতুন বই, লেখা এবং আপডেটের জন্য সামাজিক মাধ্যমে অনুসরণ করুন অথবা সরাসরি যোগাযোগ করুন।
@@ -602,8 +622,8 @@ export default function About() {
                     display: "inline-flex", alignItems: "center", gap: 10,
                     padding: "14px 30px", borderRadius: 4,
                     background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                    color: "#060E1A", fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.95rem", fontWeight: 700, cursor: "pointer",
+                    color: "#060E1A", fontFamily: AL,
+                    fontSize: "0.98rem", fontWeight: 700, cursor: "pointer",
                     textDecoration: "none", boxShadow: "0 8px 24px rgba(201,168,76,0.3)",
                   }}
                 >
@@ -621,8 +641,8 @@ export default function About() {
                     background: "transparent",
                     border: "1px solid rgba(201,168,76,0.3)",
                     color: "rgba(250,246,239,0.75)",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.95rem", fontWeight: 600, cursor: "pointer",
+                    fontFamily: AL,
+                    fontSize: "0.98rem", fontWeight: 600, cursor: "pointer",
                     textDecoration: "none",
                   }}
                 >
@@ -643,6 +663,7 @@ export default function About() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        @import url('https://cdn.msar.me/fonts/adorsho-lipi/font.css');
         * { box-sizing: border-box; }
 
         /* ── Hero grid ── */
