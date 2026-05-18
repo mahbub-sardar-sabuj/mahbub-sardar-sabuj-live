@@ -518,12 +518,17 @@ export default function Home() {
                 কলমের মানুষ,<br />
                 <span style={{ background: "linear-gradient(135deg, #C9A84C, #E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>মানুষের কলম</span>
               </h2>
-              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.62)", lineHeight: 2.05, margin: "0 0 1.2rem", maxWidth: 560, letterSpacing: "0.01em" }}>
-                মাহবুব সরদার সবুজ সমকালীন বাংলা সাহিত্যের একজন অনুভূতিশীল লেখক ও কবি। তাঁর লেখায় ভালোবাসা, বিচ্ছেদ, স্মৃতি, প্রবাস, মানবিক সম্পর্ক ও জীবনের নীরব সত্যগুলো সহজ ভাষায় গভীর অনুভূতির সঙ্গে উঠে আসে।
-              </p>
-              <p style={{ fontFamily: "'Tiro Bangla', serif", fontSize: "clamp(1.08rem, 2.5vw, 1.28rem)", color: "rgba(250,246,239,0.54)", lineHeight: 2.05, margin: 0, maxWidth: 560, letterSpacing: "0.01em" }}>
-                প্রবাসে থেকেও তিনি বাংলা ভাষা, মাটি ও মানুষের সঙ্গে এক নিবিড় আত্মিক বন্ধন বহন করেন। তাই তাঁর কবিতা ও গদ্যে ব্যক্তিগত বেদনা যেমন থাকে, তেমনি থাকে মানুষের প্রতি মমতা, সময়ের প্রতি প্রশ্ন এবং জীবনের প্রতি গভীর বিশ্বাস।
-              </p>
+              <div className="author-bio-card">
+                <p>
+                  <strong>মাহবুব সরদার সবুজ।</strong> এক নাম, যার কলমে ধরা দেয় জীবনের অদেখা রূপ, মানুষের অনাবিষ্কৃত অনুভূতি এবং সময়ের নির্মম সত্য। কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে জন্মগ্রহণ করেছেন তিনি। পিতা ফানাউল্লাহ সরদার ও মাতা আহামালী বিনতে মাসুরার স্নেহে বেড়ে উঠা এই লেখক শৈশব থেকেই শব্দকে বেছে নিয়েছেন আত্মার আশ্রয় হিসেবে।
+                </p>
+                <p>
+                  তাঁর লেখায় উচ্চারিত হয় ন্যায় ও সত্যের দৃঢ় ভাষা, ফুটে উঠে প্রেম, মানবিকতা ও জীবনের গভীর বাস্তবতা। সহজ অথচ হৃদয়স্পর্শী শব্দচয়নে তিনি নির্মাণ করেন এমনসব লেখা, যা পাঠকের মনে শুধু দাগ কাটে না, বরং অন্তরকে নাড়া দেয়।
+                </p>
+                <p>
+                  মাহবুব সরদার সবুজের কলম শুধু লেখার মাধ্যম নয়, এটি যেন মানুষের আত্মাকে স্পর্শ করা এক অনুভূতির সেতু। তাঁর শব্দ ভাঙা মনকে জাগিয়ে তোলে, ক্লান্ত মানুষকে দেয় প্রেরণা, আর পথহারা মানুষকে দেখায় ইতিবাচক জীবনের নতুন পথচিহ্ন।
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -741,6 +746,50 @@ export default function Home() {
           height: 520px;
           object-fit: cover;
         }
+        .author-bio-card {
+          max-width: 640px;
+          position: relative;
+          padding: clamp(1.35rem, 3vw, 2rem);
+          border: 1px solid rgba(201,168,76,0.42);
+          border-radius: 28px;
+          background: linear-gradient(145deg, rgba(255,255,255,0.055), rgba(201,168,76,0.025));
+          box-shadow: 0 28px 84px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
+          overflow: hidden;
+        }
+        .author-bio-card::before {
+          content: "";
+          position: absolute;
+          inset: 10px;
+          border: 1px solid rgba(232,201,122,0.13);
+          border-radius: 20px;
+          pointer-events: none;
+        }
+        .author-bio-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 12% 0%, rgba(232,201,122,0.12), transparent 34%);
+          pointer-events: none;
+        }
+        .author-bio-card p {
+          position: relative;
+          z-index: 1;
+          font-family: 'Tiro Bangla', serif;
+          font-size: clamp(1.02rem, 2.15vw, 1.18rem);
+          line-height: 2.02;
+          color: rgba(250,246,239,0.68);
+          margin: 0 0 1.05rem;
+          letter-spacing: 0.01em;
+          text-align: justify;
+          text-justify: inter-word;
+        }
+        .author-bio-card p:last-child {
+          margin-bottom: 0;
+        }
+        .author-bio-card strong {
+          color: #E8C97A;
+          font-weight: 700;
+        }
 
         /* Tablet */
         @media (max-width: 1024px) {
@@ -760,6 +809,7 @@ export default function Home() {
             gap: 3rem;
           }
           .author-profile-img { height: 380px; }
+          .author-bio-card { max-width: 100%; }
         }
 
         /* Mobile */
@@ -778,6 +828,9 @@ export default function Home() {
             gap: 3px;
           }
           .cta-btn svg { width: 13px; height: 13px; }
+          .author-bio-card { padding: 1.15rem; border-radius: 24px; }
+          .author-bio-card::before { inset: 8px; border-radius: 18px; }
+          .author-bio-card p { font-size: 1rem; line-height: 1.92; text-align: left; }
         }
 
         @media (max-width: 480px) {
@@ -788,6 +841,8 @@ export default function Home() {
           .app-icon-wrap { width: 44px; height: 44px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.72rem; min-height: 2.55em; }
+          .author-bio-card { padding: 1rem; border-radius: 22px; }
+          .author-bio-card p { font-size: 0.96rem; line-height: 1.86; }
           .cta-row { gap: 4px; }
           .cta-btn {
             font-size: 0.68rem;
