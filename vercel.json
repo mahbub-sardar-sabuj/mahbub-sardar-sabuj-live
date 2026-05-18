@@ -105,6 +105,10 @@
       "dest": "/$1"
     },
     {
+      "src": "/(writings|ebooks)/?",
+      "dest": "/index.html"
+    },
+    {
       "src": "/([^.]*)",
       "has": [
         {
