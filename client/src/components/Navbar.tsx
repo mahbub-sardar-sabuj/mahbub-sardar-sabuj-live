@@ -311,13 +311,14 @@ export default function Navbar() {
           {/* ── DESKTOP NAV LINKS (only visible on md+) ── */}
           {isDesktop && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap" }}>
-              {navLinks.map((link) =>
-                link.type === "page" ? (
+              {navLinks.map((link) => {
+                const isActive = isPrimaryNavActive(link.href, link.type, location);
+                return link.type === "page" ? (
                   <Link key={link.href} href={link.href}>
                     <span
                       style={{
                         fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)",
+                        color: isActive ? "#0D1B2A" : "rgba(253,246,236,0.9)",
                         padding: "9px 14px",
                         textDecoration: "none",
                         fontSize: "0.88rem",
@@ -326,10 +327,10 @@ export default function Navbar() {
                         cursor: "pointer",
                         display: "inline-block",
                         whiteSpace: "nowrap",
-                        background: location === link.href
+                        background: isActive
                           ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
                           : "rgba(253,246,236,0.04)",
-                        border: location === link.href
+                        border: isActive
                           ? "1px solid rgba(212,168,67,0.65)"
                           : "1px solid rgba(212,168,67,0.12)",
                       }}
@@ -338,8 +339,8 @@ export default function Navbar() {
                         e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = location === link.href ? "#0D1B2A" : "rgba(253,246,236,0.9)";
-                        e.currentTarget.style.background = location === link.href
+                        e.currentTarget.style.color = isActive ? "#0D1B2A" : "rgba(253,246,236,0.9)";
+                        e.currentTarget.style.background = isActive
                           ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
                           : "rgba(253,246,236,0.04)";
                       }}
@@ -375,8 +376,8 @@ export default function Navbar() {
                   >
                     {link.label}
                   </a>
-                ),
-              )}
+                );
+              })}
             </div>
           )}
 
