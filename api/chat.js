@@ -131,63 +131,264 @@ function extractUserText(messages = []) {
 }
 
 
+const WEBSITE_KNOWLEDGE = {
+  author: {
+    name: "মাহবুব সরদার সবুজ",
+    identity: "বাংলা ভাষার একজন লেখক ও কবি, যিনি ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম, স্মৃতি ও মানবিক অনুভূতি নিয়ে লেখেন।",
+    birthplace: "কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি",
+    currentLocation: "কর্মসূত্রে সৌদি আরব",
+    signatureQuote: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।",
+    stats: ["Facebook পেজে ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার", "৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন"],
+  },
+  pages: [
+    { key: "home", label: "হোম", path: "/", keywords: ["home", "হোম", "প্রথম পেজ"] },
+    { key: "about", label: "পরিচিতি", path: "/about", keywords: ["about", "পরিচয়", "লেখক", "কবি", "মাহবুব", "সবুজ", "জন্ম"] },
+    { key: "writings", label: "লেখালেখি", path: "/writings", keywords: ["লেখা", "লেখালেখি", "writings", "archive", "আর্কাইভ", "কবিতা", "গল্প"] },
+    { key: "ebooks", label: "ই-বুক", path: "/ebooks", keywords: ["বই", "ই-বুক", "ebook", "ebooks", "পড়তে", "বইগুলো"] },
+    { key: "recitations", label: "Facebook আবৃত্তি", path: "/facebook-recitations", keywords: ["আবৃত্তি", "recitation", "রিল", "reel", "facebook video"] },
+    { key: "editor", label: "সরদার ডিজাইন স্টুডিও", path: "/editor", keywords: ["ডিজাইন", "design", "কার্ড", "পোস্টার", "editor", "স্টুডিও"] },
+    { key: "gallery", label: "গ্যালারি", path: "/gallery", keywords: ["গ্যালারি", "gallery", "ছবি", "ফটো", "photo"] },
+    { key: "news", label: "সরদার সংবাদ", path: "/news", keywords: ["সংবাদ", "news", "খবর", "আপডেট"] },
+    { key: "contact", label: "যোগাযোগ", path: "/contact", keywords: ["যোগাযোগ", "contact", "ইমেইল", "email", "ফর্ম"] },
+    { key: "community", label: "আমিও লিখবো বাস্তবতা", path: "/amio-likhbo-bastobota", keywords: ["আমিও লিখবো", "বাস্তবতা", "amio", "bastobota", "নিজের লেখা"] },
+  ],
+  books: [
+    {
+      key: "dukkhovilash",
+      title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
+      type: "ফিজিক্যাল কাব্যগ্রন্থ ও অনলাইন পাঠ",
+      year: "২০২৬",
+      pages: "১৫০+",
+      summary: "বিচ্ছেদ, অপেক্ষা, হারানোর বেদনা ও ভালোবাসার গভীর অনুভূতি নিয়ে লেখা প্রথম ফিজিক্যাল কাব্যগ্রন্থ।",
+      readPath: "/ebooks/read/dukkhovilash",
+      buyUrl: "https://rkmri.co/TTMEoA3l3pM0/",
+      keywords: ["দুঃখবিলাস", "বিচ্ছেদকে বলি", "dukkhovilash", "রকমারি", "rokomari", "কিনতে", "অর্ডার"],
+    },
+    {
+      key: "smritir-boshonte",
+      title: "স্মৃতির বসন্তে তুমি",
+      type: "ই-বুক",
+      year: "২০২৪",
+      pages: "৮০+",
+      summary: "স্মৃতি, ভালোবাসা ও আবেগের কবিতাময় সংকলন।",
+      readPath: "/ebooks/read/smritir-boshonte",
+      keywords: ["স্মৃতির বসন্তে", "smritir", "boshonte", "স্মৃতি"],
+    },
+    {
+      key: "chand-phool",
+      title: "চাঁদফুল",
+      type: "ই-বুক",
+      year: "২০২৩",
+      pages: "৬০+",
+      summary: "কোমল অনুভূতি, প্রেম ও সৌন্দর্যের কাব্যিক প্রকাশ।",
+      readPath: "/ebooks/read/chand-phool",
+      keywords: ["চাঁদফুল", "chand", "phool", "চাদফুল"],
+    },
+    {
+      key: "shomoyer-gohvore",
+      title: "সময়ের গহ্বরে",
+      type: "ই-বুক",
+      year: "২০২৩",
+      pages: "১০০+",
+      summary: "সময়, জীবন ও অভিজ্ঞতার গভীর ভাবনামূলক লেখা।",
+      readPath: "/ebooks/read/shomoyer-gohvore",
+      keywords: ["সময়ের গহ্বরে", "সময়ের গহ্বরে", "shomoyer", "gohvore"]
+    },
+    {
+      key: "onoboddo-lekha",
+      title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
+      type: "ই-বুক সংকলন",
+      year: "চলমান",
+      pages: "১০০টি লেখা",
+      summary: "জীবনমুখী ও অনুপ্রেরণামূলক লেখার বাছাই সংকলন।",
+      readPath: "/ebooks/read/onoboddo-lekha",
+      keywords: ["অনবদ্য", "onoboddo", "অনুপ্রেরণা", "জীবনমুখী"]
+    },
+  ],
+  writingCategories: [
+    { name: "জীবনদর্শন", count: 570, path: "/writings", keywords: ["জীবনদর্শন", "জীবন", "বাস্তবতা", "অনুপ্রেরণা", "life"] },
+    { name: "বিচ্ছেদ", count: 251, path: "/writings", keywords: ["বিচ্ছেদ", "কষ্ট", "হারানো", "অপেক্ষা", "breakup"] },
+    { name: "ভালোবাসা", count: 168, path: "/writings", keywords: ["ভালোবাসা", "প্রেম", "love"] },
+    { name: "ছোট লেখা", count: 55, path: "/writings", keywords: ["ছোট লেখা", "short", "উক্তি", "স্ট্যাটাস"] },
+    { name: "কবিতা", count: 40, path: "/writings", keywords: ["কবিতা", "poem", "poetry"] },
+  ],
+  recitations: [
+    { title: "জানেন বাবা", path: "/facebook-recitations", keywords: ["জানেন বাবা", "বাবা"] },
+    { title: "আমি কাঁদলে মা আর কাঁদে না", path: "/facebook-recitations", keywords: ["কাঁদলে মা", "মা"] },
+    { title: "তবুও তাকে ভালো", path: "/facebook-recitations", keywords: ["তবুও তাকে", "তাকে ভালো"] },
+    { title: "আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে", path: "/facebook-recitations", keywords: ["সব ঠিক", "নিয়ম আছে"] },
+    { title: "মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি", path: "/facebook-recitations", keywords: ["মাঝে মাঝে", "ডেকে বলি"] },
+    { title: "নারীকে ভালোবাসার আগে", path: "/facebook-recitations", keywords: ["নারীকে", "ভালোবাসার আগে"] },
+    { title: "মানুষটা তোমার প্রতি অন্ধ", path: "/facebook-recitations", keywords: ["মানুষটা", "অন্ধ"] },
+    { title: "এমনভাবে সরে যাবো একদিন", path: "/facebook-recitations", keywords: ["সরে যাবো", "সরে যাব"] },
+    { title: "বিবেকের আদালত", path: "/facebook-recitations", keywords: ["বিবেক", "আদালত"] },
+  ],
+  contact: {
+    email: "lekhokmahbubsardarsabuj@gmail.com",
+    facebook: "https://facebook.com/MahbubSardarSabuj",
+    instagram: "https://instagram.com/mahbub_sardar_sabuj",
+    youtube: "https://youtube.com/@MahbubSardarSabuj",
+  },
+  tools: [
+    { key: "audio", label: "Audio Studio", keywords: ["অডিও", "audio", "ভয়েস", "voice", "নয়েজ", "noise", "মিউজিক", "music", "মিক্স", "mix", "রেকর্ড", "sound"] },
+    { key: "vision", label: "Vision Assistant", keywords: ["ছবি বিশ্লেষণ", "image", "vision", "স্ক্রিনশট", "screenshot", "ফটো বিশ্লেষণ"] },
+    { key: "live", label: "Live Chat", keywords: ["লাইভ", "live", "মানুষের সাথে", "সরাসরি চ্যাট", "admin", "support"] },
+  ],
+};
+
+const INTENT_RULES = [
+  { intent: "book", priority: 95, keywords: ["বই", "ই-বুক", "ebook", "ebooks", "দুঃখবিলাস", "রকমারি", "কিনতে", "অর্ডার", "পড়তে", "read"] },
+  { intent: "writing", priority: 90, keywords: ["লেখা", "লেখালেখি", "writings", "কবিতা", "জীবনদর্শন", "বিচ্ছেদ", "ভালোবাসা", "ছোট লেখা", "স্ট্যাটাস", "উক্তি"] },
+  { intent: "recitation", priority: 88, keywords: ["আবৃত্তি", "recitation", "reel", "রিল", "জানেন বাবা", "কাঁদলে মা", "বিবেকের আদালত"] },
+  { intent: "author", priority: 86, keywords: ["মাহবুব", "সবুজ", "লেখক", "কবি", "পরিচয়", "about", "জন্ম", "কুমিল্লা", "সৌদি", "কে তিনি", "আপনি কে", "তুমি কে"] },
+  { intent: "contact", priority: 84, keywords: ["যোগাযোগ", "contact", "ইমেইল", "email", "ফেসবুক", "facebook", "instagram", "ইনস্টাগ্রাম", "youtube", "ইউটিউব"] },
+  { intent: "audio", priority: 82, keywords: ["অডিও", "audio", "ভয়েস", "voice", "নয়েজ", "noise", "মিউজিক", "music", "রেকর্ড", "সাউন্ড", "মিক্স"] },
+  { intent: "vision", priority: 80, keywords: ["ছবি বিশ্লেষণ", "image", "vision", "স্ক্রিনশট", "screenshot", "ফটো বিশ্লেষণ"] },
+  { intent: "design", priority: 78, keywords: ["ডিজাইন", "design", "কার্ড", "পোস্টার", "editor", "এডিটর", "স্টুডিও"] },
+  { intent: "gallery", priority: 76, keywords: ["গ্যালারি", "gallery", "ছবি", "ফটো", "photo"] },
+  { intent: "news", priority: 74, keywords: ["সংবাদ", "news", "খবর", "সরদার সংবাদ", "আপডেট"] },
+  { intent: "community", priority: 72, keywords: ["আমিও লিখবো", "বাস্তবতা", "amio", "bastobota", "নিজের লেখা", "গল্প শেয়ার"] },
+  { intent: "site", priority: 60, keywords: ["ওয়েবসাইট", "website", "পেজ", "লিংক", "মেনু", "কোথায় পাব", "কোথায় আছে", "সব পেজ"] },
+];
+
+function normalizeForIntent(text = "") {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[“”‘’]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function keywordHits(text, keywords = []) {
+  return keywords.filter((keyword) => text.includes(String(keyword).toLowerCase())).length;
+}
+
+function findBestByKeywords(text, items = []) {
+  return items
+    .map((item) => ({ item, score: keywordHits(text, [item.title, item.name, item.label, ...(item.keywords || [])].filter(Boolean)) }))
+    .filter((match) => match.score > 0)
+    .sort((a, b) => b.score - a.score)[0]?.item || null;
+}
+
+function detectIntent(rawText = "") {
+  const text = normalizeForIntent(rawText);
+  const scored = INTENT_RULES
+    .map((rule) => {
+      const hits = keywordHits(text, rule.keywords);
+      return { ...rule, hits, score: hits * 20 + rule.priority };
+    })
+    .filter((rule) => rule.hits > 0)
+    .sort((a, b) => b.score - a.score || b.priority - a.priority);
+
+  return scored[0] || null;
+}
+
+function pageButton(path, label) {
+  return `${label}: [BUTTON:${path}]`;
+}
+
+function buildBookReply(text) {
+  const book = findBestByKeywords(text, WEBSITE_KNOWLEDGE.books);
+  if (book) {
+    const buyLine = book.buyUrl ? `\nঅর্ডার করতে: ${book.buyUrl}` : "";
+    return `**${book.title}**\n\nধরন: ${book.type}\nপ্রকাশ/সময়: ${book.year}\nপৃষ্ঠা/পরিমাণ: ${book.pages}\n\n${book.summary}${buyLine}\n\nপড়তে যান: [BUTTON:${book.readPath}]\nসব বই দেখতে: [BUTTON:/ebooks]\n\nআরও চাইলে লিখুন—“এই বইটির সারাংশ দাও” বা “আরও বই দেখাও”।`;
+  }
+
+  const rows = WEBSITE_KNOWLEDGE.books.map((item, index) => {
+    const buy = item.buyUrl ? ` | অর্ডার: ${item.buyUrl}` : "";
+    return `${index + 1}. **${item.title}** — ${item.type}, ${item.year}, ${item.pages}. পড়তে: [BUTTON:${item.readPath}]${buy}`;
+  }).join("\n");
+  return `মাহবুব সরদার সবুজের যাচাইকৃত বই ও ই-বুক তালিকা:\n\n${rows}\n\nসব বইয়ের পেজ: [BUTTON:/ebooks]\nআপনি চাইলে নির্দিষ্ট বইয়ের নাম লিখলে আমি সরাসরি সেই বইয়ের লিংক ও তথ্য দেব।`;
+}
+
+function buildWritingReply(text) {
+  const category = findBestByKeywords(text, WEBSITE_KNOWLEDGE.writingCategories);
+  if (category) {
+    return `**${category.name}** বিভাগে মাহবুব সরদার সবুজের প্রায় ${category.count}টি লেখা রয়েছে।\n\nএই বিভাগের লেখা দেখতে লেখালেখি আর্কাইভে যান: [BUTTON:${category.path}]\n\nচাইলে আপনি লিখতে পারেন—“${category.name} থেকে জনপ্রিয় লেখা দেখাও” অথবা “${category.name} নিয়ে একটি পোস্ট লিখে দাও”।`;
+  }
+
+  const categories = WEBSITE_KNOWLEDGE.writingCategories.map((cat) => `${cat.name} ${cat.count}টি`).join(", ");
+  return `ওয়েবসাইটে মাহবুব সরদার সবুজের মোট **১১৯৮টি লেখা** রয়েছে। প্রধান বিভাগগুলো হলো: ${categories}।\n\nসব লেখা দেখতে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\n\nআপনি ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা বা কবিতা—যে কোনো বিভাগ আলাদা করে চাইতে পারেন।`;
+}
+
+function buildRecitationReply(text) {
+  const recitation = findBestByKeywords(text, WEBSITE_KNOWLEDGE.recitations);
+  if (recitation) {
+    return `**${recitation.title}** আবৃত্তিটি Facebook আবৃত্তি সংগ্রহে রয়েছে।\n\nশুনতে/দেখতে যান: [BUTTON:${recitation.path}]\nঅফিসিয়াল Facebook পেজ: ${WEBSITE_KNOWLEDGE.contact.facebook}\n\nআরও আবৃত্তি চাইলে লিখুন—“সব আবৃত্তি দেখাও”।`;
+  }
+
+  const list = WEBSITE_KNOWLEDGE.recitations.map((item, index) => `${index + 1}. ${item.title}`).join("\n");
+  return `মাহবুব সরদার সবুজের ৯টি জনপ্রিয় Facebook আবৃত্তি রয়েছে:\n\n${list}\n\nশুনতে/দেখতে যান: [BUTTON:/facebook-recitations]\nঅফিসিয়াল Facebook পেজ: ${WEBSITE_KNOWLEDGE.contact.facebook}`;
+}
+
+function buildAuthorReply() {
+  const { author } = WEBSITE_KNOWLEDGE;
+  return `${author.name} ${author.identity}\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: ${author.birthplace}\n- বর্তমান অবস্থান: ${author.currentLocation}\n- ${author.stats.join("\n- ")}\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “${author.signatureQuote}”\n\nআরও পড়ুন: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]`;
+}
+
+function buildContactReply() {
+  const { contact } = WEBSITE_KNOWLEDGE;
+  return `লেখকের অফিসিয়াল যোগাযোগ তথ্য:\n\nইমেইল: ${contact.email}\nFacebook: ${contact.facebook}\nInstagram: ${contact.instagram}\nYouTube: ${contact.youtube}\n\nযোগাযোগ ফর্ম: [BUTTON:/contact]\nসরাসরি কথা বলতে চাইলে চ্যাটবটের **সরাসরি চ্যাট** ট্যাব ব্যবহার করুন।`;
+}
+
+function buildSiteReply(text) {
+  const matchedPage = findBestByKeywords(text, WEBSITE_KNOWLEDGE.pages);
+  if (matchedPage) {
+    return `${matchedPage.label} পেজে যেতে এখানে চাপুন: [BUTTON:${matchedPage.path}]\n\nআরও গুরুত্বপূর্ণ পেজ দেখতে লিখুন—“সব পেজ দেখাও”।`;
+  }
+
+  const pageList = WEBSITE_KNOWLEDGE.pages
+    .filter((page) => page.key !== "home")
+    .map((page) => pageButton(page.path, page.label))
+    .join("\n");
+  return `ওয়েবসাইটের গুরুত্বপূর্ণ পেজগুলো:\n\n${pageList}\n\nআপনি কী খুঁজছেন বললে আমি সরাসরি সঠিক পেজে নিয়ে যেতে পারি।`;
+}
+
+function buildToolReply(intent) {
+  if (intent === "audio") {
+    return `**Audio Studio Mode** দিয়ে আপনি অডিও/ভয়েস আরও পরিষ্কার ও প্রফেশনাল করতে পারবেন।\n\nসম্ভব কাজগুলো:\n- নয়েজ কমানো ও voice cleanup\n- volume boost ও clarity enhancement\n- podcast/radio style processing\n- কবিতা/আবৃত্তির জন্য reverb ambience\n- music mix নির্দেশনা\n\nব্যবহার: ফাইল আপলোড করে লিখুন—“নয়েজ কমাও”, “ভয়েস ক্লিন করো” বা “মিউজিকের সাথে মিক্স করো”।`;
+  }
+  if (intent === "vision") {
+    return `**Vision Assistant** দিয়ে ছবি, স্ক্রিনশট বা ডিজাইন বিশ্লেষণ করা যায়।\n\nআপনি করতে পারেন:\n- ছবির caption বা description\n- design review ও improvement suggestion\n- screenshot error বুঝে সমাধান\n- ছবির লেখা পড়ে সারাংশ/অনুবাদ\n\nব্যবহার: ছবি আপলোড করে কী জানতে চান তা লিখুন।`;
+  }
+  return null;
+}
+
 function buildCanonicalReply(messages = []) {
   const rawText = extractUserText(messages);
-  const userText = rawText.toLowerCase().replace(/\s+/g, " ").trim();
+  const userText = normalizeForIntent(rawText);
   if (!userText) return null;
 
-  const wantsBook = /দুঃখবিলাস|বিচ্ছেদকে বলি|বই|ebook|ই-বুক|চাঁদফুল|স্মৃতির বসন্তে|সময়ের গহ্বরে|অনবদ্য|কিনব|কিনতে|পড়ব|পড়তে|রকমারি|rokomari|order/.test(userText);
-  const wantsContact = /যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|ইনস্টাগ্রাম|youtube|ইউটিউব|সোশ্যাল|social/.test(userText);
-  const wantsRecitation = /আবৃত্তি|recitation|জানেন বাবা|কাঁদলে মা|তবুও তাকে|বিবেকের আদালত|নারীকে ভালোবাসার আগে/.test(userText);
-  const wantsWriting = /লেখালেখি|writings|লেখা|ভালোবাসার লেখা|বিচ্ছেদের লেখা|জীবনদর্শন|ছোট লেখা|কবিতা পড়|কবিতা দেখ|archive|আর্কাইভ/.test(userText);
-  const wantsAuthor = /মাহবুব|সবুজ|লেখক|কবি|পরিচয়|about|জন্ম|জন্মস্থান|কোথায় থাকেন|বর্তমান অবস্থান|সৌদি|কুমিল্লা|আরিফপুর|খোশবাস|ফলোয়ার|পাঠকসংখ্যা|আপনি কে|তুমি কে|আপনার সম্পর্কে|তার সম্পর্কে|আমার সম্পর্কে/.test(userText);
-  const wantsSite = /ওয়েবসাইট|website|পেজ|লিংক|মেনু|কোথায় পাব|কোথায় আছে/.test(userText);
+  const intent = detectIntent(userText);
+  if (!intent) return null;
 
-  if (/দুঃখবিলাস|বিচ্ছেদকে বলি|রকমারি|rokomari|order|কিনতে/.test(userText)) {
-    return "**আমি বিচ্ছেদকে বলি দুঃখবিলাস** মাহবুব সরদার সবুজের প্রথম ফিজিক্যাল কাব্যগ্রন্থ। প্রকাশ: ২০২৬, পৃষ্ঠা: ১৫০+। বইটি বিচ্ছেদ, অপেক্ষা, হারানোর বেদনা ও ভালোবাসার গভীর অনুভূতি নিয়ে লেখা।\n\nরকমারি থেকে অর্ডার করুন: https://rkmri.co/TTMEoA3l3pM0/\n\nঅনলাইনে পড়তে: [BUTTON:/ebooks/read/dukkhovilash]\nসব বই দেখতে: [BUTTON:/ebooks]";
+  switch (intent.intent) {
+    case "book":
+      return buildBookReply(userText);
+    case "writing":
+      return buildWritingReply(userText);
+    case "recitation":
+      return buildRecitationReply(userText);
+    case "author":
+      return buildAuthorReply();
+    case "contact":
+      return buildContactReply();
+    case "audio":
+    case "vision":
+      return buildToolReply(intent.intent);
+    case "design":
+      return "সরদার ডিজাইন স্টুডিওতে কবিতা, উক্তি বা লেখার কার্ড তৈরি করা যায়। ছবি, টেক্সট, স্টিকার, ফিল্টার ও ব্যাকগ্রাউন্ডসহ ডিজাইন করতে এখানে যান: [BUTTON:/editor]";
+    case "gallery":
+      return "মাহবুব সরদার সবুজের ছবি ও গ্যালারি দেখতে এই পেজে যান: [BUTTON:/gallery]";
+    case "news":
+      return "সর্বশেষ আপডেট ও সংবাদ পড়তে সরদার সংবাদ পেজে যান: [BUTTON:/news]";
+    case "community":
+      return "**আমিও লিখবো বাস্তবতা** হলো একটি সোশ্যাল ফিড, যেখানে পাঠকেরা নিজের বাস্তব অনুভূতি ও গল্প শেয়ার করতে পারেন। পেজ: [BUTTON:/amio-likhbo-bastobota]";
+    case "site":
+      return buildSiteReply(userText);
+    default:
+      return null;
   }
-
-  if (wantsBook) {
-    return "মাহবুব সরদার সবুজের যাচাইকৃত বই ও ই-বুক তালিকা:\n\n১. **আমি বিচ্ছেদকে বলি দুঃখবিলাস** — প্রথম ফিজিক্যাল কাব্যগ্রন্থ, ২০২৬, ১৫০+ পৃষ্ঠা। রকমারি: https://rkmri.co/TTMEoA3l3pM0/ এবং পাঠ: [BUTTON:/ebooks/read/dukkhovilash]\n২. **স্মৃতির বসন্তে তুমি** — ই-বুক, ২০২৪, ৮০+ পৃষ্ঠা। [BUTTON:/ebooks/read/smritir-boshonte]\n৩. **চাঁদফুল** — ই-বুক, ২০২৩, ৬০+ পৃষ্ঠা। [BUTTON:/ebooks/read/chand-phool]\n৪. **সময়ের গহ্বরে** — ই-বুক, ২০২৩, ১০০+ পৃষ্ঠা। [BUTTON:/ebooks/read/shomoyer-gohvore]\n৫. **মাহবুব সরদার সবুজের অনবদ্য লেখা** — ১০০টি জীবনমুখী ও অনুপ্রেরণামূলক লেখার সংকলন। [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব ই-বুক বিনামূল্যে পড়া যায়। সম্পূর্ণ সংগ্রহ: [BUTTON:/ebooks]";
-  }
-
-  if (wantsContact) {
-    return "লেখকের অফিসিয়াল যোগাযোগ তথ্য:\n\nইমেইল: lekhokmahbubsardarsabuj@gmail.com\nFacebook: https://facebook.com/MahbubSardarSabuj\nInstagram: https://instagram.com/mahbub_sardar_sabuj\nYouTube: https://youtube.com/@MahbubSardarSabuj\n\nযোগাযোগ ফর্ম ব্যবহার করতে পারেন: [BUTTON:/contact]\nসরাসরি কথা বলতে চাইলে চ্যাটবটের **সরাসরি চ্যাট** ট্যাব ব্যবহার করুন।";
-  }
-
-  if (wantsRecitation) {
-    return "মাহবুব সরদার সবুজের ৯টি জনপ্রিয় Facebook আবৃত্তি রয়েছে:\n\n১. জানেন বাবা\n২. আমি কাঁদলে মা আর কাঁদে না\n৩. তবুও তাকে ভালো\n৪. আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে\n৫. মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি\n৬. নারীকে ভালোবাসার আগে\n৭. মানুষটা তোমার প্রতি অন্ধ\n৮. এমনভাবে সরে যাবো একদিন\n৯. বিবেকের আদালত\n\nশুনতে/দেখতে যান: [BUTTON:/facebook-recitations]\nঅফিসিয়াল Facebook পেজ: https://www.facebook.com/MahbubSardarSabuj";
-  }
-
-  if (wantsWriting) {
-    return "ওয়েবসাইটে মাহবুব সরদার সবুজের মোট **১১৯৮টি লেখা** রয়েছে। বিভাগগুলো হলো: জীবনদর্শন ৫৭০টি, বিচ্ছেদ ২৫১টি, ভালোবাসা ১৬৮টি, ছোট লেখা ৫৫টি এবং কবিতা ৪০টি।\n\nলেখাগুলো পড়তে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\nআপনি চাইলে নির্দিষ্টভাবে বলতে পারেন—ভালোবাসা, বিচ্ছেদ, জীবনদর্শন বা কবিতা কোন ধরনের লেখা দেখতে চান।";
-  }
-
-  if (wantsAuthor) {
-    return "মাহবুব সরদার সবুজ বাংলা ভাষার একজন নিবেদিতপ্রাণ লেখক ও কবি। তিনি ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম, স্মৃতি ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন।\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি\n- বর্তমান অবস্থান: কর্মসূত্রে সৌদি আরব\n\n- Facebook পেজ: ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার\n- পাঠকসংখ্যা: ৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।”\n\nআরও পড়ুন: [BUTTON:/about]";
-  }
-
-  if (/ডিজাইন|design|কার্ড|editor|এডিটর|স্টুডিও|পোস্টার/.test(userText)) {
-    return "সরদার ডিজাইন স্টুডিওতে কবিতা, উক্তি বা লেখার কার্ড তৈরি করা যায়। ছবি, টেক্সট, স্টিকার, ফিল্টার ও ব্যাকগ্রাউন্ডসহ ডিজাইন করতে এখানে যান: [BUTTON:/editor]";
-  }
-
-  if (/গ্যালারি|gallery|ছবি|ফটো/.test(userText)) {
-    return "মাহবুব সরদার সবুজের ছবি ও গ্যালারি দেখতে এই পেজে যান: [BUTTON:/gallery]";
-  }
-
-  if (/সংবাদ|news|খবর|সরদার সংবাদ/.test(userText)) {
-    return "সর্বশেষ আপডেট ও সংবাদ পড়তে সরদার সংবাদ পেজে যান: [BUTTON:/news]";
-  }
-
-  if (/আমিও লিখবো|লিখবো বাস্তবতা|amio|bastobota/.test(userText)) {
-    return "**আমিও লিখবো বাস্তবতা** হলো একটি সোশ্যাল ফিড, যেখানে পাঠকেরা নিজের বাস্তব অনুভূতি ও গল্প শেয়ার করতে পারেন। পেজ: [BUTTON:/amio-likhbo-bastobota]";
-  }
-
-  if (wantsSite) {
-    return "ওয়েবসাইটের গুরুত্বপূর্ণ পেজগুলো:\n\nপরিচিতি: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]\nআবৃত্তি: [BUTTON:/facebook-recitations]\nডিজাইন স্টুডিও: [BUTTON:/editor]\nগ্যালারি: [BUTTON:/gallery]\nসংবাদ: [BUTTON:/news]\nযোগাযোগ: [BUTTON:/contact]";
-  }
-
-  return null;
 }
 
 function buildFallbackReply(messages = [], originalError = null) {
