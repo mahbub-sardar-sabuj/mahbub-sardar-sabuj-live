@@ -2633,42 +2633,7 @@ export default function AIChatbot() {
                       WebkitTextFillColor: "transparent",
                       animation: "chatbot-shimmer 4s linear infinite",
                     }}>
-                      মাহবুব সরদার সবুজ
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                      <span style={{
-                        display: "inline-flex", alignItems: "center", gap: 4,
-                        padding: "2px 7px",
-                        borderRadius: 999,
-                        color: "rgba(74,222,128,0.95)",
-                        background: "rgba(34,197,94,0.08)",
-                        border: "1px solid rgba(34,197,94,0.18)",
-                        fontSize: "0.58rem",
-                        fontWeight: 700,
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        letterSpacing: "0.02em",
-                        lineHeight: 1.2,
-                      }}>
-                        <span style={{
-                          width: 5, height: 5, borderRadius: "50%",
-                          background: "#4ade80",
-                          boxShadow: "0 0 10px rgba(74,222,128,0.75)",
-                          animation: "chatbot-glow-pulse 2.5s ease-in-out infinite",
-                        }} />
-                        Official AI
-                      </span>
-                      <span style={{
-                        display: "inline-flex", alignItems: "center", gap: 4,
-                        padding: "2px 7px",
-                        borderRadius: 999,
-                        color: "rgba(245,238,222,0.72)",
-                        background: "rgba(212,168,67,0.07)",
-                        border: "1px solid rgba(212,168,67,0.16)",
-                        fontSize: "0.56rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        lineHeight: 1.2,
-                        fontWeight: 700,
-                      }}>যাচাইকৃত তথ্যভিত্তিক</span>
+                      মাহবুব সরদার সবুজ AI ChatBot
                     </div>
                   </div>
                 </div>
@@ -2759,7 +2724,7 @@ export default function AIChatbot() {
                     }}
                   >
                     {tab === "ai" ? (
-                      <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI সহকারী</>
+                      <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI ChatBot</
                     ) : (
                       <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> সরাসরি চ্যাট</>
                     )}
@@ -3371,7 +3336,7 @@ export default function AIChatbot() {
                     margin: 0,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
-                  }}>AI সহকারী • অডিও এডিটিং সক্ষম • Enter = পাঠান</p>
+                  }}>মাহবুব সরদার সবুজ AI ChatBot • Enter = পাঠান</p>
                   {input.length > 0 && (
                     <span style={{
                       color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
