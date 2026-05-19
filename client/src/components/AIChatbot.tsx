@@ -1431,16 +1431,7 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম ওয়া রাহমাতুল্লাহি ওয়া বারাকাতুহ! 🌟
-
-আমি "সবুজের AI সহকারী" — একটি সাধারণ AI (General AI)। আমি যেকোনো বিষয়ে সাহায্য করতে পারি:
-
-🤖 **সাধারণ AI** — বিজ্ঞান, ইতিহাস, প্রযুক্তি, গণিত, রান্না, স্বাস্থ্য, প্রোগ্রামিং সব বিষয়ে
-📚 **ওয়েবসাইট বিশেষজ্ঞ** — লেখক, বই, ১১৯৯+ লেখা ও আবৃত্তি সম্পর্কে সব তথ্য
-🎙️ **অডিও এডিটিং** — ভয়েস ক্লিন, মিউজিক মিক্স, ইকো, ভয়েস চেঞ্জার
-💬 **যেকোনো প্রশ্ন** — আমি ChatGPT-এর মতোই সব পারি
-
-যা মনে চায় জিজ্ঞেস করুন! [BUTTON:/about]`,
+    content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent। আপনাকে কীভাবে সাহায্য করতে পারি?`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2437,8 +2428,7 @@ export default function AIChatbot() {
                     animation: "chatbot-ping2 2s ease-in-out infinite 0.4s",
                     pointerEvents: "none",
                   }} />
-                </>
-              )}
+  
               <AnimatePresence mode="wait">
                 {isOpen ? (
                   <motion.span key="x"
@@ -2633,7 +2623,7 @@ export default function AIChatbot() {
                       WebkitTextFillColor: "transparent",
                       animation: "chatbot-shimmer 4s linear infinite",
                     }}>
-                      মাহবুব সরদার সবুজ AI ChatBot
+                      মাহবুব সরদার সবুজ AI Agent
                     </div>
                   </div>
                 </div>
@@ -2690,149 +2680,6 @@ export default function AIChatbot() {
                   </button>
                 </div>
               </div>
-
-              {/* ── Tabs ── */}
-              <div style={{
-                display: "flex",
-                borderBottom: "1px solid rgba(212,168,67,0.1)",
-                background: "rgba(5,10,20,0.9)",
-                flexShrink: 0,
-                padding: "0 6px",
-              }}>
-                {(["ai", "live"] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`chatbot-tab-btn${activeTab === tab ? " active" : ""}`}
-                    style={{
-                      flex: 1,
-                      padding: "8px 10px",
-                      background: activeTab === tab ? "rgba(212,168,67,0.09)" : "transparent",
-                      border: "none",
-                      borderBottom: activeTab === tab ? "2px solid rgba(212,168,67,0.9)" : "2px solid transparent",
-                      color: activeTab === tab ? "rgba(212,168,67,1.0)" : "rgba(160,140,100,0.45)",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.74rem",
-                      fontWeight: activeTab === tab ? 700 : 500,
-                      letterSpacing: "0.02em",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 5,
-                      marginBottom: -1,
-                    }}
-                  >
-                    {tab === "ai" ? (
-                      <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> AI ChatBot</
-                    ) : (
-                      <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> সরাসরি চ্যাট</>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* ── Tab Content ── */}
-              {activeTab === "live" ? (
-                <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                  <Suspense fallback={
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "rgba(212,168,67,0.6)", fontSize: "0.85rem" }}>
-                      লোড হচ্ছে...
-                    </div>
-                  }>
-                    <LiveChatWidget />
-                  </Suspense>
-                </div>
-              ) : (
-              <>
-              {/* ── Quick suggestion chips (context-aware) ── */}
-              {!audioFile && !lastAudioBlobRef.current && (() => {
-                // Context-aware: detect last assistant message topic
-                const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
-                const lastText = lastAssistant?.content?.toString().toLowerCase() ?? "";
-                let contextChips: { label: string; cmd: string }[] = [];
-                if (messages.length > 1) {
-                  if (lastText.includes("বই") || lastText.includes("ebook") || lastText.includes("ই-বুক")) {
-                    contextChips = [
-                      { label: "📖 বিনামূল্যে পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
-                      { label: "🛒 কিনতে চাই", cmd: "দুঃখবিলাস বই কোথায় পাওয়া যায়?" },
-                      { label: "✍️ অন্য বই", cmd: "আর কোন বই আছে?" },
-                    ];
-                  } else if (lastText.includes("কবিতা") || lastText.includes("লেখা") || lastText.includes("writings")) {
-                    contextChips = [
-                      { label: "📝 লেখা পড়ুন", cmd: "লেখালেখি পেজে যেতে চাই" },
-                      { label: "❤️ ভালোবাসার কবিতা", cmd: "ভালোবাসার কবিতা দেখাও" },
-                      { label: "💔 বিচ্ছেদের লেখা", cmd: "বিচ্ছেদের লেখা দেখাও" },
-                    ];
-                  } else if (lastText.includes("যোগাযোগ") || lastText.includes("contact")) {
-                    contextChips = [
-                      { label: "📞 যোগাযোগ পেজ", cmd: "যোগাযোগ পেজে যেতে চাই" },
-                      { label: "📘 ফেসবুক", cmd: "ফেসবুক পেজের লিংক দাও" },
-                    ];
-                  } else if (lastText.includes("অডিও") || lastText.includes("audio")) {
-                    contextChips = [
-                      { label: "🧹 নয়েজ রিমুভ", cmd: "নয়েজ রিমুভ করো" },
-                      { label: "✨ নিখুঁত স্টুডিও", cmd: "নিখুঁত স্টুডিও মাস্টারিং করো" },
-                      { label: "🌟 গোল্ডেন ভয়েস", cmd: "গোল্ডেন ভয়েস প্রয়োগ করো" },
-                      { label: "🔧 অটো রিপেয়ার", cmd: "অটো রিপেয়ার করো" },
-                    ];
-                  }
-                }
-                const showChips = messages.length <= 1 ? true : contextChips.length > 0;
-                if (!showChips) return null;
-                const chips = messages.length <= 1 ? [
-                  { label: "লেখক পরিচয়", cmd: "মাহবুব সরদার সবুজ কে?" },
-                  { label: "দুঃখবিলাস", cmd: "দুঃখবিলাস বই কোথায় পাওয়া যায়?" },
-                  { label: "ই-বুক পড়ুন", cmd: "বিনামূল্যে ই-বুক পড়তে চাই" },
-                  { label: "আবৃত্তি", cmd: "আবৃত্তির তালিকা দেখাও" },
-                  { label: "লেখালেখি", cmd: "লেখালেখি পেজে যেতে চাই" },
-                  { label: "যোগাযোগ", cmd: "লেখকের সাথে যোগাযোগ করতে চাই" },
-                  { label: "অডিও এডিট", cmd: "অডিও এডিট করতে চাই" },
-                ] : contextChips;
-                return (
-                <div style={{
-                  padding: "6px 10px 5px",
-                  borderBottom: "1px solid rgba(212,168,67,0.07)",
-                  background: "rgba(4,8,16,0.7)",
-                  flexShrink: 0,
-                }}>
-                  <div style={{
-                    color: "rgba(212,168,67,0.35)",
-                    fontSize: "0.52rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    fontWeight: 600,
-                    letterSpacing: "0.04em",
-                    marginBottom: 5,
-                  }}>{messages.length <= 1 ? "দ্রুত শুরু করুন" : "সম্পর্কিত প্রশ্ন"}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {chips.map(chip => (
-                      <button
-                        key={chip.label}
-                        onClick={() => {
-                          handleSendWithText(chip.cmd);
-                        }}
-                        className="chatbot-suggestion-btn"
-                        style={{
-                          padding: "5px 10px",
-                          background: "linear-gradient(135deg, rgba(212,168,67,0.11), rgba(212,168,67,0.035))",
-                          border: "1px solid rgba(212,168,67,0.24)",
-                          borderRadius: 999,
-                          color: "rgba(244,224,164,0.82)",
-                          boxShadow: "0 4px 14px rgba(0,0,0,0.16)",
-                          fontSize: "0.6rem",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {chip.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                );
-              })()}
 
               {/* ── Messages ── */}
               <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
@@ -3336,7 +3183,7 @@ export default function AIChatbot() {
                     margin: 0,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
-                  }}>মাহবুব সরদার সবুজ AI ChatBot • Enter = পাঠান</p>
+                  }}>মাহবুব সরদার সবুজ AI Agent • Enter = পাঠান</p>
                   {input.length > 0 && (
                     <span style={{
                       color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
