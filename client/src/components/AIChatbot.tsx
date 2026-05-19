@@ -142,6 +142,24 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
+const AI_CAPABILITIES = [
+  { label: "সাধারণ AI", detail: "যে কোনো প্রশ্নের গুছানো উত্তর" },
+  { label: "ওয়েবসাইট গাইড", detail: "লেখক, বই, লেখা, আবৃত্তি ও পেজ" },
+  { label: "ভিশন", detail: "ছবি দেখে বিশ্লেষণ ও ব্যাখ্যা" },
+  { label: "অডিও স্টুডিও", detail: "নয়েজ রিমুভ, মাস্টারিং, ভয়েস টিউন" },
+  { label: "ভিডিও → অডিও", detail: "ভিডিও থেকে অডিও বের করে এডিট" },
+  { label: "লাইভ সাপোর্ট", detail: "প্রয়োজনে সরাসরি যোগাযোগ" },
+];
+
+const QUICK_ACTIONS = [
+  { label: "আমি কী কী পারি?", prompt: "তুমি কী কী করতে পারো? সংক্ষেপে আমার জন্য সব সক্ষমতা দেখাও।" },
+  { label: "বই দেখাও", prompt: "মাহবুব সরদার সবুজের বই ও ই-বুকগুলো দেখাও।" },
+  { label: "লেখা খুঁজতে চাই", prompt: "ওয়েবসাইটে কোন কোন ধরনের লেখা আছে এবং কীভাবে পড়ব?" },
+  { label: "অডিও ক্লিন করব", prompt: "আমি একটি অডিও ক্লিন করতে চাই—নয়েজ রিমুভ ও স্টুডিও মাস্টারিং কীভাবে করব?" },
+  { label: "ছবি বিশ্লেষণ", prompt: "আমি একটি ছবি আপলোড করব। তুমি কী কী বিশ্লেষণ করতে পারবে?" },
+  { label: "লাইভ যোগাযোগ", prompt: "আমি সরাসরি যোগাযোগ করতে চাই।" },
+];
+
 // ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/about",    label: "পরিচিতি পেজ দেখুন",    keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
@@ -1431,7 +1449,9 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent। আপনাকে কীভাবে সাহায্য করতে পারি?`,
+    content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent—আপনার সাধারণ AI সহকারী, ওয়েবসাইট গাইড, ভিশন সহায়ক ও অডিও স্টুডিও।
+
+আপনি যে কোনো প্রশ্ন করতে পারেন, ছবি/অডিও/ভিডিও দিতে পারেন, বই-লেখা-আবৃত্তি খুঁজতে পারেন বা সরাসরি লাইভ সাপোর্ট নিতে পারেন।`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2682,58 +2702,136 @@ export default function AIChatbot() {
                 </div>
               </div>
 
-              {/* ── Messages ── */}
-              <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
-                {messages.map((msg, idx) => (
-                  <MessageBubble
-                    key={msg.id}
-                    message={msg}
-                    onNavigate={handleNavigate}
-                    onSwitchToLive={() => setActiveTab("live")}
-                    isLatest={msg.role === "assistant" && idx === messages.length - 1 && !isLoading && !audioProcessing}
-                  />
-                ))}
-                {(isLoading || audioProcessing) && <TypingIndicator stage={audioProcessing ? audioProcessingStage : null} />}
-
-                {error && !isLoading && !audioProcessing && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "6px 0" }}>
-                    <div style={{
-                      textAlign: "center",
-                      color: "#f87171",
-                      fontSize: "0.75rem",
-                      background: "rgba(239,68,68,0.09)",
-                      border: "1px solid rgba(239,68,68,0.22)",
-                      borderRadius: 11,
-                      padding: "9px 13px",
-                      width: "100%",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    }}>
-                      {error}
-                    </div>
+              {/* ── Mode switch ── */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 6,
+                padding: "8px 10px",
+                background: "rgba(4,8,16,0.76)",
+                borderBottom: "1px solid rgba(212,168,67,0.08)",
+                flexShrink: 0,
+              }}>
+                {[
+                  { key: "ai", label: "AI Agent", sub: "প্রশ্ন, ছবি, অডিও" },
+                  { key: "live", label: "Live Chat", sub: "সরাসরি সহায়তা" },
+                ].map(tab => {
+                  const active = activeTab === tab.key;
+                  return (
                     <button
-                      onClick={handleRetry}
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key as "ai" | "live")}
                       style={{
-                        display: "flex", alignItems: "center", gap: 7,
-                        padding: "7px 16px",
-                        background: "rgba(212,168,67,0.1)",
-                        border: "1px solid rgba(212,168,67,0.38)",
-                        color: "#D4A843",
+                        border: `1px solid ${active ? "rgba(212,168,67,0.48)" : "rgba(212,168,67,0.13)"}`,
+                        background: active ? "linear-gradient(135deg, rgba(212,168,67,0.18), rgba(212,168,67,0.07))" : "rgba(255,255,255,0.025)",
+                        color: active ? "#F7E4A5" : "rgba(240,232,212,0.58)",
                         borderRadius: 13,
-                        fontSize: "0.75rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontWeight: 600,
+                        padding: "7px 8px",
                         cursor: "pointer",
-                        transition: "all 0.2s",
+                        textAlign: "left",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        boxShadow: active ? "0 8px 22px rgba(212,168,67,0.08)" : "none",
                       }}
                     >
-                      ↺ আবার চেষ্টা করুন
+                      <span style={{ display: "block", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.02em" }}>{tab.label}</span>
+                      <span style={{ display: "block", marginTop: 1, fontSize: "0.52rem", opacity: 0.72 }}>{tab.sub}</span>
                     </button>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                  );
+                })}
               </div>
 
+              {/* ── Messages / Live chat ── */}
+              {activeTab === "ai" ? (
+                <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
+                  {messages.length <= 1 && (
+                    <div style={{
+                      marginBottom: 12,
+                      padding: 12,
+                      borderRadius: 18,
+                      border: "1px solid rgba(212,168,67,0.2)",
+                      background: "linear-gradient(145deg, rgba(212,168,67,0.08), rgba(15,23,42,0.52))",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                    }}>
+                      <div style={{
+                        color: "#F7E4A5",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.76rem",
+                        fontWeight: 800,
+                        marginBottom: 8,
+                      }}>নতুন ডিজাইন: সবকিছু পারার মতো AI সহকারী</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                        {AI_CAPABILITIES.map(item => (
+                          <div key={item.label} style={{
+                            padding: "7px 8px",
+                            borderRadius: 12,
+                            background: "rgba(2,6,18,0.52)",
+                            border: "1px solid rgba(212,168,67,0.1)",
+                          }}>
+                            <div style={{ color: "rgba(212,168,67,0.9)", fontSize: "0.58rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.label}</div>
+                            <div style={{ color: "rgba(240,232,212,0.48)", fontSize: "0.5rem", lineHeight: 1.35, marginTop: 2, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.detail}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {messages.map((msg, idx) => (
+                    <MessageBubble
+                      key={msg.id}
+                      message={msg}
+                      onNavigate={handleNavigate}
+                      onSwitchToLive={() => setActiveTab("live")}
+                      isLatest={msg.role === "assistant" && idx === messages.length - 1 && !isLoading && !audioProcessing}
+                    />
+                  ))}
+                  {(isLoading || audioProcessing) && <TypingIndicator stage={audioProcessing ? audioProcessingStage : null} />}
+
+                  {error && !isLoading && !audioProcessing && (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "6px 0" }}>
+                      <div style={{
+                        textAlign: "center",
+                        color: "#f87171",
+                        fontSize: "0.75rem",
+                        background: "rgba(239,68,68,0.09)",
+                        border: "1px solid rgba(239,68,68,0.22)",
+                        borderRadius: 11,
+                        padding: "9px 13px",
+                        width: "100%",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      }}>
+                        {error}
+                      </div>
+                      <button
+                        onClick={handleRetry}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 7,
+                          padding: "7px 16px",
+                          background: "rgba(212,168,67,0.1)",
+                          border: "1px solid rgba(212,168,67,0.38)",
+                          color: "#D4A843",
+                          borderRadius: 13,
+                          fontSize: "0.75rem",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        ↺ আবার চেষ্টা করুন
+                      </button>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              ) : (
+                <div style={{ flex: 1, minHeight: 0, overflow: "hidden", padding: 10 }}>
+                  <Suspense fallback={<div style={{ color: "rgba(212,168,67,0.65)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.72rem", padding: 12 }}>লাইভ চ্যাট প্রস্তুত হচ্ছে...</div>}>
+                    <LiveChatWidget onClose={() => setActiveTab("ai")} />
+                  </Suspense>
+                </div>
+              )}
+
               {/* ── Input ── */}
+              {activeTab === "ai" && (
               <div style={{
                 padding: "8px 10px 10px",
                 borderTop: "1px solid rgba(212,168,67,0.08)",
@@ -3016,6 +3114,39 @@ export default function AIChatbot() {
                   </div>
                 )}
 
+                {!audioFile && !lastAudioBlobRef.current && !imagePreview && !isLoading && !audioProcessing && (
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{
+                      display: "flex",
+                      gap: 5,
+                      overflowX: "auto",
+                      paddingBottom: 2,
+                    }}>
+                      {QUICK_ACTIONS.map(action => (
+                        <button
+                          key={action.label}
+                          onClick={() => handleSendWithText(action.prompt)}
+                          className="chatbot-suggestion-btn"
+                          style={{
+                            padding: "5px 9px",
+                            background: "rgba(212,168,67,0.06)",
+                            border: "1px solid rgba(212,168,67,0.18)",
+                            borderRadius: 999,
+                            color: "rgba(247,228,165,0.78)",
+                            fontSize: "0.58rem",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            cursor: "pointer",
+                            fontWeight: 700,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {action.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: "flex", gap: 5, alignItems: "flex-end" }}>
                   {/* Image attach button (hidden in audio mode) */}
                   {!isAudioMode && (
@@ -3097,7 +3228,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "লেখক, কবিতা, বই বা অডিও সম্পর্কে জিজ্ঞেস করুন..."}
+                      placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "যে কোনো প্রশ্ন করুন, ছবি দিন, বই/লেখা খুঁজুন বা অডিও এডিট করুন..."}
                       rows={1}
                       disabled={isLoading}
                       className="chatbot-input"
@@ -3184,7 +3315,7 @@ export default function AIChatbot() {
                     margin: 0,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
-                  }}>মাহবুব সরদার সবুজ AI Agent • Enter = পাঠান</p>
+                  }}>সবুজ AI Agent • General AI + Vision + Audio Studio • Enter = পাঠান</p>
                   {input.length > 0 && (
                     <span style={{
                       color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
@@ -3194,6 +3325,7 @@ export default function AIChatbot() {
                   )}
                 </div>
                             </div>
+              )}
             </div>
           </motion.div>
         )}
