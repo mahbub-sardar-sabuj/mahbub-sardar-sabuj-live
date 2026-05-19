@@ -2422,13 +2422,14 @@ export default function AIChatbot() {
                     animation: "chatbot-ping 2s ease-in-out infinite",
                     pointerEvents: "none",
                   }} />
-                  <span style={{
+                                    <span style={{
                     position: "absolute", inset: -10, borderRadius: "50%",
                     border: "1.5px solid rgba(212,168,67,0.25)",
                     animation: "chatbot-ping2 2s ease-in-out infinite 0.4s",
                     pointerEvents: "none",
                   }} />
-  
+                </>
+              )}
               <AnimatePresence mode="wait">
                 {isOpen ? (
                   <motion.span key="x"
@@ -3192,10 +3193,7 @@ export default function AIChatbot() {
                     }}>{input.length}</span>
                   )}
                 </div>
-              </div>
-              </>
-              )}
-
+                            </div>
             </div>
           </motion.div>
         )}
