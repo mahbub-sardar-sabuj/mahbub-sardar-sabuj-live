@@ -1,40 +1,26 @@
+import { WEBSITE_KNOWLEDGE } from "./knowledge/siteKnowledge.js";
+import {
+  CHATBOT_PERSONA_RULES,
+  INTENT_RULES,
+  buildKnowledgeContext,
+  buildTrainingExampleContext,
+} from "./knowledge/trainingExamples.js";
+
 // api/chat.js — সম্পূর্ণ আপডেট: General AI + Knowledge Base
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent"—লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে থাকা একটি প্রিমিয়াম General AI সহকারী। তুমি শুধুমাত্র ওয়েবসাইট-তথ্যে সীমাবদ্ধ নও; ব্যবহারকারীর সাধারণ জ্ঞান, শিক্ষা, প্রযুক্তি, প্রোগ্রামিং, সাহিত্য, গণিত, জীবনযাপন, কনটেন্ট পরিকল্পনা, অনুবাদ, সারাংশ, আইডিয়া, বিশ্লেষণ এবং সৃজনশীল লেখার প্রশ্নেও সহায়তা করবে।
 
-## মূল পরিচয়
-১. তুমি বাংলাকে অগ্রাধিকার দেবে, তবে ব্যবহারকারী অন্য ভাষায় লিখলে সেই ভাষায় উত্তর দিতে পারো।
-২. তুমি মাহবুব সরদার সবুজ, তাঁর বই, লেখা, আবৃত্তি, গ্যালারি, সংবাদ, যোগাযোগ ও ওয়েবসাইট ন্যাভিগেশনের যাচাইকৃত গাইড।
-৩. তুমি multimodal সহায়ক: ছবি সংযুক্ত থাকলে ছবির বিষয়, লেখা, দৃশ্য, সমস্যা, নকশা বা উন্নতির পরামর্শ বিশ্লেষণ করবে।
-৪. তুমি অডিও স্টুডিও workflow বোঝো: ব্যবহারকারী অডিও/ভিডিও আপলোড করলে UI আলাদা প্রসেসিং ইঞ্জিনে নয়েজ রিমুভ, EQ, কম্প্রেশন, মাস্টারিং, ভয়েস স্টাইল, মিউজিক মিক্স, ভিডিও থেকে অডিও এক্সট্রাক্ট ইত্যাদি করতে পারে।
-৫. তুমি প্রয়োজনে ব্যবহারকারীকে লাইভ চ্যাটে পাঠাতে পারো, তবে আগে নিজে যথাসম্ভব সহায়তা করবে।
+## মূল আচরণবিধি
+${CHATBOT_PERSONA_RULES.map((rule, index) => `${index + 1}. ${rule}`).join("\\n")}
 
-## ওয়েবসাইটের যাচাইকৃত তথ্য
-- জন্মস্থান: কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রাম।
-- পরিচয়: লেখক, কবি ও সাহিত্যিক মাহবুব সরদার সবুজ।
-- Facebook: https://facebook.com/MahbubSardarSabuj
-- Instagram: https://www.instagram.com/mahbub_sardar_sabuj
-- YouTube: https://youtube.com/@MahbubSardarSabuj
-- ইমেইল: lekhokmahbubsardarsabuj@gmail.com
+## যাচাইকৃত Knowledge Base
+${buildKnowledgeContext(WEBSITE_KNOWLEDGE)}
 
-## লেখালেখি
-ওয়েবসাইটে মোট ১১৯৯টি লেখা রয়েছে: জীবনদর্শন ৬৬২টি, বিচ্ছেদ ২৫১টি, ভালোবাসা ১৯০টি, ছোট লেখা ৫৫টি এবং কবিতা ৪০টি।
-
-## বই ও ই-বুক
-১. আমি বিচ্ছেদকে বলি দুঃখবিলাস—প্রথম ফিজিক্যাল কাব্যগ্রন্থ; কেনার লিংক: https://rkmri.co/TTMEoA3l3pM0/
-২. স্মৃতির বসন্তে তুমি
-৩. চাঁদফুল
-৪. সময়ের গহ্বরে
-৫. মাহবুব সরদার সবুজের অনবদ্য লেখা
-
-## আবৃত্তি
-ওয়েবসাইটে ইউটিউব ও ফেসবুকের বহু আবৃত্তি রয়েছে, যেমন: জানেন বাবা, আমি কাঁদলে মা আর কাঁদে না, তবুও তাকে ভালো, আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে, তোমাকে ভুলে গেছি-এই কথাটা নিজেকে প্রতিদিন বলি।
-
-## পেজ ন্যাভিগেশন
-হোম /, পরিচিতি /about, বই /ebooks, লেখালেখি /writings, আবৃত্তি /recitations, সংবাদ /news, গ্যালারি /gallery, যোগাযোগ /contact, ডিজাইন স্টুডিও /editor। প্রাসঙ্গিক হলে [BUTTON:/path] ফরম্যাটে অ্যাকশন বাটন দাও।
+## শেখানো ও উত্তর দেওয়ার উদাহরণ
+${buildTrainingExampleContext()}
 
 ## উত্তর দেওয়ার নীতি
 ১. ব্যবহারকারীর উদ্দেশ্য আগে বোঝো, তারপর সরাসরি কার্যকর উত্তর দাও।
-২. ওয়েবসাইট/লেখক সম্পর্কে প্রশ্ন হলে উপরের যাচাইকৃত তথ্যকে অগ্রাধিকার দাও; অনুমান করো না।
+২. ওয়েবসাইট/লেখক সম্পর্কে প্রশ্ন হলে যাচাইকৃত knowledge base-কে অগ্রাধিকার দাও; অনুমান করো না।
 ৩. সাধারণ জ্ঞানভিত্তিক প্রশ্নে সহায়ক, গুছানো ও বাস্তবসম্মত উত্তর দাও।
 ৪. ছবি থাকলে ছবির দৃশ্যমান তথ্য বিশ্লেষণ করো; অদৃশ্য বা ব্যক্তিগত তথ্য দাবি করো না।
 ৫. চিকিৎসা, আইন, আর্থিক বা নিরাপত্তাজনিত বিষয়ে সতর্ক ডিসক্লেইমার দিয়ে সাধারণ সহায়তা দাও।
@@ -131,125 +117,7 @@ function extractUserText(messages = []) {
 }
 
 
-const WEBSITE_KNOWLEDGE = {
-  author: {
-    name: "মাহবুব সরদার সবুজ",
-    identity: "বাংলা ভাষার একজন লেখক ও কবি, যিনি ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম, স্মৃতি ও মানবিক অনুভূতি নিয়ে লেখেন।",
-    birthplace: "কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়ি",
-    currentLocation: "কর্মসূত্রে সৌদি আরব",
-    signatureQuote: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি।",
-    stats: ["Facebook পেজে ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার", "৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন"],
-  },
-  pages: [
-    { key: "home", label: "হোম", path: "/", keywords: ["home", "হোম", "প্রথম পেজ"] },
-    { key: "about", label: "পরিচিতি", path: "/about", keywords: ["about", "পরিচয়", "লেখক", "কবি", "মাহবুব", "সবুজ", "জন্ম"] },
-    { key: "writings", label: "লেখালেখি", path: "/writings", keywords: ["লেখা", "লেখালেখি", "writings", "archive", "আর্কাইভ", "কবিতা", "গল্প"] },
-    { key: "ebooks", label: "ই-বুক", path: "/ebooks", keywords: ["বই", "ই-বুক", "ebook", "ebooks", "পড়তে", "বইগুলো"] },
-    { key: "recitations", label: "Facebook আবৃত্তি", path: "/facebook-recitations", keywords: ["আবৃত্তি", "recitation", "রিল", "reel", "facebook video"] },
-    { key: "editor", label: "সরদার ডিজাইন স্টুডিও", path: "/editor", keywords: ["ডিজাইন", "design", "কার্ড", "পোস্টার", "editor", "স্টুডিও"] },
-    { key: "gallery", label: "গ্যালারি", path: "/gallery", keywords: ["গ্যালারি", "gallery", "ছবি", "ফটো", "photo"] },
-    { key: "news", label: "সরদার সংবাদ", path: "/news", keywords: ["সংবাদ", "news", "খবর", "আপডেট"] },
-    { key: "contact", label: "যোগাযোগ", path: "/contact", keywords: ["যোগাযোগ", "contact", "ইমেইল", "email", "ফর্ম"] },
-    { key: "community", label: "আমিও লিখবো বাস্তবতা", path: "/amio-likhbo-bastobota", keywords: ["আমিও লিখবো", "বাস্তবতা", "amio", "bastobota", "নিজের লেখা"] },
-  ],
-  books: [
-    {
-      key: "dukkhovilash",
-      title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
-      type: "ফিজিক্যাল কাব্যগ্রন্থ ও অনলাইন পাঠ",
-      year: "২০২৬",
-      pages: "১৫০+",
-      summary: "বিচ্ছেদ, অপেক্ষা, হারানোর বেদনা ও ভালোবাসার গভীর অনুভূতি নিয়ে লেখা প্রথম ফিজিক্যাল কাব্যগ্রন্থ।",
-      readPath: "/ebooks/read/dukkhovilash",
-      buyUrl: "https://rkmri.co/TTMEoA3l3pM0/",
-      keywords: ["দুঃখবিলাস", "বিচ্ছেদকে বলি", "dukkhovilash", "রকমারি", "rokomari", "কিনতে", "অর্ডার"],
-    },
-    {
-      key: "smritir-boshonte",
-      title: "স্মৃতির বসন্তে তুমি",
-      type: "ই-বুক",
-      year: "২০২৪",
-      pages: "৮০+",
-      summary: "স্মৃতি, ভালোবাসা ও আবেগের কবিতাময় সংকলন।",
-      readPath: "/ebooks/read/smritir-boshonte",
-      keywords: ["স্মৃতির বসন্তে", "smritir", "boshonte", "স্মৃতি"],
-    },
-    {
-      key: "chand-phool",
-      title: "চাঁদফুল",
-      type: "ই-বুক",
-      year: "২০২৩",
-      pages: "৬০+",
-      summary: "কোমল অনুভূতি, প্রেম ও সৌন্দর্যের কাব্যিক প্রকাশ।",
-      readPath: "/ebooks/read/chand-phool",
-      keywords: ["চাঁদফুল", "chand", "phool", "চাদফুল"],
-    },
-    {
-      key: "shomoyer-gohvore",
-      title: "সময়ের গহ্বরে",
-      type: "ই-বুক",
-      year: "২০২৩",
-      pages: "১০০+",
-      summary: "সময়, জীবন ও অভিজ্ঞতার গভীর ভাবনামূলক লেখা।",
-      readPath: "/ebooks/read/shomoyer-gohvore",
-      keywords: ["সময়ের গহ্বরে", "সময়ের গহ্বরে", "shomoyer", "gohvore"]
-    },
-    {
-      key: "onoboddo-lekha",
-      title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
-      type: "ই-বুক সংকলন",
-      year: "চলমান",
-      pages: "১০০টি লেখা",
-      summary: "জীবনমুখী ও অনুপ্রেরণামূলক লেখার বাছাই সংকলন।",
-      readPath: "/ebooks/read/onoboddo-lekha",
-      keywords: ["অনবদ্য", "onoboddo", "অনুপ্রেরণা", "জীবনমুখী"]
-    },
-  ],
-  writingCategories: [
-    { name: "জীবনদর্শন", count: 570, path: "/writings", keywords: ["জীবনদর্শন", "জীবন", "বাস্তবতা", "অনুপ্রেরণা", "life"] },
-    { name: "বিচ্ছেদ", count: 251, path: "/writings", keywords: ["বিচ্ছেদ", "কষ্ট", "হারানো", "অপেক্ষা", "breakup"] },
-    { name: "ভালোবাসা", count: 168, path: "/writings", keywords: ["ভালোবাসা", "প্রেম", "love"] },
-    { name: "ছোট লেখা", count: 55, path: "/writings", keywords: ["ছোট লেখা", "short", "উক্তি", "স্ট্যাটাস"] },
-    { name: "কবিতা", count: 40, path: "/writings", keywords: ["কবিতা", "poem", "poetry"] },
-  ],
-  recitations: [
-    { title: "জানেন বাবা", path: "/facebook-recitations", keywords: ["জানেন বাবা", "বাবা"] },
-    { title: "আমি কাঁদলে মা আর কাঁদে না", path: "/facebook-recitations", keywords: ["কাঁদলে মা", "মা"] },
-    { title: "তবুও তাকে ভালো", path: "/facebook-recitations", keywords: ["তবুও তাকে", "তাকে ভালো"] },
-    { title: "আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে", path: "/facebook-recitations", keywords: ["সব ঠিক", "নিয়ম আছে"] },
-    { title: "মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি", path: "/facebook-recitations", keywords: ["মাঝে মাঝে", "ডেকে বলি"] },
-    { title: "নারীকে ভালোবাসার আগে", path: "/facebook-recitations", keywords: ["নারীকে", "ভালোবাসার আগে"] },
-    { title: "মানুষটা তোমার প্রতি অন্ধ", path: "/facebook-recitations", keywords: ["মানুষটা", "অন্ধ"] },
-    { title: "এমনভাবে সরে যাবো একদিন", path: "/facebook-recitations", keywords: ["সরে যাবো", "সরে যাব"] },
-    { title: "বিবেকের আদালত", path: "/facebook-recitations", keywords: ["বিবেক", "আদালত"] },
-  ],
-  contact: {
-    email: "lekhokmahbubsardarsabuj@gmail.com",
-    facebook: "https://facebook.com/MahbubSardarSabuj",
-    instagram: "https://instagram.com/mahbub_sardar_sabuj",
-    youtube: "https://youtube.com/@MahbubSardarSabuj",
-  },
-  tools: [
-    { key: "audio", label: "Audio Studio", keywords: ["অডিও", "audio", "ভয়েস", "voice", "নয়েজ", "noise", "মিউজিক", "music", "মিক্স", "mix", "রেকর্ড", "sound"] },
-    { key: "vision", label: "Vision Assistant", keywords: ["ছবি বিশ্লেষণ", "image", "vision", "স্ক্রিনশট", "screenshot", "ফটো বিশ্লেষণ"] },
-    { key: "live", label: "Live Chat", keywords: ["লাইভ", "live", "মানুষের সাথে", "সরাসরি চ্যাট", "admin", "support"] },
-  ],
-};
 
-const INTENT_RULES = [
-  { intent: "book", priority: 95, keywords: ["বই", "ই-বুক", "ebook", "ebooks", "দুঃখবিলাস", "রকমারি", "কিনতে", "অর্ডার", "পড়তে", "read"] },
-  { intent: "writing", priority: 90, keywords: ["লেখা", "লেখালেখি", "writings", "কবিতা", "জীবনদর্শন", "বিচ্ছেদ", "ভালোবাসা", "ছোট লেখা", "স্ট্যাটাস", "উক্তি"] },
-  { intent: "recitation", priority: 88, keywords: ["আবৃত্তি", "recitation", "reel", "রিল", "জানেন বাবা", "কাঁদলে মা", "বিবেকের আদালত"] },
-  { intent: "author", priority: 86, keywords: ["মাহবুব", "সবুজ", "লেখক", "কবি", "পরিচয়", "about", "জন্ম", "কুমিল্লা", "সৌদি", "কে তিনি", "আপনি কে", "তুমি কে"] },
-  { intent: "contact", priority: 84, keywords: ["যোগাযোগ", "contact", "ইমেইল", "email", "ফেসবুক", "facebook", "instagram", "ইনস্টাগ্রাম", "youtube", "ইউটিউব"] },
-  { intent: "audio", priority: 82, keywords: ["অডিও", "audio", "ভয়েস", "voice", "নয়েজ", "noise", "মিউজিক", "music", "রেকর্ড", "সাউন্ড", "মিক্স"] },
-  { intent: "vision", priority: 80, keywords: ["ছবি বিশ্লেষণ", "image", "vision", "স্ক্রিনশট", "screenshot", "ফটো বিশ্লেষণ"] },
-  { intent: "design", priority: 78, keywords: ["ডিজাইন", "design", "কার্ড", "পোস্টার", "editor", "এডিটর", "স্টুডিও"] },
-  { intent: "gallery", priority: 76, keywords: ["গ্যালারি", "gallery", "ছবি", "ফটো", "photo"] },
-  { intent: "news", priority: 74, keywords: ["সংবাদ", "news", "খবর", "সরদার সংবাদ", "আপডেট"] },
-  { intent: "community", priority: 72, keywords: ["আমিও লিখবো", "বাস্তবতা", "amio", "bastobota", "নিজের লেখা", "গল্প শেয়ার"] },
-  { intent: "site", priority: 60, keywords: ["ওয়েবসাইট", "website", "পেজ", "লিংক", "মেনু", "কোথায় পাব", "কোথায় আছে", "সব পেজ"] },
-];
 
 function normalizeForIntent(text = "") {
   return String(text || "")
@@ -275,7 +143,8 @@ function detectIntent(rawText = "") {
   const scored = INTENT_RULES
     .map((rule) => {
       const hits = keywordHits(text, rule.keywords);
-      return { ...rule, hits, score: hits * 20 + rule.priority };
+      const priority = typeof rule.priority === "number" ? rule.priority : 50;
+      return { ...rule, hits, priority, score: hits * 20 + priority };
     })
     .filter((rule) => rule.hits > 0)
     .sort((a, b) => b.score - a.score || b.priority - a.priority);
@@ -362,6 +231,10 @@ function buildCanonicalReply(messages = []) {
   const intent = detectIntent(userText);
   if (!intent) return null;
 
+  if (intent.intent === "teaching") {
+    return "অবশ্যই, আমি ধাপে ধাপে শেখাতে পারি। আপনি যে বিষয়টি শিখতে চান সেটি লিখুন—আমি সহজ ভাষায় ধারণা, উদাহরণ, অনুশীলন এবং পরবর্তী ধাপ সাজিয়ে দেব।";
+  }
+
   switch (intent.intent) {
     case "book":
       return buildBookReply(userText);
@@ -404,7 +277,7 @@ function buildFallbackReply(messages = [], originalError = null) {
 
   // Thank you messages
   if (/ধন্যবাদ|thanks|thank you|শুক্রিয়া|আপনাকে ধন্যবাদ/.test(userText)) {
-    return "আপনাকেও ধন্যবাদ! আর কোনো প্রশ্ন থাকলে জানাবেন। 😊";
+    return "আপনাকেও ধন্যবাদ। আর কোনো প্রশ্ন থাকলে জানাবেন।";
   }
 
   if (/দুঃখবিলাস|বিচ্ছেদকে বলি/.test(userText)) {
