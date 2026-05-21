@@ -120,7 +120,7 @@ export default function Home() {
         {/* Multi-layer gradient overlay — richer depth */}
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(105deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,0.92) 42%, rgba(6,14,26,0.45) 100%)",
+          background: "linear-gradient(105deg, rgba(4,10,20,0.96) 0%, rgba(6,14,26,0.88) 42%, rgba(6,14,26,0.35) 100%)",
         }} />
         <div style={{
           position: "absolute", inset: 0,
@@ -264,7 +264,7 @@ export default function Home() {
                     backgroundClip: "text",
                     letterSpacing: "-0.02em",
                     filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
-                    animation: "goldShimmer 4.5s ease-in-out infinite",
+                    animation: "goldShimmer 6s ease-in-out infinite",
                   }}
                 >
                   সরদার সবুজ
@@ -277,11 +277,11 @@ export default function Home() {
                   style={{
                     position: "absolute", bottom: -8, left: 0,
                     height: 2,
-                    width: "75%",
+                    width: "85%",
                     background: "linear-gradient(90deg, #C9A84C 0%, rgba(201,168,76,0.5) 60%, transparent 100%)",
                     transformOrigin: "left",
                     borderRadius: 2,
-                    boxShadow: "0 0 16px rgba(201,168,76,0.6), 0 0 32px rgba(201,168,76,0.25)",
+                    boxShadow: "0 0 20px rgba(201,168,76,0.7), 0 0 40px rgba(201,168,76,0.3)",
                   }}
                 />
               </div>
@@ -365,9 +365,9 @@ export default function Home() {
                 {/* Main portrait — suit photo */}
                 <div style={{
                   position: "relative",
-                  borderRadius: 16,
+                  borderRadius: 20,
                   overflow: "hidden",
-                  boxShadow: "0 50px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.22), 0 0 60px rgba(201,168,76,0.08)",
+                  boxShadow: "0 50px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.12)",
                   zIndex: 1,
                 }}>
                   <img
@@ -380,7 +380,7 @@ export default function Home() {
                       objectFit: "cover",
                       objectPosition: "center top",
                       display: "block",
-                      filter: "contrast(1.06) saturate(0.88) brightness(0.97)",
+                      filter: "contrast(1.08) saturate(0.95) brightness(1.0)",
                     }}
                     className="hero-portrait"
                     fetchPriority="high"
@@ -588,12 +588,12 @@ export default function Home() {
         }
         .hero-inner {
           display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          gap: 5rem;
+          grid-template-columns: 1fr 1fr;
+          gap: 4rem;
           align-items: center;
         }
         .hero-portrait {
-          height: 560px;
+          height: 580px;
           width: 100%;
           object-fit: cover;
         }
@@ -606,11 +606,11 @@ export default function Home() {
           text-align: center;
           margin-bottom: 2rem;
         }
-        .app-launcher-shell {
-          border: 1px solid rgba(201,168,76,0.22);
-          border-radius: 36px;
-          padding: clamp(1.1rem, 3vw, 1.65rem);
-          background: linear-gradient(145deg, rgba(255,255,255,0.075) 0%, rgba(201,168,76,0.04) 60%, rgba(8,18,32,0.6) 100%);
+          .app-launcher-shell {
+          border: 1px solid rgba(201,168,76,0.26);
+          border-radius: 40px;
+          padding: clamp(1.2rem, 3vw, 1.8rem);
+          background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(201,168,76,0.05) 60%, rgba(8,18,32,0.65) 100%);
           box-shadow:
             0 50px 130px rgba(0,0,0,0.45),
             0 0 0 1px rgba(255,255,255,0.04) inset,
@@ -656,20 +656,20 @@ export default function Home() {
           background: rgba(201,168,76,0.5);
           box-shadow: 0 0 16px rgba(201,168,76,0.5);
         }
-        .app-launcher-grid {
+          .app-launcher-grid {
           position: relative;
           z-index: 1;
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: clamp(0.75rem, 2.5vw, 1.1rem);
+          gap: clamp(0.85rem, 2.5vw, 1.2rem);
         }
         .app-launcher-link {
           display: block;
           text-decoration: none;
           height: 100%;
         }
-        .app-launcher-card {
-          min-height: 136px;
+          .app-launcher-card {
+          min-height: 148px;
           height: 100%;
           display: flex;
           flex-direction: column;
@@ -677,14 +677,14 @@ export default function Home() {
           justify-content: flex-start;
           text-align: center;
           gap: 0.5rem;
-          padding: 1.1rem 0.65rem 0.9rem;
-          border-radius: 26px;
-          border: 1px solid rgba(201,168,76,0.16);
-          background: linear-gradient(160deg, rgba(12,24,42,0.9) 0%, rgba(8,18,32,0.75) 100%);
+          padding: 1.25rem 0.75rem 1rem;
+          border-radius: 28px;
+          border: 1px solid rgba(201,168,76,0.18);
+          background: linear-gradient(160deg, rgba(14,26,46,0.92) 0%, rgba(8,18,32,0.80) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.065),
-            0 18px 42px rgba(0,0,0,0.28),
-            0 2px 8px rgba(0,0,0,0.2);
+            inset 0 1px 0 rgba(255,255,255,0.08),
+            0 20px 48px rgba(0,0,0,0.32),
+            0 2px 10px rgba(0,0,0,0.22);
           color: #FAF6EF;
           cursor: pointer;
           transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease;
@@ -711,10 +711,10 @@ export default function Home() {
         .app-launcher-card:hover::before {
           opacity: 1;
         }
-        .app-icon-wrap {
-          width: clamp(50px, 7vw, 60px);
-          height: clamp(50px, 7vw, 60px);
-          border-radius: 18px;
+          .app-icon-wrap {
+          width: clamp(52px, 7vw, 64px);
+          height: clamp(52px, 7vw, 64px);
+          border-radius: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -761,7 +761,7 @@ export default function Home() {
         @media (max-width: 1024px) {
           .hero-inner {
             grid-template-columns: 1fr;
-            gap: 1.7rem;
+            gap: 1.5rem;
             text-align: center;
           }
           .hero-right {
