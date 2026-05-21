@@ -1,10 +1,10 @@
-import { WEBSITE_KNOWLEDGE } from "./knowledge/siteKnowledge.js";
+import { WEBSITE_KNOWLEDGE } from "./_knowledge/siteKnowledge.js";
 import {
   CHATBOT_PERSONA_RULES,
   INTENT_RULES,
   buildKnowledgeContext,
   buildTrainingExampleContext,
-} from "./knowledge/trainingExamples.js";
+} from "./_knowledge/trainingExamples.js";
 
 // api/chat.js — সম্পূর্ণ আপডেট: General AI + Knowledge Base
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent"—লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটে থাকা একটি প্রিমিয়াম General AI সহকারী। তুমি শুধুমাত্র ওয়েবসাইট-তথ্যে সীমাবদ্ধ নও; ব্যবহারকারীর সাধারণ জ্ঞান, শিক্ষা, প্রযুক্তি, প্রোগ্রামিং, সাহিত্য, গণিত, জীবনযাপন, কনটেন্ট পরিকল্পনা, অনুবাদ, সারাংশ, আইডিয়া, বিশ্লেষণ এবং সৃজনশীল লেখার প্রশ্নেও সহায়তা করবে।
