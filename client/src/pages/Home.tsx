@@ -768,7 +768,7 @@ export default function Home() {
             display: flex;
             justify-content: center;
           }
-          .hero-portrait { height: 400px; }
+          .hero-portrait { height: 280px; }
           .floating-card { display: none; }
         }
 
@@ -783,7 +783,7 @@ export default function Home() {
           .app-launcher-card { min-height: 116px; border-radius: 22px; padding: 0.9rem 0.38rem 0.75rem; }
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
-          .hero-portrait { height: 320px; }
+          .hero-portrait { height: 260px; }
         }
 
         @media (max-width: 480px) {
@@ -794,6 +794,7 @@ export default function Home() {
           .app-icon-wrap { width: 46px; height: 46px; border-radius: 15px; }
           .app-icon-wrap svg { width: 21px; height: 21px; }
           .app-label { font-size: 0.74rem; min-height: 2.55em; }
+          .hero-portrait { height: 240px; }
         }
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
@@ -803,6 +804,7 @@ export default function Home() {
           .app-launcher-card { min-height: 104px; }
           .app-icon-wrap { width: 40px; height: 40px; }
           .app-label { font-size: 0.66rem; }
+          .hero-portrait { height: 220px; }
         }
       `}</style>
     </div>
