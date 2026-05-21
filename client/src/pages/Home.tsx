@@ -9,29 +9,40 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette,
-  Star, Feather
+  Star, Feather, ArrowRight, PenLine
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import AdSenseAd from "@/components/AdSenseAd";
+import { writings } from "@/data/writingsArchive";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
-const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
-  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
-  { label: "আবৃত্তি", subtitle: "কণ্ঠে কবিতা, অনুভবে উচ্চারণ", href: "/facebook-recitations", icon: Mic2 },
-  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
-  { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
-  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
-  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
-  { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
+  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound, count: null },
+  { label: "আবৃত্তি", subtitle: "কণ্ঠে কবিতা, অনুভবে উচ্চারণ", href: "/facebook-recitations", icon: Mic2, count: "৯টি" },
+  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen, count: "১১৯৮+" },
+  { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather, count: null },
+  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette, count: null },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images, count: null },
+  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper, count: null },
+  { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail, count: null },
 ];
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+const stats = [
+  { value: "১১৯৮+", label: "প্রকাশিত লেখা" },
+  { value: "৫টি", label: "বই ও ই-বুক" },
+  { value: "১ লক্ষ+", label: "Facebook ফলোয়ার" },
+  { value: "৫০ হাজার+", label: "ই-বুক পাঠক" },
+];
+
+// ── Recent writings (last 4) ──────────────────────────────────────────────────
+const recentWritings = writings.slice(0, 4);
 
 // ═════════════════════════════════════════════════════════════════════════════════
 export default function Home() {
@@ -64,27 +75,44 @@ export default function Home() {
 
   const homeJsonLd = {
     "@context": "https://schema.org",
-    "@graph": [{
-      "@type": "Person",
-      "name": "Mahbub Sardar Sabuj",
-      "alternateName": "মাহবুব সরদার সবুজ",
-      "url": "https://www.mahbubsardarsabuj.com/",
-      "image": PROFILE_1,
-      "jobTitle": "লেখক ও কবি",
-      "description": "বাংলা সাহিত্যের লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
-      "sameAs": [
-        "https://facebook.com/MahbubSardarSabuj",
-        "https://www.instagram.com/mahbub_sardar_sabuj",
-        "https://youtube.com/@MahbubSardarSabuj"
-      ],
-    }]
+    "@graph": [
+      {
+        "@type": "Person",
+        "name": "Mahbub Sardar Sabuj",
+        "alternateName": "মাহবুব সরদার সবুজ",
+        "url": "https://www.mahbubsardarsabuj.com/",
+        "image": PROFILE_1,
+        "jobTitle": "লেখক ও কবি",
+        "description": "বাংলা সাহিত্যের লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। ১১৯৮+ লেখা, ৫টি বই ও ই-বুক।",
+        "sameAs": [
+          "https://facebook.com/MahbubSardarSabuj",
+          "https://www.instagram.com/mahbub_sardar_sabuj",
+          "https://youtube.com/@MahbubSardarSabuj"
+        ],
+        "knowsAbout": ["বাংলা কবিতা", "বাংলা সাহিত্য", "বাংলা গদ্য", "ভালোবাসার কবিতা", "জীবনদর্শন"],
+      },
+      {
+        "@type": "WebSite",
+        "name": "মাহবুব সরদার সবুজ",
+        "url": "https://www.mahbubsardarsabuj.com/",
+        "description": "মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট — বাংলা কবিতা, লেখালেখি, বই ও ই-বুক।",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.mahbubsardarsabuj.com/writings?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
   };
 
   return (
     <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
         title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি"
-        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। লেখকের পরিচিতি, বাংলা কবিতা, লেখালেখি, বই, ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।"
+        description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। ১১৯৮+ বাংলা কবিতা ও লেখা, ৫টি বই ও ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।"
         path="/"
         keywords="মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা কবি, বাংলা লেখক, বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, বাংলা ই-বুক, দুঃখবিলাস, স্মৃতির বসন্তে তুমি, চাঁদফুল, সময়ের গহ্বরে, বাংলা সাহিত্য, বাংলাদেশি লেখক, mahbub sardar sabuj kobita, bangla kobita, bangla sahitya, bangladeshi poet, bangla ebook free, সরদার সংবাদ"
         jsonLd={homeJsonLd}
@@ -307,6 +335,65 @@ export default function Home() {
                 </p>
               </motion.div>
 
+              {/* ── CTA Buttons ── */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.82 }}
+                style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", marginTop: "1.6rem" }}
+              >
+                <Link href="/writings">
+                  <motion.button
+                    whileHover={{ scale: 1.04, boxShadow: "0 0 32px rgba(201,168,76,0.45)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      padding: "0.72rem 1.55rem",
+                      borderRadius: 40,
+                      border: "none",
+                      background: "linear-gradient(110deg, #C9A84C 0%, #EDD07A 50%, #C9A84C 100%)",
+                      backgroundSize: "200% 100%",
+                      color: "#060E1A",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.95rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      boxShadow: "0 4px 24px rgba(201,168,76,0.35), 0 2px 8px rgba(0,0,0,0.3)",
+                      animation: "goldShimmer 3s ease-in-out infinite",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    <PenLine size={16} strokeWidth={2.2} />
+                    লেখালেখি পড়ুন
+                  </motion.button>
+                </Link>
+                <Link href="/about">
+                  <motion.button
+                    whileHover={{ scale: 1.04, borderColor: "rgba(201,168,76,0.8)", background: "rgba(201,168,76,0.12)" }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      padding: "0.72rem 1.55rem",
+                      borderRadius: 40,
+                      border: "1px solid rgba(201,168,76,0.45)",
+                      background: "rgba(201,168,76,0.07)",
+                      backdropFilter: "blur(12px)",
+                      color: "#E8C97A",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      boxShadow: "0 2px 16px rgba(0,0,0,0.25)",
+                      letterSpacing: "0.02em",
+                      transition: "all 0.25s ease",
+                    }}
+                  >
+                    <UserRound size={16} strokeWidth={1.8} />
+                    পরিচিতি জানুন
+                  </motion.button>
+                </Link>
+              </motion.div>
+
             </div>
 
             {/* Right column — author portrait */}
@@ -449,6 +536,57 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
+          STATS BAR — Social proof numbers
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        background: "linear-gradient(90deg, rgba(201,168,76,0.07) 0%, rgba(201,168,76,0.03) 50%, rgba(201,168,76,0.07) 100%)",
+        borderTop: "1px solid rgba(201,168,76,0.15)",
+        borderBottom: "1px solid rgba(201,168,76,0.15)",
+        padding: "1.5rem 1.25rem",
+      }}>
+        <div style={{ maxWidth: 980, margin: "0 auto" }}>
+          <motion.div
+            className="stats-grid"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            {stats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                style={{ textAlign: "center" }}
+              >
+                <div style={{
+                  fontFamily: "'Tiro Bangla', serif",
+                  fontSize: "clamp(1.55rem, 3.5vw, 2.1rem)",
+                  fontWeight: 700,
+                  background: "linear-gradient(110deg, #C9A84C, #F5E4A0, #C9A84C)",
+                  backgroundSize: "200% 100%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "goldShimmer 4s ease-in-out infinite",
+                  lineHeight: 1.1,
+                }}>{stat.value}</div>
+                <div style={{
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.78rem",
+                  color: "rgba(250,246,239,0.48)",
+                  marginTop: "0.3rem",
+                  letterSpacing: "0.04em",
+                }}>{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="explore-app-section" style={{
@@ -550,6 +688,19 @@ export default function Home() {
                         </div>
                         <span className="app-label">{sec.label}</span>
                         <span className="app-subtitle">{sec.subtitle}</span>
+                        {sec.count && (
+                          <span style={{
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            fontSize: "0.62rem",
+                            color: "#C9A84C",
+                            background: "rgba(201,168,76,0.12)",
+                            border: "1px solid rgba(201,168,76,0.25)",
+                            borderRadius: 20,
+                            padding: "1px 8px",
+                            marginTop: "0.2rem",
+                            letterSpacing: "0.04em",
+                          }}>{sec.count}</span>
+                        )}
                       </motion.div>
                     </Link>
                   </motion.div>
@@ -557,6 +708,149 @@ export default function Home() {
               })}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          FEATURED WRITINGS — সাম্প্রতিক লেখা
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: "clamp(2.5rem, 6vw, 4.5rem) 1.25rem",
+        background: "linear-gradient(180deg, #060E1A 0%, #080F1C 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Background accent */}
+        <div style={{
+          position: "absolute", top: 0, left: "10%", right: "10%",
+          height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.18), transparent)",
+          pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "absolute", bottom: "-20%", right: "-5%",
+          width: "35vw", height: "35vw", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)",
+          pointerEvents: "none",
+        }} />
+
+        <div style={{ maxWidth: 980, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          {/* Section heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            style={{ marginBottom: "2.2rem", display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "0.6rem" }}>
+                <div style={{ width: 36, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
+                <span style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: "0.62rem", letterSpacing: "0.34em",
+                  textTransform: "uppercase", color: "#C9A84C",
+                }}>Latest</span>
+              </div>
+              <h2 style={{
+                fontFamily: "'Tiro Bangla', serif",
+                fontSize: "clamp(1.6rem, 4vw, 2.4rem)",
+                fontWeight: 700, color: "#FAF6EF",
+                margin: 0, lineHeight: 1.2,
+              }}>সাম্প্রতিক লেখা</h2>
+            </div>
+            <Link href="/writings">
+              <motion.span
+                whileHover={{ x: 4 }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.88rem", color: "#C9A84C",
+                  textDecoration: "none", cursor: "pointer",
+                  borderBottom: "1px solid rgba(201,168,76,0.3)",
+                  paddingBottom: 2,
+                  transition: "border-color 0.2s",
+                }}
+              >
+                সব লেখা দেখুন <ArrowRight size={14} strokeWidth={2} />
+              </motion.span>
+            </Link>
+          </motion.div>
+
+          {/* Writings grid */}
+          <div className="writings-grid">
+            {recentWritings.map((writing, i) => (
+              <motion.div
+                key={writing.id}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.07 }}
+              >
+                <Link href={`/writings`} style={{ textDecoration: "none" }}>
+                  <motion.div
+                    className="writing-card"
+                    whileHover={{ y: -5, borderColor: "rgba(201,168,76,0.4)" }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Category badge */}
+                    <div style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "3px 10px",
+                      borderRadius: 20,
+                      background: "rgba(201,168,76,0.1)",
+                      border: "1px solid rgba(201,168,76,0.22)",
+                      marginBottom: "0.75rem",
+                    }}>
+                      <Star size={9} strokeWidth={2} color="#C9A84C" />
+                      <span style={{
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.65rem", color: "#C9A84C",
+                        letterSpacing: "0.06em",
+                      }}>{writing.category}</span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 style={{
+                      fontFamily: "'Tiro Bangla', serif",
+                      fontSize: "clamp(1rem, 2.2vw, 1.15rem)",
+                      fontWeight: 700,
+                      color: "#FAF6EF",
+                      margin: "0 0 0.6rem",
+                      lineHeight: 1.35,
+                    }}>{writing.title}</h3>
+
+                    {/* Excerpt */}
+                    <p style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.82rem",
+                      color: "rgba(250,246,239,0.5)",
+                      lineHeight: 1.7,
+                      margin: 0,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}>
+                      {writing.content.slice(0, 120)}...
+                    </p>
+
+                    {/* Read more */}
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 5,
+                      marginTop: "1rem",
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontSize: "0.75rem",
+                      color: "rgba(201,168,76,0.7)",
+                    }}>
+                      <span>পড়ুন</span>
+                      <ArrowRight size={12} strokeWidth={2} />
+                    </div>
+                  </motion.div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -599,6 +893,13 @@ export default function Home() {
         }
         .floating-card {
           min-width: 180px;
+        }
+
+        /* Stats bar */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
         }
 
         /* App-style Explore launcher */
@@ -757,6 +1058,26 @@ export default function Home() {
           overflow: hidden;
         }
 
+        /* Writings grid */
+        .writings-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.1rem;
+        }
+        .writing-card {
+          padding: 1.4rem 1.5rem;
+          border-radius: 20px;
+          border: 1px solid rgba(201,168,76,0.14);
+          background: linear-gradient(145deg, rgba(12,24,42,0.85) 0%, rgba(8,18,32,0.7) 100%);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05);
+          cursor: pointer;
+          transition: border-color 0.25s ease, box-shadow 0.25s ease;
+          height: 100%;
+        }
+        .writing-card:hover {
+          box-shadow: 0 18px 48px rgba(0,0,0,0.32), 0 0 0 1px rgba(201,168,76,0.12) inset;
+        }
+
         /* Tablet */
         @media (max-width: 1024px) {
           .hero-inner {
@@ -768,8 +1089,9 @@ export default function Home() {
             display: flex;
             justify-content: center;
           }
-          .hero-portrait { height: 400px; }
+          .hero-portrait { height: 280px; }
           .floating-card { display: none; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
         }
 
         /* Mobile */
@@ -783,7 +1105,9 @@ export default function Home() {
           .app-launcher-card { min-height: 116px; border-radius: 22px; padding: 0.9rem 0.38rem 0.75rem; }
           .app-icon-wrap { border-radius: 16px; }
           .app-subtitle { display: none; }
-          .hero-portrait { height: 320px; }
+          .hero-portrait { height: 260px; }
+          .writings-grid { grid-template-columns: 1fr; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 480px) {
@@ -794,6 +1118,7 @@ export default function Home() {
           .app-icon-wrap { width: 46px; height: 46px; border-radius: 15px; }
           .app-icon-wrap svg { width: 21px; height: 21px; }
           .app-label { font-size: 0.74rem; min-height: 2.55em; }
+          .hero-portrait { height: 240px; }
         }
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
@@ -803,6 +1128,7 @@ export default function Home() {
           .app-launcher-card { min-height: 104px; }
           .app-icon-wrap { width: 40px; height: 40px; }
           .app-label { font-size: 0.66rem; }
+          .hero-portrait { height: 220px; }
         }
       `}</style>
     </div>
