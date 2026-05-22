@@ -42,7 +42,7 @@
       "permanent": true
     },
     {
-      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|news-sitemap.xml|manifest.json).*)",
+      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|sitemap-index.xml|news-sitemap.xml|manifest.json|llms.txt|humans.txt).*)",
       "has": [
         {
           "type": "host",
@@ -91,6 +91,10 @@
     {
       "src": "/sitemap.xml",
       "dest": "/sitemap.xml"
+    },
+    {
+      "src": "/sitemap-index.xml",
+      "dest": "/sitemap-index.xml"
     },
     {
       "src": "/news-sitemap.xml",

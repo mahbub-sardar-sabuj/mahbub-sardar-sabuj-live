@@ -5601,10 +5601,17 @@ export default async function handler(req) {
     <html lang="bn">
     <head>
       <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title}</title>
       <meta name="description" content="${description}">
       <meta name="keywords" content="${keywords}">
+      <meta name="author" content="Mahbub Sardar Sabuj">
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+      <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
       <link rel="canonical" href="${url}">
+      <link rel="alternate" hreflang="bn-BD" href="${url}">
+      <link rel="alternate" hreflang="x-default" href="${url}">
+      <link rel="sitemap" type="application/xml" href="${SITE_URL}/sitemap-index.xml">
       
       <!-- Open Graph / Facebook -->
       <meta property="og:type" content="${ogType}">
@@ -5617,17 +5624,18 @@ export default async function handler(req) {
       <meta property="og:image:width" content="1024">
       <meta property="og:image:height" content="1024">
       <meta property="og:site_name" content="${ogType === 'article' ? NEWS_PUBLISHER_NAME : SITE_NAME}">
+      <meta property="og:locale" content="bn_BD">
       ${publishedTime ? `<meta property="article:published_time" content="${publishedTime}">` : ""}
       ${modifiedTime ? `<meta property="article:modified_time" content="${modifiedTime}">` : ""}
       ${articleSection ? `<meta property="article:section" content="${escapeHtml(articleSection)}">` : ""}
       ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>` : ""}
 
       <!-- Twitter -->
-      <meta property="twitter:card" content="summary_large_image">
-      <meta property="twitter:url" content="${url}">
-      <meta property="twitter:title" content="${title}">
-      <meta property="twitter:description" content="${description}">
-      <meta property="twitter:image" content="${image}">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:url" content="${url}">
+      <meta name="twitter:title" content="${title}">
+      <meta name="twitter:description" content="${description}">
+      <meta name="twitter:image" content="${image}">
 
       <!-- Redirect human users to main site, keep bots here -->
       <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|facebookexternalhit|facebot|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot|discordbot|pinterest|applebot|gptbot|chatgpt-user|oai-searchbot|claudebot|claude-searchbot|claude-user|anthropic-ai|perplexitybot|perplexity-user|youbot|ccbot|bytespider|meta-externalagent|meta-externalfetcher|amazonbot|diffbot|cohere-ai|mistralai-user|ai2bot|omgili|omgilibot/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>

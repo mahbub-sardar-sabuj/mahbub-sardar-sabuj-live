@@ -83,10 +83,12 @@ Allow: /
 # https://www.mahbubsardarsabuj.com/llms.txt
 # https://www.mahbubsardarsabuj.com/humans.txt
 
-# Sitemap location
+# Crawl delay
+Crawl-delay: 1
+
+# Canonical discovery endpoints for Google Search Console and other crawlers
+Sitemap: https://www.mahbubsardarsabuj.com/sitemap-index.xml
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/api/amio-sitemap
-
-# Crawl delay
-Crawl-delay: 1
+Host: https://www.mahbubsardarsabuj.com

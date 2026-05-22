@@ -92,18 +92,27 @@ export default function Seo({
     upsertMeta('meta[property="og:site_name"]', { property: "og:site_name", content: SITE_NAME });
     upsertMeta('meta[property="og:locale"]', { property: "og:locale", content: "bn_BD" });
     upsertMeta('meta[property="og:image"]', { property: "og:image", content: absoluteImage });
+    upsertMeta('meta[property="og:image:secure_url"]', { property: "og:image:secure_url", content: absoluteImage });
     upsertMeta('meta[property="og:image:alt"]', { property: "og:image:alt", content: imageAlt });
+    upsertMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1024" });
+    upsertMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "1024" });
     upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
+    upsertMeta('meta[name="twitter:url"]', { name: "twitter:url", content: canonicalUrl });
     upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: title });
     upsertMeta('meta[name="twitter:description"]', { name: "twitter:description", content: description });
     upsertMeta('meta[name="twitter:image"]', { name: "twitter:image", content: absoluteImage });
     upsertMeta('meta[name="twitter:image:alt"]', { name: "twitter:image:alt", content: imageAlt });
     upsertMeta('meta[name="robots"]', { name: "robots", content: robots });
     upsertMeta('meta[name="googlebot"]', { name: "googlebot", content: robots });
+    upsertMeta('meta[name="bingbot"]', { name: "bingbot", content: robots });
+    upsertMeta('meta[name="language"]', { name: "language", content: "Bengali" });
+    upsertMeta('meta[name="distribution"]', { name: "distribution", content: "global" });
+    upsertMeta('meta[name="rating"]', { name: "rating", content: "general" });
     upsertMeta('meta[name="theme-color"]', { name: "theme-color", content: "#060E1A" });
     upsertLink('link[rel="canonical"]', { rel: "canonical", href: canonicalUrl });
     upsertLink('link[rel="alternate"][hreflang="bn-BD"]', { rel: "alternate", hreflang: "bn-BD", href: canonicalUrl });
     upsertLink('link[rel="alternate"][hreflang="x-default"]', { rel: "alternate", hreflang: "x-default", href: canonicalUrl });
+    upsertLink('link[rel="sitemap"]', { rel: "sitemap", type: "application/xml", href: new URL("/sitemap-index.xml", SITE_URL).toString() });
 
     const newsArticleJsonLd = newsArticle ? {
       "@context": "https://schema.org",
