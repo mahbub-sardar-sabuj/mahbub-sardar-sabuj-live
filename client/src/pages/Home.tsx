@@ -452,8 +452,8 @@ export default function Home() {
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="explore-app-section" style={{
-        padding: "clamp(3rem, 6.5vw, 5rem) 1.25rem",
-        background: "radial-gradient(circle at 78% 12%, rgba(201,168,76,0.12), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.07), transparent 30%), #060E1A",
+        padding: "clamp(3.5rem, 7vw, 5.6rem) 1.25rem",
+        background: "linear-gradient(180deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,1) 16%, rgba(6,14,26,1) 100%), radial-gradient(circle at 78% 12%, rgba(201,168,76,0.15), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.08), transparent 30%), #060E1A",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -478,11 +478,12 @@ export default function Home() {
         <div style={{
           position: "absolute", top: 0, left: "10%", right: "10%",
           height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.2), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.42), rgba(250,246,239,0.22), rgba(201,168,76,0.42), transparent)",
+          boxShadow: "0 0 28px rgba(201,168,76,0.16)",
           pointerEvents: "none",
         }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 980, margin: "0 auto" }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1040, margin: "0 auto" }}>
           <motion.div
             className="explore-app-heading"
             initial={{ opacity: 0, y: 26 }}
@@ -495,7 +496,8 @@ export default function Home() {
               <span style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontSize: "0.66rem", letterSpacing: "0.34em",
-                textTransform: "uppercase", color: "#C9A84C",
+                textTransform: "uppercase", color: "#E8C97A",
+                textShadow: "0 0 18px rgba(201,168,76,0.32)",
               }}>Explore</span>
               <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
@@ -504,12 +506,12 @@ export default function Home() {
               fontSize: "clamp(2rem, 5vw, 3.1rem)",
               fontWeight: 700, color: "#FAF6EF",
               margin: 0, lineHeight: 1.18,
-              textShadow: "0 4px 24px rgba(0,0,0,0.4)",
+              textShadow: "0 4px 24px rgba(0,0,0,0.48), 0 0 34px rgba(201,168,76,0.14)",
             }}>অন্বেষণ করুন</h2>
             <p style={{
               fontFamily: "'Noto Sans Bengali', sans-serif",
-              maxWidth: 650, color: "rgba(250,246,239,0.52)",
-              lineHeight: 1.65, margin: "1rem auto 0",
+              maxWidth: 650, color: "rgba(250,246,239,0.66)",
+              lineHeight: 1.72, margin: "1rem auto 0",
               fontSize: "0.98rem",
             }}>
               লেখক, লেখা, বই, আবৃত্তি, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
@@ -561,7 +563,7 @@ export default function Home() {
       </section>
 
       {/* AdSense Ad — হোম পেজের নিচে */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
         <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
       </div>
 
@@ -604,17 +606,28 @@ export default function Home() {
         /* App-style Explore launcher */
         .explore-app-heading {
           text-align: center;
-          margin-bottom: 2rem;
+          margin-bottom: 2.35rem;
+          position: relative;
+        }
+        .explore-app-heading::after {
+          content: "";
+          display: block;
+          width: min(220px, 48vw);
+          height: 1px;
+          margin: 1.25rem auto 0;
+          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.55), transparent);
+          box-shadow: 0 0 22px rgba(201,168,76,0.18);
         }
           .app-launcher-shell {
-          border: 1px solid rgba(201,168,76,0.26);
-          border-radius: 40px;
-          padding: clamp(1.2rem, 3vw, 1.8rem);
-          background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(201,168,76,0.05) 60%, rgba(8,18,32,0.65) 100%);
+          border: 1px solid rgba(201,168,76,0.34);
+          border-radius: 42px;
+          padding: clamp(1.25rem, 3vw, 2rem);
+          background: linear-gradient(145deg, rgba(255,255,255,0.095) 0%, rgba(201,168,76,0.065) 58%, rgba(8,18,32,0.72) 100%);
           box-shadow:
-            0 50px 130px rgba(0,0,0,0.45),
-            0 0 0 1px rgba(255,255,255,0.04) inset,
-            inset 0 1px 0 rgba(255,255,255,0.1);
+            0 58px 150px rgba(0,0,0,0.52),
+            0 0 42px rgba(201,168,76,0.10),
+            0 0 0 1px rgba(255,255,255,0.055) inset,
+            inset 0 1px 0 rgba(255,255,255,0.12);
           backdrop-filter: blur(22px) saturate(140%);
           max-width: 840px;
           margin: 0 auto;
@@ -625,7 +638,7 @@ export default function Home() {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.15), transparent 45%);
+          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.20), transparent 45%);
           pointer-events: none;
         }
         .app-launcher-shell::after {
@@ -643,8 +656,8 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           gap: 10px;
-          margin: 0 0 1.1rem;
-          color: rgba(232,201,122,0.82);
+          margin: 0 0 1.25rem;
+          color: rgba(232,201,122,0.92);
           font-family: 'Noto Sans Bengali', sans-serif;
           font-size: 0.76rem;
           letter-spacing: 0.1em;
@@ -661,7 +674,7 @@ export default function Home() {
           z-index: 1;
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: clamp(0.85rem, 2.5vw, 1.2rem);
+          gap: clamp(0.9rem, 2.5vw, 1.3rem);
         }
         .app-launcher-link {
           display: block;
@@ -669,25 +682,26 @@ export default function Home() {
           height: 100%;
         }
           .app-launcher-card {
-          min-height: 148px;
+          min-height: 158px;
           height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: flex-start;
           text-align: center;
-          gap: 0.5rem;
-          padding: 1.25rem 0.75rem 1rem;
+          gap: 0.56rem;
+          padding: 1.35rem 0.82rem 1.08rem;
           border-radius: 28px;
-          border: 1px solid rgba(201,168,76,0.18);
-          background: linear-gradient(160deg, rgba(14,26,46,0.92) 0%, rgba(8,18,32,0.80) 100%);
+          border: 1px solid rgba(201,168,76,0.24);
+          background: linear-gradient(160deg, rgba(16,30,52,0.96) 0%, rgba(8,18,32,0.86) 100%);
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,0.08),
-            0 20px 48px rgba(0,0,0,0.32),
-            0 2px 10px rgba(0,0,0,0.22);
+            0 22px 54px rgba(0,0,0,0.38),
+            0 2px 12px rgba(0,0,0,0.25),
+            0 0 0 1px rgba(201,168,76,0.035);
           color: #FAF6EF;
           cursor: pointer;
-          transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease;
+          transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
           position: relative;
           overflow: hidden;
         }
@@ -695,21 +709,44 @@ export default function Home() {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.08), transparent 55%);
+          background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.12), transparent 55%);
           opacity: 0;
           transition: opacity 0.28s ease;
           pointer-events: none;
         }
         .app-launcher-card:hover {
-          border-color: rgba(201,168,76,0.48);
+          border-color: rgba(201,168,76,0.62);
           background: linear-gradient(160deg, rgba(201,168,76,0.13) 0%, rgba(10,22,38,0.88) 100%);
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,0.09),
-            0 24px 56px rgba(0,0,0,0.35),
-            0 0 0 1px rgba(201,168,76,0.1) inset;
+            0 28px 64px rgba(0,0,0,0.42),
+            0 0 34px rgba(201,168,76,0.16),
+            0 0 0 1px rgba(201,168,76,0.14) inset;
         }
         .app-launcher-card:hover::before {
           opacity: 1;
+        }
+        .app-launcher-link:focus-visible {
+          outline: none;
+        }
+        .app-launcher-link:focus-visible .app-launcher-card {
+          border-color: rgba(245,228,160,0.82);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            0 26px 62px rgba(0,0,0,0.42),
+            0 0 0 3px rgba(201,168,76,0.22),
+            0 0 34px rgba(201,168,76,0.18);
+        }
+        .app-launcher-card:active {
+          border-color: rgba(245,228,160,0.7);
+          background: linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(10,22,38,0.9) 100%);
+        }
+        .app-launcher-grid > div:nth-child(-n+4) .app-launcher-card {
+          border-color: rgba(201,168,76,0.32);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.09),
+            0 24px 58px rgba(0,0,0,0.40),
+            0 0 26px rgba(201,168,76,0.065);
         }
           .app-icon-wrap {
           width: clamp(52px, 7vw, 64px);
@@ -718,13 +755,13 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #E8C97A;
-          background: linear-gradient(145deg, rgba(201,168,76,0.2), rgba(250,246,239,0.05));
-          border: 1px solid rgba(201,168,76,0.28);
+          color: #F2D789;
+          background: linear-gradient(145deg, rgba(201,168,76,0.25), rgba(250,246,239,0.07));
+          border: 1px solid rgba(201,168,76,0.36);
           box-shadow:
             0 12px 28px rgba(0,0,0,0.28),
             inset 0 1px 0 rgba(255,255,255,0.1),
-            0 0 20px rgba(201,168,76,0.1);
+            0 0 24px rgba(201,168,76,0.14);
           margin-bottom: 0.2rem;
           transition: box-shadow 0.28s ease, transform 0.28s ease;
         }
@@ -740,8 +777,9 @@ export default function Home() {
           font-size: clamp(0.86rem, 2.2vw, 1.02rem);
           font-weight: 700;
           line-height: 1.22;
-          color: #FAF6EF;
+          color: #FFF8EA;
           min-height: 2.45em;
+          text-shadow: 0 2px 12px rgba(0,0,0,0.38);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -750,7 +788,7 @@ export default function Home() {
           font-family: 'Noto Sans Bengali', sans-serif;
           font-size: 0.66rem;
           line-height: 1.38;
-          color: rgba(250,246,239,0.46);
+          color: rgba(250,246,239,0.58);
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -778,10 +816,11 @@ export default function Home() {
           .hero-frame-wrap { --hero-frame-offset: -10px; }
           .scroll-indicator { display: none; }
           .hero-inner { gap: 0.95rem; }
-          .app-launcher-shell { border-radius: 30px; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.65rem; }
-          .app-launcher-card { min-height: 116px; border-radius: 22px; padding: 0.9rem 0.38rem 0.75rem; }
-          .app-icon-wrap { border-radius: 16px; }
+          .app-launcher-shell { border-radius: 30px; padding: 1rem; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
+          .app-launcher-card { min-height: 124px; border-radius: 22px; padding: 0.98rem 0.42rem 0.82rem; }
+          .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
+          .app-label { font-size: 0.82rem; line-height: 1.25; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 260px; }
         }
@@ -790,10 +829,10 @@ export default function Home() {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
           .app-launcher-shell { padding: 0.85rem; border-radius: 28px; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
-          .app-launcher-card { min-height: 104px; padding: 0.75rem 0.24rem 0.65rem; border-radius: 20px; }
-          .app-icon-wrap { width: 46px; height: 46px; border-radius: 15px; }
+          .app-launcher-card { min-height: 112px; padding: 0.82rem 0.26rem 0.7rem; border-radius: 20px; }
+          .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
           .app-icon-wrap svg { width: 21px; height: 21px; }
-          .app-label { font-size: 0.74rem; min-height: 2.55em; }
+          .app-label { font-size: 0.78rem; min-height: 2.6em; }
           .hero-portrait { height: 240px; }
         }
         /* Extra small mobile — 320px fix */
@@ -801,9 +840,9 @@ export default function Home() {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
           .hero-inner { gap: 0.75rem; }
           .app-launcher-grid { gap: 0.44rem; }
-          .app-launcher-card { min-height: 104px; }
-          .app-icon-wrap { width: 40px; height: 40px; }
-          .app-label { font-size: 0.66rem; }
+          .app-launcher-card { min-height: 108px; padding-left: 0.18rem; padding-right: 0.18rem; }
+          .app-icon-wrap { width: 42px; height: 42px; }
+          .app-label { font-size: 0.69rem; }
           .hero-portrait { height: 220px; }
         }
       `}</style>

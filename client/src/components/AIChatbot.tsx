@@ -2397,6 +2397,7 @@ export default function AIChatbot() {
               cursor: isDragging.current ? "grabbing" : "grab",
               userSelect: "none",
               touchAction: "none",
+              filter: !isOpen ? "drop-shadow(0 18px 34px rgba(0,0,0,0.42)) drop-shadow(0 0 22px rgba(212,168,67,0.24))" : "drop-shadow(0 12px 26px rgba(0,0,0,0.36))",
             }}
             onMouseDown={handleBtnMouseDown}
             onTouchStart={handleBtnTouchStart}
@@ -2421,7 +2422,7 @@ export default function AIChatbot() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.92 }}
               style={{
-                width: 58, height: 58,
+                width: 64, height: 64,
                 borderRadius: "50%",
                 overflow: "hidden",
                 background: "linear-gradient(145deg, #0d1b2a, #0a1220)",
@@ -2432,7 +2433,8 @@ export default function AIChatbot() {
                 justifyContent: "center",
                 position: "relative",
                 zIndex: 2,
-                border: "2.5px solid #D4A843",
+                border: "3px solid #D4A843",
+                boxShadow: !isOpen ? "0 0 0 6px rgba(212,168,67,0.08), 0 0 34px rgba(212,168,67,0.32), inset 0 1px 0 rgba(255,255,255,0.14)" : "0 0 0 4px rgba(212,168,67,0.08), inset 0 1px 0 rgba(255,255,255,0.12)",
                 animation: !isOpen ? "chatbot-glow-pulse 2.5s ease-in-out infinite" : "none",
               }}
             >
@@ -2440,14 +2442,14 @@ export default function AIChatbot() {
               {!isOpen && (
                 <>
                   <span style={{
-                    position: "absolute", inset: -5, borderRadius: "50%",
-                    border: "2px solid rgba(212,168,67,0.5)",
+                    position: "absolute", inset: -7, borderRadius: "50%",
+                    border: "2px solid rgba(212,168,67,0.58)",
                     animation: "chatbot-ping 2s ease-in-out infinite",
                     pointerEvents: "none",
                   }} />
                                     <span style={{
-                    position: "absolute", inset: -10, borderRadius: "50%",
-                    border: "1.5px solid rgba(212,168,67,0.25)",
+                    position: "absolute", inset: -14, borderRadius: "50%",
+                    border: "1.5px solid rgba(212,168,67,0.30)",
                     animation: "chatbot-ping2 2s ease-in-out infinite 0.4s",
                     pointerEvents: "none",
                   }} />
