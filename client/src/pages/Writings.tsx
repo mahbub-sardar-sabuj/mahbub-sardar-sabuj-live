@@ -913,66 +913,6 @@ const CSS = `
     .hero-stats { gap: .55rem; }
     .hero-stat { padding: 6px 11px; font-size: .71rem; }
   }
-
-
-  /* Clean Literary Reading Redesign overrides */
-  :root {
-    --void:#FAF7F0; --bg0:#FAF7F0; --bg1:#FFFFFF; --bg2:#FFFDF8; --bg3:#F4EEE3; --bg4:#EFE5D7;
-    --t0:#172033; --t1:rgba(23,32,51,.88); --t2:rgba(23,32,51,.64); --t3:rgba(23,32,51,.38); --t4:rgba(23,32,51,.14);
-    --gold:#B58A2A; --gold2:#C99A37; --gold3:#E8D4A4; --bdr:rgba(120,93,55,.18); --bdr2:rgba(120,93,55,.26); --bdr3:rgba(120,93,55,.34);
-  }
-  .wp { background: linear-gradient(180deg,#FFFDF8 0%,#FAF7F0 42%,#F4EEE3 100%) !important; color:#172033 !important; }
-  .wp-cinema::before { background: radial-gradient(circle at 12% 0%,rgba(181,138,42,.12),transparent 30rem), radial-gradient(circle at 90% 10%,rgba(31,138,112,.09),transparent 28rem) !important; }
-  .cinema-aurora,.particles,.particle,.ebook-glow { display:none !important; }
-  .mc { max-width:1180px !important; padding:clamp(1rem,3vw,2.2rem) clamp(1rem,4vw,2rem) !important; }
-  .hero-stage,.panel,.bm2-box {
-    background:rgba(255,255,255,.86) !important; color:#172033 !important; border:1px solid #E8E0D3 !important;
-    box-shadow:0 20px 54px rgba(23,32,51,.08) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
-  }
-  .hero-stage { border-radius:28px !important; padding:clamp(1.6rem,4vw,3rem) !important; }
-  .hero-stage::before,.hero-stage::after,.panel::before,.panel::after { opacity:.24 !important; }
-  .hero-eyebrow,.section-eyebrow,.ebook-genre,.wc2-cat,.ebook-badge {
-    background:#E8F6F1 !important; color:#1F8A70 !important; border:1px solid rgba(31,138,112,.18) !important; box-shadow:none !important;
-  }
-  .hero-title,.panel-title,.wc2-title,.featured-title,.ebook-title { color:#172033 !important; text-shadow:none !important; }
-  .hero-title-gold,.hero-stat-num,.wc2-read { color:#1F8A70 !important; background:none !important; -webkit-text-fill-color:currentColor !important; }
-  .hero-desc,.panel-sub,.wc2-preview,.featured-desc,.ebook-desc,.wc2-date,.rb2-s,.lm2-note { color:#667085 !important; text-shadow:none !important; }
-  .hero-stat,.writing-tools,.sf-s,.sf-cats,.sf-vw,.rb2,.wc2,.featured-book,.ebook-card,.ebook-row,.book-shelf {
-    background:#FFFFFF !important; color:#172033 !important; border:1px solid #E8E0D3 !important; box-shadow:0 12px 34px rgba(23,32,51,.06) !important;
-  }
-  .writing-tools { padding:1rem !important; border-radius:24px !important; }
-  .sf-s input { background:#FFFFFF !important; color:#172033 !important; border-color:#E8E0D3 !important; }
-  .sf-cat,.sf-vb,.lm2-btn,.ebook-read,.ebook-preview,.ebook-buy,.featured-read,.featured-buy {
-    background:#FFFDF8 !important; color:#172033 !important; border:1px solid #E8E0D3 !important; box-shadow:none !important;
-  }
-  .sf-cat.on,.sf-vb.on,.lm2-btn,.ebook-read,.featured-read { background:#1F8A70 !important; color:#FFFFFF !important; border-color:#1F8A70 !important; }
-  .wg2 { gap:1.25rem !important; }
-  .wc2 { border-radius:22px !important; padding:1.45rem !important; transition:transform .18s ease, box-shadow .18s ease !important; }
-  .wc2:hover { transform:translateY(-3px) !important; box-shadow:0 18px 42px rgba(23,32,51,.10) !important; }
-  .wc2-preview { font-size:1rem !important; line-height:1.85 !important; }
-  .rm2 { background:rgba(23,32,51,.34) !important; backdrop-filter:blur(8px) !important; }
-  .rm2-box { background:#FFFCF6 !important; color:#172033 !important; box-shadow:0 20px 60px rgba(23,32,51,.18) !important; }
-  .rm2-hd,.rm2-nav { background:rgba(255,252,246,.94) !important; border-color:rgba(23,32,51,.12) !important; }
-  .rm2-ttl { font-size:clamp(2rem,6vw,3.2rem) !important; line-height:1.32 !important; }
-  .rm2-body { max-width:760px !important; margin:0 auto !important; }
-  .rm2-txt { font-size:1.18rem !important; line-height:2 !important; }
-  .rm2-txt p { margin-bottom:1.65rem !important; }
-  .rm2-btn,.rm2-fc,.rm2-th,.rm2-fb,.rm2-nb { background:#FFFFFF !important; border-color:rgba(23,32,51,.12) !important; color:#172033 !important; }
-  .rm2-sdd { background:#172033 !important; border:1px solid rgba(255,255,255,.12) !important; box-shadow:0 16px 44px rgba(23,32,51,.25) !important; }
-  .bm2 { background:rgba(23,32,51,.34) !important; }
-  @media (max-width:768px) {
-    .hero-grid { grid-template-columns:1fr !important; }
-    .hero-showcase { display:none !important; }
-    .hero-stage { margin-bottom:1rem !important; border-radius:22px !important; }
-    .writing-tools { gap:.75rem !important; }
-    .sf-cats { overflow-x:auto !important; flex-wrap:nowrap !important; justify-content:flex-start !important; }
-    .wc2 { padding:1.2rem !important; }
-    .wc2-title { font-size:1.24rem !important; line-height:1.45 !important; }
-    .rm2-box { border-radius:22px 22px 0 0 !important; }
-    .rm2-hd { padding:.8rem 1rem !important; }
-    .rm2-body { padding:1.25rem !important; }
-    .rm2-txt { font-size:1.1rem !important; line-height:2.05 !important; }
-  }
 `;
 
 // ── Floating Particles Component ──────────────────────────────────────────────
@@ -1114,7 +1054,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
 }) {
   const c = getCatStyle(writing.category);
   const [fontSize, setFontSize] = useState(1.0);
-  const [theme, setTheme] = useState<"dark"|"sepia"|"light">("light");
+  const [theme, setTheme] = useState<"dark"|"sepia"|"light">("dark");
   const [progress, setProgress] = useState(0);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -1132,9 +1072,9 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const relatedWritings = allWritings.filter(w => w.id !== writing.id && w.category === writing.category).slice(0, 3);
 
   const T = {
-    dark:  { bg:"#0F172A", txt:"#F8FAFC", sub:"rgba(248,250,252,.62)", bdr:"rgba(248,250,252,.12)", hnd:"rgba(248,250,252,.18)", prog:c.accent },
-    sepia: { bg:"#FBF2DF", txt:"#2E2416", sub:"rgba(46,36,22,.56)", bdr:"rgba(46,36,22,.14)", hnd:"rgba(46,36,22,.18)", prog:"#B58A2A" },
-    light: { bg:"#FFFCF6", txt:"#172033", sub:"rgba(23,32,51,.58)", bdr:"rgba(23,32,51,.12)", hnd:"rgba(23,32,51,.16)", prog:c.accent },
+    dark:  { bg:"#020408", txt:"#F2EDE4", sub:"rgba(242,237,228,.48)", bdr:"rgba(255,255,255,.07)", hnd:"rgba(255,255,255,.13)", prog:c.accent },
+    sepia: { bg:"#120E06", txt:"#D4C8A0", sub:"rgba(212,200,160,.48)", bdr:"rgba(212,200,160,.1)", hnd:"rgba(212,200,160,.22)", prog:"#C9A84C" },
+    light: { bg:"#F6F3EE", txt:"#1A1612", sub:"rgba(26,22,18,.45)", bdr:"rgba(26,22,18,.1)", hnd:"rgba(26,22,18,.15)", prog:c.accent },
   }[theme];
 
   useEffect(() => {

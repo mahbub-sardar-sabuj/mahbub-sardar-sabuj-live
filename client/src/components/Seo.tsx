@@ -108,7 +108,7 @@ export default function Seo({
     upsertMeta('meta[name="language"]', { name: "language", content: "Bengali" });
     upsertMeta('meta[name="distribution"]', { name: "distribution", content: "global" });
     upsertMeta('meta[name="rating"]', { name: "rating", content: "general" });
-    upsertMeta('meta[name="theme-color"]', { name: "theme-color", content: "#FAF7F0" });
+    upsertMeta('meta[name="theme-color"]', { name: "theme-color", content: "#060E1A" });
     upsertLink('link[rel="canonical"]', { rel: "canonical", href: canonicalUrl });
     upsertLink('link[rel="alternate"][hreflang="bn-BD"]', { rel: "alternate", hreflang: "bn-BD", href: canonicalUrl });
     upsertLink('link[rel="alternate"][hreflang="x-default"]', { rel: "alternate", hreflang: "x-default", href: canonicalUrl });
