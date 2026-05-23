@@ -8,7 +8,7 @@ export interface Writing {
   id: number;
   title: string;
   content: string;
-  category: "ছোট লেখা" | "কবিতা" | "ভালোবাসা" | "জীবনদর্শন" | "বিচ্ছেদ";
+  category: string;
   date: string;
   featured?: boolean;
 }

@@ -634,3 +634,28 @@ body::after {
     color: #111827 !important;
   }
 }
+
+
+/* Performance guardrails for low-power and touch devices */
+@media (max-width: 768px), (pointer: coarse) {
+  body::before,
+  body::after,
+  .cinematic-site-shell::before,
+  .cinematic-site-shell::after {
+    display: none !important;
+  }
+
+  .cinema-section-shell {
+    backdrop-filter: none;
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  .cinematic-site-shell article,
+  .cinematic-site-shell [class*="card"],
+  .cinematic-site-shell [class*="Card"],
+  .cinematic-site-shell [class*="tile"],
+  .cinematic-site-shell [class*="panel"] {
+    transition-property: border-color, background;
+    transition-duration: .16s;
+  }
+}

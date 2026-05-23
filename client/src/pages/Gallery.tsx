@@ -70,7 +70,15 @@ type GalleryImage = { src: string; caption: string };
 export default function Gallery() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [galleryCopied, setGalleryCopied] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(24);
   const [location] = useLocation();
+  const visibleImages = galleryImages.slice(0, visibleCount);
+  const hasMoreImages = visibleCount < galleryImages.length;
+
+  useEffect(() => {
+    const initialCount = window.matchMedia("(max-width: 768px)").matches ? 14 : 24;
+    setVisibleCount(initialCount);
+  }, []);
 
   // URL-এ ?photo=N থাকলে সরাসরি সেই ছবির lightbox খোলা
   useEffect(() => {
@@ -204,7 +212,7 @@ export default function Gallery() {
           columnGap: "8px",
           lineHeight: 0,
         }}>
-          {galleryImages.map((img, i) => (
+          {visibleImages.map((img, i) => (
             <motion.div
               key={img.src + i}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -228,7 +236,8 @@ export default function Gallery() {
               <img
                 src={img.src}
                 alt={`${img.caption || 'মাহবুব সরদার সবুজ গ্যালারি ছবি'} - গ্যালারি`}
-                loading="lazy"
+                loading={i < 6 ? "eager" : "lazy"}
+                fetchPriority={i < 3 ? "high" : "auto"}
                 decoding="async"
                 style={{
                   width: "100%",
@@ -264,6 +273,26 @@ export default function Gallery() {
             </motion.div>
           ))}
         </div>
+        {hasMoreImages ? (
+          <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            <button
+              type="button"
+              onClick={() => setVisibleCount((count) => Math.min(count + 12, galleryImages.length))}
+              style={{
+                border: "1px solid rgba(201,168,76,0.35)",
+                borderRadius: 999,
+                padding: "0.75rem 1.35rem",
+                background: "rgba(201,168,76,0.08)",
+                color: "#E8C97A",
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontSize: "0.9rem",
+                cursor: "pointer",
+              }}
+            >
+              আরও ছবি দেখুন
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* ── Lightbox ── */}

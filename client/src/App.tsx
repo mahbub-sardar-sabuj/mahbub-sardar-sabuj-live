@@ -2,18 +2,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
-// Eagerly load primary entry pages for instant first render
+// Keep only the landing page in the critical path. Everything else is loaded per route.
 import Home from "./pages/Home";
-import Writings from "./pages/Writings";
-import EBooks from "./pages/EBooks";
-import NotFound from "@/pages/NotFound";
 
-// Lazy load all other pages to reduce initial bundle size
+// Lazy load secondary pages to reduce first-load JavaScript on phones/tablets
+const Writings = lazy(() => import("./pages/Writings"));
+const EBooks = lazy(() => import("./pages/EBooks"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 const FacebookRecitations = lazy(() => import("./pages/FacebookRecitations"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -102,6 +102,24 @@ function Router() {
 }
 
 function App() {
+  const [loadAssistant, setLoadAssistant] = useState(false);
+
+  useEffect(() => {
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }).connection;
+    const isSlowConnection = connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || "");
+    const delay = isSlowConnection ? 6500 : 2500;
+
+    const idleCallback = window.requestIdleCallback?.(() => setLoadAssistant(true), { timeout: delay });
+    const timeout = window.setTimeout(() => setLoadAssistant(true), delay);
+
+    return () => {
+      if (idleCallback !== undefined) window.cancelIdleCallback?.(idleCallback);
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
@@ -110,9 +128,11 @@ function App() {
           <div className="cinematic-site-shell">
             <Router />
           </div>
-          <Suspense fallback={null}>
-            <AIChatbot />
-          </Suspense>
+          {loadAssistant ? (
+            <Suspense fallback={null}>
+              <AIChatbot />
+            </Suspense>
+          ) : null}
           <SpeedInsights />
           <Analytics />
         </TooltipProvider>
