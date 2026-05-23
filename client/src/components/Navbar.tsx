@@ -1,103 +1,41 @@
-/**
- * Design: Literary Avant-Garde — Premium Edition
- * Navbar: Sticky top nav with navy background, gold accents
- * Responsive: JS-based window width detection (no Tailwind classes)
- */
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Menu,
-  X,
-  ChevronRight,
-  House,
-  UserRound,
-  BookOpen,
-  Mic2,
-  PenLine,
-  Images,
-  Newspaper,
-  Mail,
-  Palette,
-  Feather,
-} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, X, House, UserRound, Mic2, PenLine, Images, Newspaper, Mail, Palette, Feather } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
 
 const navLinks = [
-  { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "/", type: "page", icon: House },
-  { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "/about", type: "page", icon: UserRound },
-  { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", type: "page", icon: Mic2 },
-  { label: "লেখালেখি ও বই", subtitle: "কবিতা, লেখা ও প্রকাশিত বই সংগ্রহ", href: "/writings", type: "page", icon: PenLine },
-  { label: "আমিও লিখবো বাস্তবতা", subtitle: "সৃজনশীল লেখালেখির নতুন কমিউনিটি", href: "/amio-likhbo-bastobota", type: "page", icon: Feather },
-  { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", type: "page", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "/gallery", type: "page", icon: Images },
-  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", type: "page", icon: Newspaper },
-  { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", type: "page", icon: Mail },
+  { label: "হোম", href: "/", icon: House },
+  { label: "পরিচিতি", href: "/about", icon: UserRound },
+  { label: "আবৃত্তি", href: "/facebook-recitations", icon: Mic2 },
+  { label: "লেখালেখি ও বই", href: "/writings", icon: PenLine },
+  { label: "আমিও লিখবো", href: "/amio-likhbo-bastobota", icon: Feather },
+  { label: "ডিজাইন", href: "/editor", icon: Palette },
+  { label: "গ্যালারি", href: "/gallery", icon: Images },
+  { label: "সংবাদ", href: "/news", icon: Newspaper },
+  { label: "যোগাযোগ", href: "/contact", icon: Mail },
 ];
 
-const infoTabs = [
-  { titleBn: "পরিচিতি পেজ", description: "লেখক পরিচিতি ও সংক্ষিপ্ত প্রেক্ষিত", href: "/about" },
-  { titleBn: "যোগাযোগ", description: "ইমেইল, সামাজিক মাধ্যম ও ওয়েবসাইট", href: "/contact" },
-  { titleBn: "প্রাইভেসি পলিসি", description: "তথ্য সংগ্রহ, cookies ও privacy ব্যাখ্যা", href: "/privacy-policy" },
-  { titleBn: "শর্তাবলি", description: "ব্যবহারের নিয়ম, অধিকার ও সীমাবদ্ধতা", href: "/terms" },
-];
-
-const isInfoTabActive = (href: string, location: string) => location === href;
-
-const isPrimaryNavActive = (href: string, type: string, location: string) => {
+const isActive = (href: string, location: string) => {
   if (href === "/") return location === "/";
-  // লেখালেখি ও বই: /writings, /ebooks, /ebooks/read/* সব পেইজেই active
-  if (href === "/writings") return location === "/writings" || location === "/ebooks" || location.startsWith("/ebooks/");
-  if (type === "page") return location === href;
-  return false;
+  if (href === "/writings") return location === "/writings" || location === "/ebooks" || location.startsWith("/writings/") || location.startsWith("/ebooks/");
+  return location === href || location.startsWith(href + "/");
 };
 
-// Small event emitter to open chatbot from outside
 export const openChatbot = () => {
   window.dispatchEvent(new CustomEvent("open-chatbot"));
 };
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
-  const [logoHovered, setLogoHovered] = useState(false);
-  const isEBookReaderPage = location.startsWith("/ebooks/read/");
-  const isWritingsPage = location === "/writings" || location === "/ebooks";
-  const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
-  const navElevated = scrolled || isWritingsPage;
-
-  useEffect(() => {
-    const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
-    checkWidth();
-    window.addEventListener("resize", checkWidth);
-    return () => window.removeEventListener("resize", checkWidth);
-  }, []);
-
-  // Throttled scroll handler — fires at most once per 100ms to reduce re-renders
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const scrollThrottleRef = useRef<number | null>(null);
-  useEffect(() => {
-    const handleScroll = () => {
-      if (scrollThrottleRef.current !== null) return;
-      scrollThrottleRef.current = window.setTimeout(() => {
-        setScrolled(window.scrollY > 50);
-        scrollThrottleRef.current = null;
-      }, 100);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (scrollThrottleRef.current !== null) clearTimeout(scrollThrottleRef.current);
-    };
-  }, []);
-
-  const navHeight = scrolled ? (isDesktop ? 58 : 64) : (isDesktop ? 70 : 76);
-  const totalNavOffset = navHeight;
+  const isEBookReaderPage = location.startsWith("/ebooks/read/");
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--site-nav-offset", `${totalNavOffset}px`);
+    const navHeight = 72;
+    document.documentElement.style.setProperty("--site-nav-offset", `${navHeight}px`);
     document.documentElement.style.setProperty("--site-nav-height", `${navHeight}px`);
     document.documentElement.style.setProperty("--site-banner-height", "0px");
     return () => {
@@ -105,555 +43,94 @@ export default function Navbar() {
       document.documentElement.style.removeProperty("--site-nav-height");
       document.documentElement.style.removeProperty("--site-banner-height");
     };
-  }, [totalNavOffset, navHeight]);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (scrollThrottleRef.current !== null) return;
+      scrollThrottleRef.current = window.setTimeout(() => {
+        setScrolled(window.scrollY > 10);
+        scrollThrottleRef.current = null;
+      }, 80);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollThrottleRef.current !== null) clearTimeout(scrollThrottleRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
+    if (mobileOpen) preloadRoutesWhenIdle(navLinks.map((link) => link.href));
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  // Close mobile menu when switching to desktop
-  useEffect(() => {
-    if (isDesktop && mobileOpen) setMobileOpen(false);
-  }, [isDesktop, mobileOpen]);
-
-  // Auto-close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location]);
-
-  useEffect(() => {
-    if (!mobileOpen) return;
-    preloadRoutesWhenIdle([...navLinks.map((link) => link.href), ...infoTabs.map((tab) => tab.href)]);
-  }, [mobileOpen]);
-
-  const warmRoute = (href: string) => {
-    preloadRoute(href);
-  };
-
-  const handleNavClick = (href: string, _type: string) => {
-    warmRoute(href);
-    setMobileOpen(false);
-  };
-
+  useEffect(() => setMobileOpen(false), [location]);
+  const warmRoute = (href: string) => preloadRoute(href);
   if (isEBookReaderPage) return null;
+
   return (
-    <>
-      {/* Keyframe animations injected globally */}
-      <style>{`
-        @keyframes logoMicPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.0), 0 2px 12px rgba(212,168,67,0.15); }
-          50% { box-shadow: 0 0 0 6px rgba(245,166,35,0.18), 0 2px 18px rgba(212,168,67,0.35); }
-        }
-        @keyframes logoShimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        @keyframes ping {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.5); opacity: 0.5; }
-        }
-        @keyframes broadcastRing {
-          0% { transform: scale(0.8); opacity: 0.8; }
-          100% { transform: scale(2.2); opacity: 0; }
-        }
-      `}</style>
-
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      style={{
-        position: "fixed",
-        top: 0, left: 0, right: 0,
-        zIndex: 100,
-        transition: "all 0.5s",
-        background: navElevated ? "rgba(6,14,26,0.92)" : "transparent",
-        backdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
-        WebkitBackdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
-        boxShadow: navElevated ? "0 4px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.03)" : "none",
-        borderBottom: navElevated ? "1px solid rgba(201,168,76,0.1)" : "none",
-      }}
-    >
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isDesktop ? "0 1.5rem" : "0 1rem", position: "relative", zIndex: 2 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: navHeight, transition: "height 0.4s ease" }}>
-
-          {/* ── PREMIUM LOGO (original) ── */}
-          <Link
-            href="/"
-            style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: isDesktop ? 10 : 12, flexShrink: 0, minWidth: 0 }}
-          >
-            <span style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: "linear-gradient(135deg, rgba(212,168,67,0.18) 0%, rgba(212,168,67,0.08) 100%)",
-              border: "1px solid rgba(212,168,67,0.35)",
-              boxShadow: "0 2px 12px rgba(212,168,67,0.15)",
-              flexShrink: 0,
-            }}>
-              <Feather size={16} color="#D4A843" />
+    <nav className={`clean-navbar ${scrolled ? "is-scrolled" : ""}`}>
+      <div className="clean-navbar__inner">
+        <Link href="/">
+          <span className="clean-navbar__brand" onPointerDown={() => warmRoute("/")} onMouseEnter={() => warmRoute("/")}>
+            <span className="clean-navbar__mark"><Feather size={18} /></span>
+            <span className="clean-navbar__brand-text">
+              <strong>মাহবুব সরদার সবুজ</strong>
+              <small>লেখক ও কবি</small>
             </span>
-            <span style={{ display: "flex", flexDirection: isDesktop ? "column" : "row", justifyContent: "center", alignItems: isDesktop ? "flex-start" : "baseline", gap: isDesktop ? 0 : 5, lineHeight: 1.05, minWidth: 0 }}>
-              <span style={{
-                fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                fontSize: isDesktop ? "1.12rem" : "1.04rem",
-                fontWeight: 800,
-                letterSpacing: "0.01em",
-                color: isDesktop ? "#E8C97A" : "#FFE39A",
-                textShadow: isDesktop ? "none" : "0 2px 10px rgba(0,0,0,0.88), 0 0 14px rgba(255,227,154,0.28)",
-                whiteSpace: "nowrap",
-                background: isDesktop ? "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)" : "none",
-                WebkitBackgroundClip: isDesktop ? "text" : "border-box",
-                WebkitTextFillColor: isDesktop ? "transparent" : "#FFE39A",
-                backgroundClip: isDesktop ? "text" : "border-box",
-              }}>
-                মাহবুব সরদার সবুজ
-              </span>
-              <span style={{
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                fontSize: isDesktop ? "0.65rem" : "0.66rem",
-                letterSpacing: isDesktop ? "0.1em" : "0.015em",
-                color: isDesktop ? "rgba(232,201,122,0.78)" : "#FFF0BE",
-                fontWeight: isDesktop ? 400 : 800,
-                textShadow: isDesktop ? "none" : "0 2px 9px rgba(0,0,0,0.9), 0 0 12px rgba(255,240,190,0.26)",
-                marginTop: isDesktop ? 2 : 0,
-                lineHeight: 1.05,
-                whiteSpace: "nowrap",
-                textAlign: "center",
-              }}>
-                লেখক ও কবি
-              </span>
-            </span>
-          </Link>
+          </span>
+        </Link>
 
-          {/* ── DESKTOP NAV LINKS (only visible on md+) ── */}
-          {isDesktop && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap" }}>
-              {navLinks.map((link) => {
-                const isActive = isPrimaryNavActive(link.href, link.type, location);
-                return link.type === "page" ? (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: isActive ? "#0D1B2A" : "rgba(253,246,236,0.9)",
-                        padding: "9px 14px",
-                        textDecoration: "none",
-                        fontSize: "0.88rem",
-                        transition: "all 0.3s ease",
-                        borderRadius: 999,
-                        cursor: "pointer",
-                        display: "inline-block",
-                        whiteSpace: "nowrap",
-                        background: isActive
-                          ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                          : "rgba(253,246,236,0.04)",
-                        border: isActive
-                          ? "1px solid rgba(212,168,67,0.65)"
-                          : "1px solid rgba(212,168,67,0.12)",
-                      }}
-                      onPointerDown={() => warmRoute(link.href)}
-                      onFocus={() => warmRoute(link.href)}
-                      onMouseEnter={(e) => {
-                        warmRoute(link.href);
-                        e.currentTarget.style.color = "#0D1B2A";
-                        e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = isActive ? "#0D1B2A" : "rgba(253,246,236,0.9)";
-                        e.currentTarget.style.background = isActive
-                          ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                          : "rgba(253,246,236,0.04)";
-                      }}
-                    >
-                      {link.label}
-                    </span>
-                  </Link>
-                ) : (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    onClick={(e) => { e.preventDefault(); handleNavClick(link.href, link.type); }}
-                    style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: "rgba(253,246,236,0.9)",
-                      padding: "9px 14px",
-                      textDecoration: "none",
-                      fontSize: "0.88rem",
-                      transition: "all 0.3s ease",
-                      borderRadius: 999,
-                      whiteSpace: "nowrap",
-                      background: "rgba(253,246,236,0.04)",
-                      border: "1px solid rgba(212,168,67,0.12)",
-                    }}
-                    onPointerDown={() => warmRoute(link.href)}
-                    onFocus={() => warmRoute(link.href)}
-                    onMouseEnter={(e) => {
-                      warmRoute(link.href);
-                      e.currentTarget.style.color = "#0D1B2A";
-                      e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "rgba(253,246,236,0.9)";
-                      e.currentTarget.style.background = "rgba(253,246,236,0.04)";
-                    }}
-                  >
-                    {link.label}
-                  </a>
-                );
-              })}
-            </div>
-          )}
-
-          {/* ── HAMBURGER (only visible on mobile) ── */}
-          {!isDesktop && (
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              style={{
-                color: "rgba(253,246,236,0.85)",
-                background: mobileOpen ? "rgba(212,168,67,0.12)" : "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(212,168,67,0.2)",
-                borderRadius: 10,
-                padding: "7px 9px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.25s",
-                flexShrink: 0,
-              }}
-            >
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          )}
+        <div className="clean-navbar__links" aria-label="প্রধান মেনু">
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.href, location);
+            return (
+              <Link key={link.href} href={link.href}>
+                <span
+                  className={`clean-navbar__link ${active ? "active" : ""}`}
+                  onPointerDown={() => warmRoute(link.href)}
+                  onMouseEnter={() => warmRoute(link.href)}
+                  onFocus={() => warmRoute(link.href)}
+                >
+                  <Icon size={15} /> {link.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
+
+        <button className="clean-navbar__menu" type="button" onClick={() => setMobileOpen((v) => !v)} aria-expanded={mobileOpen} aria-label="মেনু খুলুন">
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </div>
 
-      {/* ── MOBILE MENU ── */}
       <AnimatePresence>
-        {mobileOpen && !isDesktop && (
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            style={{
-              background: "rgba(6,14,26,0.97)",
-              borderTop: "1px solid rgba(212,168,67,0.18)",
-              position: "fixed",
-              top: totalNavOffset, left: 0, right: 0, bottom: 0,
-              height: `calc(100dvh - ${totalNavOffset}px)`,
-              minHeight: `calc(100vh - ${totalNavOffset}px)`,
-              overflowY: "auto",
-              WebkitOverflowScrolling: "touch",
-              overscrollBehavior: "contain",
-              touchAction: "pan-y",
-              zIndex: 300,
-            }}
-          >
-            <div style={{
-              position: "relative",
-              minHeight: "100%",
-              padding: "1.2rem 1rem calc(2.5rem + env(safe-area-inset-bottom))",
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              scrollbarWidth: "thin",
-              scrollbarColor: "rgba(212,168,67,0.3) rgba(255,255,255,0.03)",
-            }}>
-
-              {/* Author branding badge at top of mobile menu — Home page style */}
-              <div style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 16,
-                padding: "18px 16px",
-                borderRadius: 20,
-                background: "linear-gradient(135deg, rgba(212,168,67,0.07) 0%, rgba(212,168,67,0.02) 100%)",
-                border: "1px solid rgba(212,168,67,0.18)",
-                marginBottom: 2,
-                position: "relative",
-                overflow: "hidden",
-              }}>
-                {/* Subtle background glow */}
-                <div style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: 200,
-                  height: 200,
-                  borderRadius: "50%",
-                  background: "radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
-                  pointerEvents: "none",
-                }} />
-                {/* Suit photo on left */}
-                <div style={{
-                  width: 80,
-                  height: 90,
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  border: "1.5px solid rgba(212,168,67,0.35)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-                  position: "relative",
-                }}>
-                  <img
-                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
-                    alt="মাহবুব সরদার সবুজ"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center top",
-                      display: "block",
-                    }}
-                  />
-                  <div style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.4) 100%)",
-                  }} />
-                </div>
-                {/* Name display — single line */}
-                <div style={{ display: "flex", flexDirection: "column", position: "relative", flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "1.25rem",
-                    fontWeight: 800,
-                    lineHeight: 1.2,
-                    background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    marginBottom: 6,
-                    whiteSpace: "nowrap",
-                  }}>মাহবুব সরদার সবুজ</div>
-                  {/* Divider line */}
-                  <div style={{
-                    width: 40,
-                    height: 1.5,
-                    background: "linear-gradient(90deg, #D4A843, transparent)",
-                    marginBottom: 6,
-                  }} />
-                  <div style={{
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.72rem",
-                    color: "rgba(212,168,67,0.55)",
-                    letterSpacing: "0.06em",
-                  }}>লেখক ও কবি</div>
-                </div>
-              </div>
-
-              {/* Primary nav links */}
-              <div style={{
-                borderRadius: 22,
-                background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.015) 100%)",
-                border: "1px solid rgba(212,168,67,0.13)",
-                padding: "10px",
-                boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
-              }}>
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: {},
-                    visible: { transition: { staggerChildren: 0.055, delayChildren: 0.03 } },
-                  }}
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
-                  {navLinks.map((link) => {
-                    const active = isPrimaryNavActive(link.href, link.type, location);
-                    const Icon = link.icon;
-                    const linkContent = (
-                      <motion.span
-                        variants={{
-                          hidden: { opacity: 0, x: -16, scale: 0.97 },
-                          visible: { opacity: 1, x: 0, scale: 1 },
-                        }}
-                        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                        whileTap={{ scale: 0.983 }}
-                        style={{
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
-                          color: active ? "#0D1B2A" : "#FDF6EC",
-                          background: active
-                            ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
-                            : "transparent",
-                          border: active
-                            ? "1px solid rgba(212,168,67,0.5)"
-                            : "1px solid transparent",
-                          padding: "11px 12px",
-                          textDecoration: "none",
-                          borderRadius: 14,
-                          transition: "all 0.25s ease",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 12,
-                          boxShadow: active ? "0 8px 24px rgba(212,168,67,0.28)" : "none",
-                        }}
-                      >
-                        <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
-                          <span style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 38,
-                            height: 38,
-                            borderRadius: 11,
-                            background: active
-                              ? "rgba(10,22,40,0.15)"
-                              : "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.05) 100%)",
-                            border: active
-                              ? "1px solid rgba(10,22,40,0.15)"
-                              : "1px solid rgba(212,168,67,0.2)",
-                            flexShrink: 0,
-                            boxShadow: active ? "none" : "0 2px 8px rgba(0,0,0,0.15)",
-                          }}>
-                            <Icon size={17} color={active ? "#0D1B2A" : "#D4A843"} />
-                          </span>
-                          <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                            <span style={{ fontSize: "0.98rem", fontWeight: 700, lineHeight: 1.3 }}>
-                              {link.label}
-                            </span>
-                            <span style={{
-                              fontSize: "0.73rem",
-                              lineHeight: 1.4,
-                              color: active ? "rgba(10,22,40,0.75)" : "rgba(253,246,236,0.5)",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}>
-                              {link.subtitle}
-                            </span>
-                          </span>
-                        </span>
-                        <span style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: 30,
-                          height: 30,
-                          borderRadius: 999,
-                          background: active ? "rgba(10,22,40,0.12)" : "rgba(212,168,67,0.07)",
-                          border: active ? "1px solid rgba(10,22,40,0.12)" : "1px solid rgba(212,168,67,0.15)",
-                          flexShrink: 0,
-                        }}>
-                          <ChevronRight size={14} color={active ? "#0D1B2A" : "#D4A843"} />
-                        </span>
-                      </motion.span>
-                    );
-
-                    return link.type === "page" ? (
-                      <Link key={link.href} href={link.href}>
-                        <span
-                          onPointerDown={() => warmRoute(link.href)}
-                          onTouchStart={() => warmRoute(link.href)}
-                          onClick={() => {
-                            warmRoute(link.href);
-                            setMobileOpen(false);
-                          }}
-                          style={{ display: "block" }}
-                        >
-                          {linkContent}
-                        </span>
-                      </Link>
-                    ) : (
-                      <a
-                        key={link.href}
-                        href={link.href}
-                        onClick={(e) => { e.preventDefault(); handleNavClick(link.href, link.type); }}
-                        style={{ textDecoration: "none", display: "block" }}
-                      >
-                        {linkContent}
-                      </a>
-                    );
-                  })}
-                </motion.div>
-              </div>
-
-              {/* Info tabs — 2×2 grid */}
-              {!isAmioLikhboPage && (
-                <div style={{ margin: "0 2px" }}>
-                  <p style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    color: "rgba(212,168,67,0.7)",
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.16em",
-                    textTransform: "uppercase",
-                    margin: "0 4px 10px",
-                  }}>
-                    তথ্য ও নীতিমালা
-                  </p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    {infoTabs.map((tab) => {
-                      const active = isInfoTabActive(tab.href, location);
-                      return (
-                        <Link key={tab.href} href={tab.href}>
-                          <motion.span
-                            onPointerDown={() => warmRoute(tab.href)}
-                            onTouchStart={() => warmRoute(tab.href)}
-                            onClick={() => {
-                              warmRoute(tab.href);
-                              setMobileOpen(false);
-                            }}
-                            whileTap={{ scale: 0.97 }}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.28, ease: "easeOut" }}
-                            style={{
-                              fontFamily: "'Noto Sans Bengali', sans-serif",
-                              color: active ? "#0D1B2A" : "#FDF6EC",
-                              background: active
-                                ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
-                                : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(212,168,67,0.04) 100%)",
-                              border: active
-                                ? "1px solid rgba(212,168,67,0.6)"
-                                : "1px solid rgba(212,168,67,0.18)",
-                              padding: "14px 13px",
-                              textDecoration: "none",
-                              borderRadius: 16,
-                              transition: "all 0.25s",
-                              cursor: "pointer",
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 5,
-                              minHeight: 82,
-                              justifyContent: "center",
-                              boxShadow: active
-                                ? "0 8px 24px rgba(212,168,67,0.28)"
-                                : "0 4px 16px rgba(0,0,0,0.15)",
-                            }}
-                          >
-                            <span style={{ fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3 }}>
-                              {tab.titleBn}
-                            </span>
-                            <span style={{
-                              fontSize: "0.7rem",
-                              lineHeight: 1.45,
-                              color: active ? "rgba(10,22,40,0.75)" : "rgba(253,246,236,0.5)",
-                            }}>
-                              {tab.description}
-                            </span>
-                          </motion.span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-            </div>
+        {mobileOpen && (
+          <motion.div className="clean-navbar__mobile" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: .18 }}>
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const active = isActive(link.href, location);
+              return (
+                <Link key={link.href} href={link.href}>
+                  <span
+                    className={`clean-navbar__mobile-link ${active ? "active" : ""}`}
+                    onPointerDown={() => warmRoute(link.href)}
+                    onTouchStart={() => warmRoute(link.href)}
+                    onMouseEnter={() => warmRoute(link.href)}
+                    onFocus={() => warmRoute(link.href)}
+                  >
+                    <Icon size={18} /> {link.label}
+                  </span>
+                </Link>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
-    </>
+    </nav>
   );
 }

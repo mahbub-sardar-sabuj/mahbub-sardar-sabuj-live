@@ -382,3 +382,24 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }/* ── Global: Scrollbar for panels (dark theme) ───────────────────────────── */
+
+
+/* Clean Literary desktop neutralizer */
+@media (min-width: 1024px) {
+  .glass-card,
+  .glow-card,
+  .writings-sidebar,
+  .reading-col,
+  .book-grid > *,
+  .footer-grid > * {
+    background: var(--literary-surface) !important;
+    color: var(--literary-text) !important;
+    border-color: var(--literary-border) !important;
+    box-shadow: 0 12px 34px rgba(23, 32, 51, 0.07) !important;
+  }
+  .shimmer-text {
+    background: none !important;
+    -webkit-text-fill-color: var(--literary-text) !important;
+    color: var(--literary-text) !important;
+  }
+}
