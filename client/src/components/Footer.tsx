@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { preloadRoute } from "@/lib/routePreloader";
 
 const socialLinks = [
   { icon: Facebook, href: "https://facebook.com/MahbubSardarSabuj", label: "Facebook", color: "#1877F2" },
@@ -47,6 +48,7 @@ export default function Footer() {
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
+  const warmRoute = (href: string) => preloadRoute(href);
 
   if (isAmioLikhboPage) {
     return null;
@@ -215,6 +217,10 @@ export default function Footer() {
                 return (
                   <Link key={link.href + link.label} href={link.href}>
                     <motion.span
+                      onPointerDown={() => warmRoute(link.href)}
+                      onTouchStart={() => warmRoute(link.href)}
+                      onFocus={() => warmRoute(link.href)}
+                      onMouseEnter={() => warmRoute(link.href)}
                       whileHover={{ x: 6, color: "#C9A84C" }}
                       style={{
                         fontFamily: "'Noto Sans Bengali', sans-serif",
@@ -252,6 +258,10 @@ export default function Footer() {
                     return (
                       <Link key={link.href} href={link.href}>
                         <motion.span
+                          onPointerDown={() => warmRoute(link.href)}
+                          onTouchStart={() => warmRoute(link.href)}
+                          onFocus={() => warmRoute(link.href)}
+                          onMouseEnter={() => warmRoute(link.href)}
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
                             fontFamily: "'Noto Sans Bengali', sans-serif",
@@ -287,6 +297,10 @@ export default function Footer() {
                     return (
                       <Link key={link.href} href={link.href}>
                         <motion.span
+                          onPointerDown={() => warmRoute(link.href)}
+                          onTouchStart={() => warmRoute(link.href)}
+                          onFocus={() => warmRoute(link.href)}
+                          onMouseEnter={() => warmRoute(link.href)}
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
                             fontFamily: "'Noto Sans Bengali', sans-serif",

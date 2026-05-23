@@ -21,6 +21,7 @@ import {
   Feather,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
 
 const navLinks = [
   { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "/", type: "page", icon: House },
@@ -121,7 +122,17 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [location]);
 
-  const handleNavClick = (_href: string, _type: string) => {
+  useEffect(() => {
+    if (!mobileOpen) return;
+    preloadRoutesWhenIdle([...navLinks.map((link) => link.href), ...infoTabs.map((tab) => tab.href)]);
+  }, [mobileOpen]);
+
+  const warmRoute = (href: string) => {
+    preloadRoute(href);
+  };
+
+  const handleNavClick = (href: string, _type: string) => {
+    warmRoute(href);
     setMobileOpen(false);
   };
 
@@ -245,7 +256,10 @@ export default function Navbar() {
                           ? "1px solid rgba(212,168,67,0.65)"
                           : "1px solid rgba(212,168,67,0.12)",
                       }}
+                      onPointerDown={() => warmRoute(link.href)}
+                      onFocus={() => warmRoute(link.href)}
                       onMouseEnter={(e) => {
+                        warmRoute(link.href);
                         e.currentTarget.style.color = "#0D1B2A";
                         e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
                       }}
@@ -276,7 +290,10 @@ export default function Navbar() {
                       background: "rgba(253,246,236,0.04)",
                       border: "1px solid rgba(212,168,67,0.12)",
                     }}
+                    onPointerDown={() => warmRoute(link.href)}
+                    onFocus={() => warmRoute(link.href)}
                     onMouseEnter={(e) => {
+                      warmRoute(link.href);
                       e.currentTarget.style.color = "#0D1B2A";
                       e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
                     }}
@@ -535,7 +552,15 @@ export default function Navbar() {
 
                     return link.type === "page" ? (
                       <Link key={link.href} href={link.href}>
-                        <span onClick={() => setMobileOpen(false)} style={{ display: "block" }}>
+                        <span
+                          onPointerDown={() => warmRoute(link.href)}
+                          onTouchStart={() => warmRoute(link.href)}
+                          onClick={() => {
+                            warmRoute(link.href);
+                            setMobileOpen(false);
+                          }}
+                          style={{ display: "block" }}
+                        >
                           {linkContent}
                         </span>
                       </Link>
@@ -572,7 +597,12 @@ export default function Navbar() {
                       return (
                         <Link key={tab.href} href={tab.href}>
                           <motion.span
-                            onClick={() => setMobileOpen(false)}
+                            onPointerDown={() => warmRoute(tab.href)}
+                            onTouchStart={() => warmRoute(tab.href)}
+                            onClick={() => {
+                              warmRoute(tab.href);
+                              setMobileOpen(false);
+                            }}
                             whileTap={{ scale: 0.97 }}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}

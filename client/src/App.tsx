@@ -6,30 +6,31 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { lazyRoute, preloadRoute, preloadRoutesWhenIdle } from "./lib/routePreloader";
 
 // Keep only the landing page in the critical path. Everything else is loaded per route.
 import Home from "./pages/Home";
 
 // Lazy load secondary pages to reduce first-load JavaScript on phones/tablets
-const Writings = lazy(() => import("./pages/Writings"));
-const EBooks = lazy(() => import("./pages/EBooks"));
-const NotFound = lazy(() => import("@/pages/NotFound"));
-const FacebookRecitations = lazy(() => import("./pages/FacebookRecitations"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const Terms = lazy(() => import("./pages/Terms"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const EBookReader = lazy(() => import("./pages/EBookReader"));
-const Editor = lazy(() => import("./pages/Editor"));
-const News = lazy(() => import("./pages/News"));
-const Gallery = lazy(() => import("./pages/Gallery"));
-const AmiOLikhboBastobota = lazy(() => import("./pages/AmiOLikhboBastobota"));
+const Writings = lazyRoute("Writings");
+const EBooks = lazyRoute("EBooks");
+const NotFound = lazyRoute("NotFound");
+const FacebookRecitations = lazyRoute("FacebookRecitations");
+const PrivacyPolicy = lazyRoute("PrivacyPolicy");
+const Terms = lazyRoute("Terms");
+const About = lazyRoute("About");
+const Contact = lazyRoute("Contact");
+const EBookReader = lazyRoute("EBookReader");
+const Editor = lazyRoute("Editor");
+const News = lazyRoute("News");
+const Gallery = lazyRoute("Gallery");
+const AmiOLikhboBastobota = lazyRoute("AmiOLikhboBastobota");
 const AIChatbot = lazy(() => import("./components/AIChatbot"));
-const AdminLiveChat = lazy(() => import("./pages/AdminLiveChat"));
-const AdminWritingModeration = lazy(() => import("./pages/AdminWritingModeration"));
-const Profile = lazy(() => import("./pages/Profile"));
-const AmiOLikhboLogin = lazy(() => import("./pages/AmiOLikhboLogin"));
-const SeoKeywordLanding = lazy(() => import("./pages/SeoKeywordLanding"));
+const AdminLiveChat = lazyRoute("AdminLiveChat");
+const AdminWritingModeration = lazyRoute("AdminWritingModeration");
+const Profile = lazyRoute("Profile");
+const AmiOLikhboLogin = lazyRoute("AmiOLikhboLogin");
+const SeoKeywordLanding = lazyRoute("SeoKeywordLanding");
 
 // Page loading fallback
 function PageLoader() {
@@ -117,6 +118,44 @@ function App() {
     return () => {
       if (idleCallback !== undefined) window.cancelIdleCallback?.(idleCallback);
       window.clearTimeout(timeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    const warmInternalLink = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      const url = new URL(anchor.href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      preloadRoute(`${url.pathname}${url.search}${url.hash}`);
+    };
+
+    document.addEventListener("pointerover", warmInternalLink, { passive: true });
+    document.addEventListener("pointerdown", warmInternalLink, { passive: true });
+    document.addEventListener("touchstart", warmInternalLink, { passive: true });
+    document.addEventListener("focusin", warmInternalLink);
+
+    preloadRoutesWhenIdle([
+      "/about",
+      "/contact",
+      "/gallery",
+      "/facebook-recitations",
+      "/news",
+      "/editor",
+      "/amio-likhbo-bastobota",
+      "/writings",
+      "/ebooks",
+      "/privacy-policy",
+      "/terms",
+    ]);
+
+    return () => {
+      document.removeEventListener("pointerover", warmInternalLink);
+      document.removeEventListener("pointerdown", warmInternalLink);
+      document.removeEventListener("touchstart", warmInternalLink);
+      document.removeEventListener("focusin", warmInternalLink);
     };
   }, []);
 
