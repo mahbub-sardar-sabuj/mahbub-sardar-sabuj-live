@@ -838,6 +838,58 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-input:focus {
       box-shadow: 0 0 0 2px rgba(212,168,67,0.12), 0 4px 20px rgba(212,168,67,0.08) !important;
     }
+
+    .chatbot-adorsho button:focus-visible,
+    .chatbot-adorsho textarea:focus-visible,
+    .chatbot-adorsho input:focus-visible,
+    .chatbot-launcher:focus-visible {
+      outline: 2px solid rgba(247,228,165,0.9) !important;
+      outline-offset: 3px !important;
+      box-shadow: 0 0 0 4px rgba(212,168,67,0.16) !important;
+    }
+    .chatbot-adorsho button,
+    .chatbot-launcher {
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chatbot-icon-btn,
+    .chatbot-send-btn,
+    .chatbot-touch-target {
+      min-width: 40px;
+      min-height: 40px;
+    }
+    @media (max-width: 480px) {
+      .chatbot-icon-btn,
+      .chatbot-send-btn,
+      .chatbot-touch-target {
+        min-width: 44px;
+        min-height: 44px;
+      }
+      .chatbot-suggestion-btn {
+        min-height: 34px;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+      .chatbot-input::placeholder {
+        font-size: 0.72rem !important;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .chatbot-adorsho *,
+      .chatbot-launcher,
+      .chatbot-launcher * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+      .chatbot-msg-animate,
+      .chatbot-suggestion-btn:hover,
+      .chatbot-nav-btn:hover,
+      .chatbot-download-btn:hover,
+      .chatbot-send-btn:not(:disabled):hover {
+        transform: none !important;
+      }
+    }
   `;
   document.head.appendChild(style);
 }
@@ -2327,7 +2379,8 @@ export default function AIChatbot() {
   // FIX: Removed isAudioMode from deps — it is not used inside handleSend body
   }, [input, isLoading, messages, imagePreview, audioFile, handleAudioEdit, isAudioEditRequest]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.nativeEvent.isComposing) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -2390,7 +2443,18 @@ export default function AIChatbot() {
         const abs = getAbsPos();
         return (
           <div
-            className="fixed z-[60]"
+            className="fixed z-[60] chatbot-launcher"
+            role="button"
+            tabIndex={0}
+            aria-label={isOpen ? "চ্যাটবট বন্ধ করুন" : "চ্যাটবট খুলুন"}
+            aria-expanded={isOpen}
+            aria-controls="ai-chatbot-dialog"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsOpen(o => !o);
+              }
+            }}
             style={{
               left: abs.x,
               top: abs.y,
@@ -2498,6 +2562,10 @@ export default function AIChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="ai-chatbot-dialog"
+            role="dialog"
+            aria-modal="false"
+            aria-label="মাহবুব সরদার সবুজ AI Agent"
             className={`chatbot-adorsho${isDragOver ? " chatbot-drag-over" : ""}`}
             initial={{ opacity: 0, scale: 0.88, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2537,11 +2605,11 @@ export default function AIChatbot() {
               flexDirection: "column",
               overflow: "hidden",
               background: "linear-gradient(160deg, rgba(8,14,28,0.99) 0%, rgba(4,8,18,0.99) 100%)",
-              backdropFilter: "blur(40px)",
-              WebkitBackdropFilter: "blur(40px)",
+              backdropFilter: "blur(22px)",
+              WebkitBackdropFilter: "blur(22px)",
               border: "1px solid rgba(212,168,67,0.28)",
-              boxShadow: "0 40px 100px rgba(0,0,0,0.92), 0 0 0 1px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.12), 0 0 60px rgba(212,168,67,0.04)",
-              animation: "chatbot-border-glow 4s ease-in-out infinite",
+              boxShadow: "0 24px 70px rgba(0,0,0,0.72), 0 0 0 1px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.12), 0 0 36px rgba(212,168,67,0.04)",
+              animation: "chatbot-border-glow 8s ease-in-out infinite",
               transition: "border-color 0.2s, box-shadow 0.2s",
             }}
           >
@@ -2668,7 +2736,7 @@ export default function AIChatbot() {
                       fontWeight: 700,
                     }}>{messages.length - 1}</span>
                   )}
-                  <button onClick={clearChat} title="নতুন কথোপকথন"
+                  <button onClick={clearChat} title="নতুন কথোপকথন" aria-label="নতুন কথোপকথন"
                     className="chatbot-icon-btn"
                     style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
@@ -2688,6 +2756,7 @@ export default function AIChatbot() {
                   <button
                     onClick={() => setIsOpen(false)}
                     title="বন্ধ করুন"
+                    aria-label="বন্ধ করুন"
                     className="chatbot-icon-btn"
                     style={{
                       width: 26, height: 26,
@@ -2726,12 +2795,15 @@ export default function AIChatbot() {
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key as "ai" | "live")}
+                      aria-pressed={active}
+                      className="chatbot-touch-target"
                       style={{
                         border: `1px solid ${active ? "rgba(212,168,67,0.48)" : "rgba(212,168,67,0.13)"}`,
                         background: active ? "linear-gradient(135deg, rgba(212,168,67,0.18), rgba(212,168,67,0.07))" : "rgba(255,255,255,0.025)",
                         color: active ? "#F7E4A5" : "rgba(240,232,212,0.58)",
                         borderRadius: 13,
-                        padding: "7px 8px",
+                        padding: "9px 10px",
+                        minHeight: 44,
                         cursor: "pointer",
                         textAlign: "left",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
@@ -2807,6 +2879,7 @@ export default function AIChatbot() {
                       </div>
                       <button
                         onClick={handleRetry}
+                        className="chatbot-touch-target"
                         style={{
                           display: "flex", alignItems: "center", gap: 7,
                           padding: "7px 16px",
@@ -2991,6 +3064,8 @@ export default function AIChatbot() {
                       }}>⚡ দ্রুত প্রিসেট</span>
                       <button
                         onClick={() => setShowPresets(p => !p)}
+                        className="chatbot-touch-target"
+                        aria-expanded={showPresets}
                         style={{
                           background: "none",
                           border: "none",
@@ -3100,6 +3175,8 @@ export default function AIChatbot() {
                       />
                       <button
                         onClick={() => setImagePreview(null)}
+                        aria-label="ছবি সরান"
+                        className="chatbot-touch-target"
                         style={{
                           position: "absolute", top: -5, right: -5,
                           width: 17, height: 17, borderRadius: "50%",
@@ -3158,9 +3235,10 @@ export default function AIChatbot() {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     title="ছবি যুক্ত করুন"
+                    aria-label="ছবি যুক্ত করুন"
                     className="chatbot-icon-btn"
                     style={{
-                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
+                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
                       background: imagePreview ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
                       border: `1px solid ${imagePreview ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
                       cursor: "pointer",
@@ -3180,9 +3258,10 @@ export default function AIChatbot() {
                   <button
                     onClick={() => audioFileInputRef.current?.click()}
                     title="অডিও ফাইল যুক্ত করুন"
+                    aria-label="অডিও ফাইল যুক্ত করুন"
                     className="chatbot-icon-btn"
                     style={{
-                      width: 33, height: 33, borderRadius: 9, flexShrink: 0,
+                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
                       background: isAudioMode ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
                       border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
                       cursor: "pointer",
@@ -3201,10 +3280,12 @@ export default function AIChatbot() {
                   {/* Video upload button */}
                   <button
                     title="ভিডিও আপলোড করুন (অডিও এক্সট্রাক্ট হবে)"
+                    aria-label="ভিডিও আপলোড করুন"
+                    className="chatbot-icon-btn"
                     onClick={() => videoFileInputRef.current?.click()}
                     disabled={audioProcessing || videoConverting}
                     style={{
-                      width: 36, height: 36, borderRadius: 10,
+                      width: 40, height: 40, borderRadius: 10,
                       background: "rgba(99,102,241,0.07)",
                       border: "1px solid rgba(99,102,241,0.2)",
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -3236,6 +3317,7 @@ export default function AIChatbot() {
                       placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "যে কোনো প্রশ্ন করুন, ছবি দিন, বই/লেখা খুঁজুন বা অডিও এডিট করুন..."}
                       rows={1}
                       disabled={isLoading}
+                      aria-label="চ্যাট বার্তা"
                       className="chatbot-input"
                       style={{
                         width: "100%",
@@ -3267,13 +3349,15 @@ export default function AIChatbot() {
                   </div>
                   <button
                     onClick={(audioFile || lastAudioBlobRef.current) ? () => handleAudioEdit() : handleSend}
+                    aria-label={(audioFile || lastAudioBlobRef.current) ? "অডিও নির্দেশনা পাঠান" : "বার্তা পাঠান"}
+                    className="chatbot-send-btn"
                     disabled={(audioFile || lastAudioBlobRef.current)
                       ? audioProcessing
                       : ((!input.trim() && !imagePreview) || isLoading)
                     }
                     style={{
-                      width: 40, height: 40,
-                      borderRadius: 12,
+                      width: 44, height: 44,
+                      borderRadius: 14,
                       background: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
                         ? "linear-gradient(135deg, #D8B84E 0%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.1)",

@@ -135,7 +135,9 @@ export default function LiveChatWidget({ onClose }: Props) {
 
   // Scroll to bottom when messages update
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const prefersReducedMotion = typeof window !== "undefined"
+      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    messagesEndRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
   }, [localMessages]);
 
   // ── FIX #1 + FIX #2: Start session — send contact info + use stored visitorId if available ──
@@ -289,6 +291,8 @@ export default function LiveChatWidget({ onClose }: Props) {
             </div>
             <input
               type="text"
+              aria-label="আপনার নাম লিখুন"
+              autoComplete="name"
               value={nameInput}
               onChange={e => setNameInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && startSession()}
@@ -297,7 +301,7 @@ export default function LiveChatWidget({ onClose }: Props) {
               style={{
                 background: nameHasValue ? "rgba(212,168,67,0.07)" : "rgba(255,255,255,0.04)",
                 border: `1.5px solid ${nameHasValue ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.25)"}`,
-                borderRadius: 12, padding: "10px 13px 10px 36px",
+                borderRadius: 12, padding: "12px 13px 12px 38px",
                 color: "#FAF6EF", fontFamily: FONT, fontSize: "0.8rem",
                 outline: "none", width: "100%", boxSizing: "border-box",
                 transition: "border-color 0.25s, background 0.25s, box-shadow 0.25s",
@@ -330,6 +334,8 @@ export default function LiveChatWidget({ onClose }: Props) {
             </div>
             <input
               type="text"
+              aria-label="হোয়াটসঅ্যাপ নম্বর অথবা জিমেইল"
+              autoComplete="email tel"
               value={contactInput}
               onChange={e => setContactInput(e.target.value)}
               placeholder="হোয়াটসঅ্যাপ নম্বর অথবা জিমেইল"
@@ -345,7 +351,7 @@ export default function LiveChatWidget({ onClose }: Props) {
                   : contactType === "whatsapp" ? "rgba(37,211,102,0.5)"
                   : "rgba(212,168,67,0.25)"
                 }`,
-                borderRadius: 12, padding: "10px 13px 10px 36px",
+                borderRadius: 12, padding: "12px 13px 12px 38px",
                 color: "#FAF6EF", fontFamily: FONT, fontSize: "0.8rem",
                 outline: "none", width: "100%", boxSizing: "border-box",
                 transition: "border-color 0.25s, background 0.25s, box-shadow 0.25s",
@@ -388,6 +394,7 @@ export default function LiveChatWidget({ onClose }: Props) {
           {/* Submit button */}
           <button
             onClick={startSession}
+            aria-disabled={!canStart}
             disabled={!canStart}
             style={{
               background: canStart
@@ -395,7 +402,7 @@ export default function LiveChatWidget({ onClose }: Props) {
                 : "rgba(212,168,67,0.12)",
               backgroundSize: canStart ? "200% 100%" : "100% 100%",
               border: canStart ? "1px solid rgba(212,168,67,0.6)" : "1px solid rgba(212,168,67,0.15)",
-              borderRadius: 12, padding: "11px 12px",
+              borderRadius: 12, padding: "13px 14px",
               color: canStart ? NAVY : "rgba(212,168,67,0.3)",
               fontFamily: FONT, fontSize: "0.82rem", fontWeight: 800,
               cursor: canStart ? "pointer" : "not-allowed",
@@ -420,7 +427,7 @@ export default function LiveChatWidget({ onClose }: Props) {
         </div>
 
         {error && (
-          <p style={{
+          <p role="alert" style={{
             color: "#f87171", fontFamily: FONT, fontSize: "0.78rem",
             textAlign: "center", marginTop: 10,
             background: "rgba(248,113,113,0.08)", padding: "8px 14px",
@@ -460,10 +467,11 @@ export default function LiveChatWidget({ onClose }: Props) {
         </div>
         <button
           onClick={resetSession}
+          className="chatbot-touch-target"
           style={{
             background: "none", border: "none",
             color: "rgba(245,238,222,0.4)", fontFamily: FONT,
-            fontSize: "0.72rem", cursor: "pointer", padding: "2px 6px",
+            fontSize: "0.72rem", cursor: "pointer", padding: "8px 10px", borderRadius: 8,
           }}
         >
           নতুন চ্যাট
@@ -473,6 +481,9 @@ export default function LiveChatWidget({ onClose }: Props) {
       {/* Messages */}
       <div
         className="chatbot-scrollbar"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
         style={{
           flex: 1, overflowY: "auto", padding: "14px 12px",
           display: "flex", flexDirection: "column", gap: 10,
@@ -540,7 +551,7 @@ export default function LiveChatWidget({ onClose }: Props) {
       {/* Error */}
       {error && (
         <div style={{ padding: "4px 14px" }}>
-          <p style={{ color: "#f87171", fontFamily: FONT, fontSize: "0.75rem", textAlign: "center", margin: 0 }}>{error}</p>
+          <p role="alert" style={{ color: "#f87171", fontFamily: FONT, fontSize: "0.75rem", textAlign: "center", margin: 0 }}>{error}</p>
         </div>
       )}
 
@@ -552,9 +563,11 @@ export default function LiveChatWidget({ onClose }: Props) {
           display: "flex", gap: 8, alignItems: "flex-end",
         }}>
           <textarea
+            aria-label="বার্তা লিখুন"
             value={inputText}
             onChange={e => setInputText(e.target.value)}
             onKeyDown={e => {
+              if (e.nativeEvent.isComposing) return;
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
@@ -565,16 +578,18 @@ export default function LiveChatWidget({ onClose }: Props) {
             style={{
               flex: 1, background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(212,168,67,0.3)", borderRadius: 12,
-              padding: "10px 14px", color: "#FAF6EF", fontFamily: FONT,
+              padding: "12px 14px", color: "#FAF6EF", fontFamily: FONT,
               fontSize: "0.85rem", outline: "none", resize: "none", lineHeight: 1.5,
             }}
           />
 
           <button
             onClick={sendMessage}
+            aria-label="বার্তা পাঠান"
+            className="chatbot-send-btn"
             disabled={!inputText.trim() || sendMessageMutation.isPending}
             style={{
-              width: 40, height: 40, borderRadius: 12,
+              width: 44, height: 44, borderRadius: 14,
               background: inputText.trim() && !sendMessageMutation.isPending
                 ? "linear-gradient(135deg, #C9A84C, #D4A843)"
                 : "rgba(212,168,67,0.15)",
@@ -612,10 +627,11 @@ export default function LiveChatWidget({ onClose }: Props) {
           </p>
           <button
             onClick={resetSession}
+            className="chatbot-touch-target"
             style={{
               background: "rgba(212,168,67,0.15)",
               border: "1px solid rgba(212,168,67,0.3)",
-              borderRadius: 10, padding: "8px 16px",
+              borderRadius: 10, padding: "11px 18px",
               color: GOLD, fontFamily: FONT, fontSize: "0.8rem",
               cursor: "pointer",
             }}
