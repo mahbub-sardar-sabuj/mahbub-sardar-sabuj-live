@@ -948,6 +948,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   writing: Writing; index: number; onClick: () => void; viewMode?: "grid"|"list";
 }) {
   const c = getCatStyle(writing.category);
+  const hideShortWritingLabel = writing.category === "ছোট লেখা";
   const isL = viewMode === "list";
   const slug = makeSlug(writing.title, writing.id);
   const ref = useRef<HTMLDivElement>(null);
@@ -998,7 +999,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
           <>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="wc2-tags">
-                <span className="wc2-cat"><span style={{ fontSize: ".75rem" }}>{c.icon}</span>{writing.category}</span>
+                {!hideShortWritingLabel && <span className="wc2-cat"><span style={{ fontSize: ".75rem" }}>{c.icon}</span>{writing.category}</span>}
                 {writing.featured && <span className="wc2-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
               </div>
               <div className="wc2-title">{writing.title}</div>
@@ -1021,7 +1022,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
         ) : (
           <>
             <div className="wc2-tags">
-              <span className="wc2-cat"><span style={{ fontSize: ".75rem" }}>{c.icon}</span>{writing.category}</span>
+              {!hideShortWritingLabel && <span className="wc2-cat"><span style={{ fontSize: ".75rem" }}>{c.icon}</span>{writing.category}</span>}
               {writing.featured && <span className="wc2-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
             </div>
             <div className="wc2-title">{writing.title}</div>
@@ -1053,6 +1054,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   onClose: () => void; onNavigate: (w: Writing) => void;
 }) {
   const c = getCatStyle(writing.category);
+  const hideShortWritingLabel = writing.category === "ছোট লেখা";
   const [fontSize, setFontSize] = useState(1.0);
   const [theme, setTheme] = useState<"dark"|"sepia"|"light">("dark");
   const [progress, setProgress] = useState(0);
@@ -1102,9 +1104,11 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         </div>
         <div className="rm2-hd" style={{ borderColor: T.bdr }}>
           <div className="rm2-hdl">
-            <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 13px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".71rem", fontWeight:600 }}>
-              <span style={{ fontSize:".75rem" }}>{c.icon}</span>{writing.category}
-            </span>
+            {!hideShortWritingLabel && (
+              <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 13px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".71rem", fontWeight:600 }}>
+                <span style={{ fontSize:".75rem" }}>{c.icon}</span>{writing.category}
+              </span>
+            )}
           </div>
           <div className="rm2-ctrl">
             <div className="rm2-fc" style={{ borderColor: T.bdr }}>
@@ -1132,8 +1136,8 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
           <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:"1.3rem", opacity:.52 }}>
             <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
-            <span style={{ color:T.bdr }}>·</span>
-            <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>{writing.category}</span>
+            {!hideShortWritingLabel && <span style={{ color:T.bdr }}>·</span>}
+            {!hideShortWritingLabel && <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>{writing.category}</span>}
           </div>
           <div className="rm2-txt" style={{ color:T.txt, fontSize:`${fontSize}rem`, whiteSpace:'pre-line' }}>
             {writing.content.split(/\n\n+/).map((para, i) => (
