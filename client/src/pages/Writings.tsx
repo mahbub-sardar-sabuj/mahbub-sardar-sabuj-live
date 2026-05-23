@@ -857,142 +857,6 @@ const CSS = `
   .ebook-tile:focus-visible, .wc2:focus-visible, .sf-cat:focus-visible, .lm2-btn:focus-visible { box-shadow: 0 0 0 3px rgba(201,168,76,.35), 0 0 0 1px rgba(242,237,228,.15) inset; }
 
   /* ══════════════════════════════════════════════════
-     FRIENDLY SELECTED FEELINGS ARCHIVE — SCOPED UPDATE
-  ══════════════════════════════════════════════════ */
-  .archive-panel {
-    isolation: isolate;
-    overflow: hidden;
-    border-color: rgba(52,211,153,.18);
-    background:
-      radial-gradient(ellipse 75% 42% at 92% 0%, rgba(52,211,153,.16), transparent 58%),
-      radial-gradient(ellipse 58% 36% at 0% 18%, rgba(201,168,76,.11), transparent 56%),
-      linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.018) 100%),
-      rgba(6,8,15,.88);
-    box-shadow:
-      0 42px 120px rgba(0,0,0,.42),
-      0 0 0 1px rgba(52,211,153,.05) inset,
-      inset 0 1px 0 rgba(255,255,255,.09);
-  }
-  .archive-panel::after {
-    content: "";
-    position: absolute; inset: auto -12% -32% 18%; height: 260px;
-    background: radial-gradient(ellipse, rgba(52,211,153,.13), transparent 62%);
-    filter: blur(8px); pointer-events: none; z-index: 0;
-  }
-  .archive-panel > * { position: relative; z-index: 1; }
-  .archive-panel .panel-head { margin-bottom: clamp(1.35rem,3vw,2.15rem); }
-  .archive-panel .section-eyebrow {
-    background: rgba(201,168,76,.12);
-    border-color: rgba(201,168,76,.3);
-    box-shadow: 0 0 24px rgba(201,168,76,.08);
-  }
-  .archive-panel .panel-head h2 {
-    position: relative; z-index: 2;
-    font-size: clamp(1.95rem,5.2vw,3.35rem);
-    line-height: 1.13;
-    color: #fffaf0;
-    text-shadow: 0 12px 36px rgba(0,0,0,.52), 0 0 28px rgba(201,168,76,.1);
-  }
-  .archive-panel .panel-head p {
-    position: relative; z-index: 2;
-    max-width: 760px;
-    color: rgba(242,237,228,.66);
-    font-size: clamp(.93rem,1.6vw,1.08rem);
-  }
-  .archive-panel .writing-tools {
-    grid-template-columns: minmax(240px,430px) minmax(0,1fr) auto;
-    gap: 12px;
-    margin: 1.45rem 0 1.75rem;
-    padding: 14px;
-    border-radius: 30px;
-    border-color: rgba(255,255,255,.11);
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.035)),
-      rgba(3,5,12,.9);
-    box-shadow:
-      0 26px 70px rgba(0,0,0,.42),
-      0 0 0 1px rgba(52,211,153,.08) inset,
-      inset 0 1px 0 rgba(255,255,255,.1);
-  }
-  .archive-panel .sf-s {
-    height: 54px;
-    border-radius: 22px;
-    padding: 0 17px;
-    background: rgba(2,4,10,.72);
-    border-color: rgba(255,255,255,.12);
-  }
-  .archive-panel .sf-s input {
-    min-height: 54px;
-    font-size: 1rem;
-    color: #fffaf0;
-    font-weight: 500;
-  }
-  .archive-panel .sf-cats { gap: 8px; }
-  .archive-panel .sf-cat {
-    min-height: 42px;
-    padding: 9px 17px;
-    font-size: .88rem;
-    background: rgba(255,255,255,.055);
-    border-color: rgba(255,255,255,.11);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-  }
-  .archive-panel .sf-vw { padding: 6px; border-radius: 18px; background: rgba(255,255,255,.055); }
-  .archive-panel .sf-vb { width: 40px; height: 40px; border-radius: 13px; }
-  .archive-panel .sf-vb.on { background: rgba(255,255,255,.14); color: #fffaf0; }
-  .archive-panel .wg2 {
-    grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
-    gap: clamp(16px,2.2vw,24px);
-  }
-  .archive-panel .wc2 {
-    min-height: 286px;
-    border-radius: 30px;
-    border-color: rgba(255,255,255,.09);
-    background:
-      radial-gradient(ellipse 80% 55% at 50% -10%, color-mix(in srgb, var(--ca,var(--gold)) 15%, transparent), transparent 62%),
-      linear-gradient(180deg, rgba(255,255,255,.055) 0%, rgba(255,255,255,.018) 100%),
-      #070B17;
-    box-shadow: 0 20px 56px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.07);
-  }
-  .archive-panel .wc2::after {
-    content: "";
-    position: absolute; inset: 1px;
-    border-radius: inherit;
-    background: linear-gradient(135deg, rgba(255,255,255,.055), transparent 42%);
-    pointer-events: none; z-index: 0;
-  }
-  .archive-panel .wc2-body {
-    position: relative; z-index: 2;
-    padding: clamp(1.28rem,2.4vw,1.7rem);
-  }
-  .archive-panel .wc2-title {
-    position: relative; z-index: 3;
-    font-size: clamp(1.22rem,2.7vw,1.48rem);
-    line-height: 1.55;
-    color: #fffaf0;
-    text-shadow: 0 10px 26px rgba(0,0,0,.48);
-    -webkit-line-clamp: 3;
-  }
-  .archive-panel .wc2-preview {
-    position: relative; z-index: 3;
-    font-size: .98rem;
-    line-height: 2.02;
-    color: rgba(242,237,228,.68);
-    -webkit-line-clamp: 4;
-  }
-  .archive-panel .wc2-cat {
-    position: relative; z-index: 3;
-    padding: 5px 14px;
-    font-size: .78rem;
-  }
-  .archive-panel .wc2-foot {
-    position: relative; z-index: 3;
-    border-top-color: rgba(255,255,255,.065);
-  }
-  .archive-panel .wc2-read { font-size: .92rem; }
-  .archive-panel .wc2-l { min-height: 104px; }
-  .archive-panel .wc2-l .wc2-title { font-size: clamp(1.05rem,2vw,1.24rem); -webkit-line-clamp: 2; }
-
-  /* ══════════════════════════════════════════════════
      RESPONSIVE
   ══════════════════════════════════════════════════ */
   @media (max-width: 980px) {
@@ -1005,8 +869,6 @@ const CSS = `
     .ebook-tile { min-width: min(76vw,300px); scroll-snap-align: start; }
     .writing-tools { grid-template-columns: 1fr auto; }
     .wt-cats { grid-column: 1 / -1; }
-    .archive-panel .writing-tools { grid-template-columns: 1fr auto; }
-    .archive-panel .wt-cats { grid-column: 1 / -1; }
   }
   @media (max-width: 768px) {
     .sf-s { max-width: 100%; flex: 1; }
@@ -1016,8 +878,6 @@ const CSS = `
     .rb2 { align-items: flex-start; flex-direction: column; }
     .hero-stage, .panel { border-radius: 26px; }
     .writing-tools { border-radius: 22px; }
-    .archive-panel .writing-tools { border-radius: 24px; }
-    .archive-panel .wg2 { grid-template-columns: 1fr; }
     .bm2-in { flex-direction: column; }
     .bm2-cv { width: clamp(100px,36vw,148px); }
     .rm2-nt { max-width: 135px; }
@@ -1042,13 +902,7 @@ const CSS = `
     .ebook-cover { width: 112px; }
     .ebook-copy h3 { font-size: 1rem; }
     .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 10px; margin: .5rem 0 1.6rem; }
-    .archive-panel .writing-tools { grid-template-columns: 1fr; padding: 11px; margin: .75rem 0 1.3rem; }
-    .archive-panel .panel-head h2 { font-size: clamp(1.72rem,9vw,2.38rem); }
-    .archive-panel .panel-head p { font-size: .9rem; }
     .wc2 { min-height: 190px; }
-    .archive-panel .wc2 { min-height: 248px; border-radius: 26px; }
-    .archive-panel .wc2-title { font-size: 1.18rem; }
-    .archive-panel .wc2-preview { font-size: .9rem; line-height: 1.9; }
     .rm2-box { border-radius: 24px 24px 0 0; }
     .rm2-body { padding: 1.7rem 1.3rem; }
     .rm2-ttl { font-size: 1.6rem; margin-bottom: 1.4rem; }
@@ -1554,7 +1408,7 @@ export default function Writings() {
     let list = archive;
     if (cat !== "all") list = list.filter(w => w.category === cat);
     if (deferredQuery.trim()) { const qn = deferredQuery.trim().toLowerCase(); list = list.filter(w => w.title.toLowerCase().includes(qn) || w.content.toLowerCase().includes(qn)); }
-    return [...list].sort((a, b) => b.content.length - a.content.length || b.id - a.id);
+    return list;
   }, [archive, cat, deferredQuery]);
 
   useEffect(() => { setVisibleCount(WRITINGS_PAGE_SIZE); }, [cat, deferredQuery]);
@@ -1611,7 +1465,7 @@ export default function Writings() {
           {/* Writings Archive */}
           <motion.section
             ref={writingsSectionRef}
-            className="panel panel-blue archive-panel"
+            className="panel panel-blue"
             id="all-writings"
             aria-labelledby="writings-title"
             initial={{ opacity:0, y:28 }}
