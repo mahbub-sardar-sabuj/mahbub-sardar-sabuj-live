@@ -1538,11 +1538,20 @@ export default function AIChatbot() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"ai" | "live">("ai");
   const [isDragOver, setIsDragOver] = useState(false);
+  const [visualViewportBox, setVisualViewportBox] = useState(() => ({
+    width: typeof window !== "undefined" ? window.innerWidth : 420,
+    height: typeof window !== "undefined" ? window.innerHeight : 680,
+    offsetTop: 0,
+  }));
 
   const handleNavigate = useCallback((path: string) => {
     setIsOpen(false);
     navigate(path);
   }, [navigate]);
+
+  const isCompactChatViewport = visualViewportBox.width <= 640 || (typeof window !== "undefined" && window.innerWidth <= 640);
+  const isKeyboardViewport = isCompactChatViewport && typeof window !== "undefined" && visualViewportBox.height < window.innerHeight - 80;
+  const keyboardSafeChatHeight = Math.max(330, visualViewportBox.height - (isKeyboardViewport ? 14 : 24));
 
   useEffect(() => {
     const handleExternalOpen = () => setIsOpen(true);
@@ -1559,6 +1568,28 @@ export default function AIChatbot() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    const syncVisualViewport = () => {
+      const vv = window.visualViewport;
+      setVisualViewportBox({
+        width: Math.round(vv?.width ?? window.innerWidth),
+        height: Math.round(vv?.height ?? window.innerHeight),
+        offsetTop: Math.round(vv?.offsetTop ?? 0),
+      });
+    };
+
+    syncVisualViewport();
+    window.visualViewport?.addEventListener("resize", syncVisualViewport);
+    window.visualViewport?.addEventListener("scroll", syncVisualViewport);
+    window.addEventListener("resize", syncVisualViewport);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", syncVisualViewport);
+      window.visualViewport?.removeEventListener("scroll", syncVisualViewport);
+      window.removeEventListener("resize", syncVisualViewport);
+    };
+  }, []);
 
   const getAbsPos = useCallback(() => {
     const W = window.innerWidth;
@@ -2594,13 +2625,15 @@ export default function AIChatbot() {
             }}
             style={{
               position: "fixed",
-              bottom: 80,
-              right: 12,
+              top: isCompactChatViewport ? Math.max(6, visualViewportBox.offsetTop + 6) : undefined,
+              bottom: isCompactChatViewport ? "auto" : 80,
+              right: isCompactChatViewport ? 8 : 12,
               zIndex: 150,
-              width: 420,
+              width: isCompactChatViewport ? "calc(100vw - 16px)" : 420,
               maxWidth: "calc(100vw - 16px)",
-              height: "min(680px, calc(100vh - 100px))",
-              borderRadius: 24,
+              height: isCompactChatViewport ? `min(680px, ${keyboardSafeChatHeight}px)` : "min(680px, calc(100vh - 100px))",
+              maxHeight: isCompactChatViewport ? `calc(${visualViewportBox.height}px - 12px)` : undefined,
+              borderRadius: isKeyboardViewport ? 18 : 24,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
@@ -3229,7 +3262,7 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: 5, alignItems: "flex-end" }}>
+                <div style={{ display: "flex", gap: 5, alignItems: "flex-end", paddingBottom: isKeyboardViewport ? "env(safe-area-inset-bottom, 0px)" : 0 }}>
                   {/* Image attach button (hidden in audio mode) */}
                   {!isAudioMode && (
                   <button
