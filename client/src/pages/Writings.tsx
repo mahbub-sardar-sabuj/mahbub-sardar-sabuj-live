@@ -541,14 +541,14 @@ const CSS = `
     text-transform: uppercase; font-weight: 600;
   }
   .ebook-copy h3 {
-    margin: .5rem 0 .6rem; color: var(--t0); font-family: var(--f);
-    font-size: 1.08rem; line-height: 1.44;
-    font-weight: 700; letter-spacing: -.018em;
+    margin: .55rem 0 .7rem; color: var(--t0); font-family: var(--f);
+    font-size: 1.12rem; line-height: 1.52;
+    font-weight: 700; letter-spacing: -.015em;
   }
   .ebook-copy p {
     margin: 0; color: var(--t2); font-family: var(--f);
-    font-size: .79rem; line-height: 1.82;
-    display: -webkit-box; -webkit-line-clamp: 2;
+    font-size: .83rem; line-height: 1.95;
+    display: -webkit-box; -webkit-line-clamp: 3;
     -webkit-box-orient: vertical; overflow: hidden;
   }
   .ebook-meta {
@@ -561,11 +561,11 @@ const CSS = `
     position: relative; z-index: 2;
   }
   .ebook-actions > * {
-    min-height: 37px; display: inline-flex; align-items: center;
-    justify-content: center; gap: 6px; border-radius: 13px;
+    min-height: 40px; display: inline-flex; align-items: center;
+    justify-content: center; gap: 6px; border-radius: 14px;
     border: 1px solid rgba(255,255,255,.09); font-family: var(--f);
-    font-size: .77rem; text-decoration: none; cursor: pointer;
-    transition: all .24s var(--silk); font-weight: 500;
+    font-size: .8rem; text-decoration: none; cursor: pointer;
+    transition: all .24s var(--silk); font-weight: 600;
   }
   .ebook-preview { background: rgba(255,255,255,.04); color: var(--t2); }
   .ebook-read, .ebook-buy {
@@ -664,9 +664,9 @@ const CSS = `
 
   .wc2 {
     position: relative; overflow: hidden;
-    background: linear-gradient(180deg, rgba(255,255,255,.045) 0%, rgba(255,255,255,.014) 100%), var(--bg2);
-    border: 1px solid var(--bdr); border-radius: 22px;
-    cursor: pointer; min-height: 232px;
+    background: linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.018) 100%), var(--bg2);
+    border: 1px solid var(--bdr); border-radius: 24px;
+    cursor: pointer; min-height: 240px;
     transition: transform .28s var(--silk), box-shadow .28s, border-color .28s;
     animation: fadeUp .38s var(--ease) both;
   }
@@ -706,7 +706,7 @@ const CSS = `
     filter: blur(36px); opacity: 0; transition: opacity .4s; pointer-events: none;
   }
   .wc2:hover .wc2-glow { opacity: 1; }
-  .wc2-body { height: 100%; display: flex; flex-direction: column; padding: clamp(1.1rem,2.2vw,1.4rem); }
+  .wc2-body { height: 100%; display: flex; flex-direction: column; padding: clamp(1.2rem,2.4vw,1.55rem); }
   .wc2-tags { display: flex; align-items: center; gap: 6px; margin-bottom: .9rem; flex-wrap: wrap; }
   .wc2-cat {
     display: inline-flex; align-items: center; gap: 5px;
@@ -722,14 +722,14 @@ const CSS = `
     background: rgba(251,191,36,.09); color: #FBBF24; border: 1px solid rgba(251,191,36,.22);
   }
   .wc2-title {
-    font-family: var(--f); font-size: clamp(1rem,2.2vw,1.16rem);
-    color: var(--t0); line-height: 1.6; margin-bottom: .78rem;
-    font-weight: 700; letter-spacing: -.018em;
+    font-family: var(--f); font-size: clamp(1.05rem,2.4vw,1.22rem);
+    color: var(--t0); line-height: 1.65; margin-bottom: .85rem;
+    font-weight: 700; letter-spacing: -.015em;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .wc2-preview {
-    font-family: var(--f); font-size: .83rem; color: var(--t2);
-    line-height: 1.85; display: -webkit-box; -webkit-line-clamp: 3;
+    font-family: var(--f); font-size: .87rem; color: var(--t2);
+    line-height: 2.0; display: -webkit-box; -webkit-line-clamp: 4;
     -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;
   }
   .wc2-foot {
@@ -779,10 +779,10 @@ const CSS = `
     display: flex; align-items: flex-end; justify-content: center;
   }
   .rm2-box {
-    width: 100%; max-width: 800px; max-height: 94vh;
-    border-radius: 30px 30px 0 0; overflow: hidden;
+    width: 100%; max-width: 860px; max-height: 94vh;
+    border-radius: 32px 32px 0 0; overflow: hidden;
     display: flex; flex-direction: column;
-    box-shadow: 0 -40px 120px rgba(0,0,0,.8), 0 -1px 0 rgba(255,255,255,.07);
+    box-shadow: 0 -50px 140px rgba(0,0,0,.85), 0 -1px 0 rgba(255,255,255,.09);
   }
   .rm2-hnd { width: 42px; height: 4px; border-radius: 999px; margin: 13px auto 0; flex-shrink: 0; }
   .rm2-prog { height: 2px; flex-shrink: 0; margin-top: 11px; }
@@ -810,15 +810,15 @@ const CSS = `
   .rm2-th:hover { opacity: .78; }
   .rm2-body {
     flex: 1; overflow-y: auto;
-    padding: clamp(1.6rem,4.5vw,3rem) clamp(1.4rem,5.5vw,3.5rem);
+    padding: clamp(1.8rem,5vw,3.5rem) clamp(1.6rem,6vw,4.5rem);
     scroll-behavior: smooth;
   }
   .rm2-body::-webkit-scrollbar { width: 4px; }
   .rm2-body::-webkit-scrollbar-track { background: transparent; }
   .rm2-body::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 999px; }
-  .rm2-ttl { font-family: var(--f); font-size: clamp(1.55rem,4.8vw,2.4rem); line-height: 1.4; margin-bottom: 1.9rem; font-weight: 700; letter-spacing: -.028em; }
-  .rm2-txt { font-family: var(--f); line-height: 2.2; white-space: pre-wrap; word-break: break-word; }
-  .rm2-sig { margin-top: 3rem; padding-top: 1.7rem; border-top: 1px solid; font-family: var(--f); font-size: .85rem; opacity: .44; font-style: italic; }
+  .rm2-ttl { font-family: var(--f); font-size: clamp(1.65rem,5vw,2.6rem); line-height: 1.48; margin-bottom: 2.1rem; font-weight: 700; letter-spacing: -.022em; }
+  .rm2-txt { font-family: var(--f); line-height: 2.35; white-space: pre-wrap; word-break: break-word; font-size: 1.08rem; letter-spacing: 0.01em; }
+  .rm2-sig { margin-top: 3.5rem; padding-top: 1.9rem; border-top: 1px solid; font-family: var(--f); font-size: .9rem; opacity: .55; font-style: italic; letter-spacing: .02em; }
   .rm2-nav { display: flex; border-top: 1px solid; flex-shrink: 0; }
   .rm2-nb {
     flex: 1; display: flex; align-items: center; gap: 10px;
@@ -836,13 +836,13 @@ const CSS = `
 
   /* ── BOOK MODAL ── */
   .bm2 { position: fixed; inset: 0; z-index: 9999; background: rgba(1,2,6,.88); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
-  .bm2-box { width: 100%; max-width: 710px; max-height: 90vh; border-radius: 28px; background: #090D1E; border: 1px solid rgba(255,255,255,.11); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 50px 130px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.07); }
+  .bm2-box { width: 100%; max-width: 740px; max-height: 92vh; border-radius: 30px; background: #0A0F20; border: 1px solid rgba(255,255,255,.13); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 55px 140px rgba(0,0,0,.80), inset 0 1px 0 rgba(255,255,255,.09); }
   .bm2-hd { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,.07); flex-shrink: 0; }
   .bm2-in { display: flex; gap: clamp(1.3rem,3vw,2.3rem); padding: clamp(1.4rem,3vw,2.3rem); overflow-y: auto; align-items: flex-start; }
   .bm2-in::-webkit-scrollbar { width: 4px; }
   .bm2-in::-webkit-scrollbar-thumb { background: rgba(201,168,76,.24); border-radius: 999px; }
   .bm2-cw { flex-shrink: 0; }
-  .bm2-cv { width: clamp(118px,21vw,170px); height: auto; border-radius: 13px; box-shadow: 0 18px 55px rgba(0,0,0,.58), inset 0 0 0 1px rgba(255,255,255,.11); display: block; }
+  .bm2-cv { width: clamp(128px,22vw,180px); height: auto; border-radius: 15px; box-shadow: 0 22px 65px rgba(0,0,0,.62), inset 0 0 0 1px rgba(255,255,255,.13); display: block; }
   .bm2-cnt { flex: 1; min-width: 0; }
 
   /* ── ANIMATIONS ── */
@@ -903,10 +903,10 @@ const CSS = `
     .ebook-copy h3 { font-size: 1rem; }
     .writing-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 10px; margin: .5rem 0 1.6rem; }
     .wc2 { min-height: 190px; }
-    .rm2-box { border-radius: 24px 24px 0 0; }
-    .rm2-body { padding: 1.7rem 1.3rem; }
-    .rm2-ttl { font-size: 1.6rem; margin-bottom: 1.4rem; }
-    .rm2-txt { font-size: 1rem; line-height: 1.88; }
+    .rm2-box { border-radius: 26px 26px 0 0; }
+    .rm2-body { padding: 2rem 1.5rem; }
+    .rm2-ttl { font-size: 1.75rem; margin-bottom: 1.6rem; }
+    .rm2-txt { font-size: 1.06rem; line-height: 2.2; }
     .wc2-l .wc2-body { flex-direction: column; align-items: flex-start; gap: .8rem; }
     .wc2-l .wc2-foot { width: 100%; margin-left: 0; justify-content: space-between; }
     .wt-view { justify-self: end; }
@@ -1074,9 +1074,9 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const relatedWritings = allWritings.filter(w => w.id !== writing.id && w.category === writing.category).slice(0, 3);
 
   const T = {
-    dark:  { bg:"#020408", txt:"#F2EDE4", sub:"rgba(242,237,228,.48)", bdr:"rgba(255,255,255,.07)", hnd:"rgba(255,255,255,.13)", prog:c.accent },
-    sepia: { bg:"#120E06", txt:"#D4C8A0", sub:"rgba(212,200,160,.48)", bdr:"rgba(212,200,160,.1)", hnd:"rgba(212,200,160,.22)", prog:"#C9A84C" },
-    light: { bg:"#F6F3EE", txt:"#1A1612", sub:"rgba(26,22,18,.45)", bdr:"rgba(26,22,18,.1)", hnd:"rgba(26,22,18,.15)", prog:c.accent },
+    dark:  { bg:"#040810", txt:"#EDE8DE", sub:"rgba(237,232,222,.55)", bdr:"rgba(255,255,255,.09)", hnd:"rgba(255,255,255,.16)", prog:c.accent },
+    sepia: { bg:"#1C1408", txt:"#E8D8A8", sub:"rgba(232,216,168,.58)", bdr:"rgba(232,216,168,.15)", hnd:"rgba(232,216,168,.28)", prog:"#D4A84C" },
+    light: { bg:"#FDFAF6", txt:"#1C1814", sub:"rgba(28,24,20,.52)", bdr:"rgba(28,24,20,.12)", hnd:"rgba(28,24,20,.18)", prog:c.accent },
   }[theme];
 
   useEffect(() => {
@@ -1141,7 +1141,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
           </div>
           <div className="rm2-txt" style={{ color:T.txt, fontSize:`${fontSize}rem`, whiteSpace:'pre-line' }}>
             {writing.content.split(/\n\n+/).map((para, i) => (
-              para.trim() ? <p key={i} style={{ marginBottom:'1.7rem', lineHeight:'2.15' }}>{para.trim()}</p> : null
+              para.trim() ? <p key={i} style={{ marginBottom:'2rem', lineHeight:'2.4', fontSize:'inherit' }}>{para.trim()}</p> : null
             ))}
           </div>
           <div className="rm2-sig" style={{ borderColor:T.bdr, color:T.txt }}>— মাহবুব সরদার সবুজ · {writing.date}</div>
@@ -1205,11 +1205,11 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"5px 14px", borderRadius:999, background:`${book.accentColor}15`, border:`1px solid ${book.accentColor}2A`, marginBottom:"1.1rem" }}>
               <span style={{ fontFamily:"var(--f)", fontSize:".65rem", color:book.accentColor, letterSpacing:".1em", textTransform:"uppercase", fontWeight:600 }}>{book.badge}</span>
             </div>
-            <h2 style={{ fontFamily:"var(--f)", fontSize:"1.25rem", color:"#F2EDE4", lineHeight:1.42, marginBottom:".68rem", fontWeight:700, letterSpacing:"-.022em" }}>{book.title}</h2>
-            <p style={{ fontFamily:"var(--f)", fontSize:".85rem", color:"rgba(242,237,228,.52)", lineHeight:1.98, marginBottom:"1.15rem" }}>{book.description}</p>
-            <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:"1.35rem" }}>
+            <h2 style={{ fontFamily:"var(--f)", fontSize:"1.32rem", color:"#EDE8DE", lineHeight:1.52, marginBottom:".78rem", fontWeight:700, letterSpacing:"-.018em" }}>{book.title}</h2>
+            <p style={{ fontFamily:"var(--f)", fontSize:".88rem", color:"rgba(237,232,222,.62)", lineHeight:2.05, marginBottom:"1.25rem" }}>{book.description}</p>
+            <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:"1.45rem" }}>
               {[book.genre, `${book.pages} পৃষ্ঠা`, book.year].map((t, i) => (
-                <span key={i} style={{ padding:"4px 12px", borderRadius:999, background:"rgba(255,255,255,.055)", border:"1px solid rgba(255,255,255,.09)", fontFamily:"var(--f)", fontSize:".69rem", color:"rgba(242,237,228,.38)" }}>{t}</span>
+                <span key={i} style={{ padding:"5px 14px", borderRadius:999, background:"rgba(255,255,255,.065)", border:"1px solid rgba(255,255,255,.11)", fontFamily:"var(--f)", fontSize:".72rem", color:"rgba(237,232,222,.48)" }}>{t}</span>
               ))}
             </div>
             <div style={{ display:"flex", gap:9, flexWrap:"wrap" }}>

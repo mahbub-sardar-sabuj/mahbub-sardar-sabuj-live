@@ -150,10 +150,10 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
           <div className="bg-[#0D1B2A] p-6 flex justify-between items-start">
             <div>
               <span className="text-[#D4A843] text-xs font-bold tracking-widest uppercase">{book.badge}</span>
-              <h2 className="text-white text-2xl mt-1 leading-tight" style={{ fontFamily: "'Tiro Bangla', serif" }}>
+              <h2 className="text-white mt-1" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "1.45rem", lineHeight: 1.55, fontWeight: 700, letterSpacing: "-0.015em" }}>
                 {book.title}
               </h2>
-              <p className="text-[#D4A843] text-sm mt-1">মাহবুব সরদার সবুজ</p>
+              <p className="text-[#D4A843] text-sm mt-1" style={{ fontFamily: "'Tiro Bangla', serif" }}>মাহবুব সরদার সবুজ</p>
             </div>
             <button
               onClick={onClose}
@@ -185,7 +185,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                   </div>
                 ))}
               </div>
-              <p className="text-white/80 text-sm leading-relaxed mb-5">{book.description}</p>
+              <p style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.92rem", lineHeight: 2.05, color: "rgba(253,246,236,0.72)", marginBottom: "1.35rem" }}>{book.description}</p>
               <div className="flex flex-wrap gap-3">
                 {book.canRead && (
                   <Link href={`/ebooks/read/${book.slug}`}>
@@ -526,27 +526,28 @@ export default function EBooks() {
               </div>
 
               {/* Info */}
-              <div style={{ padding: "1.4rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                <h3 style={{ fontFamily: "'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "1.15rem", fontWeight: 400, lineHeight: 1.45, marginBottom: "0.5rem" }}>
+              <div style={{ padding: "1.6rem", flex: 1, display: "flex", flexDirection: "column" }}>
+                <h3 style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", color: "#FDF6EC", fontSize: "1.18rem", fontWeight: 600, lineHeight: 1.55, marginBottom: "0.55rem", letterSpacing: "-0.012em" }}>
                   {book.title}
                 </h3>
-                <p style={{ color: "rgba(201,168,76,0.6)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>{book.genre} • {book.year}</p>
-                <p style={{ color: "rgba(253,246,236,0.55)", fontSize: "0.875rem", lineHeight: 1.7, flex: 1, marginBottom: "1.25rem" }}>
-                  {book.description.slice(0, 100)}...
+                <p style={{ color: "rgba(201,168,76,0.7)", fontSize: "0.82rem", marginBottom: "0.85rem", fontFamily: "'Tiro Bangla', serif" }}>{book.genre} • {book.year}</p>
+                <p style={{ color: "rgba(253,246,236,0.65)", fontSize: "0.9rem", lineHeight: 1.95, flex: 1, marginBottom: "1.35rem", fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif" }}>
+                  {book.description.slice(0, 120)}...
                 </p>
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link href={`/ebooks/read/${book.slug}`}>
-                    <motion.button
+                  <motion.button
                       whileHover={{ scale: 1.04, boxShadow: "0 6px 20px rgba(212,168,67,0.35)" }}
                       whileTap={{ scale: 0.97 }}
                       style={{
                         display: "flex", alignItems: "center", gap: 6,
                         background: "linear-gradient(135deg, #D4A843, #f0c060)",
-                        color: "#0D1B2A", padding: "9px 18px", borderRadius: 999,
-                        fontWeight: 700, fontSize: "0.875rem", border: "none", cursor: "pointer",
+                        color: "#0D1B2A", padding: "10px 20px", borderRadius: 999,
+                        fontWeight: 700, fontSize: "0.9rem", border: "none", cursor: "pointer",
+                        fontFamily: "'Tiro Bangla', serif",
                       }}
                     >
-                      <BookOpen size={15} /> পড়ুন
+                      <BookOpen size={15} /> পড়ুন
                     </motion.button>
                   </Link>
                   <motion.button
@@ -555,10 +556,11 @@ export default function EBooks() {
                     onClick={() => setSelectedBook(book)}
                     style={{
                       display: "flex", alignItems: "center", gap: 6,
-                      background: "transparent", color: "rgba(253,246,236,0.7)",
-                      padding: "9px 18px", borderRadius: 999,
-                      fontWeight: 600, fontSize: "0.875rem",
-                      border: "1.5px solid rgba(201,168,76,0.2)", cursor: "pointer",
+                      background: "transparent", color: "rgba(253,246,236,0.75)",
+                      padding: "10px 20px", borderRadius: 999,
+                      fontWeight: 600, fontSize: "0.9rem",
+                      border: "1.5px solid rgba(201,168,76,0.25)", cursor: "pointer",
+                      fontFamily: "'Tiro Bangla', serif",
                     }}
                   >
                     <Eye size={15} /> বিস্তারিত

@@ -622,15 +622,15 @@ export default function EBookReader() {
               <div className="sticky top-24">
                 <AdBanner slot="3456789012" format="vertical" className="min-h-[600px]" />
                 {/* Book info card */}
-                <div className={`mt-4 rounded-2xl p-4 ${isDarkMode ? "bg-gray-900" : "bg-white"} shadow-lg`}>
-                  <img src={book.cover} alt={book.title} className="w-full rounded-lg shadow mb-3" />
-                  <h3 className="font-bold text-sm mb-1">{book.title}</h3>
-                  <p className="text-xs text-gray-500 mb-2">{book.author}</p>
-                  <div className="flex flex-wrap gap-1">
-                    <span className="text-xs bg-[#D4A843]/20 text-[#D4A843] px-2 py-0.5 rounded-full">{book.genre}</span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{book.year}</span>
+                <div className={`mt-4 rounded-2xl p-5 ${isDarkMode ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-100"} shadow-lg`}>
+                  <img src={book.cover} alt={book.title} className="w-full rounded-xl shadow-lg mb-4" style={{ boxShadow: "0 12px 32px rgba(0,0,0,0.22)" }} />
+                  <h3 className="font-bold mb-1" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.95rem", lineHeight: 1.55 }}>{book.title}</h3>
+                  <p className="text-xs mb-3" style={{ color: isDarkMode ? "rgba(212,168,67,0.85)" : "#C9A84C" }}>{book.author}</p>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    <span className="text-xs bg-[#D4A843]/20 text-[#D4A843] px-2.5 py-1 rounded-full font-medium">{book.genre}</span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"}`}>{book.year}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 leading-relaxed">{book.description}</p>
+                  <p className="leading-relaxed" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.78rem", lineHeight: 1.85, color: isDarkMode ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)" }}>{book.description.slice(0, 150)}...</p>
                 </div>
               </div>
             </div>
@@ -642,21 +642,21 @@ export default function EBookReader() {
           </div>
 
           {/* Other Books Section */}
-          <div className={`mt-8 rounded-2xl p-6 ${isDarkMode ? "bg-gray-900" : "bg-white"} shadow-lg`}>
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <div className={`mt-8 rounded-2xl p-6 ${isDarkMode ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-100"} shadow-lg`}>
+            <h3 className="text-lg font-bold mb-5 flex items-center gap-2" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif" }}>
               <BookOpen size={20} className="text-[#D4A843]" />
-              আরও পড়ুন
+              আরও পড়ুন
             </h3>
             <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(ebookData)
                 .filter(([s]) => s !== slug)
                 .map(([s, b]) => (
                   <Link key={s} href={`/ebooks/read/${s}`}>
-                    <div className={`rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform ${isDarkMode ? "bg-gray-800" : "bg-gray-50"} shadow`}>
+                    <div className={`rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 ${isDarkMode ? "bg-gray-800 hover:bg-gray-750" : "bg-gray-50 hover:bg-white"} shadow hover:shadow-xl`}>
                       <img src={b.cover} alt={b.title} className="w-full aspect-[3/4] object-cover" />
-                      <div className="p-2">
-                        <p className="text-xs font-bold line-clamp-2">{b.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{b.genre}</p>
+                      <div className="p-3">
+                        <p className="font-bold line-clamp-2 mb-1" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.82rem", lineHeight: 1.55 }}>{b.title}</p>
+                        <p className="text-xs mt-0.5" style={{ color: isDarkMode ? "rgba(212,168,67,0.75)" : "#C9A84C" }}>{b.genre}</p>
                       </div>
                     </div>
                   </Link>
