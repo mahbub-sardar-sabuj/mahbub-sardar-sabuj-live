@@ -85,6 +85,10 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/mahbubsardarsabuj2026bd.txt",
+      "dest": "/mahbubsardarsabuj2026bd.txt"
+    },
+    {
       "src": "/ads.txt",
       "dest": "/ads.txt"
     },
