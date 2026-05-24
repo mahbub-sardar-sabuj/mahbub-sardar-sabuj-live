@@ -8,7 +8,7 @@ import { X, ChevronLeft, ChevronRight, Images, ZoomIn, Copy, Check, Share2 } fro
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
-import AdSenseAd from "@/components/AdSenseAd";
+import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import { useLocation } from "wouter";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
@@ -511,7 +511,7 @@ export default function Gallery() {
 
       {/* AdSense Ad */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem" }}>
-        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+        <AdSenseAd adSlot={AD_SLOTS.GALLERY_BOTTOM} adFormat="auto" fullWidthResponsive={true} />
       </div>
       <Footer />
 

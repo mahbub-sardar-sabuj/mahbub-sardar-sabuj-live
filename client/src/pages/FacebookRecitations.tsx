@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
-import AdSenseAd from "@/components/AdSenseAd";
+import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import { facebookPageUrl, facebookRecitations } from "@/data/facebookRecitations";
 
 // ── Palette (matches Homepage) ─────────────────────────────────────────────
@@ -477,7 +477,7 @@ export default function FacebookRecitations() {
 
       {/* AdSense Ad */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem" }}>
-        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+        <AdSenseAd adSlot={AD_SLOTS.RECITATIONS_BOTTOM} adFormat="auto" fullWidthResponsive={true} />
       </div>
       <Footer />
     </div>

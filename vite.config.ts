@@ -174,7 +174,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 3000, // writings-data chunk is intentionally large (2.8MB literary archive, gzipped to 424KB)
     minify: "esbuild",
     // Enable CSS code splitting for better caching
     cssCodeSplit: true,

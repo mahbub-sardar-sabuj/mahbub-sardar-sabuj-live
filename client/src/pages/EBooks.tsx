@@ -16,7 +16,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import { Link } from "wouter";
-import AdSenseAd from "@/components/AdSenseAd";
+import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 
 const ebooks = [
   {
@@ -1022,7 +1022,7 @@ export default function EBooks() {
 
         {/* AdSense */}
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "1rem 0 2rem" }}>
-          <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+          <AdSenseAd adSlot={AD_SLOTS.EBOOKS_SIDEBAR} adFormat="auto" fullWidthResponsive={true} />
         </div>
       </div>
 

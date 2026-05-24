@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import AdSenseAd from "@/components/AdSenseAd";
+import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import Seo from "@/components/Seo";
 import { Link } from "wouter";
 
@@ -785,7 +785,7 @@ export default function EBookReader() {
 
         {/* AdSense Ad */}
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem 1rem" }}>
-          <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+          <AdSenseAd adSlot={AD_SLOTS.READER_INLINE} adFormat="auto" fullWidthResponsive={true} />
         </div>
         <Footer />
       </div>

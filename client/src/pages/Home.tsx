@@ -14,7 +14,7 @@ import {
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
-import AdSenseAd from "@/components/AdSenseAd";
+import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
@@ -564,7 +564,7 @@ export default function Home() {
 
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
-        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true} />
+        <AdSenseAd adSlot={AD_SLOTS.HOME_BANNER} adFormat="auto" fullWidthResponsive={true} />
       </div>
 
       {/* ── Responsive CSS ────────────────────────────────────────────────────── */}

@@ -8,7 +8,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo, { SITE_URL } from "@/components/Seo";
-import AdSenseAd from "@/components/AdSenseAd";
+import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import type { Writing } from "@/data/writingsArchive";
 import {
   motion, AnimatePresence, useMotionValue, useSpring, useInView,
@@ -1718,7 +1718,7 @@ export default function Writings() {
       </div>
 
       <div style={{ maxWidth:840, margin:"0 auto", padding:"1.5rem 1rem" }}>
-        <AdSenseAd adSlot="" adFormat="auto" fullWidthResponsive={true}/>
+        <AdSenseAd adSlot={AD_SLOTS.WRITINGS_INLINE} adFormat="auto" fullWidthResponsive={true}/>
       </div>
       <Footer/>
 
