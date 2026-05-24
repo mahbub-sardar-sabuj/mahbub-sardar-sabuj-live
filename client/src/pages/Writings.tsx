@@ -732,6 +732,14 @@ const CSS = `
     line-height: 2.0; display: -webkit-box; -webkit-line-clamp: 4;
     -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;
   }
+  /* ছোট লেখার কার্ডে শিরোনাম নেই, তাই preview আরও বেশি দেখাবে */
+  .wc2-short .wc2-preview {
+    -webkit-line-clamp: 6;
+    font-size: .9rem;
+    line-height: 2.05;
+  }
+  .wc2-short .wc2-tags { margin-bottom: .5rem; }
+  .wc2-short { min-height: 200px; }
   .wc2-foot {
     display: flex; align-items: center; justify-content: space-between;
     gap: .65rem; margin-top: auto; padding-top: .9rem; border-top: 1px solid var(--bdr);
@@ -975,7 +983,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   return (
     <motion.div
       ref={ref}
-      className={`wc2${isL?" wc2-l":""}`}
+      className={`wc2${isL?" wc2-l":""}${hideShortWritingLabel?" wc2-short":""}`}
       style={{
         "--ca": c.accent, "--cg": c.glow, "--cbg": c.bg,
         "--cbg2": c.badge, "--cbdr": c.border,
@@ -1020,12 +1028,11 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             </div>
           </>
         ) : (
-          <>
-            <div className="wc2-tags">
+                    <>            <div className="wc2-tags">
               {!hideShortWritingLabel && <span className="wc2-cat"><span style={{ fontSize: ".75rem" }}>{c.icon}</span>{writing.category}</span>}
               {writing.featured && <span className="wc2-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
             </div>
-            <div className="wc2-title">{writing.title}</div>
+            {!hideShortWritingLabel && <div className="wc2-title">{writing.title}</div>}
             <div className="wc2-preview">{writing.content}</div>
             <div className="wc2-foot">
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
@@ -1394,6 +1401,7 @@ export default function Writings() {
   const [sel, setSel] = useState<Writing|null>(null);
   const [viewMode, setViewMode] = useState<"grid"|"list">("grid");
   const [visibleCount, setVisibleCount] = useState(WRITINGS_PAGE_SIZE);
+  const [visibleShortCount, setVisibleShortCount] = useState(WRITINGS_PAGE_SIZE);
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/writings/:slug");
   const [archive, setArchive] = useState<Writing[]>([]);
@@ -1415,10 +1423,25 @@ export default function Writings() {
     return list;
   }, [archive, cat, deferredQuery]);
 
-  useEffect(() => { setVisibleCount(WRITINGS_PAGE_SIZE); }, [cat, deferredQuery]);
+  // সব লেখা ফিল্টারে: বড় লেখা ও ছোট লেখা আলাদা সেকশনে দেখাবে
+  // নির্দিষ্ট ক্যাটাগরি ফিল্টারে: সব লেখা এক সেকশনে
+  const showSplitSections = cat === "all";
+  const longWritings = useMemo(() => {
+    if (!showSplitSections) return filtered;
+    return filtered.filter(w => w.category !== "ছোট লেখা");
+  }, [filtered, showSplitSections]);
+  const shortWritings = useMemo(() => {
+    if (!showSplitSections) return [];
+    return filtered.filter(w => w.category === "ছোট লেখা");
+  }, [filtered, showSplitSections]);
 
-  const visibleWritings = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
-  const hasMoreWritings = visibleCount < filtered.length;
+  useEffect(() => { setVisibleCount(WRITINGS_PAGE_SIZE); setVisibleShortCount(WRITINGS_PAGE_SIZE); }, [cat, deferredQuery]);
+
+  const mainList = showSplitSections ? longWritings : filtered;
+  const visibleWritings = useMemo(() => mainList.slice(0, visibleCount), [mainList, visibleCount]);
+  const hasMoreWritings = visibleCount < mainList.length;
+  const visibleShortWritings = useMemo(() => shortWritings.slice(0, visibleShortCount), [shortWritings, visibleShortCount]);
+  const hasMoreShortWritings = visibleShortCount < shortWritings.length;
 
   useEffect(() => {
     if (match && params?.slug && archiveReady) {
@@ -1529,18 +1552,59 @@ export default function Writings() {
               </div>
             ) : filtered.length > 0 ? (
               <>
-                <div className={viewMode==="grid"?"wg2":"wg2-l"}>
-                  {visibleWritings.map((w, i) => (
-                    <WritingCard key={w.id} writing={w} index={i} onClick={() => handleCardClick(w)} viewMode={viewMode}/>
-                  ))}
-                </div>
-                {hasMoreWritings && (
-                  <div className="lm2">
-                    <motion.button className="lm2-btn" aria-label="আরও লেখা দেখুন" onClick={() => setVisibleCount(n => Math.min(n + WRITINGS_PAGE_SIZE, filtered.length))} whileTap={{ scale:.96 }}>
-                      <ChevronDown size={15}/> আরও লেখা দেখুন
-                    </motion.button>
-                    <span className="lm2-note">{visibleCount} / {filtered.length} লেখা দেখানো হচ্ছে</span>
-                  </div>
+                {/* বড় লেখা সেকশন — কবিতা, ভালোবাসা, জীবনদর্শন, বিচ্ছেদ */}
+                {visibleWritings.length > 0 && (
+                  <>
+                    {cat === "all" && longWritings.length > 0 && (
+                      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:"1.2rem", marginTop:".5rem" }}>
+                        <span style={{ fontFamily:"var(--f)", fontSize:".72rem", color:"rgba(201,168,76,.55)", letterSpacing:".12em", textTransform:"uppercase", fontWeight:600 }}>✦ বড় লেখা</span>
+                        <div style={{ flex:1, height:1, background:"rgba(201,168,76,.12)" }}/>
+                        <span style={{ fontFamily:"var(--f)", fontSize:".68rem", color:"rgba(242,237,228,.22)" }}>{longWritings.length}টি</span>
+                      </div>
+                    )}
+                    <div className={viewMode==="grid"?"wg2":"wg2-l"}>
+                      {visibleWritings.map((w, i) => (
+                        <WritingCard key={w.id} writing={w} index={i} onClick={() => handleCardClick(w)} viewMode={viewMode}/>
+                      ))}
+                    </div>
+                    {hasMoreWritings && (
+                      <div className="lm2">
+                        <motion.button className="lm2-btn" aria-label="আরও বড় লেখা দেখুন" onClick={() => setVisibleCount(n => Math.min(n + WRITINGS_PAGE_SIZE, mainList.length))} whileTap={{ scale:.96 }}>
+                          <ChevronDown size={15}/> আরও বড় লেখা দেখুন
+                        </motion.button>
+                        <span className="lm2-note">{visibleCount} / {mainList.length} লেখা দেখানো হচ্ছে</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* ছোট লেখা সেকশন — শুধু "সব লেখা" ফিল্টারে আলাদা দেখাবে */}
+                {cat === "all" && shortWritings.length > 0 && (
+                  <motion.div
+                    initial={{ opacity:0, y:18 }}
+                    animate={{ opacity:1, y:0 }}
+                    transition={{ duration:.45, delay:.1, ease:[.25,.46,.45,.94] }}
+                    style={{ marginTop:"2.8rem" }}
+                  >
+                    <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:"1.4rem" }}>
+                      <span style={{ fontFamily:"var(--f)", fontSize:".72rem", color:"rgba(52,211,153,.65)", letterSpacing:".12em", textTransform:"uppercase", fontWeight:600 }}>✎ ছোট লেখা</span>
+                      <div style={{ flex:1, height:1, background:"rgba(52,211,153,.12)" }}/>
+                      <span style={{ fontFamily:"var(--f)", fontSize:".68rem", color:"rgba(242,237,228,.22)" }}>{shortWritings.length}টি</span>
+                    </div>
+                    <div className={viewMode==="grid"?"wg2":"wg2-l"}>
+                      {visibleShortWritings.map((w, i) => (
+                        <WritingCard key={w.id} writing={w} index={i} onClick={() => handleCardClick(w)} viewMode={viewMode}/>
+                      ))}
+                    </div>
+                    {hasMoreShortWritings && (
+                      <div className="lm2">
+                        <motion.button className="lm2-btn" aria-label="আরও ছোট লেখা দেখুন" onClick={() => setVisibleShortCount(n => Math.min(n + WRITINGS_PAGE_SIZE, shortWritings.length))} whileTap={{ scale:.96 }}>
+                          <ChevronDown size={15}/> আরও ছোট লেখা দেখুন
+                        </motion.button>
+                        <span className="lm2-note">{visibleShortCount} / {shortWritings.length} লেখা দেখানো হচ্ছে</span>
+                      </div>
+                    )}
+                  </motion.div>
                 )}
               </>
             ) : (
