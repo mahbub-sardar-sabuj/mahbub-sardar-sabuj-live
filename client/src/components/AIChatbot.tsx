@@ -27,6 +27,7 @@ interface Message {
   operationsApplied?: string[]; // list of applied operation names
   outputSizeKB?: number;       // output file size in KB
   isCopied?: boolean;          // message copy state
+  reaction?: "up" | "down" | null; // user reaction
 }
 
 interface ActionButton {
@@ -152,15 +153,85 @@ const AI_CAPABILITIES = [
 ];
 
 const QUICK_ACTIONS = [
-  { label: "লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে গুছিয়ে বলো—তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন?" },
-  { label: "বই ও ই-বুক", prompt: "মাহবুব সরদার সবুজের বই ও ই-বুকগুলো তালিকা করে পড়ার/কেনার লিংকসহ দেখাও।" },
-  { label: "লেখা খুঁজুন", prompt: "ওয়েবসাইটে ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা ও কবিতা কীভাবে পড়ব?" },
-  { label: "কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও—বিষয়, আবেগ, চিত্রকল্প ও সম্পাদনা সহ।" },
-  { label: "আবৃত্তি শুনবো", prompt: "মাহবুব সরদার সবুজের জনপ্রিয় আবৃত্তিগুলো দেখাও এবং কোথায় শুনব বলো।" },
-  { label: "ডিজাইন স্টুডিও", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা/উক্তির কার্ড বানাতে কীভাবে শুরু করব?" },
-  { label: "অডিও ক্লিন", prompt: "আমি একটি অডিও ক্লিন করতে চাই—নয়েজ রিমুভ ও স্টুডিও মাস্টারিং কীভাবে করব?" },
-  { label: "যোগাযোগ", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই—ইমেইল, সোশ্যাল লিংক ও যোগাযোগ পেজ দেখাও।" },
+  { label: "লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে গুছিয়ে বলো—তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন?", context: "author" },
+  { label: "বই ও ই-বুক", prompt: "মাহবুব সরদার সবুজের বই ও ই-বুকগুলো তালিকা করে পড়ার/কেনার লিংকসহ দেখাও।", context: "book" },
+  { label: "লেখা খুঁজুন", prompt: "ওয়েবসাইটে ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা ও কবিতা কীভাবে পড়ব?", context: "writing" },
+  { label: "কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও—বিষয়, আবেগ, চিত্রকল্প ও সম্পাদনা সহ।", context: "teaching" },
+  { label: "আবৃত্তি শুনবো", prompt: "মাহবুব সরদার সবুজের জনপ্রিয় আবৃত্তিগুলো দেখাও এবং কোথায় শুনব বলো।", context: "recitation" },
+  { label: "ডিজাইন স্টুডিও", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা/উক্তির কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
+  { label: "অডিও ক্লিন", prompt: "আমি একটি অডিও ক্লিন করতে চাই—নয়েজ রিমুভ ও স্টুডিও মাস্টারিং কীভাবে করব?", context: "audio" },
+  { label: "যোগাযোগ", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই—ইমেইল, সোশ্যাল লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
 ];
+
+// ── Dynamic context-aware quick actions ──────────────────────────────────────
+const CONTEXT_FOLLOW_UP_ACTIONS: Record<string, { label: string; prompt: string }[]> = {
+  author: [
+    { label: "বই দেখাও", prompt: "মাহবুব সরদার সবুজের সব বই ও ই-বুক দেখাও।" },
+    { label: "লেখা পড়বো", prompt: "লেখকের জনপ্রিয় লেখাগুলো কোথায় পড়ব?" },
+    { label: "যোগাযোগ করবো", prompt: "লেখকের সাথে কীভাবে যোগাযোগ করব?" },
+  ],
+  book: [
+    { label: "দুঃখবিলাস কিনবো", prompt: "'আমি বিচ্ছেদকে বলি দুঃখবিলাস' বইটি কোথায় কিনব?" },
+    { label: "ই-বুক পড়বো", prompt: "ই-বুকগুলো অনলাইনে কীভাবে পড়ব?" },
+    { label: "লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো।" },
+  ],
+  writing: [
+    { label: "বিচ্ছেদের লেখা", prompt: "বিচ্ছেদ বিষয়ক সেরা লেখাগুলো দেখাও।" },
+    { label: "ভালোবাসার লেখা", prompt: "ভালোবাসার লেখা কোথায় পড়ব?" },
+    { label: "কবিতা পড়বো", prompt: "লেখকের কবিতাগুলো কোথায় পাব?" },
+  ],
+  teaching: [
+    { label: "ছন্দ শেখাও", prompt: "বাংলা কবিতার ছন্দ কীভাবে শিখব?" },
+    { label: "চিত্রকল্প কী", prompt: "কবিতায় চিত্রকল্প কী এবং কীভাবে ব্যবহার করব?" },
+    { label: "লেখার অনুশীলন", prompt: "আমাকে একটি কবিতা লেখার অনুশীলন দাও।" },
+  ],
+  recitation: [
+    { label: "জনপ্রিয় আবৃত্তি", prompt: "সবচেয়ে জনপ্রিয় আবৃত্তিগুলোর নাম বলো।" },
+    { label: "Facebook পেজ", prompt: "লেখকের Facebook পেজের লিংক দাও।" },
+    { label: "YouTube চ্যানেল", prompt: "লেখকের YouTube চ্যানেলের লিংক দাও।" },
+  ],
+  design: [
+    { label: "কার্ড বানাবো", prompt: "কবিতার কার্ড বানাতে ডিজাইন স্টুডিওতে কীভাবে শুরু করব?" },
+    { label: "পোস্টার ডিজাইন", prompt: "পোস্টার ডিজাইনের জন্য কোন ফিচার ব্যবহার করব?" },
+    { label: "ফন্ট নির্বাচন", prompt: "বাংলা কবিতার কার্ডের জন্য কোন ফন্ট ভালো?" },
+  ],
+  audio: [
+    { label: "নয়েজ রিমুভ", prompt: "অডিও থেকে নয়েজ রিমুভ করতে কী করব?" },
+    { label: "ভয়েস ক্লিন", prompt: "ভয়েস রেকর্ডিং ক্লিন করার সেরা উপায় কী?" },
+    { label: "মাস্টারিং", prompt: "অডিও মাস্টারিং কী এবং কীভাবে করব?" },
+  ],
+  contact: [
+    { label: "ইমেইল করবো", prompt: "লেখকের ইমেইল ঠিকানা কী?" },
+    { label: "Facebook মেসেজ", prompt: "Facebook-এ লেখককে কীভাবে মেসেজ করব?" },
+    { label: "লাইভ চ্যাট", prompt: "সরাসরি লাইভ চ্যাটে কথা বলতে চাই।" },
+  ],
+};
+
+function getContextualActions(messages: Message[]): { label: string; prompt: string }[] {
+  if (messages.length <= 1) return QUICK_ACTIONS;
+  // Detect context from last few messages
+  const recentText = messages
+    .slice(-4)
+    .filter(m => m.role === "user" || m.role === "assistant")
+    .map(m => (typeof m.content === "string" ? m.content : "").toLowerCase())
+    .join(" ");
+  const contextMap: [string, string[]][] = [
+    ["author", ["লেখক", "পরিচয়", "মাহবুব", "সবুজ", "জীবনী", "কে তিনি"]],
+    ["book", ["বই", "ই-বুক", "দুঃখবিলাস", "স্মৃতির", "চাঁদফুল", "কিনতে", "পড়তে"]],
+    ["writing", ["লেখা", "কবিতা", "বিচ্ছেদ", "ভালোবাসা", "জীবনদর্শন", "writings"]],
+    ["teaching", ["শেখাও", "শিখতে", "কীভাবে লিখব", "ছন্দ", "চিত্রকল্প"]],
+    ["recitation", ["আবৃত্তি", "ভিডিও", "রিল", "শুনব"]],
+    ["design", ["ডিজাইন", "কার্ড", "পোস্টার", "স্টুডিও", "editor"]],
+    ["audio", ["অডিও", "নয়েজ", "ভয়েস", "মাস্টারিং", "রেকর্ড"]],
+    ["contact", ["যোগাযোগ", "ইমেইল", "ফেসবুক", "মেসেজ", "contact"]],
+  ];
+  for (const [ctx, keywords] of contextMap) {
+    if (keywords.some(kw => recentText.includes(kw))) {
+      return CONTEXT_FOLLOW_UP_ACTIONS[ctx] || QUICK_ACTIONS;
+    }
+  }
+  return QUICK_ACTIONS;
+}
 
 // ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
@@ -895,7 +966,7 @@ if (!document.getElementById(STYLE_ID)) {
 }
 
 // ── Message Bubble ────────────────────────────────────────────
-function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { message: Message; onNavigate: (path: string) => void; onSwitchToLive: () => void; isLatest?: boolean }) {
+function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact }: { message: Message; onNavigate: (path: string) => void; onSwitchToLive: () => void; isLatest?: boolean; onReact?: (id: string, reaction: "up" | "down") => void }) {
   const isUser = message.role === "user";
   const userAudioInstruction = message.userAudioInstruction || (message.userAudioName ? extractAudioInstruction(message.content) : "");
 
@@ -1395,14 +1466,52 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest }: { mess
               }}
               onMouseEnter={e => (e.currentTarget.style.color = "rgba(212,168,67,0.7)")}
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(212,168,67,0.35)")}
-            >⎘ কপি</button>
+                        >⎘ কপি</button>
+          )}
+          {/* Reaction buttons for assistant messages */}
+          {!isUser && onReact && renderedText && (
+            <div style={{ display: "flex", gap: 3, marginLeft: 2 }}>
+              <button
+                onClick={() => onReact(message.id, "up")}
+                title="ভালো লেগেছে"
+                style={{
+                  background: message.reaction === "up" ? "rgba(74,222,128,0.15)" : "none",
+                  border: message.reaction === "up" ? "1px solid rgba(74,222,128,0.4)" : "none",
+                  borderRadius: 4,
+                  color: message.reaction === "up" ? "rgba(74,222,128,0.9)" : "rgba(212,168,67,0.3)",
+                  fontSize: "0.65rem",
+                  cursor: "pointer",
+                  padding: "1px 4px",
+                  lineHeight: 1,
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={e => { if (message.reaction !== "up") e.currentTarget.style.color = "rgba(74,222,128,0.7)"; }}
+                onMouseLeave={e => { if (message.reaction !== "up") e.currentTarget.style.color = "rgba(212,168,67,0.3)"; }}
+              >👍</button>
+              <button
+                onClick={() => onReact(message.id, "down")}
+                title="উন্নতি দরকার"
+                style={{
+                  background: message.reaction === "down" ? "rgba(248,113,113,0.15)" : "none",
+                  border: message.reaction === "down" ? "1px solid rgba(248,113,113,0.4)" : "none",
+                  borderRadius: 4,
+                  color: message.reaction === "down" ? "rgba(248,113,113,0.9)" : "rgba(212,168,67,0.3)",
+                  fontSize: "0.65rem",
+                  cursor: "pointer",
+                  padding: "1px 4px",
+                  lineHeight: 1,
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={e => { if (message.reaction !== "down") e.currentTarget.style.color = "rgba(248,113,113,0.7)"; }}
+                onMouseLeave={e => { if (message.reaction !== "down") e.currentTarget.style.color = "rgba(212,168,67,0.3)"; }}
+              >👎</button>
+            </div>
           )}
         </div>
       </div>
     </motion.div>
   );
 }
-
 // ── Typing indicator ────────────────────────────────────────────
 function TypingIndicator({ stage }: { stage?: string | null }) {
   return (
@@ -1538,6 +1647,8 @@ export default function AIChatbot() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"ai" | "live">("ai");
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [visualViewportBox, setVisualViewportBox] = useState(() => ({
     width: typeof window !== "undefined" ? window.innerWidth : 420,
     height: typeof window !== "undefined" ? window.innerHeight : 680,
@@ -1566,8 +1677,34 @@ export default function AIChatbot() {
   }, [isOpen]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Only auto-scroll if user is near bottom
+    const container = messagesContainerRef.current;
+    if (!container) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+    if (isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isLoading]);
+
+  // Scroll tracking for scroll-to-bottom button
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      const distFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+      setShowScrollBtn(distFromBottom > 150);
+    };
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [isOpen]);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setShowScrollBtn(false);
+  }, []);
 
   useEffect(() => {
     const syncVisualViewport = () => {
@@ -2445,6 +2582,14 @@ export default function AIChatbot() {
     }
   }, []);
 
+  const handleReact = useCallback((msgId: string, reaction: "up" | "down") => {
+    setMessages(prev => prev.map(m =>
+      m.id === msgId
+        ? { ...m, reaction: m.reaction === reaction ? null : reaction }
+        : m
+    ));
+  }, []);
+
   const clearChat = () => {
     setMessages([{
       id: "welcome-new",
@@ -2852,7 +2997,8 @@ export default function AIChatbot() {
 
               {/* ── Messages / Live chat ── */}
               {activeTab === "ai" ? (
-                <div className="chatbot-scrollbar" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
+                <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+                <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
                   {messages.length <= 1 && (
                     <div style={{
                       marginBottom: 12,
@@ -2891,6 +3037,7 @@ export default function AIChatbot() {
                       onNavigate={handleNavigate}
                       onSwitchToLive={() => setActiveTab("live")}
                       isLatest={msg.role === "assistant" && idx === messages.length - 1 && !isLoading && !audioProcessing}
+                      onReact={handleReact}
                     />
                   ))}
                   {(isLoading || audioProcessing) && <TypingIndicator stage={audioProcessing ? audioProcessingStage : null} />}
@@ -2910,28 +3057,92 @@ export default function AIChatbot() {
                       }}>
                         {error}
                       </div>
-                      <button
-                        onClick={handleRetry}
-                        className="chatbot-touch-target"
-                        style={{
-                          display: "flex", alignItems: "center", gap: 7,
-                          padding: "7px 16px",
-                          background: "rgba(212,168,67,0.1)",
-                          border: "1px solid rgba(212,168,67,0.38)",
-                          color: "#D4A843",
-                          borderRadius: 13,
-                          fontSize: "0.75rem",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                        }}
-                      >
-                        ↺ আবার চেষ্টা করুন
-                      </button>
+                      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", justifyContent: "center" }}>
+                        <button
+                          onClick={handleRetry}
+                          className="chatbot-touch-target"
+                          style={{
+                            display: "flex", alignItems: "center", gap: 6,
+                            padding: "7px 14px",
+                            background: "rgba(212,168,67,0.1)",
+                            border: "1px solid rgba(212,168,67,0.38)",
+                            color: "#D4A843",
+                            borderRadius: 13,
+                            fontSize: "0.72rem",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          ↺ আবার চেষ্টা
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("live")}
+                          className="chatbot-touch-target"
+                          style={{
+                            display: "flex", alignItems: "center", gap: 6,
+                            padding: "7px 14px",
+                            background: "rgba(99,102,241,0.1)",
+                            border: "1px solid rgba(99,102,241,0.35)",
+                            color: "rgba(165,180,252,0.9)",
+                            borderRadius: 13,
+                            fontSize: "0.72rem",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          💬 লাইভ সাপোর্ট
+                        </button>
+                      </div>
                     </div>
                   )}
                   <div ref={messagesEndRef} />
+                </div>
+                {/* Scroll-to-bottom floating button */}
+                <AnimatePresence>
+                  {showScrollBtn && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 8, scale: 0.85 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.85 }}
+                      transition={{ duration: 0.18 }}
+                      onClick={scrollToBottom}
+                      aria-label="নিচে যান"
+                      title="নিচে যান"
+                      style={{
+                        position: "absolute",
+                        bottom: 10,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        zIndex: 20,
+                        background: "rgba(212,168,67,0.18)",
+                        border: "1px solid rgba(212,168,67,0.45)",
+                        borderRadius: 999,
+                        padding: "5px 14px 5px 10px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        color: "#F7E4A5",
+                        fontSize: "0.62rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        backdropFilter: "blur(8px)",
+                        WebkitBackdropFilter: "blur(8px)",
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D4A843" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                      নতুন বার্তা
+                    </motion.button>
+                  )}
+                </AnimatePresence>
                 </div>
               ) : (
                 <div style={{ flex: 1, minHeight: 0, overflow: "hidden", padding: 10 }}>
@@ -3237,22 +3448,23 @@ export default function AIChatbot() {
                       overflowX: "auto",
                       paddingBottom: 2,
                     }}>
-                      {QUICK_ACTIONS.map(action => (
+                      {getContextualActions(messages).map(action => (
                         <button
                           key={action.label}
                           onClick={() => handleSendWithText(action.prompt)}
                           className="chatbot-suggestion-btn"
                           style={{
                             padding: "5px 9px",
-                            background: "rgba(212,168,67,0.06)",
-                            border: "1px solid rgba(212,168,67,0.18)",
+                            background: messages.length > 1 ? "rgba(212,168,67,0.1)" : "rgba(212,168,67,0.06)",
+                            border: `1px solid ${messages.length > 1 ? "rgba(212,168,67,0.3)" : "rgba(212,168,67,0.18)"}`,
                             borderRadius: 999,
-                            color: "rgba(247,228,165,0.78)",
+                            color: messages.length > 1 ? "rgba(247,228,165,0.9)" : "rgba(247,228,165,0.78)",
                             fontSize: "0.58rem",
                             fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                             cursor: "pointer",
                             fontWeight: 700,
                             whiteSpace: "nowrap",
+                            transition: "all 0.2s",
                           }}
                         >
                           {action.label}
