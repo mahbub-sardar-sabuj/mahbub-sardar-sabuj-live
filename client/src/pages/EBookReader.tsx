@@ -382,9 +382,35 @@ export default function EBookReader() {
   return (
     <>
       <Seo
-        title={`${book.title} পড়ুন | মাহবুব সরদার সবুজ`}
-        description={book.description}
+        title={`${book.title} পড়ুন | মাহবুব সরদার সবুজ | বিনামূল্যে বাংলা ই-বুক`}
+        description={`${book.description} মাহবুব সরদার সবুজের ${book.title} বিনামূল্যে অনলাইনে পড়ুন।`}
         path={`/ebooks/read/${slug}`}
+        image={`https://www.mahbubsardarsabuj.com${book.cover}`}
+        imageAlt={`${book.title} — মাহবুব সরদার সবুজ`}
+        keywords={`${book.title}, মাহবুব সরদার সবুজ বই, বাংলা ই-বুক, বিনামূল্যে বাংলা বই, Mahbub Sardar Sabuj ebook, বাংলা সাহিত্য, বাংলা কবিতা বই`}
+        type="book"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Book",
+          "name": book.title,
+          "description": book.description,
+          "author": {
+            "@type": "Person",
+            "name": "Mahbub Sardar Sabuj",
+            "alternateName": "মাহবুব সরদার সবুজ",
+            "url": "https://www.mahbubsardarsabuj.com/"
+          },
+          "inLanguage": "bn",
+          "bookFormat": "EBook",
+          "isAccessibleForFree": true,
+          "url": `https://www.mahbubsardarsabuj.com/ebooks/read/${slug}`,
+          "image": `https://www.mahbubsardarsabuj.com${book.cover}`,
+          "publisher": {
+            "@type": "Person",
+            "name": "Mahbub Sardar Sabuj"
+          },
+          "genre": ["Poetry", "Bengali Literature", "বাংলা সাহিত্য"]
+        }}
       />
 
       <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? "bg-gray-950 text-gray-100" : "bg-[#FDF6EC] text-[#0D1B2A]"}`}>

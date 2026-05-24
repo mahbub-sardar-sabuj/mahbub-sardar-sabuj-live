@@ -94,8 +94,8 @@ export default function Seo({
     upsertMeta('meta[property="og:image"]', { property: "og:image", content: absoluteImage });
     upsertMeta('meta[property="og:image:secure_url"]', { property: "og:image:secure_url", content: absoluteImage });
     upsertMeta('meta[property="og:image:alt"]', { property: "og:image:alt", content: imageAlt });
-    upsertMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1024" });
-    upsertMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "1024" });
+    upsertMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1200" });
+    upsertMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "630" });
     upsertMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
     upsertMeta('meta[name="twitter:url"]', { name: "twitter:url", content: canonicalUrl });
     upsertMeta('meta[name="twitter:title"]', { name: "twitter:title", content: title });

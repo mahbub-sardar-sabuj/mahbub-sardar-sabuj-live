@@ -2,25 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <!-- ── মূল পেজ ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/about</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/contact</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/about</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/contact</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 
 
   <!-- ── AI ও ownership discovery ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/llms.txt</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/humans.txt</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/llms.txt</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/humans.txt</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
 
   <!-- ── লেখালেখি ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/writings</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/amio-likhbo-bastobota</loc><lastmod>2026-05-22</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/writings</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/amio-likhbo-bastobota</loc><lastmod>2026-05-24</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
 
   <!-- ── আমিও লিখবো বাস্তবতা পোস্ট সাইটম্যাপ (ডাইনামিক) ──
        ভিজিটর পোস্টগুলোর সম্পূর্ণ ডাইনামিক সাইটম্যাপ: https://www.mahbubsardarsabuj.com/api/amio-sitemap
        Google Search Console এ এই URL সাবমিট করুন: https://www.mahbubsardarsabuj.com/api/amio-sitemap -->
 
   <!-- ── ই-বুক ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/ebooks</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/ebooks</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://www.mahbubsardarsabuj.com/ebooks/read/dukkhovilash</loc><lastmod>2026-05-19</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.mahbubsardarsabuj.com/ebooks/read/smritir-boshonte</loc><lastmod>2026-05-19</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.mahbubsardarsabuj.com/ebooks/read/chand-phool</loc><lastmod>2026-05-19</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
@@ -28,22 +28,22 @@
   <url><loc>https://www.mahbubsardarsabuj.com/ebooks/read/onoboddo-lekha</loc><lastmod>2026-05-19</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
 
   <!-- ── গ্যালারি ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/gallery</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/gallery</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 
   <!-- ── আবৃত্তি ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/facebook-recitations</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/facebook-recitations</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
 
   <!-- ── SEO collection pages: high-intent Bengali literature searches ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/bangla-kobita</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/valobashar-kobita</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/bichched-kobita</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/jibon-dorshon</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/bangla-ebook</loc><lastmod>2026-05-22</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/bangla-status</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/bangla-quotes</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/koster-kobita</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/romantic-bangla-kobita</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/bangla-golpo</loc><lastmod>2026-05-22</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-kobita</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/valobashar-kobita</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bichched-kobita</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/jibon-dorshon</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-ebook</loc><lastmod>2026-05-24</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-status</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-quotes</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/koster-kobita</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/romantic-bangla-kobita</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/bangla-golpo</loc><lastmod>2026-05-24</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
 
   <!-- ── লেখালেখি — ৭৮৯টি কবিতা ও লেখা ── -->
   <url>
@@ -9517,7 +9517,7 @@
     <priority>0.8</priority>
   </url>
   <!-- ── সরদার সংবাদ (মূল পেজ) ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/news</loc><lastmod>2026-05-22</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/news</loc><lastmod>2026-05-24</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
@@ -9791,35 +9791,35 @@
     </news:news>
   </url>
   <!-- ── আইনি পেজ ── -->
-  <url><loc>https://www.mahbubsardarsabuj.com/privacy-policy</loc><lastmod>2026-05-22</lastmod><changefreq>yearly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://www.mahbubsardarsabuj.com/terms</loc><lastmod>2026-05-22</lastmod><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/privacy-policy</loc><lastmod>2026-05-24</lastmod><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.mahbubsardarsabuj.com/terms</loc><lastmod>2026-05-24</lastmod><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url>
     <loc>https://www.mahbubsardarsabuj.com/bangla-kobita</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.mahbubsardarsabuj.com/valobashar-kobita</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://www.mahbubsardarsabuj.com/bichched-kobita</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://www.mahbubsardarsabuj.com/jibon-dorshon</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.mahbubsardarsabuj.com/bangla-ebook</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-05-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

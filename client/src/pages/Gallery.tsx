@@ -141,7 +141,22 @@ export default function Gallery() {
       <Seo
         title="গ্যালারি | মাহবুব সরদার সবুজের ছবি সংগ্রহ | Mahbub Sardar Sabuj Gallery"
         description="মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো গ্যালারি। বাংলাদেশের জনপ্রিয় কবি ও লেখকের ছবি সংগ্রহ।"
-        keywords="মাহবুব সরদার সবুজ গ্যালারি, Mahbub Sardar Sabuj photos, বাংলা লেখক ছবি, বাংলাদেশি কবির ছবি"
+        path="/gallery"
+        image="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
+        imageAlt="মাহবুব সরদার সবুজ — বাংলাদেশি কবি ও লেখক"
+        keywords="মাহবুব সরদার সবুজ গ্যালারি, Mahbub Sardar Sabuj photos, বাংলা লেখক ছবি, বাংলাদেশি কবির ছবি, Mahbub Sardar Sabuj gallery, বাংলা সাহিত্যিক ছবি"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ImageGallery",
+          "name": "মাহবুব সরদার সবুজের ফটো গ্যালারি",
+          "description": "মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো সংগ্রহ",
+          "url": "https://www.mahbubsardarsabuj.com/gallery",
+          "author": {
+            "@type": "Person",
+            "name": "Mahbub Sardar Sabuj",
+            "url": "https://www.mahbubsardarsabuj.com/"
+          }
+        }}
       />
       <Navbar />
 

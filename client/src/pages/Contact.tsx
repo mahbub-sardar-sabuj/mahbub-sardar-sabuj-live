@@ -129,7 +129,26 @@ export default function Contact() {
           title="যোগাযোগ | মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj Contact"
           description="বাংলাদেশের জনপ্রিয় কবি ও লেখক মাহবুব সরদার সবুজ-এর সঙ্গে যোগাযোগ করুন। ইমেইল, সামাজিক মাধ্যম এবং বার্তা পাঠানোর ফর্ম।"
           path="/contact"
-          keywords="মাহবুব সরদার সবুজ যোগাযোগ, Mahbub Sardar Sabuj contact"
+          image="https://www.mahbubsardarsabuj.com/images/og-home-suit.jpg"
+          imageAlt="মাহবুব সরদার সবুজ — যোগাযোগ"
+          keywords="মাহবুব সরদার সবুজ যোগাযোগ, Mahbub Sardar Sabuj contact, বাংলা লেখক যোগাযোগ, মাহবুব সরদার সবুজ ইমেইল, Mahbub Sardar Sabuj email"
+          jsonLd={{
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            "name": "মাহবুব সরদার সবুজ — যোগাযোগ",
+            "url": "https://www.mahbubsardarsabuj.com/contact",
+            "description": "মাহবুব সরদার সবুজের সঙ্গে যোগাযোগ করুন।",
+            "author": {
+              "@type": "Person",
+              "name": "Mahbub Sardar Sabuj",
+              "url": "https://www.mahbubsardarsabuj.com/",
+              "sameAs": [
+                "https://facebook.com/MahbubSardarSabuj",
+                "https://www.instagram.com/mahbub_sardar_sabuj",
+                "https://youtube.com/@MahbubSardarSabuj"
+              ]
+            }
+          }}
         />
         <Navbar />
 
