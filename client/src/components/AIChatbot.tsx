@@ -2517,7 +2517,7 @@ export default function AIChatbot() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.92 }}
               style={{
-                width: 64, height: 64,
+                width: 46, height: 46,
                 borderRadius: "50%",
                 overflow: "hidden",
                 background: "linear-gradient(145deg, #0d1b2a, #0a1220)",
@@ -2528,8 +2528,8 @@ export default function AIChatbot() {
                 justifyContent: "center",
                 position: "relative",
                 zIndex: 2,
-                border: "3px solid #D4A843",
-                boxShadow: !isOpen ? "0 0 0 6px rgba(212,168,67,0.08), 0 0 34px rgba(212,168,67,0.32), inset 0 1px 0 rgba(255,255,255,0.14)" : "0 0 0 4px rgba(212,168,67,0.08), inset 0 1px 0 rgba(255,255,255,0.12)",
+                border: "2px solid #D4A843",
+                boxShadow: !isOpen ? "0 0 0 4px rgba(212,168,67,0.07), 0 0 20px rgba(212,168,67,0.22), inset 0 1px 0 rgba(255,255,255,0.12)" : "0 0 0 3px rgba(212,168,67,0.07), inset 0 1px 0 rgba(255,255,255,0.10)",
                 animation: !isOpen ? "chatbot-glow-pulse 2.5s ease-in-out infinite" : "none",
               }}
             >
@@ -2537,14 +2537,14 @@ export default function AIChatbot() {
               {!isOpen && (
                 <>
                   <span style={{
-                    position: "absolute", inset: -7, borderRadius: "50%",
-                    border: "2px solid rgba(212,168,67,0.58)",
+                    position: "absolute", inset: -5, borderRadius: "50%",
+                    border: "1.5px solid rgba(212,168,67,0.50)",
                     animation: "chatbot-ping 2s ease-in-out infinite",
                     pointerEvents: "none",
                   }} />
-                                    <span style={{
-                    position: "absolute", inset: -14, borderRadius: "50%",
-                    border: "1.5px solid rgba(212,168,67,0.30)",
+                  <span style={{
+                    position: "absolute", inset: -10, borderRadius: "50%",
+                    border: "1px solid rgba(212,168,67,0.25)",
                     animation: "chatbot-ping2 2s ease-in-out infinite 0.4s",
                     pointerEvents: "none",
                   }} />
@@ -2554,7 +2554,7 @@ export default function AIChatbot() {
                 {isOpen ? (
                   <motion.span key="x"
                     initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
-                    style={{ color: "#D4A843", fontSize: "1.3rem", fontWeight: 700 }}>✕</motion.span>
+                    style={{ color: "#D4A843", fontSize: "1rem", fontWeight: 700 }}>✕</motion.span>
                 ) : btnFace === 'photo' ? (
                   <motion.div key="av-photo"
                     initial={{ scale: 0.75, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.75, opacity: 0 }}
@@ -2574,7 +2574,7 @@ export default function AIChatbot() {
                     transition={{ duration: 0.35, ease: "easeInOut" }}
                     style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
                     {/* Chat bubble icon */}
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
                         fill="rgba(212,168,67,0.18)" stroke="#D4A843" strokeWidth="1.8" strokeLinejoin="round"/>
                       <circle cx="8.5" cy="11" r="1" fill="#D4A843"/>
