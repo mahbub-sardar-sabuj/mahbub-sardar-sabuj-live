@@ -1140,7 +1140,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
           </div>
         </div>
         <div className="rm2-body" ref={bodyRef}>
-          <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>
+          {!hideShortWritingLabel && <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>}
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:"1.3rem", opacity:.52 }}>
             <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
             {!hideShortWritingLabel && <span style={{ color:T.bdr }}>·</span>}
