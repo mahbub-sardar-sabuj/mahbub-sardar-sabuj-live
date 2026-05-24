@@ -8,11 +8,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazyRoute, preloadRoute, preloadRoutesWhenIdle } from "./lib/routePreloader";
 
-// Keep only the landing page in the critical path. Everything else is loaded per route.
+// Keep the landing page and the primary content page in the critical path.
 import Home from "./pages/Home";
+import Writings from "./pages/Writings";
 
 // Lazy load secondary pages to reduce first-load JavaScript on phones/tablets
-const Writings = lazyRoute("Writings");
+// Writings is eagerly loaded above to avoid spinner on the main content tab
 const EBooks = lazyRoute("EBooks");
 const NotFound = lazyRoute("NotFound");
 const FacebookRecitations = lazyRoute("FacebookRecitations");
@@ -32,30 +33,49 @@ const Profile = lazyRoute("Profile");
 const AmiOLikhboLogin = lazyRoute("AmiOLikhboLogin");
 const SeoKeywordLanding = lazyRoute("SeoKeywordLanding");
 
-// Page loading fallback
+// Page loading fallback — skeleton layout instead of blank spinner
 function PageLoader() {
   return (
     <div
       style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "60vh",
-        background: "transparent",
+        minHeight: "100vh",
+        background: "#060E1A",
+        padding: "0",
       }}
       aria-label="পেজ লোড হচ্ছে..."
+      role="status"
     >
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          border: "3px solid rgba(201,168,76,0.2)",
-          borderTop: "3px solid #C9A84C",
-          borderRadius: "50%",
-          animation: "spin 0.8s linear infinite",
-        }}
-      />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      {/* Skeleton Navbar */}
+      <div style={{ height: 64, background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(201,168,76,0.1)", display: "flex", alignItems: "center", padding: "0 24px", gap: 16 }}>
+        <div style={{ width: 120, height: 20, borderRadius: 6, background: "rgba(201,168,76,0.15)", animation: "skeletonPulse 1.5s ease-in-out infinite" }} />
+        <div style={{ flex: 1 }} />
+        {[80, 70, 90, 60].map((w, i) => (
+          <div key={i} style={{ width: w, height: 14, borderRadius: 4, background: "rgba(255,255,255,0.06)", animation: `skeletonPulse 1.5s ease-in-out ${i * 0.1}s infinite` }} />
+        ))}
+      </div>
+      {/* Skeleton Hero */}
+      <div style={{ padding: "60px 24px 40px", maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ width: "60%", height: 40, borderRadius: 8, background: "rgba(201,168,76,0.12)", marginBottom: 16, animation: "skeletonPulse 1.5s ease-in-out infinite" }} />
+        <div style={{ width: "80%", height: 20, borderRadius: 6, background: "rgba(255,255,255,0.06)", marginBottom: 10, animation: "skeletonPulse 1.5s ease-in-out 0.1s infinite" }} />
+        <div style={{ width: "50%", height: 20, borderRadius: 6, background: "rgba(255,255,255,0.04)", marginBottom: 40, animation: "skeletonPulse 1.5s ease-in-out 0.2s infinite" }} />
+        {/* Skeleton Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={{ borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.08)", padding: 20, animation: `skeletonPulse 1.5s ease-in-out ${i * 0.08}s infinite` }}>
+              <div style={{ width: "70%", height: 18, borderRadius: 5, background: "rgba(255,255,255,0.08)", marginBottom: 12 }} />
+              <div style={{ width: "100%", height: 12, borderRadius: 4, background: "rgba(255,255,255,0.05)", marginBottom: 8 }} />
+              <div style={{ width: "85%", height: 12, borderRadius: 4, background: "rgba(255,255,255,0.04)" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <style>{`
+        @keyframes skeletonPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

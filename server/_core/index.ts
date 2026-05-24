@@ -9,6 +9,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleTelegramWebhook, registerTelegramWebhook } from "../telegramService";
+import { registerContactRoute } from "../contactRoute";
 import { ENV } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -40,6 +41,8 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Local email+password auth for writing platform
   registerLocalAuthRoute(app);
+  // Contact form & newsletter subscription
+  registerContactRoute(app);
   // tRPC API
   app.use(
     "/api/trpc",

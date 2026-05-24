@@ -1359,7 +1359,7 @@ function LiteraryHero({ totalWritings }: { totalWritings: number }) {
           initial={{ opacity:0, scale:.94 }} animate={{ opacity:1, scale:1 }} transition={{ delay:.2, duration:.6 }}>
           <div className="hero-book-stack" aria-hidden="true">
             {books.map(book => (
-              <img key={book.id} src={book.cover} alt="" className="hero-book" loading="eager" decoding="async"/>
+              <img key={book.id} src={book.cover} alt={`${book.title} — মাহবুব সরদার সবুজ`} className="hero-book" loading="eager" decoding="async"/>
             ))}
           </div>
         </motion.div>

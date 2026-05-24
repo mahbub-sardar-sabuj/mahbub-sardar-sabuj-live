@@ -894,7 +894,7 @@ export default function EBooks() {
             >
               <div className="eb-book-stack" aria-hidden="true">
                 {heroBooks.map((book) => (
-                  <img key={book.id} src={book.cover} alt="" className="eb-book-img" loading="eager" decoding="async" />
+                  <img key={book.id} src={book.cover} alt={`${book.title} — মাহবুব সরদার সবুজের বই`} className="eb-book-img" loading="eager" decoding="async" />
                 ))}
               </div>
             </motion.div>

@@ -15,6 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import AdSenseAd from "@/components/AdSenseAd";
+import FAQSection from "@/components/FAQSection";
 
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
 const BOOK_COVER = "/images/book-cover-20260328.jpg";
@@ -658,6 +659,21 @@ export default function About() {
           </div>
         </FadeUp>
       </section>
+
+      {/* FAQ Section — SEO Rich Snippets */}
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 1rem" }}>
+        <FAQSection
+          title="মাহবুব সরদার সবুজ সম্পর্কে সাধারণ প্রশ্ন"
+          description="লেখক মাহবুব সরদার সবুজ সম্পর্কে পাঠকদের জিজ্ঞাসার উত্তর"
+          faqs={[
+            { question: "মাহবুব সরদার সবুজ কোথায় জন্মগ্রহণ করেন?", answer: "মাহবুব সরদার সবুজ কুমিল্লা জেলার বরুড়া উপজেলার আরিফপুর গ্রামে জন্মগ্রহণ করেন।" },
+            { question: "মাহবুব সরদার সবুজের প্রথম বইয়ের নাম কী?", answer: "মাহবুব সরদার সবুজের প্রথম মুদ্রিত বইয়ের নাম 'আমি বিচ্ছেদকে বলি দুঃখবিলাস', যা ২০২৬ সালে প্রকাশিত হয়েছে। বইটি রকমারিতে পাওয়া যাচ্ছে।" },
+            { question: "মাহবুব সরদার সবুজের বই কোথায় পাওয়া যাবে?", answer: "মাহবুব সরদার সবুজের বই রকমারিতে অর্ডার করা যাবে। এছাড়া তাঁর অফিশিয়াল ওয়েবসাইট mahbubsardarsabuj.com-এ বিনামূল্যে ই-বুক পড়া যাবে।" },
+            { question: "মাহবুব সরদার সবুজ কোন ধরনের লেখা লেখেন?", answer: "মাহবুব সরদার সবুজ মূলত ভালোবাসা, বিচ্ছেদ, জীবনদর্শন এবং মানবিক অনুভূতি নিয়ে বাংলা কবিতা এবং ছোট লেখা লেখেন।" },
+            { question: "মাহবুব সরদার সবুজের সাথে যোগাযোগ করা যাবে কীভাবে?", answer: "মাহবুব সরদার সবুজের সাথে mahbubsardarsabuj.com/contact পেজের মাধ্যমে, অথবা Facebook, Instagram বা YouTube-এ যোগাযোগ করা যাবে।" },
+          ]}
+        />
+      </div>
 
       {/* AdSense Ad — পরিচিতি পেজের নিচে */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
