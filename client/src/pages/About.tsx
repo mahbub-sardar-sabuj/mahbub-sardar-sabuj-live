@@ -123,12 +123,16 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  fontFamily: AL,
-                  fontSize: "clamp(2.4rem, 5.5vw, 4.5rem)",
-                  fontWeight: 700, lineHeight: 1.15,
-                  background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
+                  fontFamily: "'Tiro Bangla', serif",
+                  fontSize: "clamp(2.8rem, 6.5vw, 5.5rem)",
+                  fontWeight: 700, lineHeight: 1.08,
+                  background: "linear-gradient(135deg, #C9A84C 0%, #E8C97A 40%, #F5E4A0 60%, #C9A84C 100%)",
+                  backgroundSize: "200% 100%",
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                   backgroundClip: "text", margin: "0 0 1.5rem",
+                  letterSpacing: "-0.02em",
+                  textShadow: "none",
+                  filter: "drop-shadow(0 4px 20px rgba(201,168,76,0.3))",
                 }}
               >
                 মাহবুব সরদার সবুজ
@@ -669,15 +673,15 @@ export default function About() {
         /* ── Hero grid ── */
         .about-hero-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 5rem;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: clamp(3rem, 6vw, 7rem);
           align-items: center;
         }
         .about-portrait-wrapper {
           position: relative;
         }
         .about-portrait-img {
-          height: 560px;
+          height: clamp(520px, 58vw, 700px);
           object-fit: cover;
           object-position: center top;
         }

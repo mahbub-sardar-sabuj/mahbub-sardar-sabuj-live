@@ -233,12 +233,12 @@ export default function Home() {
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'Tiro Bangla', serif",
-                    fontSize: "clamp(3.4rem, 8vw, 7rem)",
+                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
-                    lineHeight: 1.0,
+                    lineHeight: 0.95,
                     margin: 0,
                     color: "#FAF6EF",
-                    letterSpacing: "-0.02em",
+                    letterSpacing: "-0.03em",
                     textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
                   }}
                 >
@@ -253,9 +253,9 @@ export default function Home() {
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'Tiro Bangla', serif",
-                    fontSize: "clamp(3.4rem, 8vw, 7rem)",
+                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
-                    lineHeight: 1.0,
+                    lineHeight: 0.95,
                     margin: 0,
                     background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
                     backgroundSize: "280% 100%",
@@ -585,19 +585,20 @@ export default function Home() {
 
         /* Hero layout */
         .hero-container {
-          padding-top: calc(var(--site-nav-offset, 98px) + 20px);
-          padding-bottom: 48px;
+          padding-top: calc(var(--site-nav-offset, 98px) + 28px);
+          padding-bottom: 64px;
         }
         .hero-inner {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 4rem;
+          grid-template-columns: 1.15fr 0.85fr;
+          gap: clamp(3rem, 6vw, 6rem);
           align-items: center;
         }
         .hero-portrait {
-          height: 580px;
+          height: clamp(480px, 55vw, 680px);
           width: 100%;
           object-fit: cover;
+          object-position: center top;
         }
         .floating-card {
           min-width: 180px;

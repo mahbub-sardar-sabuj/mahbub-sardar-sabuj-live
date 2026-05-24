@@ -145,63 +145,129 @@ export default function Gallery() {
       />
       <Navbar />
 
-      {/* ── Hero Header ── */}
+      {/* ── Cinematic Hero Header ── */}
       <div style={{
-        paddingTop: "calc(var(--site-nav-offset, 98px) + 2rem)",
-        paddingBottom: "2.5rem",
+        paddingTop: "calc(var(--site-nav-offset, 98px) + 0px)",
+        paddingBottom: "0",
         textAlign: "center",
-        background: "linear-gradient(180deg, #0A1628 0%, #060E1A 100%)",
+        background: "#060E1A",
         position: "relative",
         overflow: "hidden",
+        minHeight: "clamp(220px, 32vw, 380px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}>
+        {/* Background collage of gallery images */}
         <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600, height: 300,
-          background: "radial-gradient(ellipse, rgba(201,168,76,0.1) 0%, transparent 70%)",
+          position: "absolute", inset: 0,
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          gap: 0,
+          opacity: 0.18,
+          filter: "blur(2px) saturate(0.7)",
+        }}>
+          {galleryImages.slice(0, 6).map((img, i) => (
+            <div key={i} style={{
+              backgroundImage: `url(${img.src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              height: "100%",
+            }} />
+          ))}
+        </div>
+        {/* Dark gradient overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, rgba(6,14,26,0.55) 0%, rgba(6,14,26,0.82) 60%, rgba(6,14,26,1) 100%)",
           pointerEvents: "none",
         }} />
+        {/* Gold radial glow */}
+        <div style={{
+          position: "absolute", top: "30%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 700, height: 400,
+          background: "radial-gradient(ellipse, rgba(201,168,76,0.14) 0%, transparent 65%)",
+          pointerEvents: "none",
+        }} />
+        {/* Horizontal gold line top */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: 2,
+          background: "linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.5) 30%, rgba(201,168,76,0.8) 50%, rgba(201,168,76,0.5) 70%, transparent 100%)",
+          boxShadow: "0 0 20px rgba(201,168,76,0.3)",
+        }} />
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          style={{ position: "relative", zIndex: 2, padding: "3rem 1.5rem 2.5rem" }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "1rem" }}>
-            <div style={{ width: 50, height: 1, background: "rgba(201,168,76,0.4)" }} />
-            <Images size={20} color="#C9A84C" />
-            <span style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              color: "#C9A84C",
-              fontSize: "0.75rem",
-              letterSpacing: "0.22em",
-            }}>ফটো গ্যালারি</span>
-            <Images size={20} color="#C9A84C" />
-            <div style={{ width: 50, height: 1, background: "rgba(201,168,76,0.4)" }} />
+          {/* Eyebrow */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: "1.2rem" }}>
+            <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.6))" }} />
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "5px 14px",
+              borderRadius: 40,
+              border: "1px solid rgba(201,168,76,0.35)",
+              background: "rgba(201,168,76,0.08)",
+              backdropFilter: "blur(12px)",
+            }}>
+              <Images size={14} color="#C9A84C" />
+              <span style={{
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                color: "#E8C97A",
+                fontSize: "0.72rem",
+                letterSpacing: "0.22em",
+                fontWeight: 500,
+              }}>ফটো গ্যালারি</span>
+            </div>
+            <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.6), transparent)" }} />
           </div>
+
           <h1 style={{
             fontFamily: "'Tiro Bangla', serif",
             color: "#FAF6EF",
-            fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
-            fontWeight: 400,
-            margin: "0 0 0.75rem",
+            fontSize: "clamp(2.6rem, 6vw, 4.5rem)",
+            fontWeight: 700,
+            margin: "0 0 0.9rem",
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+            textShadow: "0 4px 32px rgba(201,168,76,0.2), 0 8px 48px rgba(0,0,0,0.5)",
           }}>গ্যালারি</h1>
+
           <p style={{
             fontFamily: "'Noto Sans Bengali', sans-serif",
-            color: "rgba(250,246,239,0.55)",
-            fontSize: "0.9rem",
-            maxWidth: 440,
-            margin: "0 auto",
+            color: "rgba(250,246,239,0.62)",
+            fontSize: "clamp(0.88rem, 1.8vw, 1rem)",
+            maxWidth: 500,
+            margin: "0 auto 0.8rem",
+            lineHeight: 1.7,
           }}>
             মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম ও স্মৃতির সংগ্রহ
           </p>
-          <p style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
-            color: "rgba(201,168,76,0.6)",
-            fontSize: "0.78rem",
-            marginTop: "0.6rem",
+
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "6px 16px",
+            borderRadius: 40,
+            background: "rgba(201,168,76,0.1)",
+            border: "1px solid rgba(201,168,76,0.25)",
           }}>
-            {galleryImages.length}টি ছবি — ক্লিক করলে বড় হবে
-          </p>
+            <span style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: "#C9A84C",
+              boxShadow: "0 0 8px rgba(201,168,76,0.8)",
+              display: "inline-block",
+            }} />
+            <span style={{
+              fontFamily: "'Noto Sans Bengali', sans-serif",
+              color: "rgba(201,168,76,0.85)",
+              fontSize: "0.78rem",
+            }}>{galleryImages.length}টি ছবি — ক্লিক করলে বড় হবে</span>
+          </div>
         </motion.div>
       </div>
 

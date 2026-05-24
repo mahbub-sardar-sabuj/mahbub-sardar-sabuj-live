@@ -338,102 +338,131 @@ export default function News() {
       />
       <Navbar />
 
-      {/* ── PAGE HEADER ── */}
+      {/* ── CINEMATIC PAGE HEADER ── */}
       <div style={{
         paddingTop: "var(--site-nav-offset, 98px)",
         paddingBottom: "0",
-        background: "linear-gradient(180deg, rgba(27,42,107,0.25) 0%, transparent 100%)",
+        background: "linear-gradient(180deg, rgba(10,18,50,0.95) 0%, rgba(6,14,26,0.98) 100%)",
+        position: "relative",
+        overflow: "hidden",
+        borderBottom: "1px solid rgba(245,166,35,0.12)",
       }}>
+        {/* Background deep blue glow */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: "100%",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(27,42,107,0.5) 0%, transparent 65%)",
+          pointerEvents: "none",
+        }} />
+        {/* Top accent line */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: 3,
+          background: "linear-gradient(90deg, transparent 0%, #1B2A6B 20%, #F5A623 50%, #1B2A6B 80%, transparent 100%)",
+          boxShadow: "0 0 20px rgba(245,166,35,0.4)",
+        }} />
+        {/* Dot grid pattern */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "radial-gradient(rgba(245,166,35,0.06) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          pointerEvents: "none",
+          opacity: 0.6,
+        }} />
 
         {/* Page title */}
-        <div style={{ padding: "8px 0 0", textAlign: "center", width: "100%" }}>
+        <div style={{ padding: "1.5rem 1rem 0", textAlign: "center", width: "100%" }}>
           {/* Logo brand */}
           <motion.div
-            initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0 }}
-            style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: 10 }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: 14 }}
           >
-            <img
-              src="/images/sardar-sangbad-logo-final.png"
-              alt="সরদার সংবাদ - মাহবুব সরদার সবুজের সাহিত্য ও সংবাদ পোর্টাল"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              style={{
-                height: "auto",
-                maxWidth: "min(88vw, 640px)",
-                width: "min(88vw, 640px)",
-                display: "block",
-                objectFit: "contain",
-              }}
-            />
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <img
+                src="/images/sardar-sangbad-logo-final.png"
+                alt="সরদার সংবাদ - মাহবুব সরদার সবুজের সাহিত্য ও সংবাদ পোর্টাল"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                style={{
+                  height: "auto",
+                  maxWidth: "min(88vw, 580px)",
+                  width: "min(88vw, 580px)",
+                  display: "block",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 4px 24px rgba(245,166,35,0.2))",
+                  position: "relative",
+                  zIndex: 1,
+                }}
+              />
+              {/* Shimmer overlay */}
+              <div className="logo-shimmer-overlay" />
+            </div>
           </motion.div>
 
-          {/* Breaking ticker bar — below logo */}
+          {/* Breaking ticker bar — premium redesign */}
           <motion.div
-            initial={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0 }}
-            style={{ marginBottom: 32 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ marginBottom: 24 }}
           >
             <div style={{
-              background: "linear-gradient(90deg, #1B2A6B 0%, #0F1E52 50%, #1B2A6B 100%)",
-              borderTop: "2px solid #F5A623",
-              borderBottom: "2px solid #F5A623",
+              background: "linear-gradient(90deg, rgba(10,18,50,0.95) 0%, rgba(27,42,107,0.8) 50%, rgba(10,18,50,0.95) 100%)",
+              border: "1px solid rgba(245,166,35,0.3)",
+              borderLeft: "none", borderRight: "none",
               overflow: "hidden",
-              maxWidth: 700,
+              maxWidth: 760,
               margin: "0 auto",
-              borderRadius: 8,
+              borderRadius: 10,
+              boxShadow: "0 4px 24px rgba(245,166,35,0.08), inset 0 1px 0 rgba(245,166,35,0.15)",
             }}>
-              <div style={{
-                display: "flex",
-                alignItems: "stretch",
-              }}>
+              <div style={{ display: "flex", alignItems: "stretch" }}>
                 <div style={{
-                  background: "#F5A623",
+                  background: "linear-gradient(135deg, #F5A623 0%, #E8920F 100%)",
                   color: "#060E1A",
-                  padding: "9px 16px",
+                  padding: "10px 18px",
                   display: "flex",
                   alignItems: "center",
                   gap: 7,
-                  fontWeight: 800,
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.12em",
+                  fontWeight: 900,
+                  fontSize: "0.72rem",
+                  letterSpacing: "0.14em",
                   textTransform: "uppercase",
                   flexShrink: 0,
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  borderRadius: "8px 0 0 8px",
+                  borderRadius: "10px 0 0 10px",
+                  boxShadow: "2px 0 12px rgba(245,166,35,0.3)",
                 }}>
-                  <Radio size={13} />
+                  <Radio size={12} />
                   ব্রেকিং
                 </div>
                 <div style={{
                   flex: 1,
                   overflow: "hidden",
                   position: "relative",
-                  height: 38,
+                  height: 40,
                   display: "flex",
                   alignItems: "center",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontSize: "0.88rem",
+                  color: "rgba(250,246,239,0.9)",
+                  paddingLeft: 12,
                 }}>
                   <motion.div
-                    animate={{ x: [0, -1000] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear", repeatType: "loop" }}
+                    animate={{ x: [0, -1200] }}
+                    transition={{ duration: 28, repeat: Infinity, ease: "linear", repeatType: "loop" }}
                     style={{
                       display: "flex",
-                      gap: "4rem",
+                      gap: "5rem",
                       whiteSpace: "nowrap",
                       alignItems: "center",
                     }}
                   >
-                    {breakingNews.map((item, j) => (
-                      <span key={j} style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexShrink: 0 }}>
+                    {[...breakingNews, ...breakingNews].map((item, j) => (
+                      <span key={j} style={{ display: "flex", alignItems: "center", gap: "2rem", flexShrink: 0 }}>
                         {item}
-                        <span style={{ color: "#F5A623", fontSize: "0.6rem" }}>●</span>
-                      </span>
-                    ))}
-                    {breakingNews.map((item, j) => (
-                      <span key={`dup-${j}`} style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexShrink: 0 }}>
-                        {item}
-                        <span style={{ color: "#F5A623", fontSize: "0.6rem" }}>●</span>
+                        <span style={{ color: "#F5A623", fontSize: "0.5rem", opacity: 0.8 }}>◆</span>
                       </span>
                     ))}
                   </motion.div>
@@ -444,15 +473,15 @@ export default function News() {
 
           {/* Search bar */}
           <motion.div
-            initial={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0 }}
-            style={{ position: "relative", maxWidth: 480, margin: "24px auto 0" }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            style={{ position: "relative", maxWidth: 520, margin: "0 auto 1.5rem" }}
           >
             <Search style={{
               position: "absolute", left: 18, top: "50%",
               transform: "translateY(-50%)",
-              color: "rgba(245,166,35,0.5)"
+              color: "rgba(245,166,35,0.55)"
             }} size={18} />
             <input
               type="text"
@@ -461,26 +490,28 @@ export default function News() {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: "100%",
-                background: "rgba(27,42,107,0.3)",
-                border: "1.5px solid rgba(245,166,35,0.2)",
+                background: "rgba(27,42,107,0.25)",
+                border: "1.5px solid rgba(245,166,35,0.18)",
                 borderRadius: 50,
-                padding: "13px 20px 13px 50px",
+                padding: "13px 20px 13px 52px",
                 color: "#FAF6EF",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 outline: "none",
                 transition: "all 0.3s",
                 boxSizing: "border-box",
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)",
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#F5A623";
-                e.currentTarget.style.background = "rgba(27,42,107,0.5)";
-                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(245,166,35,0.1)";
+                e.currentTarget.style.borderColor = "rgba(245,166,35,0.6)";
+                e.currentTarget.style.background = "rgba(27,42,107,0.45)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(245,166,35,0.12), 0 4px 20px rgba(0,0,0,0.25)";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(245,166,35,0.2)";
-                e.currentTarget.style.background = "rgba(27,42,107,0.3)";
-                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.borderColor = "rgba(245,166,35,0.18)";
+                e.currentTarget.style.background = "rgba(27,42,107,0.25)";
+                e.currentTarget.style.boxShadow = "0 2px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)";
               }}
             />
           </motion.div>

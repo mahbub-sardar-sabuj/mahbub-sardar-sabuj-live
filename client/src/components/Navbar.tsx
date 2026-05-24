@@ -232,77 +232,87 @@ export default function Navbar() {
 
           {/* ── DESKTOP NAV LINKS (only visible on md+) ── */}
           {isDesktop && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "nowrap" }}>
               {navLinks.map((link) => {
                 const isActive = isPrimaryNavActive(link.href, link.type, location);
+                const Icon = link.icon;
+                const navItem = (
+                  <span
+                    style={{
+                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      color: isActive ? "#0D1B2A" : "rgba(253,246,236,0.88)",
+                      padding: "7px 12px",
+                      textDecoration: "none",
+                      fontSize: "0.84rem",
+                      fontWeight: isActive ? 700 : 400,
+                      transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
+                      borderRadius: 10,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      whiteSpace: "nowrap",
+                      position: "relative",
+                      background: isActive
+                        ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
+                        : "transparent",
+                      border: isActive
+                        ? "1px solid rgba(212,168,67,0.7)"
+                        : "1px solid transparent",
+                      boxShadow: isActive
+                        ? "0 4px 18px rgba(212,168,67,0.35), 0 0 0 1px rgba(212,168,67,0.2) inset"
+                        : "none",
+                      letterSpacing: "0.01em",
+                    }}
+                    onPointerDown={() => warmRoute(link.href)}
+                    onFocus={() => warmRoute(link.href)}
+                    onMouseEnter={(e) => {
+                      warmRoute(link.href);
+                      if (!isActive) {
+                        e.currentTarget.style.color = "#FAF6EF";
+                        e.currentTarget.style.background = "rgba(212,168,67,0.1)";
+                        e.currentTarget.style.border = "1px solid rgba(212,168,67,0.28)";
+                        e.currentTarget.style.boxShadow = "0 2px 12px rgba(212,168,67,0.12)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.color = "rgba(253,246,236,0.88)";
+                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.border = "1px solid transparent";
+                        e.currentTarget.style.boxShadow = "none";
+                      }
+                    }}
+                  >
+                    <Icon size={13} strokeWidth={isActive ? 2.5 : 1.8} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
+                    {link.label}
+                    {isActive && (
+                      <span style={{
+                        position: "absolute",
+                        bottom: -1,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "60%",
+                        height: 2,
+                        borderRadius: 2,
+                        background: "rgba(10,22,40,0.4)",
+                        pointerEvents: "none",
+                      }} />
+                    )}
+                  </span>
+                );
                 return link.type === "page" ? (
                   <Link key={link.href} href={link.href}>
-                    <span
-                      style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        color: isActive ? "#0D1B2A" : "rgba(253,246,236,0.9)",
-                        padding: "9px 14px",
-                        textDecoration: "none",
-                        fontSize: "0.88rem",
-                        transition: "all 0.3s ease",
-                        borderRadius: 999,
-                        cursor: "pointer",
-                        display: "inline-block",
-                        whiteSpace: "nowrap",
-                        background: isActive
-                          ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                          : "rgba(253,246,236,0.04)",
-                        border: isActive
-                          ? "1px solid rgba(212,168,67,0.65)"
-                          : "1px solid rgba(212,168,67,0.12)",
-                      }}
-                      onPointerDown={() => warmRoute(link.href)}
-                      onFocus={() => warmRoute(link.href)}
-                      onMouseEnter={(e) => {
-                        warmRoute(link.href);
-                        e.currentTarget.style.color = "#0D1B2A";
-                        e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = isActive ? "#0D1B2A" : "rgba(253,246,236,0.9)";
-                        e.currentTarget.style.background = isActive
-                          ? "linear-gradient(135deg, #D4A843 0%, #E3BC63 100%)"
-                          : "rgba(253,246,236,0.04)";
-                      }}
-                    >
-                      {link.label}
-                    </span>
+                    {navItem}
                   </Link>
                 ) : (
                   <a
                     key={link.href}
                     href={link.href}
                     onClick={(e) => { e.preventDefault(); handleNavClick(link.href, link.type); }}
-                    style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      color: "rgba(253,246,236,0.9)",
-                      padding: "9px 14px",
-                      textDecoration: "none",
-                      fontSize: "0.88rem",
-                      transition: "all 0.3s ease",
-                      borderRadius: 999,
-                      whiteSpace: "nowrap",
-                      background: "rgba(253,246,236,0.04)",
-                      border: "1px solid rgba(212,168,67,0.12)",
-                    }}
-                    onPointerDown={() => warmRoute(link.href)}
-                    onFocus={() => warmRoute(link.href)}
-                    onMouseEnter={(e) => {
-                      warmRoute(link.href);
-                      e.currentTarget.style.color = "#0D1B2A";
-                      e.currentTarget.style.background = "linear-gradient(135deg, rgba(212,168,67,0.92) 0%, rgba(227,188,99,0.92) 100%)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "rgba(253,246,236,0.9)";
-                      e.currentTarget.style.background = "rgba(253,246,236,0.04)";
-                    }}
+                    style={{ textDecoration: "none" }}
                   >
-                    {link.label}
+                    {navItem}
                   </a>
                 );
               })}
