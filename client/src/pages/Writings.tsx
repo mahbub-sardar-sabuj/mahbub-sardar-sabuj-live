@@ -856,6 +856,66 @@ const CSS = `
   /* ── ANIMATIONS ── */
   @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
+  /* ── SKELETON LOADING ── */
+  @keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg,
+      rgba(255,255,255,.04) 0%,
+      rgba(255,255,255,.10) 40%,
+      rgba(255,255,255,.04) 80%
+    );
+    background-size: 600px 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+    border-radius: 8px;
+  }
+  .sk-card {
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.055);
+    background: rgba(9,12,24,.75);
+    min-height: 240px;
+    padding: 1.4rem;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .sk-tag  { height: 22px; width: 80px; }
+  .sk-ttl  { height: 20px; width: 75%; }
+  .sk-ttl2 { height: 20px; width: 55%; margin-top: -6px; }
+  .sk-line { height: 14px; }
+  .sk-line2{ height: 14px; width: 85%; }
+  .sk-line3{ height: 14px; width: 65%; }
+  .sk-foot { height: 14px; width: 40%; margin-top: auto; }
+
+  /* ── MOBILE FILTER SCROLL INDICATOR ── */
+  .wt-cats-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .wt-cats-wrap::after {
+    content: "";
+    position: absolute; right: 0; top: 0; bottom: 0;
+    width: 32px;
+    background: linear-gradient(to right, transparent, rgba(4,6,12,.9));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .wt-cats-wrap.has-overflow::after { opacity: 1; }
+
+  /* ── PREMIUM TOUCH FEEDBACK ── */
+  @media (hover: none) {
+    .wc2:active { transform: scale(.97); }
+    .ebook-tile:active { transform: scale(.97); }
+    .sf-cat:active { transform: scale(.95); }
+    .lm2-btn:active { transform: scale(.97); }
+  }
+
+  /* ── WRITING TOOLS MOBILE STICKY FIX ── */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    .rm2-box { padding-bottom: env(safe-area-inset-bottom); }
+  }
+
   /* ── SCROLLBAR & SELECTION ── */
   * { scrollbar-width: thin; scrollbar-color: rgba(201,168,76,.24) transparent; }
   ::selection { background: rgba(201,168,76,.28); color: var(--t0); }
@@ -920,6 +980,31 @@ const CSS = `
     .wt-view { justify-self: end; }
     .hero-stats { gap: .55rem; }
     .hero-stat { padding: 6px 11px; font-size: .71rem; }
+    /* Mobile: filter pills bigger touch targets */
+    .sf-cat { padding: 9px 16px; font-size: .8rem; min-height: 40px; }
+    /* Mobile: search input bigger */
+    .sf-s { height: 46px; }
+    .sf-s input { font-size: .9rem; }
+    /* Mobile: view toggle bigger */
+    .sf-vb { width: 36px; height: 36px; }
+    /* Mobile: load more button bigger */
+    .lm2-btn { padding: 15px 32px; font-size: .9rem; min-height: 52px; }
+    /* Mobile: writing card footer bigger tap targets */
+    .wc2-foot { padding-top: 1rem; }
+    /* Mobile: ebook actions bigger */
+    .ebook-actions > * { min-height: 44px; font-size: .85rem; }
+    .featured-actions > * { min-height: 50px; font-size: .88rem; }
+  }
+
+  /* ── ULTRA-SMALL (360px) ── */
+  @media (max-width: 360px) {
+    .mc { padding: 1rem .75rem; }
+    .hero-stage { padding: 1rem; }
+    .panel { padding: .8rem; }
+    .wg2 { grid-template-columns: 1fr; }
+    .ebook-row { padding: 4px 2px 14px; }
+    .ebook-tile { min-width: 82vw; }
+    .writing-tools { padding: 8px; gap: 7px; }
   }
 `;
 
@@ -1544,11 +1629,23 @@ export default function Writings() {
 
             {/* Cards */}
             {!archiveReady ? (
-              <div className="wc2-em" aria-live="polite">
-                <motion.div animate={{ opacity:[.3,.75,.3] }} transition={{ repeat:Infinity, duration:1.9, ease:"easeInOut" }}>
-                  <Feather size={30} color="rgba(201,168,76,.28)" style={{ margin:"0 auto 1rem", display:"block" }}/>
-                </motion.div>
-                <div style={{ fontSize:".97rem", color:"rgba(242,237,228,.3)", fontFamily:"var(--f)" }}>লেখাগুলো প্রস্তুত হচ্ছে…</div>
+              <div aria-live="polite" aria-label="লেখাগুলো লোড হচ্ছে">
+                <div className="wg2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="sk-card" style={{ animationDelay: `${i * 0.08}s` }}>
+                      <div className="sk-tag skeleton"/>
+                      <div className="sk-ttl skeleton"/>
+                      <div className="sk-ttl2 skeleton"/>
+                      <div style={{ display:"flex", flexDirection:"column", gap:8, flex:1 }}>
+                        <div className="sk-line skeleton"/>
+                        <div className="sk-line2 skeleton"/>
+                        <div className="sk-line3 skeleton"/>
+                        <div className="sk-line skeleton" style={{ width:"90%" }}/>
+                      </div>
+                      <div className="sk-foot skeleton"/>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : filtered.length > 0 ? (
               <>

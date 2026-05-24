@@ -362,12 +362,15 @@ export default function EBookReader() {
 
   if (!book) {
     return (
-      <div className="min-h-screen bg-[#0D1B2A] flex items-center justify-center">
-        <div className="text-center text-white">
-          <BookOpen size={64} className="mx-auto mb-4 text-[#D4A843]" />
-          <h2 className="text-2xl font-bold mb-2">বইটি পাওয়া যায়নি</h2>
+      <div className="min-h-screen bg-[#020408] flex items-center justify-center">
+        <div className="text-center" style={{ padding: "2rem" }}>
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(201,168,76,.12)", border: "1px solid rgba(201,168,76,.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem" }}>
+            <BookOpen size={36} style={{ color: "#C9A84C" }} />
+          </div>
+          <h2 style={{ color: "#F2EDE4", fontFamily: "'Noto Serif Bengali', serif", fontSize: "1.4rem", marginBottom: ".75rem" }}>বইটি পাওয়া যায়নি</h2>
+          <p style={{ color: "rgba(242,237,228,.5)", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".9rem", marginBottom: "1.5rem" }}>অনুগ্রহ করে ই-বুক সংগ্রহ থেকে বই বেছে নিন</p>
           <Link href="/ebooks">
-            <button className="mt-4 bg-[#D4A843] text-[#0D1B2A] px-6 py-2 rounded-full font-bold">
+            <button style={{ background: "linear-gradient(135deg,#D4A843,#f0c060)", color: "#0D1B2A", padding: "13px 28px", borderRadius: 999, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".9rem" }}>
               ই-বুক সংগ্রহে ফিরুন
             </button>
           </Link>
@@ -528,11 +531,27 @@ export default function EBookReader() {
 
               {/* Loading State */}
               {isLoading && (
-                <div className="flex flex-col items-center justify-center py-24">
-                  <div className="w-16 h-16 border-4 border-[#D4A843] border-t-transparent rounded-full animate-spin mb-4" />
-                  <p className="text-[#D4A843] font-medium">বই লোড হচ্ছে...</p>
-                  <p className="text-sm text-gray-500 mt-1">{book.title}</p>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center justify-center py-24"
+                  style={{ gap: "1.2rem" }}
+                >
+                  {/* Book cover preview while loading */}
+                  <div style={{ position: "relative", width: 100, height: 133, marginBottom: ".5rem" }}>
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 14, boxShadow: "0 22px 55px rgba(0,0,0,.55)", opacity: .7 }}
+                    />
+                    <div style={{ position: "absolute", inset: 0, borderRadius: 14, background: "rgba(0,0,0,.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid rgba(212,168,67,.25)", borderTopColor: "#D4A843", animation: "spin 1s linear infinite" }} />
+                    </div>
+                  </div>
+                  <p style={{ color: "#D4A843", fontFamily: "'Noto Serif Bengali', serif", fontWeight: 600, fontSize: ".95rem" }}>বই প্রস্তুত হচ্ছে…</p>
+                  <p style={{ color: "rgba(242,237,228,.4)", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".82rem", maxWidth: 240, textAlign: "center", lineHeight: 1.7 }}>{book.title}</p>
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </motion.div>
               )}
 
               {/* Error State */}
@@ -594,12 +613,30 @@ export default function EBookReader() {
                     পৃষ্ঠা {currentPage} / {totalPages}
                   </div>
 
-                  {/* Bottom navigation */}
-                  <div className="flex flex-col min-[420px]:flex-row items-stretch min-[420px]:items-center gap-3 sm:gap-4 mt-6 w-full sm:w-auto">
+                  {/* Reading Progress Bar */}
+                  {totalPages > 0 && (
+                    <div style={{ width: "100%", maxWidth: 480, marginTop: "1.2rem" }}>
+                      <div style={{ height: 4, borderRadius: 999, background: isDarkMode ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.1)", overflow: "hidden" }}>
+                        <motion.div
+                          style={{ height: "100%", background: "linear-gradient(90deg,#C9A84C,#E8C87A)", borderRadius: 999 }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(currentPage / totalPages) * 100}%` }}
+                          transition={{ duration: .4, ease: "easeOut" }}
+                        />
+                      </div>
+                      <p style={{ textAlign: "center", marginTop: ".5rem", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".72rem", color: isDarkMode ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)" }}>
+                        {Math.round((currentPage / totalPages) * 100)}% পড়া হয়েছে
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Bottom navigation — Desktop */}
+                  <div className="hidden sm:flex items-center gap-4 mt-6">
                     <button
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage <= 1}
-                      className="flex items-center justify-center gap-2 px-5 sm:px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
+                      style={{ fontFamily: "'Noto Serif Bengali', serif" }}
                     >
                       <ChevronLeft size={18} />
                       আগের পাতা
@@ -607,11 +644,66 @@ export default function EBookReader() {
                     <button
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage >= totalPages}
-                      className="flex items-center justify-center gap-2 px-5 sm:px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
+                      style={{ fontFamily: "'Noto Serif Bengali', serif" }}
                     >
                       পরের পাতা
                       <ChevronRight size={18} />
                     </button>
+                  </div>
+
+                  {/* Mobile Bottom Navigation — Fixed floating bar */}
+                  <div
+                    className="sm:hidden"
+                    style={{
+                      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
+                      padding: "12px 16px",
+                      paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
+                      background: isDarkMode
+                        ? "rgba(10,12,20,.92)"
+                        : "rgba(253,246,236,.95)",
+                      backdropFilter: "blur(20px)",
+                      WebkitBackdropFilter: "blur(20px)",
+                      borderTop: isDarkMode ? "1px solid rgba(255,255,255,.07)" : "1px solid rgba(0,0,0,.08)",
+                      boxShadow: "0 -12px 40px rgba(0,0,0,.18)",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, maxWidth: 480, margin: "0 auto" }}>
+                      <button
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage <= 1}
+                        style={{
+                          flex: 1, height: 50, borderRadius: 16,
+                          background: currentPage <= 1 ? "rgba(212,168,67,.2)" : "linear-gradient(135deg,#D4A843,#f0c060)",
+                          color: currentPage <= 1 ? "rgba(212,168,67,.4)" : "#0D1B2A",
+                          border: "none", cursor: currentPage <= 1 ? "not-allowed" : "pointer",
+                          fontFamily: "'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".85rem",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                          transition: "all .22s",
+                        }}
+                      >
+                        <ChevronLeft size={16} /> আগের
+                      </button>
+                      <div style={{ textAlign: "center", flexShrink: 0, minWidth: 60 }}>
+                        <div style={{ fontFamily: "'Noto Serif Bengali', serif", fontSize: ".7rem", color: isDarkMode ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)" }}>পৃষ্ঠা</div>
+                        <div style={{ fontFamily: "'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".9rem", color: isDarkMode ? "#F2EDE4" : "#0D1B2A" }}>{currentPage}/{totalPages}</div>
+                      </div>
+                      <button
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage >= totalPages}
+                        style={{
+                          flex: 1, height: 50, borderRadius: 16,
+                          background: currentPage >= totalPages ? "rgba(212,168,67,.2)" : "linear-gradient(135deg,#D4A843,#f0c060)",
+                          color: currentPage >= totalPages ? "rgba(212,168,67,.4)" : "#0D1B2A",
+                          border: "none", cursor: currentPage >= totalPages ? "not-allowed" : "pointer",
+                          fontFamily: "'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".85rem",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                          transition: "all .22s",
+                        }}
+                      >
+                        পরের <ChevronRight size={16} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
