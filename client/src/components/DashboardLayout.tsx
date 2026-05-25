@@ -26,6 +26,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { trpc } from "@/lib/trpc";
 
 const menuItems = [
   { icon: MessageSquare, label: "লাইভ চ্যাট", path: "/admin/live-chat" },
@@ -115,6 +116,13 @@ function DashboardLayoutContent({
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
+  // Unread live chat badge
+  const { data: unreadData } = trpc.liveChat.adminUnreadCount.useQuery(
+    undefined,
+    { refetchInterval: 10000 }
+  );
+  const unreadCount = unreadData?.count ?? 0;
+
   useEffect(() => {
     if (isCollapsed) {
       setIsResizing(false);
@@ -182,6 +190,8 @@ function DashboardLayoutContent({
             <SidebarMenu className="px-2 py-1">
               {menuItems.map(item => {
                 const isActive = location === item.path;
+                const isLiveChat = item.path === "/admin/live-chat";
+                const showBadge = isLiveChat && unreadCount > 0;
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
@@ -190,10 +200,55 @@ function DashboardLayoutContent({
                       tooltip={item.label}
                       className={`h-10 transition-all font-normal`}
                     >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
+                      <div className="relative">
+                        <item.icon
+                          className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                        />
+                        {showBadge && (
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: -4,
+                              right: -5,
+                              minWidth: 14,
+                              height: 14,
+                              borderRadius: 7,
+                              background: "#ef4444",
+                              color: "#fff",
+                              fontSize: 9,
+                              fontWeight: 700,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              padding: "0 2px",
+                              lineHeight: 1,
+                            }}
+                          >
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                          </span>
+                        )}
+                      </div>
                       <span>{item.label}</span>
+                      {showBadge && !isCollapsed && (
+                        <span
+                          style={{
+                            marginLeft: "auto",
+                            minWidth: 18,
+                            height: 18,
+                            borderRadius: 9,
+                            background: "#ef4444",
+                            color: "#fff",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "0 4px",
+                          }}
+                        >
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

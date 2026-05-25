@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
 import { appRouter } from "../server/routers";
 import { sdk } from "../server/_core/sdk";
+import { handleTelegramWebhook } from "../server/telegramService";
 
 const COOKIE_NAME = "app_session_id";
 
@@ -405,6 +406,40 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         res.statusCode = 500;
         res.setHeader("Content-Type", "application/json; charset=utf-8");
         res.end(JSON.stringify({ ok: false, error: "Internal error" }));
+      }
+    }
+    return;
+  }
+
+  // Route: /api/telegram/webhook — receives admin replies from Telegram Bot
+  const isTelegramWebhook =
+    pathname === "/api/telegram/webhook" ||
+    url?.searchParams.get("_telegram_webhook") === "1";
+  if (isTelegramWebhook) {
+    if (req.method !== "POST") {
+      res.statusCode = 405;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.end(JSON.stringify({ error: "Method not allowed" }));
+      return;
+    }
+    try {
+      // Parse body if not already parsed
+      let body: unknown;
+      if ((req as CompatibleRequest).body !== undefined) {
+        body = (req as CompatibleRequest).body;
+      } else {
+        body = await parseJsonBody(req);
+      }
+      await handleTelegramWebhook(body as Parameters<typeof handleTelegramWebhook>[0]);
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      console.error("[TELEGRAM WEBHOOK ERROR]", err);
+      if (!res.headersSent) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify({ ok: false }));
       }
     }
     return;

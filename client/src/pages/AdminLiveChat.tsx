@@ -24,10 +24,20 @@ function statusLabel(status: string) {
   return { text: "বন্ধ", color: "#f87171" };
 }
 
+type ChatMessage = {
+  id: number;
+  sessionId: string;
+  sender: "visitor" | "admin";
+  content: string;
+  read: boolean;
+  createdAt: Date | string;
+};
+
 export default function AdminLiveChat() {
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [replyInput, setReplyInput] = useState("");
   const [lastMsgId, setLastMsgId] = useState<number>(0);
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: sessions, refetch: refetchSessions } = trpc.liveChat.adminGetSessions.useQuery(
@@ -35,13 +45,32 @@ export default function AdminLiveChat() {
     { refetchInterval: 5000 }
   );
 
-  const { data: messages, refetch: refetchMessages } = trpc.liveChat.adminGetMessages.useQuery(
-    { sessionId: selectedSession || "", afterId: undefined },
+  // FIX: Use afterId to only fetch new messages incrementally
+  const { data: messagesData, refetch: refetchMessages } = trpc.liveChat.adminGetMessages.useQuery(
+    { sessionId: selectedSession || "", afterId: lastMsgId > 0 ? lastMsgId : undefined },
     {
       enabled: !!selectedSession,
       refetchInterval: 3000,
     }
   );
+
+  // FIX: Accumulate messages in local state — reset when session changes
+  useEffect(() => {
+    setLocalMessages([]);
+    setLastMsgId(0);
+  }, [selectedSession]);
+
+  useEffect(() => {
+    if (!messagesData || messagesData.length === 0) return;
+    setLocalMessages(prev => {
+      const existingIds = new Set(prev.map(m => m.id));
+      const newMsgs = (messagesData as ChatMessage[]).filter(m => !existingIds.has(m.id));
+      if (newMsgs.length === 0) return prev;
+      const maxId = Math.max(...messagesData.map(m => m.id));
+      setLastMsgId(cur => Math.max(cur, maxId));
+      return [...prev, ...newMsgs];
+    });
+  }, [messagesData]);
 
   const adminReply = trpc.liveChat.adminReply.useMutation({
     onSuccess: () => {
@@ -59,7 +88,7 @@ export default function AdminLiveChat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [localMessages]);
 
   const handleReply = async () => {
     if (!replyInput.trim() || !selectedSession) return;
@@ -297,7 +326,7 @@ export default function AdminLiveChat() {
                   gap: 12,
                 }}
               >
-                {messages?.map(msg => (
+                {localMessages.map(msg => (
                   <div
                     key={msg.id}
                     style={{

@@ -3,7 +3,7 @@
  * Visitor ↔ Admin real-time messaging via polling
  */
 import { z } from "zod";
-import { eq, desc, and, gt } from "drizzle-orm";
+import { eq, desc, and, gt, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { publicProcedure, adminProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
@@ -298,7 +298,7 @@ export const liveChatRouter = router({
       return { success: true };
     }),
 
-  // Admin: get unread count
+  // Admin: get unread count (active + waiting with adminRead=false)
   adminUnreadCount: adminProcedure
     .query(async ({ ctx }) => {
       const db = await getDb();
@@ -310,7 +310,7 @@ export const liveChatRouter = router({
         .where(
           and(
             eq(liveChatSessions.adminRead, false),
-            eq(liveChatSessions.status, "active")
+            inArray(liveChatSessions.status, ["active", "waiting"])
           )
         );
 
