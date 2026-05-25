@@ -659,3 +659,54 @@ body::after {
     transition-duration: .16s;
   }
 }
+
+/* ── Site-wide 2026 refresh: accessibility, reading polish, premium surfaces ── */
+.skip-to-content {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 9999;
+  transform: translateY(-160%);
+  padding: 0.72rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 168, 76, 0.55);
+  background: rgba(6, 14, 26, 0.96);
+  color: #fff8ea;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35), 0 0 26px rgba(201, 168, 76, 0.18);
+  font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
+  font-size: 0.92rem;
+  text-decoration: none;
+  transition: transform 0.22s ease;
+}
+.skip-to-content:focus-visible {
+  transform: translateY(0);
+}
+#main-content:focus {
+  outline: none;
+}
+.cinematic-site-shell {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(201, 168, 76, 0.10), transparent 28rem),
+    radial-gradient(circle at 88% 18%, rgba(60, 120, 200, 0.08), transparent 30rem),
+    linear-gradient(180deg, rgba(6, 14, 26, 1), rgba(4, 10, 20, 1));
+}
+.literary-surface {
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(8, 18, 32, 0.74));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+.literary-reading-text {
+  max-width: 72ch;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+  text-wrap: pretty;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

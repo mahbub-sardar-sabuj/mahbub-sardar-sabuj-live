@@ -184,8 +184,11 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <a className="skip-to-content" href="#main-content">মূল কনটেন্টে যান</a>
           <div className="cinematic-site-shell">
-            <Router />
+            <main id="main-content" tabIndex={-1} aria-label="মাহবুব সরদার সবুজ ওয়েবসাইটের মূল কনটেন্ট">
+              <Router />
+            </main>
           </div>
           {loadAssistant ? (
             <Suspense fallback={null}>
