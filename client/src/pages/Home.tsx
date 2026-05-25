@@ -225,9 +225,10 @@ export default function Home() {
                 }}>লেখক ও কবি</span>
               </motion.div>
 
-              {/* Main name */}
+              {/* Main name — single H1 for SEO, split visually with spans */}
+              <h1 style={{ margin: 0, padding: 0, display: "block", lineHeight: 1 }}>
               <div style={{ position: "relative", marginBottom: "0.2rem" }}>
-                <motion.h1
+                <motion.span
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -236,18 +237,18 @@ export default function Home() {
                     fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
-                    margin: 0,
+                    display: "block",
                     color: "#FAF6EF",
                     letterSpacing: "-0.03em",
                     textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
                   }}
                 >
                   মাহবুব
-                </motion.h1>
+                </motion.span>
               </div>
 
               <div style={{ position: "relative", marginBottom: "0.6rem" }}>
-                <motion.h1
+                <motion.span
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -256,7 +257,7 @@ export default function Home() {
                     fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
-                    margin: 0,
+                    display: "block",
                     background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
                     backgroundSize: "280% 100%",
                     WebkitBackgroundClip: "text",
@@ -268,7 +269,7 @@ export default function Home() {
                   }}
                 >
                   সরদার সবুজ
-                </motion.h1>
+                </motion.span>
                 {/* Underline glow — wider & softer */}
                 <motion.div
                   initial={{ scaleX: 0, opacity: 0 }}
@@ -284,8 +285,8 @@ export default function Home() {
                     boxShadow: "0 0 20px rgba(201,168,76,0.7), 0 0 40px rgba(201,168,76,0.3)",
                   }}
                 />
-              </div>
-
+                            </div>
+              </h1>
               {/* Tagline */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -383,6 +384,7 @@ export default function Home() {
                       filter: "contrast(1.08) saturate(0.95) brightness(1.0)",
                     }}
                     className="hero-portrait"
+                    loading="eager"
                     fetchPriority="high"
                     decoding="async"
                   />

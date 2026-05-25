@@ -3,7 +3,8 @@ import { lazy, type ComponentType } from "react";
 type Importer = () => Promise<{ default: ComponentType<any> }>;
 
 const routeImporters = {
-  Writings: () => import("../pages/Writings"),
+  // Writings is eagerly imported in App.tsx, so no dynamic import needed here.
+  // Keeping the preload function for /writings paths to be a no-op.
   EBooks: () => import("../pages/EBooks"),
   NotFound: () => import("../pages/NotFound"),
   FacebookRecitations: () => import("../pages/FacebookRecitations"),
@@ -33,7 +34,8 @@ const importerForPath = (href: string): Importer | undefined => {
   const path = href.split("?")[0].split("#")[0];
 
   if (path === "/") return undefined;
-  if (path === "/writings" || path.startsWith("/writings/")) return routeImporters.Writings;
+  // Writings is statically imported in App.tsx — no preload needed.
+  if (path === "/writings" || path.startsWith("/writings/")) return undefined;
   if (path === "/ebooks") return routeImporters.EBooks;
   if (path.startsWith("/ebooks/read/")) return routeImporters.EBookReader;
   if (path === "/facebook-recitations") return routeImporters.FacebookRecitations;

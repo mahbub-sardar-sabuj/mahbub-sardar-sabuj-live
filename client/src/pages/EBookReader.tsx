@@ -568,6 +568,8 @@ export default function EBookReader() {
                     <img
                       src={book.cover}
                       alt={book.title}
+                      loading="lazy"
+                      decoding="async"
                       style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 14, boxShadow: "0 22px 55px rgba(0,0,0,.55)", opacity: .7 }}
                     />
                     <div style={{ position: "absolute", inset: 0, borderRadius: 14, background: "rgba(0,0,0,.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>

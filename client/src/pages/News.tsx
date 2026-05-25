@@ -383,6 +383,8 @@ export default function News() {
               <img
                 src="/images/sardar-sangbad-logo-final.png"
                 alt="সরদার সংবাদ - মাহবুব সরদার সবুজের সাহিত্য ও সংবাদ পোর্টাল"
+                loading="eager"
+                decoding="async"
                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 style={{
                   height: "auto",
@@ -399,6 +401,10 @@ export default function News() {
               <div className="logo-shimmer-overlay" />
             </div>
           </motion.div>
+          {/* Visually hidden H1 for SEO — logo image is the visual title */}
+          <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>
+            সরদার সংবাদ | বাংলা সাহিত্য আপডেট | মাহবুব সরদার সবুজ
+          </h1>
 
           {/* Breaking ticker bar — premium redesign */}
           <motion.div
