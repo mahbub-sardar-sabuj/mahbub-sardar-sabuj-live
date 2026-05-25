@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 
@@ -32,19 +31,6 @@ const sections = [
   { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
   { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
-];
-
-const homeHighlights = [
-  { label: "সাহিত্য আর্কাইভ", value: "কবিতা, গদ্য ও বই", detail: "পাঠকের জন্য সাজানো মূল সংগ্রহ", href: "/writings", icon: BookOpen },
-  { label: "কণ্ঠ ও আবৃত্তি", value: "ভিডিও উপস্থাপনা", detail: "কবিতার উচ্চারণ ও অনুভব", href: "/facebook-recitations", icon: Mic2 },
-  { label: "সৃজনশীল টুল", value: "ডিজাইন ফরম্যাট", detail: "লেখাকে ছবি-উপযোগী রূপ দিন", href: "/editor", icon: Palette },
-  { label: "সংবাদ ও আপডেট", value: "সরদার সংবাদ", detail: "প্রকাশনা, অনুষ্ঠান ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
-];
-
-const editorialSignals = [
-  "মোবাইল-ফার্স্ট রিডিং অভিজ্ঞতা",
-  "বাংলা SEO ও structured content প্রস্তুতি",
-  "প্রিমিয়াম Ink & Gold ভিজ্যুয়াল সিস্টেম",
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════════
@@ -578,85 +564,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          SITE HIGHLIGHTS — Reader journey and conversion bridge
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="home-refresh-section" aria-labelledby="home-refresh-title">
-        <div className="home-refresh-shell">
-          <motion.div
-            className="home-refresh-intro"
-            initial={{ opacity: 0, y: 26 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.65 }}
-          >
-            <span className="home-refresh-kicker">২০২৬ ওয়েবসাইট রিফ্রেশ</span>
-            <h2 id="home-refresh-title">পাঠকের জন্য আরও দ্রুত, সুসংগঠিত ও প্রিমিয়াম সাহিত্য অভিজ্ঞতা</h2>
-            <p>
-              হোমপেজ থেকে পাঠক এখন সরাসরি লেখালেখি, বই, আবৃত্তি, সংবাদ, গ্যালারি ও যোগাযোগের পথে যেতে পারবেন।
-              প্রতিটি অংশে একই সাহিত্যিক ব্র্যান্ডিং, স্পষ্ট CTA এবং মোবাইল-বান্ধব পাঠযোগ্যতা বজায় রাখা হয়েছে।
-            </p>
-          </motion.div>
-
-          <div className="home-highlight-grid" aria-label="ওয়েবসাইটের প্রধান সুবিধা">
-            {homeHighlights.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: index * 0.06 }}
-                >
-                  <Link href={item.href} className="home-highlight-card literary-surface" aria-label={`${item.label}: ${item.value}`}>
-                    <span className="home-highlight-icon"><Icon size={22} strokeWidth={1.8} /></span>
-                    <span className="home-highlight-label">{item.label}</span>
-                    <strong>{item.value}</strong>
-                    <small>{item.detail}</small>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <motion.div
-            className="home-reader-journey literary-surface"
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55, delay: 0.1 }}
-          >
-            <div>
-              <span className="home-refresh-kicker">Reader Path</span>
-              <h3>নতুন পাঠকের জন্য প্রস্তাবিত পথ</h3>
-              <p>
-                প্রথমে পরিচিতি পড়ুন, তারপর নির্বাচিত লেখা ও বই দেখুন, এরপর আবৃত্তি বা সংবাদে যান।
-                কোনো লেখা শেয়ার বা ডিজাইন করতে চাইলে “ডিজাইন ফরম্যাট” ব্যবহার করুন।
-              </p>
-            </div>
-            <ul aria-label="সাইট আপডেটের গুণগত বৈশিষ্ট্য">
-              {editorialSignals.map((signal) => (
-                <li key={signal}>
-                  <Star size={15} aria-hidden="true" />
-                  <span>{signal}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="home-reader-actions">
-              <Link href="/about" className="home-primary-cta">লেখক পরিচিতি</Link>
-              <Link href="/writings" className="home-secondary-cta">লেখা ও বই পড়ুন</Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
         <AdSenseAd adSlot={AD_SLOTS.HOME_BANNER} adFormat="auto" fullWidthResponsive={true} />
       </div>
-
-      <Footer />
 
       {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
       <style>{`
@@ -887,197 +798,6 @@ export default function Home() {
           overflow: hidden;
         }
 
-        .home-refresh-section {
-          position: relative;
-          overflow: hidden;
-          padding: clamp(4rem, 8vw, 6.8rem) 1.25rem;
-          background:
-            radial-gradient(circle at 20% 18%, rgba(201,168,76,0.14), transparent 30%),
-            radial-gradient(circle at 84% 72%, rgba(250,246,239,0.08), transparent 28%),
-            linear-gradient(180deg, #060E1A 0%, #081426 52%, #050B15 100%);
-        }
-        .home-refresh-section::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background-image: linear-gradient(rgba(201,168,76,0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.045) 1px, transparent 1px);
-          background-size: 46px 46px;
-          mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
-          pointer-events: none;
-        }
-        .home-refresh-shell {
-          position: relative;
-          z-index: 1;
-          max-width: 1120px;
-          margin: 0 auto;
-        }
-        .home-refresh-intro {
-          max-width: 780px;
-          margin: 0 auto 2.4rem;
-          text-align: center;
-        }
-        .home-refresh-kicker {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          color: #E8C97A;
-          font-family: 'Space Grotesk', 'Noto Sans Bengali', sans-serif;
-          font-size: 0.68rem;
-          letter-spacing: 0.28em;
-          text-transform: uppercase;
-          margin-bottom: 0.85rem;
-        }
-        .home-refresh-intro h2,
-        .home-reader-journey h3 {
-          margin: 0;
-          font-family: 'Tiro Bangla', serif;
-          color: #FFF8EA;
-          line-height: 1.22;
-          text-shadow: 0 12px 34px rgba(0,0,0,0.38);
-        }
-        .home-refresh-intro h2 {
-          font-size: clamp(2rem, 5vw, 3.15rem);
-        }
-        .home-refresh-intro p,
-        .home-reader-journey p {
-          margin: 1rem auto 0;
-          color: rgba(250,246,239,0.68);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 1rem;
-          line-height: 1.86;
-          text-wrap: pretty;
-        }
-        .home-highlight-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 1rem;
-          margin-bottom: 1.25rem;
-        }
-        .home-highlight-card {
-          min-height: 210px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: 1.25rem;
-          border-radius: 28px;
-          color: #FAF6EF;
-          text-decoration: none;
-          transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
-        }
-        .home-highlight-card:hover,
-        .home-highlight-card:focus-visible {
-          transform: translateY(-6px);
-          border-color: rgba(232,201,122,0.58);
-          box-shadow: 0 34px 90px rgba(0,0,0,0.42), 0 0 34px rgba(201,168,76,0.16);
-          outline: none;
-        }
-        .home-highlight-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 18px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          color: #F2D789;
-          background: linear-gradient(145deg, rgba(201,168,76,0.24), rgba(255,255,255,0.06));
-          border: 1px solid rgba(201,168,76,0.32);
-        }
-        .home-highlight-label {
-          margin-top: 1.05rem;
-          color: rgba(232,201,122,0.88);
-          font-family: 'Space Grotesk', 'Noto Sans Bengali', sans-serif;
-          font-size: 0.68rem;
-          letter-spacing: 0.13em;
-          text-transform: uppercase;
-        }
-        .home-highlight-card strong {
-          display: block;
-          color: #FFF8EA;
-          font-family: 'Tiro Bangla', serif;
-          font-size: 1.18rem;
-          line-height: 1.35;
-        }
-        .home-highlight-card small {
-          color: rgba(250,246,239,0.58);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          line-height: 1.55;
-          font-size: 0.82rem;
-        }
-        .home-reader-journey {
-          display: grid;
-          grid-template-columns: 1.4fr 0.9fr auto;
-          align-items: center;
-          gap: 1.5rem;
-          border-radius: 32px;
-          padding: clamp(1.3rem, 3vw, 2rem);
-        }
-        .home-reader-journey h3 {
-          font-size: clamp(1.45rem, 3vw, 2.1rem);
-        }
-        .home-reader-journey p {
-          margin-left: 0;
-          margin-right: 0;
-          font-size: 0.95rem;
-        }
-        .home-reader-journey ul {
-          list-style: none;
-          margin: 0;
-          padding: 0;
-          display: grid;
-          gap: 0.72rem;
-        }
-        .home-reader-journey li {
-          display: flex;
-          align-items: center;
-          gap: 0.58rem;
-          color: rgba(250,246,239,0.72);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.88rem;
-          line-height: 1.5;
-        }
-        .home-reader-journey li svg {
-          flex: 0 0 auto;
-          color: #E8C97A;
-          fill: rgba(232,201,122,0.18);
-        }
-        .home-reader-actions {
-          display: flex;
-          flex-direction: column;
-          gap: 0.7rem;
-          min-width: 158px;
-        }
-        .home-primary-cta,
-        .home-secondary-cta {
-          display: inline-flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 44px;
-          padding: 0.75rem 1rem;
-          border-radius: 999px;
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-weight: 700;
-          text-decoration: none;
-          transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
-        }
-        .home-primary-cta {
-          color: #06101C;
-          background: linear-gradient(135deg, #F2D789, #C9A84C);
-          box-shadow: 0 16px 34px rgba(201,168,76,0.22);
-        }
-        .home-secondary-cta {
-          color: #F7E7B0;
-          border: 1px solid rgba(201,168,76,0.34);
-          background: rgba(255,255,255,0.045);
-        }
-        .home-primary-cta:hover,
-        .home-secondary-cta:hover,
-        .home-primary-cta:focus-visible,
-        .home-secondary-cta:focus-visible {
-          transform: translateY(-2px);
-          outline: none;
-          box-shadow: 0 18px 38px rgba(0,0,0,0.26), 0 0 0 3px rgba(201,168,76,0.18);
-        }
-
         /* Tablet */
         @media (max-width: 1024px) {
           .hero-inner {
@@ -1091,9 +811,6 @@ export default function Home() {
           }
           .hero-portrait { height: 280px; }
           .floating-card { display: none; }
-          .home-highlight-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .home-reader-journey { grid-template-columns: 1fr; }
-          .home-reader-actions { flex-direction: row; flex-wrap: wrap; }
         }
 
         /* Mobile */
@@ -1109,10 +826,6 @@ export default function Home() {
           .app-label { font-size: 0.82rem; line-height: 1.25; }
           .app-subtitle { display: none; }
           .hero-portrait { height: 260px; }
-          .home-highlight-grid { grid-template-columns: 1fr; }
-          .home-highlight-card { min-height: 174px; }
-          .home-refresh-section { padding-left: 0.9rem; padding-right: 0.9rem; }
-          .home-reader-actions { flex-direction: column; }
         }
 
         @media (max-width: 480px) {
