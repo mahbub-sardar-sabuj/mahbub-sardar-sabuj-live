@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { AudioResultCard } from "./chatbot/AudioResultCard";
+import { QuickActions } from "./chatbot/QuickActions";
 // Lazy-load LiveChatWidget — only needed when user opens the live chat tab
 const LiveChatWidget = lazy(() => import("./LiveChatWidget"));
 
@@ -28,6 +30,7 @@ interface Message {
   outputSizeKB?: number;       // output file size in KB
   isCopied?: boolean;          // message copy state
   reaction?: "up" | "down" | null; // user reaction
+  isStreaming?: boolean;         // true while streaming token-by-token
 }
 
 interface ActionButton {
@@ -1020,9 +1023,12 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
   }
 
   const { text, buttons, showPhoto, showContact, showLiveChat } = parseContent(message.content);
-  // Typing animation for latest assistant message
-  const { displayText, isDone: typingDone } = useTypingText(isLatest ? text : "", 10);
-  const renderedText = isLatest ? displayText : text;
+  // Streaming messages bypass typing animation — they stream token-by-token from server
+  const { displayText, isDone: typingDone } = useTypingText(
+    (isLatest && !message.isStreaming) ? text : "",
+    10
+  );
+  const renderedText = (isLatest && !message.isStreaming) ? displayText : text;
 
   return (
     <motion.div
@@ -1116,8 +1122,21 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
               }} />
           </div>
         )}
-        {/* ── Audio player & download (for edited audio messages) ── */}
+        {/* ── Audio Result Card (for edited audio messages) ── */}
         {message.audioUrl && (
+          <AudioResultCard
+            audioUrl={message.audioUrl}
+            audioFilename={message.audioFilename || "edited_audio.mp3"}
+            audioDescription={message.audioDescription}
+            audioAppliedSteps={message.audioAppliedSteps}
+            audioIntent={message.audioIntent}
+            audioPipeline={message.audioPipeline}
+            audioTechnicalNote={message.audioTechnicalNote}
+            outputSizeKB={message.outputSizeKB}
+          />
+        )}
+        {/* ── LEGACY: keep for backward compat — hidden via display:none ── */}
+        {false && message.audioUrl && (
           <div style={{
             background: "linear-gradient(145deg, rgba(11,19,34,0.98) 0%, rgba(8,15,28,0.98) 100%)",
             borderRadius: "3px 14px 14px 14px",
@@ -1400,7 +1419,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
             wordBreak: "break-word",
           }}>
             {renderedText}
-            {isLatest && !typingDone && (
+            {(isLatest && !typingDone) || message.isStreaming ? (
               <span style={{
                 display: "inline-block",
                 width: 2,
@@ -1410,7 +1429,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                 verticalAlign: "text-bottom",
                 animation: "chatbot-cursor-blink 0.7s ease-in-out infinite",
               }} />
-            )}
+            ) : null}
           </div>
         )}
         {buttons.length > 0 && (
@@ -2523,15 +2542,92 @@ export default function AIChatbot() {
 
     retryPayloadRef.current = payload;
 
+    // ── Streaming response via SSE ──────────────────────────────────────────
+    const streamMsgId = `ai-stream-${Date.now()}`;
+    setMessages(prev => [...prev, {
+      id: streamMsgId,
+      role: "assistant" as const,
+      content: "",
+      timestamp: new Date(),
+      isStreaming: true,
+    }]);
+
     try {
-      const reply = await callAI(payload);
-      setMessages(prev => [...prev, {
-        id: `ai-${Date.now()}`,
-        role: "assistant",
-        content: reply,
-        timestamp: new Date(),
-      }]);
+      const streamRes = await fetch("/api/chat-stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: payload }),
+        signal: AbortSignal.timeout(52000),
+      });
+
+      if (!streamRes.ok || !streamRes.body) {
+        // Fallback to non-streaming
+        const reply = await callAI(payload);
+        setMessages(prev => prev.map(m =>
+          m.id === streamMsgId
+            ? { ...m, content: reply, isStreaming: false }
+            : m
+        ));
+        setIsLoading(false);
+        return;
+      }
+
+      const reader = streamRes.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullReply = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith("data: ")) continue;
+          try {
+            const json = JSON.parse(trimmed.slice(6));
+            if (json.error) {
+              setMessages(prev => prev.filter(m => m.id !== streamMsgId));
+              setError(json.error);
+              setIsLoading(false);
+              return;
+            }
+            if (json.delta) {
+              fullReply += json.delta;
+              setMessages(prev => prev.map(m =>
+                m.id === streamMsgId
+                  ? { ...m, content: m.content + json.delta }
+                  : m
+              ));
+            }
+            if (json.done) {
+              setMessages(prev => prev.map(m =>
+                m.id === streamMsgId
+                  ? { ...m, content: json.fullReply || fullReply, isStreaming: false }
+                  : m
+              ));
+              setIsLoading(false);
+              return;
+            }
+          } catch { /* skip malformed chunk */ }
+        }
+      }
+
+      // Stream ended without explicit done
+      if (fullReply) {
+        setMessages(prev => prev.map(m =>
+          m.id === streamMsgId
+            ? { ...m, content: fullReply, isStreaming: false }
+            : m
+        ));
+      } else {
+        setMessages(prev => prev.filter(m => m.id !== streamMsgId));
+        setError("উত্তর পাওয়া যায়নি।");
+      }
     } catch (err: any) {
+      setMessages(prev => prev.filter(m => m.id !== streamMsgId));
       const isTimeout = err?.name === "AbortError" || err?.message?.includes("timeout");
       const isNetwork = err?.message?.includes("fetch") || err?.message?.includes("network");
       if (isTimeout) {
@@ -3441,37 +3537,11 @@ export default function AIChatbot() {
                 )}
 
                 {!audioFile && !lastAudioBlobRef.current && !imagePreview && !isLoading && !audioProcessing && (
-                  <div style={{ marginBottom: 8 }}>
-                    <div style={{
-                      display: "flex",
-                      gap: 5,
-                      overflowX: "auto",
-                      paddingBottom: 2,
-                    }}>
-                      {getContextualActions(messages).map(action => (
-                        <button
-                          key={action.label}
-                          onClick={() => handleSendWithText(action.prompt)}
-                          className="chatbot-suggestion-btn"
-                          style={{
-                            padding: "5px 9px",
-                            background: messages.length > 1 ? "rgba(212,168,67,0.1)" : "rgba(212,168,67,0.06)",
-                            border: `1px solid ${messages.length > 1 ? "rgba(212,168,67,0.3)" : "rgba(212,168,67,0.18)"}`,
-                            borderRadius: 999,
-                            color: messages.length > 1 ? "rgba(247,228,165,0.9)" : "rgba(247,228,165,0.78)",
-                            fontSize: "0.58rem",
-                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                            cursor: "pointer",
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          {action.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <QuickActions
+                    messages={messages}
+                    onSelect={(text) => handleSendWithText(text)}
+                    isLoading={isLoading || audioProcessing}
+                  />
                 )}
 
                 <div style={{ display: "flex", gap: 5, alignItems: "flex-end", paddingBottom: isKeyboardViewport ? "env(safe-area-inset-bottom, 0px)" : 0 }}>

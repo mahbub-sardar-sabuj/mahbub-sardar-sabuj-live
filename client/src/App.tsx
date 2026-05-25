@@ -29,6 +29,7 @@ const AmiOLikhboBastobota = lazyRoute("AmiOLikhboBastobota");
 const AIChatbot = lazy(() => import("./components/AIChatbot"));
 const AdminLiveChat = lazyRoute("AdminLiveChat");
 const AdminWritingModeration = lazyRoute("AdminWritingModeration");
+const AdminChatbotAnalytics = lazyRoute("AdminChatbotAnalytics");
 const Profile = lazyRoute("Profile");
 const AmiOLikhboLogin = lazyRoute("AmiOLikhboLogin");
 const SeoKeywordLanding = lazyRoute("SeoKeywordLanding");
@@ -114,6 +115,7 @@ function Router() {
         <Route path={"/profile"} component={Profile} />
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />
         <Route path={"/admin/writing"} component={AdminWritingModeration} />
+        <Route path={"/admin/chatbot-analytics"} component={AdminChatbotAnalytics} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />

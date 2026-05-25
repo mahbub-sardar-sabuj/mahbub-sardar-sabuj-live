@@ -19,6 +19,7 @@ const routeImporters = {
   AmiOLikhboBastobota: () => import("../pages/AmiOLikhboBastobota"),
   AdminLiveChat: () => import("../pages/AdminLiveChat"),
   AdminWritingModeration: () => import("../pages/AdminWritingModeration"),
+  AdminChatbotAnalytics: () => import("../pages/AdminChatbotAnalytics"),
   Profile: () => import("../pages/Profile"),
   AmiOLikhboLogin: () => import("../pages/AmiOLikhboLogin"),
   SeoKeywordLanding: () => import("../pages/SeoKeywordLanding"),
@@ -51,6 +52,7 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/profile") return routeImporters.Profile;
   if (path === "/admin/live-chat") return routeImporters.AdminLiveChat;
   if (path === "/admin/writing") return routeImporters.AdminWritingModeration;
+  if (path === "/admin/chatbot-analytics") return routeImporters.AdminChatbotAnalytics;
   if (path === "/404") return routeImporters.NotFound;
 
   if (
