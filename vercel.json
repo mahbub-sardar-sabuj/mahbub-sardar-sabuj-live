@@ -42,7 +42,7 @@
       "permanent": true
     },
     {
-      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|sitemap-index.xml|news-sitemap.xml|manifest.json|llms.txt|humans.txt).*)",
+      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|sitemap-index.xml|news-sitemap.xml|writings-sitemap-1.xml|writings-sitemap-2.xml|writings-sitemap-3.xml|manifest.json|llms.txt|humans.txt).*)",
       "has": [
         {
           "type": "host",
@@ -103,6 +103,18 @@
     {
       "src": "/news-sitemap.xml",
       "dest": "/news-sitemap.xml"
+    },
+    {
+      "src": "/writings-sitemap-1.xml",
+      "dest": "/writings-sitemap-1.xml"
+    },
+    {
+      "src": "/writings-sitemap-2.xml",
+      "dest": "/writings-sitemap-2.xml"
+    },
+    {
+      "src": "/writings-sitemap-3.xml",
+      "dest": "/writings-sitemap-3.xml"
     },
     {
       "src": "/robots.txt",

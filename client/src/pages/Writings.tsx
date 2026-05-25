@@ -1540,8 +1540,20 @@ export default function Writings() {
   const handleNavigate = useCallback((w: Writing) => { setSel(w); setLocation(`/writings/${makeSlug(w.title, w.id)}`); }, [setLocation]);
 
   const seoPath = sel ? `/writings/${makeSlug(sel.title, sel.id)}` : "/writings";
-  const seoTitle = sel ? `${sel.title} — মাহবুব সরদার সবুজ` : "লেখালেখি ও বই — মাহবুব সরদার সবুজ";
-  const seoDescription = sel ? makeExcerpt(sel.content) : "মাহবুব সরদার সবুজের প্রকাশিত ই-বুক, বই এবং সকল লেখা একসাথে একটি প্রিমিয়াম সাহিত্য সংগ্রহে।";
+  const seoTitle = sel ? `${sel.title} — মাহবুব সরদার সবুজ` : "লেখালেখি ও বই — মাহবুব সরদার সবুজ | ২২৫৮+ কবিতা ও লেখা";
+  const seoDescription = sel 
+    ? `${makeExcerpt(sel.content, 155)} — মাহবুব সরদার সবুজ`
+    : "মাহবুব সরদার সবুজের ২২৫৮+ বাংলা কবিতা, ছোট লেখা, ভালোবাসার লেখা, বিচ্ছেদের কবিতা ও জীবনদর্শন। বিনামূল্যে পড়ুন।";
+  const catKeywordMap: Record<string, string> = {
+    "ভালোবাসা": "ভালোবাসার কবিতা, প্রেমের লেখা, love poem bangla, ভালোবাসার স্ট্যাটাস",
+    "বিচ্ছেদ": "বিচ্ছেদের কবিতা, বিরহের লেখা, কষ্টের কবিতা, sad bangla poem",
+    "কবিতা": "বাংলা কবিতা, bangla kobita, কবিতা পড়ুন, বাংলা সাহিত্য",
+    "ছোট লেখা": "বাংলা স্ট্যাটাস, ছোট কবিতা, bangla status, বাংলা উক্তি",
+    "জীবনদর্শন": "জীবনদর্শন, জীবনের কথা, অনুপ্রেরণামূলক লেখা, motivational bangla",
+  };
+  const seoKeywords = sel
+    ? `${sel.title}, ${sel.category}, মাহবুব সরদার সবুজ, ${catKeywordMap[sel.category] ?? "বাংলা কবিতা, bangla kobita"}, Mahbub Sardar Sabuj`
+    : "মাহবুব সরদার সবুজ লেখা, বাংলা কবিতা, বাংলা ই-বুক, বাংলা বই, ভালোবাসার লেখা, বিচ্ছেদের লেখা, জীবনদর্শন, Mahbub Sardar Sabuj writings, bangla kobita, bangla poem collection, বাংলা কবিতা পড়ুন, বাংলা সাহিত্য, বাংলাদেশি কবির লেখা";
 
   const writingsJsonLd = useMemo(() => ({
     "@context": "https://schema.org",
@@ -1549,7 +1561,7 @@ export default function Writings() {
       { "@type":"CollectionPage", "@id":siteUrl("/writings#collection"), "name":"লেখালেখি ও বই — মাহবুব সরদার সবুজ", "url":siteUrl("/writings"), "inLanguage":"bn-BD", "description":"মাহবুব সরদার সবুজের বই, ই-বুক, কবিতা, ভালোবাসা, বিচ্ছেদ ও জীবনদর্শনের লেখাগুলোর curated সংগ্রহ।", "isPartOf":{ "@type":"WebSite", "@id":siteUrl("/#website"), "name":"মাহবুব সরদার সবুজ" }, "about":{ "@id":siteUrl("/about#author") } },
       { "@type":"Person", "@id":siteUrl("/about#author"), "name":"মাহবুব সরদার সবুজ", "alternateName":"Mahbub Sardar Sabuj", "url":siteUrl("/about"), "knowsLanguage":["bn-BD","en"] },
       { "@type":"BreadcrumbList", "itemListElement":[ { "@type":"ListItem","position":1,"name":"হোম","item":siteUrl("/") }, { "@type":"ListItem","position":2,"name":"লেখালেখি ও বই","item":siteUrl("/writings") }, ...(sel?[{ "@type":"ListItem","position":3,"name":sel.title,"item":siteUrl(seoPath) }]:[]) ] },
-      { "@type":"ItemList", "@id":siteUrl("/writings#latest-writings"), "name":"নির্বাচিত অনুভূতির আর্কাইভ", "itemListElement":archive.slice(0,24).map((writing,index) => ({ "@type":"ListItem","position":index+1,"url":siteUrl(`/writings/${makeSlug(writing.title,writing.id)}`),"name":writing.title })) },
+      { "@type":"ItemList", "@id":siteUrl("/writings#latest-writings"), "name":"নির্বাচিত অনুভূতির আর্কাইভ — মাহবুব সরদার সবুজের ২২৫৮+ লেখা", "itemListElement":archive.slice(0,24).map((writing,index) => ({ "@type":"ListItem","position":index+1,"url":siteUrl(`/writings/${makeSlug(writing.title,writing.id)}`),"name":writing.title })) },
       ...ebooks.map(book => ({ "@type":"Book","@id":siteUrl(`/ebooks/read/${book.slug}#book`),"name":book.title,"inLanguage":"bn-BD","author":{"@id":siteUrl("/about#author")},"url":siteUrl(`/ebooks/read/${book.slug}`),"image":siteUrl(book.cover),"description":book.description,"genre":book.genre,"bookFormat":book.badge.includes("ফিজিক্যাল")?"https://schema.org/Hardcover":"https://schema.org/EBook","isAccessibleForFree":!book.buyLink })),
       ...(sel?[{ "@type":"CreativeWork","@id":siteUrl(`${seoPath}#writing`),"name":sel.title,"headline":sel.title,"url":siteUrl(seoPath),"inLanguage":"bn-BD","text":makeExcerpt(sel.content,500),"description":makeExcerpt(sel.content),"datePublished":sel.date,"genre":sel.category,"author":{"@id":siteUrl("/about#author")},"isAccessibleForFree":true }]:[]),
     ],
@@ -1558,7 +1570,7 @@ export default function Writings() {
   return (
     <>
       <Seo title={seoTitle} description={seoDescription} path={seoPath}
-        keywords="মাহবুব সরদার সবুজ লেখা, বাংলা কবিতা, বাংলা ই-বুক, বাংলা বই, ভালোবাসার লেখা, বিচ্ছেদের লেখা, জীবনদর্শন, Mahbub Sardar Sabuj writings, bangla kobita, bangla poem collection, বাংলা কবিতা পড়ুন, বাংলা সাহিত্য, বাংলাদেশি কবির লেখা"
+        keywords={seoKeywords}
         jsonLd={writingsJsonLd}/>
       <Navbar/>
       <style>{CSS}</style>

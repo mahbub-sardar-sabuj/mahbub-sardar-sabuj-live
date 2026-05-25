@@ -90,5 +90,8 @@ Crawl-delay: 1
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap-index.xml
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml
+Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-1.xml
+Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-2.xml
+Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-3.xml
 Sitemap: https://www.mahbubsardarsabuj.com/api/amio-sitemap
 Host: https://www.mahbubsardarsabuj.com
