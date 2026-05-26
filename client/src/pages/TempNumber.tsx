@@ -134,13 +134,8 @@ export default function TempNumber() {
         return;
       }
 
-      // receive-smss.live stores messages in data-attributes on .message-row divs:
-      // data-message-body, data-message-from, data-message-time
-      // We parse these with a regex since JS rendering fills them server-side in HTML
       const smsList: SmsMessage[] = [];
-
-      const pattern =
-        /data-message-id="(\d+)"\s+data-message-body="([^"]*)"\s+data-message-from="([^"]*)"\s+data-message-time="(\d+)"/g;
+      const pattern = /data-message-id="(\d+)"\s+data-message-body="([^"]*)"\s+data-message-from="([^"]*)"\s+data-message-time="(\d+)"/g;
 
       let match: RegExpExecArray | null;
       const seen = new Set<string>();
@@ -161,11 +156,7 @@ export default function TempNumber() {
       }
 
       setMessages(smsList);
-
-      if (smsList.length === 0) {
-        // No messages yet — not an error, just empty inbox
-        setFetchError(false);
-      }
+      setFetchError(false);
     } catch (error) {
       console.error("SMS Fetch Error:", error);
       setFetchError(true);
@@ -227,7 +218,6 @@ export default function TempNumber() {
           paddingTop: "var(--site-nav-offset, 70px)",
         }}
       >
-        {/* Hero */}
         <div className="text-center pt-10 pb-10 px-4">
           <div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
@@ -237,40 +227,17 @@ export default function TempNumber() {
             }}
           >
             <Phone size={14} style={{ color: "#C9A84C" }} />
-            <span
-              className="text-xs font-semibold tracking-widest uppercase"
-              style={{ color: "#C9A84C" }}
-            >
+            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#C9A84C" }}>
               বিনামূল্যে
             </span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-            টেম্পোরারি ফোন নম্বর
-          </h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">টেম্পোরারি ফোন নম্বর</h1>
           <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto">
             রেজিস্ট্রেশন ছাড়াই যেকোনো ওয়েবসাইটে SMS ভেরিফিকেশন সম্পন্ন করুন
           </p>
-          <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {["তাৎক্ষণিক", "কোনো রেজিস্ট্রেশন নেই", "স্প্যাম প্রতিরোধ", "অটো রিফ্রেশ"].map(
-              (f) => (
-                <span
-                  key={f}
-                  className="text-xs px-3 py-1 rounded-full"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    color: "#aaa",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                  }}
-                >
-                  {f}
-                </span>
-              )
-            )}
-          </div>
         </div>
 
         <div className="max-w-2xl mx-auto px-4 pb-16">
-          {/* Country Filter */}
           <div className="flex gap-2 flex-wrap mb-4">
             {COUNTRIES.map((c) => (
               <button
@@ -278,8 +245,7 @@ export default function TempNumber() {
                 onClick={() => setFilterCountry(c)}
                 className="text-xs px-3 py-1.5 rounded-full transition-all"
                 style={{
-                  background:
-                    filterCountry === c ? "#C9A84C" : "rgba(255,255,255,0.06)",
+                  background: filterCountry === c ? "#C9A84C" : "rgba(255,255,255,0.06)",
                   color: filterCountry === c ? "#060E1A" : "#aaa",
                   border: `1px solid ${filterCountry === c ? "#C9A84C" : "rgba(255,255,255,0.1)"}`,
                   fontWeight: filterCountry === c ? "700" : "400",
@@ -290,7 +256,6 @@ export default function TempNumber() {
             ))}
           </div>
 
-          {/* Number Selector Dropdown */}
           <div className="relative mb-4">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
@@ -333,8 +298,7 @@ export default function TempNumber() {
                     onClick={() => handleSelectNumber(num)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-all hover:bg-white/5"
                     style={{
-                      color:
-                        selectedNumber?.slug === num.slug ? "#C9A84C" : "#ccc",
+                      color: selectedNumber?.slug === num.slug ? "#C9A84C" : "#ccc",
                       borderBottom: "1px solid rgba(255,255,255,0.04)",
                     }}
                   >
@@ -349,213 +313,115 @@ export default function TempNumber() {
             )}
           </div>
 
-          {/* Active Number Card */}
           {selectedNumber && (
             <div
-              className="rounded-2xl p-5 mb-6"
+              className="rounded-2xl p-6 mb-8"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(201,168,76,0.25)",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-2 h-2 rounded-full animate-pulse"
-                    style={{ background: "#4ade80" }}
-                  ></div>
-                  <span
-                    className="text-xs font-semibold"
-                    style={{ color: "#4ade80" }}
-                  >
-                    নম্বর সক্রিয় আছে
-                  </span>
-                </div>
-                <div
-                  className="flex items-center gap-1 text-xs"
-                  style={{ color: "#666" }}
-                >
-                  <Clock size={12} />
-                  <span>{countdown}s এ রিফ্রেশ</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="font-mono text-lg font-bold text-white">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex-1 text-center md:text-left">
+                  <div className="text-xs text-gray-500 mb-2 flex items-center justify-center md:justify-start gap-2">
+                    <Globe size={12} /> {selectedNumber.country} নম্বর
+                  </div>
+                  <div className="text-2xl md:text-4xl font-mono font-bold text-white mb-4 tracking-tighter">
                     {selectedNumber.display}
                   </div>
-                  <div className="text-xs" style={{ color: "#666" }}>
-                    {selectedNumber.flag} {selectedNumber.country}
+                  <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all"
+                      style={{
+                        background: copied ? "rgba(34,197,94,0.15)" : "rgba(201,168,76,0.1)",
+                        border: `1px solid ${copied ? "rgba(34,197,94,0.3)" : "rgba(201,168,76,0.3)"}`,
+                        color: copied ? "#22c55e" : "#C9A84C",
+                      }}
+                    >
+                      <Copy size={16} />
+                      {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
+                    </button>
+                    <button
+                      onClick={() => setShowQr(!showQr)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "#fff",
+                      }}
+                    >
+                      <QrCode size={16} />
+                      QR কোড
+                    </button>
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: copied
-                      ? "rgba(74,222,128,0.15)"
-                      : "rgba(201,168,76,0.15)",
-                    border: `1px solid ${copied ? "#4ade80" : "#C9A84C"}`,
-                    color: copied ? "#4ade80" : "#C9A84C",
-                  }}
-                >
-                  <Copy size={14} />
-                  {copied ? "কপি হয়েছে!" : "কপি করুন"}
-                </button>
-                <button
-                  onClick={handleRefresh}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    color: "#aaa",
-                    opacity: loading ? 0.5 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
-                  রিফ্রেশ করুন
-                </button>
-                <button
-                  onClick={() => setShowQr(!showQr)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: "rgba(201,168,76,0.1)",
-                    border: "1px solid rgba(201,168,76,0.3)",
-                    color: "#C9A84C",
-                  }}
-                >
-                  <QrCode size={14} />
-                  QR কোড
-                </button>
-              </div>
-              
-              {showQr && (
-                <div className="mt-4 p-4 bg-white rounded-xl inline-block">
-                  <QRCodeSVG value={selectedNumber.number} size={128} />
-                  <div className="text-black text-[10px] mt-2 text-center font-bold">স্ক্যান করুন</div>
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Messages Section */}
+                {showQr && (
+                  <div className="p-3 bg-white rounded-xl">
+                    <QRCodeSVG value={selectedNumber.number} size={100} />
+                  </div>
+                )}
+              </div>
 
-          {/* How to Use Section */}
-          <div className="mt-12 p-6 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.25)" }}>
-            <h2 className="text-xl font-bold text-white mb-4">কীভাবে ব্যবহার করবেন?</h2>
-            <ol className="list-decimal list-inside text-gray-300 space-y-2">
-              <li>উপরে তালিকা থেকে আপনার পছন্দের একটি টেম্পোরারি ফোন নম্বর বেছে নিন।</li>
-              <li>আপনি যে সার্ভিস বা ওয়েবসাইটে রেজিস্ট্রেশন করতে চান, সেখানে এই নম্বরটি ব্যবহার করুন।</li>
-              <li>SMS কোড বা OTP আসার জন্য এই পেজে কিছুক্ষণ অপেক্ষা করুন। নতুন বার্তা স্বয়ংক্রিয়ভাবে লোড হবে।</li>
-              <li>যদি বার্তা না আসে, তাহলে 'রিফ্রেশ করুন' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করতে পারেন।</li>
-              <li>আপনার কাজ শেষ হলে, আপনি অন্য একটি নম্বর বেছে নিতে পারেন বা পেজটি বন্ধ করে দিতে পারেন।</li>
-            </ol>
-          </div>
-
-          {/* FAQ Section */}
-          <div className="mt-8 p-6 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.25)" }}>
-            <h2 className="text-xl font-bold text-white mb-4">সাধারণ জিজ্ঞাসা (FAQ)</h2>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold text-white">১. টেম্পোরারি ফোন নম্বর কী?</h3>
-                <p className="text-gray-300">টেম্পোরারি ফোন নম্বর হলো একটি অস্থায়ী, ডিসপোজেবল নম্বর যা আপনি অনলাইন রেজিস্ট্রেশন, SMS ভেরিফিকেশন বা OTP গ্রহণের জন্য ব্যবহার করতে পারেন। এটি আপনার আসল ফোন নম্বর গোপন রাখতে সাহায্য করে।</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">২. এই সার্ভিস কি বিনামূল্যে?</h3>
-                <p className="text-gray-300">হ্যাঁ, আমাদের টেম্পোরারি ফোন নম্বর সার্ভিস সম্পূর্ণ বিনামূল্যে। কোনো রেজিস্ট্রেশন বা সাবস্ক্রিপশনের প্রয়োজন নেই।</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">৩. SMS আসতে কতক্ষণ সময় লাগে?</h3>
-                <p className="text-gray-300">সাধারণত, SMS কোড বা OTP কয়েক সেকেন্ড থেকে কয়েক মিনিটের মধ্যে চলে আসে। যদি না আসে, তাহলে পেজটি রিফ্রেশ করে দেখতে পারেন।</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">৪. আমার পাঠানো SMS কি অন্য কেউ দেখতে পাবে?</h3>
-                <p className="text-gray-300">হ্যাঁ, এই নম্বরগুলো পাবলিক এবং এখানে আসা সব SMS সবাই দেখতে পাবে। তাই ব্যক্তিগত বা সংবেদনশীল তথ্যের জন্য এই নম্বর ব্যবহার না করাই ভালো।</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">৫. আমি কি এই নম্বরগুলো দিয়ে SMS পাঠাতে পারব?</h3>
-                <p className="text-gray-300">না, এই সার্ভিসটি শুধুমাত্র SMS গ্রহণ করার জন্য ডিজাইন করা হয়েছে। আপনি এই নম্বরগুলো ব্যবহার করে কোনো SMS পাঠাতে পারবেন না।</p>
-              </div>
-            </div>
-          </div>
-          {selectedNumber && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <MessageSquare size={16} style={{ color: "#C9A84C" }} />
-                <h3 className="text-sm font-semibold text-white">
-                  বার্তা ({messages.length})
-                </h3>
-              </div>
-              {loading && !messages.length && (
-                <div
-                  className="text-center py-8 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                  }}
-                >
-                  <div className="text-sm" style={{ color: "#aaa" }}>
-                    লোড হচ্ছে...
+              <div className="mt-8 pt-6 border-t border-white/5">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    <MessageSquare size={18} style={{ color: "#C9A84C" }} />
+                    ইনবক্স
                   </div>
-                </div>
-              )}
-              {fetchError && (
-                <div
-                  className="text-center py-8 px-4 rounded-xl"
-                  style={{
-                    background: "rgba(255,100,100,0.05)",
-                    border: "1px solid rgba(255,100,100,0.2)",
-                  }}
-                >
-                  <div className="text-sm" style={{ color: "#ff6464" }}>
-                    SMS লোড করতে সমস্যা হয়েছে। কয়েক সেকেন্ড অপেক্ষা করুন এবং রিফ্রেশ করুন।
-                  </div>
-                </div>
-              )}
-              {!loading && messages.length === 0 && !fetchError && (
-                <div
-                  className="text-center py-8 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                  }}
-                >
-                  <div className="text-sm" style={{ color: "#aaa" }}>
-                    এখনো কোনো বার্তা নেই। কোড পাঠালে এখানে কিছুক্ষণ অপেক্ষা করুন।
-                  </div>
-                </div>
-              )}
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className="mb-3 p-3 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(201,168,76,0.15)",
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="text-xs font-semibold" style={{ color: "#C9A84C" }}>
-                      {msg.sender}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Clock size={12} />
+                      {countdown}s পর অটো রিফ্রেশ
                     </div>
-                    <div className="text-xs" style={{ color: "#666" }}>
-                      {msg.time}
-                    </div>
-                  </div>
-                  <div className="text-sm" style={{ color: "#ddd" }}>
-                    {msg.message}
+                    <button onClick={handleRefresh} disabled={loading} className="text-gray-400 hover:text-white transition-colors">
+                      <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+                    </button>
                   </div>
                 </div>
-              ))}
+
+                <div className="space-y-4">
+                  {loading && messages.length === 0 ? (
+                    <div className="text-center py-10">
+                      <RefreshCw size={24} className="animate-spin mx-auto text-gray-600 mb-2" />
+                      <p className="text-sm text-gray-500">মেসেজ লোড হচ্ছে...</p>
+                    </div>
+                  ) : fetchError ? (
+                    <div className="text-center py-10 bg-red-500/5 rounded-xl border border-red-500/10">
+                      <p className="text-sm text-red-400">মেসেজ লোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।</p>
+                    </div>
+                  ) : messages.length > 0 ? (
+                    messages.map((msg, i) => (
+                      <div
+                        key={i}
+                        className="p-4 rounded-xl transition-all hover:bg-white/5"
+                        style={{
+                          background: "rgba(255,255,255,0.02)",
+                          border: "1px solid rgba(255,255,255,0.05)",
+                        }}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-xs font-bold text-gray-400 px-2 py-0.5 rounded bg-white/5">
+                            {msg.sender}
+                          </span>
+                          <span className="text-[10px] text-gray-600">{msg.time}</span>
+                        </div>
+                        <p className="text-sm text-gray-300 leading-relaxed">{msg.message}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-sm">এখনো কোনো মেসেজ আসেনি। অপেক্ষা করুন...</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
-        <Footer />
       </div>
+      <Footer />
     </>
   );
 }

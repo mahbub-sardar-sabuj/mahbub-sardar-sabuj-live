@@ -1,421 +1,244 @@
-/**
- * TempEmail — Temporary Email Generator
- * Design: Deep Navy + Rich Gold (matches site theme)
- * API: mail.tm (free, no API key required)
- * Features: Generate email, copy, receive inbox, auto-refresh, delete
- */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, RefreshCw, Mail, Trash2, Eye, Clock, CheckCircle, AlertCircle, Inbox, Shield, Zap, Lock, QrCode, Globe } from "lucide-react";
+import {
+  Mail,
+  Copy,
+  RefreshCw,
+  Trash2,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Zap,
+  Inbox,
+  Globe,
+  QrCode
+} from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 
+// Colors from the premium theme
 const GOLD = "#C9A84C";
-const GOLD_LIGHT = "#E8C97A";
-const BG = "#060E1A";
-const CARD_BG = "rgba(255,255,255,0.03)";
-const BORDER = "rgba(201,168,76,0.15)";
-const TEXT = "#FAF6EF";
-const MUTED = "rgba(250,246,239,0.55)";
-const API_BASE = "https://api.mail.tm";
+const GOLD_LIGHT = "#E5C167";
+const CARD_BG = "rgba(13, 27, 46, 0.7)";
+const BORDER = "rgba(201, 168, 76, 0.2)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A0AEC0";
 
 interface EmailAccount {
-  id: string;
   address: string;
   token: string;
-  password: string;
-  createdAt: string;
+  id: string;
 }
 
 interface Message {
   id: string;
-  from: { name: string; address: string };
+  from: { address: string; name: string };
   subject: string;
   intro: string;
-  seen: boolean;
   createdAt: string;
-  hasAttachments: boolean;
-}
-
-interface MessageDetail {
-  id: string;
-  from: { name: string; address: string };
-  subject: string;
-  text: string;
-  html: string[];
-  createdAt: string;
-  hasAttachments: boolean;
-}
-
-// Generate random string
-function randomString(length: number): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-// Sanitize custom username: lowercase, alphanumeric + dot/underscore/hyphen only
-function sanitizeUsername(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]/g, "")
-    .slice(0, 40);
-}
-
-// Format time ago
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return `${diff} সেকেন্ড আগে`;
-  if (diff < 3600) return `${Math.floor(diff / 60)} মিনিট আগে`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} ঘণ্টা আগে`;
-  return `${Math.floor(diff / 86400)} দিন আগে`;
 }
 
 export default function TempEmail() {
   const [account, setAccount] = useState<EmailAccount | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [selectedMessage, setSelectedMessage] = useState<MessageDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(30);
   const [generating, setGenerating] = useState(false);
-  const [viewingMessage, setViewingMessage] = useState(false);
-  const [customUsername, setCustomUsername] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [countdown, setCountdown] = useState(15);
   const [useCustom, setUseCustom] = useState(false);
-  const [availableDomain, setAvailableDomain] = useState<string>("...");
+  const [customUsername, setCustomUsername] = useState("");
+  const [availableDomain, setAvailableDomain] = useState("mail.tm");
   const [allDomains, setAllDomains] = useState<string[]>([]);
   const [showQr, setShowQr] = useState(false);
-  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Load domain on mount
-  useEffect(() => {
-    getDomains().then((domains) => {
-      if (domains.length > 0) {
-        setAllDomains(domains);
-        setAvailableDomain(domains[0]);
-      }
-    }).catch(() => setAvailableDomain("mail.tm"));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Fetch available domains
-  const getDomains = async (): Promise<string[]> => {
-    const res = await fetch(`${API_BASE}/domains?page=1`);
-    if (!res.ok) throw new Error("ডোমেইন লোড করতে সমস্যা হয়েছে");
-    const data = await res.json();
-    const members = data["hydra:member"] || [];
-    return members.filter((d: { isActive: boolean }) => d.isActive).map((d: { domain: string }) => d.domain);
-  };
-
-  // Create new email account
-  const createAccount = async (preferredUsername?: string): Promise<EmailAccount> => {
-    const domain = availableDomain;
-    // Use custom username if provided, else random
-    const baseUsername = preferredUsername ? sanitizeUsername(preferredUsername) : "";
-    const password = randomString(16);
-
-    // Try exact username first, then fallback with suffix if taken
-    const tryAddresses = baseUsername.length >= 3
-      ? [
-          `${baseUsername}@${domain}`,
-          `${baseUsername}${randomString(2)}@${domain}`,
-          `${baseUsername}${randomString(4)}@${domain}`,
-        ]
-      : [`${randomString(10)}@${domain}`];
-
-    let address = tryAddresses[0];
-    let accountData: Record<string, string> | null = null;
-
-    for (const addr of tryAddresses) {
-      const tryRes = await fetch(`${API_BASE}/accounts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: addr, password }),
-      });
-      if (tryRes.ok) {
-        accountData = await tryRes.json();
-        address = addr;
-        break;
+  useEffect(() => {
+    const fetchDomains = async () => {
+      try {
+        const res = await fetch("https://api.mail.tm/domains");
+        const data = await res.json();
+        if (data["hydra:member"] && data["hydra:member"].length > 0) {
+          const domains = data["hydra:member"].map((d: any) => d.domain);
+          setAllDomains(domains);
+          setAvailableDomain(domains[0]);
+        }
+      } catch (e) {
+        console.error("Failed to fetch domains", e);
+        setAllDomains(["mail.tm"]);
       }
-      // If last attempt, throw error
-      if (addr === tryAddresses[tryAddresses.length - 1]) {
-        const err = await tryRes.json().catch(() => ({}));
-        throw new Error((err as Record<string, string>)["hydra:description"] || "অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
-      }
-    }
-    if (!accountData) throw new Error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
-
-    // Get token
-    const tokenRes = await fetch(`${API_BASE}/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address, password }),
-    });
-    if (!tokenRes.ok) throw new Error("টোকেন পেতে সমস্যা হয়েছে");
-    const tokenData = await tokenRes.json();
-
-    return {
-      id: accountData.id,
-      address,
-      token: tokenData.token,
-      password,
-      createdAt: accountData.createdAt,
     };
-  };
-
-  // Fetch messages
-  const fetchMessages = useCallback(async (acc: EmailAccount) => {
-    try {
-      const res = await fetch(`${API_BASE}/messages?page=1`, {
-        headers: { Authorization: `Bearer ${acc.token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      setMessages(data["hydra:member"] || []);
-    } catch {
-      // Silent fail
-    }
+    fetchDomains();
   }, []);
 
-  // Fetch single message detail
-  const fetchMessageDetail = async (msgId: string, acc: EmailAccount) => {
-    setViewingMessage(true);
-    try {
-      const res = await fetch(`${API_BASE}/messages/${msgId}`, {
-        headers: { Authorization: `Bearer ${acc.token}` },
-      });
-      if (!res.ok) throw new Error("ইমেইল লোড করতে সমস্যা হয়েছে");
-      const data = await res.json();
-      setSelectedMessage(data);
-      // Mark as read
-      setMessages((prev) =>
-        prev.map((m) => (m.id === msgId ? { ...m, seen: true } : m))
-      );
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "ইমেইল লোড করতে সমস্যা হয়েছে");
-    } finally {
-      setViewingMessage(false);
-    }
-  };
-
-  // Delete message
-  const deleteMessage = async (msgId: string) => {
-    if (!account) return;
-    try {
-      await fetch(`${API_BASE}/messages/${msgId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${account.token}` },
-      });
-      setMessages((prev) => prev.filter((m) => m.id !== msgId));
-      if (selectedMessage?.id === msgId) setSelectedMessage(null);
-    } catch {
-      // Silent fail
-    }
-  };
-
-  // Start auto-refresh
-  const startAutoRefresh = useCallback(
-    (acc: EmailAccount) => {
-      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-
-      setCountdown(30);
-      refreshIntervalRef.current = setInterval(() => {
-        fetchMessages(acc);
-        setCountdown(30);
-      }, 30000);
-
-      countdownIntervalRef.current = setInterval(() => {
-        setCountdown((c) => (c > 0 ? c - 1 : 30));
-      }, 1000);
-    },
-    [fetchMessages]
-  );
-
-  // Generate new email
   const generateEmail = async () => {
     setGenerating(true);
     setError(null);
-    setMessages([]);
-    setSelectedMessage(null);
     try {
-      const preferred = useCustom && customUsername.trim().length >= 3 ? customUsername.trim() : undefined;
-      const acc = await createAccount(preferred);
-      setAccount(acc);
-      await fetchMessages(acc);
-      startAutoRefresh(acc);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "ইমেইল তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      const username = useCustom && customUsername.trim().length >= 3 
+        ? customUsername.trim().toLowerCase() 
+        : Math.random().toString(36).substring(2, 12);
+      
+      const address = `${username}@${availableDomain}`;
+      const password = Math.random().toString(36).substring(2, 15);
+
+      const createRes = await fetch("https://api.mail.tm/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address, password }),
+      });
+
+      if (!createRes.ok) {
+        const errData = await createRes.json();
+        throw new Error(errData.detail || "ইমেইল তৈরি করতে সমস্যা হয়েছে। অন্য নাম চেষ্টা করুন।");
+      }
+
+      const tokenRes = await fetch("https://api.mail.tm/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address, password }),
+      });
+
+      const tokenData = await tokenRes.json();
+      const newAccount = { address, token: tokenData.token, id: tokenData.id };
+      
+      setAccount(newAccount);
+      localStorage.setItem("temp_email_account", JSON.stringify(newAccount));
+      setMessages([]);
+      setCountdown(15);
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setGenerating(false);
     }
   };
 
-  // Manual refresh
-  const manualRefresh = async () => {
-    if (!account || refreshing) return;
+  const fetchMessages = useCallback(async () => {
+    if (!account) return;
     setRefreshing(true);
-    await fetchMessages(account);
-    setCountdown(30);
-    setRefreshing(false);
-  };
-
-  // Copy email
-  const copyEmail = () => {
-    if (!account) return;
-    navigator.clipboard.writeText(account.address).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
-  // Delete account and generate new one
-  const deleteAccount = async () => {
-    if (!account) return;
-    setLoading(true);
     try {
-      await fetch(`${API_BASE}/accounts/${account.id}`, {
-        method: "DELETE",
+      const res = await fetch("https://api.mail.tm/messages", {
         headers: { Authorization: `Bearer ${account.token}` },
       });
-    } catch {
-      // Silent fail
+      const data = await res.json();
+      setMessages(data["hydra:member"] || []);
+    } catch (e) {
+      console.error("Failed to fetch messages", e);
+    } finally {
+      setRefreshing(false);
     }
-    setAccount(null);
-    setMessages([]);
-    setSelectedMessage(null);
-    if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    setLoading(false);
-  };
+  }, [account]);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    };
+    const saved = localStorage.getItem("temp_email_account");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setAccount(parsed);
+    }
   }, []);
 
-  const unreadCount = messages.filter((m) => !m.seen).length;
+  useEffect(() => {
+    if (!account) return;
+    fetchMessages();
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          fetchMessages();
+          return 15;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [account, fetchMessages]);
+
+  const copyEmail = () => {
+    if (!account) return;
+    navigator.clipboard.writeText(account.address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const deleteAccount = () => {
+    if (window.confirm("আপনি কি নিশ্চিতভাবে এই ইমেইলটি মুছে ফেলতে চান?")) {
+      localStorage.removeItem("temp_email_account");
+      setAccount(null);
+      setMessages([]);
+      setUseCustom(false);
+      setCustomUsername("");
+    }
+  };
+
+  const manualRefresh = () => {
+    setCountdown(15);
+    fetchMessages();
+  };
 
   return (
     <>
       <Seo
         title="বিনামূল্যে টেম্পোরারি ইমেইল | ডিসপোজেবল ইমেইল সার্ভিস | Temporary Email"
-        description="স্প্যাম ও অবাঞ্ছিত মেইল থেকে আপনার আসল ইমেইল সুরক্ষিত রাখুন। রেজিস্ট্রেশন ছাড়াই তাৎক্ষণিক টেম্পোরারি ইমেইল তৈরি করুন এবং SMS ভেরিফিকেশন ও OTP গ্রহণ করুন।"
+        description="নিরাপদ এবং গোপনীয় টেম্পোরারি ইমেইল ব্যবহার করুন। কোনো রেজিস্ট্রেশন ছাড়াই তাৎক্ষণিক ইনবক্স পান এবং স্প্যাম থেকে বাঁচুন।"
         path="/temp-email"
-        seoKeywords="temporary email, temp mail, disposable email, free temp mail, temporary email address, temp email generator, otp email, sms verification email, অস্থায়ী ইমেইল, টেম্প মেইল, ডিসপোজেবল ইমেইল, ফ্রি টেম্প মেইল, অস্থায়ী ইমেইল ঠিকানা, টেম্প ইমেইল জেনারেটর, ওটিপি ইমেইল, এসএমএস ভেরিফিকেশন ইমেইল"
+        seoKeywords="temporary email, temp mail, disposable email, burner email, free temp mail, anonymous email, টেম্পোরারি ইমেইল, টেম্প মেইল, ডিসপোজেবল ইমেইল, বার্নার ইমেইল, ফ্রি টেম্প মেইল, বেনামী ইমেইল"
       />
       <Navbar />
-      <main
+      <div
+        className="min-h-screen"
         style={{
-          minHeight: "100vh",
-          background: BG,
+          background: "linear-gradient(135deg, #060E1A 0%, #0a1628 100%)",
+          color: TEXT,
+          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
           paddingTop: "var(--site-nav-offset, 70px)",
-          paddingBottom: 60,
         }}
       >
         {/* Hero Section */}
-        <section
-          style={{
-            background: `linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%)`,
-            borderBottom: `1px solid ${BORDER}`,
-            padding: "48px 20px 40px",
-            textAlign: "center",
-          }}
-        >
+        <section style={{ textAlign: "center", padding: "60px 20px 40px" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
           >
             <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                background: "rgba(201,168,76,0.1)",
-                border: `1px solid rgba(201,168,76,0.3)`,
+                background: "rgba(201,168,76,0.12)",
+                border: `1px solid ${BORDER}`,
+                padding: "8px 16px",
                 borderRadius: 100,
-                padding: "6px 16px",
-                marginBottom: 20,
+                marginBottom: 24,
               }}
             >
-              <Shield size={14} color={GOLD} />
-              <span style={{ color: GOLD, fontSize: "0.8rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                সম্পূর্ণ বিনামূল্যে ও নিরাপদ
+              <Zap size={14} color={GOLD} />
+              <span style={{ color: GOLD, fontSize: "0.75rem", fontWeight: 700, letterSpacing: 1.2, uppercase: true }}>
+                তাৎক্ষণিক সার্ভিস
               </span>
             </div>
             <h1
               style={{
-                color: TEXT,
-                fontSize: "clamp(1.8rem, 5vw, 2.8rem)",
+                fontSize: "clamp(2rem, 5vw, 3.5rem)",
+                fontWeight: 800,
+                marginBottom: 16,
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
-                fontWeight: 700,
-                margin: "0 0 12px",
-                lineHeight: 1.3,
+                background: `linear-gradient(to bottom, #FFFFFF, ${MUTED})`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
               }}
             >
-              টেম্পোরারি{" "}
-              <span style={{ color: GOLD }}>ইমেইল</span>
+              টেম্পোরারি ইমেইল
             </h1>
-            <p
-              style={{
-                color: MUTED,
-                fontSize: "clamp(0.9rem, 2.5vw, 1.05rem)",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                maxWidth: 520,
-                margin: "0 auto 32px",
-                lineHeight: 1.7,
-              }}
-            >
-              আপনার আসল ইমেইল গোপন রাখুন। যেকোনো ওয়েবসাইটে রেজিস্ট্রেশনের জন্য তাৎক্ষণিক ডিসপোজেবল ইমেইল তৈরি করুন।
+            <p style={{ color: MUTED, fontSize: "1.1rem", maxWidth: 600, margin: "0 auto 32px", lineHeight: 1.6 }}>
+              আপনার আসল ইমেইল গোপন রাখুন। স্প্যাম থেকে বাঁচতে ব্যবহার করুন আমাদের প্রিমিয়াম ডিসপোজেবল ইমেইল সার্ভিস।
             </p>
-
-            {/* Feature badges */}
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              {[
-                { icon: Zap, label: "তাৎক্ষণিক" },
-                { icon: Lock, label: "কোনো রেজিস্ট্রেশন নেই" },
-                { icon: Shield, label: "স্প্যাম প্রতিরোধ" },
-                { icon: RefreshCw, label: "অটো রিফ্রেশ" },
-              ].map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    background: "rgba(255,255,255,0.04)",
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: 8,
-                    padding: "6px 12px",
-                  }}
-                >
-                  <Icon size={13} color={GOLD} />
-                  <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
           </motion.div>
         </section>
 
         {/* Main Content */}
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 16px 0" }}>
-          {/* Error */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -434,20 +257,12 @@ export default function TempEmail() {
                 }}
               >
                 <AlertCircle size={16} color="#ef4444" />
-                <span style={{ color: "#ef4444", fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                  {error}
-                </span>
-                <button
-                  onClick={() => setError(null)}
-                  style={{ marginLeft: "auto", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "1.1rem" }}
-                >
-                  ×
-                </button>
+                <span style={{ color: "#ef4444", fontSize: "0.9rem" }}>{error}</span>
+                <button onClick={() => setError(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "1.1rem" }}>×</button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Email Display Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -461,918 +276,127 @@ export default function TempEmail() {
             }}
           >
             {!account ? (
-              /* Generate Button */
               <div style={{ textAlign: "center", padding: "20px 0" }}>
-                <div
-                  style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    background: "rgba(201,168,76,0.1)",
-                    border: `2px solid rgba(201,168,76,0.3)`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto 20px",
-                  }}
-                >
+                <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(201,168,76,0.1)", border: `2px solid rgba(201,168,76,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
                   <Mail size={32} color={GOLD} />
                 </div>
-                <h2
-                  style={{
-                    color: TEXT,
-                    fontSize: "1.3rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
-                    fontWeight: 600,
-                    margin: "0 0 8px",
-                  }}
-                >
-                  নতুন টেম্পোরারি ইমেইল তৈরি করুন
-                </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", margin: "0 0 20px" }}>
-                  একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
-                </p>
-
-                {/* Domain Selector */}
+                <h2 style={{ color: TEXT, fontSize: "1.3rem", fontWeight: 600, margin: "0 0 8px" }}>নতুন ইমেইল তৈরি করুন</h2>
+                
                 {allDomains.length > 0 && (
                   <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: MUTED, fontSize: '0.85rem', fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                      <Globe size={14} color={GOLD} />
-                      ডোমেইন:
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: MUTED, fontSize: '0.85rem' }}>
+                      <Globe size={14} color={GOLD} /> ডোমেইন:
                     </div>
                     <select 
                       value={availableDomain}
                       onChange={(e) => setAvailableDomain(e.target.value)}
-                      style={{
-                        background: "rgba(255,255,255,0.05)",
-                        color: TEXT,
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: 8,
-                        padding: '4px 10px',
-                        fontSize: '0.85rem',
-                        outline: 'none',
-                        cursor: 'pointer'
-                      }}
+                      style={{ background: "rgba(255,255,255,0.05)", color: TEXT, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '4px 10px', fontSize: '0.85rem', outline: 'none', cursor: 'pointer' }}
                     >
                       {allDomains.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
                 )}
 
-                {/* Custom username toggle */}
                 <div style={{ marginBottom: 20, textAlign: "left", maxWidth: 420, margin: "0 auto 20px" }}>
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      cursor: "pointer",
-                      marginBottom: useCustom ? 12 : 0,
-                      userSelect: "none",
-                    }}
-                  >
-                    <div
-                      onClick={() => setUseCustom(!useCustom)}
-                      style={{
-                        width: 40,
-                        height: 22,
-                        borderRadius: 11,
-                        background: useCustom ? GOLD : "rgba(255,255,255,0.1)",
-                        border: `1px solid ${useCustom ? GOLD : "rgba(255,255,255,0.2)"}`,
-                        position: "relative",
-                        transition: "all 0.2s",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          background: "#fff",
-                          position: "absolute",
-                          top: 2,
-                          left: useCustom ? 20 : 2,
-                          transition: "left 0.2s",
-                        }}
-                      />
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: useCustom ? 12 : 0 }}>
+                    <div onClick={() => setUseCustom(!useCustom)} style={{ width: 40, height: 22, borderRadius: 11, background: useCustom ? GOLD : "rgba(255,255,255,0.1)", border: `1px solid ${useCustom ? GOLD : "rgba(255,255,255,0.2)"}`, position: "relative", transition: "all 0.2s" }}>
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: useCustom ? 20 : 2, transition: "left 0.2s" }} />
                     </div>
-                    <span
-                      onClick={() => setUseCustom(!useCustom)}
-                      style={{ color: MUTED, fontSize: "0.85rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}
-                    >
-                      কাস্টম নাম দিয়ে ইমেইল তৈরি করুন
-                    </span>
+                    <span style={{ color: MUTED, fontSize: "0.85rem" }}>কাস্টম নাম ব্যবহার করুন</span>
                   </label>
-
                   {useCustom && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 0, background: "rgba(201,168,76,0.06)", border: `1px solid rgba(201,168,76,0.3)`, borderRadius: 12, overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", background: "rgba(201,168,76,0.06)", border: `1px solid rgba(201,168,76,0.3)`, borderRadius: 12, overflow: "hidden" }}>
                       <input
                         type="text"
                         value={customUsername}
                         onChange={(e) => setCustomUsername(e.target.value.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 30))}
-                        placeholder="MahbubSardarSabuj"
-                        maxLength={30}
-                        style={{
-                          flex: 1,
-                          background: "transparent",
-                          border: "none",
-                          outline: "none",
-                          color: TEXT,
-                          fontSize: "0.95rem",
-                          fontFamily: "monospace",
-                          padding: "10px 14px",
-                        }}
+                        placeholder="আপনার নাম"
+                        style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: TEXT, padding: "10px 14px" }}
                       />
-                      <span style={{ color: GOLD, fontSize: "0.8rem", fontFamily: "monospace", padding: "0 12px", whiteSpace: "nowrap", borderLeft: `1px solid rgba(201,168,76,0.2)` }}>
-                        @{availableDomain}
-                      </span>
+                      <span style={{ color: GOLD, fontSize: "0.8rem", padding: "0 12px", borderLeft: `1px solid rgba(201,168,76,0.2)` }}>@{availableDomain}</span>
                     </div>
-                  )}
-                  {useCustom && customUsername.length > 0 && customUsername.length < 3 && (
-                    <p style={{ color: "#f59e0b", fontSize: "0.78rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", margin: "6px 0 0" }}>
-                      কমপক্ষে ৩টি অক্ষর দিন
-                    </p>
                   )}
                 </div>
 
                 <button
                   onClick={generateEmail}
-                  disabled={generating || (useCustom && customUsername.trim().length > 0 && customUsername.trim().length < 3)}
-                  style={{
-                    background: generating
-                      ? "rgba(201,168,76,0.3)"
-                      : `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
-                    color: generating ? MUTED : "#060E1A",
-                    border: "none",
-                    borderRadius: 14,
-                    padding: "14px 36px",
-                    fontSize: "1rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    fontWeight: 700,
-                    cursor: generating ? "not-allowed" : "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    transition: "all 0.2s",
-                    boxShadow: generating ? "none" : `0 4px 20px rgba(201,168,76,0.3)`,
-                  }}
+                  disabled={generating}
+                  style={{ background: generating ? "rgba(201,168,76,0.3)" : `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#060E1A", border: "none", borderRadius: 14, padding: "14px 36px", fontSize: "1rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10, transition: "all 0.2s" }}
                 >
-                  {generating ? (
-                    <>
-                      <RefreshCw size={18} style={{ animation: "spin 1s linear infinite" }} />
-                      তৈরি হচ্ছে...
-                    </>
-                  ) : (
-                    <>
-                      <Zap size={18} />
-                      ইমেইল তৈরি করুন
-                    </>
-                  )}
+                  {generating ? <RefreshCw size={18} className="animate-spin" /> : <Zap size={18} />}
+                  ইমেইল তৈরি করুন
                 </button>
               </div>
             ) : (
-              /* Email Address Display */
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 16,
-                  }}
-                >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
                   <CheckCircle size={16} color="#22c55e" />
-                  <span style={{ color: "#22c55e", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                    ইমেইল সক্রিয় আছে
-                  </span>
+                  <span style={{ color: "#22c55e", fontSize: "0.85rem" }}>ইমেইল সক্রিয় আছে</span>
                   <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
                     <Clock size={13} color={MUTED} />
-                    <span style={{ color: MUTED, fontSize: "0.78rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-                      {countdown}s পরে রিফ্রেশ
-                    </span>
+                    <span style={{ color: MUTED, fontSize: "0.78rem" }}>{countdown}s পরে রিফ্রেশ</span>
                   </div>
                 </div>
 
-                {/* Email Address Box */}
-                <div
-                  style={{
-                    background: "rgba(201,168,76,0.06)",
-                    border: `2px solid rgba(201,168,76,0.3)`,
-                    borderRadius: 14,
-                    padding: "16px 20px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    marginBottom: 16,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Mail size={20} color={GOLD} style={{ flexShrink: 0 }} />
-                  <span
-                    style={{
-                      color: TEXT,
-                      fontSize: "clamp(0.9rem, 3vw, 1.1rem)",
-                      fontFamily: "monospace",
-                      fontWeight: 600,
-                      flex: 1,
-                      wordBreak: "break-all",
-                    }}
-                  >
-                    {account.address}
-                  </span>
-                  <button
-                    onClick={copyEmail}
-                    style={{
-                      background: copied ? "rgba(34,197,94,0.15)" : "rgba(201,168,76,0.1)",
-                      border: `1px solid ${copied ? "rgba(34,197,94,0.4)" : "rgba(201,168,76,0.3)"}`,
-                      borderRadius: 10,
-                      padding: "8px 16px",
-                      color: copied ? "#22c55e" : GOLD,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      fontSize: "0.85rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.2s",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {copied ? <CheckCircle size={15} /> : <Copy size={15} />}
-                    {copied ? "কপি হয়েছে!" : "কপি করুন"}
+                <div style={{ background: "rgba(201,168,76,0.06)", border: `2px solid rgba(201,168,76,0.3)`, borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+                  <Mail size={20} color={GOLD} />
+                  <span style={{ color: TEXT, fontSize: "1.1rem", fontFamily: "monospace", fontWeight: 600, flex: 1, wordBreak: "break-all" }}>{account.address}</span>
+                  <button onClick={copyEmail} style={{ background: copied ? "rgba(34,197,94,0.15)" : "rgba(201,168,76,0.1)", border: `1px solid ${copied ? "rgba(34,197,94,0.4)" : "rgba(201,168,76,0.3)"}`, borderRadius: 10, padding: "8px 16px", color: copied ? "#22c55e" : GOLD, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem" }}>
+                    {copied ? <CheckCircle size={15} /> : <Copy size={15} />} {copied ? "কপি হয়েছে!" : "কপি করুন"}
                   </button>
                 </div>
 
-                {/* Action Buttons */}
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <button
-                    onClick={manualRefresh}
-                    disabled={refreshing}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: 10,
-                      padding: "9px 18px",
-                      color: TEXT,
-                      cursor: refreshing ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 7,
-                      fontSize: "0.85rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <RefreshCw
-                      size={15}
-                      color={GOLD}
-                      style={{ animation: refreshing ? "spin 1s linear infinite" : "none" }}
-                    />
-                    ইনবক্স রিফ্রেশ
+                  <button onClick={manualRefresh} disabled={refreshing} style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "9px 18px", color: TEXT, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontSize: "0.85rem" }}>
+                    <RefreshCw size={15} color={GOLD} className={refreshing ? "animate-spin" : ""} /> ইনবক্স রিফ্রেশ
                   </button>
-
-                  <button
-                    onClick={generateEmail}
-                    disabled={generating}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: 10,
-                      padding: "9px 18px",
-                      color: TEXT,
-                      cursor: generating ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 7,
-                      fontSize: "0.85rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <Zap size={15} color={GOLD} />
-                    নতুন ইমেইল
+                  <button onClick={() => setShowQr(!showQr)} style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, borderRadius: 10, padding: "9px 18px", color: TEXT, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontSize: "0.85rem" }}>
+                    <QrCode size={15} color={GOLD} /> QR কোড
                   </button>
-
-                  <button
-                    onClick={() => setShowQr(!showQr)}
-                    style={{
-                      background: "rgba(201,168,76,0.1)",
-                      border: `1px solid rgba(201,168,76,0.3)`,
-                      borderRadius: 10,
-                      padding: "9px 18px",
-                      color: GOLD,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 7,
-                      fontSize: "0.85rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <QrCode size={15} />
-                    QR কোড
-                  </button>
-                  <button
-                    onClick={deleteAccount}
-                    disabled={loading}
-                    style={{
-                      background: "rgba(239,68,68,0.06)",
-                      border: "1px solid rgba(239,68,68,0.2)",
-                      borderRadius: 10,
-                      padding: "9px 18px",
-                      color: "#ef4444",
-                      cursor: loading ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 7,
-                      fontSize: "0.85rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      transition: "all 0.2s",
-                      marginLeft: "auto",
-                    }}
-                  >
-                    <Trash2 size={15} />
-                    মুছে ফেলুন
+                  <button onClick={deleteAccount} style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "9px 18px", color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontSize: "0.85rem", marginLeft: "auto" }}>
+                    <Trash2 size={15} /> মুছে ফেলুন
                   </button>
                 </div>
 
                 {showQr && (
-                  <div style={{ marginTop: 20, textAlign: 'center' }}>
-                    <div style={{ display: 'inline-block', padding: 12, background: '#fff', borderRadius: 12 }}>
-                      <QRCodeSVG value={account.address} size={128} />
-                    </div>
-                    <p style={{ color: MUTED, fontSize: '0.75rem', marginTop: 8 }}>ইমেইল স্ক্যান করুন</p>
+                  <div style={{ marginTop: 20, textAlign: 'center', padding: 20, background: 'white', borderRadius: 12, display: 'inline-block' }}>
+                    <QRCodeSVG value={account.address} size={150} />
                   </div>
                 )}
               </div>
             )}
           </motion.div>
 
-          {/* Inbox */}
-
-          {/* How to Use Section */}
-          <div style={{ marginTop: 40, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
-            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>কীভাবে ব্যবহার করবেন?</h2>
-            <ol style={{ listStyleType: "decimal", listStylePosition: "inside", color: MUTED, lineHeight: 1.6, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-              <li>উপরে তালিকা থেকে আপনার পছন্দের একটি টেম্পোরারি ইমেইল ডোমেইন বেছে নিন।</li>
-              <li>"ইমেইল তৈরি করুন" বাটনে ক্লিক করে একটি নতুন টেম্পোরারি ইমেইল অ্যাড্রেস তৈরি করুন। আপনি চাইলে কাস্টম ইউজারনেমও ব্যবহার করতে পারেন।</li>
-              <li>আপনি যে সার্ভিস বা ওয়েবসাইটে রেজিস্ট্রেশন করতে চান, সেখানে এই ইমেইল অ্যাড্রেসটি ব্যবহার করুন।</li>
-              <li>ভেরিফিকেশন ইমেইল বা কোড আসার জন্য এই পেজে কিছুক্ষণ অপেক্ষা করুন। নতুন বার্তা স্বয়ংক্রিয়ভাবে ইনবক্সে লোড হবে।</li>
-              <li>যদি বার্তা না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করতে পারেন।</li>
-              <li>আপনার কাজ শেষ হলে, আপনি 'নতুন ইমেইল' বাটনে ক্লিক করে একটি নতুন ইমেইল তৈরি করতে পারেন বা পেজটি বন্ধ করে দিতে পারেন।</li>
-            </ol>
-          </div>
-
-          {/* FAQ Section */}
-          <div style={{ marginTop: 24, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
-            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>সাধারণ জিজ্ঞাসা (FAQ)</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>১. টেম্পোরারি ইমেইল কী?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>টেম্পোরারি ইমেইল হলো একটি অস্থায়ী, ডিসপোজেবল ইমেইল অ্যাড্রেস যা আপনি অনলাইন রেজিস্ট্রেশন, নিউজলেটার সাবস্ক্রিপশন বা OTP গ্রহণের জন্য ব্যবহার করতে পারেন। এটি আপনার আসল ইমেইল অ্যাড্রেসকে স্প্যাম এবং অবাঞ্ছিত মেইল থেকে রক্ষা করে।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>২. এই সার্ভিস কি বিনামূল্যে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, আমাদের টেম্পোরারি ইমেইল সার্ভিস সম্পূর্ণ বিনামূল্যে। কোনো রেজিস্ট্রেশন বা সাবস্ক্রিপশনের প্রয়োজন নেই।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৩. ইমেইল আসতে কতক্ষণ সময় লাগে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ভেরিফিকেশন ইমেইল বা কোড কয়েক সেকেন্ড থেকে কয়েক মিনিটের মধ্যে চলে আসে। যদি না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করে দেখতে পারেন।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৪. আমার পাঠানো ইমেইল কি অন্য কেউ দেখতে পাবে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, এই ইমেইল অ্যাড্রেসগুলো পাবলিক এবং এখানে আসা সব ইমেইল সবাই দেখতে পাবে। তাই ব্যক্তিগত বা সংবেদনশীল তথ্যের জন্য এই ইমেইল ব্যবহার না করাই ভালো।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৫. আমি কি এই ইমেইল অ্যাড্রেসগুলো দিয়ে ইমেইল পাঠাতে পারব?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>না, এই সার্ভিসটি শুধুমাত্র ইমেইল গ্রহণ করার জন্য ডিজাইন করা হয়েছে। আপনি এই ইমেইল অ্যাড্রেসগুলো ব্যবহার করে কোনো ইমেইল পাঠাতে পারবেন না।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৬. কতক্ষণ পর্যন্ত ইমেইলগুলো ইনবক্সে থাকে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ইমেইলগুলো নির্দিষ্ট সময় (যেমন ১ ঘণ্টা) পর্যন্ত ইনবক্সে থাকে, এরপর স্বয়ংক্রিয়ভাবে মুছে যায়।</p>
-              </div>
+          {/* Inbox Section */}
+          <div style={{ marginBottom: 60 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <Inbox size={20} color={GOLD} />
+              <h3 style={{ color: TEXT, fontSize: "1.2rem", fontWeight: 600 }}>ইনবক্স</h3>
+              {refreshing && <span style={{ color: MUTED, fontSize: "0.8rem" }}>আপডেট হচ্ছে...</span>}
             </div>
-          </div>
 
-          {/* How to Use Section */}
-          <div style={{ marginTop: 40, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
-            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>কীভাবে ব্যবহার করবেন?</h2>
-            <ol style={{ listStyleType: "decimal", listStylePosition: "inside", color: MUTED, lineHeight: 1.6, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
-              <li>উপরে তালিকা থেকে আপনার পছন্দের একটি টেম্পোরারি ইমেইল ডোমেইন বেছে নিন।</li>
-              <li>"ইমেইল তৈরি করুন" বাটনে ক্লিক করে একটি নতুন টেম্পোরারি ইমেইল অ্যাড্রেস তৈরি করুন। আপনি চাইলে কাস্টম ইউজারনেমও ব্যবহার করতে পারেন।</li>
-              <li>আপনি যে সার্ভিস বা ওয়েবসাইটে রেজিস্ট্রেশন করতে চান, সেখানে এই ইমেইল অ্যাড্রেসটি ব্যবহার করুন।</li>
-              <li>ভেরিফিকেশন ইমেইল বা কোড আসার জন্য এই পেজে কিছুক্ষণ অপেক্ষা করুন। নতুন বার্তা স্বয়ংক্রিয়ভাবে ইনবক্সে লোড হবে।</li>
-              <li>যদি বার্তা না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করতে পারেন।</li>
-              <li>আপনার কাজ শেষ হলে, আপনি 'নতুন ইমেইল' বাটনে ক্লিক করে একটি নতুন ইমেইল তৈরি করতে পারেন বা পেজটি বন্ধ করে দিতে পারেন।</li>
-            </ol>
-          </div>
-
-          {/* FAQ Section */}
-          <div style={{ marginTop: 24, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
-            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>সাধারণ জিজ্ঞাসা (FAQ)</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>১. টেম্পোরারি ইমেইল কী?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>টেম্পোরারি ইমেইল হলো একটি অস্থায়ী, ডিসপোজেবল ইমেইল অ্যাড্রেস যা আপনি অনলাইন রেজিস্ট্রেশন, নিউজলেটার সাবস্ক্রিপশন বা OTP গ্রহণের জন্য ব্যবহার করতে পারেন। এটি আপনার আসল ইমেইল অ্যাড্রেসকে স্প্যাম এবং অবাঞ্ছিত মেইল থেকে রক্ষা করে।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>২. এই সার্ভিস কি বিনামূল্যে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, আমাদের টেম্পোরারি ইমেইল সার্ভিস সম্পূর্ণ বিনামূল্যে। কোনো রেজিস্ট্রেশন বা সাবস্ক্রিপশনের প্রয়োজন নেই।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৩. ইমেইল আসতে কতক্ষণ সময় লাগে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ভেরিফিকেশন ইমেইল বা কোড কয়েক সেকেন্ড থেকে কয়েক মিনিটের মধ্যে চলে আসে। যদি না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করে দেখতে পারেন।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৪. আমার পাঠানো ইমেইল কি অন্য কেউ দেখতে পাবে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, এই ইমেইল অ্যাড্রেসগুলো পাবলিক এবং এখানে আসা সব ইমেইল সবাই দেখতে পাবে। তাই ব্যক্তিগত বা সংবেদনশীল তথ্যের জন্য এই ইমেইল ব্যবহার না করাই ভালো।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৫. আমি কি এই ইমেইল অ্যাড্রেসগুলো দিয়ে ইমেইল পাঠাতে পারব?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>না, এই সার্ভিসটি শুধুমাত্র ইমেইল গ্রহণ করার জন্য ডিজাইন করা হয়েছে। আপনি এই ইমেইল অ্যাড্রেসগুলো ব্যবহার করে কোনো ইমেইল পাঠাতে পারবেন না।</p>
-              </div>
-              <div>
-                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৬. কতক্ষণ পর্যন্ত ইমেইলগুলো ইনবক্সে থাকে?</h3>
-                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ইমেইলগুলো নির্দিষ্ট সময় (যেমন ১ ঘণ্টা) পর্যন্ত ইনবক্সে থাকে, এরপর স্বয়ংক্রিয়ভাবে মুছে যায়।</p>
-              </div>
-            </div>
-          </div>
-          <AnimatePresence>
-            {account && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                {/* Inbox Header */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    marginBottom: 16,
-                  }}
-                >
-                  <Inbox size={18} color={GOLD} />
-                  <h2
-                    style={{
-                      color: TEXT,
-                      fontSize: "1.1rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
-                      fontWeight: 600,
-                      margin: 0,
-                    }}
-                  >
-                    ইনবক্স
-                  </h2>
-                  {unreadCount > 0 && (
-                    <span
-                      style={{
-                        background: GOLD,
-                        color: "#060E1A",
-                        borderRadius: 100,
-                        padding: "2px 10px",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {unreadCount} নতুন
-                    </span>
-                  )}
-                  <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginLeft: "auto" }}>
-                    {messages.length} টি মেইল
-                  </span>
-                </div>
-
-                {/* Message List */}
-                {messages.length === 0 ? (
-                  <div
-                    style={{
-                      background: CARD_BG,
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: 16,
-                      padding: "40px 20px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Mail size={40} color="rgba(201,168,76,0.3)" style={{ marginBottom: 12 }} />
-                    <p style={{ color: MUTED, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", margin: 0 }}>
-                      এখনো কোনো ইমেইল আসেনি
-                    </p>
-                    <p style={{ color: "rgba(250,246,239,0.3)", fontSize: "0.82rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginTop: 6 }}>
-                      ইমেইল আসলে এখানে দেখাবে। প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়।
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {messages.map((msg) => (
-                      <motion.div
-                        key={msg.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        style={{
-                          background: msg.seen ? CARD_BG : "rgba(201,168,76,0.05)",
-                          border: `1px solid ${msg.seen ? BORDER : "rgba(201,168,76,0.25)"}`,
-                          borderRadius: 14,
-                          padding: "16px 18px",
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                        }}
-                        onClick={() => fetchMessageDetail(msg.id, account)}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(201,168,76,0.4)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.borderColor = msg.seen ? BORDER : "rgba(201,168,76,0.25)";
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                          <div
-                            style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: "50%",
-                              background: "rgba(201,168,76,0.12)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              flexShrink: 0,
-                              fontSize: "0.9rem",
-                              color: GOLD,
-                              fontWeight: 700,
-                            }}
-                          >
-                            {(msg.from.name || msg.from.address)[0].toUpperCase()}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                              <span
-                                style={{
-                                  color: msg.seen ? MUTED : TEXT,
-                                  fontSize: "0.85rem",
-                                  fontWeight: msg.seen ? 400 : 600,
-                                  fontFamily: "monospace",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                  maxWidth: "200px",
-                                }}
-                              >
-                                {msg.from.name || msg.from.address}
-                              </span>
-                              {!msg.seen && (
-                                <span
-                                  style={{
-                                    width: 7,
-                                    height: 7,
-                                    borderRadius: "50%",
-                                    background: GOLD,
-                                    flexShrink: 0,
-                                  }}
-                                />
-                              )}
-                              <span style={{ color: MUTED, fontSize: "0.75rem", marginLeft: "auto", flexShrink: 0 }}>
-                                {timeAgo(msg.createdAt)}
-                              </span>
-                            </div>
-                            <div
-                              style={{
-                                color: msg.seen ? MUTED : TEXT,
-                                fontSize: "0.9rem",
-                                fontWeight: msg.seen ? 400 : 600,
-                                marginBottom: 4,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {msg.subject || "(কোনো বিষয় নেই)"}
-                            </div>
-                            <div
-                              style={{
-                                color: MUTED,
-                                fontSize: "0.8rem",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {msg.intro}
-                            </div>
-                          </div>
-                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                fetchMessageDetail(msg.id, account);
-                              }}
-                              style={{
-                                background: "rgba(201,168,76,0.1)",
-                                border: `1px solid rgba(201,168,76,0.2)`,
-                                borderRadius: 8,
-                                padding: "6px 8px",
-                                color: GOLD,
-                                cursor: "pointer",
-                              }}
-                              title="দেখুন"
-                            >
-                              <Eye size={14} />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteMessage(msg.id);
-                              }}
-                              style={{
-                                background: "rgba(239,68,68,0.08)",
-                                border: "1px solid rgba(239,68,68,0.2)",
-                                borderRadius: 8,
-                                padding: "6px 8px",
-                                color: "#ef4444",
-                                cursor: "pointer",
-                              }}
-                              title="মুছুন"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Message Detail Modal */}
-          <AnimatePresence>
-            {selectedMessage && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  background: "rgba(6,14,26,0.92)",
-                  zIndex: 1000,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 16,
-                  backdropFilter: "blur(8px)",
-                }}
-                onClick={() => setSelectedMessage(null)}
-              >
-                <motion.div
-                  initial={{ scale: 0.95, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.95, y: 20 }}
-                  style={{
-                    background: "#0d1929",
-                    border: `1px solid rgba(201,168,76,0.25)`,
-                    borderRadius: 20,
-                    padding: "28px 24px",
-                    maxWidth: 680,
-                    width: "100%",
-                    maxHeight: "80vh",
-                    overflowY: "auto",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Modal Header */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 20 }}>
-                    <div style={{ flex: 1 }}>
-                      <h3
-                        style={{
-                          color: TEXT,
-                          fontSize: "1.1rem",
-                          fontWeight: 700,
-                          margin: "0 0 8px",
-                        }}
-                      >
-                        {selectedMessage.subject || "(কোনো বিষয় নেই)"}
-                      </h3>
-                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                        <span style={{ color: MUTED, fontSize: "0.82rem" }}>
-                          <strong style={{ color: GOLD_LIGHT }}>প্রেরক:</strong>{" "}
-                          {selectedMessage.from.name
-                            ? `${selectedMessage.from.name} <${selectedMessage.from.address}>`
-                            : selectedMessage.from.address}
-                        </span>
-                        <span style={{ color: MUTED, fontSize: "0.82rem" }}>
-                          <strong style={{ color: GOLD_LIGHT }}>সময়:</strong>{" "}
-                          {new Date(selectedMessage.createdAt).toLocaleString("bn-BD")}
-                        </span>
-                      </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {messages.length > 0 ? (
+                messages.map((msg) => (
+                  <motion.div key={msg.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 20, cursor: "pointer" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                      <span style={{ color: GOLD, fontWeight: 700, fontSize: "0.9rem" }}>{msg.from.name || msg.from.address}</span>
+                      <span style={{ color: MUTED, fontSize: "0.75rem" }}>{new Date(msg.createdAt).toLocaleTimeString()}</span>
                     </div>
-                    <button
-                      onClick={() => setSelectedMessage(null)}
-                      style={{
-                        background: "rgba(255,255,255,0.06)",
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: 10,
-                        padding: "8px 14px",
-                        color: TEXT,
-                        cursor: "pointer",
-                        fontSize: "0.85rem",
-                        flexShrink: 0,
-                      }}
-                    >
-                      বন্ধ করুন ×
-                    </button>
-                  </div>
-
-                  {/* Divider */}
-                  <div style={{ height: 1, background: BORDER, marginBottom: 20 }} />
-
-                  {/* Message Body */}
-                  <div
-                    style={{
-                      color: TEXT,
-                      fontSize: "0.92rem",
-                      lineHeight: 1.8,
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {selectedMessage.html && selectedMessage.html.length > 0 ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: selectedMessage.html.join(""),
-                        }}
-                        style={{
-                          background: "rgba(255,255,255,0.02)",
-                          borderRadius: 10,
-                          padding: 16,
-                          color: TEXT,
-                        }}
-                      />
-                    ) : (
-                      <pre
-                        style={{
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          background: "rgba(255,255,255,0.02)",
-                          borderRadius: 10,
-                          padding: 16,
-                          margin: 0,
-                          color: TEXT,
-                          fontFamily: "monospace",
-                          fontSize: "0.88rem",
-                        }}
-                      >
-                        {selectedMessage.text || "(ইমেইলে কোনো টেক্সট নেই)"}
-                      </pre>
-                    )}
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Loading overlay for message fetch */}
-          <AnimatePresence>
-            {viewingMessage && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  background: "rgba(6,14,26,0.7)",
-                  zIndex: 999,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <RefreshCw size={32} color={GOLD} style={{ animation: "spin 1s linear infinite" }} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* How to use section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            style={{
-              background: CARD_BG,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              padding: "28px 24px",
-              marginTop: 32,
-            }}
-          >
-            <h2
-              style={{
-                color: TEXT,
-                fontSize: "1.15rem",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
-                fontWeight: 700,
-                margin: "0 0 20px",
-              }}
-            >
-              কীভাবে ব্যবহার করবেন?
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: 16,
-              }}
-            >
-              {[
-                {
-                  step: "১",
-                  title: "ইমেইল তৈরি করুন",
-                  desc: "'ইমেইল তৈরি করুন' বাটনে ক্লিক করুন। তাৎক্ষণিক একটি ইমেইল পাবেন।",
-                },
-                {
-                  step: "২",
-                  title: "ইমেইল কপি করুন",
-                  desc: "ইমেইল ঠিকানাটি কপি করুন এবং যেকোনো ওয়েবসাইটে ব্যবহার করুন।",
-                },
-                {
-                  step: "৩",
-                  title: "ইনবক্স দেখুন",
-                  desc: "ইমেইল আসলে ইনবক্সে দেখাবে। প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়।",
-                },
-                {
-                  step: "৪",
-                  title: "মুছে ফেলুন",
-                  desc: "কাজ শেষে ইমেইল মুছে ফেলুন। আপনার তথ্য সম্পূর্ণ নিরাপদ থাকবে।",
-                },
-              ].map(({ step, title, desc }) => (
-                <div
-                  key={step}
-                  style={{
-                    background: "rgba(255,255,255,0.02)",
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: 14,
-                    padding: "16px 18px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      background: "rgba(201,168,76,0.15)",
-                      border: `1px solid rgba(201,168,76,0.3)`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: GOLD,
-                      fontWeight: 700,
-                      fontSize: "0.9rem",
-                      marginBottom: 10,
-                    }}
-                  >
-                    {step}
-                  </div>
-                  <h3
-                    style={{
-                      color: TEXT,
-                      fontSize: "0.95rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
-                      fontWeight: 600,
-                      margin: "0 0 6px",
-                    }}
-                  >
-                    {title}
-                  </h3>
-                  <p
-                    style={{
-                      color: MUTED,
-                      fontSize: "0.83rem",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      margin: 0,
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {desc}
-                  </p>
+                    <h4 style={{ color: TEXT, fontSize: "1rem", fontWeight: 600, marginBottom: 6 }}>{msg.subject}</h4>
+                    <p style={{ color: MUTED, fontSize: "0.85rem", lineHeight: 1.5 }}>{msg.intro}</p>
+                  </motion.div>
+                ))
+              ) : (
+                <div style={{ textAlign: "center", padding: "60px 20px", background: "rgba(255,255,255,0.01)", border: `1px dashed ${BORDER}`, borderRadius: 20 }}>
+                  <div style={{ color: MUTED, fontSize: "0.9rem" }}>ইনবক্স খালি। কোনো ইমেইল আসলে এখানে দেখা যাবে।</div>
                 </div>
-              ))}
+              )}
             </div>
-          </motion.div>
+          </div>
         </div>
-
-        {/* Spin animation */}
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </main>
-      <Footer />
+        <Footer />
+      </div>
     </>
   );
 }
