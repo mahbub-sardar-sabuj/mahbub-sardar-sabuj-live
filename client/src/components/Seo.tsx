@@ -18,7 +18,6 @@ interface SeoProps {
   path?: string;
   image?: string;
   keywords?: string;
-  seoKeywords?: string;
   type?: string;
   jsonLd?: JsonLd;
   newsArticle?: NewsArticleSeo;
@@ -75,7 +74,6 @@ export default function Seo({
   newsArticle,
   robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   imageAlt = "মাহবুব সরদার সবুজ অফিসিয়াল ওয়েবসাইটের প্রিভিউ ছবি",
-  seoKeywords,
 }: SeoProps) {
   useEffect(() => {
     const canonicalUrl = new URL(path, SITE_URL).toString();
@@ -85,7 +83,7 @@ export default function Seo({
     document.title = title;
 
     upsertMeta('meta[name="description"]', { name: "description", content: description });
-    upsertMeta('meta[name="keywords"]', { name: "keywords", content: seoKeywords ?? keywords ?? "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, লেখালেখি" });
+    upsertMeta('meta[name="keywords"]', { name: "keywords", content: keywords ?? "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, লেখালেখি" });
     upsertMeta('meta[name="author"]', { name: "author", content: "Mahbub Sardar Sabuj" });
     upsertMeta('meta[property="og:title"]', { property: "og:title", content: title });
     upsertMeta('meta[property="og:description"]', { property: "og:description", content: description });
@@ -166,7 +164,7 @@ export default function Seo({
         jsonLdScript.parentNode.removeChild(jsonLdScript);
       }
     };
-  }, [title, description, path, image, keywords, seoKeywords, type, jsonLd, newsArticle, robots, imageAlt]);
+  }, [title, description, path, image, keywords, type, jsonLd, newsArticle, robots, imageAlt]);
 
   return null;
 }
