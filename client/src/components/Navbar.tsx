@@ -71,7 +71,7 @@ export default function Navbar() {
   const navElevated = scrolled || isWritingsPage;
 
   useEffect(() => {
-    const checkWidth = () => setIsDesktop(window.innerWidth >= 768);
+    const checkWidth = () => setIsDesktop(window.innerWidth >= 1100);
     checkWidth();
     window.addEventListener("resize", checkWidth);
     return () => window.removeEventListener("resize", checkWidth);
@@ -234,7 +234,7 @@ export default function Navbar() {
 
           {/* ── DESKTOP NAV LINKS (only visible on md+) ── */}
           {isDesktop && (
-            <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "nowrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "nowrap", overflow: "hidden" }}>
               {navLinks.map((link) => {
                 const isActive = isPrimaryNavActive(link.href, link.type, location);
                 const Icon = link.icon;
@@ -243,9 +243,9 @@ export default function Navbar() {
                     style={{
                       fontFamily: "'Noto Sans Bengali', sans-serif",
                       color: isActive ? "#0D1B2A" : "rgba(253,246,236,0.88)",
-                      padding: "7px 12px",
+                      padding: "6px 7px",
                       textDecoration: "none",
-                      fontSize: "0.84rem",
+                      fontSize: "0.76rem",
                       fontWeight: isActive ? 700 : 400,
                       transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
                       borderRadius: 10,
@@ -286,7 +286,6 @@ export default function Navbar() {
                       }
                     }}
                   >
-                    <Icon size={13} strokeWidth={isActive ? 2.5 : 1.8} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
                     {link.label}
                     {isActive && (
                       <span style={{
