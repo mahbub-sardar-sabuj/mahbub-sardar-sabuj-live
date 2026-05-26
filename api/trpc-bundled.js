@@ -1,5 +1,6 @@
 // scripts/trpc-bundled-entry.ts
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
+import mysql2Promise from "mysql2/promise";
 
 // shared/const.ts
 var COOKIE_NAME = "app_session_id";
@@ -1685,10 +1686,194 @@ async function handleChatbotNotify(req, res) {
     res.end(JSON.stringify({ ok: false, error: error?.message || String(error) }));
   }
 }
+
+
+// ── analytics handler (merged from analytics.js) ──
+const analyticsStore = {
+  intentHits: new Map(),
+  fallbackCount: 0,
+  totalMessages: 0,
+  topQuestions: [],
+  providerStats: new Map(),
+  sessionCount: 0,
+  lastReset: Date.now(),
+};
+function recordAnalyticsEvent(event) {
+  switch (event.type) {
+    case "intent_hit": {
+      const count = analyticsStore.intentHits.get(event.intent) || 0;
+      analyticsStore.intentHits.set(event.intent, count + 1);
+      analyticsStore.totalMessages++;
+      if (event.userText) {
+        analyticsStore.topQuestions.unshift({ text: event.userText.slice(0, 80), intent: event.intent, timestamp: Date.now() });
+        if (analyticsStore.topQuestions.length > 50) analyticsStore.topQuestions.pop();
+      }
+      break;
+    }
+    case "fallback": {
+      analyticsStore.fallbackCount++;
+      analyticsStore.totalMessages++;
+      if (event.userText) {
+        analyticsStore.topQuestions.unshift({ text: event.userText.slice(0, 80), intent: "fallback", timestamp: Date.now() });
+        if (analyticsStore.topQuestions.length > 50) analyticsStore.topQuestions.pop();
+      }
+      break;
+    }
+    case "provider_success": {
+      const s1 = analyticsStore.providerStats.get(event.provider) || { success: 0, fail: 0 };
+      s1.success++;
+      analyticsStore.providerStats.set(event.provider, s1);
+      break;
+    }
+    case "provider_fail": {
+      const s2 = analyticsStore.providerStats.get(event.provider) || { success: 0, fail: 0 };
+      s2.fail++;
+      analyticsStore.providerStats.set(event.provider, s2);
+      break;
+    }
+    case "session_start": { analyticsStore.sessionCount++; break; }
+  }
+}
+async function handleAnalytics(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Admin-Key");
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method === "POST") {
+    const rate = checkRateLimitInline(req, res, { keyPrefix: "analytics", windowMs: 60000, max: 60 });
+    if (rate.limited) return;
+    const { type, intent, userText, provider } = req.body || {};
+    if (!type) return res.status(400).json({ error: "Missing event type" });
+    recordAnalyticsEvent({ type, intent, userText, provider });
+    return res.status(200).json({ ok: true });
+  }
+  if (req.method === "GET") {
+    const adminKey = req.headers["x-admin-key"];
+    const expectedKey = process.env.ADMIN_ANALYTICS_KEY?.trim();
+    if (!expectedKey || adminKey !== expectedKey) return res.status(403).json({ error: "Unauthorized" });
+    const intentHitsObj = Object.fromEntries(analyticsStore.intentHits);
+    const providerStatsObj = Object.fromEntries(analyticsStore.providerStats);
+    const sortedIntents = Object.entries(intentHitsObj).sort(([,a],[,b]) => b - a).map(([intent, count]) => ({ intent, count }));
+    const fallbackRate = analyticsStore.totalMessages > 0 ? ((analyticsStore.fallbackCount / analyticsStore.totalMessages) * 100).toFixed(1) : "0.0";
+    return res.status(200).json({
+      summary: { totalMessages: analyticsStore.totalMessages, fallbackCount: analyticsStore.fallbackCount, fallbackRate: `${fallbackRate}%`, sessionCount: analyticsStore.sessionCount, uptime: Math.round((Date.now() - analyticsStore.lastReset) / 1000 / 60) + " minutes" },
+      topIntents: sortedIntents.slice(0, 10),
+      recentQuestions: analyticsStore.topQuestions.slice(0, 20),
+      providerStats: providerStatsObj,
+    });
+  }
+  return res.status(405).json({ error: "Method not allowed" });
+}
+
+// ── amio-post-seo handler (merged from amio-post-seo.js) ──
+async function handleAmioPostSeo(req, res) {
+  const AMIO_SITE_URL = "https://www.mahbubsardarsabuj.com";
+  const AMIO_DEFAULT_IMAGE = `${AMIO_SITE_URL}/images/og-home-suit.jpg`;
+  const AMIO_SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj";
+  const AMIO_NAME = "আমিও লিখবো বাস্তবতা";
+  const CATEGORY_LABELS = {
+    experience: "অভিজ্ঞতা", story: "গল্প", poem: "কবিতা",
+    thought: "ভাবনা", photo: "ছবি", video: "ভিডিও",
+  };
+  function escapeHtmlAmio(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  const urlObj = req.url ? new URL(req.url, "https://local.invalid") : null;
+  const slug = urlObj?.searchParams?.get("slug") || "";
+  if (!slug) return res.status(400).json({ error: "slug required" });
+  let db2;
+  try {
+    db2 = await mysql2Promise.createConnection(process.env.DATABASE_URL || "");
+    const [rows] = await db2.execute(
+      `SELECT id, slug, title, content, category, authorName, authorId, imageUrl, createdAt, updatedAt
+       FROM writing_posts WHERE slug = ? AND status = 'approved' LIMIT 1`,
+      [slug]
+    );
+    const post = rows[0];
+    if (!post) {
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.status(404).send(`<!DOCTYPE html><html><head><title>পোস্ট পাওয়া যায়নি</title></head><body><h1>পোস্ট পাওয়া যায়নি</h1><a href="${AMIO_SITE_URL}/amio-likhbo-bastobota">ফিরে যান</a></body></html>`);
+    }
+    const catLabel = CATEGORY_LABELS[post.category] || post.category || "লেখা";
+    const canonicalUrl = `${AMIO_SITE_URL}/amio-likhbo-bastobota/${encodeURIComponent(post.slug)}`;
+    const postImage = post.imageUrl || AMIO_DEFAULT_IMAGE;
+    const description = String(post.content || "").slice(0, 160).replace(/\n/g, " ").trim();
+    const publishedTime = post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString();
+    const modifiedTime = post.updatedAt ? new Date(post.updatedAt).toISOString() : publishedTime;
+    const schemaType = post.category === "poem" ? "Poem" : "Article";
+    const jsonLd = {
+      "@context": "https://schema.org", "@type": schemaType,
+      "headline": post.title, "description": description,
+      "url": canonicalUrl, "author": { "@type": "Person", "name": post.authorName },
+      "publisher": { "@type": "Organization", "name": AMIO_SITE_NAME, "logo": { "@type": "ImageObject", "url": `${AMIO_SITE_URL}/images/og-home-suit.jpg` } },
+      "datePublished": publishedTime, "dateModified": modifiedTime,
+      "inLanguage": "bn-BD", "genre": catLabel, "image": postImage,
+      "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
+    };
+    const contentHtml = String(post.content || "").split("\n").map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtmlAmio(p)}</p>`).join("");
+    const title = `${post.title} — ${post.authorName} | ${AMIO_NAME}`;
+    const keywords = `${post.authorName}, ${catLabel}, আমিও লিখবো বাস্তবতা, বাস্তব গল্প, বাংলা লেখা, মাহবুব সরদার সবুজ`;
+    const html = `<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtmlAmio(title)}</title><meta name="description" content="${escapeHtmlAmio(description)}"><meta name="keywords" content="${escapeHtmlAmio(keywords)}"><meta name="author" content="${escapeHtmlAmio(post.authorName)}"><meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"><link rel="canonical" href="${canonicalUrl}"><meta property="og:type" content="article"><meta property="og:url" content="${canonicalUrl}"><meta property="og:title" content="${escapeHtmlAmio(title)}"><meta property="og:description" content="${escapeHtmlAmio(description)}"><meta property="og:image" content="${escapeHtmlAmio(postImage)}"><meta property="og:site_name" content="${escapeHtmlAmio(AMIO_SITE_NAME)}"><meta property="og:locale" content="bn_BD"><meta property="article:published_time" content="${publishedTime}"><meta property="article:section" content="${escapeHtmlAmio(catLabel)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtmlAmio(title)}"><meta name="twitter:description" content="${escapeHtmlAmio(description)}"><meta name="twitter:image" content="${escapeHtmlAmio(postImage)}"><script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script><script>if(!/bot|crawler|spider|googlebot|bingbot/i.test(navigator.userAgent)){window.location.replace("${canonicalUrl}");}</script></head><body><header><nav><a href="${AMIO_SITE_URL}">মাহবুব সরদার সবুজ</a> &rsaquo; <a href="${AMIO_SITE_URL}/amio-likhbo-bastobota">আমিও লিখবো বাস্তবতা</a></nav></header><main><article><header><h1>${escapeHtmlAmio(post.title)}</h1><p><strong>${escapeHtmlAmio(post.authorName)}</strong> &bull; ${escapeHtmlAmio(catLabel)} &bull; <time datetime="${publishedTime}">${new Date(post.createdAt).toLocaleDateString("bn-BD", {year:"numeric",month:"long",day:"numeric"})}</time></p></header>${contentHtml}<footer style="margin-top:2rem"><a href="${AMIO_SITE_URL}/amio-likhbo-bastobota">← ফিরে যান</a> | <a href="${AMIO_SITE_URL}">মাহবুব সরদার সবুজ</a></footer></article></main></body></html>`;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    return res.status(200).send(html);
+  } catch (err) {
+    console.error("[amio-post-seo] error:", err);
+    return res.status(500).json({ error: "internal error" });
+  } finally {
+    if (db2) await db2.end().catch(() => {});
+  }
+}
+
+// ── amio-sitemap handler (merged from amio-sitemap.js) ──
+async function handleAmioSitemap(req, res) {
+  const AMIO_SITE_URL2 = "https://www.mahbubsardarsabuj.com";
+  let db3;
+  try {
+    db3 = await mysql2Promise.createConnection(process.env.DATABASE_URL || "");
+    const [rows] = await db3.execute(
+      `SELECT slug, updatedAt FROM writing_posts WHERE status = 'approved' ORDER BY updatedAt DESC LIMIT 5000`
+    );
+    const today = new Date().toISOString().split("T")[0];
+    const urlEntries = (rows || []).map(post => {
+      const lastmod = post.updatedAt ? new Date(post.updatedAt).toISOString().split("T")[0] : today;
+      return `  <url>\n    <loc>${AMIO_SITE_URL2}/amio-likhbo-bastobota/${encodeURIComponent(post.slug)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
+    }).join("\n");
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${AMIO_SITE_URL2}/amio-likhbo-bastobota</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n${urlEntries}\n</urlset>`;
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    return res.status(200).send(xml);
+  } catch (err) {
+    console.error("[amio-sitemap] error:", err);
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${AMIO_SITE_URL2}/amio-likhbo-bastobota</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    return res.status(200).send(xml);
+  } finally {
+    if (db3) await db3.end().catch(() => {});
+  }
+}
+
 async function handler(req, res) {
   const url = req.url ? new URL(req.url, "https://local.invalid") : null;
   const pathname = url?.pathname ?? "";
   const { compatibleRes } = addExpressCompatibility(req, res);
+  if (pathname === "/api/analytics" || pathname.startsWith("/api/analytics?")) {
+    const { compatibleRes: cr3 } = addExpressCompatibility(req, res);
+    try { await handleAnalytics(req, cr3); } catch(e) { console.error("[ANALYTICS]", e); if(!res.headersSent){res.statusCode=500;res.end(JSON.stringify({error:"internal error"}));} }
+    return;
+  }
+  if (pathname === "/api/amio-post-seo" || pathname.startsWith("/api/amio-post-seo?")) {
+    const { compatibleRes: cr1 } = addExpressCompatibility(req, res);
+    try { await handleAmioPostSeo(req, cr1); } catch(e) { console.error("[AMIO-POST-SEO]", e); if(!res.headersSent){res.statusCode=500;res.end(JSON.stringify({error:"internal error"}));} }
+    return;
+  }
+  if (pathname === "/api/amio-sitemap" || pathname.startsWith("/api/amio-sitemap?")) {
+    const { compatibleRes: cr2 } = addExpressCompatibility(req, res);
+    try { await handleAmioSitemap(req, cr2); } catch(e) { console.error("[AMIO-SITEMAP]", e); if(!res.headersSent){res.statusCode=500;res.end(JSON.stringify({error:"internal error"}));} }
+    return;
+  }
   if (pathname === "/api/contact" || pathname.startsWith("/api/contact?")) {
     try {
       await handleContact(req, compatibleRes);
