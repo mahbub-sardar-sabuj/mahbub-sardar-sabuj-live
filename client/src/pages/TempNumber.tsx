@@ -552,7 +552,7 @@ export default function TempNumber() {
                 </div>
               ))}
             </div>
-          </div>
+          )}
         </div>
         <Footer />
       </div>
