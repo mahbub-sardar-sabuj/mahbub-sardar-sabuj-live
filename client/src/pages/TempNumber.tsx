@@ -17,9 +17,26 @@ interface PhoneNumber {
 }
 
 const PHONE_NUMBERS: PhoneNumber[] = [
-  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧" },
+  // United States
+  { slug: "19282850693-United States", number: "19282850693", display: "+1 928 285 0693", country: "United States", flag: "🇺🇸" },
+  { slug: "18049660123-United States", number: "18049660123", display: "+1 804 966 0123", country: "United States", flag: "🇺🇸" },
+  { slug: "17406930721-United States", number: "17406930721", display: "+1 740 693 0721", country: "United States", flag: "🇺🇸" },
+  { slug: "19035463899-United States", number: "19035463899", display: "+1 903 546 3899", country: "United States", flag: "🇺🇸" },
+  { slug: "19107086833-United States", number: "19107086833", display: "+1 910 708 6833", country: "United States", flag: "🇺🇸" },
+  
+  // Canada
+  { slug: "12267730771-Canada", number: "12267730771", display: "+1 226 773 0771", country: "Canada", flag: "🇨🇦" },
+  { slug: "12267778204-Canada", number: "12267778204", display: "+1 226 777 8204", country: "Canada", flag: "🇨🇦" },
+  { slug: "12266404389-Canada", number: "12266404389", display: "+1 226 640 4389", country: "Canada", flag: "🇨🇦" },
+  { slug: "16722023225-Canada", number: "16722023225", display: "+1 672 202 3225", country: "Canada", flag: "🇨🇦" },
+  { slug: "17828217929-Canada", number: "17828217929", display: "+1 782 821 7929", country: "Canada", flag: "🇨🇦" },
+  
+  // United Kingdom
+  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723 431202", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480 787793", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476 559840", country: "United Kingdom", flag: "🇬🇧" },
+  
+  // Saudi Arabia
   { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦" },
   { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦" },
   { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦" },
@@ -47,9 +64,20 @@ export default function TempNumber() {
     setFetchError(false);
     try {
       let html = "";
-      
-      // Fetch from receive-smss.live for UK and Saudi Arabia
-      const countryCode = phone.country === "United Kingdom" ? "uk" : "sa";
+      let countryCode = "";
+
+      // Determine country code for API endpoint
+      if (phone.country === "United States") {
+        countryCode = "us";
+      } else if (phone.country === "Canada") {
+        countryCode = "ca";
+      } else if (phone.country === "United Kingdom") {
+        countryCode = "uk";
+      } else if (phone.country === "Saudi Arabia") {
+        countryCode = "sa";
+      }
+
+      // Fetch from receive-smss.live
       const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
       
@@ -68,22 +96,51 @@ export default function TempNumber() {
       const smsList: SmsMessage[] = [];
       
       // Parse receive-smss.live structure
-      // Look for message containers
-      const messageElements = doc.querySelectorAll("[class*='message'], [class*='sms'], div");
+      // Look for message containers - they typically have sender, time, and message
+      const messageElements = doc.querySelectorAll("div");
       
+      let foundMessages = false;
       messageElements.forEach((el) => {
         const text = el.textContent || "";
-        // Look for elements containing verification codes or messages
-        if (text.length > 10 && (text.includes("code") || text.includes("verification") || text.includes("Your") || /\d{3,6}/.test(text))) {
-          const sender = el.querySelector("div:first-child")?.textContent?.trim() || "Unknown";
-          const time = el.querySelector("div:last-child")?.textContent?.trim() || "";
-          const message = text.trim();
-          
-          if (message.length > 10 && !smsList.some(m => m.message === message)) {
-            smsList.push({ sender, message, time });
+        
+        // Look for verification codes or messages with typical patterns
+        if (text.length > 10 && (
+          text.includes("code") || 
+          text.includes("verification") || 
+          text.includes("Your") || 
+          text.includes("confirm") ||
+          /\d{3,8}/.test(text)
+        )) {
+          // Try to extract sender, message, and time
+          const children = Array.from(el.children);
+          if (children.length >= 2) {
+            const sender = children[0]?.textContent?.trim() || "Unknown";
+            const message = text.trim().substring(0, 200); // Limit message length
+            const time = children[children.length - 1]?.textContent?.trim() || "";
+            
+            if (message.length > 10 && !smsList.some(m => m.message === message)) {
+              smsList.push({ sender, message, time });
+              foundMessages = true;
+            }
           }
         }
       });
+      
+      // If no structured messages found, try alternative parsing
+      if (!foundMessages) {
+        const textContent = doc.body.textContent || "";
+        const lines = textContent.split("\n").filter(line => line.trim().length > 10);
+        
+        lines.slice(0, 10).forEach((line) => {
+          if (line.includes("code") || line.includes("verification") || /\d{3,8}/.test(line)) {
+            smsList.push({
+              sender: "SMS",
+              message: line.trim().substring(0, 200),
+              time: "Just now"
+            });
+          }
+        });
+      }
       
       setMessages(smsList);
     } catch (error) {
@@ -240,7 +297,7 @@ export default function TempNumber() {
                 style={{
                   background: "#0d1b2e",
                   border: "1px solid rgba(201,168,76,0.3)",
-                  maxHeight: "260px",
+                  maxHeight: "300px",
                   overflowY: "auto",
                 }}
               >
