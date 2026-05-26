@@ -23,6 +23,7 @@ const routeImporters = {
   Profile: () => import("../pages/Profile"),
   AmiOLikhboLogin: () => import("../pages/AmiOLikhboLogin"),
   SeoKeywordLanding: () => import("../pages/SeoKeywordLanding"),
+  TempEmail: () => import("../pages/TempEmail"),
 } satisfies Record<string, Importer>;
 
 type RouteKey = keyof typeof routeImporters;
@@ -54,6 +55,7 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/admin/writing") return routeImporters.AdminWritingModeration;
   if (path === "/admin/chatbot-analytics") return routeImporters.AdminChatbotAnalytics;
   if (path === "/404") return routeImporters.NotFound;
+  if (path === "/temp-email") return routeImporters.TempEmail;
 
   if (
     path === "/bangla-kobita" ||
