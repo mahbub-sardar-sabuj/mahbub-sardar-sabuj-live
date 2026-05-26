@@ -228,17 +228,17 @@ export default function Home() {
               </motion.div>
 
               {/* Main name — single H1 for SEO, split visually with spans */}
-              <h1 style={{ margin: 0, padding: 0, display: "block", lineHeight: 1 }}>
-              <div style={{ position: "relative", marginBottom: "0.2rem" }}>
+              <h1 style={{ margin: 0, padding: 0, display: "block", lineHeight: 1.1 }}>
+              <div style={{ position: "relative", marginBottom: "0.4rem" }}>
                 <motion.span
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3rem, 12vw, 8.5rem)",
+                    fontSize: "clamp(2.8rem, 11vw, 8.5rem)",
                     fontWeight: 700,
-                    lineHeight: 0.95,
+                    lineHeight: 1,
                     display: "block",
                     color: "#FAF6EF",
                     letterSpacing: "-0.03em",
@@ -249,16 +249,16 @@ export default function Home() {
                 </motion.span>
               </div>
 
-              <div style={{ position: "relative", marginBottom: "0.6rem" }}>
+              <div style={{ position: "relative", marginBottom: "1.5rem" }}>
                 <motion.span
                   initial={{ opacity: 0, y: 60 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3rem, 12vw, 8.5rem)",
+                    fontSize: "clamp(2.8rem, 11vw, 8.5rem)",
                     fontWeight: 700,
-                    lineHeight: 0.95,
+                    lineHeight: 1,
                     display: "block",
                     background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
                     backgroundSize: "280% 100%",
@@ -268,7 +268,7 @@ export default function Home() {
                     letterSpacing: "-0.02em",
                     filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
                     animation: "goldShimmer 6s ease-in-out infinite",
-                    paddingBottom: "10px"
+                    paddingBottom: "8px"
                   }}
                 >
                   সরদার সবুজ
@@ -279,7 +279,7 @@ export default function Home() {
                   animate={{ scaleX: 1, opacity: 1 }}
                   transition={{ duration: 1.4, delay: 0.85, ease: [0.16,1,0.3,1] }}
                   style={{
-                    position: "absolute", bottom: -8, left: 0,
+                    position: "absolute", bottom: -2, left: 0,
                     height: 2,
                     width: "85%",
                     background: "linear-gradient(90deg, #C9A84C 0%, rgba(201,168,76,0.5) 60%, transparent 100%)",
@@ -295,7 +295,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
+                style={{ margin: "2rem 0 1rem", maxWidth: 460 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
