@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown } from "lucide-react";
+import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown, ExternalLink } from "lucide-react";
 import Seo from "@/components/Seo";
 
 interface SmsMessage {
@@ -14,41 +14,21 @@ interface PhoneNumber {
   display: string;
   country: string;
   flag: string;
+  directUrl?: string;
 }
 
 const PHONE_NUMBERS: PhoneNumber[] = [
-  { slug: "3197010291201-Netherlands", number: "3197010291201", display: "+31 97010291201", country: "Netherlands", flag: "🇳🇱" },
-  { slug: "3197010291202-Netherlands", number: "3197010291202", display: "+31 97010291202", country: "Netherlands", flag: "🇳🇱" },
-  { slug: "3197010291203-Netherlands", number: "3197010291203", display: "+31 97010291203", country: "Netherlands", flag: "🇳🇱" },
-  { slug: "3197010291204-Netherlands", number: "3197010291204", display: "+31 97010291204", country: "Netherlands", flag: "🇳🇱" },
-  { slug: "3197010291205-Netherlands", number: "3197010291205", display: "+31 97010291205", country: "Netherlands", flag: "🇳🇱" },
-  { slug: "3584573994600-Finland", number: "3584573994600", display: "+358 4573994600", country: "Finland", flag: "🇫🇮" },
-  { slug: "3584573994601-Finland", number: "3584573994601", display: "+358 4573994601", country: "Finland", flag: "🇫🇮" },
-  { slug: "3584573994602-Finland", number: "3584573994602", display: "+358 4573994602", country: "Finland", flag: "🇫🇮" },
-  { slug: "3584573994603-Finland", number: "3584573994603", display: "+358 4573994603", country: "Finland", flag: "🇫🇮" },
-  { slug: "3584573994604-Finland", number: "3584573994604", display: "+358 4573994604", country: "Finland", flag: "🇫🇮" },
-  { slug: "46726405810-Sweden", number: "46726405810", display: "+46 726405810", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726405811-Sweden", number: "46726405811", display: "+46 726405811", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726405812-Sweden", number: "46726405812", display: "+46 726405812", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726405813-Sweden", number: "46726405813", display: "+46 726405813", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726405814-Sweden", number: "46726405814", display: "+46 726405814", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726409551-Sweden", number: "46726409551", display: "+46 726409551", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726409552-Sweden", number: "46726409552", display: "+46 726409552", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726409553-Sweden", number: "46726409553", display: "+46 726409553", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726409554-Sweden", number: "46726409554", display: "+46 726409554", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299500-Sweden", number: "46731299500", display: "+46 731299500", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299501-Sweden", number: "46731299501", display: "+46 731299501", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299502-Sweden", number: "46731299502", display: "+46 731299502", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299505-Sweden", number: "46731299505", display: "+46 731299505", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299509-Sweden", number: "46731299509", display: "+46 731299509", country: "Sweden", flag: "🇸🇪" },
-  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "447897034164-United Kingdom", number: "447897034164", display: "+44 7897034164", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "447897030765-United Kingdom", number: "447897030765", display: "+44 7897030765", country: "United Kingdom", flag: "🇬🇧" },
-  { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦" },
-  { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦" },
-  { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦" },
+  { slug: "46731299509-Sweden", number: "46731299509", display: "+46 731299509", country: "Sweden", flag: "🇸🇪", directUrl: "https://receive-sms-online.info/46731299509-Sweden" },
+  { slug: "46731299508-Sweden", number: "46731299508", display: "+46 731299508", country: "Sweden", flag: "🇸🇪", directUrl: "https://receive-sms-online.info/46731299508-Sweden" },
+  { slug: "46731299507-Sweden", number: "46731299507", display: "+46 731299507", country: "Sweden", flag: "🇸🇪", directUrl: "https://receive-sms-online.info/46731299507-Sweden" },
+  { slug: "3584573994619-Finland", number: "3584573994619", display: "+358 4573994619", country: "Finland", flag: "🇫🇮", directUrl: "https://receive-sms-online.info/3584573994619-Finland" },
+  { slug: "3584573994618-Finland", number: "3584573994618", display: "+358 4573994618", country: "Finland", flag: "🇫🇮", directUrl: "https://receive-sms-online.info/3584573994618-Finland" },
+  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧", directUrl: "https://receive-smss.live/sms/uk/447723431202" },
+  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧", directUrl: "https://receive-smss.live/sms/uk/447480787793" },
+  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧", directUrl: "https://receive-smss.live/sms/uk/447476559840" },
+  { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦", directUrl: "https://receive-smss.live/sms/sa/966512345678" },
+  { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦", directUrl: "https://receive-smss.live/sms/sa/966553902441" },
+  { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦", directUrl: "https://receive-smss.live/sms/sa/966596771203" },
 ];
 
 const COUNTRIES = ["সব দেশ", ...Array.from(new Set(PHONE_NUMBERS.map((n) => n.country)))];
@@ -72,23 +52,40 @@ export default function TempNumber() {
     setLoading(true);
     setFetchError(false);
     try {
-      // Primary source: receive-sms-online.info (for Netherlands, Finland, Sweden)
-      let targetUrl = `https://receive-sms-online.info/get_sms_register.php?phone=${phone.number}`;
-      let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-      let res = await fetch(proxyUrl);
-      let data = await res.json();
-      let html: string = data.contents || "";
+      let html = "";
       
-      // Fallback: If no messages from primary source, try receive-smss.live for UK/Saudi Arabia
-      if (!html || html.trim().length === 0) {
-        if (phone.country === "United Kingdom") {
-          targetUrl = `https://receive-smss.live/sms/uk/${phone.number}`;
-        } else if (phone.country === "Saudi Arabia") {
-          targetUrl = `https://receive-smss.live/sms/sa/${phone.number}`;
+      if (phone.country === "United Kingdom" || phone.country === "Saudi Arabia") {
+        const countryCode = phone.country === "United Kingdom" ? "uk" : "sa";
+        const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl);
+        const data = await res.json();
+        const fullHtml = data.contents || "";
+        
+        // Extract messages from receive-smss.live structure
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(fullHtml, "text/html");
+        const container = doc.getElementById("messagesContainer");
+        if (container) {
+          const smsList: SmsMessage[] = [];
+          const msgElements = container.querySelectorAll(".flex.flex-col.gap-2");
+          msgElements.forEach(el => {
+             const sender = el.querySelector("div:first-child")?.textContent?.trim() || "Unknown";
+             const time = el.querySelector("div:last-child")?.textContent?.trim() || "";
+             const message = el.querySelector("p")?.textContent?.trim() || "";
+             if (message) {
+               smsList.push({ sender, message, time });
+             }
+          });
+          setMessages(smsList);
+          return;
         }
-        proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-        res = await fetch(proxyUrl);
-        data = await res.json();
+      } else {
+        // Default for Sweden, Finland, Netherlands
+        const targetUrl = `https://receive-sms-online.info/get_sms_register.php?phone=${phone.number}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const res = await fetch(proxyUrl);
+        const data = await res.json();
         html = data.contents || "";
       }
       
@@ -141,7 +138,7 @@ export default function TempNumber() {
 
   const handleCopy = () => {
     if (!selectedNumber) return;
-    navigator.clipboard.writeText(selectedNumber.display);
+    navigator.clipboard.writeText(selectedNumber.number);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -189,23 +186,6 @@ export default function TempNumber() {
           <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto">
             রেজিস্ট্রেশন ছাড়াই যেকোনো ওয়েবসাইটে SMS ভেরিফিকেশন সম্পন্ন করুন
           </p>
-          <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {["তাৎক্ষণিক", "কোনো রেজিস্ট্রেশন নেই", "স্প্যাম প্রতিরোধ", "অটো রিফ্রেশ"].map(
-              (f) => (
-                <span
-                  key={f}
-                  className="text-xs px-3 py-1 rounded-full"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    color: "#aaa",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                  }}
-                >
-                  {f}
-                </span>
-              )
-            )}
-          </div>
         </div>
 
         <div className="max-w-2xl mx-auto px-4 pb-16">
@@ -370,6 +350,22 @@ export default function TempNumber() {
                   <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
                   রিফ্রেশ করুন
                 </button>
+                {selectedNumber.directUrl && (
+                  <a
+                    href={selectedNumber.directUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                    style={{
+                      background: "rgba(201,168,76,0.1)",
+                      border: "1px solid rgba(201,168,76,0.3)",
+                      color: "#C9A84C",
+                    }}
+                  >
+                    <ExternalLink size={14} />
+                    সরাসরি দেখুন
+                  </a>
+                )}
               </div>
             </div>
           )}
@@ -398,15 +394,29 @@ export default function TempNumber() {
               )}
               {fetchError && (
                 <div
-                  className="text-center py-8 rounded-xl"
+                  className="text-center py-8 px-4 rounded-xl"
                   style={{
-                    background: "rgba(255,100,100,0.1)",
-                    border: "1px solid rgba(255,100,100,0.3)",
+                    background: "rgba(255,100,100,0.05)",
+                    border: "1px solid rgba(255,100,100,0.2)",
                   }}
                 >
-                  <div className="text-sm" style={{ color: "#ff6464" }}>
-                    বার্তা লোড করতে ব্যর্থ। পরে চেষ্টা করুন।
+                  <div className="text-sm mb-3" style={{ color: "#ff6464" }}>
+                    SMS লোড করতে সমস্যা হয়েছে। সোর্স সাইটটি সরাসরি চেক করুন।
                   </div>
+                  {selectedNumber.directUrl && (
+                    <a
+                      href={selectedNumber.directUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        background: "#ff6464",
+                        color: "#fff",
+                      }}
+                    >
+                      সরাসরি দেখুন: {new URL(selectedNumber.directUrl).hostname}
+                    </a>
+                  )}
                 </div>
               )}
               {!loading && messages.length === 0 && !fetchError && (
@@ -418,7 +428,7 @@ export default function TempNumber() {
                   }}
                 >
                   <div className="text-sm" style={{ color: "#aaa" }}>
-                    এখনো কোনো বার্তা নেই
+                    এখনো কোনো বার্তা নেই। কোড পাঠালে এখানে কিছুক্ষণ অপেক্ষা করুন।
                   </div>
                 </div>
               )}
