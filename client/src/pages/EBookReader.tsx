@@ -367,10 +367,10 @@ export default function EBookReader() {
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(201,168,76,.12)", border: "1px solid rgba(201,168,76,.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem" }}>
             <BookOpen size={36} style={{ color: "#C9A84C" }} />
           </div>
-          <h2 style={{ color: "#F2EDE4", fontFamily: "'Noto Serif Bengali', serif", fontSize: "1.4rem", marginBottom: ".75rem" }}>বইটি পাওয়া যায়নি</h2>
-          <p style={{ color: "rgba(242,237,228,.5)", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".9rem", marginBottom: "1.5rem" }}>অনুগ্রহ করে ই-বুক সংগ্রহ থেকে বই বেছে নিন</p>
+          <h2 style={{ color: "#F2EDE4", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: "1.4rem", marginBottom: ".75rem" }}>বইটি পাওয়া যায়নি</h2>
+          <p style={{ color: "rgba(242,237,228,.5)", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".9rem", marginBottom: "1.5rem" }}>অনুগ্রহ করে ই-বুক সংগ্রহ থেকে বই বেছে নিন</p>
           <Link href="/ebooks">
-            <button style={{ background: "linear-gradient(135deg,#D4A843,#f0c060)", color: "#0D1B2A", padding: "13px 28px", borderRadius: 999, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".9rem" }}>
+            <button style={{ background: "linear-gradient(135deg,#D4A843,#f0c060)", color: "#0D1B2A", padding: "13px 28px", borderRadius: 999, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".9rem" }}>
               ই-বুক সংগ্রহে ফিরুন
             </button>
           </Link>
@@ -576,8 +576,8 @@ export default function EBookReader() {
                       <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid rgba(212,168,67,.25)", borderTopColor: "#D4A843", animation: "spin 1s linear infinite" }} />
                     </div>
                   </div>
-                  <p style={{ color: "#D4A843", fontFamily: "'Noto Serif Bengali', serif", fontWeight: 600, fontSize: ".95rem" }}>বই প্রস্তুত হচ্ছে…</p>
-                  <p style={{ color: "rgba(242,237,228,.4)", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".82rem", maxWidth: 240, textAlign: "center", lineHeight: 1.7 }}>{book.title}</p>
+                  <p style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontWeight: 600, fontSize: ".95rem" }}>বই প্রস্তুত হচ্ছে…</p>
+                  <p style={{ color: "rgba(242,237,228,.4)", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".82rem", maxWidth: 240, textAlign: "center", lineHeight: 1.7 }}>{book.title}</p>
                   <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                 </motion.div>
               )}
@@ -652,7 +652,7 @@ export default function EBookReader() {
                           transition={{ duration: .4, ease: "easeOut" }}
                         />
                       </div>
-                      <p style={{ textAlign: "center", marginTop: ".5rem", fontFamily: "'Noto Serif Bengali', serif", fontSize: ".72rem", color: isDarkMode ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)" }}>
+                      <p style={{ textAlign: "center", marginTop: ".5rem", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".72rem", color: isDarkMode ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)" }}>
                         {Math.round((currentPage / totalPages) * 100)}% পড়া হয়েছে
                       </p>
                     </div>
@@ -664,7 +664,7 @@ export default function EBookReader() {
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage <= 1}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
-                      style={{ fontFamily: "'Noto Serif Bengali', serif" }}
+                      style={{ fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif" }}
                     >
                       <ChevronLeft size={18} />
                       আগের পাতা
@@ -673,7 +673,7 @@ export default function EBookReader() {
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage >= totalPages}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A843] text-[#0D1B2A] rounded-full font-bold disabled:opacity-40 hover:bg-[#c49535] transition-all shadow-lg"
-                      style={{ fontFamily: "'Noto Serif Bengali', serif" }}
+                      style={{ fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif" }}
                     >
                       পরের পাতা
                       <ChevronRight size={18} />
@@ -705,7 +705,7 @@ export default function EBookReader() {
                           background: currentPage <= 1 ? "rgba(212,168,67,.2)" : "linear-gradient(135deg,#D4A843,#f0c060)",
                           color: currentPage <= 1 ? "rgba(212,168,67,.4)" : "#0D1B2A",
                           border: "none", cursor: currentPage <= 1 ? "not-allowed" : "pointer",
-                          fontFamily: "'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".85rem",
+                          fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".85rem",
                           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                           transition: "all .22s",
                         }}
@@ -713,8 +713,8 @@ export default function EBookReader() {
                         <ChevronLeft size={16} /> আগের
                       </button>
                       <div style={{ textAlign: "center", flexShrink: 0, minWidth: 60 }}>
-                        <div style={{ fontFamily: "'Noto Serif Bengali', serif", fontSize: ".7rem", color: isDarkMode ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)" }}>পৃষ্ঠা</div>
-                        <div style={{ fontFamily: "'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".9rem", color: isDarkMode ? "#F2EDE4" : "#0D1B2A" }}>{currentPage}/{totalPages}</div>
+                        <div style={{ fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".7rem", color: isDarkMode ? "rgba(255,255,255,.35)" : "rgba(0,0,0,.35)" }}>পৃষ্ঠা</div>
+                        <div style={{ fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".9rem", color: isDarkMode ? "#F2EDE4" : "#0D1B2A" }}>{currentPage}/{totalPages}</div>
                       </div>
                       <button
                         onClick={() => goToPage(currentPage + 1)}
@@ -724,7 +724,7 @@ export default function EBookReader() {
                           background: currentPage >= totalPages ? "rgba(212,168,67,.2)" : "linear-gradient(135deg,#D4A843,#f0c060)",
                           color: currentPage >= totalPages ? "rgba(212,168,67,.4)" : "#0D1B2A",
                           border: "none", cursor: currentPage >= totalPages ? "not-allowed" : "pointer",
-                          fontFamily: "'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".85rem",
+                          fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontWeight: 700, fontSize: ".85rem",
                           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                           transition: "all .22s",
                         }}
@@ -744,13 +744,13 @@ export default function EBookReader() {
                 {/* Book info card */}
                 <div className={`mt-4 rounded-2xl p-5 ${isDarkMode ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-100"} shadow-lg`}>
                   <img src={book.cover} alt={book.title} className="w-full rounded-xl shadow-lg mb-4" style={{ boxShadow: "0 12px 32px rgba(0,0,0,0.22)" }} />
-                  <h3 className="font-bold mb-1" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.95rem", lineHeight: 1.55 }}>{book.title}</h3>
+                  <h3 className="font-bold mb-1" style={{ fontFamily: "'Tiro Bangla', 'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: "0.95rem", lineHeight: 1.55 }}>{book.title}</h3>
                   <p className="text-xs mb-3" style={{ color: isDarkMode ? "rgba(212,168,67,0.85)" : "#C9A84C" }}>{book.author}</p>
                   <div className="flex flex-wrap gap-1 mb-3">
                     <span className="text-xs bg-[#D4A843]/20 text-[#D4A843] px-2.5 py-1 rounded-full font-medium">{book.genre}</span>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"}`}>{book.year}</span>
                   </div>
-                  <p className="leading-relaxed" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.78rem", lineHeight: 1.85, color: isDarkMode ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)" }}>{book.description.slice(0, 150)}...</p>
+                  <p className="leading-relaxed" style={{ fontFamily: "'Tiro Bangla', 'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: "0.78rem", lineHeight: 1.85, color: isDarkMode ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)" }}>{book.description.slice(0, 150)}...</p>
                 </div>
               </div>
             </div>
@@ -763,7 +763,7 @@ export default function EBookReader() {
 
           {/* Other Books Section */}
           <div className={`mt-8 rounded-2xl p-6 ${isDarkMode ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-100"} shadow-lg`}>
-            <h3 className="text-lg font-bold mb-5 flex items-center gap-2" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif" }}>
+            <h3 className="text-lg font-bold mb-5 flex items-center gap-2" style={{ fontFamily: "'Tiro Bangla', 'AdorshoLipi', 'Noto Serif Bengali', serif" }}>
               <BookOpen size={20} className="text-[#D4A843]" />
               আরও পড়ুন
             </h3>
@@ -775,7 +775,7 @@ export default function EBookReader() {
                     <div className={`rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 ${isDarkMode ? "bg-gray-800 hover:bg-gray-750" : "bg-gray-50 hover:bg-white"} shadow hover:shadow-xl`}>
                       <img src={b.cover} alt={b.title} className="w-full aspect-[3/4] object-cover" />
                       <div className="p-3">
-                        <p className="font-bold line-clamp-2 mb-1" style={{ fontFamily: "'Tiro Bangla', 'Noto Serif Bengali', serif", fontSize: "0.82rem", lineHeight: 1.55 }}>{b.title}</p>
+                        <p className="font-bold line-clamp-2 mb-1" style={{ fontFamily: "'Tiro Bangla', 'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: "0.82rem", lineHeight: 1.55 }}>{b.title}</p>
                         <p className="text-xs mt-0.5" style={{ color: isDarkMode ? "rgba(212,168,67,0.75)" : "#C9A84C" }}>{b.genre}</p>
                       </div>
                     </div>

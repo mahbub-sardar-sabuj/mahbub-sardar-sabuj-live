@@ -348,7 +348,7 @@ export default function TempEmail() {
               }}
             >
               <Shield size={14} color={GOLD} />
-              <span style={{ color: GOLD, fontSize: "0.8rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+              <span style={{ color: GOLD, fontSize: "0.8rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
                 সম্পূর্ণ বিনামূল্যে ও নিরাপদ
               </span>
             </div>
@@ -356,7 +356,7 @@ export default function TempEmail() {
               style={{
                 color: TEXT,
                 fontSize: "clamp(1.8rem, 5vw, 2.8rem)",
-                fontFamily: "'Noto Sans Bengali', serif",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
                 fontWeight: 700,
                 margin: "0 0 12px",
                 lineHeight: 1.3,
@@ -369,7 +369,7 @@ export default function TempEmail() {
               style={{
                 color: MUTED,
                 fontSize: "clamp(0.9rem, 2.5vw, 1.05rem)",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 maxWidth: 520,
                 margin: "0 auto 32px",
                 lineHeight: 1.7,
@@ -399,7 +399,7 @@ export default function TempEmail() {
                   }}
                 >
                   <Icon size={13} color={GOLD} />
-                  <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                  <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
                     {label}
                   </span>
                 </div>
@@ -429,7 +429,7 @@ export default function TempEmail() {
                 }}
               >
                 <AlertCircle size={16} color="#ef4444" />
-                <span style={{ color: "#ef4444", fontSize: "0.9rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                <span style={{ color: "#ef4444", fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
                   {error}
                 </span>
                 <button
@@ -477,14 +477,14 @@ export default function TempEmail() {
                   style={{
                     color: TEXT,
                     fontSize: "1.3rem",
-                    fontFamily: "'Noto Sans Bengali', serif",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
                     fontWeight: 600,
                     margin: "0 0 8px",
                   }}
                 >
                   নতুন টেম্পোরারি ইমেইল তৈরি করুন
                 </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'Noto Sans Bengali', sans-serif", margin: "0 0 20px" }}>
+                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", margin: "0 0 20px" }}>
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
                 </p>
 
@@ -528,7 +528,7 @@ export default function TempEmail() {
                     </div>
                     <span
                       onClick={() => setUseCustom(!useCustom)}
-                      style={{ color: MUTED, fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}
+                      style={{ color: MUTED, fontSize: "0.85rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}
                     >
                       কাস্টম নাম দিয়ে ইমেইল তৈরি করুন
                     </span>
@@ -559,7 +559,7 @@ export default function TempEmail() {
                     </div>
                   )}
                   {useCustom && customUsername.length > 0 && customUsername.length < 3 && (
-                    <p style={{ color: "#f59e0b", fontSize: "0.78rem", fontFamily: "'Noto Sans Bengali', sans-serif", margin: "6px 0 0" }}>
+                    <p style={{ color: "#f59e0b", fontSize: "0.78rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", margin: "6px 0 0" }}>
                       কমপক্ষে ৩টি অক্ষর দিন
                     </p>
                   )}
@@ -577,7 +577,7 @@ export default function TempEmail() {
                     borderRadius: 14,
                     padding: "14px 36px",
                     fontSize: "1rem",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     fontWeight: 700,
                     cursor: generating ? "not-allowed" : "pointer",
                     display: "inline-flex",
@@ -612,12 +612,12 @@ export default function TempEmail() {
                   }}
                 >
                   <CheckCircle size={16} color="#22c55e" />
-                  <span style={{ color: "#22c55e", fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                  <span style={{ color: "#22c55e", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
                     ইমেইল সক্রিয় আছে
                   </span>
                   <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
                     <Clock size={13} color={MUTED} />
-                    <span style={{ color: MUTED, fontSize: "0.78rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                    <span style={{ color: MUTED, fontSize: "0.78rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
                       {countdown}s পরে রিফ্রেশ
                     </span>
                   </div>
@@ -663,7 +663,7 @@ export default function TempEmail() {
                       alignItems: "center",
                       gap: 6,
                       fontSize: "0.85rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       transition: "all 0.2s",
                       flexShrink: 0,
                     }}
@@ -689,7 +689,7 @@ export default function TempEmail() {
                       alignItems: "center",
                       gap: 7,
                       fontSize: "0.85rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       transition: "all 0.2s",
                     }}
                   >
@@ -715,7 +715,7 @@ export default function TempEmail() {
                       alignItems: "center",
                       gap: 7,
                       fontSize: "0.85rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       transition: "all 0.2s",
                     }}
                   >
@@ -737,7 +737,7 @@ export default function TempEmail() {
                       alignItems: "center",
                       gap: 7,
                       fontSize: "0.85rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       transition: "all 0.2s",
                       marginLeft: "auto",
                     }}
@@ -773,7 +773,7 @@ export default function TempEmail() {
                     style={{
                       color: TEXT,
                       fontSize: "1.1rem",
-                      fontFamily: "'Noto Sans Bengali', serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
                       fontWeight: 600,
                       margin: 0,
                     }}
@@ -794,7 +794,7 @@ export default function TempEmail() {
                       {unreadCount} নতুন
                     </span>
                   )}
-                  <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "'Noto Sans Bengali', sans-serif", marginLeft: "auto" }}>
+                  <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginLeft: "auto" }}>
                     {messages.length} টি মেইল
                   </span>
                 </div>
@@ -811,10 +811,10 @@ export default function TempEmail() {
                     }}
                   >
                     <Mail size={40} color="rgba(201,168,76,0.3)" style={{ marginBottom: 12 }} />
-                    <p style={{ color: MUTED, fontFamily: "'Noto Sans Bengali', sans-serif", margin: 0 }}>
+                    <p style={{ color: MUTED, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", margin: 0 }}>
                       এখনো কোনো ইমেইল আসেনি
                     </p>
-                    <p style={{ color: "rgba(250,246,239,0.3)", fontSize: "0.82rem", fontFamily: "'Noto Sans Bengali', sans-serif", marginTop: 6 }}>
+                    <p style={{ color: "rgba(250,246,239,0.3)", fontSize: "0.82rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginTop: 6 }}>
                       ইমেইল আসলে এখানে দেখাবে। প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়।
                     </p>
                   </div>
@@ -1125,7 +1125,7 @@ export default function TempEmail() {
               style={{
                 color: TEXT,
                 fontSize: "1.15rem",
-                fontFamily: "'Noto Sans Bengali', serif",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
                 fontWeight: 700,
                 margin: "0 0 20px",
               }}
@@ -1192,7 +1192,7 @@ export default function TempEmail() {
                     style={{
                       color: TEXT,
                       fontSize: "0.95rem",
-                      fontFamily: "'Noto Sans Bengali', serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
                       fontWeight: 600,
                       margin: "0 0 6px",
                     }}
@@ -1203,7 +1203,7 @@ export default function TempEmail() {
                     style={{
                       color: MUTED,
                       fontSize: "0.83rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       margin: 0,
                       lineHeight: 1.6,
                     }}

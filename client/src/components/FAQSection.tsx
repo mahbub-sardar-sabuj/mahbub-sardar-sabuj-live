@@ -54,7 +54,7 @@ export default function FAQSection({ faqs, title = "সাধারণ প্র
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           {/* Title */}
           <h2 style={{
-            fontFamily: "'Tiro Bangla', serif",
+            fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
             fontSize: "1.8rem",
             fontWeight: 700,
             color: "#FAF6EF",
@@ -67,7 +67,7 @@ export default function FAQSection({ faqs, title = "সাধারণ প্র
           {/* Description */}
           {description && (
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
               fontSize: "0.95rem",
               color: "rgba(250,246,239,0.6)",
               textAlign: "center",
@@ -109,7 +109,7 @@ export default function FAQSection({ faqs, title = "সাধারণ প্র
                   aria-expanded={openIndex === index}
                 >
                   <span style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     fontSize: "1rem",
                     fontWeight: 600,
                     color: "#FAF6EF",
@@ -139,7 +139,7 @@ export default function FAQSection({ faqs, title = "সাধারণ প্র
                       }}
                     >
                       <p style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.95rem",
                         color: "rgba(250,246,239,0.7)",
                         padding: "1.2rem",

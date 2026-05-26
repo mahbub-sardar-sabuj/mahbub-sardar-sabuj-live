@@ -82,8 +82,8 @@ const FONT_CSS: Record<string, string> = {
   BHSabitAdorshoLightUnicode:   "'BHSabitAdorshoLightUnicode', serif",
   BLABNorhaGramUnicode:         "'BLABNorhaGramUnicode', serif",
   AkhandBengali:                "'AkhandBengali', serif",
-  TiroBangla:                   "'Tiro Bangla', serif",
-  NotoSansBengali:              "'Noto Sans Bengali', sans-serif",
+  TiroBangla:                   "'AdorshoLipi', 'Tiro Bangla', serif",
+  NotoSansBengali:              "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
   // new BH series
   BHAparajito:                  "'BHAparajito', serif",
   BHHadaVoda:                   "'BHHadaVoda', serif",

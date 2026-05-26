@@ -128,7 +128,7 @@ const CSS = `
     --eb-gold2: #E8C87A;
     --eb-bdr:   rgba(255,255,255,.055);
     --eb-bdr2:  rgba(255,255,255,.10);
-    --eb-f:     'Noto Serif Bengali', 'SolaimanLipi', serif;
+    --eb-f:     'AdorshoLipi', 'Noto Serif Bengali', serif;
     --eb-ease:  cubic-bezier(.25,.46,.45,.94);
     --eb-silk:  cubic-bezier(.16,1,.3,1);
   }

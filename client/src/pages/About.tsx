@@ -124,7 +124,7 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                   fontSize: "clamp(2.8rem, 6.5vw, 5.5rem)",
                   fontWeight: 700, lineHeight: 1.08,
                   background: "linear-gradient(135deg, #C9A84C 0%, #E8C97A 40%, #F5E4A0 60%, #C9A84C 100%)",

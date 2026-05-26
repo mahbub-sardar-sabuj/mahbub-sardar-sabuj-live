@@ -260,7 +260,7 @@ export default function SeoKeywordLanding() {
       </main>
       <Footer />
       <style>{`
-        .seo-landing { min-height: 100vh; background: #070A12; color: #EEEAE2; font-family: 'Noto Serif Bengali', 'SolaimanLipi', serif; }
+        .seo-landing { min-height: 100vh; background: #070A12; color: #EEEAE2; font-family: 'AdorshoLipi', 'AdorshoLipi', 'Noto Serif Bengali', serif; }
         .sl-main { padding-top: var(--site-nav-offset, 96px); }
         .sl-hero { max-width: 980px; margin: 0 auto; padding: clamp(4rem, 9vw, 7rem) 1.25rem 3rem; text-align: center; }
         .sl-icon { width: 76px; height: 76px; margin: 0 auto 1.2rem; border: 1px solid rgba(201,168,76,.32); border-radius: 24px; display: grid; place-items: center; color: #D8B45E; background: radial-gradient(circle at 30% 20%, rgba(201,168,76,.22), rgba(201,168,76,.04)); box-shadow: 0 18px 60px rgba(0,0,0,.36); }

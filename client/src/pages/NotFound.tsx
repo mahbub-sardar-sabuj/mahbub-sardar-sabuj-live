@@ -62,7 +62,7 @@ export default function NotFound() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              fontFamily: "'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
               fontSize: "clamp(7rem, 20vw, 12rem)",
               fontWeight: 700,
               lineHeight: 1,
@@ -95,7 +95,7 @@ export default function NotFound() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.35 }}
             style={{
-              fontFamily: "'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
               color: "#FAF6EF",
               fontSize: "clamp(1.5rem, 4vw, 2.2rem)",
               fontWeight: 400,
@@ -112,7 +112,7 @@ export default function NotFound() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.45 }}
             style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
               color: "rgba(250,246,239,0.55)",
               fontSize: "1rem",
               lineHeight: 2,
@@ -141,7 +141,7 @@ export default function NotFound() {
                   gap: 8,
                   background: "linear-gradient(135deg, #C9A84C 0%, #E8C97A 100%)",
                   color: "#060E1A",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontWeight: 700,
                   fontSize: "0.95rem",
                   padding: "14px 32px",
@@ -165,7 +165,7 @@ export default function NotFound() {
                   gap: 8,
                   background: "transparent",
                   color: "#C9A84C",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontWeight: 600,
                   fontSize: "0.95rem",
                   padding: "14px 32px",

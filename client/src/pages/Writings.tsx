@@ -115,7 +115,7 @@ const CSS = `
     --bdr:   rgba(255,255,255,.055);
     --bdr2:  rgba(255,255,255,.10);
     --bdr3:  rgba(255,255,255,.17);
-    --f:     'Noto Serif Bengali', 'SolaimanLipi', serif;
+    --f:     'AdorshoLipi', 'Noto Serif Bengali', serif;
     --ease:  cubic-bezier(.25,.46,.45,.94);
     --spring: cubic-bezier(.34,1.56,.64,1);
     --silk:  cubic-bezier(.16,1,.3,1);

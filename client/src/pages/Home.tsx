@@ -234,7 +234,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    fontFamily: "'Tiro Bangla', serif",
+                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                     fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
@@ -254,7 +254,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    fontFamily: "'Tiro Bangla', serif",
+                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                     fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
@@ -412,7 +412,7 @@ export default function Home() {
                       textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
                     }}>লেখক ও কবি</div>
                     <div style={{
-                      fontFamily: "'Tiro Bangla', serif",
+                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                       fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
                       textShadow: "0 2px 12px rgba(0,0,0,0.5)",
                     }}>মাহবুব সরদার সবুজ</div>
@@ -505,7 +505,7 @@ export default function Home() {
               <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
             <h2 style={{
-              fontFamily: "'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
               fontSize: "clamp(2rem, 5vw, 3.1rem)",
               fontWeight: 700, color: "#FAF6EF",
               margin: 0, lineHeight: 1.18,
@@ -777,7 +777,7 @@ export default function Home() {
           transform: scale(1.06);
         }
         .app-label {
-          font-family: 'Tiro Bangla', serif;
+          font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
           font-size: clamp(0.86rem, 2.2vw, 1.02rem);
           font-weight: 700;
           line-height: 1.22;

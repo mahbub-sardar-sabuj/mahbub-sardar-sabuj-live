@@ -1141,7 +1141,7 @@ export default function News() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <h3 style={{
                   color: "#F5A623",
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                   margin: 0,
                   fontSize: "1.2rem",
                 }}>

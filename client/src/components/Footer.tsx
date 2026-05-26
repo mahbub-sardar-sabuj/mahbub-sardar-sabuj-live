@@ -125,7 +125,7 @@ export default function Footer() {
               </div>
               <div>
                 <div style={{
-                  fontFamily: "'Tiro Bangla', serif",
+                  fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                   fontSize: "1.1rem", fontWeight: 700,
                   background: "linear-gradient(90deg, #E8C97A, #C9A84C)",
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
@@ -139,7 +139,7 @@ export default function Footer() {
             </div>
 
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
               color: "rgba(250,246,239,0.45)",
               fontSize: "0.875rem", lineHeight: 1.9,
               margin: "0 0 2rem",
@@ -154,13 +154,13 @@ export default function Footer() {
               borderRadius: 12, padding: "1.25rem",
             }}>
               <div style={{
-                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 fontSize: "0.8rem", fontWeight: 600,
                 color: "#C9A84C", marginBottom: "0.75rem",
               }}>নতুন লেখার আপডেট পান</div>
               {subscribed ? (
                 <div style={{
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.85rem", color: "#4ade80",
                   display: "flex", alignItems: "center", gap: 8,
                 }}>
@@ -178,7 +178,7 @@ export default function Footer() {
                       background: "rgba(255,255,255,0.04)",
                       border: "1px solid rgba(201,168,76,0.2)",
                       borderRadius: 6, color: "#FAF6EF",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.8rem", outline: "none",
                     }}
                   />
@@ -196,7 +196,7 @@ export default function Footer() {
                       opacity: subscribing ? 0.7 : 1,
                     }}
                   >
-                    {subscribing ? <span style={{ fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>...</span> : <ArrowRight size={16} />}
+                    {subscribing ? <span style={{ fontSize: "0.75rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>...</span> : <ArrowRight size={16} />}
                   </motion.button>
                 </form>
               )}
@@ -224,7 +224,7 @@ export default function Footer() {
                       onMouseEnter={() => warmRoute(link.href)}
                       whileHover={{ x: 6, color: "#C9A84C" }}
                       style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                         textDecoration: "none",
                         fontSize: "0.875rem",
@@ -265,7 +265,7 @@ export default function Footer() {
                           onMouseEnter={() => warmRoute(link.href)}
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
-                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                             color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                             textDecoration: "none",
                             fontSize: "0.875rem",
@@ -304,7 +304,7 @@ export default function Footer() {
                           onMouseEnter={() => warmRoute(link.href)}
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
-                            fontFamily: "'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                             color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                             textDecoration: "none",
                             fontSize: "0.875rem",
@@ -416,7 +416,7 @@ export default function Footer() {
           gap: "1rem",
         }}>
           <p style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
             color: "rgba(250,246,239,0.3)",
             fontSize: "0.8rem",
             margin: 0,
@@ -425,7 +425,7 @@ export default function Footer() {
             © ২০২৬ মাহবুব সরদার সবুজ। সর্বস্বত্ব সংরক্ষিত।
           </p>
           <p style={{
-            fontFamily: "'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
             color: "rgba(250,246,239,0.25)",
             fontSize: "0.8rem",
             margin: 0,
