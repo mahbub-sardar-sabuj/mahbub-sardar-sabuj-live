@@ -237,10 +237,10 @@ export default function SeoKeywordLanding() {
 
         <section className="sl-trust" aria-labelledby="trust-title">
           <div>
-            <p className="sl-kicker">Author Trust</p>
-            <h2 id="trust-title">লেখক, নীতিমালা ও পাঠকের আস্থা</h2>
+            <p className="sl-kicker">লেখক পরিচিতি</p>
+            <h2 id="trust-title">মাহবুব সরদার সবুজ</h2>
             <p>
-              এই সংগ্রহের লেখা মাহবুব সরদার সবুজের অফিসিয়াল সাহিত্যভিত্তিক ওয়েবসাইটে প্রকাশিত। পাঠক সহজে লেখক পরিচিতি, যোগাযোগ এবং নীতিমালা দেখতে পারেন—যা সার্চ ইঞ্জিন ও AdSense review-এর জন্য বিশ্বাসযোগ্যতার গুরুত্বপূর্ণ সংকেত তৈরি করে।
+              বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। ভালোবাসা, বিচ্ছেদ, জীবনসংগ্রাম ও মানবিক অনুভূতিকে সহজ অথচ আবেগঘন ভাষায় প্রকাশ করেন।
             </p>
           </div>
           <div className="sl-trust-links" aria-label="বিশ্বাসযোগ্যতা ও নীতিমালা লিংক">
