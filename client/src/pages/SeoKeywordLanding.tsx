@@ -218,14 +218,6 @@ export default function SeoKeywordLanding() {
           </div>
         </section>
 
-        <section className="sl-guide" aria-labelledby="guide-title">
-          <h2 id="guide-title">এই সংগ্রহ কেন গুরুত্বপূর্ণ</h2>
-          <p>{page.guide}</p>
-          <div className="sl-tags">
-            {page.keywords.split(",").map((keyword) => <span key={keyword}>{keyword.trim()}</span>)}
-          </div>
-        </section>
-
         <section className="sl-grid-section" aria-labelledby="selected-title">
           <div className="sl-section-head">
             <h2 id="selected-title">নির্বাচিত লেখা</h2>
