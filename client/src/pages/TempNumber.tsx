@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown, QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 
 interface SmsMessage {
@@ -216,15 +218,17 @@ export default function TempNumber() {
         path="/temp-number"
         seoKeywords="temporary phone number, temp number, disposable phone number, free temp number, temporary sms receiver, otp receiver, sms verification, অস্থায়ী ফোন নম্বর, টেম্প নম্বর, ডিসপোজেবল ফোন নম্বর, ফ্রি টেম্প নম্বর, অস্থায়ী এসএমএস রিসিভার, ওটিপি রিসিভার, এসএমএস ভেরিফিকেশন"
       />
+      <Navbar />
       <div
         className="min-h-screen"
         style={{
           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
           background: "linear-gradient(135deg, #060E1A 0%, #0a1628 100%)",
+          paddingTop: "var(--site-nav-offset, 70px)",
         }}
       >
         {/* Hero */}
-        <div className="text-center pt-16 pb-10 px-4">
+        <div className="text-center pt-10 pb-10 px-4">
           <div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
             style={{
@@ -548,8 +552,9 @@ export default function TempNumber() {
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
+        <Footer />
       </div>
     </>
   );
