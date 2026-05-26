@@ -58,6 +58,14 @@ function randomString(length: number): string {
   return result;
 }
 
+// Sanitize custom username: lowercase, alphanumeric + dot/underscore/hyphen only
+function sanitizeUsername(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, "")
+    .slice(0, 40);
+}
+
 // Format time ago
 function timeAgo(dateStr: string): string {
   const now = new Date();
@@ -80,6 +88,8 @@ export default function TempEmail() {
   const [countdown, setCountdown] = useState(30);
   const [generating, setGenerating] = useState(false);
   const [viewingMessage, setViewingMessage] = useState(false);
+  const [customUsername, setCustomUsername] = useState("");
+  const [useCustom, setUseCustom] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -93,11 +103,13 @@ export default function TempEmail() {
   };
 
   // Create new email account
-  const createAccount = async (): Promise<EmailAccount> => {
+  const createAccount = async (preferredUsername?: string): Promise<EmailAccount> => {
     const domains = await getDomains();
     if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
     const domain = domains[0];
-    const username = randomString(10);
+    // Use custom username if provided, else random
+    const baseUsername = preferredUsername ? sanitizeUsername(preferredUsername) : "";
+    const username = baseUsername.length >= 3 ? baseUsername + randomString(4) : randomString(10);
     const password = randomString(16);
     const address = `${username}@${domain}`;
 
@@ -206,7 +218,8 @@ export default function TempEmail() {
     setMessages([]);
     setSelectedMessage(null);
     try {
-      const acc = await createAccount();
+      const preferred = useCustom && customUsername.trim().length >= 3 ? customUsername.trim() : undefined;
+      const acc = await createAccount(preferred);
       setAccount(acc);
       await fetchMessages(acc);
       startAutoRefresh(acc);
@@ -444,12 +457,90 @@ export default function TempEmail() {
                 >
                   নতুন টেম্পোরারি ইমেইল তৈরি করুন
                 </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'Noto Sans Bengali', sans-serif", margin: "0 0 24px" }}>
+                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'Noto Sans Bengali', sans-serif", margin: "0 0 20px" }}>
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
                 </p>
+
+                {/* Custom username toggle */}
+                <div style={{ marginBottom: 20, textAlign: "left", maxWidth: 420, margin: "0 auto 20px" }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      cursor: "pointer",
+                      marginBottom: useCustom ? 12 : 0,
+                      userSelect: "none",
+                    }}
+                  >
+                    <div
+                      onClick={() => setUseCustom(!useCustom)}
+                      style={{
+                        width: 40,
+                        height: 22,
+                        borderRadius: 11,
+                        background: useCustom ? GOLD : "rgba(255,255,255,0.1)",
+                        border: `1px solid ${useCustom ? GOLD : "rgba(255,255,255,0.2)"}`,
+                        position: "relative",
+                        transition: "all 0.2s",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: "50%",
+                          background: "#fff",
+                          position: "absolute",
+                          top: 2,
+                          left: useCustom ? 20 : 2,
+                          transition: "left 0.2s",
+                        }}
+                      />
+                    </div>
+                    <span
+                      onClick={() => setUseCustom(!useCustom)}
+                      style={{ color: MUTED, fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}
+                    >
+                      কাস্টম নাম দিয়ে ইমেইল তৈরি করুন
+                    </span>
+                  </label>
+
+                  {useCustom && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 0, background: "rgba(201,168,76,0.06)", border: `1px solid rgba(201,168,76,0.3)`, borderRadius: 12, overflow: "hidden" }}>
+                      <input
+                        type="text"
+                        value={customUsername}
+                        onChange={(e) => setCustomUsername(e.target.value.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 30))}
+                        placeholder="MahbubSardarSabuj"
+                        maxLength={30}
+                        style={{
+                          flex: 1,
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: TEXT,
+                          fontSize: "0.95rem",
+                          fontFamily: "monospace",
+                          padding: "10px 14px",
+                        }}
+                      />
+                      <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "monospace", padding: "0 12px", whiteSpace: "nowrap" }}>
+                        @domain
+                      </span>
+                    </div>
+                  )}
+                  {useCustom && customUsername.length > 0 && customUsername.length < 3 && (
+                    <p style={{ color: "#f59e0b", fontSize: "0.78rem", fontFamily: "'Noto Sans Bengali', sans-serif", margin: "6px 0 0" }}>
+                      কমপক্ষে ৩টি অক্ষর দিন
+                    </p>
+                  )}
+                </div>
+
                 <button
                   onClick={generateEmail}
-                  disabled={generating}
+                  disabled={generating || (useCustom && customUsername.trim().length > 0 && customUsername.trim().length < 3)}
                   style={{
                     background: generating
                       ? "rgba(201,168,76,0.3)"
