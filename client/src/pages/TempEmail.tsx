@@ -109,20 +109,38 @@ export default function TempEmail() {
     const domain = domains[0];
     // Use custom username if provided, else random
     const baseUsername = preferredUsername ? sanitizeUsername(preferredUsername) : "";
-    const username = baseUsername.length >= 3 ? baseUsername + randomString(4) : randomString(10);
     const password = randomString(16);
-    const address = `${username}@${domain}`;
 
-    const res = await fetch(`${API_BASE}/accounts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address, password }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err["hydra:description"] || "অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
+    // Try exact username first, then fallback with suffix if taken
+    const tryAddresses = baseUsername.length >= 3
+      ? [
+          `${baseUsername}@${domain}`,
+          `${baseUsername}${randomString(2)}@${domain}`,
+          `${baseUsername}${randomString(4)}@${domain}`,
+        ]
+      : [`${randomString(10)}@${domain}`];
+
+    let address = tryAddresses[0];
+    let accountData: Record<string, string> | null = null;
+
+    for (const addr of tryAddresses) {
+      const tryRes = await fetch(`${API_BASE}/accounts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addr, password }),
+      });
+      if (tryRes.ok) {
+        accountData = await tryRes.json();
+        address = addr;
+        break;
+      }
+      // If last attempt, throw error
+      if (addr === tryAddresses[tryAddresses.length - 1]) {
+        const err = await tryRes.json().catch(() => ({}));
+        throw new Error((err as Record<string, string>)["hydra:description"] || "অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
+      }
     }
-    const accountData = await res.json();
+    if (!accountData) throw new Error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
 
     // Get token
     const tokenRes = await fetch(`${API_BASE}/token`, {
