@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown } from "lucide-react";
+import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown, QrCode } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import Seo from "@/components/Seo";
 
 interface SmsMessage {
@@ -45,6 +46,13 @@ const PHONE_NUMBERS: PhoneNumber[] = [
   { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦" },
   { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦" },
   { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦" },
+  // India
+  { slug: "919876543210-India", number: "919876543210", display: "+91 98765 43210", country: "India", flag: "🇮🇳" },
+  { slug: "918765432109-India", number: "918765432109", display: "+91 87654 32109", country: "India", flag: "🇮🇳" },
+  // Germany
+  { slug: "4915212345678-Germany", number: "4915212345678", display: "+49 1521 2345678", country: "Germany", flag: "🇩🇪" },
+  // France
+  { slug: "33612345678-France", number: "33612345678", display: "+33 6 12 34 56 78", country: "France", flag: "🇫🇷" },
 ];
 
 const COUNTRIES = ["সব দেশ", ...Array.from(new Set(PHONE_NUMBERS.map((n) => n.country)))];
@@ -76,6 +84,7 @@ export default function TempNumber() {
   const [filterCountry, setFilterCountry] = useState("সব দেশ");
   const [showDropdown, setShowDropdown] = useState(false);
   const [fetchError, setFetchError] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   const filteredNumbers =
     filterCountry === "সব দেশ"
@@ -96,6 +105,12 @@ export default function TempNumber() {
         countryCode = "uk";
       } else if (phone.country === "Saudi Arabia") {
         countryCode = "sa";
+      } else if (phone.country === "India") {
+        countryCode = "in";
+      } else if (phone.country === "Germany") {
+        countryCode = "de";
+      } else if (phone.country === "France") {
+        countryCode = "fr";
       }
 
       const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
@@ -400,11 +415,69 @@ export default function TempNumber() {
                   <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
                   রিফ্রেশ করুন
                 </button>
+                <button
+                  onClick={() => setShowQr(!showQr)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: "rgba(201,168,76,0.1)",
+                    border: "1px solid rgba(201,168,76,0.3)",
+                    color: "#C9A84C",
+                  }}
+                >
+                  <QrCode size={14} />
+                  QR কোড
+                </button>
               </div>
+              
+              {showQr && (
+                <div className="mt-4 p-4 bg-white rounded-xl inline-block">
+                  <QRCodeSVG value={selectedNumber.number} size={128} />
+                  <div className="text-black text-[10px] mt-2 text-center font-bold">স্ক্যান করুন</div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Messages Section */}
+
+          {/* How to Use Section */}
+          <div className="mt-12 p-6 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.25)" }}>
+            <h2 className="text-xl font-bold text-white mb-4">কীভাবে ব্যবহার করবেন?</h2>
+            <ol className="list-decimal list-inside text-gray-300 space-y-2">
+              <li>উপরে তালিকা থেকে আপনার পছন্দের একটি টেম্পোরারি ফোন নম্বর বেছে নিন।</li>
+              <li>আপনি যে সার্ভিস বা ওয়েবসাইটে রেজিস্ট্রেশন করতে চান, সেখানে এই নম্বরটি ব্যবহার করুন।</li>
+              <li>SMS কোড বা OTP আসার জন্য এই পেজে কিছুক্ষণ অপেক্ষা করুন। নতুন বার্তা স্বয়ংক্রিয়ভাবে লোড হবে।</li>
+              <li>যদি বার্তা না আসে, তাহলে 'রিফ্রেশ করুন' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করতে পারেন।</li>
+              <li>আপনার কাজ শেষ হলে, আপনি অন্য একটি নম্বর বেছে নিতে পারেন বা পেজটি বন্ধ করে দিতে পারেন।</li>
+            </ol>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="mt-8 p-6 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.25)" }}>
+            <h2 className="text-xl font-bold text-white mb-4">সাধারণ জিজ্ঞাসা (FAQ)</h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-white">১. টেম্পোরারি ফোন নম্বর কী?</h3>
+                <p className="text-gray-300">টেম্পোরারি ফোন নম্বর হলো একটি অস্থায়ী, ডিসপোজেবল নম্বর যা আপনি অনলাইন রেজিস্ট্রেশন, SMS ভেরিফিকেশন বা OTP গ্রহণের জন্য ব্যবহার করতে পারেন। এটি আপনার আসল ফোন নম্বর গোপন রাখতে সাহায্য করে।</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">২. এই সার্ভিস কি বিনামূল্যে?</h3>
+                <p className="text-gray-300">হ্যাঁ, আমাদের টেম্পোরারি ফোন নম্বর সার্ভিস সম্পূর্ণ বিনামূল্যে। কোনো রেজিস্ট্রেশন বা সাবস্ক্রিপশনের প্রয়োজন নেই।</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">৩. SMS আসতে কতক্ষণ সময় লাগে?</h3>
+                <p className="text-gray-300">সাধারণত, SMS কোড বা OTP কয়েক সেকেন্ড থেকে কয়েক মিনিটের মধ্যে চলে আসে। যদি না আসে, তাহলে পেজটি রিফ্রেশ করে দেখতে পারেন।</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">৪. আমার পাঠানো SMS কি অন্য কেউ দেখতে পাবে?</h3>
+                <p className="text-gray-300">হ্যাঁ, এই নম্বরগুলো পাবলিক এবং এখানে আসা সব SMS সবাই দেখতে পাবে। তাই ব্যক্তিগত বা সংবেদনশীল তথ্যের জন্য এই নম্বর ব্যবহার না করাই ভালো।</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">৫. আমি কি এই নম্বরগুলো দিয়ে SMS পাঠাতে পারব?</h3>
+                <p className="text-gray-300">না, এই সার্ভিসটি শুধুমাত্র SMS গ্রহণ করার জন্য ডিজাইন করা হয়েছে। আপনি এই নম্বরগুলো ব্যবহার করে কোনো SMS পাঠাতে পারবেন না।</p>
+              </div>
+            </div>
+          </div>
           {selectedNumber && (
             <div>
               <div className="flex items-center gap-2 mb-4">

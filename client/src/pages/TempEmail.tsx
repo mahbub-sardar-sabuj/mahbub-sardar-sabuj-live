@@ -6,7 +6,8 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, RefreshCw, Mail, Trash2, Eye, Clock, CheckCircle, AlertCircle, Inbox, Shield, Zap, Lock } from "lucide-react";
+import { Copy, RefreshCw, Mail, Trash2, Eye, Clock, CheckCircle, AlertCircle, Inbox, Shield, Zap, Lock, QrCode, Globe } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
@@ -91,13 +92,18 @@ export default function TempEmail() {
   const [customUsername, setCustomUsername] = useState("");
   const [useCustom, setUseCustom] = useState(false);
   const [availableDomain, setAvailableDomain] = useState<string>("...");
+  const [allDomains, setAllDomains] = useState<string[]>([]);
+  const [showQr, setShowQr] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load domain on mount
   useEffect(() => {
     getDomains().then((domains) => {
-      if (domains.length > 0) setAvailableDomain(domains[0]);
+      if (domains.length > 0) {
+        setAllDomains(domains);
+        setAvailableDomain(domains[0]);
+      }
     }).catch(() => setAvailableDomain("mail.tm"));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -113,9 +119,7 @@ export default function TempEmail() {
 
   // Create new email account
   const createAccount = async (preferredUsername?: string): Promise<EmailAccount> => {
-    const domains = await getDomains();
-    if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
-    const domain = domains[0];
+    const domain = availableDomain;
     // Use custom username if provided, else random
     const baseUsername = preferredUsername ? sanitizeUsername(preferredUsername) : "";
     const password = randomString(16);
@@ -489,6 +493,32 @@ export default function TempEmail() {
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
                 </p>
 
+                {/* Domain Selector */}
+                {allDomains.length > 0 && (
+                  <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: MUTED, fontSize: '0.85rem', fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+                      <Globe size={14} color={GOLD} />
+                      ডোমেইন:
+                    </div>
+                    <select 
+                      value={availableDomain}
+                      onChange={(e) => setAvailableDomain(e.target.value)}
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        color: TEXT,
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: 8,
+                        padding: '4px 10px',
+                        fontSize: '0.85rem',
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {allDomains.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                )}
+
                 {/* Custom username toggle */}
                 <div style={{ marginBottom: 20, textAlign: "left", maxWidth: 420, margin: "0 auto 20px" }}>
                   <label
@@ -725,6 +755,26 @@ export default function TempEmail() {
                   </button>
 
                   <button
+                    onClick={() => setShowQr(!showQr)}
+                    style={{
+                      background: "rgba(201,168,76,0.1)",
+                      border: `1px solid rgba(201,168,76,0.3)`,
+                      borderRadius: 10,
+                      padding: "9px 18px",
+                      color: GOLD,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 7,
+                      fontSize: "0.85rem",
+                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <QrCode size={15} />
+                    QR কোড
+                  </button>
+                  <button
                     onClick={deleteAccount}
                     disabled={loading}
                     style={{
@@ -747,11 +797,108 @@ export default function TempEmail() {
                     মুছে ফেলুন
                   </button>
                 </div>
+
+                {showQr && (
+                  <div style={{ marginTop: 20, textAlign: 'center' }}>
+                    <div style={{ display: 'inline-block', padding: 12, background: '#fff', borderRadius: 12 }}>
+                      <QRCodeSVG value={account.address} size={128} />
+                    </div>
+                    <p style={{ color: MUTED, fontSize: '0.75rem', marginTop: 8 }}>ইমেইল স্ক্যান করুন</p>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
 
           {/* Inbox */}
+
+          {/* How to Use Section */}
+          <div style={{ marginTop: 40, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>কীভাবে ব্যবহার করবেন?</h2>
+            <ol style={{ listStyleType: "decimal", listStylePosition: "inside", color: MUTED, lineHeight: 1.6, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+              <li>উপরে তালিকা থেকে আপনার পছন্দের একটি টেম্পোরারি ইমেইল ডোমেইন বেছে নিন।</li>
+              <li>"ইমেইল তৈরি করুন" বাটনে ক্লিক করে একটি নতুন টেম্পোরারি ইমেইল অ্যাড্রেস তৈরি করুন। আপনি চাইলে কাস্টম ইউজারনেমও ব্যবহার করতে পারেন।</li>
+              <li>আপনি যে সার্ভিস বা ওয়েবসাইটে রেজিস্ট্রেশন করতে চান, সেখানে এই ইমেইল অ্যাড্রেসটি ব্যবহার করুন।</li>
+              <li>ভেরিফিকেশন ইমেইল বা কোড আসার জন্য এই পেজে কিছুক্ষণ অপেক্ষা করুন। নতুন বার্তা স্বয়ংক্রিয়ভাবে ইনবক্সে লোড হবে।</li>
+              <li>যদি বার্তা না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করতে পারেন।</li>
+              <li>আপনার কাজ শেষ হলে, আপনি 'নতুন ইমেইল' বাটনে ক্লিক করে একটি নতুন ইমেইল তৈরি করতে পারেন বা পেজটি বন্ধ করে দিতে পারেন।</li>
+            </ol>
+          </div>
+
+          {/* FAQ Section */}
+          <div style={{ marginTop: 24, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>সাধারণ জিজ্ঞাসা (FAQ)</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>১. টেম্পোরারি ইমেইল কী?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>টেম্পোরারি ইমেইল হলো একটি অস্থায়ী, ডিসপোজেবল ইমেইল অ্যাড্রেস যা আপনি অনলাইন রেজিস্ট্রেশন, নিউজলেটার সাবস্ক্রিপশন বা OTP গ্রহণের জন্য ব্যবহার করতে পারেন। এটি আপনার আসল ইমেইল অ্যাড্রেসকে স্প্যাম এবং অবাঞ্ছিত মেইল থেকে রক্ষা করে।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>২. এই সার্ভিস কি বিনামূল্যে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, আমাদের টেম্পোরারি ইমেইল সার্ভিস সম্পূর্ণ বিনামূল্যে। কোনো রেজিস্ট্রেশন বা সাবস্ক্রিপশনের প্রয়োজন নেই।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৩. ইমেইল আসতে কতক্ষণ সময় লাগে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ভেরিফিকেশন ইমেইল বা কোড কয়েক সেকেন্ড থেকে কয়েক মিনিটের মধ্যে চলে আসে। যদি না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করে দেখতে পারেন।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৪. আমার পাঠানো ইমেইল কি অন্য কেউ দেখতে পাবে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, এই ইমেইল অ্যাড্রেসগুলো পাবলিক এবং এখানে আসা সব ইমেইল সবাই দেখতে পাবে। তাই ব্যক্তিগত বা সংবেদনশীল তথ্যের জন্য এই ইমেইল ব্যবহার না করাই ভালো।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৫. আমি কি এই ইমেইল অ্যাড্রেসগুলো দিয়ে ইমেইল পাঠাতে পারব?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>না, এই সার্ভিসটি শুধুমাত্র ইমেইল গ্রহণ করার জন্য ডিজাইন করা হয়েছে। আপনি এই ইমেইল অ্যাড্রেসগুলো ব্যবহার করে কোনো ইমেইল পাঠাতে পারবেন না।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৬. কতক্ষণ পর্যন্ত ইমেইলগুলো ইনবক্সে থাকে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ইমেইলগুলো নির্দিষ্ট সময় (যেমন ১ ঘণ্টা) পর্যন্ত ইনবক্সে থাকে, এরপর স্বয়ংক্রিয়ভাবে মুছে যায়।</p>
+              </div>
+            </div>
+          </div>
+
+          {/* How to Use Section */}
+          <div style={{ marginTop: 40, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>কীভাবে ব্যবহার করবেন?</h2>
+            <ol style={{ listStyleType: "decimal", listStylePosition: "inside", color: MUTED, lineHeight: 1.6, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+              <li>উপরে তালিকা থেকে আপনার পছন্দের একটি টেম্পোরারি ইমেইল ডোমেইন বেছে নিন।</li>
+              <li>"ইমেইল তৈরি করুন" বাটনে ক্লিক করে একটি নতুন টেম্পোরারি ইমেইল অ্যাড্রেস তৈরি করুন। আপনি চাইলে কাস্টম ইউজারনেমও ব্যবহার করতে পারেন।</li>
+              <li>আপনি যে সার্ভিস বা ওয়েবসাইটে রেজিস্ট্রেশন করতে চান, সেখানে এই ইমেইল অ্যাড্রেসটি ব্যবহার করুন।</li>
+              <li>ভেরিফিকেশন ইমেইল বা কোড আসার জন্য এই পেজে কিছুক্ষণ অপেক্ষা করুন। নতুন বার্তা স্বয়ংক্রিয়ভাবে ইনবক্সে লোড হবে।</li>
+              <li>যদি বার্তা না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করতে পারেন।</li>
+              <li>আপনার কাজ শেষ হলে, আপনি 'নতুন ইমেইল' বাটনে ক্লিক করে একটি নতুন ইমেইল তৈরি করতে পারেন বা পেজটি বন্ধ করে দিতে পারেন।</li>
+            </ol>
+          </div>
+
+          {/* FAQ Section */}
+          <div style={{ marginTop: 24, padding: 24, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16 }}>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: TEXT, marginBottom: 16, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>সাধারণ জিজ্ঞাসা (FAQ)</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>১. টেম্পোরারি ইমেইল কী?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>টেম্পোরারি ইমেইল হলো একটি অস্থায়ী, ডিসপোজেবল ইমেইল অ্যাড্রেস যা আপনি অনলাইন রেজিস্ট্রেশন, নিউজলেটার সাবস্ক্রিপশন বা OTP গ্রহণের জন্য ব্যবহার করতে পারেন। এটি আপনার আসল ইমেইল অ্যাড্রেসকে স্প্যাম এবং অবাঞ্ছিত মেইল থেকে রক্ষা করে।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>২. এই সার্ভিস কি বিনামূল্যে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, আমাদের টেম্পোরারি ইমেইল সার্ভিস সম্পূর্ণ বিনামূল্যে। কোনো রেজিস্ট্রেশন বা সাবস্ক্রিপশনের প্রয়োজন নেই।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৩. ইমেইল আসতে কতক্ষণ সময় লাগে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ভেরিফিকেশন ইমেইল বা কোড কয়েক সেকেন্ড থেকে কয়েক মিনিটের মধ্যে চলে আসে। যদি না আসে, তাহলে 'ইনবক্স রিফ্রেশ' বাটনে ক্লিক করে ম্যানুয়ালি রিফ্রেশ করে দেখতে পারেন।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৪. আমার পাঠানো ইমেইল কি অন্য কেউ দেখতে পাবে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>হ্যাঁ, এই ইমেইল অ্যাড্রেসগুলো পাবলিক এবং এখানে আসা সব ইমেইল সবাই দেখতে পাবে। তাই ব্যক্তিগত বা সংবেদনশীল তথ্যের জন্য এই ইমেইল ব্যবহার না করাই ভালো।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৫. আমি কি এই ইমেইল অ্যাড্রেসগুলো দিয়ে ইমেইল পাঠাতে পারব?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>না, এই সার্ভিসটি শুধুমাত্র ইমেইল গ্রহণ করার জন্য ডিজাইন করা হয়েছে। আপনি এই ইমেইল অ্যাড্রেসগুলো ব্যবহার করে কোনো ইমেইল পাঠাতে পারবেন না।</p>
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 600, color: TEXT, marginBottom: 4, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif" }}>৬. কতক্ষণ পর্যন্ত ইমেইলগুলো ইনবক্সে থাকে?</h3>
+                <p style={{ color: MUTED, fontSize: "0.9rem", lineHeight: 1.6, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>সাধারণত, ইমেইলগুলো নির্দিষ্ট সময় (যেমন ১ ঘণ্টা) পর্যন্ত ইনবক্সে থাকে, এরপর স্বয়ংক্রিয়ভাবে মুছে যায়।</p>
+              </div>
+            </div>
+          </div>
           <AnimatePresence>
             {account && (
               <motion.div
