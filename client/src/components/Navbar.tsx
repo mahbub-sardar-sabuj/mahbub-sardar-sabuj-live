@@ -20,6 +20,7 @@ import {
   Palette,
   Feather,
   MailOpen,
+  Phone,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
@@ -35,6 +36,7 @@ const navLinks = [
   { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", type: "page", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", type: "page", icon: Mail },
   { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", type: "page", icon: MailOpen },
+  { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", type: "page", icon: Phone },
 ];
 
 const infoTabs = [
