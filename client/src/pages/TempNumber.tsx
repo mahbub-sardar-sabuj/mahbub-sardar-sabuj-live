@@ -49,6 +49,24 @@ const PHONE_NUMBERS: PhoneNumber[] = [
 
 const COUNTRIES = ["সব দেশ", ...Array.from(new Set(PHONE_NUMBERS.map((n) => n.country)))];
 
+function formatTimestamp(ts: string): string {
+  try {
+    const num = parseInt(ts, 10);
+    if (!num) return ts;
+    const date = new Date(num * 1000);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "এইমাত্র";
+    if (diffMins < 60) return `${diffMins} মিনিট আগে`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} ঘণ্টা আগে`;
+    return date.toLocaleDateString("bn-BD");
+  } catch {
+    return ts;
+  }
+}
+
 export default function TempNumber() {
   const [selectedNumber, setSelectedNumber] = useState<PhoneNumber | null>(null);
   const [messages, setMessages] = useState<SmsMessage[]>([]);
@@ -68,10 +86,8 @@ export default function TempNumber() {
     setLoading(true);
     setFetchError(false);
     try {
-      let html = "";
       let countryCode = "";
 
-      // Determine country code for API endpoint
       if (phone.country === "United States") {
         countryCode = "us";
       } else if (phone.country === "Canada") {
@@ -82,72 +98,57 @@ export default function TempNumber() {
         countryCode = "sa";
       }
 
-      // Fetch from receive-smss.live
       const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
-      
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
       const res = await fetch(proxyUrl);
+      if (!res.ok) {
+        setFetchError(true);
+        setMessages([]);
+        return;
+      }
+
       const data = await res.json();
-      html = data.contents || "";
-      
+      const html: string = data.contents || "";
+
       if (!html || html.trim().length === 0) {
         setFetchError(true);
         setMessages([]);
         return;
       }
-      
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+
+      // receive-smss.live stores messages in data-attributes on .message-row divs:
+      // data-message-body, data-message-from, data-message-time
+      // We parse these with a regex since JS rendering fills them server-side in HTML
       const smsList: SmsMessage[] = [];
-      
-      // Parse receive-smss.live structure
-      // Look for message containers - they typically have sender, time, and message
-      const messageElements = doc.querySelectorAll("div");
-      
-      let foundMessages = false;
-      messageElements.forEach((el) => {
-        const text = el.textContent || "";
-        
-        // Look for verification codes or messages with typical patterns
-        if (text.length > 10 && (
-          text.includes("code") || 
-          text.includes("verification") || 
-          text.includes("Your") || 
-          text.includes("confirm") ||
-          /\d{3,8}/.test(text)
-        )) {
-          // Try to extract sender, message, and time
-          const children = Array.from(el.children);
-          if (children.length >= 2) {
-            const sender = children[0]?.textContent?.trim() || "Unknown";
-            const message = text.trim().substring(0, 200); // Limit message length
-            const time = children[children.length - 1]?.textContent?.trim() || "";
-            
-            if (message.length > 10 && !smsList.some(m => m.message === message)) {
-              smsList.push({ sender, message, time });
-              foundMessages = true;
-            }
-          }
-        }
-      });
-      
-      // If no structured messages found, try alternative parsing
-      if (!foundMessages) {
-        const textContent = doc.body.textContent || "";
-        const lines = textContent.split("\n").filter(line => line.trim().length > 10);
-        
-        lines.slice(0, 10).forEach((line) => {
-          if (line.includes("code") || line.includes("verification") || /\d{3,8}/.test(line)) {
-            smsList.push({
-              sender: "SMS",
-              message: line.trim().substring(0, 200),
-              time: "Just now"
-            });
-          }
+
+      const pattern =
+        /data-message-id="(\d+)"\s+data-message-body="([^"]*)"\s+data-message-from="([^"]*)"\s+data-message-time="(\d+)"/g;
+
+      let match: RegExpExecArray | null;
+      const seen = new Set<string>();
+
+      while ((match = pattern.exec(html)) !== null) {
+        const body = match[2].trim();
+        const from = match[3].trim() || "Unknown";
+        const timeRaw = match[4];
+
+        if (!body || seen.has(match[1])) continue;
+        seen.add(match[1]);
+
+        smsList.push({
+          sender: from,
+          message: body,
+          time: formatTimestamp(timeRaw),
         });
       }
-      
+
       setMessages(smsList);
+
+      if (smsList.length === 0) {
+        // No messages yet — not an error, just empty inbox
+        setFetchError(false);
+      }
     } catch (error) {
       console.error("SMS Fetch Error:", error);
       setFetchError(true);
@@ -355,21 +356,10 @@ export default function TempNumber() {
                   style={{ color: "#666" }}
                 >
                   <Clock size={12} />
-                  <span>{countdown}s পরে রিফ্রেশ</span>
+                  <span>{countdown}s এ রিফ্রেশ</span>
                 </div>
               </div>
-
-              <div
-                className="flex items-center gap-3 p-3 rounded-xl mb-4"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <Phone
-                  size={20}
-                  style={{ color: "#C9A84C", flexShrink: 0 }}
-                />
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="font-mono text-lg font-bold text-white">
                     {selectedNumber.display}
@@ -379,7 +369,6 @@ export default function TempNumber() {
                   </div>
                 </div>
               </div>
-
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={handleCopy}
