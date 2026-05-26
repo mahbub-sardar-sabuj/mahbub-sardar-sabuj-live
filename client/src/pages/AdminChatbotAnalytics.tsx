@@ -1,7 +1,7 @@
 // client/src/pages/AdminChatbotAnalytics.tsx
 // Admin page: Chatbot Analytics & Fallback Tracking Dashboard
 import { useState, useEffect } from "react";
-import { DashboardLayout } from "../components/DashboardLayout";
+import DashboardLayout from "../components/DashboardLayout";
 
 interface AnalyticsData {
   summary: {

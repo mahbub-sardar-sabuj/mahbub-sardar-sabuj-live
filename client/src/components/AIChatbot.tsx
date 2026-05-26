@@ -1218,7 +1218,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
               </div>
             )}
             {/* Pipeline steps (ordered) */}
-            {message.audioPipeline && message.audioPipeline.length > 0 && (
+            {(message.audioPipeline?.length ?? 0) > 0 && (
               <div style={{ marginBottom: 8 }}>
                 <div style={{
                   color: "rgba(212,168,67,0.45)",
@@ -1230,7 +1230,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   textTransform: "uppercase",
                 }}>প্রসেসিং পাইপলাইন</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 3, alignItems: "center" }}>
-                  {message.audioPipeline.map((step, i) => (
+                  {message.audioPipeline?.map((step, i) => (
                     <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
                       <span style={{
                         padding: "1px 6px",
@@ -1250,7 +1250,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
               </div>
             )}
             {/* Applied steps */}
-            {message.audioAppliedSteps && message.audioAppliedSteps.length > 0 && (
+            {(message.audioAppliedSteps?.length ?? 0) > 0 && (
               <div style={{ marginBottom: 8 }}>
                 <div style={{
                   color: "rgba(74,222,128,0.45)",
@@ -1262,7 +1262,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   textTransform: "uppercase",
                 }}>সম্পন্ন পদক্ষেপ</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                  {message.audioAppliedSteps.map((step, i) => (
+                  {message.audioAppliedSteps?.map((step, i) => (
                     <span key={i} style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -1387,7 +1387,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                     fontWeight: 600,
                   }}>📦 {message.outputSizeKB} KB</span>
                 )}
-                {message.operationsApplied && message.operationsApplied.length > 0 && (
+                {(message.operationsApplied?.length ?? 0) > 0 && (
                   <span style={{
                     padding: "1px 6px",
                     background: "rgba(99,102,241,0.06)",
@@ -1397,7 +1397,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                     fontSize: "0.52rem",
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     fontWeight: 600,
-                  }}>🔧 {message.operationsApplied.length} অপারেশন</span>
+                  }}>🔧 {message.operationsApplied?.length} অপারেশন</span>
                 )}
               </div>
             )}
