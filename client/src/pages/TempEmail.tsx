@@ -90,8 +90,17 @@ export default function TempEmail() {
   const [viewingMessage, setViewingMessage] = useState(false);
   const [customUsername, setCustomUsername] = useState("");
   const [useCustom, setUseCustom] = useState(false);
+  const [availableDomain, setAvailableDomain] = useState<string>("...");
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load domain on mount
+  useEffect(() => {
+    getDomains().then((domains) => {
+      if (domains.length > 0) setAvailableDomain(domains[0]);
+    }).catch(() => setAvailableDomain("mail.tm"));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch available domains
   const getDomains = async (): Promise<string[]> => {
@@ -544,8 +553,8 @@ export default function TempEmail() {
                           padding: "10px 14px",
                         }}
                       />
-                      <span style={{ color: MUTED, fontSize: "0.8rem", fontFamily: "monospace", padding: "0 12px", whiteSpace: "nowrap" }}>
-                        @domain
+                      <span style={{ color: GOLD, fontSize: "0.8rem", fontFamily: "monospace", padding: "0 12px", whiteSpace: "nowrap", borderLeft: `1px solid rgba(201,168,76,0.2)` }}>
+                        @{availableDomain}
                       </span>
                     </div>
                   )}
