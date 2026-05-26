@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 
 interface SmsMessage {
@@ -101,14 +103,12 @@ export default function TempNumber() {
       const smsList: SmsMessage[] = [];
       
       // Parse receive-smss.live structure
-      // Look for message containers - they typically have sender, time, and message
       const messageElements = doc.querySelectorAll("div");
       
       let foundMessages = false;
       messageElements.forEach((el) => {
         const text = el.textContent || "";
         
-        // Look for verification codes or messages with typical patterns
         if (text.length > 10 && (
           text.includes("code") || 
           text.includes("verification") || 
@@ -116,11 +116,10 @@ export default function TempNumber() {
           text.includes("confirm") ||
           /\d{3,8}/.test(text)
         )) {
-          // Try to extract sender, message, and time
           const children = Array.from(el.children);
           if (children.length >= 2) {
             const sender = children[0]?.textContent?.trim() || "Unknown";
-            const message = text.trim().substring(0, 200); // Limit message length
+            const message = text.trim().substring(0, 200);
             const time = children[children.length - 1]?.textContent?.trim() || "";
             
             if (message.length > 10 && !smsList.some(m => m.message === message)) {
@@ -131,7 +130,6 @@ export default function TempNumber() {
         }
       });
       
-      // If no structured messages found, try alternative parsing
       if (!foundMessages) {
         const textContent = doc.body.textContent || "";
         const lines = textContent.split("\n").filter(line => line.trim().length > 10);
@@ -199,11 +197,13 @@ export default function TempNumber() {
         description="বিনামূল্যে ডিসপোজেবল ফোন নম্বর ব্যবহার করুন। কোনো রেজিস্ট্রেশন ছাড়াই SMS ভেরিফিকেশন সম্পন্ন করুন।"
         path="/temp-number"
       />
+      <Navbar />
       <div
         className="min-h-screen"
         style={{
           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
           background: "linear-gradient(135deg, #060E1A 0%, #0a1628 100%)",
+          paddingTop: "var(--site-nav-offset, 70px)",
         }}
       >
         {/* Hero */}
@@ -355,139 +355,111 @@ export default function TempNumber() {
                   style={{ color: "#666" }}
                 >
                   <Clock size={12} />
-                  <span>{countdown}s পরে রিফ্রেশ</span>
+                  {countdown}s পর অটো রিফ্রেশ
                 </div>
               </div>
 
-              <div
-                className="flex items-center gap-3 p-3 rounded-xl mb-4"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <Phone
-                  size={20}
-                  style={{ color: "#C9A84C", flexShrink: 0 }}
-                />
-                <div>
-                  <div className="font-mono text-lg font-bold text-white">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="text-center md:text-left">
+                  <div className="text-3xl md:text-4xl font-mono font-bold text-white mb-2 tracking-tighter">
                     {selectedNumber.display}
                   </div>
-                  <div className="text-xs" style={{ color: "#666" }}>
-                    {selectedNumber.flag} {selectedNumber.country}
+                  <div className="text-xs text-gray-500">
+                    {selectedNumber.country} নম্বর
                   </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all"
+                    style={{
+                      background: copied
+                        ? "rgba(34,197,94,0.15)"
+                        : "rgba(201,168,76,0.1)",
+                      border: `1px solid ${copied ? "rgba(34,197,94,0.3)" : "rgba(201,168,76,0.3)"}`,
+                      color: copied ? "#4ade80" : "#C9A84C",
+                    }}
+                  >
+                    <Copy size={16} />
+                    {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
+                  </button>
+                  <button
+                    onClick={handleRefresh}
+                    disabled={loading}
+                    className="p-2 rounded-lg transition-all"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      color: "#fff",
+                    }}
+                  >
+                    <RefreshCw
+                      size={20}
+                      className={loading ? "animate-spin" : ""}
+                    />
+                  </button>
                 </div>
               </div>
 
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: copied
-                      ? "rgba(74,222,128,0.15)"
-                      : "rgba(201,168,76,0.15)",
-                    border: `1px solid ${copied ? "#4ade80" : "#C9A84C"}`,
-                    color: copied ? "#4ade80" : "#C9A84C",
-                  }}
-                >
-                  <Copy size={14} />
-                  {copied ? "কপি হয়েছে!" : "কপি করুন"}
-                </button>
-                <button
-                  onClick={handleRefresh}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    color: "#aaa",
-                    opacity: loading ? 0.5 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
-                  রিফ্রেশ করুন
-                </button>
-              </div>
-            </div>
-          )}
+              {/* Inbox Area */}
+              <div className="mt-8 pt-6 border-t border-white/5">
+                <div className="flex items-center gap-2 text-white font-semibold mb-4">
+                  <MessageSquare size={18} style={{ color: "#C9A84C" }} />
+                  ইনবক্স
+                </div>
 
-          {/* Messages Section */}
-          {selectedNumber && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <MessageSquare size={16} style={{ color: "#C9A84C" }} />
-                <h3 className="text-sm font-semibold text-white">
-                  বার্তা ({messages.length})
-                </h3>
+                <div className="space-y-3">
+                  {loading && messages.length === 0 ? (
+                    <div className="text-center py-10">
+                      <RefreshCw
+                        size={24}
+                        className="animate-spin mx-auto text-gray-600 mb-2"
+                      />
+                      <p className="text-sm text-gray-500">মেসেজ লোড হচ্ছে...</p>
+                    </div>
+                  ) : fetchError ? (
+                    <div className="text-center py-10 bg-red-500/5 rounded-xl border border-red-500/10">
+                      <p className="text-sm text-red-400">
+                        মেসেজ লোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।
+                      </p>
+                    </div>
+                  ) : messages.length > 0 ? (
+                    messages.map((msg, i) => (
+                      <div
+                        key={i}
+                        className="p-4 rounded-xl transition-all hover:bg-white/5"
+                        style={{
+                          background: "rgba(255,255,255,0.02)",
+                          border: "1px solid rgba(255,255,255,0.05)",
+                        }}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-xs font-bold text-gray-400">
+                            {msg.sender}
+                          </span>
+                          <span className="text-[10px] text-gray-600">
+                            {msg.time}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-300 leading-relaxed">
+                          {msg.message}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-sm">
+                        এখনো কোনো মেসেজ আসেনি। অপেক্ষা করুন...
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-              {loading && !messages.length && (
-                <div
-                  className="text-center py-8 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                  }}
-                >
-                  <div className="text-sm" style={{ color: "#aaa" }}>
-                    লোড হচ্ছে...
-                  </div>
-                </div>
-              )}
-              {fetchError && (
-                <div
-                  className="text-center py-8 px-4 rounded-xl"
-                  style={{
-                    background: "rgba(255,100,100,0.05)",
-                    border: "1px solid rgba(255,100,100,0.2)",
-                  }}
-                >
-                  <div className="text-sm" style={{ color: "#ff6464" }}>
-                    SMS লোড করতে সমস্যা হয়েছে। কয়েক সেকেন্ড অপেক্ষা করুন এবং রিফ্রেশ করুন।
-                  </div>
-                </div>
-              )}
-              {!loading && messages.length === 0 && !fetchError && (
-                <div
-                  className="text-center py-8 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                  }}
-                >
-                  <div className="text-sm" style={{ color: "#aaa" }}>
-                    এখনো কোনো বার্তা নেই। কোড পাঠালে এখানে কিছুক্ষণ অপেক্ষা করুন।
-                  </div>
-                </div>
-              )}
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className="mb-3 p-3 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(201,168,76,0.15)",
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="text-xs font-semibold" style={{ color: "#C9A84C" }}>
-                      {msg.sender}
-                    </div>
-                    <div className="text-xs" style={{ color: "#666" }}>
-                      {msg.time}
-                    </div>
-                  </div>
-                  <div className="text-sm" style={{ color: "#ddd" }}>
-                    {msg.message}
-                  </div>
-                </div>
-              ))}
             </div>
           )}
         </div>
       </div>
+      <Footer />
     </>
   );
 }
