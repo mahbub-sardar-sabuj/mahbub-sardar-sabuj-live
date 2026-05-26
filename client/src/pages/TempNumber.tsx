@@ -196,9 +196,10 @@ export default function TempNumber() {
   return (
     <>
       <Seo
-        title="টেম্পোরারি ফোন নম্বর — বিনামূল্যে SMS গ্রহণ করুন"
-        description="বিনামূল্যে ডিসপোজেবল ফোন নম্বর ব্যবহার করুন। কোনো রেজিস্ট্রেশন ছাড়াই SMS ভেরিফিকেশন সম্পন্ন করুন।"
+        title="বিনামূল্যে টেম্পোরারি ফোন নম্বর | ডিসপোজেবল SMS রিসিভার | Temporary Phone Number"
+        description="রেজিস্ট্রেশন ছাড়াই তাৎক্ষণিক টেম্পোরারি ফোন নম্বর ব্যবহার করুন। অনলাইন SMS ভেরিফিকেশন, OTP এবং কোড গ্রহণ করুন।"
         path="/temp-number"
+        seoKeywords="temporary phone number, temp number, disposable phone number, free temp number, temporary sms receiver, otp receiver, sms verification, অস্থায়ী ফোন নম্বর, টেম্প নম্বর, ডিসপোজেবল ফোন নম্বর, ফ্রি টেম্প নম্বর, অস্থায়ী এসএমএস রিসিভার, ওটিপি রিসিভার, এসএমএস ভেরিফিকেশন"
       />
       <div
         className="min-h-screen"

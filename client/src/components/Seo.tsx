@@ -18,6 +18,7 @@ interface SeoProps {
   path?: string;
   image?: string;
   keywords?: string;
+  seoKeywords?: string;
   type?: string;
   jsonLd?: JsonLd;
   newsArticle?: NewsArticleSeo;
@@ -83,7 +84,7 @@ export default function Seo({
     document.title = title;
 
     upsertMeta('meta[name="description"]', { name: "description", content: description });
-    upsertMeta('meta[name="keywords"]', { name: "keywords", content: keywords ?? "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, লেখালেখি" });
+    upsertMeta('meta[name="keywords"]', { name: "keywords", content: seoKeywords ?? keywords ?? "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা লেখক, কবি, লেখালেখি" });
     upsertMeta('meta[name="author"]', { name: "author", content: "Mahbub Sardar Sabuj" });
     upsertMeta('meta[property="og:title"]', { property: "og:title", content: title });
     upsertMeta('meta[property="og:description"]', { property: "og:description", content: description });

@@ -308,9 +308,10 @@ export default function TempEmail() {
   return (
     <>
       <Seo
-        title="টেম্পোরারি ইমেইল | Temporary Email — মাহবুব সরদার সবুজ"
-        description="বিনামূল্যে টেম্পোরারি ইমেইল তৈরি করুন। স্প্যাম থেকে আপনার আসল ইমেইল রক্ষা করুন। কোনো রেজিস্ট্রেশন দরকার নেই।"
+        title="বিনামূল্যে টেম্পোরারি ইমেইল | ডিসপোজেবল ইমেইল সার্ভিস | Temporary Email"
+        description="স্প্যাম ও অবাঞ্ছিত মেইল থেকে আপনার আসল ইমেইল সুরক্ষিত রাখুন। রেজিস্ট্রেশন ছাড়াই তাৎক্ষণিক টেম্পোরারি ইমেইল তৈরি করুন এবং SMS ভেরিফিকেশন ও OTP গ্রহণ করুন।"
         path="/temp-email"
+        seoKeywords="temporary email, temp mail, disposable email, free temp mail, temporary email address, temp email generator, otp email, sms verification email, অস্থায়ী ইমেইল, টেম্প মেইল, ডিসপোজেবল ইমেইল, ফ্রি টেম্প মেইল, অস্থায়ী ইমেইল ঠিকানা, টেম্প ইমেইল জেনারেটর, ওটিপি ইমেইল, এসএমএস ভেরিফিকেশন ইমেইল"
       />
       <Navbar />
       <main
