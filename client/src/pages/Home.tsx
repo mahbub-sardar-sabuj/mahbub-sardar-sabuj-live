@@ -229,626 +229,350 @@ export default function Home() {
 
               {/* Main name — single H1 for SEO, split visually with spans */}
               <h1 style={{ margin: 0, padding: 0, display: "block", lineHeight: 1 }}>
-              <div style={{ position: "relative", marginBottom: "0.2rem" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  style={{
-                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
-                    fontWeight: 700,
-                    lineHeight: 0.95,
-                    display: "block",
-                    color: "#FAF6EF",
-                    letterSpacing: "-0.03em",
-                    textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  মাহবুব
-                </motion.span>
-              </div>
+                <div style={{ position: "relative", marginBottom: "0.2rem" }}>
+                  <motion.span
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                      fontSize: "clamp(3.6rem, 12vw, 8.5rem)",
+                      fontWeight: 700,
+                      lineHeight: 1.1,
+                      display: "block",
+                      color: "#FAF6EF",
+                      letterSpacing: "-0.03em",
+                      textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    মাহবুব
+                  </motion.span>
+                </div>
 
-              <div style={{ position: "relative", marginBottom: "0.6rem" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  style={{
-                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
-                    fontWeight: 700,
-                    lineHeight: 0.95,
-                    display: "block",
-                    background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
-                    backgroundSize: "280% 100%",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    letterSpacing: "-0.02em",
-                    filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
-                    animation: "goldShimmer 6s ease-in-out infinite",
-                  }}
-                >
-                  সরদার সবুজ
-                </motion.span>
-                {/* Underline glow — wider & softer */}
-                <motion.div
-                  initial={{ scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: 1.4, delay: 0.85, ease: [0.16,1,0.3,1] }}
-                  style={{
-                    position: "absolute", bottom: -8, left: 0,
-                    height: 2,
-                    width: "85%",
-                    background: "linear-gradient(90deg, #C9A84C 0%, rgba(201,168,76,0.5) 60%, transparent 100%)",
-                    transformOrigin: "left",
-                    borderRadius: 2,
-                    boxShadow: "0 0 20px rgba(201,168,76,0.7), 0 0 40px rgba(201,168,76,0.3)",
-                  }}
-                />
-                            </div>
+                <div style={{ position: "relative", marginBottom: "2rem" }}>
+                  <motion.span
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                      fontSize: "clamp(3.6rem, 12vw, 8.5rem)",
+                      fontWeight: 700,
+                      lineHeight: 1.1,
+                      display: "block",
+                      background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
+                      backgroundSize: "280% 100%",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      letterSpacing: "-0.02em",
+                      filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
+                      animation: "goldShimmer 6s ease-in-out infinite",
+                    }}
+                  >
+                    সরদার সবুজ
+                  </motion.span>
+                  {/* Underline glow — wider & softer */}
+                  <motion.div
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    animate={{ scaleX: 1, opacity: 1 }}
+                    transition={{ duration: 1.5, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      position: "absolute",
+                      bottom: "-12px", left: 0,
+                      width: "40%", height: 3,
+                      background: "linear-gradient(90deg, #C9A84C, transparent)",
+                      transformOrigin: "left",
+                      boxShadow: "0 0 15px rgba(201,168,76,0.6)",
+                    }}
+                  />
+                </div>
               </h1>
-              {/* Tagline */}
+
+              {/* Tagline / Subtitle */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
+                transition={{ duration: 1, delay: 0.75 }}
+                style={{
+                  maxWidth: "540px",
+                  marginTop: "2.5rem",
+                  paddingLeft: "1.2rem",
+                  borderLeft: "2px solid rgba(201,168,76,0.3)",
+                }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
-                  color: "rgba(250,246,239,0.68)",
-                  lineHeight: 1.75,
-                  margin: 0,
-                  letterSpacing: "0.02em",
-                  borderLeft: "2px solid rgba(201,168,76,0.5)",
-                  paddingLeft: 18,
+                  fontSize: "clamp(1.1rem, 2.5vw, 1.35rem)",
+                  lineHeight: 1.7,
+                  color: "rgba(250,246,239,0.85)",
+                  fontWeight: 300,
+                  letterSpacing: "0.01em",
                 }}>
                   বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
                 </p>
               </motion.div>
 
+              {/* Action buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.95 }}
+                style={{ display: "flex", flexWrap: "wrap", gap: "1.2rem", marginTop: "3.2rem" }}
+              >
+                <Link href="/writings">
+                  <button className="btn-premium-gold">
+                    <span className="btn-inner">
+                      <Feather size={18} />
+                      <span>রচনাবলী দেখুন</span>
+                    </span>
+                  </button>
+                </Link>
+                <Link href="/about">
+                  <button className="btn-premium-outline">
+                    <span className="btn-inner">
+                      <span>আমার সম্পর্কে</span>
+                    </span>
+                  </button>
+                </Link>
+              </motion.div>
+
             </div>
 
-            {/* Right column — author portrait */}
-            <motion.div
-              className="hero-right"
-              initial={{ opacity: 0, x: 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              style={{ position: "relative" }}
-            >
-              {/* Portrait frame */}
+            {/* Right column — Floating Profile Frame */}
+            <div className="hero-right">
               <motion.div
-                animate={{
-                  x: mousePos.x * 0.3,
-                  y: mousePos.y * 0.3,
-                }}
-                transition={{ type: "spring", stiffness: 60, damping: 20 }}
-                className="hero-frame-wrap"
-                style={{ position: "relative" }}
-              >
-                {/* Decorative frame lines — more visible */}
-                <div style={{
-                  position: "absolute",
-                  top: "var(--hero-frame-offset, -22px)", right: "var(--hero-frame-offset, -22px)",
-                  width: "62%", height: "62%",
-                  border: "1px solid rgba(201,168,76,0.32)",
-                  borderRadius: 6,
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }} />
-                <div style={{
-                  position: "absolute",
-                  bottom: "var(--hero-frame-offset, -22px)", left: "var(--hero-frame-offset, -22px)",
-                  width: "62%", height: "62%",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 6,
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }} />
-                {/* Corner accent dots */}
-                <div style={{
-                  position: "absolute", top: "var(--hero-frame-offset, -22px)", right: "var(--hero-frame-offset, -22px)",
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "rgba(201,168,76,0.7)",
-                  boxShadow: "0 0 10px rgba(201,168,76,0.5)",
-                  zIndex: 2, pointerEvents: "none",
-                }} />
-                <div style={{
-                  position: "absolute", bottom: "var(--hero-frame-offset, -22px)", left: "var(--hero-frame-offset, -22px)",
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "rgba(201,168,76,0.5)",
-                  boxShadow: "0 0 10px rgba(201,168,76,0.4)",
-                  zIndex: 2, pointerEvents: "none",
-                }} />
-
-                {/* Main portrait — suit photo */}
-                <div style={{
+                initial={{ opacity: 0, scale: 0.92, rotateY: 15 }}
+                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                transition={{ duration: 1.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                style={{
                   position: "relative",
-                  borderRadius: 20,
+                  width: "clamp(280px, 35vw, 460px)",
+                  aspectRatio: "0.82",
+                  perspective: 1000,
+                }}
+              >
+                {/* Floating ornaments */}
+                <motion.div
+                  animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ position: "absolute", top: "-5%", right: "-5%", zIndex: 5, color: "#C9A84C", opacity: 0.8 }}
+                >
+                  <Star size={32} fill="#C9A84C" />
+                </motion.div>
+
+                {/* Main frame */}
+                <div style={{
+                  position: "relative", width: "100%", height: "100%",
+                  borderRadius: "24px",
+                  padding: "12px",
+                  background: "linear-gradient(135deg, rgba(201,168,76,0.3) 0%, rgba(201,168,76,0.05) 50%, rgba(201,168,76,0.2) 100%)",
+                  boxShadow: "0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(201,168,76,0.1)",
                   overflow: "hidden",
-                  boxShadow: "0 50px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.12)",
-                  zIndex: 1,
                 }}>
-                  <img
-                    src={PROFILE_1}
-                    alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - অফিসিয়াল প্রোফাইল ছবি"
-                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+                  {/* Inner border */}
+                  <div style={{
+                    position: "absolute", inset: "12px",
+                    border: "1px solid rgba(201,168,76,0.2)",
+                    borderRadius: "16px",
+                    zIndex: 1, pointerEvents: "none",
+                  }} />
+
+                  {/* Profile Image */}
+                  <motion.div
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center top",
-                      display: "block",
-                      filter: "contrast(1.08) saturate(0.95) brightness(1.0)",
+                      width: "100%", height: "100%",
+                      borderRadius: "14px",
+                      backgroundImage: `url(${PROFILE_1})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      filter: "contrast(1.05) brightness(1.02)",
+                      x: mousePos.x * 0.4,
+                      y: mousePos.y * 0.4,
                     }}
-                    className="hero-portrait"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
                   />
-                  {/* Gradient overlay — richer */}
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, transparent 45%, rgba(4,10,20,0.85) 100%)",
-                  }} />
-                  {/* Side glow on portrait */}
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to right, rgba(201,168,76,0.06) 0%, transparent 30%)",
-                    pointerEvents: "none",
-                  }} />
-                  {/* Name tag at bottom */}
+
+                  {/* Corner Accents */}
+                  <div style={{ position: "absolute", top: 25, left: 25, width: 20, height: 20, borderTop: "2px solid #C9A84C", borderLeft: "2px solid #C9A84C", zIndex: 2 }} />
+                  <div style={{ position: "absolute", bottom: 25, right: 25, width: 20, height: 20, borderBottom: "2px solid #C9A84C", borderRight: "2px solid #C9A84C", zIndex: 2 }} />
+
+                  {/* Caption Overlay */}
                   <div style={{
                     position: "absolute", bottom: 0, left: 0, right: 0,
-                    padding: "1.4rem 1.6rem",
-                    background: "linear-gradient(to top, rgba(4,10,20,0.9) 0%, transparent 100%)",
+                    padding: "2.5rem 1.5rem 1.5rem",
+                    background: "linear-gradient(to top, rgba(6,14,26,0.95) 0%, rgba(6,14,26,0.6) 50%, transparent 100%)",
+                    zIndex: 3, textAlign: "center",
                   }}>
-                    <div style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      fontSize: "0.6rem", letterSpacing: "0.22em",
-                      textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
-                    }}>লেখক ও কবি</div>
-                    <div style={{
+                    <span style={{
+                      display: "block",
+                      fontFamily: "'AdorshoLipi', sans-serif",
+                      fontSize: "0.75rem",
+                      color: "#C9A84C",
+                      letterSpacing: "0.15em",
+                      marginBottom: "0.4rem",
+                      opacity: 0.9,
+                    }}>(লেখক ও কবি)</span>
+                    <span style={{
                       fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                      fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
-                      textShadow: "0 2px 12px rgba(0,0,0,0.5)",
-                    }}>মাহবুব সরদার সবুজ</div>
+                      fontSize: "1.4rem",
+                      color: "#FAF6EF",
+                      fontWeight: 500,
+                      letterSpacing: "0.02em",
+                    }}>মাহবুব সরদার সবুজ</span>
                   </div>
                 </div>
+
+                {/* Back decorative glow */}
+                <div style={{
+                  position: "absolute", inset: "-20px",
+                  background: "radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%)",
+                  zIndex: -1, filter: "blur(30px)",
+                }} />
               </motion.div>
-            </motion.div>
+            </div>
+
           </div>
         </motion.div>
 
-        {/* Scroll indicator */}
+        {/* Scroll Indicator */}
         <motion.div
-          className="scroll-indicator"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2, duration: 1 }}
           style={{
-            position: "absolute", bottom: 40, left: "50%",
-            transform: "translateX(-50%)", zIndex: 3,
-            opacity: heroOpacity,
+            position: "absolute", bottom: "2.5rem", left: "50%", transform: "translateX(-50%)",
+            display: "flex", flexDirection: "column", alignItems: "center", gap: "0.8rem",
+            zIndex: 5, pointerEvents: "none",
           }}
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
         >
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <span style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              color: "rgba(250,246,239,0.3)",
-              fontSize: "0.62rem",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-            }}>Scroll</span>
-            <div style={{
-              width: 1, height: 44,
-              background: "linear-gradient(to bottom, rgba(201,168,76,0.7), transparent)",
-              boxShadow: "0 0 8px rgba(201,168,76,0.3)",
-            }} />
-          </div>
+          <span style={{ fontSize: "0.65rem", color: "rgba(201,168,76,0.6)", letterSpacing: "0.3em", textTransform: "uppercase" }}>Scroll</span>
+          <div style={{ width: 1, height: 50, background: "linear-gradient(to bottom, #C9A84C, transparent)" }} />
         </motion.div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          APP LAUNCHER — Compact explore tabs
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="explore-app-section" style={{
-        padding: "clamp(3.5rem, 7vw, 5.6rem) 1.25rem",
-        background: "linear-gradient(180deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,1) 16%, rgba(6,14,26,1) 100%), radial-gradient(circle at 78% 12%, rgba(201,168,76,0.15), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.08), transparent 30%), #060E1A",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Dot grid */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(rgba(201,168,76,0.08) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          pointerEvents: "none", opacity: 0.5,
-        }} />
-        {/* Central glow */}
-        <div style={{
-          position: "absolute", inset: "8% auto auto 50%",
-          width: 480, height: 480,
-          transform: "translateX(-50%)",
-          borderRadius: "50%",
-          background: "rgba(201,168,76,0.065)",
-          filter: "blur(100px)",
-          pointerEvents: "none",
-        }} />
-        {/* Top separator line */}
-        <div style={{
-          position: "absolute", top: 0, left: "10%", right: "10%",
-          height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.42), rgba(250,246,239,0.22), rgba(201,168,76,0.42), transparent)",
-          boxShadow: "0 0 28px rgba(201,168,76,0.16)",
-          pointerEvents: "none",
-        }} />
+      {/* ── Additional sections below ─────────────────────────────────────────── */}
+      <section style={{ position: "relative", zIndex: 10, background: "#060E1A", paddingTop: "4rem" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem" }}>
+          <AdSenseAd slot={AD_SLOTS.HORIZONTAL} style={{ marginBottom: "4rem" }} />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1040, margin: "0 auto" }}>
-          <motion.div
-            className="explore-app-heading"
-            initial={{ opacity: 0, y: 26 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "0.95rem" }}>
-              <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
-              <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "0.66rem", letterSpacing: "0.34em",
-                textTransform: "uppercase", color: "#E8C97A",
-                textShadow: "0 0 18px rgba(201,168,76,0.32)",
-              }}>Explore</span>
-              <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
-            </div>
-            <h2 style={{
-              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-              fontSize: "clamp(2rem, 5vw, 3.1rem)",
-              fontWeight: 700, color: "#FAF6EF",
-              margin: 0, lineHeight: 1.18,
-              textShadow: "0 4px 24px rgba(0,0,0,0.48), 0 0 34px rgba(201,168,76,0.14)",
-            }}>অন্বেষণ করুন</h2>
-            <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
-              maxWidth: 650, color: "rgba(250,246,239,0.66)",
-              lineHeight: 1.72, margin: "1rem auto 0",
-              fontSize: "0.98rem",
-            }}>
-              লেখক, লেখা, বই, আবৃত্তি, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="app-launcher-shell"
-            initial={{ opacity: 0, y: 32, scale: 0.97 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.75, delay: 0.1 }}
-          >
-            <div className="app-launcher-topbar">
-              <span />
-              <strong>সব ট্যাব</strong>
-              <span />
-            </div>
-            <div className="app-launcher-grid">
-              {sections.map((sec, i) => {
-                const Icon = sec.icon;
-                return (
-                  <motion.div
-                    key={sec.href + sec.label}
-                    initial={{ opacity: 0, y: 18 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.04 }}
-                  >
-                    <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
-                      <motion.div
-                        className="app-launcher-card"
-                        whileHover={{ y: -6, scale: 1.03 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <div className="app-icon-wrap">
-                          <Icon size={23} strokeWidth={1.8} />
-                        </div>
-                        <span className="app-label">{sec.label}</span>
-                        <span className="app-subtitle">{sec.subtitle}</span>
-                      </motion.div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "1.5rem",
+            paddingBottom: "6rem"
+          }}>
+            {sections.map((item, idx) => (
+              <Link key={idx} href={item.href}>
+                <motion.div
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(201,168,76,0.15)",
+                    borderRadius: "20px",
+                    padding: "2rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                    transition: "all 0.3s ease",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  <div style={{
+                    width: "60px", height: "60px",
+                    borderRadius: "15px",
+                    background: "rgba(201,168,76,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "1.5rem",
+                    color: "#C9A84C",
+                  }}>
+                    <item.icon size={28} />
+                  </div>
+                  <h3 style={{
+                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                    fontSize: "1.5rem",
+                    color: "#FAF6EF",
+                    marginBottom: "0.5rem",
+                    fontWeight: 600,
+                  }}>{item.label}</h3>
+                  <p style={{
+                    fontFamily: "'AdorshoLipi', sans-serif",
+                    fontSize: "0.9rem",
+                    color: "rgba(250,246,239,0.6)",
+                    lineHeight: 1.5,
+                  }}>{item.subtitle}</p>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* AdSense Ad — হোম পেজের নিচে */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
-        <AdSenseAd adSlot={AD_SLOTS.HOME_BANNER} adFormat="auto" fullWidthResponsive={true} />
-      </div>
-
-      {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
+      {/* Global CSS for custom styles */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-        @import url('https://cdn.msar.me/fonts/adorsho-lipi/font.css');
-
-        * { box-sizing: border-box; }
-
         @keyframes goldShimmer {
-          0%, 100% { background-position: 0% 50%; }
+          0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
         @keyframes pulseDot {
-          0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C, 0 0 16px rgba(201,168,76,0.5); }
-          50% { opacity: 0.65; transform: scale(1.6); box-shadow: 0 0 18px rgba(201,168,76,0.9), 0 0 32px rgba(201,168,76,0.4); }
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
         }
-
-        /* Hero layout */
-        .hero-container {
-          padding-top: calc(var(--site-nav-offset, 98px) + 28px);
-          padding-bottom: 64px;
-        }
-        .hero-inner {
-          display: grid;
-          grid-template-columns: 1.15fr 0.85fr;
-          gap: clamp(3rem, 6vw, 6rem);
-          align-items: center;
-        }
-        .hero-portrait {
-          height: clamp(480px, 55vw, 680px);
-          width: 100%;
-          object-fit: cover;
-          object-position: center top;
-        }
-        .floating-card {
-          min-width: 180px;
-        }
-
-        /* App-style Explore launcher */
-        .explore-app-heading {
-          text-align: center;
-          margin-bottom: 2.35rem;
+        .btn-premium-gold {
           position: relative;
-        }
-        .explore-app-heading::after {
-          content: "";
-          display: block;
-          width: min(220px, 48vw);
-          height: 1px;
-          margin: 1.25rem auto 0;
-          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.55), transparent);
-          box-shadow: 0 0 22px rgba(201,168,76,0.18);
-        }
-          .app-launcher-shell {
-          border: 1px solid rgba(201,168,76,0.34);
-          border-radius: 42px;
-          padding: clamp(1.25rem, 3vw, 2rem);
-          background: linear-gradient(145deg, rgba(255,255,255,0.095) 0%, rgba(201,168,76,0.065) 58%, rgba(8,18,32,0.72) 100%);
-          box-shadow:
-            0 58px 150px rgba(0,0,0,0.52),
-            0 0 42px rgba(201,168,76,0.10),
-            0 0 0 1px rgba(255,255,255,0.055) inset,
-            inset 0 1px 0 rgba(255,255,255,0.12);
-          backdrop-filter: blur(22px) saturate(140%);
-          max-width: 840px;
-          margin: 0 auto;
-          position: relative;
-          overflow: hidden;
-        }
-        .app-launcher-shell::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.20), transparent 45%);
-          pointer-events: none;
-        }
-        .app-launcher-shell::after {
-          content: "";
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.18), transparent);
-          pointer-events: none;
-        }
-        .app-launcher-topbar {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          margin: 0 0 1.25rem;
-          color: rgba(232,201,122,0.92);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.76rem;
-          letter-spacing: 0.1em;
-        }
-        .app-launcher-topbar span {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: rgba(201,168,76,0.5);
-          box-shadow: 0 0 16px rgba(201,168,76,0.5);
-        }
-          .app-launcher-grid {
-          position: relative;
-          z-index: 1;
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: clamp(0.9rem, 2.5vw, 1.3rem);
-        }
-        .app-launcher-link {
-          display: block;
-          text-decoration: none;
-          height: 100%;
-        }
-          .app-launcher-card {
-          min-height: 158px;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-start;
-          text-align: center;
-          gap: 0.56rem;
-          padding: 1.35rem 0.82rem 1.08rem;
-          border-radius: 28px;
-          border: 1px solid rgba(201,168,76,0.24);
-          background: linear-gradient(160deg, rgba(16,30,52,0.96) 0%, rgba(8,18,32,0.86) 100%);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.08),
-            0 22px 54px rgba(0,0,0,0.38),
-            0 2px 12px rgba(0,0,0,0.25),
-            0 0 0 1px rgba(201,168,76,0.035);
-          color: #FAF6EF;
+          padding: 1px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #C9A84C, #F5E4A0, #8A5E10);
+          border: none;
           cursor: pointer;
-          transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
-          position: relative;
           overflow: hidden;
+          transition: transform 0.3s ease;
         }
-        .app-launcher-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.12), transparent 55%);
-          opacity: 0;
-          transition: opacity 0.28s ease;
-          pointer-events: none;
-        }
-        .app-launcher-card:hover {
-          border-color: rgba(201,168,76,0.62);
-          background: linear-gradient(160deg, rgba(201,168,76,0.13) 0%, rgba(10,22,38,0.88) 100%);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.09),
-            0 28px 64px rgba(0,0,0,0.42),
-            0 0 34px rgba(201,168,76,0.16),
-            0 0 0 1px rgba(201,168,76,0.14) inset;
-        }
-        .app-launcher-card:hover::before {
-          opacity: 1;
-        }
-        .app-launcher-link:focus-visible {
-          outline: none;
-        }
-        .app-launcher-link:focus-visible .app-launcher-card {
-          border-color: rgba(245,228,160,0.82);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.1),
-            0 26px 62px rgba(0,0,0,0.42),
-            0 0 0 3px rgba(201,168,76,0.22),
-            0 0 34px rgba(201,168,76,0.18);
-        }
-        .app-launcher-card:active {
-          border-color: rgba(245,228,160,0.7);
-          background: linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(10,22,38,0.9) 100%);
-        }
-        .app-launcher-grid > div:nth-child(-n+4) .app-launcher-card {
-          border-color: rgba(201,168,76,0.32);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.09),
-            0 24px 58px rgba(0,0,0,0.40),
-            0 0 26px rgba(201,168,76,0.065);
-        }
-          .app-icon-wrap {
-          width: clamp(52px, 7vw, 64px);
-          height: clamp(52px, 7vw, 64px);
-          border-radius: 20px;
+        .btn-premium-gold:hover { transform: translateY(-3px); }
+        .btn-premium-gold .btn-inner {
           display: flex;
           align-items: center;
-          justify-content: center;
-          color: #F2D789;
-          background: linear-gradient(145deg, rgba(201,168,76,0.25), rgba(250,246,239,0.07));
-          border: 1px solid rgba(201,168,76,0.36);
-          box-shadow:
-            0 12px 28px rgba(0,0,0,0.28),
-            inset 0 1px 0 rgba(255,255,255,0.1),
-            0 0 24px rgba(201,168,76,0.14);
-          margin-bottom: 0.2rem;
-          transition: box-shadow 0.28s ease, transform 0.28s ease;
+          gap: 12px;
+          padding: 14px 28px;
+          border-radius: 11px;
+          background: #060E1A;
+          color: #C9A84C;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 1rem;
+          font-weight: 600;
+          transition: all 0.3s ease;
         }
-        .app-launcher-card:hover .app-icon-wrap {
-          box-shadow:
-            0 14px 32px rgba(0,0,0,0.32),
-            inset 0 1px 0 rgba(255,255,255,0.12),
-            0 0 28px rgba(201,168,76,0.22);
-          transform: scale(1.06);
+        .btn-premium-gold:hover .btn-inner { background: transparent; color: #060E1A; }
+
+        .btn-premium-outline {
+          padding: 14px 28px;
+          border-radius: 12px;
+          background: transparent;
+          border: 1px solid rgba(201,168,76,0.4);
+          color: #FAF6EF;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
         }
-        .app-label {
-          font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
-          font-size: clamp(0.86rem, 2.2vw, 1.02rem);
-          font-weight: 700;
-          line-height: 1.22;
-          color: #FFF8EA;
-          min-height: 2.45em;
-          text-shadow: 0 2px 12px rgba(0,0,0,0.38);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .app-subtitle {
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 0.66rem;
-          line-height: 1.38;
-          color: rgba(250,246,239,0.58);
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
+        .btn-premium-outline:hover {
+          background: rgba(201,168,76,0.08);
+          border-color: #C9A84C;
+          transform: translateY(-3px);
         }
 
-        /* Tablet */
-        @media (max-width: 1024px) {
-          .hero-inner {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            text-align: center;
-          }
-          .hero-right {
-            display: flex;
-            justify-content: center;
-          }
-          .hero-portrait { height: 280px; }
-          .floating-card { display: none; }
-        }
-
-        /* Mobile */
-        @media (max-width: 768px) {
-          .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
-          .hero-frame-wrap { --hero-frame-offset: -10px; }
-          .scroll-indicator { display: none; }
-          .hero-inner { gap: 0.95rem; }
-          .app-launcher-shell { border-radius: 30px; padding: 1rem; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
-          .app-launcher-card { min-height: 124px; border-radius: 22px; padding: 0.98rem 0.42rem 0.82rem; }
-          .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
-          .app-label { font-size: 0.82rem; line-height: 1.25; }
-          .app-subtitle { display: none; }
-          .hero-portrait { height: 260px; }
-        }
-
-        @media (max-width: 480px) {
-          .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
-          .app-launcher-shell { padding: 0.85rem; border-radius: 28px; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
-          .app-launcher-card { min-height: 112px; padding: 0.82rem 0.26rem 0.7rem; border-radius: 20px; }
-          .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
-          .app-icon-wrap svg { width: 21px; height: 21px; }
-          .app-label { font-size: 0.78rem; min-height: 2.6em; }
-          .hero-portrait { height: 240px; }
-        }
-        /* Extra small mobile — 320px fix */
-        @media (max-width: 360px) {
-          .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
-          .hero-inner { gap: 0.75rem; }
-          .app-launcher-grid { gap: 0.44rem; }
-          .app-launcher-card { min-height: 108px; padding-left: 0.18rem; padding-right: 0.18rem; }
-          .app-icon-wrap { width: 42px; height: 42px; }
-          .app-label { font-size: 0.69rem; }
-          .hero-portrait { height: 220px; }
+        @media (max-width: 992px) {
+          .hero-inner { flex-direction: column; text-align: center; padding-top: 6rem !important; }
+          .hero-left { margin-bottom: 4rem; display: flex; flexDirection: column; alignItems: center; }
+          .hero-left h1 { display: flex; flex-direction: column; align-items: center; }
+          .hero-left div { padding-left: 0 !important; border-left: none !important; text-align: center; }
+          .hero-left .motion-div { justify-content: center; }
         }
       `}</style>
     </div>
