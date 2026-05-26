@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown, ExternalLink } from "lucide-react";
+import { Phone, Copy, RefreshCw, MessageSquare, Clock, Globe, ChevronDown } from "lucide-react";
 import Seo from "@/components/Seo";
 
 interface SmsMessage {
@@ -14,21 +14,25 @@ interface PhoneNumber {
   display: string;
   country: string;
   flag: string;
-  directUrl?: string;
 }
 
 const PHONE_NUMBERS: PhoneNumber[] = [
-  { slug: "46731299509-Sweden", number: "46731299509", display: "+46 731299509", country: "Sweden", flag: "🇸🇪", directUrl: "https://receive-sms-online.info/46731299509-Sweden" },
-  { slug: "46731299508-Sweden", number: "46731299508", display: "+46 731299508", country: "Sweden", flag: "🇸🇪", directUrl: "https://receive-sms-online.info/46731299508-Sweden" },
-  { slug: "46731299507-Sweden", number: "46731299507", display: "+46 731299507", country: "Sweden", flag: "🇸🇪", directUrl: "https://receive-sms-online.info/46731299507-Sweden" },
-  { slug: "3584573994619-Finland", number: "3584573994619", display: "+358 4573994619", country: "Finland", flag: "🇫🇮", directUrl: "https://receive-sms-online.info/3584573994619-Finland" },
-  { slug: "3584573994618-Finland", number: "3584573994618", display: "+358 4573994618", country: "Finland", flag: "🇫🇮", directUrl: "https://receive-sms-online.info/3584573994618-Finland" },
-  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧", directUrl: "https://receive-smss.live/sms/uk/447723431202" },
-  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧", directUrl: "https://receive-smss.live/sms/uk/447480787793" },
-  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧", directUrl: "https://receive-smss.live/sms/uk/447476559840" },
-  { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦", directUrl: "https://receive-smss.live/sms/sa/966512345678" },
-  { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦", directUrl: "https://receive-smss.live/sms/sa/966553902441" },
-  { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦", directUrl: "https://receive-smss.live/sms/sa/966596771203" },
+  { slug: "46731299509-Sweden", number: "46731299509", display: "+46 731299509", country: "Sweden", flag: "🇸🇪" },
+  { slug: "46731299508-Sweden", number: "46731299508", display: "+46 731299508", country: "Sweden", flag: "🇸🇪" },
+  { slug: "46731299507-Sweden", number: "46731299507", display: "+46 731299507", country: "Sweden", flag: "🇸🇪" },
+  { slug: "46726405810-Sweden", number: "46726405810", display: "+46 726405810", country: "Sweden", flag: "🇸🇪" },
+  { slug: "46726405811-Sweden", number: "46726405811", display: "+46 726405811", country: "Sweden", flag: "🇸🇪" },
+  { slug: "3584573994619-Finland", number: "3584573994619", display: "+358 4573994619", country: "Finland", flag: "🇫🇮" },
+  { slug: "3584573994618-Finland", number: "3584573994618", display: "+358 4573994618", country: "Finland", flag: "🇫🇮" },
+  { slug: "3584573994617-Finland", number: "3584573994617", display: "+358 4573994617", country: "Finland", flag: "🇫🇮" },
+  { slug: "3197010291201-Netherlands", number: "3197010291201", display: "+31 97010291201", country: "Netherlands", flag: "🇳🇱" },
+  { slug: "3197010291202-Netherlands", number: "3197010291202", display: "+31 97010291202", country: "Netherlands", flag: "🇳🇱" },
+  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦" },
+  { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦" },
+  { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦" },
 ];
 
 const COUNTRIES = ["সব দেশ", ...Array.from(new Set(PHONE_NUMBERS.map((n) => n.country)))];
@@ -54,61 +58,87 @@ export default function TempNumber() {
     try {
       let html = "";
       
-      if (phone.country === "United Kingdom" || phone.country === "Saudi Arabia") {
-        const countryCode = phone.country === "United Kingdom" ? "uk" : "sa";
-        const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+      // Different API endpoints based on country
+      if (phone.country === "United Kingdom") {
+        const targetUrl = `https://receive-smss.live/sms/uk/${phone.number}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
         const res = await fetch(proxyUrl);
         const data = await res.json();
-        const fullHtml = data.contents || "";
-        
-        // Extract messages from receive-smss.live structure
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(fullHtml, "text/html");
-        const container = doc.getElementById("messagesContainer");
-        if (container) {
-          const smsList: SmsMessage[] = [];
-          const msgElements = container.querySelectorAll(".flex.flex-col.gap-2");
-          msgElements.forEach(el => {
-             const sender = el.querySelector("div:first-child")?.textContent?.trim() || "Unknown";
-             const time = el.querySelector("div:last-child")?.textContent?.trim() || "";
-             const message = el.querySelector("p")?.textContent?.trim() || "";
-             if (message) {
-               smsList.push({ sender, message, time });
-             }
-          });
-          setMessages(smsList);
-          return;
-        }
+        html = data.contents || "";
+      } else if (phone.country === "Saudi Arabia") {
+        const targetUrl = `https://receive-smss.live/sms/sa/${phone.number}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
+        const res = await fetch(proxyUrl);
+        const data = await res.json();
+        html = data.contents || "";
       } else {
         // Default for Sweden, Finland, Netherlands
         const targetUrl = `https://receive-sms-online.info/get_sms_register.php?phone=${phone.number}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
         const res = await fetch(proxyUrl);
         const data = await res.json();
         html = data.contents || "";
       }
       
+      if (!html || html.trim().length === 0) {
+        setFetchError(true);
+        setMessages([]);
+        return;
+      }
+      
       const parser = new DOMParser();
-      const doc = parser.parseFromString(
-        `<table><tbody>${html}</tbody></table>`,
-        "text/html"
-      );
-      const rows = doc.querySelectorAll("tr");
-      const smsList: SmsMessage[] = [];
-      rows.forEach((row) => {
-        const tds = row.querySelectorAll("td");
-        if (tds.length >= 3) {
-          smsList.push({
-            sender: tds[0]?.textContent?.trim() || "Unknown",
-            message: tds[1]?.textContent?.trim() || "",
-            time: tds[2]?.textContent?.trim() || "",
-          });
-        }
-      });
-      setMessages(smsList);
-    } catch {
+      
+      // Parse based on country source
+      if (phone.country === "United Kingdom" || phone.country === "Saudi Arabia") {
+        // Parse receive-smss.live structure
+        const doc = parser.parseFromString(html, "text/html");
+        const smsList: SmsMessage[] = [];
+        
+        // Find message containers - they typically have sender, time, and message
+        const messageElements = doc.querySelectorAll("[class*='message'], [class*='sms'], div[class*='flex']");
+        
+        messageElements.forEach((el) => {
+          const text = el.textContent || "";
+          if (text.includes("Your") || text.includes("code") || text.includes("verification")) {
+            const sender = el.querySelector("div:first-child")?.textContent?.trim() || "Unknown";
+            const time = el.querySelector("div:last-child")?.textContent?.trim() || "";
+            const message = text.trim();
+            
+            if (message.length > 10) {
+              smsList.push({ sender, message, time });
+            }
+          }
+        });
+        
+        setMessages(smsList);
+      } else {
+        // Parse receive-sms-online.info structure (HTML table)
+        const doc = parser.parseFromString(
+          `<table><tbody>${html}</tbody></table>`,
+          "text/html"
+        );
+        const rows = doc.querySelectorAll("tr");
+        const smsList: SmsMessage[] = [];
+        
+        rows.forEach((row) => {
+          const tds = row.querySelectorAll("td");
+          if (tds.length >= 3) {
+            const sender = tds[0]?.textContent?.trim() || "Unknown";
+            const message = tds[1]?.textContent?.trim() || "";
+            const time = tds[2]?.textContent?.trim() || "";
+            
+            if (message.length > 0) {
+              smsList.push({ sender, message, time });
+            }
+          }
+        });
+        
+        setMessages(smsList);
+      }
+    } catch (error) {
+      console.error("SMS Fetch Error:", error);
       setFetchError(true);
+      setMessages([]);
     } finally {
       setLoading(false);
     }
@@ -186,6 +216,23 @@ export default function TempNumber() {
           <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto">
             রেজিস্ট্রেশন ছাড়াই যেকোনো ওয়েবসাইটে SMS ভেরিফিকেশন সম্পন্ন করুন
           </p>
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            {["তাৎক্ষণিক", "কোনো রেজিস্ট্রেশন নেই", "স্প্যাম প্রতিরোধ", "অটো রিফ্রেশ"].map(
+              (f) => (
+                <span
+                  key={f}
+                  className="text-xs px-3 py-1 rounded-full"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    color: "#aaa",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
+                  {f}
+                </span>
+              )
+            )}
+          </div>
         </div>
 
         <div className="max-w-2xl mx-auto px-4 pb-16">
@@ -350,22 +397,6 @@ export default function TempNumber() {
                   <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
                   রিফ্রেশ করুন
                 </button>
-                {selectedNumber.directUrl && (
-                  <a
-                    href={selectedNumber.directUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                    style={{
-                      background: "rgba(201,168,76,0.1)",
-                      border: "1px solid rgba(201,168,76,0.3)",
-                      color: "#C9A84C",
-                    }}
-                  >
-                    <ExternalLink size={14} />
-                    সরাসরি দেখুন
-                  </a>
-                )}
               </div>
             </div>
           )}
@@ -400,23 +431,9 @@ export default function TempNumber() {
                     border: "1px solid rgba(255,100,100,0.2)",
                   }}
                 >
-                  <div className="text-sm mb-3" style={{ color: "#ff6464" }}>
-                    SMS লোড করতে সমস্যা হয়েছে। সোর্স সাইটটি সরাসরি চেক করুন।
+                  <div className="text-sm" style={{ color: "#ff6464" }}>
+                    SMS লোড করতে সমস্যা হয়েছে। কয়েক সেকেন্ড অপেক্ষা করুন এবং রিফ্রেশ করুন।
                   </div>
-                  {selectedNumber.directUrl && (
-                    <a
-                      href={selectedNumber.directUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all"
-                      style={{
-                        background: "#ff6464",
-                        color: "#fff",
-                      }}
-                    >
-                      সরাসরি দেখুন: {new URL(selectedNumber.directUrl).hostname}
-                    </a>
-                  )}
                 </div>
               )}
               {!loading && messages.length === 0 && !fetchError && (
