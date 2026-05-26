@@ -75,6 +75,7 @@ export default function Seo({
   newsArticle,
   robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   imageAlt = "মাহবুব সরদার সবুজ অফিসিয়াল ওয়েবসাইটের প্রিভিউ ছবি",
+  seoKeywords,
 }: SeoProps) {
   useEffect(() => {
     const canonicalUrl = new URL(path, SITE_URL).toString();
@@ -165,7 +166,7 @@ export default function Seo({
         jsonLdScript.parentNode.removeChild(jsonLdScript);
       }
     };
-  }, [title, description, path, image, keywords, type, jsonLd, newsArticle, robots, imageAlt]);
+  }, [title, description, path, image, keywords, seoKeywords, type, jsonLd, newsArticle, robots, imageAlt]);
 
   return null;
 }
