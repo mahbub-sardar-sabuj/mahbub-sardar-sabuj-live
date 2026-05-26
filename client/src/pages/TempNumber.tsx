@@ -17,16 +17,6 @@ interface PhoneNumber {
 }
 
 const PHONE_NUMBERS: PhoneNumber[] = [
-  { slug: "46731299509-Sweden", number: "46731299509", display: "+46 731299509", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299508-Sweden", number: "46731299508", display: "+46 731299508", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46731299507-Sweden", number: "46731299507", display: "+46 731299507", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726405810-Sweden", number: "46726405810", display: "+46 726405810", country: "Sweden", flag: "🇸🇪" },
-  { slug: "46726405811-Sweden", number: "46726405811", display: "+46 726405811", country: "Sweden", flag: "🇸🇪" },
-  { slug: "3584573994619-Finland", number: "3584573994619", display: "+358 4573994619", country: "Finland", flag: "🇫🇮" },
-  { slug: "3584573994618-Finland", number: "3584573994618", display: "+358 4573994618", country: "Finland", flag: "🇫🇮" },
-  { slug: "3584573994617-Finland", number: "3584573994617", display: "+358 4573994617", country: "Finland", flag: "🇫🇮" },
-  { slug: "3197010291201-Netherlands", number: "3197010291201", display: "+31 97010291201", country: "Netherlands", flag: "🇳🇱" },
-  { slug: "3197010291202-Netherlands", number: "3197010291202", display: "+31 97010291202", country: "Netherlands", flag: "🇳🇱" },
   { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧" },
   { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧" },
   { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧" },
@@ -58,27 +48,14 @@ export default function TempNumber() {
     try {
       let html = "";
       
-      // Different API endpoints based on country
-      if (phone.country === "United Kingdom") {
-        const targetUrl = `https://receive-smss.live/sms/uk/${phone.number}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
-        html = data.contents || "";
-      } else if (phone.country === "Saudi Arabia") {
-        const targetUrl = `https://receive-smss.live/sms/sa/${phone.number}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
-        html = data.contents || "";
-      } else {
-        // Default for Sweden, Finland, Netherlands
-        const targetUrl = `https://receive-sms-online.info/get_sms_register.php?phone=${phone.number}`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
-        html = data.contents || "";
-      }
+      // Fetch from receive-smss.live for UK and Saudi Arabia
+      const countryCode = phone.country === "United Kingdom" ? "uk" : "sa";
+      const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&cache=false`;
+      
+      const res = await fetch(proxyUrl);
+      const data = await res.json();
+      html = data.contents || "";
       
       if (!html || html.trim().length === 0) {
         setFetchError(true);
@@ -87,54 +64,28 @@ export default function TempNumber() {
       }
       
       const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const smsList: SmsMessage[] = [];
       
-      // Parse based on country source
-      if (phone.country === "United Kingdom" || phone.country === "Saudi Arabia") {
-        // Parse receive-smss.live structure
-        const doc = parser.parseFromString(html, "text/html");
-        const smsList: SmsMessage[] = [];
-        
-        // Find message containers - they typically have sender, time, and message
-        const messageElements = doc.querySelectorAll("[class*='message'], [class*='sms'], div[class*='flex']");
-        
-        messageElements.forEach((el) => {
-          const text = el.textContent || "";
-          if (text.includes("Your") || text.includes("code") || text.includes("verification")) {
-            const sender = el.querySelector("div:first-child")?.textContent?.trim() || "Unknown";
-            const time = el.querySelector("div:last-child")?.textContent?.trim() || "";
-            const message = text.trim();
-            
-            if (message.length > 10) {
-              smsList.push({ sender, message, time });
-            }
+      // Parse receive-smss.live structure
+      // Look for message containers
+      const messageElements = doc.querySelectorAll("[class*='message'], [class*='sms'], div");
+      
+      messageElements.forEach((el) => {
+        const text = el.textContent || "";
+        // Look for elements containing verification codes or messages
+        if (text.length > 10 && (text.includes("code") || text.includes("verification") || text.includes("Your") || /\d{3,6}/.test(text))) {
+          const sender = el.querySelector("div:first-child")?.textContent?.trim() || "Unknown";
+          const time = el.querySelector("div:last-child")?.textContent?.trim() || "";
+          const message = text.trim();
+          
+          if (message.length > 10 && !smsList.some(m => m.message === message)) {
+            smsList.push({ sender, message, time });
           }
-        });
-        
-        setMessages(smsList);
-      } else {
-        // Parse receive-sms-online.info structure (HTML table)
-        const doc = parser.parseFromString(
-          `<table><tbody>${html}</tbody></table>`,
-          "text/html"
-        );
-        const rows = doc.querySelectorAll("tr");
-        const smsList: SmsMessage[] = [];
-        
-        rows.forEach((row) => {
-          const tds = row.querySelectorAll("td");
-          if (tds.length >= 3) {
-            const sender = tds[0]?.textContent?.trim() || "Unknown";
-            const message = tds[1]?.textContent?.trim() || "";
-            const time = tds[2]?.textContent?.trim() || "";
-            
-            if (message.length > 0) {
-              smsList.push({ sender, message, time });
-            }
-          }
-        });
-        
-        setMessages(smsList);
-      }
+        }
+      });
+      
+      setMessages(smsList);
     } catch (error) {
       console.error("SMS Fetch Error:", error);
       setFetchError(true);
