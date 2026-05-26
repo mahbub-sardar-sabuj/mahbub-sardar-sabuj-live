@@ -236,7 +236,7 @@ export default function Home() {
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
+                    fontSize: "clamp(3rem, 12vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
                     display: "block",
@@ -256,7 +256,7 @@ export default function Home() {
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
+                    fontSize: "clamp(3rem, 12vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
                     display: "block",
@@ -268,6 +268,7 @@ export default function Home() {
                     letterSpacing: "-0.02em",
                     filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
                     animation: "goldShimmer 6s ease-in-out infinite",
+                    paddingBottom: "10px"
                   }}
                 >
                   সরদার সবুজ
@@ -298,9 +299,9 @@ export default function Home() {
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                  fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
-                  color: "rgba(250,246,239,0.68)",
-                  lineHeight: 1.75,
+                  fontSize: "clamp(0.9rem, 4.5vw, 1.2rem)",
+                  color: "rgba(250,246,239,0.8)",
+                  lineHeight: 1.6,
                   margin: 0,
                   letterSpacing: "0.02em",
                   borderLeft: "2px solid rgba(201,168,76,0.5)",
