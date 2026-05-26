@@ -41,6 +41,14 @@ const PHONE_NUMBERS: PhoneNumber[] = [
   { slug: "46731299502-Sweden", number: "46731299502", display: "+46 731299502", country: "Sweden", flag: "🇸🇪" },
   { slug: "46731299505-Sweden", number: "46731299505", display: "+46 731299505", country: "Sweden", flag: "🇸🇪" },
   { slug: "46731299509-Sweden", number: "46731299509", display: "+46 731299509", country: "Sweden", flag: "🇸🇪" },
+  { slug: "447723431202-United Kingdom", number: "447723431202", display: "+44 7723431202", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447480787793-United Kingdom", number: "447480787793", display: "+44 7480787793", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447476559840-United Kingdom", number: "447476559840", display: "+44 7476559840", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447897034164-United Kingdom", number: "447897034164", display: "+44 7897034164", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "447897030765-United Kingdom", number: "447897030765", display: "+44 7897030765", country: "United Kingdom", flag: "🇬🇧" },
+  { slug: "966512345678-Saudi Arabia", number: "966512345678", display: "+966 512345678", country: "Saudi Arabia", flag: "🇸🇦" },
+  { slug: "966553902441-Saudi Arabia", number: "966553902441", display: "+966 553902441", country: "Saudi Arabia", flag: "🇸🇦" },
+  { slug: "966596771203-Saudi Arabia", number: "966596771203", display: "+966 596771203", country: "Saudi Arabia", flag: "🇸🇦" },
 ];
 
 const COUNTRIES = ["সব দেশ", ...Array.from(new Set(PHONE_NUMBERS.map((n) => n.country)))];
@@ -64,11 +72,26 @@ export default function TempNumber() {
     setLoading(true);
     setFetchError(false);
     try {
-      const targetUrl = `https://receive-sms-online.info/get_sms_register.php?phone=${phone.number}`;
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(proxyUrl);
-      const data = await res.json();
-      const html: string = data.contents || "";
+      // Primary source: receive-sms-online.info (for Netherlands, Finland, Sweden)
+      let targetUrl = `https://receive-sms-online.info/get_sms_register.php?phone=${phone.number}`;
+      let proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+      let res = await fetch(proxyUrl);
+      let data = await res.json();
+      let html: string = data.contents || "";
+      
+      // Fallback: If no messages from primary source, try receive-smss.live for UK/Saudi Arabia
+      if (!html || html.trim().length === 0) {
+        if (phone.country === "United Kingdom") {
+          targetUrl = `https://receive-smss.live/sms/uk/${phone.number}`;
+        } else if (phone.country === "Saudi Arabia") {
+          targetUrl = `https://receive-smss.live/sms/sa/${phone.number}`;
+        }
+        proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        res = await fetch(proxyUrl);
+        data = await res.json();
+        html = data.contents || "";
+      }
+      
       const parser = new DOMParser();
       const doc = parser.parseFromString(
         `<table><tbody>${html}</tbody></table>`,
@@ -340,170 +363,87 @@ export default function TempNumber() {
                     background: "rgba(255,255,255,0.06)",
                     border: "1px solid rgba(255,255,255,0.15)",
                     color: "#aaa",
+                    opacity: loading ? 0.5 : 1,
+                    cursor: loading ? "not-allowed" : "pointer",
                   }}
                 >
-                  <RefreshCw
-                    size={14}
-                    className={loading ? "animate-spin" : ""}
-                  />
-                  ইনবক্স রিফ্রেশ
+                  <RefreshCw size={14} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
+                  রিফ্রেশ করুন
                 </button>
               </div>
             </div>
           )}
 
-          {/* Inbox */}
+          {/* Messages Section */}
           {selectedNumber && (
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={16} style={{ color: "#C9A84C" }} />
-                  <span className="font-semibold text-white text-sm">
-                    ইনবক্স
-                  </span>
-                </div>
-                <span className="text-xs" style={{ color: "#666" }}>
-                  {messages.length} টি মেসেজ
-                </span>
+              <div className="flex items-center gap-2 mb-4">
+                <MessageSquare size={16} style={{ color: "#C9A84C" }} />
+                <h3 className="text-sm font-semibold text-white">
+                  বার্তা ({messages.length})
+                </h3>
               </div>
-
-              {loading && messages.length === 0 ? (
-                <div className="text-center py-12">
-                  <RefreshCw
-                    size={28}
-                    className="animate-spin mx-auto mb-3"
-                    style={{ color: "#C9A84C" }}
-                  />
-                  <p className="text-sm" style={{ color: "#666" }}>
-                    SMS লোড হচ্ছে...
-                  </p>
-                </div>
-              ) : fetchError ? (
+              {loading && !messages.length && (
                 <div
-                  className="text-center py-12 rounded-2xl"
+                  className="text-center py-8 rounded-xl"
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(201,168,76,0.25)",
                   }}
                 >
-                  <p className="text-sm" style={{ color: "#f87171" }}>
-                    SMS লোড করতে সমস্যা হয়েছে।
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "#666" }}>
-                    সরাসরি দেখুন:{" "}
-                    <a
-                      href={`https://receive-sms-online.info/${selectedNumber.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: "#C9A84C" }}
-                    >
-                      receive-sms-online.info
-                    </a>
-                  </p>
-                </div>
-              ) : messages.length === 0 ? (
-                <div
-                  className="text-center py-12 rounded-2xl"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <MessageSquare
-                    size={36}
-                    className="mx-auto mb-3 opacity-30"
-                    style={{ color: "#C9A84C" }}
-                  />
-                  <p className="text-sm font-medium text-white">
-                    এখনো কোনো SMS আসেনি
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "#666" }}>
-                    এই নম্বরে SMS পাঠান, প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়।
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {messages.map((msg, i) => (
-                    <div
-                      key={i}
-                      className="p-4 rounded-xl"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span
-                          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                          style={{
-                            background: "rgba(201,168,76,0.15)",
-                            color: "#C9A84C",
-                          }}
-                        >
-                          {msg.sender}
-                        </span>
-                        <span className="text-xs" style={{ color: "#555" }}>
-                          {msg.time}
-                        </span>
-                      </div>
-                      <p className="text-sm text-white leading-relaxed">
-                        {msg.message}
-                      </p>
-                    </div>
-                  ))}
+                  <div className="text-sm" style={{ color: "#aaa" }}>
+                    লোড হচ্ছে...
+                  </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* How to use */}
-          {!selectedNumber && (
-            <div
-              className="mt-8 rounded-2xl p-6"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <h2 className="text-lg font-bold text-white mb-4">
-                কীভাবে ব্যবহার করবেন?
-              </h2>
-              <div className="space-y-3">
-                {[
-                  ["১", "উপরের তালিকা থেকে একটি দেশ ও নম্বর বেছে নিন"],
-                  [
-                    "২",
-                    "নম্বরটি কপি করুন এবং যে ওয়েবসাইটে দরকার সেখানে দিন",
-                  ],
-                  [
-                    "৩",
-                    "SMS আসলে ইনবক্সে দেখা যাবে — প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়",
-                  ],
-                ].map(([num, text]) => (
-                  <div key={num} className="flex items-start gap-3">
-                    <span
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={{
-                        background: "rgba(201,168,76,0.2)",
-                        color: "#C9A84C",
-                      }}
-                    >
-                      {num}
-                    </span>
-                    <p className="text-sm text-gray-400 pt-1">{text}</p>
+              {fetchError && (
+                <div
+                  className="text-center py-8 rounded-xl"
+                  style={{
+                    background: "rgba(255,100,100,0.1)",
+                    border: "1px solid rgba(255,100,100,0.3)",
+                  }}
+                >
+                  <div className="text-sm" style={{ color: "#ff6464" }}>
+                    বার্তা লোড করতে ব্যর্থ। পরে চেষ্টা করুন।
                   </div>
-                ))}
-              </div>
-              <div
-                className="mt-4 p-3 rounded-xl text-xs"
-                style={{
-                  background: "rgba(248,113,113,0.08)",
-                  border: "1px solid rgba(248,113,113,0.2)",
-                  color: "#f87171",
-                }}
-              >
-                এই নম্বরগুলো public — সবাই SMS দেখতে পারে। ব্যক্তিগত তথ্য পাঠাবেন না।
-              </div>
+                </div>
+              )}
+              {!loading && messages.length === 0 && !fetchError && (
+                <div
+                  className="text-center py-8 rounded-xl"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(201,168,76,0.25)",
+                  }}
+                >
+                  <div className="text-sm" style={{ color: "#aaa" }}>
+                    এখনো কোনো বার্তা নেই
+                  </div>
+                </div>
+              )}
+              {messages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className="mb-3 p-3 rounded-xl"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(201,168,76,0.15)",
+                  }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-xs font-semibold" style={{ color: "#C9A84C" }}>
+                      {msg.sender}
+                    </div>
+                    <div className="text-xs" style={{ color: "#666" }}>
+                      {msg.time}
+                    </div>
+                  </div>
+                  <div className="text-sm" style={{ color: "#ddd" }}>
+                    {msg.message}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
