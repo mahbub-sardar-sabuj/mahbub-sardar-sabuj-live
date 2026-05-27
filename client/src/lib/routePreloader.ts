@@ -25,6 +25,7 @@ const routeImporters = {
   SeoKeywordLanding: () => import("../pages/SeoKeywordLanding"),
   TempEmail: () => import("../pages/TempEmail"),
   TempNumber: () => import("../pages/TempNumber"),
+  TempCard: () => import("../pages/TempCard"),
 } satisfies Record<string, Importer>;
 
 type RouteKey = keyof typeof routeImporters;
@@ -58,6 +59,7 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/404") return routeImporters.NotFound;
   if (path === "/temp-email") return routeImporters.TempEmail;
   if (path === "/temp-number") return routeImporters.TempNumber;
+  if (path === "/temp-card") return routeImporters.TempCard;
 
   if (
     path === "/bangla-kobita" ||
