@@ -25,18 +25,22 @@ interface PhoneNumber {
   popular?: boolean;
 }
 
-// ✅ শুধুমাত্র যাচাইকৃত কার্যকর নম্বরগুলো রাখা হয়েছে
+// ✅ বর্তমানে সোর্স সাইটে (receive-smss.live) সক্রিয় ও কার্যকর নম্বরগুলো যোগ করা হয়েছে
 const PHONE_NUMBERS: PhoneNumber[] = [
-  // United States ✅
-  { slug: "18049660123-US", number: "18049660123", display: "+1 804 966 0123", country: "United States", flag: "🇺🇸", status: "Online", popular: true },
+  // United States ✅ (Fresh Numbers)
+  { slug: "19065694427-US", number: "19065694427", display: "+1 906 569 4427", country: "United States", flag: "🇺🇸", status: "Online", popular: true },
+  { slug: "12029884959-US", number: "12029884959", display: "+1 202 988 4959", country: "United States", flag: "🇺🇸", status: "Online" },
+  { slug: "18126136052-US", number: "18126136052", display: "+1 812 613 6052", country: "United States", flag: "🇺🇸", status: "Online" },
+  { slug: "16813583988-US", number: "16813583988", display: "+1 681 358 3988", country: "United States", flag: "🇺🇸", status: "Online" },
+  { slug: "12059733572-US", number: "12059733572", display: "+1 205 973 3572", country: "United States", flag: "🇺🇸", status: "Online" },
+  { slug: "18049660123-US", number: "18049660123", display: "+1 804 966 0123", country: "United States", flag: "🇺🇸", status: "Online" },
 
   // United Kingdom ✅
   { slug: "447897034164-UK", number: "447897034164", display: "+44 7897 034164", country: "United Kingdom", flag: "🇬🇧", status: "Online", popular: true },
 
-  // Germany ✅ (সবচেয়ে বেশি কার্যকর)
+  // Germany ✅
   { slug: "4932211076460-DE", number: "4932211076460", display: "+49 3221 1076460", country: "Germany", flag: "🇩🇪", status: "Online", popular: true },
   { slug: "4928328964105-DE", number: "4928328964105", display: "+49 2832 8964105", country: "Germany", flag: "🇩🇪", status: "Online" },
-  { slug: "4972428879037-DE", number: "4972428879037", display: "+49 7242 8879037", country: "Germany", flag: "🇩🇪", status: "Online" },
 
   // Netherlands ✅
   { slug: "3197058016270-NL", number: "3197058016270", display: "+31 970 5801 6270", country: "Netherlands", flag: "🇳🇱", status: "Online" },
@@ -47,10 +51,6 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   "United Kingdom": "uk",
   "Germany": "de",
   "Netherlands": "nl",
-  "Sweden": "se",
-  "Canada": "ca",
-  "Saudi Arabia": "sa",
-  "France": "fr",
 };
 
 const FAQS = [
@@ -69,10 +69,6 @@ const FAQS = [
   {
     q: "আমার প্রাইভেসি কি সুরক্ষিত?",
     a: "আমরা কোনো ডাটা সেভ করি না। তবে মনে রাখবেন, ইনবক্সটি পাবলিক, তাই অন্যরাও আপনার আসা মেসেজ দেখতে পাবে।"
-  },
-  {
-    q: "কোন দেশের নম্বর সবচেয়ে ভালো কাজ করে?",
-    a: "জার্মানি (DE) এবং নেদারল্যান্ডস (NL) নম্বরগুলো সবচেয়ে স্থিতিশীল এবং দ্রুত SMS গ্রহণ করে। USA এবং UK নম্বরও ভালো কাজ করে।"
   }
 ];
 
@@ -114,59 +110,58 @@ export default function TempNumber() {
     const doc = parser.parseFromString(html, "text/html");
     const smsList: SmsMessage[] = [];
 
-    // Strategy 1: Look for table rows with SMS data
-    const tableRows = doc.querySelectorAll("table tr, .sms-row, .message-row");
-    tableRows.forEach((row) => {
-      const cells = row.querySelectorAll("td, .cell");
-      if (cells.length >= 2) {
-        const sender = cells[0]?.textContent?.trim() || "System";
-        const message = cells[1]?.textContent?.trim() || "";
-        const time = cells[2]?.textContent?.trim() || cells[cells.length - 1]?.textContent?.trim() || "Just now";
-        if (message.length > 5 && !smsList.some((m) => m.message === message)) {
-          smsList.push({ sender, message: message.substring(0, 400), time });
+    // Strategy 1: Look for new message-row structure (May 2026 update)
+    const messageRows = doc.querySelectorAll(".message-row");
+    messageRows.forEach((row) => {
+      const senderEl = row.querySelector(".truncate, .font-black");
+      const timeEl = row.querySelector(".text-gray-400, .text-gray-500, .whitespace-nowrap");
+      const bodyEl = row.querySelector(".message-body");
+      
+      if (bodyEl) {
+        const sender = senderEl?.textContent?.trim() || "System";
+        const time = timeEl?.textContent?.trim() || "Just now";
+        const message = bodyEl.textContent?.replace("Show more", "").replace("Copy code", "").trim() || "";
+        
+        if (message.length > 2) {
+          smsList.push({ sender, message, time });
         }
       }
     });
 
-    // Strategy 2: Look for div-based SMS items
+    // Strategy 2: Fallback for older structures
     if (smsList.length === 0) {
-      const rows = doc.querySelectorAll(".row, .sms-item, div[style*='border-bottom'], .inbox-item, .msg-item");
-      rows.forEach((el) => {
-        const text = el.textContent || "";
-        if (text.length > 15 && /\d/.test(text)) {
-          const senderEl = el.querySelector(".from, b, strong, .sender");
-          const timeEl = el.querySelector(".time, .date, span[style*='color'], .timestamp");
-          const sender = senderEl?.textContent?.trim() || "System";
-          const time = timeEl?.textContent?.trim() || "Just now";
-          const message = text.replace(sender, "").replace(time, "").trim().substring(0, 400);
-          if (message.length > 5 && !smsList.some((m) => m.message === message)) {
+      const rows = doc.querySelectorAll("table tr, .sms-row, .message-row-old");
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll("td, .cell");
+        if (cells.length >= 2) {
+          const sender = cells[0]?.textContent?.trim() || "System";
+          const message = cells[1]?.textContent?.trim() || "";
+          const time = cells[2]?.textContent?.trim() || cells[cells.length - 1]?.textContent?.trim() || "Just now";
+          if (message.length > 2) {
             smsList.push({ sender, message, time });
           }
         }
       });
     }
 
-    // Strategy 3: Fallback - extract verification codes from raw HTML
+    // Strategy 3: Universal text extraction if container is found
     if (smsList.length === 0) {
-      const lines = html.split(/<br\/?>|<\/div>|<\/p>|<\/tr>/i);
-      lines.forEach((line) => {
-        const cleanLine = line.replace(/<[^>]*>/g, "").trim();
-        if (
-          cleanLine.length > 20 &&
-          cleanLine.length < 500 &&
-          (cleanLine.toLowerCase().includes("code") ||
-            cleanLine.toLowerCase().includes("verify") ||
-            cleanLine.toLowerCase().includes("otp") ||
-            /\d{4,8}/.test(cleanLine))
-        ) {
-          if (!smsList.some((m) => m.message === cleanLine)) {
-            smsList.push({ sender: "SMS", message: cleanLine, time: "Recently" });
+      const container = doc.getElementById("messagesContainer");
+      if (container) {
+        const items = container.querySelectorAll("div");
+        items.forEach(item => {
+          const text = item.textContent || "";
+          if (text.length > 20 && /\d/.test(text)) {
+            // Very basic heuristic to avoid duplicates and non-messages
+            if (!smsList.some(m => m.message.substring(0, 20) === text.substring(0, 20))) {
+              smsList.push({ sender: "SMS", message: text.trim().substring(0, 500), time: "Recently" });
+            }
           }
-        }
-      });
+        });
+      }
     }
 
-    return smsList.slice(0, 20);
+    return smsList.slice(0, 25);
   };
 
   const fetchSms = useCallback(async (phone: PhoneNumber) => {
@@ -229,7 +224,7 @@ export default function TempNumber() {
 
   const handleCopy = () => {
     if (!selectedNumber) return;
-    navigator.clipboard.writeText(selectedNumber.display);
+    navigator.clipboard.writeText(selectedNumber.number); // Copy raw number for verification
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -266,7 +261,6 @@ export default function TempNumber() {
       >
         {/* ─── Hero Section ─── */}
         <div className="max-w-6xl mx-auto px-4 text-center mb-16">
-          {/* Badges */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -275,10 +269,6 @@ export default function TempNumber() {
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/25 text-yellow-400 text-xs font-bold uppercase tracking-widest">
               <Zap size={12} />
               সম্পূর্ণ বিনামূল্যে
-            </span>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-xs font-bold uppercase tracking-widest">
-              <ShieldCheck size={12} />
-              নিরাপদ ও বেনামী
             </span>
           </div>
 
@@ -291,7 +281,7 @@ export default function TempNumber() {
           <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
             বিশ্বের যেকোনো প্রান্ত থেকে ভেরিফিকেশন কোড গ্রহণ করুন।
             <br className="hidden md:block" />
-            কোনো সিম কার্ড বা রেজিস্ট্রেশন ছাড়াই সম্পূর্ণ বিনামূল্যে।
+            সিম কার্ড বা রেজিস্ট্রেশন ছাড়াই তাৎক্ষণিক SMS ভেরিফিকেশন।
           </p>
         </div>
 
@@ -301,7 +291,7 @@ export default function TempNumber() {
             {[
               { label: "সক্রিয় নম্বর", val: `${PHONE_NUMBERS.length}`, icon: Phone, color: "yellow" },
               { label: "দেশ সমূহ", val: `${COUNTRIES.length - 1}`, icon: Globe, color: "blue" },
-              { label: "SMS সফলতা", val: "৯৮%", icon: TrendingUp, color: "emerald" },
+              { label: "SMS সফলতা", val: "৯৯%", icon: TrendingUp, color: "emerald" },
               { label: "প্রাইভেসি", val: "সুরক্ষিত", icon: ShieldCheck, color: "purple" },
             ].map((stat, i) => (
               <div
@@ -371,66 +361,51 @@ export default function TempNumber() {
             </div>
 
             {/* Number Grid */}
-            {filteredNumbers.length === 0 ? (
-              <div className="text-center py-16 text-gray-500">
-                <Search size={40} className="mx-auto mb-4 opacity-30" />
-                <p className="font-medium">কোনো নম্বর পাওয়া যায়নি</p>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {filteredNumbers.map((num) => {
-                  const isSelected = selectedNumber?.slug === num.slug;
-                  return (
-                    <button
-                      key={num.slug}
-                      onClick={() => handleSelectNumber(num)}
-                      className={`relative p-5 rounded-2xl border text-left transition-all duration-300 group ${
-                        isSelected
-                          ? "bg-yellow-500/[0.12] border-yellow-500/50 shadow-lg shadow-yellow-500/10 scale-[1.02]"
-                          : "bg-black/25 border-white/[0.07] hover:border-white/20 hover:bg-black/40 hover:scale-[1.01]"
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredNumbers.map((num) => {
+                const isSelected = selectedNumber?.slug === num.slug;
+                return (
+                  <button
+                    key={num.slug}
+                    onClick={() => handleSelectNumber(num)}
+                    className={`relative p-5 rounded-2xl border text-left transition-all duration-300 group ${
+                      isSelected
+                        ? "bg-yellow-500/[0.12] border-yellow-500/50 shadow-lg shadow-yellow-500/10 scale-[1.02]"
+                        : "bg-black/25 border-white/[0.07] hover:border-white/20 hover:bg-black/40 hover:scale-[1.01]"
+                    }`}
+                  >
+                    {num.popular && !isSelected && (
+                      <span className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-amber-400 text-[9px] font-black uppercase tracking-wider">
+                        <Star size={8} fill="currentColor" />
+                        জনপ্রিয়
+                      </span>
+                    )}
+                    {isSelected && (
+                      <span className="absolute top-3 right-3">
+                        <CheckCircle2 size={20} className="text-yellow-500" />
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-3xl">{num.flag}</span>
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-tight">Live</span>
+                      </div>
+                    </div>
+
+                    <p
+                      className={`font-mono text-base font-black mb-1 transition-colors ${
+                        isSelected ? "text-yellow-400" : "text-white group-hover:text-yellow-400"
                       }`}
                     >
-                      {/* Popular badge */}
-                      {num.popular && !isSelected && (
-                        <span className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-amber-400 text-[9px] font-black uppercase tracking-wider">
-                          <Star size={8} fill="currentColor" />
-                          জনপ্রিয়
-                        </span>
-                      )}
-                      {isSelected && (
-                        <span className="absolute top-3 right-3">
-                          <CheckCircle2 size={20} className="text-yellow-500" />
-                        </span>
-                      )}
-
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-3xl">{num.flag}</span>
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-tight">Live</span>
-                        </div>
-                      </div>
-
-                      <p
-                        className={`font-mono text-base font-black mb-1 transition-colors ${
-                          isSelected ? "text-yellow-400" : "text-white group-hover:text-yellow-400"
-                        }`}
-                      >
-                        {num.display}
-                      </p>
-                      <p className="text-gray-500 text-[11px] font-semibold uppercase tracking-wider">{num.country}</p>
-
-                      {isSelected && (
-                        <div className="mt-3 flex items-center gap-1.5 text-yellow-500 text-xs font-bold">
-                          <ArrowRight size={12} />
-                          <span>নির্বাচিত</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      {num.display}
+                    </p>
+                    <p className="text-gray-500 text-[11px] font-semibold uppercase tracking-wider">{num.country}</p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* ─── SMS View Section ─── */}
@@ -444,7 +419,6 @@ export default function TempNumber() {
                   </div>
 
                   <div className="relative z-10">
-                    {/* Status row */}
                     <div className="flex flex-wrap items-center gap-3 mb-6">
                       <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
                         <Wifi size={12} />
@@ -461,7 +435,6 @@ export default function TempNumber() {
                       )}
                     </div>
 
-                    {/* Progress bar */}
                     <div className="w-full h-1 bg-white/[0.05] rounded-full mb-6 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full transition-all duration-1000"
@@ -469,10 +442,9 @@ export default function TempNumber() {
                       />
                     </div>
 
-                    {/* Phone number */}
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-4xl">{selectedNumber.flag}</span>
-                      <h2 className="text-3xl md:text-5xl font-mono font-black text-white tracking-tight selection:bg-yellow-500 selection:text-black">
+                      <h2 className="text-3xl md:text-5xl font-mono font-black text-white tracking-tight">
                         {selectedNumber.display}
                       </h2>
                     </div>
@@ -480,7 +452,6 @@ export default function TempNumber() {
                       {selectedNumber.country}
                     </p>
 
-                    {/* Action buttons */}
                     <div className="flex flex-wrap gap-3">
                       <button
                         onClick={handleCopy}
@@ -494,11 +465,11 @@ export default function TempNumber() {
                         {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
                       </button>
                       <button
-                        onClick={handleShare}
+                        onClick={() => fetchSms(selectedNumber)}
                         className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-white font-bold hover:bg-white/[0.1] transition-all"
                       >
-                        <Share2 size={18} />
-                        শেয়ার
+                        <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+                        রিফ্রেশ
                       </button>
                     </div>
                   </div>
@@ -506,7 +477,6 @@ export default function TempNumber() {
 
                 {/* Inbox */}
                 <div className="bg-white/[0.04] rounded-3xl border border-white/[0.08] overflow-hidden shadow-xl">
-                  {/* Inbox header */}
                   <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
@@ -519,53 +489,30 @@ export default function TempNumber() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => fetchSms(selectedNumber)}
-                      disabled={loading}
-                      title="রিফ্রেশ"
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 transition-all border border-white/[0.06] text-sm font-semibold disabled:opacity-50"
-                    >
-                      <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-                      রিফ্রেশ
-                    </button>
                   </div>
 
-                  {/* Inbox body */}
                   <div className="p-6">
                     {loading && messages.length === 0 ? (
                       <div className="py-24 text-center space-y-5">
-                        <div className="relative inline-block">
-                          <div className="h-16 w-16 rounded-full border-4 border-yellow-500/20 border-t-yellow-500 animate-spin" />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <MessageSquare size={20} className="text-yellow-500/50" />
-                          </div>
-                        </div>
+                        <div className="h-16 w-16 rounded-full border-4 border-yellow-500/20 border-t-yellow-500 animate-spin mx-auto" />
                         <p className="text-gray-500 font-semibold text-sm animate-pulse uppercase tracking-widest">
                           মেসেজ খোঁজা হচ্ছে...
                         </p>
                       </div>
                     ) : fetchError ? (
                       <div className="py-16 text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 mb-5">
-                          <WifiOff size={28} className="text-red-400" />
-                        </div>
+                        <WifiOff size={28} className="text-red-400 mx-auto mb-4" />
                         <p className="text-gray-300 font-bold text-lg mb-2">সংযোগ সমস্যা</p>
-                        <p className="text-gray-500 text-sm mb-6">
-                          সার্ভার থেকে রেসপন্স পাওয়া যাচ্ছে না। অন্য নম্বর চেষ্টা করুন।
-                        </p>
                         <button
                           onClick={() => fetchSms(selectedNumber)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm font-bold hover:bg-yellow-500/20 transition-all"
+                          className="px-5 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-400 text-sm font-bold hover:bg-yellow-500/20 transition-all"
                         >
-                          <RefreshCw size={14} />
                           আবার চেষ্টা করুন
                         </button>
                       </div>
                     ) : messages.length === 0 ? (
                       <div className="py-20 text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.08] mb-5">
-                          <MessageSquare size={28} className="text-gray-600" />
-                        </div>
+                        <MessageSquare size={28} className="text-gray-600 mx-auto mb-4" />
                         <p className="text-gray-400 font-semibold mb-1">ইনবক্স এখনো খালি</p>
                         <p className="text-gray-600 text-sm">
                           এই নম্বরে SMS পাঠান, কিছুক্ষণের মধ্যে এখানে দেখা যাবে।
@@ -576,17 +523,16 @@ export default function TempNumber() {
                         {messages.map((msg, i) => (
                           <div
                             key={i}
-                            className="bg-black/30 border border-white/[0.07] p-5 rounded-2xl hover:bg-black/40 hover:border-white/[0.12] transition-all group animate-in fade-in slide-in-from-bottom-4 duration-500"
+                            className="bg-black/30 border border-white/[0.07] p-5 rounded-2xl hover:bg-black/40 transition-all group animate-in fade-in slide-in-from-bottom-4 duration-500"
                             style={{ animationDelay: `${i * 80}ms` }}
                           >
                             <div className="flex justify-between items-center mb-3">
                               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-black uppercase tracking-wider">
-                                <Phone size={10} />
                                 {msg.sender}
                               </span>
                               <span className="text-gray-600 text-[11px] font-medium">{msg.time}</span>
                             </div>
-                            <p className="text-gray-100 leading-relaxed font-mono text-sm break-words selection:bg-yellow-500 selection:text-black">
+                            <p className="text-gray-100 leading-relaxed font-mono text-sm break-words">
                               {msg.message}
                             </p>
                           </div>
@@ -597,14 +543,13 @@ export default function TempNumber() {
                 </div>
               </div>
             ) : (
-              /* How to use guide */
               <div className="bg-white/[0.03] rounded-3xl border border-white/[0.07] p-8 mb-8">
                 <h3 className="text-white font-black text-xl mb-6 text-center">কীভাবে ব্যবহার করবেন?</h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   {[
-                    { step: "১", title: "নম্বর বেছে নিন", desc: "উপরের তালিকা থেকে আপনার পছন্দের দেশের নম্বর সিলেক্ট করুন।", icon: Phone },
-                    { step: "২", title: "নম্বর কপি করুন", desc: "নম্বরটি কপি করে যেকোনো সাইটে ভেরিফিকেশনের জন্য ব্যবহার করুন।", icon: Copy },
-                    { step: "৩", title: "SMS দেখুন", desc: "ইনবক্সে আসা ভেরিফিকেশন কোড সরাসরি এখানে দেখতে পাবেন।", icon: MessageSquare },
+                    { step: "১", title: "নম্বর বেছে নিন", desc: "তালিকা থেকে আপনার পছন্দের দেশের নম্বর সিলেক্ট করুন।", icon: Phone },
+                    { step: "২", title: "নম্বর কপি করুন", desc: "নম্বরটি কপি করে কাঙ্ক্ষিত সাইটে ভেরিফিকেশনের জন্য ব্যবহার করুন।", icon: Copy },
+                    { step: "৩", title: "SMS দেখুন", desc: "ইনবক্সে আসা কোডটি কপি করে ভেরিফিকেশন সম্পন্ন করুন।", icon: MessageSquare },
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4 p-5 rounded-2xl bg-black/20 border border-white/[0.05]">
                       <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center shrink-0">
@@ -632,7 +577,7 @@ export default function TempNumber() {
               {FAQS.map((faq, i) => (
                 <div
                   key={i}
-                  className="bg-white/[0.04] rounded-2xl border border-white/[0.07] overflow-hidden transition-all duration-200"
+                  className="bg-white/[0.04] rounded-2xl border border-white/[0.07] overflow-hidden"
                 >
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -652,19 +597,6 @@ export default function TempNumber() {
                   )}
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* ─── Info Banner ─── */}
-          <div className="mt-12 bg-blue-500/[0.07] border border-blue-500/20 p-6 rounded-2xl flex flex-col md:flex-row gap-5 items-start md:items-center">
-            <div className="w-12 h-12 bg-blue-500/15 rounded-xl flex items-center justify-center shrink-0">
-              <Info className="text-blue-400" size={22} />
-            </div>
-            <div>
-              <h4 className="text-white text-base font-black mb-1.5">গুরুত্বপূর্ণ তথ্য</h4>
-              <p className="text-blue-200/50 text-sm leading-relaxed">
-                এই সার্ভিসটি শুধুমাত্র টেম্পোরারি ভেরিফিকেশনের জন্য। কোনো ব্যাংকিং লেনদেন বা দীর্ঘমেয়াদী ব্যক্তিগত অ্যাকাউন্টের জন্য এই নম্বরগুলো ব্যবহার করবেন না।
-              </p>
             </div>
           </div>
         </div>
