@@ -1,54 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-/**
- * Browser-side image upscaling using Canvas API with multi-step interpolation.
- * No server dependency — works reliably on Vercel free tier.
- */
-function upscaleWithCanvas(
-  dataUrl: string,
-  scale: number
-): Promise<{ imageData: string; originalSize: { width: number; height: number }; upscaledSize: { width: number; height: number }; scale: number }> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const origW = img.naturalWidth;
-        const origH = img.naturalHeight;
-        const newW = Math.min(origW * scale, 4000);
-        const newH = Math.min(origH * scale, 4000);
-        // Multi-step upscaling for better quality
-        const steps = Math.ceil(Math.log(scale) / Math.log(1.5));
-        const stepScale = Math.pow(scale, 1 / steps);
-        let currentCanvas = document.createElement("canvas");
-        let currentCtx = currentCanvas.getContext("2d")!;
-        currentCanvas.width = origW;
-        currentCanvas.height = origH;
-        currentCtx.drawImage(img, 0, 0);
-        for (let s = 0; s < steps; s++) {
-          const isLast = s === steps - 1;
-          const targetW = isLast ? newW : Math.round(currentCanvas.width * stepScale);
-          const targetH = isLast ? newH : Math.round(currentCanvas.height * stepScale);
-          const nextCanvas = document.createElement("canvas");
-          nextCanvas.width = targetW;
-          nextCanvas.height = targetH;
-          const nextCtx = nextCanvas.getContext("2d")!;
-          nextCtx.imageSmoothingEnabled = true;
-          nextCtx.imageSmoothingQuality = "high";
-          nextCtx.drawImage(currentCanvas, 0, 0, targetW, targetH);
-          currentCanvas = nextCanvas;
-          currentCtx = nextCtx;
-        }
-        const resultDataUrl = currentCanvas.toDataURL("image/png", 1.0);
-        resolve({ imageData: resultDataUrl, originalSize: { width: origW, height: origH }, upscaledSize: { width: newW, height: newH }, scale });
-      } catch (e) { reject(e); }
-    };
-    img.onerror = () => reject(new Error("ছবি লোড করতে সমস্যা হয়েছে।"));
-    img.src = dataUrl;
-  });
-}
-
-import { Upload, Image as ImageIcon, Sparkles, Download, RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, Image as ImageIcon, Sparkles, Download, RefreshCw, AlertCircle, CheckCircle2, SplitSquareHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 
@@ -59,6 +11,85 @@ interface UpscaleResult {
   scale: number;
 }
 
+// Before/After comparison slider component
+function CompareSlider({ before, after }: { before: string; after: string }) {
+  const [sliderPos, setSliderPos] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  const updateSlider = useCallback((clientX: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    setSliderPos((x / rect.width) * 100);
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isDragging.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    updateSlider(e.clientX);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    updateSlider(e.clientX);
+  };
+
+  const handlePointerUp = () => {
+    isDragging.current = false;
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative select-none overflow-hidden rounded-2xl shadow-2xl cursor-col-resize"
+      style={{ touchAction: "none" }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    >
+      {/* After (upscaled) - full width base layer */}
+      <img src={after} alt="Upscaled" className="block w-full max-h-[500px] object-contain" draggable={false} />
+
+      {/* Before (original) - clipped overlay on left side */}
+      <div
+        className="absolute inset-0 overflow-hidden"
+        style={{ width: `${sliderPos}%` }}
+      >
+        <img
+          src={before}
+          alt="Original"
+          className="block max-h-[500px] object-contain"
+          style={{ width: `${(100 / sliderPos) * 100}%`, maxWidth: "none" }}
+          draggable={false}
+        />
+      </div>
+
+      {/* Divider line */}
+      <div
+        className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] pointer-events-none"
+        style={{ left: `${sliderPos}%` }}
+      />
+
+      {/* Drag handle */}
+      <div
+        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center pointer-events-none"
+        style={{ left: `${sliderPos}%` }}
+      >
+        <SplitSquareHorizontal size={18} className="text-gray-700" />
+      </div>
+
+      {/* Labels */}
+      <div className="absolute top-3 left-3 bg-black/60 text-white text-xs font-bold px-2 py-1 rounded-full pointer-events-none">
+        আগে (Original)
+      </div>
+      <div className="absolute top-3 right-3 bg-blue-600/90 text-white text-xs font-bold px-2 py-1 rounded-full pointer-events-none">
+        পরে (AI Enhanced)
+      </div>
+    </div>
+  );
+}
+
 export default function ImageUpscaler() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUpscaling, setIsUpscaling] = useState(false);
@@ -66,24 +97,42 @@ export default function ImageUpscaler() {
   const [scale, setScale] = useState(2);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<UpscaleResult | null>(null);
+  const [showCompare, setShowCompare] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Max 8MB check
     if (file.size > 10 * 1024 * 1024) {
       setError("ছবির সাইজ ১০MB-এর বেশি হওয়া যাবে না।");
       return;
     }
-
     setError(null);
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target?.result as string);
+    reader.onload = (ev) => {
+      setSelectedImage(ev.target?.result as string);
       setUpscaledImage(null);
       setResult(null);
+      setShowCompare(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("ছবির সাইজ ১০MB-এর বেশি হওয়া যাবে না।");
+      return;
+    }
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setSelectedImage(ev.target?.result as string);
+      setUpscaledImage(null);
+      setResult(null);
+      setShowCompare(false);
     };
     reader.readAsDataURL(file);
   };
@@ -94,11 +143,24 @@ export default function ImageUpscaler() {
     setError(null);
     setUpscaledImage(null);
     setResult(null);
+    setShowCompare(false);
 
     try {
-      const data = await upscaleWithCanvas(selectedImage, scale);
+      const response = await fetch("/api/image-upscale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageData: selectedImage, scale }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "আপসেল করতে সমস্যা হয়েছে।");
+      }
+
       setUpscaledImage(data.imageData);
       setResult(data);
+      setShowCompare(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "অজানা সমস্যা হয়েছে।";
       setError(msg);
@@ -113,12 +175,13 @@ export default function ImageUpscaler() {
     setIsUpscaling(false);
     setError(null);
     setResult(null);
+    setShowCompare(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
     <div className="min-h-screen bg-[#060E1A] text-white pt-24 pb-20">
-      <Seo 
+      <Seo
         title="AI Image Upscaler — ছবির কোয়ালিটি বাড়ান অনলাইনে | Mahbub Sardar Sabuj"
         description="এআই প্রযুক্তির মাধ্যমে আপনার ঝাপসা বা কম রেজোলিউশনের ছবির কোয়ালিটি বাড়ান একদম ফ্রিতে। ২x এবং ৪x আপসেলিং সুবিধা।"
         path="/image-upscaler"
@@ -150,7 +213,7 @@ export default function ImageUpscaler() {
             transition={{ delay: 0.2 }}
             className="text-gray-400 text-lg max-w-2xl mx-auto"
           >
-            আপনার ঝাপসা বা লো-কোয়ালিটি ছবিকে এআই-এর মাধ্যমে মুহূর্তেই এইচডি (HD) কোয়ালিটিতে রূপান্তর করুন।
+            আপনার ঝাপসা বা লো-কোয়ালিটি ছবিকে Lanczos3 অ্যালগরিদমের মাধ্যমে মুহূর্তেই HD কোয়ালিটিতে রূপান্তর করুন।
           </motion.p>
         </div>
 
@@ -170,9 +233,9 @@ export default function ImageUpscaler() {
                         key={s}
                         onClick={() => setScale(s)}
                         className={`py-3 rounded-xl font-bold transition-all ${
-                          scale === s 
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                          : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                          scale === s
+                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                            : "bg-white/5 text-gray-400 hover:bg-white/10"
                         }`}
                       >
                         {s}x (HD)
@@ -180,15 +243,27 @@ export default function ImageUpscaler() {
                     ))}
                   </div>
                 </div>
+
                 <div className="pt-4">
                   {!selectedImage ? (
-                    <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group">
+                    <label
+                      className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleDrop}
+                    >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Upload className="w-10 h-10 text-gray-500 group-hover:text-blue-500 transition-colors mb-3" />
                         <p className="text-sm text-gray-400">ছবি সিলেক্ট করুন</p>
-                        <p className="text-xs text-gray-600 mt-1">সর্বোচ্চ ৮MB</p>
+                        <p className="text-xs text-gray-500 mt-1">বা এখানে ড্র্যাগ করুন</p>
+                        <p className="text-xs text-gray-600 mt-1">সর্বোচ্চ ১০MB</p>
                       </div>
-                      <input ref={fileInputRef} type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                      />
                     </label>
                   ) : (
                     <div className="space-y-4">
@@ -239,10 +314,21 @@ export default function ImageUpscaler() {
               </div>
             )}
 
+            {/* Toggle compare/single view */}
+            {upscaledImage && (
+              <button
+                onClick={() => setShowCompare((v) => !v)}
+                className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-bold text-sm text-gray-300 transition-all flex items-center justify-center gap-2"
+              >
+                <SplitSquareHorizontal size={16} />
+                {showCompare ? "শুধু আপসেলড দেখুন" : "আগে/পরে তুলনা করুন"}
+              </button>
+            )}
+
             <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 flex gap-3">
               <AlertCircle className="text-blue-400 shrink-0" size={20} />
               <p className="text-xs text-blue-200/70 leading-relaxed">
-                ছবিগুলো সরাসরি আপনার ব্রাউজারেই প্রসেস হয় — কোনো সার্ভারে আপলোড হয় না। সম্পূর্ণ প্রাইভেট ও নিরাপদ।
+                Lanczos3 অ্যালগরিদম ও edge sharpening দিয়ে সার্ভারে প্রসেস হয়। ছবি সম্পূর্ণ নিরাপদ।
               </p>
             </div>
           </div>
@@ -263,41 +349,58 @@ export default function ImageUpscaler() {
                       <ImageIcon className="text-gray-600" size={40} />
                     </div>
                     <p className="text-gray-500 font-medium">কোনো ছবি আপলোড করা হয়নি</p>
+                    <p className="text-gray-600 text-sm">বাম দিক থেকে ছবি সিলেক্ট করুন</p>
                   </motion.div>
                 ) : (
                   <motion.div
                     key="preview"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full h-full flex flex-col items-center"
+                    className="w-full h-full flex flex-col items-center gap-6"
                   >
-                    <div className="relative group max-w-full rounded-2xl overflow-hidden shadow-2xl">
-                      <img 
-                        src={upscaledImage || selectedImage} 
-                        alt="Preview" 
-                        className={`max-h-[600px] object-contain transition-all duration-700 ${isUpscaling ? 'blur-md grayscale' : ''}`}
-                      />
-                      {isUpscaling && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-white font-black tracking-widest uppercase">AI Enhancing...</p>
+                    {/* Compare slider or single image */}
+                    {upscaledImage && showCompare ? (
+                      <div className="w-full">
+                        <CompareSlider before={selectedImage} after={upscaledImage} />
+                        <p className="text-center text-xs text-gray-500 mt-3">
+                          ← স্লাইডার টেনে আগে/পরে তুলনা করুন →
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="relative group max-w-full rounded-2xl overflow-hidden shadow-2xl">
+                        <img
+                          src={upscaledImage || selectedImage}
+                          alt="Preview"
+                          className={`max-h-[500px] object-contain transition-all duration-700 ${
+                            isUpscaling ? "blur-md grayscale" : ""
+                          }`}
+                        />
+                        {isUpscaling && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                            <div className="flex flex-col items-center gap-4">
+                              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                              <p className="text-white font-black tracking-widest uppercase">
+                                AI Enhancing...
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      {upscaledImage && !isUpscaling && (
-                        <div className="absolute top-4 right-4">
-                          <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
-                            <Sparkles size={12} /> ENHANCED
+                        )}
+                        {upscaledImage && !isUpscaling && (
+                          <div className="absolute top-4 right-4">
+                            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
+                              <Sparkles size={12} /> ENHANCED
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Download button */}
                     {upscaledImage && !isUpscaling && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-8 flex gap-4"
+                        className="flex gap-4"
                       >
                         <a
                           href={upscaledImage}
