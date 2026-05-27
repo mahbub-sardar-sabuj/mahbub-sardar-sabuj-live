@@ -258,7 +258,7 @@ export default function Home() {
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
                     fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
                     fontWeight: 700,
-                    lineHeight: 0.95,
+                    lineHeight: 1.1,
                     display: "block",
                     background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
                     backgroundSize: "280% 100%",
@@ -268,6 +268,7 @@ export default function Home() {
                     letterSpacing: "-0.02em",
                     filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
                     animation: "goldShimmer 6s ease-in-out infinite",
+                    paddingBottom: "12px",
                   }}
                 >
                   সরদার সবুজ
