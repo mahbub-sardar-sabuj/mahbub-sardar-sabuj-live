@@ -442,18 +442,107 @@ async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent, im
   }
 }
 
+// ── Streaming handler (for /api/chat-stream compatibility) ────────────────────
+async function handleStream(req, res, allMessages) {
+  const configs = resolveAiConfigs();
+  if (configs.length === 0) {
+    return res.status(500).json({ error: "AI API key not configured." });
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+
+  let streamSuccess = false;
+
+  for (const config of configs) {
+    try {
+      const response = await fetch(config.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: allMessages,
+          max_tokens: 4000,
+          temperature: 0.7,
+          stream: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        console.warn(`[stream] ${config.source} error ${response.status}: ${errText.slice(0, 100)}`);
+        continue;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullReply = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === "data: [DONE]") continue;
+          if (!trimmed.startsWith("data: ")) continue;
+
+          try {
+            const json = JSON.parse(trimmed.slice(6));
+            const delta = json?.choices?.[0]?.delta?.content;
+            if (delta) {
+              fullReply += delta;
+              const sanitized = sanitizeReply(delta);
+              res.write(`data: ${JSON.stringify({ delta: sanitized })}\n\n`);
+            }
+          } catch {
+            // skip malformed chunk
+          }
+        }
+      }
+
+      res.write(`data: ${JSON.stringify({ done: true, fullReply: sanitizeReply(fullReply) })}\n\n`);
+      res.end();
+      streamSuccess = true;
+      break;
+
+    } catch (err) {
+      console.error(`[stream] ${config.source} failed:`, err.message);
+      continue;
+    }
+  }
+
+  if (!streamSuccess) {
+    res.write(`data: ${JSON.stringify({ error: "সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।" })}\n\n`);
+    res.end();
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Cache-Control", "no-store");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   if (limitJsonBodySize(req, res, 2 * 1024 * 1024)) return;
 
-  const rate = checkRateLimit(req, res, { keyPrefix: "chat", windowMs: 60 * 1000, max: 20 });
+  // Detect streaming mode: ?stream=1 query param (used by /api/chat-stream redirect)
+  const url = new URL(req.url || "/", "https://local.invalid");
+  const isStream = url.searchParams.get("stream") === "1";
+
+  const rate = checkRateLimit(req, res, { keyPrefix: isStream ? "chat-stream" : "chat", windowMs: 60 * 1000, max: 20 });
   if (rate.limited) return;
 
   try {
@@ -475,6 +564,14 @@ export default async function handler(req, res) {
       .filter((m) => m.role !== "system" && ["user", "assistant"].includes(m.role))
       .slice(-12);
     const allMessages = [{ role: "system", content: SYSTEM_PROMPT }, ...filteredMessages];
+
+    // Streaming mode — SSE response
+    if (isStream) {
+      return await handleStream(req, res, allMessages);
+    }
+
+    // Normal (non-streaming) mode
+    res.setHeader("Cache-Control", "no-store");
 
     const lastUserMsg = messages.filter((m) => m.role === "user").slice(-1)[0];
     const lastUserImgPart = Array.isArray(lastUserMsg?.content)
@@ -511,8 +608,6 @@ export default async function handler(req, res) {
       console.error("AI API failed; returning built-in fallback reply:", err.message);
       const fallbackReply = buildFallbackReply(messages, err);
 
-      // FIX: Don't spam Telegram on every 429 quota error — only notify for unexpected failures
-      // 429 = quota exceeded (expected, not actionable), so we skip Telegram notification
       if (!is429) {
         await notifyTelegram({
           userMessage: userMsgText,

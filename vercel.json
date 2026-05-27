@@ -85,6 +85,10 @@
       "dest": "/api/trpc-bundled"
     },
     {
+      "src": "/api/chat-stream",
+      "dest": "/api/chat?stream=1"
+    },
+    {
       "src": "/api/image-upscale",
       "dest": "/api/image-upscale.js"
     },
