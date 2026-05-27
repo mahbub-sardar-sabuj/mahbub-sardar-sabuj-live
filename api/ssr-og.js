@@ -344,7 +344,11 @@ function buildBreadcrumbJsonLd(path, url) {
     "/gallery": "গ্যালারি",
     "/facebook-recitations": "Facebook আবৃত্তি",
     "/amio-likhbo-bastobota": "আমিও লিখবো বাস্তবতা",
-    "/editor": "সরদার ডিজাইন স্টুডিও",
+    "/editor": "ডিজাইন ফরম্যাট",
+    "/temp-email": "টেম্প ইমেইল",
+    "/temp-number": "টেম্প নম্বর",
+    "/temp-card": "টেম্প কার্ড",
+    "/image-upscaler": "ইমেজ আপসেলার",
   };
   return {
     "@context": "https://schema.org",
@@ -406,7 +410,7 @@ function buildCollectionItems(path) {
 }
 
 function buildRouteJsonLd(path, url, title, description) {
-  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota", ...Object.keys(seoKeywordPages)]);
+  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota", "/editor", "/temp-email", "/temp-number", "/temp-card", "/image-upscaler", ...Object.keys(seoKeywordPages)]);
   const contactRoutes = new Set(["/contact"]);
   const pageType = contactRoutes.has(path) ? "ContactPage" : collectionRoutes.has(path) ? "CollectionPage" : "WebPage";
   const graph = [
@@ -2963,9 +2967,30 @@ export default async function handler(req) {
       <p>ইমেইল: lekhokmahbubsardarsabuj@gmail.com</p>
       <p><a href="${SITE_URL}">হোম পেজে ফিরুন</a></p>`;
   } else if (path === "/editor") {
-    title = "সরদার ডিজাইন স্টুডিও | মাহবুব সরদার সবুজ";
-    description = "সরদার ডিজাইন স্টুডিওতে অনলাইনে বাংলা ও ইংরেজি টেক্সট দিয়ে সুন্দর ডিজাইন তৈরি করুন। সামাজিক মাধ্যমের পোস্ট, কবিতার কার্ড ও আরও অনেক কিছু।";
-    bodyContent = `<h1>সরদার ডিজাইন স্টুডিও — মাহবুব সরদার সবুজ</h1><p>সরদার ডিজাইন স্টুডিওতে অনলাইনে বাংলা ও ইংরেজি টেক্সট দিয়ে সুন্দর ডিজাইন তৈরি করুন। সামাজিক মাধ্যমের পোস্ট, কবিতার কার্ড ও আরও অনেক কিছু।</p>`;
+    title = "ডিজাইন ফরম্যাট | বাংলা পোস্ট ডিজাইন টুল | মাহবুব সরদার সবুজ";
+    keywords = "ডিজাইন ফরম্যাট, বাংলা পোস্ট ডিজাইন, কবিতা কার্ড, Bangla design format, text to image Bangla";
+    description = "ডিজাইন ফরম্যাট পেজে বাংলা ও ইংরেজি টেক্সট দিয়ে কবিতা কার্ড, ফেসবুক পোস্ট, সাহিত্য পোস্টার ও সুন্দর ভিজ্যুয়াল ডিজাইন তৈরি করুন।";
+    bodyContent = `<main itemscope itemtype="https://schema.org/CollectionPage"><h1>ডিজাইন ফরম্যাট — বাংলা পোস্ট ডিজাইন টুল</h1><p>বাংলা কবিতা, উক্তি, স্ট্যাটাস ও সাহিত্য লেখা দিয়ে সুন্দর ভিজ্যুয়াল কার্ড এবং সামাজিক মাধ্যমের পোস্ট ডিজাইন করার পেজ।</p><ul><li><a href="https://www.mahbubsardarsabuj.com/writings">লেখালেখি থেকে লেখা নিন</a></li><li><a href="https://www.mahbubsardarsabuj.com/gallery">গ্যালারি দেখুন</a></li><li><a href="https://www.mahbubsardarsabuj.com/contact">যোগাযোগ করুন</a></li></ul></main>`;
+  } else if (path === "/temp-email") {
+    title = "টেম্প ইমেইল | ফ্রি অস্থায়ী ইমেইল | মাহবুব সরদার সবুজ";
+    keywords = "টেম্প ইমেইল, temporary email, disposable email, ফ্রি ইমেইল, অস্থায়ী ইমেইল";
+    description = "টেম্প ইমেইল পেজে দ্রুত disposable বা অস্থায়ী ইমেইল ব্যবহার করে অনলাইন signup, verification ও test কাজ সহজে করুন।";
+    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প ইমেইল — ফ্রি অস্থায়ী ইমেইল</h1><p>অনলাইন verification, signup test এবং privacy-friendly কাজের জন্য অস্থায়ী ইমেইল ব্যবহারের টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/temp-number">টেম্প নম্বর দেখুন</a> | <a href="https://www.mahbubsardarsabuj.com/temp-card">টেম্প কার্ড দেখুন</a></p></main>`;
+  } else if (path === "/temp-number") {
+    title = "টেম্প নম্বর | ফ্রি অস্থায়ী ফোন নম্বর | মাহবুব সরদার সবুজ";
+    keywords = "টেম্প নম্বর, temporary number, virtual phone number, অস্থায়ী ফোন নম্বর, verification number";
+    description = "টেম্প নম্বর পেজে verification ও test কাজের জন্য অস্থায়ী/ভার্চুয়াল ফোন নম্বর সম্পর্কিত সুবিধা ব্যবহার করুন।";
+    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প নম্বর — অস্থায়ী ফোন নম্বর</h1><p>অনলাইন test, verification এবং privacy-friendly ব্যবহারের জন্য টেম্প বা ভার্চুয়াল নম্বর সম্পর্কিত টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/temp-email">টেম্প ইমেইল দেখুন</a> | <a href="https://www.mahbubsardarsabuj.com/temp-card">টেম্প কার্ড দেখুন</a></p></main>`;
+  } else if (path === "/temp-card") {
+    title = "টেম্প কার্ড | টেস্ট ভার্চুয়াল কার্ড | মাহবুব সরদার সবুজ";
+    keywords = "টেম্প কার্ড, virtual card test, test card, temporary card, developer testing card";
+    description = "টেম্প কার্ড পেজে developer testing, UI preview ও demo কাজের জন্য virtual/test card সম্পর্কিত সুবিধা ব্যবহার করুন।";
+    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প কার্ড — টেস্ট ভার্চুয়াল কার্ড</h1><p>ডেমো, developer testing এবং UI preview কাজের জন্য টেম্প বা ভার্চুয়াল কার্ড সম্পর্কিত টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/temp-email">টেম্প ইমেইল</a> | <a href="https://www.mahbubsardarsabuj.com/temp-number">টেম্প নম্বর</a></p></main>`;
+  } else if (path === "/image-upscaler") {
+    title = "ইমেজ আপসেলার | AI Image Upscaler | মাহবুব সরদার সবুজ";
+    keywords = "ইমেজ আপসেলার, image upscaler, AI image enhancer, photo quality improve, ছবি HD করা";
+    description = "ইমেজ আপসেলার পেজে AI দিয়ে ছবির quality বাড়ানো, image enhance করা এবং low-resolution ছবি উন্নত করার সুবিধা ব্যবহার করুন।";
+    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>ইমেজ আপসেলার — AI Image Upscaler</h1><p>AI image enhancer দিয়ে ছবির resolution ও quality উন্নত করার টুল। সাহিত্য পোস্ট, গ্যালারি বা ব্যক্তিগত ছবিকে আরও পরিষ্কার করতে সহায়ক।</p><p><a href="https://www.mahbubsardarsabuj.com/gallery">গ্যালারি দেখুন</a> | <a href="https://www.mahbubsardarsabuj.com/editor">ডিজাইন ফরম্যাট ব্যবহার করুন</a></p></main>`;
   } else if (path.startsWith("/amio-likhbo-bastobota/") && path.length > "/amio-likhbo-bastobota/".length) {
     // Individual visitor post — served via dedicated SSR API for DB access
     // Redirect bots to the dedicated SSR endpoint
