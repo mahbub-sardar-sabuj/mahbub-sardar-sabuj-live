@@ -22,6 +22,10 @@
     "api/video-to-audio.js": {
       "maxDuration": 60,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
+    },
+    "api/sms-proxy.js": {
+      "maxDuration": 20,
+      "memory": 256
     }
   },
   "redirects": [

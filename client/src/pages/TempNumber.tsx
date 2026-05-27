@@ -45,11 +45,86 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   "Netherlands": "nl",
 };
 
+// ক্লায়েন্ট-সাইড ফলব্যাক প্রক্সি (সার্ভার ব্যর্থ হলে)
 const PROXY_SERVERS = [
   (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&cache=false`,
-  (url: string) => `https://thingproxy.freeboard.io/fetch/${url}`,
   (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
 ];
+
+// HTML থেকে message parse করা (ক্লায়েন্ট-সাইড ফলব্যাক)
+const parseMessagesFromHtml = (html: string): SmsMessage[] => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  const smsList: SmsMessage[] = [];
+  const seen = new Set<string>();
+
+  // Strategy 1: data-message-* attributes (নতুন structure)
+  const messageRows = doc.querySelectorAll(".message-row[data-message-body]");
+  messageRows.forEach((row) => {
+    const body = row.getAttribute("data-message-body") || "";
+    const from = row.getAttribute("data-message-from") || "Unknown";
+    const timeUnix = parseInt(row.getAttribute("data-message-time") || "0", 10);
+    const id = row.getAttribute("data-message-id") || body;
+
+    if (!body || body.length < 2 || seen.has(id)) return;
+    seen.add(id);
+
+    smsList.push({
+      sender: from,
+      message: body,
+      time: formatTimestamp(timeUnix),
+    });
+  });
+
+  // Strategy 2: পুরনো .message-row structure (ফলব্যাক)
+  if (smsList.length === 0) {
+    doc.querySelectorAll(".message-row").forEach((row) => {
+      const senderEl = row.querySelector(".truncate, .font-black, span:first-child");
+      const timeEl = row.querySelector(".text-gray-400, .text-gray-500, .whitespace-nowrap");
+      const bodyEl = row.querySelector(".message-body, div:nth-child(2)");
+      if (bodyEl) {
+        const message = bodyEl.textContent?.replace("Show more", "").replace("Copy code", "").trim() || "";
+        if (message.length > 1) {
+          smsList.push({
+            sender: senderEl?.textContent?.trim() || "System",
+            message,
+            time: timeEl?.textContent?.trim() || "Recently",
+          });
+        }
+      }
+    });
+  }
+
+  // Strategy 3: table rows (শেষ ফলব্যাক)
+  if (smsList.length === 0) {
+    doc.querySelectorAll("tr").forEach((row) => {
+      const cells = row.querySelectorAll("td");
+      if (cells.length >= 2) {
+        smsList.push({
+          sender: cells[0].textContent?.trim() || "Sender",
+          message: cells[1].textContent?.trim() || "",
+          time: cells[2]?.textContent?.trim() || "Recently",
+        });
+      }
+    });
+  }
+
+  return smsList
+    .filter((m, i, self) => m.message.length > 2 && self.findIndex((t) => t.message === m.message) === i)
+    .slice(0, 30);
+};
+
+function formatTimestamp(unix: number): string {
+  if (!unix) return "Recently";
+  const diffMs = Date.now() - unix * 1000;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffMin < 1) return "এইমাত্র";
+  if (diffMin < 60) return `${diffMin} মিনিট আগে`;
+  if (diffHr < 24) return `${diffHr} ঘণ্টা আগে`;
+  return `${diffDay} দিন আগে`;
+}
 
 export default function TempNumber() {
   const [selectedNumber, setSelectedNumber] = useState<PhoneNumber | null>(null);
@@ -73,110 +148,68 @@ export default function TempNumber() {
     });
   }, [filterCountry, searchQuery]);
 
-  const parseMessages = (html: string): SmsMessage[] => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const smsList: SmsMessage[] = [];
-
-    // Strategy 1: .message-row structure (Modern)
-    const messageRows = doc.querySelectorAll(".message-row");
-    messageRows.forEach((row) => {
-      const senderEl = row.querySelector(".truncate, .font-black, span:first-child");
-      const timeEl = row.querySelector(".text-gray-400, .text-gray-500, .whitespace-nowrap");
-      const bodyEl = row.querySelector(".message-body, div:nth-child(2)");
-      
-      if (bodyEl) {
-        const sender = senderEl?.textContent?.trim() || "System";
-        const time = timeEl?.textContent?.trim() || "Just now";
-        const message = bodyEl.textContent?.replace("Show more", "").replace("Copy code", "").trim() || "";
-        if (message.length > 1) smsList.push({ sender, message, time });
-      }
-    });
-
-    // Strategy 2: Universal Fallback (Looking for any 6+ digit numbers which are likely OTPs)
-    if (smsList.length === 0) {
-      const text = doc.body?.textContent || html;
-      const otpMatches = text.match(/\d{4,8}/g);
-      if (otpMatches && otpMatches.length > 0) {
-        // If we find numbers but no structure, we try to extract context
-        const container = doc.getElementById("messagesContainer");
-        if (container) {
-          const divs = container.querySelectorAll("div");
-          divs.forEach(d => {
-            const content = d.textContent?.trim();
-            if (content && content.length > 10 && /\d/.test(content)) {
-               smsList.push({ sender: "SMS", message: content.substring(0, 200), time: "Recently" });
-            }
-          });
-        }
-      }
-    }
-
-    // Strategy 3: Table Fallback
-    if (smsList.length === 0) {
-      doc.querySelectorAll("tr").forEach(row => {
-        const cells = row.querySelectorAll("td");
-        if (cells.length >= 2) {
-          smsList.push({
-            sender: cells[0].textContent?.trim() || "Sender",
-            message: cells[1].textContent?.trim() || "",
-            time: cells[2]?.textContent?.trim() || "Recently"
-          });
-        }
-      });
-    }
-
-    return smsList.filter((m, i, self) => 
-      m.message.length > 2 && self.findIndex(t => t.message === m.message) === i
-    ).slice(0, 30);
-  };
-
   const fetchSms = useCallback(async (phone: PhoneNumber, attempt: number = 0) => {
-    if (attempt === 0) setLoading(true);
-    setFetchError(false);
-    
+    if (attempt === 0) {
+      setLoading(true);
+      setFetchError(false);
+    }
+
     try {
       const countryCode = COUNTRY_CODE_MAP[phone.country] || "us";
-      let proxyUrl = "";
-      
-      // ✅ মাল্টি-লেয়ার ফেচিং মেথড
+
       if (attempt === 0) {
-        // Method 1: নিজস্ব সার্ভার প্রক্সি (সবচেয়ে নির্ভরযোগ্য)
-        proxyUrl = `/api/sms-proxy?country=${countryCode}&number=${phone.number}`;
-      } else {
-        // Method 2: ক্লায়েন্ট-সাইড প্রক্সি ব্যাকআপ
-        proxyUrl = PROXY_SERVERS[(attempt - 1) % PROXY_SERVERS.length](`https://receive-smss.live/sms/${countryCode}/${phone.number}`);
-      }
+        // ✅ Method 1: নিজস্ব সার্ভার প্রক্সি — JSON response দেয়
+        const res = await fetch(
+          `/api/sms-proxy?country=${countryCode}&number=${phone.number}`,
+          { signal: AbortSignal.timeout(15000) }
+        );
+        if (!res.ok) throw new Error(`Server proxy returned ${res.status}`);
 
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) });
-      if (!res.ok) throw new Error("Fetch failed");
-
-      let html = "";
-      if (proxyUrl.includes("allorigins")) {
         const data = await res.json();
-        html = data.contents || "";
+
+        if (data.messages && Array.isArray(data.messages)) {
+          setMessages(data.messages);
+          setLastUpdated(new Date().toLocaleTimeString("bn-BD"));
+          setFetchError(false);
+          setLoading(false);
+          return;
+        }
+        throw new Error("No messages in response");
       } else {
-        html = await res.text();
+        // ✅ Method 2: ক্লায়েন্ট-সাইড প্রক্সি ব্যাকআপ — HTML parse করে
+        const targetUrl = `https://receive-smss.live/sms/${countryCode}/${phone.number}`;
+        const proxyUrl = PROXY_SERVERS[(attempt - 1) % PROXY_SERVERS.length](targetUrl);
+
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) });
+        if (!res.ok) throw new Error("Client proxy fetch failed");
+
+        let html = "";
+        if (proxyUrl.includes("allorigins")) {
+          const jsonData = await res.json();
+          html = jsonData.contents || "";
+        } else {
+          html = await res.text();
+        }
+
+        if (!html || html.length < 200) throw new Error("Empty response");
+
+        const parsed = parseMessagesFromHtml(html);
+        setMessages(parsed);
+        setLastUpdated(new Date().toLocaleTimeString("bn-BD"));
+        setFetchError(false);
+        setLoading(false);
+        return;
       }
-
-      if (!html || html.length < 200) throw new Error("Empty response");
-
-      const parsed = parseMessages(html);
-      setMessages(parsed);
-      setLastUpdated(new Date().toLocaleTimeString("bn-BD"));
-      setFetchError(false);
     } catch (err) {
-      console.error(`Attempt ${attempt} failed:`, err);
-      // ৩ বার পর্যন্ত ভিন্ন ভিন্ন প্রক্সি দিয়ে ট্রাই করবে
-      if (attempt < 3) {
+      console.error(`SMS fetch attempt ${attempt} failed:`, err);
+      if (attempt < 2) {
         fetchSms(phone, attempt + 1);
       } else {
         setFetchError(true);
+        setLoading(false);
       }
-    } finally {
-      if (attempt >= 3 || !fetchError) setLoading(false);
     }
-  }, [fetchError]);
+  }, []);
 
   useEffect(() => {
     if (!selectedNumber) return;
@@ -237,7 +270,7 @@ export default function TempNumber() {
             </span>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/25 text-yellow-400 text-xs font-bold uppercase tracking-widest">
               <Zap size={12} />
-              স্মার্ট ইনবক্স সক্রিয়
+              স্মার্ট ইনবক্স সক্রিয়
             </span>
           </div>
 
@@ -248,7 +281,7 @@ export default function TempNumber() {
             </span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-            সিম কার্ড ছাড়াই তাৎক্ষণিক SMS ভেরিফিকেশন কোড গ্রহণ করুন।
+            সিম কার্ড ছাড়াই তাৎক্ষণিক SMS ভেরিফিকেশন কোড গ্রহণ করুন।
             <br />
             সবগুলো নম্বর বর্তমানে কাজ করছে এবং লাইভ আছে।
           </p>
@@ -283,6 +316,9 @@ export default function TempNumber() {
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-3xl">{num.flag}</span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase">Active</span>
+                    {num.popular && (
+                      <span className="px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase">Popular</span>
+                    )}
                   </div>
                   <p className="font-mono text-base font-black text-white">{num.display}</p>
                   <p className="text-gray-500 text-[11px] font-semibold uppercase">{num.country}</p>
@@ -320,11 +356,12 @@ export default function TempNumber() {
                       }`}
                     >
                       {copied ? <CheckCircle2 size={20} /> : <Copy size={20} />}
-                      {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
+                      {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
                     </button>
                     <button
                       onClick={() => fetchSms(selectedNumber, 0)}
-                      className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-white font-bold"
+                      disabled={loading}
+                      className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-white font-bold disabled:opacity-50"
                     >
                       <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                       রিফ্রেশ
@@ -348,7 +385,7 @@ export default function TempNumber() {
                       <div className="py-16 text-center">
                         <WifiOff size={32} className="text-red-400 mx-auto mb-4" />
                         <p className="text-white font-bold mb-2">সংযোগ সমস্যা</p>
-                        <p className="text-gray-500 text-sm mb-6">সার্ভার থেকে ডাটা পাওয়া যাচ্ছে না। দয়া করে আবার চেষ্টা করুন।</p>
+                        <p className="text-gray-500 text-sm mb-6">সার্ভার থেকে ডাটা পাওয়া যাচ্ছে না। দয়া করে আবার চেষ্টা করুন।</p>
                         <button
                           onClick={() => fetchSms(selectedNumber, 0)}
                           className="px-6 py-2 bg-yellow-500 text-black rounded-xl font-bold"
@@ -370,7 +407,7 @@ export default function TempNumber() {
                               <span className="text-yellow-500 font-black text-xs uppercase">{msg.sender}</span>
                               <span className="text-gray-600 text-[10px]">{msg.time}</span>
                             </div>
-                            <p className="text-gray-200 font-mono text-sm">{msg.message}</p>
+                            <p className="text-gray-200 font-mono text-sm whitespace-pre-wrap">{msg.message}</p>
                           </div>
                         ))}
                       </div>
@@ -387,7 +424,6 @@ export default function TempNumber() {
           </div>
         </div>
       </div>
-      <Navbar />
       <Footer />
     </>
   );
