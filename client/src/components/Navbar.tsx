@@ -46,6 +46,21 @@ const infoTabs = [
   { titleBn: "শর্তাবলি", description: "ব্যবহারের নিয়ম, অধিকার ও সীমাবদ্ধতা", href: "/terms" },
 ];
 
+const seoKeywordLinks = [
+  { label: "বাংলা কবিতা", href: "/bangla-kobita" },
+  { label: "ভালোবাসার কবিতা", href: "/valobashar-kobita" },
+  { label: "বিচ্ছেদের কবিতা", href: "/bichched-kobita" },
+  { label: "কষ্টের কবিতা", href: "/koster-kobita" },
+  { label: "বাংলা স্ট্যাটাস", href: "/bangla-status" },
+  { label: "বাংলা উক্তি", href: "/bangla-quotes" },
+  { label: "বাংলা ই-বুক", href: "/bangla-ebook" },
+  { label: "মায়ের কবিতা", href: "/mayer-kobita" },
+  { label: "বাবার কবিতা", href: "/babar-kobita" },
+  { label: "ছোট কবিতা", href: "/choto-kobita" },
+  { label: "মন খারাপের স্ট্যাটাস", href: "/mon-kharap-status" },
+  { label: "রাতের কবিতা", href: "/rater-kobita" },
+];
+
 const isInfoTabActive = (href: string, location: string) => location === href;
 
 const isPrimaryNavActive = (href: string, type: string, location: string) => {
@@ -590,6 +605,71 @@ export default function Navbar() {
                   })}
                 </motion.div>
               </div>
+
+              {/* SEO Keyword Links */}
+              {!isAmioLikhboPage && (
+                <div style={{ margin: "0 2px" }}>
+                  <p style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    color: "rgba(212,168,67,0.7)",
+                    fontSize: "0.7rem",
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    margin: "0 4px 10px",
+                  }}>
+                    জনপ্রিয় সংগ্রহ
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {seoKeywordLinks.map((link) => {
+                      const active = location === link.href;
+                      return (
+                        <Link key={link.href} href={link.href}>
+                          <motion.span
+                            onPointerDown={() => warmRoute(link.href)}
+                            onTouchStart={() => warmRoute(link.href)}
+                            onClick={() => {
+                              warmRoute(link.href);
+                              setMobileOpen(false);
+                            }}
+                            whileTap={{ scale: 0.97 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.28, ease: "easeOut" }}
+                            style={{
+                              fontFamily: "'Noto Sans Bengali', sans-serif",
+                              color: active ? "#0D1B2A" : "#FDF6EC",
+                              background: active
+                                ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
+                                : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(212,168,67,0.04) 100%)",
+                              border: active
+                                ? "1px solid rgba(212,168,67,0.6)"
+                                : "1px solid rgba(212,168,67,0.18)",
+                              padding: "12px 11px",
+                              textDecoration: "none",
+                              borderRadius: 14,
+                              transition: "all 0.25s",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              textAlign: "center",
+                              minHeight: 60,
+                              fontSize: "0.85rem",
+                              fontWeight: 600,
+                              lineHeight: 1.3,
+                              boxShadow: active
+                                ? "0 8px 24px rgba(212,168,67,0.28)"
+                                : "0 4px 16px rgba(0,0,0,0.15)",
+                            }}
+                          >
+                            {link.label}
+                          </motion.span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Info tabs — 2×2 grid */}
               {!isAmioLikhboPage && (
