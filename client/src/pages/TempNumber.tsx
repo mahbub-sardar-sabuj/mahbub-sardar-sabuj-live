@@ -26,16 +26,25 @@ interface PhoneNumber {
 }
 
 const PHONE_NUMBERS: PhoneNumber[] = [
-  { slug: "19065694427-US", number: "19065694427", display: "+1 906 569 4427", country: "United States", flag: "🇺🇸", status: "Online", popular: true },
-  { slug: "12029884959-US", number: "12029884959", display: "+1 202 988 4959", country: "United States", flag: "🇺🇸", status: "Online" },
-  { slug: "18126136052-US", number: "18126136052", display: "+1 812 613 6052", country: "United States", flag: "🇺🇸", status: "Online", popular: true },
-  { slug: "16813583988-US", number: "16813583988", display: "+1 681 358 3988", country: "United States", flag: "🇺🇸", status: "Online" },
-  { slug: "12059733572-US", number: "12059733572", display: "+1 205 973 3572", country: "United States", flag: "🇺🇸", status: "Online" },
+  // USA - Latest & Active
+  { slug: "12183924421-US", number: "12183924421", display: "+1 218 392 4421", country: "United States", flag: "🇺🇸", status: "Online", popular: true },
+  { slug: "17406930721-US", number: "17406930721", display: "+1 740 693 0721", country: "United States", flag: "🇺🇸", status: "Online" },
+  { slug: "15512013981-US", number: "15512013981", display: "+1 551 201 3981", country: "United States", flag: "🇺🇸", status: "Online", popular: true },
+  { slug: "12029884948-US", number: "12029884948", display: "+1 202 988 4948", country: "United States", flag: "🇺🇸", status: "Online" },
+  { slug: "19065694427-US", number: "19065694427", display: "+1 906 569 4427", country: "United States", flag: "🇺🇸", status: "Online" },
   { slug: "18049660123-US", number: "18049660123", display: "+1 804 966 0123", country: "United States", flag: "🇺🇸", status: "Online" },
-  { slug: "447897034164-UK", number: "447897034164", display: "+44 7897 034164", country: "United Kingdom", flag: "🇬🇧", status: "Online", popular: true },
-  { slug: "4932211076460-DE", number: "4932211076460", display: "+49 3221 1076460", country: "Germany", flag: "🇩🇪", status: "Online", popular: true },
-  { slug: "4928328964105-DE", number: "4928328964105", display: "+49 2832 8964105", country: "Germany", flag: "🇩🇪", status: "Online" },
-  { slug: "3197058016270-NL", number: "3197058016270", display: "+31 970 5801 6270", country: "Netherlands", flag: "🇳🇱", status: "Online" },
+  
+  // UK - Latest
+  { slug: "447723431202-UK", number: "447723431202", display: "+44 7723 431202", country: "United Kingdom", flag: "🇬🇧", status: "Online", popular: true },
+  { slug: "447480787793-UK", number: "447480787793", display: "+44 7480 787793", country: "United Kingdom", flag: "🇬🇧", status: "Online" },
+  
+  // Germany - Latest
+  { slug: "4934377319106-DE", number: "4934377319106", display: "+49 3437 7319106", country: "Germany", flag: "🇩🇪", status: "Online", popular: true },
+  { slug: "4932211076460-DE", number: "4932211076460", display: "+49 3221 1076460", country: "Germany", flag: "🇩🇪", status: "Online" },
+  
+  // Netherlands - Latest
+  { slug: "3197058016477-NL", number: "3197058016477", display: "+31 970 5801 6477", country: "Netherlands", flag: "🇳🇱", status: "Online" },
+  { slug: "3197058016269-NL", number: "3197058016269", display: "+31 970 5801 6269", country: "Netherlands", flag: "🇳🇱", status: "Online" },
 ];
 
 const COUNTRY_CODE_MAP: Record<string, string> = {
