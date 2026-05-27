@@ -22,6 +22,7 @@ import {
   MailOpen,
   Phone,
   CreditCard,
+  Sparkles,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
@@ -39,6 +40,7 @@ const navLinks = [
   { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", type: "page", icon: MailOpen },
   { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", type: "page", icon: Phone },
   { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", type: "page", icon: CreditCard },
+  { label: "ইমেজ আপসেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", type: "page", icon: Sparkles },
 ];
 
 const infoTabs = [
