@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "node scripts/sync-news-seo.cjs && esbuild scripts/trpc-bundled-entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/trpc-bundled.js && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "node scripts/sync-news-seo.cjs && tsx scripts/export-writings-archive.ts && esbuild scripts/trpc-bundled-entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/trpc-bundled.js && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "chatbot:router:test": "node scripts/test_chat_router.mjs",
@@ -121,32 +121,5 @@
   "engines": {
     "node": "22.x"
   },
-  "packageManager": "pnpm@10.33.2",
-  "pnpm": {
-    "patchedDependencies": {
-      "wouter@3.7.1": "patches/wouter@3.7.1.patch"
-    },
-    "overrides": {
-      "tailwindcss>nanoid": "3.3.7",
-      "@tootallnate/once": "3.0.1",
-      "ajv": "8.18.0",
-      "esbuild": "0.28.0",
-      "minimatch": "10.2.3",
-      "path-to-regexp@0.1.12": "0.1.13",
-      "path-to-regexp@8.3.0": "8.4.0",
-      "path-to-regexp@8.2.0": "8.4.0",
-      "qs": "6.14.2",
-      "smol-toml": "1.6.1",
-      "srvx": "0.11.13",
-      "tar": "7.5.13",
-      "undici": "6.24.0",
-      "uuid": "14.0.0"
-    },
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "@ffmpeg-installer/linux-x64",
-      "sharp",
-      "better-sqlite3"
-    ]
-  }
+  "packageManager": "pnpm@10.33.2"
 }

@@ -174,7 +174,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 3000, // writings-data chunk is intentionally large (2.8MB literary archive, gzipped to 424KB)
+    chunkSizeWarningLimit: 1200,
     minify: "esbuild",
     // Enable CSS code splitting for better caching
     cssCodeSplit: true,
@@ -224,10 +224,7 @@ export default defineConfig({
           if (id.includes("node_modules/embla-carousel")) {
             return "carousel";
           }
-          // Large data archives — keep in their own chunks
-          if (id.includes("writingsArchive")) {
-            return "writings-data";
-          }
+          // Large news data archive — keep in its own chunk
           if (id.includes("newsData")) {
             return "news-data";
           }

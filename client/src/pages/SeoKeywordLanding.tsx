@@ -2,7 +2,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo, { SITE_URL } from "@/components/Seo";
 import { Link, useLocation } from "wouter";
-import { writings } from "@/data/writingsArchive";
+import { useEffect, useState } from "react";
+import type { Writing } from "@/data/writingsArchive";
+import { loadWritingsArchive } from "@/lib/loadWritingsArchive";
 import { BookOpen, Feather, Heart, Library, Sparkles, ArrowRight, Search, PenLine } from "lucide-react";
 
 const BENGALI_TRANS: Record<string, string> = {
@@ -34,7 +36,7 @@ const landingPages = {
     intro: "আধুনিক বাংলা কবিতা, কাব্যিক গদ্য, অনুভূতির লেখা এবং হৃদয়স্পর্শী সাহিত্য একসাথে পড়ার জন্য এই পেজটি তৈরি করা হয়েছে।",
     description: "মাহবুব সরদার সবুজের বাংলা কবিতা, কাব্যিক গদ্য, অনুভূতির লেখা ও নির্বাচিত সাহিত্য সংকলন পড়ুন।",
     keywords: "বাংলা কবিতা, আধুনিক বাংলা কবিতা, Bangla kobita, কবিতা, মাহবুব সরদার সবুজ",
-    match: (w: typeof writings[number]) => w.category === "কবিতা" || /কবিতা|কাব্য|মন|চাঁদ|ফুল|আকাশ|নদী/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => w.category === "কবিতা" || /কবিতা|কাব্য|মন|চাঁদ|ফুল|আকাশ|নদী/.test(`${w.title} ${w.content}`),
     guide: "বাংলা কবিতা খোঁজা পাঠকেরা সাধারণত অনুভূতি, প্রেম, জীবন, প্রকৃতি ও স্মৃতির ভাষা খোঁজেন। এখানে সেসব লেখাকে একসাথে সাজানো হয়েছে যাতে সার্চ ইঞ্জিন ও পাঠক উভয়ই বিষয়ভিত্তিক সংগ্রহ সহজে বুঝতে পারে।",
   },
   "/valobashar-kobita": {
@@ -44,7 +46,7 @@ const landingPages = {
     intro: "ভালোবাসা, অপেক্ষা, স্মৃতি, সম্পর্ক এবং মায়ার গভীর অনুভূতি নিয়ে লেখা কবিতা ও ছোট লেখা এখানে সংকলিত।",
     description: "ভালোবাসার কবিতা, প্রেমের লেখা, সম্পর্কের অনুভূতি ও আবেগঘন বাংলা সাহিত্য পড়ুন মাহবুব সরদার সবুজের লেখায়।",
     keywords: "ভালোবাসার কবিতা, প্রেমের কবিতা, valobashar kobita, Bangla love poem, প্রেমের লেখা",
-    match: (w: typeof writings[number]) => w.category === "ভালোবাসা" || /ভালোবাসা|প্রেম|মায়া|অপেক্ষা|সম্পর্ক|তুমি|মন/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => w.category === "ভালোবাসা" || /ভালোবাসা|প্রেম|মায়া|অপেক্ষা|সম্পর্ক|তুমি|মন/.test(`${w.title} ${w.content}`),
     guide: "প্রেম ও ভালোবাসা বিষয়ক লেখাগুলো পাঠকের আবেগের সঙ্গে সরাসরি যুক্ত। এই landing page ভালোবাসা-ভিত্তিক লেখা, কবিতা ও উদ্ধৃতি একত্র করে organic search visibility বাড়াতে সাহায্য করবে।",
   },
   "/bichched-kobita": {
@@ -54,7 +56,7 @@ const landingPages = {
     intro: "হারানো মানুষ, বিচ্ছেদের ব্যথা, নীরব অভিমান, ফিরে না পাওয়া স্মৃতি এবং দুঃখবিলাসের লেখা এখানে সাজানো।",
     description: "বিচ্ছেদ কবিতা, কষ্টের লেখা, sad Bangla poem ও দুঃখবিলাসধর্মী সাহিত্য পড়ুন মাহবুব সরদার সবুজের লেখায়।",
     keywords: "বিচ্ছেদ কবিতা, কষ্টের কবিতা, sad Bangla poem, দুঃখের লেখা, দুঃখবিলাস",
-    match: (w: typeof writings[number]) => w.category === "বিচ্ছেদ" || /বিচ্ছেদ|কষ্ট|হারানো|অভিমান|দুঃখ|একাকী|স্মৃতি/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => w.category === "বিচ্ছেদ" || /বিচ্ছেদ|কষ্ট|হারানো|অভিমান|দুঃখ|একাকী|স্মৃতি/.test(`${w.title} ${w.content}`),
     guide: "বিচ্ছেদ ও কষ্টের কবিতা বাংলা search demand-এর একটি শক্তিশালী অংশ। এই পেজে সংশ্লিষ্ট লেখা একত্র হওয়ায় Google, Bing এবং AI crawler বিষয়টি স্পষ্টভাবে বুঝতে পারে।",
   },
   "/jibon-dorshon": {
@@ -64,7 +66,7 @@ const landingPages = {
     intro: "জীবনের শিক্ষা, আত্মবিশ্বাস, সম্পর্ক, মানুষ চেনা, বাস্তবতা এবং মানসিক শক্তি নিয়ে লেখা জীবনমুখী সাহিত্য।",
     description: "জীবনদর্শন, অনুপ্রেরণামূলক বাংলা লেখা, বাস্তবতা ও আত্মবিশ্বাস নিয়ে মাহবুব সরদার সবুজের নির্বাচিত লেখা পড়ুন।",
     keywords: "জীবনদর্শন, অনুপ্রেরণামূলক লেখা, বাংলা মোটিভেশনাল লেখা, বাস্তবতা, আত্মবিশ্বাস",
-    match: (w: typeof writings[number]) => w.category === "জীবনদর্শন" || /জীবন|বিশ্বাস|বাস্তবতা|মানুষ|স্বপ্ন|শান্তি|সম্পর্ক/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => w.category === "জীবনদর্শন" || /জীবন|বিশ্বাস|বাস্তবতা|মানুষ|স্বপ্ন|শান্তি|সম্পর্ক/.test(`${w.title} ${w.content}`),
     guide: "জীবনদর্শনধর্মী লেখা long-tail keyword থেকে visitor আনতে পারে, কারণ পাঠকেরা প্রায়ই জীবনের বাস্তবতা, সম্পর্ক ও আত্মবিশ্বাস নিয়ে বাংলা লেখা খোঁজেন।",
   },
   "/bangla-ebook": {
@@ -74,7 +76,7 @@ const landingPages = {
     intro: "মাহবুব সরদার সবুজের প্রকাশিত বই, ই-বুক, কাব্যগ্রন্থ এবং সাহিত্য সংকলনের জন্য একটি dedicated discovery page।",
     description: "বাংলা ই-বুক, কাব্যগ্রন্থ, বই ও মাহবুব সরদার সবুজের সাহিত্য সংকলনের তথ্য ও পড়ার লিংক দেখুন।",
     keywords: "বাংলা ই-বুক, Bangla ebook, বাংলা বই, কাব্যগ্রন্থ, মাহবুব সরদার সবুজ বই",
-    match: (w: typeof writings[number]) => /বই|ই-বুক|কাব্যগ্রন্থ|সংকলন|দুঃখবিলাস|চাঁদফুল|স্মৃতি/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => /বই|ই-বুক|কাব্যগ্রন্থ|সংকলন|দুঃখবিলাস|চাঁদফুল|স্মৃতি/.test(`${w.title} ${w.content}`),
     guide: "বাংলা বই ও ই-বুকের জন্য আলাদা landing page থাকলে search engine বই-সংক্রান্ত intent সহজে ধরতে পারে এবং পাঠকেরা সরাসরি relevant সংগ্রহে যেতে পারে।",
   },
   "/bangla-status": {
@@ -84,7 +86,7 @@ const landingPages = {
     intro: "মন ছুঁয়ে যাওয়া বাংলা স্ট্যাটাস, ক্যাপশন, ছোট উক্তি এবং সামাজিক মাধ্যমে শেয়ারযোগ্য অনুভূতির লেখা।",
     description: "বাংলা স্ট্যাটাস, ক্যাপশন, ছোট উক্তি ও শেয়ারযোগ্য অনুভূতির লেখা পড়ুন মাহবুব সরদার সবুজের সাহিত্য সংগ্রহে।",
     keywords: "বাংলা স্ট্যাটাস, Bangla status, বাংলা ক্যাপশন, বাংলা উক্তি, facebook caption bangla",
-    match: (w: typeof writings[number]) => /স্ট্যাটাস|ক্যাপশন|উক্তি|মন|তুমি|জীবন|ভালোবাসা|স্মৃতি|অভিমান/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => /স্ট্যাটাস|ক্যাপশন|উক্তি|মন|তুমি|জীবন|ভালোবাসা|স্মৃতি|অভিমান/.test(`${w.title} ${w.content}`),
     guide: "বাংলা স্ট্যাটাস ও ক্যাপশন বিষয়ে পাঠকেরা ছোট, অর্থবহ এবং শেয়ারযোগ্য লেখা খোঁজেন। এই পেজ সেই search intent পূরণ করার জন্য নির্বাচিত ছোট লেখা ও কবিতাকে একত্র করেছে।",
   },
   "/bangla-quotes": {
@@ -94,7 +96,7 @@ const landingPages = {
     intro: "জীবন, সম্পর্ক, বাস্তবতা, স্বপ্ন ও আত্মবিশ্বাস নিয়ে সংক্ষিপ্ত বাংলা উক্তি এবং ভাবনার লেখা।",
     description: "বাংলা উক্তি, জীবন কথা, বাস্তবতা ও অনুপ্রেরণামূলক ছোট লেখা পড়ুন মাহবুব সরদার সবুজের সংগ্রহে।",
     keywords: "বাংলা উক্তি, bangla quotes, জীবন কথা, বাস্তবতা, অনুপ্রেরণামূলক উক্তি",
-    match: (w: typeof writings[number]) => /উক্তি|জীবন|বাস্তবতা|মানুষ|স্বপ্ন|বিশ্বাস|শিক্ষা|আত্মবিশ্বাস|সম্পর্ক/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => /উক্তি|জীবন|বাস্তবতা|মানুষ|স্বপ্ন|বিশ্বাস|শিক্ষা|আত্মবিশ্বাস|সম্পর্ক/.test(`${w.title} ${w.content}`),
     guide: "উক্তি ও জীবন কথার মতো long-tail keyword নতুন পাঠক আনার জন্য কার্যকর, কারণ এগুলো দ্রুত পড়া যায় এবং social sharing-এর সম্ভাবনা বেশি।",
   },
   "/koster-kobita": {
@@ -104,7 +106,7 @@ const landingPages = {
     intro: "কষ্ট, অভিমান, হারানো স্মৃতি, নীরবতা এবং একাকিত্বের গভীর অনুভূতি নিয়ে লেখা বাংলা কবিতা।",
     description: "কষ্টের কবিতা, দুঃখের লেখা, অভিমান ও একাকিত্বের বাংলা সাহিত্য পড়ুন মাহবুব সরদার সবুজের লেখায়।",
     keywords: "কষ্টের কবিতা, দুঃখের কবিতা, koster kobita, sad bangla status, অভিমানের লেখা",
-    match: (w: typeof writings[number]) => /কষ্ট|দুঃখ|অভিমান|একাকী|নীরব|হারানো|চোখের জল|ব্যথা|বিচ্ছেদ/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => /কষ্ট|দুঃখ|অভিমান|একাকী|নীরব|হারানো|চোখের জল|ব্যথা|বিচ্ছেদ/.test(`${w.title} ${w.content}`),
     guide: "কষ্টের কবিতা ও sad Bangla status সার্চে নিয়মিত চাহিদা থাকে। এখানে related লেখা সাজানো থাকায় পাঠক দ্রুত নিজের অনুভূতির সঙ্গে মিল খুঁজে নিতে পারবেন।",
   },
   "/romantic-bangla-kobita": {
@@ -114,7 +116,7 @@ const landingPages = {
     intro: "প্রেম, মায়া, অপেক্ষা, প্রিয় মানুষ এবং সম্পর্কের কোমল অনুভূতি নিয়ে রোমান্টিক বাংলা কবিতা ও লেখা।",
     description: "রোমান্টিক বাংলা কবিতা, প্রেমের লেখা, ভালোবাসার ক্যাপশন ও অনুভূতির বাংলা সাহিত্য পড়ুন।",
     keywords: "রোমান্টিক বাংলা কবিতা, romantic bangla kobita, প্রেমের কবিতা, ভালোবাসার ক্যাপশন",
-    match: (w: typeof writings[number]) => /প্রেম|ভালোবাসা|রোমান্টিক|মায়া|তুমি|প্রিয়|অপেক্ষা|হৃদয়|সম্পর্ক/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => /প্রেম|ভালোবাসা|রোমান্টিক|মায়া|তুমি|প্রিয়|অপেক্ষা|হৃদয়|সম্পর্ক/.test(`${w.title} ${w.content}`),
     guide: "রোমান্টিক কবিতা পেজটি প্রেম-ভিত্তিক search intent আলাদাভাবে ধরতে সাহায্য করবে এবং ভালোবাসা বিষয়ক existing content-কে আরও সহজে discoverable করবে।",
   },
   "/bangla-golpo": {
@@ -124,7 +126,7 @@ const landingPages = {
     intro: "বাস্তবতা, সম্পর্ক, অভিজ্ঞতা, স্মৃতি এবং জীবনঘনিষ্ঠ অনুভূতি নিয়ে বাংলা গল্পধর্মী লেখা।",
     description: "বাংলা গল্প, বাস্তব লেখা, সম্পর্ক ও জীবনের অভিজ্ঞতা নিয়ে মাহবুব সরদার সবুজের সাহিত্য পড়ুন।",
     keywords: "বাংলা গল্প, bangla golpo, বাস্তব গল্প, ছোট গল্প, জীবনঘনিষ্ঠ লেখা",
-    match: (w: typeof writings[number]) => /গল্প|বাস্তব|ঘটনা|অভিজ্ঞতা|মানুষ|সম্পর্ক|স্মৃতি|জীবন|সময়/.test(`${w.title} ${w.content}`),
+    match: (w: Writing) => /গল্প|বাস্তব|ঘটনা|অভিজ্ঞতা|মানুষ|সম্পর্ক|স্মৃতি|জীবন|সময়/.test(`${w.title} ${w.content}`),
     guide: "বাংলা গল্প ও বাস্তব লেখা পেজটি narrative content খোঁজা পাঠকদের জন্য তৈরি। এতে সাহিত্য, অভিজ্ঞতা ও জীবনঘনিষ্ঠ লেখাকে একত্র করে organic discovery বাড়ানো যায়।",
   },
 } as const;
@@ -152,7 +154,26 @@ export default function SeoKeywordLanding() {
   const [location] = useLocation();
   const page = landingPages[location as keyof typeof landingPages] ?? landingPages["/bangla-kobita"];
   const Icon = page.icon;
-  const matched = writings.filter(page.match).slice(0, 36);
+  const [archive, setArchive] = useState<Writing[]>([]);
+  const [archiveReady, setArchiveReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    setArchiveReady(false);
+    loadWritingsArchive()
+      .then((writings) => {
+        if (mounted) {
+          setArchive(writings);
+          setArchiveReady(true);
+        }
+      })
+      .catch(() => {
+        if (mounted) setArchiveReady(true);
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const matched = archive.filter(page.match).slice(0, 36);
   const featured = matched.slice(0, 12);
   const jsonLd = {
     "@context": "https://schema.org",
@@ -221,9 +242,17 @@ export default function SeoKeywordLanding() {
         <section className="sl-grid-section" aria-labelledby="selected-title">
           <div className="sl-section-head">
             <h2 id="selected-title">নির্বাচিত লেখা</h2>
-            <p>{matched.length}টি সম্পর্কিত লেখা থেকে নির্বাচিত অংশ।</p>
+            <p>{archiveReady ? `${matched.length}টি সম্পর্কিত লেখা থেকে নির্বাচিত অংশ।` : "নির্বাচিত লেখা লোড হচ্ছে..."}</p>
           </div>
           <div className="sl-grid">
+            {archiveReady && featured.length === 0 ? (
+              <article className="sl-card">
+                <div className="sl-card-meta"><BookOpen size={15} /> সাহিত্য সংগ্রহ</div>
+                <h3><Link href="/writings">সব লেখা দেখুন</Link></h3>
+                <p>সম্পর্কিত লেখা এই মুহূর্তে লোড করা যাচ্ছে না। সম্পূর্ণ সাহিত্য আর্কাইভ থেকে লেখা পড়তে পারেন।</p>
+                <Link href="/writings" className="sl-read">সব লেখা পড়ুন <ArrowRight size={14} /></Link>
+              </article>
+            ) : null}
             {featured.map((item) => (
               <article className="sl-card" key={item.id}>
                 <div className="sl-card-meta"><BookOpen size={15} /> {item.category} · {item.date}</div>

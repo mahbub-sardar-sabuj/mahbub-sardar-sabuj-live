@@ -8,12 +8,11 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazyRoute, preloadRoute, preloadRoutesWhenIdle } from "./lib/routePreloader";
 
-// Keep the landing page and the primary content page in the critical path.
+// Keep only the landing page in the critical path. Content-heavy routes are lazy-loaded.
 import Home from "./pages/Home";
-import Writings from "./pages/Writings";
 
-// Lazy load secondary pages to reduce first-load JavaScript on phones/tablets
-// Writings is eagerly loaded above to avoid spinner on the main content tab
+// Lazy load secondary/content pages to reduce first-load JavaScript on phones/tablets.
+const Writings = lazyRoute("Writings");
 const EBooks = lazyRoute("EBooks");
 const NotFound = lazyRoute("NotFound");
 const FacebookRecitations = lazyRoute("FacebookRecitations");
@@ -196,7 +195,6 @@ function App() {
       "/news",
       "/editor",
       "/amio-likhbo-bastobota",
-      "/writings",
       "/ebooks",
       "/privacy-policy",
       "/terms",

@@ -186,7 +186,7 @@ export default function Home() {
           style={{ position: "relative", zIndex: 2, width: "100%", opacity: heroOpacity }}
           className="hero-container"
         >
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem" }} className="hero-inner">
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem", minWidth: 0 }} className="hero-inner">
 
             {/* Left column — text */}
             <div className="hero-left">
@@ -230,7 +230,7 @@ export default function Home() {
               </motion.div>
 
               {/* Main name — single H1 for SEO, split visually with spans */}
-              <h1 style={{ margin: 0, padding: 0, display: "block", lineHeight: 1 }}>
+              <h1 className="hero-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
               <div style={{ position: "relative", marginBottom: "0.2rem" }}>
                 <motion.span
                   initial={{ opacity: 0, y: 60 }}
@@ -238,10 +238,12 @@ export default function Home() {
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
+                    fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
                     display: "block",
+                    maxWidth: "100%",
+                    overflowWrap: "anywhere",
                     color: "#FAF6EF",
                     letterSpacing: "-0.03em",
                     textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
@@ -258,10 +260,12 @@ export default function Home() {
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                    fontSize: "clamp(3.6rem, 9vw, 8.5rem)",
+                    fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 1.1,
                     display: "block",
+                    maxWidth: "100%",
+                    overflowWrap: "anywhere",
                     background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
                     backgroundSize: "280% 100%",
                     WebkitBackgroundClip: "text",
@@ -823,7 +827,10 @@ export default function Home() {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
           .hero-frame-wrap { --hero-frame-offset: -10px; }
           .scroll-indicator { display: none; }
-          .hero-inner { gap: 0.95rem; }
+          .hero-inner { gap: 0.95rem; padding-left: 1rem !important; padding-right: 1rem !important; min-width: 0; }
+          .hero-left { min-width: 0; width: 100%; }
+          .hero-title { width: 100%; }
+          .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
           .app-launcher-shell { border-radius: 30px; padding: 1rem; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
           .app-launcher-card { min-height: 124px; border-radius: 22px; padding: 0.98rem 0.42rem 0.82rem; }
@@ -835,6 +842,8 @@ export default function Home() {
 
         @media (max-width: 480px) {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
+          .hero-inner { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+          .hero-title span { font-size: clamp(2.28rem, 14.2vw, 4.4rem) !important; }
           .app-launcher-shell { padding: 0.85rem; border-radius: 28px; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
           .app-launcher-card { min-height: 112px; padding: 0.82rem 0.26rem 0.7rem; border-radius: 20px; }
@@ -846,7 +855,8 @@ export default function Home() {
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
-          .hero-inner { gap: 0.75rem; }
+          .hero-inner { gap: 0.75rem; padding-left: 0.55rem !important; padding-right: 0.55rem !important; }
+          .hero-title span { font-size: clamp(2rem, 13.5vw, 3.8rem) !important; }
           .app-launcher-grid { gap: 0.44rem; }
           .app-launcher-card { min-height: 108px; padding-left: 0.18rem; padding-right: 0.18rem; }
           .app-icon-wrap { width: 42px; height: 42px; }

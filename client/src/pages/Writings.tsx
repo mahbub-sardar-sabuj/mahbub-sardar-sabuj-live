@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo, { SITE_URL } from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
+import { loadWritingsArchive } from "@/lib/loadWritingsArchive";
 import type { Writing } from "@/data/writingsArchive";
 import {
   motion, AnimatePresence, useMotionValue, useSpring, useInView,
@@ -1497,7 +1498,7 @@ export default function Writings() {
 
   useEffect(() => {
     let mounted = true;
-    import("@/data/writingsArchive").then(({ writings }) => { if (mounted) { setArchive(writings); setArchiveReady(true); } }).catch(() => { if (mounted) setArchiveReady(true); });
+    loadWritingsArchive().then((writings) => { if (mounted) { setArchive(writings); setArchiveReady(true); } }).catch(() => { if (mounted) setArchiveReady(true); });
     return () => { mounted = false; };
   }, []);
 
