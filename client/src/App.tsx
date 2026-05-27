@@ -101,6 +101,27 @@ function Router() {
         <Route path={"/koster-kobita"} component={SeoKeywordLanding} />
         <Route path={"/romantic-bangla-kobita"} component={SeoKeywordLanding} />
         <Route path={"/bangla-golpo"} component={SeoKeywordLanding} />
+        <Route path={"/mayer-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/babar-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/choto-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/mon-kharap-status"} component={SeoKeywordLanding} />
+        <Route path={"/miss-you-bangla"} component={SeoKeywordLanding} />
+        <Route path={"/ekla-thaka-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/rater-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/bhalobasha-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/bichhed-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/jibon-niye-ukti"} component={SeoKeywordLanding} />
+        <Route path={"/premer-status"} component={SeoKeywordLanding} />
+        <Route path={"/sad-bangla-status"} component={SeoKeywordLanding} />
+        <Route path={"/brishti-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/swapno-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/bangla-caption"} component={SeoKeywordLanding} />
+        <Route path={"/jibon-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/opekkhar-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/abhibab-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/shomoy-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/manush-kobita"} component={SeoKeywordLanding} />
+        <Route path={"/bangla-kobita-2024"} component={SeoKeywordLanding} />
         <Route path={"/privacy-policy"} component={PrivacyPolicy} />
         <Route path={"/terms"} component={Terms} />
         <Route path={"/about"} component={About} />

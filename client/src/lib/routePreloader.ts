@@ -69,7 +69,28 @@ const importerForPath = (href: string): Importer | undefined => {
     path === "/bangla-quotes" ||
     path === "/koster-kobita" ||
     path === "/romantic-bangla-kobita" ||
-    path === "/bangla-golpo"
+    path === "/bangla-golpo" ||
+    path === "/mayer-kobita" ||
+    path === "/babar-kobita" ||
+    path === "/choto-kobita" ||
+    path === "/mon-kharap-status" ||
+    path === "/miss-you-bangla" ||
+    path === "/ekla-thaka-kobita" ||
+    path === "/rater-kobita" ||
+    path === "/bhalobasha-kobita" ||
+    path === "/bichhed-kobita" ||
+    path === "/jibon-niye-ukti" ||
+    path === "/premer-status" ||
+    path === "/sad-bangla-status" ||
+    path === "/brishti-kobita" ||
+    path === "/swapno-kobita" ||
+    path === "/bangla-caption" ||
+    path === "/jibon-kobita" ||
+    path === "/opekkhar-kobita" ||
+    path === "/abhibab-kobita" ||
+    path === "/shomoy-kobita" ||
+    path === "/manush-kobita" ||
+    path === "/bangla-kobita-2024"
   ) {
     return routeImporters.SeoKeywordLanding;
   }
