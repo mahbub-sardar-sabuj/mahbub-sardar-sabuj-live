@@ -35,6 +35,7 @@ const AmiOLikhboLogin = lazyRoute("AmiOLikhboLogin");
 const SeoKeywordLanding = lazyRoute("SeoKeywordLanding");
 const TempEmail = lazyRoute("TempEmail");
 const TempNumber = lazyRoute("TempNumber");
+const TempCard = lazyRoute("TempCard");
 
 // Page loading fallback — skeleton layout instead of blank spinner
 function PageLoader() {
@@ -141,6 +142,7 @@ function Router() {
         <Route path={"/admin/chatbot-analytics"} component={AdminChatbotAnalytics} />
         <Route path={"/temp-email"} component={TempEmail} />
         <Route path={"/temp-number"} component={TempNumber} />
+        <Route path={"/temp-card"} component={TempCard} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />
