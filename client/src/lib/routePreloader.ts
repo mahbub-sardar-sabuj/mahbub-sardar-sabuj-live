@@ -26,6 +26,7 @@ const routeImporters = {
   TempEmail: () => import("../pages/TempEmail"),
   TempNumber: () => import("../pages/TempNumber"),
   TempCard: () => import("../pages/TempCard"),
+  ImageUpscaler: () => import("../pages/ImageUpscaler"),
 } satisfies Record<string, Importer>;
 
 type RouteKey = keyof typeof routeImporters;
@@ -60,6 +61,7 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/temp-email") return routeImporters.TempEmail;
   if (path === "/temp-number") return routeImporters.TempNumber;
   if (path === "/temp-card") return routeImporters.TempCard;
+  if (path === "/image-upscaler") return routeImporters.ImageUpscaler;
 
   if (
     path === "/bangla-kobita" ||
