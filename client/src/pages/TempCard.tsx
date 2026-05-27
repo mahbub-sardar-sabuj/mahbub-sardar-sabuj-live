@@ -162,44 +162,44 @@ export default function TempCard() {
               {generatedCard ? (
                 <div className="relative group">
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-                  <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-[2rem] border border-white/10 p-8 shadow-2xl overflow-hidden aspect-[1.586/1]">
+                  <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-[2rem] border border-white/10 p-6 md:p-8 shadow-2xl overflow-hidden min-h-[220px] md:aspect-[1.586/1]">
                     {/* Card Chips & Logo */}
-                    <div className="flex justify-between items-start mb-12">
-                      <div className="w-12 h-10 bg-gradient-to-br from-yellow-200 to-yellow-600 rounded-md relative overflow-hidden">
+                    <div className="flex justify-between items-start mb-8 md:mb-12">
+                      <div className="w-10 h-8 md:w-12 md:h-10 bg-gradient-to-br from-yellow-200 to-yellow-600 rounded-md relative overflow-hidden">
                         <div className="absolute inset-0 opacity-30 grid grid-cols-3 grid-rows-3 gap-px">
                           {[...Array(9)].map((_, i) => <div key={i} className="border border-black/20" />)}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-white font-black italic text-2xl tracking-tighter">{generatedCard.type.toUpperCase()}</p>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Virtual Card</p>
+                        <p className="text-white font-black italic text-xl md:text-2xl tracking-tighter">{generatedCard.type.toUpperCase()}</p>
+                        <p className="text-[8px] md:text-[10px] text-gray-500 font-bold uppercase tracking-widest">Virtual Card</p>
                       </div>
                     </div>
 
                     {/* Card Number */}
-                    <div className="mb-8">
-                      <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">Card Number</p>
-                      <p className="text-2xl md:text-3xl text-white font-mono tracking-[0.2em] font-bold">
+                    <div className="mb-6 md:mb-8">
+                      <p className="text-gray-500 text-[8px] md:text-[10px] uppercase tracking-widest mb-1">Card Number</p>
+                      <p className="text-xl md:text-3xl text-white font-mono tracking-[0.15em] md:tracking-[0.2em] font-bold">
                         {generatedCard.number.match(/.{1,4}/g)?.join(' ')}
                       </p>
                     </div>
 
-                    {/* Expiry & CVV */}
-                    <div className="flex gap-12">
-                      <div>
-                        <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">Expiry</p>
-                        <p className="text-white font-mono font-bold text-lg">{generatedCard.expiry}</p>
+                    {/* Expiry & CVV & Bank Info */}
+                    <div className="flex justify-between items-end">
+                      <div className="flex gap-6 md:gap-12">
+                        <div>
+                          <p className="text-gray-500 text-[8px] md:text-[10px] uppercase tracking-widest mb-1">Expiry</p>
+                          <p className="text-white font-mono font-bold text-base md:text-lg">{generatedCard.expiry}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-[8px] md:text-[10px] uppercase tracking-widest mb-1">CVV</p>
+                          <p className="text-white font-mono font-bold text-base md:text-lg">{generatedCard.cvv}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-1">CVV</p>
-                        <p className="text-white font-mono font-bold text-lg">{generatedCard.cvv}</p>
+                      <div className="text-right opacity-40">
+                        <p className="text-[10px] md:text-xs text-white font-bold">{generatedCard.bank}</p>
+                        <p className="text-[8px] md:text-[10px] text-white">{generatedCard.country}</p>
                       </div>
-                    </div>
-
-                    {/* Bank Info */}
-                    <div className="absolute bottom-8 right-8 text-right opacity-40">
-                      <p className="text-xs text-white font-bold">{generatedCard.bank}</p>
-                      <p className="text-[10px] text-white">{generatedCard.country}</p>
                     </div>
                   </div>
 
