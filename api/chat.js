@@ -443,10 +443,36 @@ async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent, im
 }
 
 // ── Streaming handler (for /api/chat-stream compatibility) ────────────────────
+// Only use OpenAI-compatible streaming endpoints (Gemini native API has different SSE format)
+function resolveStreamConfigs() {
+  const configs = [];
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  if (openaiKey) {
+    const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
+    const model = process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini";
+    configs.push({ source: "openai", apiKey: openaiKey, endpoint: `${baseUrl}/chat/completions`, model });
+  }
+  const forgeKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
+  const forgeUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+  if (forgeKey && forgeUrl) {
+    configs.push({
+      source: "forge",
+      apiKey: forgeKey,
+      endpoint: `${forgeUrl.replace(/\/$/, "")}/v1/chat/completions`,
+      model: "gemini-2.5-flash",
+    });
+  }
+  return configs;
+}
+
 async function handleStream(req, res, allMessages) {
-  const configs = resolveAiConfigs();
+  const configs = resolveStreamConfigs();
   if (configs.length === 0) {
-    return res.status(500).json({ error: "AI API key not configured." });
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.write(`data: ${JSON.stringify({ error: "AI API key not configured." })}\n\n`);
+    res.end();
+    return;
   }
 
   res.setHeader("Content-Type", "text/event-stream");
