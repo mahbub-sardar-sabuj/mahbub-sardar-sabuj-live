@@ -45,6 +45,12 @@ const COUNTRY_CODE_MAP: Record<string, string> = {
   "Netherlands": "nl",
 };
 
+const PROXY_SERVERS = [
+  (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&cache=false`,
+  (url: string) => `https://thingproxy.freeboard.io/fetch/${url}`,
+  (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+];
+
 export default function TempNumber() {
   const [selectedNumber, setSelectedNumber] = useState<PhoneNumber | null>(null);
   const [messages, setMessages] = useState<SmsMessage[]>([]);
@@ -72,7 +78,7 @@ export default function TempNumber() {
     const doc = parser.parseFromString(html, "text/html");
     const smsList: SmsMessage[] = [];
 
-    // .message-row structure
+    // Strategy 1: .message-row structure (Modern)
     const messageRows = doc.querySelectorAll(".message-row");
     messageRows.forEach((row) => {
       const senderEl = row.querySelector(".truncate, .font-black, span:first-child");
@@ -87,7 +93,26 @@ export default function TempNumber() {
       }
     });
 
-    // Table Fallback
+    // Strategy 2: Universal Fallback (Looking for any 6+ digit numbers which are likely OTPs)
+    if (smsList.length === 0) {
+      const text = doc.body?.textContent || html;
+      const otpMatches = text.match(/\d{4,8}/g);
+      if (otpMatches && otpMatches.length > 0) {
+        // If we find numbers but no structure, we try to extract context
+        const container = doc.getElementById("messagesContainer");
+        if (container) {
+          const divs = container.querySelectorAll("div");
+          divs.forEach(d => {
+            const content = d.textContent?.trim();
+            if (content && content.length > 10 && /\d/.test(content)) {
+               smsList.push({ sender: "SMS", message: content.substring(0, 200), time: "Recently" });
+            }
+          });
+        }
+      }
+    }
+
+    // Strategy 3: Table Fallback
     if (smsList.length === 0) {
       doc.querySelectorAll("tr").forEach(row => {
         const cells = row.querySelectorAll("td");
@@ -101,42 +126,64 @@ export default function TempNumber() {
       });
     }
 
-    return smsList.filter(m => m.message.length > 2).slice(0, 30);
+    return smsList.filter((m, i, self) => 
+      m.message.length > 2 && self.findIndex(t => t.message === m.message) === i
+    ).slice(0, 30);
   };
 
-  const fetchSms = useCallback(async (phone: PhoneNumber) => {
-    setLoading(true);
+  const fetchSms = useCallback(async (phone: PhoneNumber, attempt: number = 0) => {
+    if (attempt === 0) setLoading(true);
     setFetchError(false);
     
     try {
       const countryCode = COUNTRY_CODE_MAP[phone.country] || "us";
-      // ✅ এখন আমরা সরাসরি আমাদের নিজস্ব Vercel API প্রক্সি ব্যবহার করছি
-      const proxyUrl = `/api/sms-proxy?country=${countryCode}&number=${phone.number}`;
+      let proxyUrl = "";
+      
+      // ✅ মাল্টি-লেয়ার ফেচিং মেথড
+      if (attempt === 0) {
+        // Method 1: নিজস্ব সার্ভার প্রক্সি (সবচেয়ে নির্ভরযোগ্য)
+        proxyUrl = `/api/sms-proxy?country=${countryCode}&number=${phone.number}`;
+      } else {
+        // Method 2: ক্লায়েন্ট-সাইড প্রক্সি ব্যাকআপ
+        proxyUrl = PROXY_SERVERS[(attempt - 1) % PROXY_SERVERS.length](`https://receive-smss.live/sms/${countryCode}/${phone.number}`);
+      }
 
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
-      if (!res.ok) throw new Error("Server error");
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) });
+      if (!res.ok) throw new Error("Fetch failed");
 
-      const html = await res.text();
-      if (!html || html.length < 500) throw new Error("Invalid response");
+      let html = "";
+      if (proxyUrl.includes("allorigins")) {
+        const data = await res.json();
+        html = data.contents || "";
+      } else {
+        html = await res.text();
+      }
+
+      if (!html || html.length < 200) throw new Error("Empty response");
 
       const parsed = parseMessages(html);
       setMessages(parsed);
       setLastUpdated(new Date().toLocaleTimeString("bn-BD"));
       setFetchError(false);
     } catch (err) {
-      console.error("Proxy Fetch Failed:", err);
-      setFetchError(true);
+      console.error(`Attempt ${attempt} failed:`, err);
+      // ৩ বার পর্যন্ত ভিন্ন ভিন্ন প্রক্সি দিয়ে ট্রাই করবে
+      if (attempt < 3) {
+        fetchSms(phone, attempt + 1);
+      } else {
+        setFetchError(true);
+      }
     } finally {
-      setLoading(false);
+      if (attempt >= 3 || !fetchError) setLoading(false);
     }
-  }, []);
+  }, [fetchError]);
 
   useEffect(() => {
     if (!selectedNumber) return;
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          fetchSms(selectedNumber);
+          fetchSms(selectedNumber, 0);
           return 30;
         }
         return prev - 1;
@@ -150,7 +197,7 @@ export default function TempNumber() {
     setMessages([]);
     setCountdown(30);
     setFetchError(false);
-    fetchSms(num);
+    fetchSms(num, 0);
     setTimeout(() => {
       document.getElementById("sms-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
@@ -190,7 +237,7 @@ export default function TempNumber() {
             </span>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/25 text-yellow-400 text-xs font-bold uppercase tracking-widest">
               <Zap size={12} />
-              নিজস্ব সার্ভার প্রক্সি সক্রিয়
+              স্মার্ট ইনবক্স সক্রিয়
             </span>
           </div>
 
@@ -201,14 +248,13 @@ export default function TempNumber() {
             </span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-            সিম কার্ড ছাড়াই তাৎক্ষণিক SMS ভেরিফিকেশন কোড গ্রহণ করুন।
+            সিম কার্ড ছাড়াই তাৎক্ষণিক SMS ভেরিফিকেশন কোড গ্রহণ করুন।
             <br />
             সবগুলো নম্বর বর্তমানে কাজ করছে এবং লাইভ আছে।
           </p>
         </div>
 
         <div className="max-w-5xl mx-auto px-4">
-          {/* Number Grid */}
           <div className="bg-white/[0.04] backdrop-blur-xl rounded-3xl border border-white/[0.08] p-6 md:p-8 mb-8 shadow-2xl">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1">
@@ -245,7 +291,6 @@ export default function TempNumber() {
             </div>
           </div>
 
-          {/* SMS View Section */}
           <div id="sms-section">
             {selectedNumber ? (
               <div className="space-y-6">
@@ -275,10 +320,10 @@ export default function TempNumber() {
                       }`}
                     >
                       {copied ? <CheckCircle2 size={20} /> : <Copy size={20} />}
-                      {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
+                      {copied ? "কপি হয়েছে!" : "নম্বর কপি করুন"}
                     </button>
                     <button
-                      onClick={() => fetchSms(selectedNumber)}
+                      onClick={() => fetchSms(selectedNumber, 0)}
                       className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-white font-bold"
                     >
                       <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
@@ -297,14 +342,15 @@ export default function TempNumber() {
                     {loading && messages.length === 0 ? (
                       <div className="py-24 text-center">
                         <div className="h-12 w-12 border-4 border-yellow-500/20 border-t-yellow-500 animate-spin mx-auto mb-4 rounded-full" />
-                        <p className="text-gray-500 font-bold uppercase tracking-widest">মেসেজ লোড হচ্ছে...</p>
+                        <p className="text-gray-500 font-bold uppercase tracking-widest">মেসেজ খোঁজা হচ্ছে...</p>
                       </div>
                     ) : fetchError ? (
                       <div className="py-16 text-center">
                         <WifiOff size={32} className="text-red-400 mx-auto mb-4" />
-                        <p className="text-white font-bold mb-2">সার্ভার সংযোগ সমস্যা</p>
+                        <p className="text-white font-bold mb-2">সংযোগ সমস্যা</p>
+                        <p className="text-gray-500 text-sm mb-6">সার্ভার থেকে ডাটা পাওয়া যাচ্ছে না। দয়া করে আবার চেষ্টা করুন।</p>
                         <button
-                          onClick={() => fetchSms(selectedNumber)}
+                          onClick={() => fetchSms(selectedNumber, 0)}
                           className="px-6 py-2 bg-yellow-500 text-black rounded-xl font-bold"
                         >
                           আবার চেষ্টা করুন
@@ -341,6 +387,7 @@ export default function TempNumber() {
           </div>
         </div>
       </div>
+      <Navbar />
       <Footer />
     </>
   );
