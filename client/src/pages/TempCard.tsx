@@ -84,9 +84,23 @@ export default function TempCard() {
   return (
     <>
       <Seo 
-        title="ফ্রি ভার্চুয়াল ভিসা কার্ড জেনারেটর — টেস্টিং ও ট্রায়াল"
-        description="অনলাইন ভেরিফিকেশন এবং ফ্রি ট্রায়ালের জন্য ভ্যালিড ভার্চুয়াল ক্রেডিট কার্ড (Visa, Mastercard) জেনারেট করুন।"
+        title="ফ্রি ভার্চুয়াল ভিসা কার্ড জেনারেটর — টেস্টিং ও ট্রায়াল | Mahbub Sardar Sabuj"
+        description="অনলাইন ভেরিফিকেশন, ফ্রি ট্রায়াল এবং টেস্টিংয়ের জন্য ভ্যালিড ভার্চুয়াল ক্রেডিট কার্ড (Visa, Mastercard, Amex) জেনারেট করুন। সম্পূর্ণ বিনামূল্যে এবং তাৎক্ষণিক।"
         path="/temp-card"
+        keywords="ভার্চুয়াল ভিসা কার্ড, ফ্রি ভার্চুয়াল কার্ড জেনারেটর, virtual visa card generator, free vcc generator, temporary credit card for testing, লজ অ্যালগরিদম কার্ড জেনারেটর, মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "ভার্চুয়াল ভিসা কার্ড জেনারেটর",
+          "description": "অনলাইন ভেরিফিকেশন এবং টেস্টিংয়ের জন্য ভার্চুয়াল ক্রেডিট কার্ড জেনারেটর।",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "All",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }}
       />
       <Navbar />
 
@@ -185,7 +199,7 @@ export default function TempCard() {
                     </div>
 
                     {/* Expiry & CVV & Bank Info */}
-                    <div className="flex justify-between items-end">
+                    <div className="flex justify-between items-end mt-auto">
                       <div className="flex gap-6 md:gap-12">
                         <div>
                           <p className="text-gray-500 text-[8px] md:text-[10px] uppercase tracking-widest mb-1">Expiry</p>
@@ -196,7 +210,7 @@ export default function TempCard() {
                           <p className="text-white font-mono font-bold text-base md:text-lg">{generatedCard.cvv}</p>
                         </div>
                       </div>
-                      <div className="text-right opacity-40">
+                      <div className="text-right opacity-60">
                         <p className="text-[10px] md:text-xs text-white font-bold">{generatedCard.bank}</p>
                         <p className="text-[8px] md:text-[10px] text-white">{generatedCard.country}</p>
                       </div>
