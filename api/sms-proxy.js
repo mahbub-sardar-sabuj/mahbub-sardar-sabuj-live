@@ -18,8 +18,9 @@ export default async function handler(req, res) {
         'Accept-Language': 'en-US,en;q=0.9',
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
+        'Referer': 'https://receive-smss.live/',
       },
-      timeout: 15000,
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
@@ -44,25 +45,36 @@ export default async function handler(req, res) {
 
 /**
  * receive-smss.live এর HTML থেকে message data extract করে।
- * নতুন structure: data-message-id, data-message-body, data-message-from, data-message-time attributes ব্যবহার করে।
+ * Attributes যেকোনো ক্রমে থাকতে পারে, তাই প্রতিটি আলাদাভাবে extract করা হচ্ছে।
  */
 function parseMessagesFromHtml(html) {
   const messages = [];
   const seen = new Set();
 
-  // Strategy 1: data-message-* attributes (নতুন structure)
-  const dataAttrRegex = /data-message-id="(\d+)"[^>]*?data-message-body="((?:[^"\\]|\\.|&#[^;]+;)*)"[^>]*?data-message-from="([^"]*)"[^>]*?data-message-time="(\d+)"/gs;
-  let match;
-  while ((match = dataAttrRegex.exec(html)) !== null) {
-    const id = match[1];
+  // Strategy 1: data-message-id দিয়ে সব entry খুঁজে, তারপর আশেপাশে অন্য attributes খোঁজা
+  const idRegex = /data-message-id="(\d+)"/g;
+  let idMatch;
+  while ((idMatch = idRegex.exec(html)) !== null) {
+    const id = idMatch[1];
     if (seen.has(id)) continue;
-    seen.add(id);
 
-    const body = decodeHtmlEntities(match[2]);
-    const from = decodeHtmlEntities(match[3]);
-    const timestamp = parseInt(match[4], 10);
+    // id-এর আশেপাশের ৬০০ character-এ অন্য attributes খোঁজা
+    const startPos = Math.max(0, idMatch.index - 100);
+    const endPos = Math.min(html.length, idMatch.index + 600);
+    const chunk = html.slice(startPos, endPos);
+
+    const bodyMatch = chunk.match(/data-message-body="((?:[^"\\]|\\.)*)"/);
+    const fromMatch = chunk.match(/data-message-from="([^"]*)"/);
+    const timeMatch = chunk.match(/data-message-time="(\d+)"/);
+
+    if (!bodyMatch) continue;
+
+    const body = decodeHtmlEntities(bodyMatch[1]);
+    const from = fromMatch ? decodeHtmlEntities(fromMatch[1]) : 'Unknown';
+    const timestamp = timeMatch ? parseInt(timeMatch[1], 10) : 0;
 
     if (body && body.length > 1) {
+      seen.add(id);
       messages.push({
         sender: from || 'Unknown',
         message: body,
@@ -74,6 +86,7 @@ function parseMessagesFromHtml(html) {
   // Strategy 2: পুরনো .message-row structure (ফলব্যাক)
   if (messages.length === 0) {
     const rowRegex = /<div[^>]+class="[^"]*message-row[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/g;
+    let match;
     while ((match = rowRegex.exec(html)) !== null) {
       const rowHtml = match[1];
       const bodyMatch = rowHtml.match(/class="[^"]*message-body[^"]*"[^>]*>([\s\S]*?)<\/div>/);
@@ -96,6 +109,7 @@ function parseMessagesFromHtml(html) {
   // Strategy 3: table rows (শেষ ফলব্যাক)
   if (messages.length === 0) {
     const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+    let match;
     while ((match = trRegex.exec(html)) !== null) {
       const cells = [];
       const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
@@ -122,6 +136,7 @@ function parseMessagesFromHtml(html) {
 }
 
 function decodeHtmlEntities(str) {
+  if (!str) return '';
   return str
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
     .replace(/&amp;/g, '&')

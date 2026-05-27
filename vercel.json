@@ -26,6 +26,10 @@
     "api/sms-proxy.js": {
       "maxDuration": 20,
       "memory": 256
+    },
+    "api/image-upscale.js": {
+      "maxDuration": 30,
+      "memory": 1024
     }
   },
   "redirects": [
@@ -157,6 +161,10 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
+    },
+    {
+      "src": "/api/image-upscale",
+      "dest": "/api/image-upscale.js"
     }
   ],
   "headers": [

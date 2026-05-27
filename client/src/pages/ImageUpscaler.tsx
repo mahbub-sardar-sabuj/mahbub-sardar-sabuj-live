@@ -1,54 +1,91 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Image as ImageIcon, Sparkles, Download, RefreshCw, AlertCircle } from "lucide-react";
+import { Upload, Image as ImageIcon, Sparkles, Download, RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
+
+interface UpscaleResult {
+  imageData: string;
+  originalSize: { width: number; height: number };
+  upscaledSize: { width: number; height: number };
+  scale: number;
+}
 
 export default function ImageUpscaler() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUpscaling, setIsUpscaling] = useState(false);
   const [upscaledImage, setUpscaledImage] = useState<string | null>(null);
   const [scale, setScale] = useState(2);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<UpscaleResult | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        setUpscaledImage(null);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Max 8MB check
+    if (file.size > 8 * 1024 * 1024) {
+      setError("ছবির সাইজ ৮MB-এর বেশি হওয়া যাবে না।");
+      return;
     }
+
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target?.result as string);
+      setUpscaledImage(null);
+      setResult(null);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleUpscale = async () => {
     if (!selectedImage) return;
     setIsUpscaling(true);
-    
-    // Simulate AI processing
-    setTimeout(() => {
-      setUpscaledImage(selectedImage); // In real app, this would be the API result
+    setError(null);
+    setUpscaledImage(null);
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/image-upscale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageData: selectedImage, scale }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "আপসেল করতে সমস্যা হয়েছে।");
+      }
+
+      setUpscaledImage(data.imageData);
+      setResult(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "অজানা সমস্যা হয়েছে।";
+      setError(msg);
+    } finally {
       setIsUpscaling(false);
-    }, 3000);
+    }
   };
 
   const reset = () => {
     setSelectedImage(null);
     setUpscaledImage(null);
     setIsUpscaling(false);
+    setError(null);
+    setResult(null);
   };
 
   return (
     <div className="min-h-screen bg-[#060E1A] text-white pt-24 pb-20">
       <Seo 
-        title="AI Image Upscaler — ছবির কোয়ালিটি বাড়ান অনলাইনে | Mahbub Sardar Sabuj"
-        description="এআই প্রযুক্তির মাধ্যমে আপনার ঝাপসা বা কম রেজোলিউশনের ছবির কোয়ালিটি বাড়ান একদম ফ্রিতে। ২x এবং ৪x আপসেলিং সুবিধা।"
+        title="AI Image Upscaler — ছবির কোয়ালিটি বাড়ান অনলাইনে | Mahbub Sardar Sabuj"
+        description="এআই প্রযুক্তির মাধ্যমে আপনার ঝাপসা বা কম রেজোলিউশনের ছবির কোয়ালিটি বাড়ান একদম ফ্রিতে। ২x এবং ৪x আপসেলিং সুবিধা।"
         path="/image-upscaler"
         keywords="ai image upscaler, ছবি পরিষ্কার করার অ্যাপ, upscale image online, ai photo enhancer, মাহবুব সরদার সবুজ"
       />
       <Navbar />
-
       <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -74,7 +111,7 @@ export default function ImageUpscaler() {
             transition={{ delay: 0.2 }}
             className="text-gray-400 text-lg max-w-2xl mx-auto"
           >
-            আপনার ঝাপসা বা লো-কোয়ালিটি ছবিকে এআই-এর মাধ্যমে মুহূর্তেই এইচডি (HD) কোয়ালিটিতে রূপান্তর করুন।
+            আপনার ঝাপসা বা লো-কোয়ালিটি ছবিকে এআই-এর মাধ্যমে মুহূর্তেই এইচডি (HD) কোয়ালিটিতে রূপান্তর করুন।
           </motion.p>
         </div>
 
@@ -85,7 +122,6 @@ export default function ImageUpscaler() {
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <ImageIcon className="text-blue-500" /> সেটিংস
               </h3>
-              
               <div className="space-y-6">
                 <div>
                   <label className="text-sm text-gray-400 mb-3 block">আপসেলিং স্কেল</label>
@@ -105,13 +141,13 @@ export default function ImageUpscaler() {
                     ))}
                   </div>
                 </div>
-
                 <div className="pt-4">
                   {!selectedImage ? (
                     <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Upload className="w-10 h-10 text-gray-500 group-hover:text-blue-500 transition-colors mb-3" />
                         <p className="text-sm text-gray-400">ছবি সিলেক্ট করুন</p>
+                        <p className="text-xs text-gray-600 mt-1">সর্বোচ্চ ৮MB</p>
                       </div>
                       <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                     </label>
@@ -144,10 +180,30 @@ export default function ImageUpscaler() {
               </div>
             </div>
 
+            {/* Error message */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3">
+                <AlertCircle className="text-red-400 shrink-0" size={20} />
+                <p className="text-xs text-red-300 leading-relaxed">{error}</p>
+              </div>
+            )}
+
+            {/* Success info */}
+            {result && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex gap-3">
+                <CheckCircle2 className="text-green-400 shrink-0" size={20} />
+                <div className="text-xs text-green-300 leading-relaxed">
+                  <p className="font-bold mb-1">আপসেল সফল হয়েছে!</p>
+                  <p>আগের সাইজ: {result.originalSize.width}×{result.originalSize.height}px</p>
+                  <p>নতুন সাইজ: {result.upscaledSize.width}×{result.upscaledSize.height}px ({result.scale}x)</p>
+                </div>
+              </div>
+            )}
+
             <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 flex gap-3">
               <AlertCircle className="text-blue-400 shrink-0" size={20} />
               <p className="text-xs text-blue-200/70 leading-relaxed">
-                আপনার ছবিগুলো এআই-এর মাধ্যমে প্রোসেস করা হয়। বড় সাইজের ছবির ক্ষেত্রে কিছুটা সময় লাগতে পারে।
+                আপনার ছবিগুলো সার্ভারে Lanczos3 অ্যালগরিদম দিয়ে প্রোসেস করা হয়। বড় সাইজের ছবির ক্ষেত্রে কিছুটা সময় লাগতে পারে।
               </p>
             </div>
           </div>
@@ -167,7 +223,7 @@ export default function ImageUpscaler() {
                     <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6">
                       <ImageIcon className="text-gray-600" size={40} />
                     </div>
-                    <p className="text-gray-500 font-medium">কোনো ছবি আপলোড করা হয়নি</p>
+                    <p className="text-gray-500 font-medium">কোনো ছবি আপলোড করা হয়নি</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -182,7 +238,6 @@ export default function ImageUpscaler() {
                         alt="Preview" 
                         className={`max-h-[600px] object-contain transition-all duration-700 ${isUpscaling ? 'blur-md grayscale' : ''}`}
                       />
-                      
                       {isUpscaling && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                           <div className="flex flex-col items-center gap-4">
@@ -191,7 +246,6 @@ export default function ImageUpscaler() {
                           </div>
                         </div>
                       )}
-
                       {upscaledImage && !isUpscaling && (
                         <div className="absolute top-4 right-4">
                           <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg flex items-center gap-1">
@@ -200,7 +254,6 @@ export default function ImageUpscaler() {
                         </div>
                       )}
                     </div>
-
                     {upscaledImage && !isUpscaling && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -209,7 +262,7 @@ export default function ImageUpscaler() {
                       >
                         <a
                           href={upscaledImage}
-                          download="upscaled-image.png"
+                          download={`upscaled-${scale}x.png`}
                           className="px-8 py-4 bg-white text-black rounded-2xl font-black flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-xl"
                         >
                           <Download size={20} /> ডাউনলোড করুন
