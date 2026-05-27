@@ -9,7 +9,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette,
-  Star, Feather, MailOpen, Phone, CreditCard
+  Star, Feather, MailOpen, Phone, CreditCard, Sparkles
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
