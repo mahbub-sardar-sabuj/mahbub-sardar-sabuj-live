@@ -85,6 +85,10 @@
       "dest": "/api/trpc-bundled"
     },
     {
+      "src": "/api/image-upscale",
+      "dest": "/api/image-upscale.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
@@ -161,10 +165,6 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
-    },
-    {
-      "src": "/api/image-upscale",
-      "dest": "/api/image-upscale.js"
     }
   ],
   "headers": [

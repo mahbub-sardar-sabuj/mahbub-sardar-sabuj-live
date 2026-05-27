@@ -1,5 +1,53 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+/**
+ * Browser-side image upscaling using Canvas API with multi-step interpolation.
+ * No server dependency — works reliably on Vercel free tier.
+ */
+function upscaleWithCanvas(
+  dataUrl: string,
+  scale: number
+): Promise<{ imageData: string; originalSize: { width: number; height: number }; upscaledSize: { width: number; height: number }; scale: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const origW = img.naturalWidth;
+        const origH = img.naturalHeight;
+        const newW = Math.min(origW * scale, 4000);
+        const newH = Math.min(origH * scale, 4000);
+        // Multi-step upscaling for better quality
+        const steps = Math.ceil(Math.log(scale) / Math.log(1.5));
+        const stepScale = Math.pow(scale, 1 / steps);
+        let currentCanvas = document.createElement("canvas");
+        let currentCtx = currentCanvas.getContext("2d")!;
+        currentCanvas.width = origW;
+        currentCanvas.height = origH;
+        currentCtx.drawImage(img, 0, 0);
+        for (let s = 0; s < steps; s++) {
+          const isLast = s === steps - 1;
+          const targetW = isLast ? newW : Math.round(currentCanvas.width * stepScale);
+          const targetH = isLast ? newH : Math.round(currentCanvas.height * stepScale);
+          const nextCanvas = document.createElement("canvas");
+          nextCanvas.width = targetW;
+          nextCanvas.height = targetH;
+          const nextCtx = nextCanvas.getContext("2d")!;
+          nextCtx.imageSmoothingEnabled = true;
+          nextCtx.imageSmoothingQuality = "high";
+          nextCtx.drawImage(currentCanvas, 0, 0, targetW, targetH);
+          currentCanvas = nextCanvas;
+          currentCtx = nextCtx;
+        }
+        const resultDataUrl = currentCanvas.toDataURL("image/png", 1.0);
+        resolve({ imageData: resultDataUrl, originalSize: { width: origW, height: origH }, upscaledSize: { width: newW, height: newH }, scale });
+      } catch (e) { reject(e); }
+    };
+    img.onerror = () => reject(new Error("ছবি লোড করতে সমস্যা হয়েছে।"));
+    img.src = dataUrl;
+  });
+}
+
 import { Upload, Image as ImageIcon, Sparkles, Download, RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -18,14 +66,15 @@ export default function ImageUpscaler() {
   const [scale, setScale] = useState(2);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<UpscaleResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Max 8MB check
-    if (file.size > 8 * 1024 * 1024) {
-      setError("ছবির সাইজ ৮MB-এর বেশি হওয়া যাবে না।");
+    if (file.size > 10 * 1024 * 1024) {
+      setError("ছবির সাইজ ১০MB-এর বেশি হওয়া যাবে না।");
       return;
     }
 
@@ -47,18 +96,7 @@ export default function ImageUpscaler() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/image-upscale", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageData: selectedImage, scale }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "আপসেল করতে সমস্যা হয়েছে।");
-      }
-
+      const data = await upscaleWithCanvas(selectedImage, scale);
       setUpscaledImage(data.imageData);
       setResult(data);
     } catch (err: unknown) {
@@ -75,6 +113,7 @@ export default function ImageUpscaler() {
     setIsUpscaling(false);
     setError(null);
     setResult(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -149,7 +188,7 @@ export default function ImageUpscaler() {
                         <p className="text-sm text-gray-400">ছবি সিলেক্ট করুন</p>
                         <p className="text-xs text-gray-600 mt-1">সর্বোচ্চ ৮MB</p>
                       </div>
-                      <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
+                      <input ref={fileInputRef} type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                     </label>
                   ) : (
                     <div className="space-y-4">
@@ -203,7 +242,7 @@ export default function ImageUpscaler() {
             <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 flex gap-3">
               <AlertCircle className="text-blue-400 shrink-0" size={20} />
               <p className="text-xs text-blue-200/70 leading-relaxed">
-                আপনার ছবিগুলো সার্ভারে Lanczos3 অ্যালগরিদম দিয়ে প্রোসেস করা হয়। বড় সাইজের ছবির ক্ষেত্রে কিছুটা সময় লাগতে পারে।
+                ছবিগুলো সরাসরি আপনার ব্রাউজারেই প্রসেস হয় — কোনো সার্ভারে আপলোড হয় না। সম্পূর্ণ প্রাইভেট ও নিরাপদ।
               </p>
             </div>
           </div>
