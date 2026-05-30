@@ -97,7 +97,7 @@ async function callAIWithConfig(messages, config) {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(12000),
   });
 
   if (!response.ok) {
@@ -509,7 +509,7 @@ async function handleStream(req, res, allMessages) {
           temperature: 0.7,
           stream: true,
         }),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(5000),
       });
 
       if (!response.ok) {
