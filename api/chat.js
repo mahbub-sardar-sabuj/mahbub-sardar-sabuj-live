@@ -462,6 +462,17 @@ function resolveStreamConfigs() {
       model: "gemini-2.5-flash",
     });
   }
+  // Gemini direct API — OpenAI-compatible endpoint supports streaming
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  if (geminiKey) {
+    const primaryModel = process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash-lite";
+    configs.push({
+      source: "gemini",
+      apiKey: geminiKey,
+      endpoint: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      model: primaryModel,
+    });
+  }
   return configs;
 }
 
