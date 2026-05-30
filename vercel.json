@@ -93,6 +93,10 @@
       "dest": "/api/image-upscale.js"
     },
     {
+      "src": "/api/debug-stream",
+      "dest": "/api/debug-stream.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
