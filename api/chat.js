@@ -560,7 +560,8 @@ async function handleStream(req, res, allMessages) {
   }
 
   if (!streamSuccess) {
-    res.write(`data: ${JSON.stringify({ error: "সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।" })}\n\n`);
+    const debugErrors = configs.map(c => c.source).join(',');
+    res.write(`data: ${JSON.stringify({ error: "সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।", _tried: debugErrors })}\n\n`);
     res.end();
   }
 }
