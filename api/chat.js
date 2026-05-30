@@ -681,3 +681,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।" });
   }
 }
+// Force redeploy Sat May 30 14:17:36 UTC 2026
