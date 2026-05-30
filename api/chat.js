@@ -560,8 +560,24 @@ async function handleStream(req, res, allMessages) {
   }
 
   if (!streamSuccess) {
-    const debugErrors = configs.map(c => c.source).join(',');
-    res.write(`data: ${JSON.stringify({ error: "সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।", _tried: debugErrors })}\n\n`);
+    // Non-streaming fallback: use callAIWithConfig and emit as SSE
+    const nonStreamConfigs = resolveAiConfigs();
+    let fallbackReply = null;
+    for (const config of nonStreamConfigs) {
+      try {
+        fallbackReply = await callAIWithConfig(allMessages, config);
+        if (fallbackReply) break;
+      } catch (err) {
+        console.error(`[stream-fallback] ${config.source} failed:`, err.message);
+      }
+    }
+    if (fallbackReply) {
+      const sanitized = sanitizeReply(fallbackReply);
+      res.write(`data: ${JSON.stringify({ delta: sanitized })}\n\n`);
+      res.write(`data: ${JSON.stringify({ done: true, fullReply: sanitized })}\n\n`);
+    } else {
+      res.write(`data: ${JSON.stringify({ error: "সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।" })}\n\n`);
+    }
     res.end();
   }
 }
