@@ -1047,7 +1047,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
         border: "1.5px solid rgba(212,168,67,0.6)",
         boxShadow: "0 0 12px rgba(212,168,67,0.3)",
       }}>
-        <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => {
             const t = e.currentTarget;
             t.style.display = "none";
@@ -1544,7 +1544,7 @@ function TypingIndicator({ stage }: { stage?: string | null }) {
         border: "1.5px solid rgba(212,168,67,0.65)",
         boxShadow: "0 0 10px rgba(212,168,67,0.35)",
       }}>
-        <img src={AUTHOR_PHOTO} alt="AI" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
       <div style={{
         background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
@@ -2801,7 +2801,7 @@ export default function AIChatbot() {
                     initial={{ scale: 0.75, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.75, opacity: 0 }}
                     transition={{ duration: 0.35, ease: "easeInOut" }}
                     style={{ width: "100%", height: "100%" }}>
-                    <img src={AUTHOR_PHOTO} alt="AI"
+                    <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী"
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       onError={(e) => {
                         const t = e.currentTarget as HTMLImageElement;
@@ -3510,7 +3510,7 @@ export default function AIChatbot() {
                     <div style={{ position: "relative", flexShrink: 0 }}>
                       <img
                         src={imagePreview}
-                        alt="preview"
+                        alt="সংযুক্ত ছবির প্রিভিউ"
                         style={{ height: 52, width: 52, borderRadius: 8, objectFit: "cover", display: "block", border: "1.5px solid rgba(212,168,67,0.4)" }}
                       />
                       <button
