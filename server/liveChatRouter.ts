@@ -3,12 +3,73 @@
  * Visitor ↔ Admin real-time messaging via polling
  */
 import { z } from "zod";
-import { eq, desc, and, gt, inArray } from "drizzle-orm";
+import { eq, desc, and, gt, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { publicProcedure, adminProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
 import { liveChatSessions, liveChatMessages } from "../drizzle/schema";
 import { sendTelegramNotification, sendTelegramSessionClosed } from "./telegramService";
+
+// ── Auto-create / migrate live chat tables ────────────────────────────────────
+let liveChatTablesReady = false;
+let liveChatTablesReadyPromise: Promise<void> | null = null;
+
+type LiveChatDb = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+
+async function ensureLiveChatTables(db: LiveChatDb) {
+  if (liveChatTablesReady) return;
+  if (!liveChatTablesReadyPromise) {
+    liveChatTablesReadyPromise = (async () => {
+      // Create sessions table if it doesn't exist
+      await db.execute(sql.raw(
+        "CREATE TABLE IF NOT EXISTS `live_chat_sessions` (" +
+        "`id` int AUTO_INCREMENT NOT NULL, " +
+        "`sessionId` varchar(64) NOT NULL, " +
+        "`visitorId` varchar(64) NOT NULL, " +
+        "`visitorName` varchar(128) NOT NULL DEFAULT 'অতিথি', " +
+        "`visitorContact` varchar(200), " +
+        "`visitorContactType` enum('whatsapp','gmail','other'), " +
+        "`status` enum('waiting','active','closed') NOT NULL DEFAULT 'waiting', " +
+        "`adminRead` boolean NOT NULL DEFAULT false, " +
+        "`lastMessageAt` timestamp NOT NULL DEFAULT (now()), " +
+        "`createdAt` timestamp NOT NULL DEFAULT (now()), " +
+        "`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, " +
+        "CONSTRAINT `live_chat_sessions_id` PRIMARY KEY(`id`), " +
+        "CONSTRAINT `live_chat_sessions_sessionId_unique` UNIQUE(`sessionId`))"
+      ));
+      // Add missing columns if table already exists without them
+      await db.execute(sql.raw("ALTER TABLE `live_chat_sessions` ADD COLUMN `visitorContact` varchar(200)")).catch(() => {});
+      await db.execute(sql.raw("ALTER TABLE `live_chat_sessions` ADD COLUMN `visitorContactType` enum('whatsapp','gmail','other')")).catch(() => {});
+
+      // Create messages table if it doesn't exist
+      await db.execute(sql.raw(
+        "CREATE TABLE IF NOT EXISTS `live_chat_messages` (" +
+        "`id` int AUTO_INCREMENT NOT NULL, " +
+        "`sessionId` varchar(64) NOT NULL, " +
+        "`sender` enum('visitor','admin') NOT NULL DEFAULT 'visitor', " +
+        "`content` text NOT NULL, " +
+        "`read` boolean NOT NULL DEFAULT false, " +
+        "`createdAt` timestamp NOT NULL DEFAULT (now()), " +
+        "`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, " +
+        "CONSTRAINT `live_chat_messages_id` PRIMARY KEY(`id`))"
+      ));
+
+      liveChatTablesReady = true;
+    })().catch((error) => {
+      liveChatTablesReadyPromise = null;
+      console.error("[LiveChat] Failed to ensure tables:", error);
+      throw error;
+    });
+  }
+  await liveChatTablesReadyPromise;
+}
+
+async function getLiveChatDb() {
+  const db = await getDb();
+  if (!db) return null;
+  await ensureLiveChatTables(db);
+  return db;
+}
 
 // ── Visitor: start or resume a session ───────────────────────────────────────
 export const liveChatRouter = router({
@@ -22,7 +83,7 @@ export const liveChatRouter = router({
       visitorContactType: z.enum(["whatsapp", "gmail", "other"]).optional(),
     }))
     .mutation(async ({ input }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) throw new Error("Database unavailable");
 
       // Check if visitor already has an active session
@@ -100,7 +161,7 @@ export const liveChatRouter = router({
       visitorId: z.string().min(1).max(64),
     }))
     .mutation(async ({ input }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) throw new Error("Database unavailable");
 
       // Verify session belongs to this visitor
@@ -158,7 +219,7 @@ export const liveChatRouter = router({
       afterId: z.number().optional(),
     }))
     .query(async ({ input }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) return { messages: [], sessionStatus: "waiting" as const };
 
       const session = await db
@@ -197,7 +258,7 @@ export const liveChatRouter = router({
   // Admin: get all active/waiting sessions
   adminGetSessions: adminProcedure
     .query(async ({ ctx }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) return [];
 
       const sessions = await db
@@ -216,7 +277,7 @@ export const liveChatRouter = router({
       afterId: z.number().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) return [];
 
       const conditions = [eq(liveChatMessages.sessionId, input.sessionId)];
@@ -247,7 +308,7 @@ export const liveChatRouter = router({
       content: z.string().min(1).max(2000),
     }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) throw new Error("Database unavailable");
 
       await db.insert(liveChatMessages).values({
@@ -274,7 +335,7 @@ export const liveChatRouter = router({
       sessionId: z.string().min(1).max(64),
     }))
     .mutation(async ({ ctx, input }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) throw new Error("Database unavailable");
 
       // Get visitor name before closing
@@ -301,7 +362,7 @@ export const liveChatRouter = router({
   // Admin: get unread count (active + waiting with adminRead=false)
   adminUnreadCount: adminProcedure
     .query(async ({ ctx }) => {
-      const db = await getDb();
+      const db = await getLiveChatDb();
       if (!db) return { count: 0 };
 
       const unread = await db

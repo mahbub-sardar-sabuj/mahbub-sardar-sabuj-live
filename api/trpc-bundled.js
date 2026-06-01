@@ -195,7 +195,7 @@ var systemRouter = router({
 
 // server/liveChatRouter.ts
 import { z as z2 } from "zod";
-import { eq as eq3, desc, and as and2, gt, inArray } from "drizzle-orm";
+import { eq as eq3, desc, and as and2, gt, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 // server/db.ts
@@ -715,6 +715,37 @@ function escapeMarkdown(text2) {
 }
 
 // server/liveChatRouter.ts
+var liveChatTablesReady = false;
+var liveChatTablesReadyPromise = null;
+async function ensureLiveChatTables(db) {
+  if (liveChatTablesReady) return;
+  if (!liveChatTablesReadyPromise) {
+    liveChatTablesReadyPromise = (async () => {
+      await db.execute(sql.raw(
+        "CREATE TABLE IF NOT EXISTS `live_chat_sessions` (`id` int AUTO_INCREMENT NOT NULL, `sessionId` varchar(64) NOT NULL, `visitorId` varchar(64) NOT NULL, `visitorName` varchar(128) NOT NULL DEFAULT '\u0985\u09A4\u09BF\u09A5\u09BF', `visitorContact` varchar(200), `visitorContactType` enum('whatsapp','gmail','other'), `status` enum('waiting','active','closed') NOT NULL DEFAULT 'waiting', `adminRead` boolean NOT NULL DEFAULT false, `lastMessageAt` timestamp NOT NULL DEFAULT (now()), `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `live_chat_sessions_id` PRIMARY KEY(`id`), CONSTRAINT `live_chat_sessions_sessionId_unique` UNIQUE(`sessionId`))"
+      ));
+      await db.execute(sql.raw("ALTER TABLE `live_chat_sessions` ADD COLUMN `visitorContact` varchar(200)")).catch(() => {
+      });
+      await db.execute(sql.raw("ALTER TABLE `live_chat_sessions` ADD COLUMN `visitorContactType` enum('whatsapp','gmail','other')")).catch(() => {
+      });
+      await db.execute(sql.raw(
+        "CREATE TABLE IF NOT EXISTS `live_chat_messages` (`id` int AUTO_INCREMENT NOT NULL, `sessionId` varchar(64) NOT NULL, `sender` enum('visitor','admin') NOT NULL DEFAULT 'visitor', `content` text NOT NULL, `read` boolean NOT NULL DEFAULT false, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `live_chat_messages_id` PRIMARY KEY(`id`))"
+      ));
+      liveChatTablesReady = true;
+    })().catch((error) => {
+      liveChatTablesReadyPromise = null;
+      console.error("[LiveChat] Failed to ensure tables:", error);
+      throw error;
+    });
+  }
+  await liveChatTablesReadyPromise;
+}
+async function getLiveChatDb() {
+  const db = await getDb();
+  if (!db) return null;
+  await ensureLiveChatTables(db);
+  return db;
+}
 var liveChatRouter = router({
   // Visitor creates/resumes session
   startSession: publicProcedure.input(z2.object({
@@ -723,7 +754,7 @@ var liveChatRouter = router({
     visitorContact: z2.string().max(200).optional(),
     visitorContactType: z2.enum(["whatsapp", "gmail", "other"]).optional()
   })).mutation(async ({ input }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) throw new Error("Database unavailable");
     const existing = await db.select().from(liveChatSessions).where(
       and2(
@@ -774,7 +805,7 @@ var liveChatRouter = router({
     content: z2.string().min(1).max(2e3),
     visitorId: z2.string().min(1).max(64)
   })).mutation(async ({ input }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) throw new Error("Database unavailable");
     const session = await db.select().from(liveChatSessions).where(
       and2(
@@ -813,7 +844,7 @@ var liveChatRouter = router({
     visitorId: z2.string().min(1).max(64),
     afterId: z2.number().optional()
   })).query(async ({ input }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) return { messages: [], sessionStatus: "waiting" };
     const session = await db.select().from(liveChatSessions).where(
       and2(
@@ -835,7 +866,7 @@ var liveChatRouter = router({
   // ── Admin procedures ──────────────────────────────────────────────────────
   // Admin: get all active/waiting sessions
   adminGetSessions: adminProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) return [];
     const sessions = await db.select().from(liveChatSessions).orderBy(desc(liveChatSessions.lastMessageAt)).limit(50);
     return sessions;
@@ -845,7 +876,7 @@ var liveChatRouter = router({
     sessionId: z2.string().min(1).max(64),
     afterId: z2.number().optional()
   })).query(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) return [];
     const conditions = [eq3(liveChatMessages.sessionId, input.sessionId)];
     if (input.afterId) {
@@ -860,7 +891,7 @@ var liveChatRouter = router({
     sessionId: z2.string().min(1).max(64),
     content: z2.string().min(1).max(2e3)
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) throw new Error("Database unavailable");
     await db.insert(liveChatMessages).values({
       sessionId: input.sessionId,
@@ -878,7 +909,7 @@ var liveChatRouter = router({
   adminCloseSession: adminProcedure.input(z2.object({
     sessionId: z2.string().min(1).max(64)
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) throw new Error("Database unavailable");
     const sessions = await db.select().from(liveChatSessions).where(eq3(liveChatSessions.sessionId, input.sessionId)).limit(1);
     await db.update(liveChatSessions).set({ status: "closed" }).where(eq3(liveChatSessions.sessionId, input.sessionId));
@@ -889,7 +920,7 @@ var liveChatRouter = router({
   }),
   // Admin: get unread count (active + waiting with adminRead=false)
   adminUnreadCount: adminProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getLiveChatDb();
     if (!db) return { count: 0 };
     const unread = await db.select().from(liveChatSessions).where(
       and2(
@@ -903,7 +934,7 @@ var liveChatRouter = router({
 
 // server/writingPlatformRouter.ts
 import { z as z3 } from "zod";
-import { and as and3, desc as desc2, eq as eq4, inArray as inArray2, like, or, sql } from "drizzle-orm";
+import { and as and3, desc as desc2, eq as eq4, inArray as inArray2, like, or, sql as sql2 } from "drizzle-orm";
 import { nanoid as nanoid2 } from "nanoid";
 var postCategorySchema = z3.enum(["experience", "story", "poem", "thought", "photo", "video"]);
 var mediaTypeSchema = z3.enum(["none", "image", "video"]);
@@ -923,13 +954,13 @@ async function ensureWritingPlatformTables(db) {
   if (writingTablesReady) return;
   if (!writingTablesReadyPromise) {
     writingTablesReadyPromise = (async () => {
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
-      await db.execute(sql.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `content` longtext NOT NULL")).catch(() => {
+      await db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
+      await db.execute(sql2.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `content` longtext NOT NULL")).catch(() => {
       });
-      await db.execute(sql.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `mediaUrl` longtext")).catch(() => {
+      await db.execute(sql2.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `mediaUrl` longtext")).catch(() => {
       });
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))"));
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))"));
+      await db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))"));
+      await db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))"));
       writingTablesReady = true;
     })().catch((error) => {
       writingTablesReadyPromise = null;
@@ -978,7 +1009,7 @@ async function enrichPostsBatch(posts, userOpenId) {
     ),
     // Batch query 3: author avatars for all unique authors at once
     authorOpenIds.length > 0 ? db.execute(
-      sql.raw(
+      sql2.raw(
         `SELECT openId, avatarUrl FROM local_users WHERE openId IN (${authorOpenIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(",")}) LIMIT ${authorOpenIds.length}`
       )
     ).catch(() => null) : Promise.resolve(null)
