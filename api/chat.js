@@ -509,7 +509,7 @@ async function handleStream(req, res, allMessages) {
           temperature: 0.7,
           stream: true,
         }),
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(25000),
       });
 
       if (!response.ok) {
@@ -575,6 +575,11 @@ async function handleStream(req, res, allMessages) {
         console.error(`[stream-fallback] ${config.source} failed:`, errMsg);
         fallbackErrors.push(`${config.source}:${errMsg.slice(0, 50)}`);
       }
+    }
+    if (!fallbackReply) {
+      // All AI providers failed — use built-in keyword-based reply as last resort
+      fallbackReply = buildFallbackReply(allMessages);
+      console.warn("[stream-fallback] All AI providers failed. Using built-in fallback reply.");
     }
     if (fallbackReply) {
       const sanitized = sanitizeReply(fallbackReply);

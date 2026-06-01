@@ -100,6 +100,17 @@ async function callAIStreaming(
         try {
           const json = JSON.parse(trimmed.slice(6));
           if (json.error) {
+            // Streaming error — try non-streaming fallback before showing error
+            clearTimeout(timeoutId);
+            try {
+              const fallbackRes = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages }),
+              });
+              const data = await fallbackRes.json();
+              if (data.reply) { onDone(data.reply); return; }
+            } catch { /* ignore */ }
             onError(json.error);
             return;
           }
