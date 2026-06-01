@@ -42,16 +42,30 @@ import {
 
 // ── AI provider configuration ──────────────────────────────────────────────
 // Provider priority order:
-//   1. OpenAI-compatible API (primary, best instruction-following for factual site Q&A)
-//   2. Forge (built-in fallback, avoids downtime if OpenAI is unavailable)
-//   3. Gemini direct API (last resort; free tier can hit quota)
+//   1. Groq API (primary, free tier, fast inference, no credit card required)
+//   2. OpenAI-compatible API (secondary, if OPENAI_API_KEY is set)
+//   3. Forge (built-in fallback, avoids downtime if other providers are unavailable)
+//   4. Gemini direct API (last resort; free tier can hit quota)
 //
-// This order reduces wrong profile answers by using the strongest configured model first,
+// This order ensures the chatbot works for free using Groq as the primary provider,
 // while still keeping robust fallback behavior for production visitors.
 function resolveAiConfigs() {
   const configs = [];
 
-  // 1. OpenAI-compatible API — primary provider
+  // 1. Groq API — free tier, no credit card required, OpenAI-compatible
+  const groqKey = process.env.GROQ_API_KEY?.trim();
+  if (groqKey) {
+    const groqModel = process.env.GROQ_MODEL?.trim() || "llama-3.3-70b-versatile";
+    configs.push({
+      source: "groq",
+      apiKey: groqKey,
+      endpoint: "https://api.groq.com/openai/v1/chat/completions",
+      model: groqModel,
+      skipOn429: false,
+    });
+  }
+
+  // 2. OpenAI-compatible API — secondary provider
   const openaiKey = process.env.OPENAI_API_KEY?.trim();
   if (openaiKey) {
     const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
@@ -59,7 +73,7 @@ function resolveAiConfigs() {
     configs.push({ source: "openai", apiKey: openaiKey, endpoint: `${baseUrl}/chat/completions`, model, skipOn429: false });
   }
 
-  // 2. Forge API — stable fallback
+  // 3. Forge API — stable fallback
   const forgeKey = process.env.BUILT_IN_FORGE_API_KEY?.trim();
   const forgeUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
   if (forgeKey && forgeUrl) {
@@ -447,6 +461,17 @@ async function notifyTelegram({ userMessage, aiResponse, clientIp, userAgent, im
 // Only use OpenAI-compatible streaming endpoints (Gemini native API has different SSE format)
 function resolveStreamConfigs() {
   const configs = [];
+  // Groq API — free tier, fast inference, supports streaming
+  const groqKey = process.env.GROQ_API_KEY?.trim();
+  if (groqKey) {
+    const groqModel = process.env.GROQ_MODEL?.trim() || "llama-3.3-70b-versatile";
+    configs.push({
+      source: "groq",
+      apiKey: groqKey,
+      endpoint: "https://api.groq.com/openai/v1/chat/completions",
+      model: groqModel,
+    });
+  }
   const openaiKey = process.env.OPENAI_API_KEY?.trim();
   if (openaiKey) {
     const baseUrl = (process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
