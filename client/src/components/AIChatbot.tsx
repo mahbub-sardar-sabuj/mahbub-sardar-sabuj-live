@@ -147,23 +147,23 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
 const AI_CAPABILITIES = [
-  { label: "সাধারণ AI", detail: "যে কোনো প্রশ্নের গুছানো উত্তর" },
-  { label: "ওয়েবসাইট গাইড", detail: "লেখক, বই, লেখা, আবৃত্তি ও পেজ" },
-  { label: "ভিশন", detail: "ছবি দেখে বিশ্লেষণ ও ব্যাখ্যা" },
-  { label: "অডিও স্টুডিও", detail: "নয়েজ রিমুভ, মাস্টারিং, ভয়েস টিউন" },
-  { label: "ভিডিও → অডিও", detail: "ভিডিও থেকে অডিও বের করে এডিট" },
-  { label: "লাইভ সাপোর্ট", detail: "প্রয়োজনে সরাসরি যোগাযোগ" },
+  { label: "✨ সাধারণ AI", detail: "যেকোনো প্রশ্নের গভীর ও গুছানো উত্তর" },
+  { label: "📚 ওয়েবসাইট গাইড", detail: "লেখক, বই, লেখা, আবৃত্তি ও সকল পেজ" },
+  { label: "🖼️ ভিশন সহায়ক", detail: "ছবি দেখে বিশ্লেষণ ও বিস্তারিত ব্যাখ্যা" },
+  { label: "🎧 অডিও স্টুডিও", detail: "নয়েজ রিমুভ, মাস্টারিং, ভয়েস বিউটিফাই" },
+  { label: "🎬 ভিডিও → অডিও", detail: "ভিডিও থেকে অডিও বের করে প্রফেশনাল এডিট" },
+  { label: "💬 লাইভ সাপোর্ট", detail: "প্রয়োজনে সরাসরি লেখকের সাথে যোগাযোগ" },
 ];
 
 const QUICK_ACTIONS = [
-  { label: "লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে গুছিয়ে বলো—তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন?", context: "author" },
-  { label: "বই ও ই-বুক", prompt: "মাহবুব সরদার সবুজের বই ও ই-বুকগুলো তালিকা করে পড়ার/কেনার লিংকসহ দেখাও।", context: "book" },
-  { label: "লেখা খুঁজুন", prompt: "ওয়েবসাইটে ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা ও কবিতা কীভাবে পড়ব?", context: "writing" },
-  { label: "কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও—বিষয়, আবেগ, চিত্রকল্প ও সম্পাদনা সহ।", context: "teaching" },
-  { label: "আবৃত্তি শুনবো", prompt: "মাহবুব সরদার সবুজের জনপ্রিয় আবৃত্তিগুলো দেখাও এবং কোথায় শুনব বলো।", context: "recitation" },
-  { label: "ডিজাইন স্টুডিও", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা/উক্তির কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
-  { label: "অডিও ক্লিন", prompt: "আমি একটি অডিও ক্লিন করতে চাই—নয়েজ রিমুভ ও স্টুডিও মাস্টারিং কীভাবে করব?", context: "audio" },
-  { label: "যোগাযোগ", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই—ইমেইল, সোশ্যাল লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
+  { label: "👤 লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
+  { label: "📖 বই ও ই-বুক", prompt: "মাহবুব সরদার সবুজের সকল বই ও ই-বুকের তালিকা করো — পড়ার ও কেনার লিংকসহ বিস্তারিত দেখাও।", context: "book" },
+  { label: "✍️ লেখা পড়বো", prompt: "ওয়েবসাইটে ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, কবিতা ও ছোট লেখা কীভাবে পড়ব? বিভাগ অনুযায়ী বলো।", context: "writing" },
+  { label: "🎓 কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও — বিষয় নির্বাচন, আবেগ, চিত্রকল্প, ছন্দ ও সম্পাদনা সহ।", context: "teaching" },
+  { label: "🎙️ আবৃত্তি শুনবো", prompt: "মাহবুব সরদার সবুজের জনপ্রিয় আবৃত্তিগুলোর তালিকা দেখাও এবং কোথায় শুনব বলো।", context: "recitation" },
+  { label: "🎨 ডিজাইন স্টুডিও", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা বা উক্তির সুন্দর কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
+  { label: "🎧 অডিও ক্লিন", prompt: "আমি একটি অডিও ক্লিন করতে চাই — নয়েজ রিমুভ, ভয়েস এনহ্যান্স ও স্টুডিও মাস্টারিং কীভাবে করব?", context: "audio" },
+  { label: "📞 যোগাযোগ", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই — ইমেইল, সোশ্যাল মিডিয়া লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
 ];
 
 // ── Dynamic context-aware quick actions ──────────────────────────────────────
@@ -1632,9 +1632,15 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজ AI Agent—আপনার সাধারণ AI সহকারী, ওয়েবসাইট গাইড, ভিশন সহায়ক ও অডিও স্টুডিও।
+    content: `আস্সালামু আলাইকুম! আমি **মাহবুব সরদার সবুজ AI Agent** — লেখক মাহবুব সরদার সবুজের অফিশিয়াল ওয়েবসাইটের বিশ্বমানের AI সহকারী।
 
-আপনি যে কোনো প্রশ্ন করতে পারেন, ছবি/অডিও/ভিডিও দিতে পারেন, বই-লেখা-আবৃত্তি খুঁজতে পারেন বা সরাসরি লাইভ সাপোর্ট নিতে পারেন।`,
+আমি যা পারি:
+• লেখক, বই, লেখা ও আবৃত্তি সম্পর্কে সব তথ্য দিতে পারি
+• ছবি দেখে বিশ্লেষণ করতে পারি
+• অডিও এডিট ও ভয়েস বিউটিফাই করতে পারি
+• যেকোনো সাধারণ প্রশ্নের উত্তর দিতে পারি
+
+কী জানতে চান? নিচের বিষয়গুলো থেকে বেছে নিন বা সরাসরি প্রশ্ন করুন!`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2690,10 +2696,11 @@ export default function AIChatbot() {
     setMessages([{
       id: "welcome-new",
       role: "assistant",
-      content: `নতুন কথোপকথন শুরু হয়েছে।
+      content: `নতুন কথোপকথন শুরু হয়েছে! ✨
 
-আমি যাচাইকৃত ওয়েবসাইট-তথ্য ধরে উত্তর দেব।
-আপনি লেখক, বই, ই-বুক, আবৃত্তি, লেখা, যোগাযোগ বা অডিও এডিট সম্পর্কে জিজ্ঞেস করতে পারেন।`,
+আমি **মাহবুব সরদার সবুজ AI Agent** — আপনাকে সবসময় সহায়তা করতে প্রস্তুত।
+
+লেখক, বই, লেখা, আবৃত্তি, ডিজাইন স্টুডিও, অডিও এডিট বা যেকোনো প্রশ্ন — নির্দ্বিধায় জিজ্ঞেস করুন!`,
       timestamp: new Date(),
     }]);
     setError(null);
@@ -3110,17 +3117,19 @@ export default function AIChatbot() {
                         fontSize: "0.76rem",
                         fontWeight: 800,
                         marginBottom: 8,
-                      }}>নতুন ডিজাইন: সবকিছু পারার মতো AI সহকারী</div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                        letterSpacing: "0.01em",
+                      }}>✨ আমি যা যা পারি</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
                         {AI_CAPABILITIES.map(item => (
                           <div key={item.label} style={{
-                            padding: "7px 8px",
+                            padding: "8px 9px",
                             borderRadius: 12,
-                            background: "rgba(2,6,18,0.52)",
-                            border: "1px solid rgba(212,168,67,0.1)",
+                            background: "linear-gradient(135deg, rgba(212,168,67,0.06), rgba(2,6,18,0.7))",
+                            border: "1px solid rgba(212,168,67,0.14)",
+                            transition: "all 0.2s",
                           }}>
-                            <div style={{ color: "rgba(212,168,67,0.9)", fontSize: "0.58rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.label}</div>
-                            <div style={{ color: "rgba(240,232,212,0.48)", fontSize: "0.5rem", lineHeight: 1.35, marginTop: 2, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.detail}</div>
+                            <div style={{ color: "rgba(247,228,165,0.95)", fontSize: "0.6rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", letterSpacing: "0.01em" }}>{item.label}</div>
+                            <div style={{ color: "rgba(240,232,212,0.55)", fontSize: "0.5rem", lineHeight: 1.4, marginTop: 3, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.detail}</div>
                           </div>
                         ))}
                       </div>
