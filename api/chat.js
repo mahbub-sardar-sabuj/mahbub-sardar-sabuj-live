@@ -212,7 +212,13 @@ function buildRecitationReply(text) {
 
 function buildAuthorReply() {
   const { author } = WEBSITE_KNOWLEDGE;
-  return `${author.name} ${author.identity}\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: ${author.birthplace}\n- বর্তমান অবস্থান: ${author.currentLocation}\n- ${author.stats.join("\n- ")}\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “${author.signatureQuote}”\n\nআরও পড়ুন: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]`;
+  return `${author.name} ${author.identity}\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: ${author.birthplace}\n- জন্মদিন: ${author.birthday || "তথ্য নেই"}\n- বর্তমান অবস্থান: ${author.currentLocation}\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “${author.signatureQuote}”\n\nআরও পড়ুন: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]`;
+}
+
+function buildSocialReply() {
+  const { author } = WEBSITE_KNOWLEDGE;
+  const sm = author.socialMedia;
+  return `মাহবুব সরদার সবুজের সোশ্যাল মিডিয়া লিংকসমূহ:\n\n📘 **Facebook প্রোফাইল**: ${sm.facebookProfile}\n📘 **Facebook পেজ**: ${sm.facebookPage}\n📸 **Instagram**: ${sm.instagram}\n▶️ **YouTube**: ${sm.youtube}\n📌 **Pinterest**: ${sm.pinterest}\n\nফলোয়ার সংখ্যা প্রকাশ করা হয় না। সরাসরি যোগাযোগ করতে: [BUTTON:/contact]`;
 }
 
 function buildContactReply() {
@@ -264,6 +270,8 @@ function buildCanonicalReply(messages = []) {
       return buildRecitationReply(userText);
     case "author":
       return buildAuthorReply();
+    case "social":
+      return buildSocialReply();
     case "contact":
       return buildContactReply();
     case "audio":

@@ -12,6 +12,7 @@ export const AUTHOR_PROFILE = {
     father: "ফানাউল্লাহ সরদার",
     mother: "আহামালী বিনতে মাসুরা"
   },
+  birthday: "১০ নভেম্বর",
   currentLocation: "কর্মসূত্রে সৌদি আরব প্রবাসী",
   signatureQuote: "কলমের স্পর্শে আমি বিদ্রোহী, ন্যায়ের পক্ষে সদা প্রফুল্লচিত্তে ছুটি; কেউ কেউ ভালোবেসে ডাকে আমায় কবি। মানুষের আচরণই আসল পরিচয় — কে কীভাবে কথা বলে, কেমন ব্যবহারে আগলে রাখে।",
   philosophy: "মানুষের আচরণই আসল পরিচয়। ভালোবাসা, বিচ্ছেদ, কষ্ট — এই অনুভূতিগুলোই মানুষকে মানুষ করে। লেখার মাধ্যমে মানুষের হৃদয়ে পৌঁছানোই তাঁর লক্ষ্য।",
@@ -24,16 +25,24 @@ export const AUTHOR_PROFILE = {
     "বাংলা সাহিত্যে মানবিক অনুভূতির সরল ও গভীর প্রকাশ"
   ],
   stats: [
-    "Facebook পেজে ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার",
     "৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন",
-    "হাজারো পাঠকের হৃদয় স্পর্শ করা লেখার বিশাল সংগ্রহ"
+    "হাজারো পাঠকের হৃদয় স্পর্শ করা লেখার বিশাল সংগ্রহ",
+    "Facebook, Instagram, YouTube ও Pinterest-এ সক্রিয় সোশ্যাল মিডিয়া উপস্থিতি"
   ],
   socialMedia: {
-    facebook: "https://facebook.com/MahbubSardarSabuj",
-    facebookPage: "MahbubSardarSabuj",
+    facebookProfile: "https://facebook.com/Lekhok.MahbubSardarSabuj",
+    facebookProfileName: "মাহবুব সরদার সবুজ (লেখক)",
+    facebookFollowers: "প্রকাশ করা হয় না",
+    facebookUsername: "Lekhok.MahbubSardarSabuj",
+    facebookPage: "https://facebook.com/MahbubSardarSabuj",
+    facebookPageName: "MahbubSardarSabuj",
+    messenger: "https://m.me/MahbubSardarSabuj",
     instagram: "https://instagram.com/mahbub_sardar_sabuj",
+    instagramUsername: "mahbub_sardar_sabuj",
     youtube: "https://youtube.com/@MahbubSardarSabuj",
-    messenger: "https://m.me/MahbubSardarSabuj"
+    youtubeUsername: "@MahbubSardarSabuj",
+    pinterest: "https://pinterest.com/MahbubSardarSabujQuotes",
+    pinterestUsername: "MahbubSardarSabujQuotes"
   }
 };
 

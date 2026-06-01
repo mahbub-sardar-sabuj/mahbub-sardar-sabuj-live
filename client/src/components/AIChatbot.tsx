@@ -164,6 +164,7 @@ const QUICK_ACTIONS = [
   { label: "🎨 ডিজাইন স্টুডিও", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা বা উক্তির সুন্দর কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
   { label: "🎧 অডিও ক্লিন", prompt: "আমি একটি অডিও ক্লিন করতে চাই — নয়েজ রিমুভ, ভয়েস এনহ্যান্স ও স্টুডিও মাস্টারিং কীভাবে করব?", context: "audio" },
   { label: "📞 যোগাযোগ", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই — ইমেইল, সোশ্যাল মিডিয়া লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
+  { label: "🌐 সোশ্যাল মিডিয়া", prompt: "মাহবুব সরদার সবুজের Facebook প্রোফাইল, পেজ, Instagram, YouTube ও Pinterest লিংক দেখাও।", context: "social" },
 ];
 
 // ── Dynamic context-aware quick actions ──────────────────────────────────────
@@ -208,6 +209,11 @@ const CONTEXT_FOLLOW_UP_ACTIONS: Record<string, { label: string; prompt: string 
     { label: "Facebook মেসেজ", prompt: "Facebook-এ লেখককে কীভাবে মেসেজ করব?" },
     { label: "লাইভ চ্যাট", prompt: "সরাসরি লাইভ চ্যাটে কথা বলতে চাই।" },
   ],
+  social: [
+    { label: "Facebook প্রোফাইল", prompt: "লেখকের Facebook প্রোফাইল লিংক দাও।" },
+    { label: "YouTube চ্যানেল", prompt: "লেখকের YouTube চ্যানেলের লিংক দাও।" },
+    { label: "Instagram", prompt: "লেখকের Instagram লিংক দাও।" },
+  ],
 };
 
 function getContextualActions(messages: Message[]): { label: string; prompt: string }[] {
@@ -227,6 +233,7 @@ function getContextualActions(messages: Message[]): { label: string; prompt: str
     ["design", ["ডিজাইন", "কার্ড", "পোস্টার", "স্টুডিও", "editor"]],
     ["audio", ["অডিও", "নয়েজ", "ভয়েস", "মাস্টারিং", "রেকর্ড"]],
     ["contact", ["যোগাযোগ", "ইমেইল", "ফেসবুক", "মেসেজ", "contact"]],
+    ["social", ["সোশ্যাল", "প্রোফাইল আইডি", "পেজ আইডি", "ফলোয়ার", "social media", "লিংক", "instagram", "youtube"]],
   ];
   for (const [ctx, keywords] of contextMap) {
     if (keywords.some(kw => recentText.includes(kw))) {
@@ -277,6 +284,10 @@ function isPhotoRequest(text: string): boolean {
     // Analysis requests with image attached — handled separately
     "ছবি বিশ্লেষণ", "ছবি দেখে", "ছবিতে", "ছবির মধ্যে",
     "analyze image", "describe image", "what is in the image",
+    // Profile/ID/social media requests — should NOT show author photo
+    "আইডি", "id কী", "id কত", "প্রোফাইল আইডি", "profile id", "page id",
+    "পেজ আইডি", "ফলোয়ার", "follower", "সাবসক্রাইবার", "subscriber",
+    "সোশ্যাল", "social media", "লিংক", "link",
   ];
   if (imageEditExclusions.some(kw => lower.includes(kw))) return false;
 

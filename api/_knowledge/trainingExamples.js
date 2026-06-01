@@ -21,6 +21,7 @@ export const INTENT_RULES = [
   { intent: "vision", priority: 84, keywords: ["ছবি", "ইমেজ", "স্ক্রিনশট", "image", "vision", "screenshot", "ফটো"] },
   { intent: "writing", priority: 72, keywords: ["লেখা", "কবিতা", "স্ট্যাটাস", "ভালোবাসা", "বিচ্ছেদ", "জীবনদর্শন", "উক্তি", "writings", "poem", "কষ্টের"] },
   { intent: "site", priority: 64, keywords: ["পেজ", "কোথায়", "লিংক", "ওয়েবসাইট", "navigate", "খুঁজে", "দেখতে চাই", "মেনু"] },
+  { intent: "social", priority: 110, keywords: ["ফলোয়ার", "follower", "প্রোফাইল", "profile", "পেজ আইডি", "page id", "facebook id", "সোশ্যাল", "social", "ইনস্টাগ্রাম", "instagram", "youtube", "ইউটিউব", "pinterest", "ফেসবুক", "facebook", "সাবসক্রাইবার", "subscriber"] },
   { intent: "author", priority: 30, keywords: ["মাহবুব", "সবুজ", "লেখক", "কবি", "পরিচয়", "জীবনী", "কে", "author", "about", "bio", "জন্ম", "গ্রাম", "সরদার"] },
 ];
 
@@ -36,7 +37,7 @@ export const TRAINING_EXAMPLES = [
     intent: "author",
     assistant: `মাহবুব সরদার সবুজ বাংলা সাহিত্যের একজন নিবেদিতপ্রাণ লেখক ও কবি। কুমিল্লার বরুড়া উপজেলার আরিফপুর গ্রামে তাঁর জন্ম। তাঁর বাবার নাম ফানাউল্লাহ সরদার, মায়ের নাম আহামালী বিনতে মাসুরা। বর্তমানে তিনি কর্মসূত্রে সৌদি আরবে প্রবাসী।
 
-তাঁর লেখনিতে প্রেম, বিচ্ছেদ, জীবনসংগ্রাম ও গভীর মানবিক অনুভূতি ফুটে ওঠে। Facebook পেজে ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার এবং ৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন।
+তাঁর লেখনিতে প্রেম, বিচ্ছেদ, জীবনসংগ্রাম ও গভীর মানবিক অনুভূতি ফুটে ওঠে। Facebook প্রোফাইলে ১ লক্ষ ২৭ হাজার (127K) ফলোয়ার এবং ৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন।
 
 তাঁর জীবনী ও সাহিত্যিক যাত্রা সম্পর্কে বিস্তারিত জানতে: [BUTTON:/about]`,
   },
@@ -69,9 +70,11 @@ export const TRAINING_EXAMPLES = [
     assistant: `লেখকের সাথে যোগাযোগের কয়েকটি উপায়:
 
 📧 **ইমেইল**: lekhokmahbubsardarsabuj@gmail.com
-📘 **Facebook**: facebook.com/MahbubSardarSabuj
+📘 **Facebook প্রোফাইল**: facebook.com/Lekhok.MahbubSardarSabuj
+📘 **Facebook পেজ**: facebook.com/MahbubSardarSabuj
 📸 **Instagram**: @mahbub_sardar_sabuj
 ▶️ **YouTube**: @MahbubSardarSabuj
+📌 **Pinterest**: pinterest.com/MahbubSardarSabujQuotes
 
 অথবা সরাসরি যোগাযোগ ফর্ম ব্যবহার করুন: [BUTTON:/contact]`,
   },
@@ -131,6 +134,19 @@ YouTube চ্যানেলেও পাবেন: youtube.com/@MahbubSardarSa
 **শুরু করতে:** চ্যাটে আপনার অডিও ফাইলটি আপলোড করুন এবং কী করতে চান বলুন — আমি বাকি কাজ করব! 🎵`,
   },
   {
+    user: "ফলোয়ার কতজন?",
+    intent: "social",
+    assistant: `মাহবুব সরদার সবুজের সোশ্যাল মিডিয়া লিংকসমূহ:
+
+📘 **Facebook প্রোফাইল**: facebook.com/Lekhok.MahbubSardarSabuj
+📘 **Facebook পেজ**: facebook.com/MahbubSardarSabuj
+📸 **Instagram**: @mahbub_sardar_sabuj
+▶️ **YouTube**: @MahbubSardarSabuj
+📌 **Pinterest**: MahbubSardarSabujQuotes
+
+ফলোয়ার সংখ্যা প্রকাশ করা হয় না। সরাসরি যোগাযোগ করতে: [BUTTON:/contact]`,
+  },
+  {
     user: "তুমি কে? তোমার পরিচয় দাও।",
     intent: "self",
     assistant: `আমি **মাহবুব সরদার সবুজ AI Agent** — লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের বিশ্বমানের প্রিমিয়াম AI সহকারী।
@@ -176,8 +192,14 @@ export function buildKnowledgeContext(knowledge) {
 - **লেখার ধরন**: ${knowledge.author.writingStyle}
 - **স্বাক্ষর উক্তি**: "${knowledge.author.signatureQuote}"
 - **বিশেষ পরিচিতি**: ${knowledge.author.knownFor.join("; ")}
+- **জন্মদিন**: ${knowledge.author.birthday || 'তথ্য নেই'}
 - **পরিসংখ্যান**: ${knowledge.author.stats.join("; ")}
-- **সোশ্যাল মিডিয়া**: Facebook: ${knowledge.author.socialMedia.facebook} | Instagram: ${knowledge.author.socialMedia.instagram} | YouTube: ${knowledge.author.socialMedia.youtube}
+- **Facebook প্রোফাইল**: ${knowledge.author.socialMedia.facebookProfile}
+- **Facebook প্রোফাইল নাম**: ${knowledge.author.socialMedia.facebookProfileName}
+- **Facebook পেজ**: ${knowledge.author.socialMedia.facebookPage}
+- **Instagram**: ${knowledge.author.socialMedia.instagram}
+- **YouTube**: ${knowledge.author.socialMedia.youtube}
+- **Pinterest**: ${knowledge.author.socialMedia.pinterest}
 
 ## ওয়েবসাইটের পেজসমূহ
 ${pageLines}
@@ -193,9 +215,12 @@ ${recitationLines}
 
 ## যোগাযোগের তথ্য
 - **ইমেইল**: ${knowledge.contact.email}
-- **Facebook**: ${knowledge.contact.facebook}
+- **Facebook প্রোফাইল**: ${knowledge.contact.facebookProfile || knowledge.contact.facebook}
+- **Facebook পেজ**: ${knowledge.contact.facebookPage || knowledge.contact.facebook}
+- **Messenger**: ${knowledge.contact.messenger}
 - **Instagram**: ${knowledge.contact.instagram}
 - **YouTube**: ${knowledge.contact.youtube}
+- **Pinterest**: ${knowledge.contact.pinterest || 'https://pinterest.com/MahbubSardarSabujQuotes'}
 - **যোগাযোগ পেজ**: ${knowledge.contact.contactPage}`;
 }
 
