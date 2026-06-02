@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react"
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { AudioResultCard } from "./chatbot/AudioResultCard";
-import { QuickActions } from "./chatbot/QuickActions";
 // Lazy-load LiveChatWidget — only needed when user opens the live chat tab
 const LiveChatWidget = lazy(() => import("./LiveChatWidget"));
 
@@ -3556,13 +3555,6 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                {!audioFile && !lastAudioBlobRef.current && !imagePreview && !isLoading && !audioProcessing && (
-                  <QuickActions
-                    messages={messages}
-                    onSelect={(text) => handleSendWithText(text)}
-                    isLoading={isLoading || audioProcessing}
-                  />
-                )}
 
                 <div style={{ display: "flex", gap: 5, alignItems: "flex-end", paddingBottom: isKeyboardViewport ? "env(safe-area-inset-bottom, 0px)" : 0 }}>
                   {/* Image attach button (hidden in audio mode) */}
@@ -3725,28 +3717,6 @@ export default function AIChatbot() {
                       </svg>
                     )}
                   </button>
-                </div>
-                <div style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginTop: 4,
-                  padding: "0 2px",
-                }}>
-                  <p style={{
-                    color: "rgba(80,100,120,0.3)",
-                    fontSize: "0.52rem",
-                    margin: 0,
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                    letterSpacing: "0.02em",
-                  }}>সবুজ AI Agent • General AI + Vision + Audio Studio • Enter = পাঠান</p>
-                  {input.length > 0 && (
-                    <span style={{
-                      color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
-                      fontSize: "0.5rem",
-                      fontFamily: "monospace",
-                    }}>{input.length}</span>
-                  )}
                 </div>
                             </div>
               )}
