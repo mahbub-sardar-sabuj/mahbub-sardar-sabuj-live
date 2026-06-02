@@ -3556,85 +3556,13 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                {!audioFile && !lastAudioBlobRef.current && !imagePreview && !isLoading && !audioProcessing && (
-                  <QuickActions
-                    messages={messages}
-                    onSelect={(text) => handleSendWithText(text)}
-                    isLoading={isLoading || audioProcessing}
-                  />
-                )}
+                {/* QuickActions hidden for cleaner UI */}
 
                 <div style={{ display: "flex", gap: 5, alignItems: "flex-end", paddingBottom: isKeyboardViewport ? "env(safe-area-inset-bottom, 0px)" : 0 }}>
-                  {/* Image attach button (hidden in audio mode) */}
-                  {!isAudioMode && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    title="ছবি যুক্ত করুন"
-                    aria-label="ছবি যুক্ত করুন"
-                    className="chatbot-icon-btn"
-                    style={{
-                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      background: imagePreview ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${imagePreview ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
-                      cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke={imagePreview ? "#D4A843" : "rgba(212,168,67,0.4)"}
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                      <circle cx="8.5" cy="8.5" r="1.5"/>
-                      <polyline points="21 15 16 10 5 21"/>
-                    </svg>
-                  </button>
-                  )}
-                  {/* Audio attach button */}
-                  <button
-                    onClick={() => audioFileInputRef.current?.click()}
-                    title="অডিও ফাইল যুক্ত করুন"
-                    aria-label="অডিও ফাইল যুক্ত করুন"
-                    className="chatbot-icon-btn"
-                    style={{
-                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      background: isAudioMode ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
-                      cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke={isAudioMode ? "#D4A843" : "rgba(212,168,67,0.4)"}
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18V5l12-2v13"/>
-                      <circle cx="6" cy="18" r="3"/>
-                      <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                  </button>
+                  {/* Image attach button hidden for cleaner UI */}
+                  {/* Audio attach button hidden for cleaner UI */}
 
-                  {/* Video upload button */}
-                  <button
-                    title="ভিডিও আপলোড করুন (অডিও এক্সট্রাক্ট হবে)"
-                    aria-label="ভিডিও আপলোড করুন"
-                    className="chatbot-icon-btn"
-                    onClick={() => videoFileInputRef.current?.click()}
-                    disabled={audioProcessing || videoConverting}
-                    style={{
-                      width: 40, height: 40, borderRadius: 10,
-                      background: "rgba(99,102,241,0.07)",
-                      border: "1px solid rgba(99,102,241,0.2)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: audioProcessing || videoConverting ? "not-allowed" : "pointer",
-                      flexShrink: 0,
-                      transition: "all 0.2s",
-                      opacity: audioProcessing || videoConverting ? 0.5 : 1,
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="23 7 16 12 23 17 23 7"/>
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                    </svg>
-                  </button>
+                  {/* Video upload button hidden for cleaner UI */}
 
 
 
