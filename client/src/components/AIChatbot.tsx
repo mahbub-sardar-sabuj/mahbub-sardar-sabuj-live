@@ -831,8 +831,8 @@ if (!document.getElementById(STYLE_ID)) {
       font-size: 0.78rem !important;
     }
     .chatbot-input:focus {
-      border-color: rgba(212,168,67,0.5) !important;
-      box-shadow: 0 0 0 2px rgba(212,168,67,0.07), inset 0 1px 3px rgba(0,0,0,0.2) !important;
+      border-color: rgba(255,255,255,0.10) !important;
+      box-shadow: none !important;
     }
     .chatbot-suggestion-btn {
       transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
@@ -911,7 +911,7 @@ if (!document.getElementById(STYLE_ID)) {
       100% { background-position: 300% center; }
     }
     .chatbot-input:focus {
-      box-shadow: 0 0 0 2px rgba(212,168,67,0.12), 0 4px 20px rgba(212,168,67,0.08) !important;
+      box-shadow: none !important;
     }
 
     .chatbot-adorsho button:focus-visible,
@@ -3641,9 +3641,9 @@ export default function AIChatbot() {
                       style={{
                         width: "100%",
                         boxSizing: "border-box",
-                        background: "rgba(8,15,28,0.97)",
+                        background: "rgba(8,15,28,0.82)",
                         color: "rgba(240,232,212,0.95)",
-                        border: "1px solid rgba(40,60,90,0.9)",
+                        border: "1px solid rgba(255,255,255,0.08)",
                         borderRadius: 14,
                         padding: "10px 13px",
                         fontSize: "0.78rem",
@@ -3657,11 +3657,11 @@ export default function AIChatbot() {
                         display: "block",
                       }}
                       onFocus={e => {
-                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.45)";
-                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(212,168,67,0.06)";
+                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)";
+                        e.currentTarget.style.boxShadow = "none";
                       }}
                       onBlur={e => {
-                        e.currentTarget.style.borderColor = "rgba(35,50,68,0.9)";
+                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     />
