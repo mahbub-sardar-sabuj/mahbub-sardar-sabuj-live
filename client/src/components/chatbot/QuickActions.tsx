@@ -85,11 +85,9 @@ export function QuickActions({ messages, onSelect, isLoading }: QuickActionsProp
   return (
     <div style={{
       display: "flex",
-      flexWrap: "nowrap",
-      gap: 7,
-      padding: "8px 4px 9px",
-      overflowX: "auto",
-      scrollbarWidth: "none",
+      flexWrap: "wrap",
+      gap: 6,
+      padding: "8px 12px 4px",
     }}>
       {actions.map((action, i) => (
         <button
@@ -99,33 +97,34 @@ export function QuickActions({ messages, onSelect, isLoading }: QuickActionsProp
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 6,
-            padding: "7px 12px",
-            background: i === 0 ? "linear-gradient(135deg, #0084FF, #00A6FF)" : "rgba(255,255,255,0.92)",
-            border: i === 0 ? "1px solid rgba(0,132,255,0.18)" : "1px solid rgba(0,132,255,0.12)",
-            borderRadius: 999,
-            color: isLoading ? "rgba(71,85,105,0.38)" : (i === 0 ? "#ffffff" : "#006AFF"),
-            fontSize: "0.66rem",
+            gap: 5,
+            padding: "5px 10px",
+            background: "rgba(212,168,67,0.07)",
+            border: "1px solid rgba(212,168,67,0.22)",
+            borderRadius: 20,
+            color: isLoading ? "rgba(212,168,67,0.3)" : "rgba(212,168,67,0.8)",
+            fontSize: "0.62rem",
             fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: isLoading ? "not-allowed" : "pointer",
             transition: "all 0.18s",
             letterSpacing: "0.01em",
             whiteSpace: "nowrap",
-            boxShadow: i === 0 ? "0 8px 18px rgba(0,132,255,0.2)" : "0 4px 14px rgba(15,23,42,0.06)",
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 10px 22px rgba(0,132,255,0.18)";
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.15)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(212,168,67,0.45)";
+              (e.currentTarget as HTMLButtonElement).style.color = "rgba(212,168,67,0.95)";
             }
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = i === 0 ? "0 8px 18px rgba(0,132,255,0.2)" : "0 4px 14px rgba(15,23,42,0.06)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(212,168,67,0.07)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(212,168,67,0.22)";
+            (e.currentTarget as HTMLButtonElement).style.color = isLoading ? "rgba(212,168,67,0.3)" : "rgba(212,168,67,0.8)";
           }}
         >
-          <span style={{ fontSize: "0.78rem" }}>{action.icon}</span>
+          <span style={{ fontSize: "0.75rem" }}>{action.icon}</span>
           {action.label}
         </button>
       ))}

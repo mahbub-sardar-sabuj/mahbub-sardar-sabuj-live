@@ -836,7 +836,7 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.2); border-radius: 4px; }
     .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.45); }
     .chatbot-input::placeholder {
-      color: rgba(71,85,105,0.48) !important;
+      color: rgba(160,140,100,0.38) !important;
       font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
       font-size: 0.78rem !important;
     }
@@ -850,7 +850,7 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-suggestion-btn:hover {
       background: rgba(212,168,67,0.1) !important;
       border-color: rgba(212,168,67,0.45) !important;
-      color: #006AFF !important;
+      color: #E8C060 !important;
       transform: translateY(-1px);
       box-shadow: 0 3px 12px rgba(212,168,67,0.12);
     }
@@ -868,8 +868,8 @@ if (!document.getElementById(STYLE_ID)) {
       transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
     }
     .chatbot-icon-btn:hover {
-      background: rgba(0,132,255,0.1) !important;
-      border-color: rgba(0,132,255,0.26) !important;
+      background: rgba(212,168,67,0.12) !important;
+      border-color: rgba(212,168,67,0.5) !important;
     }
     .chatbot-send-btn {
       transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
@@ -907,10 +907,6 @@ if (!document.getElementById(STYLE_ID)) {
     @keyframes chatbot-slide-up {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes chatbot-messenger-float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
     }
     .chatbot-drag-over {
       border-color: rgba(212,168,67,0.7) !important;
@@ -997,16 +993,16 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
         style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}
       >
         <div style={{
-          background: "linear-gradient(135deg, #0084FF 0%, #00A6FF 100%)",
-          color: "#ffffff",
-          borderRadius: "20px 20px 6px 20px",
+          background: "linear-gradient(135deg, #D4A843 0%, #C9A84C 50%, #B8923A 100%)",
+          color: "#0A1628",
+          borderRadius: "18px 18px 4px 18px",
           padding: "10px 14px",
-          maxWidth: "78%",
+          maxWidth: "80%",
           fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
           fontSize: "0.8rem",
           lineHeight: 1.7,
           fontWeight: 600,
-          boxShadow: "0 8px 22px rgba(0,132,255,0.24), 0 2px 6px rgba(0,0,0,0.08)",
+          boxShadow: "0 4px 18px rgba(212,168,67,0.3), 0 2px 6px rgba(0,0,0,0.25)",
           wordBreak: "break-word",
         }}>
           {message.imageUrl && (
@@ -1029,7 +1025,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
           ) : (
             message.content
           )}
-          <div style={{ fontSize: "0.55rem", color: "rgba(255,255,255,0.72)", marginTop: 3, textAlign: "right", letterSpacing: "0.02em" }}>
+          <div style={{ fontSize: "0.55rem", color: "rgba(10,22,40,0.45)", marginTop: 3, textAlign: "right", letterSpacing: "0.02em" }}>
             {formatTime(message.timestamp)}
           </div>
         </div>
@@ -1059,8 +1055,8 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
         overflow: "hidden",
         flexShrink: 0,
         marginTop: 3,
-        border: "2px solid rgba(255,255,255,0.95)",
-        boxShadow: "0 4px 12px rgba(15,23,42,0.12)",
+        border: "1.5px solid rgba(212,168,67,0.6)",
+        boxShadow: "0 0 12px rgba(212,168,67,0.3)",
       }}>
         <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => {
@@ -1420,17 +1416,17 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
         )}
         {renderedText && (
           <div style={{
-            background: "#F0F2F5",
-            borderRadius: "6px 20px 20px 20px",
-            padding: "10px 13px",
-            color: "#0f172a",
+            background: "linear-gradient(145deg, rgba(13,22,40,0.97) 0%, rgba(10,18,34,0.97) 100%)",
+            borderRadius: "3px 14px 14px 14px",
+            padding: "9px 12px",
+            color: "rgba(238,230,210,0.92)",
             fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
             fontSize: "0.78rem",
             lineHeight: 1.75,
             whiteSpace: "pre-wrap",
-            border: "1px solid rgba(15,23,42,0.06)",
-            borderLeft: "none",
-            boxShadow: "0 4px 14px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.72)",
+            border: "1px solid rgba(212,168,67,0.13)",
+            borderLeft: "2px solid rgba(212,168,67,0.55)",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.02)",
             wordBreak: "break-word",
           }}>
             {renderedText}
@@ -1439,7 +1435,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                 display: "inline-block",
                 width: 2,
                 height: "0.85em",
-                background: "#0084FF",
+                background: "rgba(212,168,67,0.8)",
                 marginLeft: 2,
                 verticalAlign: "text-bottom",
                 animation: "chatbot-cursor-blink 0.7s ease-in-out infinite",
@@ -1455,9 +1451,9 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                 onClick={() => onNavigate(btn.path)}
                 className="chatbot-nav-btn"
                 style={{
-                  background: "rgba(0,132,255,0.08)",
-                  border: "1px solid rgba(0,132,255,0.18)",
-                  color: "#006AFF",
+                  background: "rgba(212,168,67,0.06)",
+                  border: "1px solid rgba(212,168,67,0.3)",
+                  color: "rgba(212,168,67,0.85)",
                   borderRadius: 20,
                   padding: "4px 10px",
                   fontSize: "0.68rem",
@@ -1489,7 +1485,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
               style={{
                 background: "none",
                 border: "none",
-                color: "rgba(0,106,255,0.45)",
+                color: "rgba(212,168,67,0.35)",
                 fontSize: "0.55rem",
                 cursor: "pointer",
                 padding: "1px 4px",
@@ -1498,8 +1494,8 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                 fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                 transition: "color 0.2s",
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = "rgba(0,106,255,0.82)")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(0,106,255,0.45)")}
+              onMouseEnter={e => (e.currentTarget.style.color = "rgba(212,168,67,0.7)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(212,168,67,0.35)")}
                         >⎘ কপি</button>
           )}
           {/* Reaction buttons for assistant messages */}
@@ -1512,7 +1508,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   background: message.reaction === "up" ? "rgba(74,222,128,0.15)" : "none",
                   border: message.reaction === "up" ? "1px solid rgba(74,222,128,0.4)" : "none",
                   borderRadius: 4,
-                  color: message.reaction === "up" ? "rgba(34,197,94,0.9)" : "rgba(0,106,255,0.35)",
+                  color: message.reaction === "up" ? "rgba(74,222,128,0.9)" : "rgba(212,168,67,0.3)",
                   fontSize: "0.65rem",
                   cursor: "pointer",
                   padding: "1px 4px",
@@ -1520,7 +1516,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   transition: "all 0.2s",
                 }}
                 onMouseEnter={e => { if (message.reaction !== "up") e.currentTarget.style.color = "rgba(74,222,128,0.7)"; }}
-                onMouseLeave={e => { if (message.reaction !== "up") e.currentTarget.style.color = "rgba(0,106,255,0.35)"; }}
+                onMouseLeave={e => { if (message.reaction !== "up") e.currentTarget.style.color = "rgba(212,168,67,0.3)"; }}
               >👍</button>
               <button
                 onClick={() => onReact(message.id, "down")}
@@ -1529,7 +1525,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   background: message.reaction === "down" ? "rgba(248,113,113,0.15)" : "none",
                   border: message.reaction === "down" ? "1px solid rgba(248,113,113,0.4)" : "none",
                   borderRadius: 4,
-                  color: message.reaction === "down" ? "rgba(248,113,113,0.9)" : "rgba(0,106,255,0.35)",
+                  color: message.reaction === "down" ? "rgba(248,113,113,0.9)" : "rgba(212,168,67,0.3)",
                   fontSize: "0.65rem",
                   cursor: "pointer",
                   padding: "1px 4px",
@@ -1537,7 +1533,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   transition: "all 0.2s",
                 }}
                 onMouseEnter={e => { if (message.reaction !== "down") e.currentTarget.style.color = "rgba(248,113,113,0.7)"; }}
-                onMouseLeave={e => { if (message.reaction !== "down") e.currentTarget.style.color = "rgba(0,106,255,0.35)"; }}
+                onMouseLeave={e => { if (message.reaction !== "down") e.currentTarget.style.color = "rgba(212,168,67,0.3)"; }}
               >👎</button>
             </div>
           )}
@@ -2755,7 +2751,7 @@ export default function AIChatbot() {
               cursor: isDragging.current ? "grabbing" : "grab",
               userSelect: "none",
               touchAction: "none",
-              filter: !isOpen ? "drop-shadow(0 18px 34px rgba(0,132,255,0.28)) drop-shadow(0 10px 28px rgba(0,0,0,0.42))" : "drop-shadow(0 12px 26px rgba(0,0,0,0.32))",
+              filter: !isOpen ? "drop-shadow(0 18px 34px rgba(0,0,0,0.42)) drop-shadow(0 0 22px rgba(212,168,67,0.24))" : "drop-shadow(0 12px 26px rgba(0,0,0,0.36))",
             }}
             onMouseDown={handleBtnMouseDown}
             onTouchStart={handleBtnTouchStart}
@@ -2780,10 +2776,10 @@ export default function AIChatbot() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.92 }}
               style={{
-                width: 54, height: 54,
+                width: 46, height: 46,
                 borderRadius: "50%",
                 overflow: "hidden",
-                background: isOpen ? "linear-gradient(135deg, #0f172a, #111827)" : "linear-gradient(135deg, #0084FF 0%, #00B2FF 55%, #7C3AED 100%)",
+                background: "linear-gradient(145deg, #0d1b2a, #0a1220)",
                 flexShrink: 0,
                 cursor: "pointer",
                 display: "flex",
@@ -2791,9 +2787,9 @@ export default function AIChatbot() {
                 justifyContent: "center",
                 position: "relative",
                 zIndex: 2,
-                border: "3px solid rgba(255,255,255,0.96)",
-                boxShadow: !isOpen ? "0 16px 38px rgba(0,132,255,0.34), 0 5px 18px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.45)" : "0 10px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18)",
-                animation: !isOpen ? "chatbot-messenger-float 3.2s ease-in-out infinite" : "none",
+                border: "2px solid #D4A843",
+                boxShadow: !isOpen ? "0 0 0 4px rgba(212,168,67,0.07), 0 0 20px rgba(212,168,67,0.22), inset 0 1px 0 rgba(255,255,255,0.12)" : "0 0 0 3px rgba(212,168,67,0.07), inset 0 1px 0 rgba(255,255,255,0.10)",
+                animation: !isOpen ? "chatbot-glow-pulse 2.5s ease-in-out infinite" : "none",
               }}
             >
               {/* Pulse rings */}
@@ -2801,13 +2797,13 @@ export default function AIChatbot() {
                 <>
                   <span style={{
                     position: "absolute", inset: -5, borderRadius: "50%",
-                    border: "1.5px solid rgba(0,132,255,0.42)",
+                    border: "1.5px solid rgba(212,168,67,0.50)",
                     animation: "chatbot-ping 2s ease-in-out infinite",
                     pointerEvents: "none",
                   }} />
                   <span style={{
                     position: "absolute", inset: -10, borderRadius: "50%",
-                    border: "1px solid rgba(0,178,255,0.22)",
+                    border: "1px solid rgba(212,168,67,0.25)",
                     animation: "chatbot-ping2 2s ease-in-out infinite 0.4s",
                     pointerEvents: "none",
                   }} />
@@ -2817,7 +2813,7 @@ export default function AIChatbot() {
                 {isOpen ? (
                   <motion.span key="x"
                     initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}
-                    style={{ color: "#ffffff", fontSize: "1rem", fontWeight: 800 }}>✕</motion.span>
+                    style={{ color: "#D4A843", fontSize: "1rem", fontWeight: 700 }}>✕</motion.span>
                 ) : btnFace === 'photo' ? (
                   <motion.div key="av-photo"
                     initial={{ scale: 0.75, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.75, opacity: 0 }}
@@ -2839,10 +2835,10 @@ export default function AIChatbot() {
                     {/* Chat bubble icon */}
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                        fill="rgba(255,255,255,0.18)" stroke="#ffffff" strokeWidth="1.8" strokeLinejoin="round"/>
-                      <circle cx="8.5" cy="11" r="1" fill="#ffffff"/>
-                      <circle cx="12" cy="11" r="1" fill="#ffffff"/>
-                      <circle cx="15.5" cy="11" r="1" fill="#ffffff"/>
+                        fill="rgba(212,168,67,0.18)" stroke="#D4A843" strokeWidth="1.8" strokeLinejoin="round"/>
+                      <circle cx="8.5" cy="11" r="1" fill="#D4A843"/>
+                      <circle cx="12" cy="11" r="1" fill="#D4A843"/>
+                      <circle cx="15.5" cy="11" r="1" fill="#D4A843"/>
                     </svg>
                   </motion.div>
                 )}
@@ -2892,20 +2888,20 @@ export default function AIChatbot() {
               bottom: isCompactChatViewport ? "auto" : 80,
               right: isCompactChatViewport ? 8 : 12,
               zIndex: 150,
-              width: isCompactChatViewport ? "calc(100vw - 12px)" : 392,
-              maxWidth: "calc(100vw - 12px)",
-              height: isCompactChatViewport ? `min(720px, ${keyboardSafeChatHeight}px)` : "min(720px, calc(100vh - 92px))",
-              maxHeight: isCompactChatViewport ? `calc(${visualViewportBox.height}px - 10px)` : undefined,
-              borderRadius: isKeyboardViewport ? 22 : 28,
+              width: isCompactChatViewport ? "calc(100vw - 16px)" : 420,
+              maxWidth: "calc(100vw - 16px)",
+              height: isCompactChatViewport ? `min(680px, ${keyboardSafeChatHeight}px)` : "min(680px, calc(100vh - 100px))",
+              maxHeight: isCompactChatViewport ? `calc(${visualViewportBox.height}px - 12px)` : undefined,
+              borderRadius: isKeyboardViewport ? 18 : 24,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(245,248,255,0.98) 44%, rgba(238,244,255,0.98) 100%)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(255,255,255,0.82)",
-              boxShadow: "0 28px 80px rgba(15,23,42,0.34), 0 12px 40px rgba(0,132,255,0.18), inset 0 1px 0 rgba(255,255,255,0.9)",
-              animation: "none",
+              background: "linear-gradient(160deg, rgba(8,14,28,0.99) 0%, rgba(4,8,18,0.99) 100%)",
+              backdropFilter: "blur(22px)",
+              WebkitBackdropFilter: "blur(22px)",
+              border: "1px solid rgba(212,168,67,0.28)",
+              boxShadow: "0 24px 70px rgba(0,0,0,0.72), 0 0 0 1px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.12), 0 0 36px rgba(212,168,67,0.04)",
+              animation: "chatbot-border-glow 8s ease-in-out infinite",
               transition: "border-color 0.2s, box-shadow 0.2s",
             }}
           >
@@ -2945,10 +2941,10 @@ export default function AIChatbot() {
             {/* Watermark */}
             <div aria-hidden="true" style={{
               position: "absolute", inset: 0,
-              backgroundImage: "radial-gradient(circle at 18% 14%, rgba(0,132,255,0.12), transparent 28%), radial-gradient(circle at 82% 0%, rgba(124,58,237,0.08), transparent 24%)",
+              backgroundImage: `url(${AUTHOR_PHOTO})`,
               backgroundSize: "cover",
               backgroundPosition: "center top",
-              opacity: 1,
+              opacity: 0.04,
               pointerEvents: "none",
               zIndex: 0,
               borderRadius: "inherit",
@@ -2956,7 +2952,7 @@ export default function AIChatbot() {
             {/* Gradient overlay */}
             <div aria-hidden="true" style={{
               position: "absolute", inset: 0,
-              background: "linear-gradient(180deg, rgba(255,255,255,0.54) 0%, rgba(245,248,255,0.32) 36%, rgba(236,242,255,0.8) 100%)",
+              background: "linear-gradient(180deg, rgba(6,12,22,0.9) 0%, rgba(6,12,22,0.78) 40%, rgba(6,12,22,0.94) 100%)",
               pointerEvents: "none",
               zIndex: 0,
               borderRadius: "inherit",
@@ -2966,29 +2962,28 @@ export default function AIChatbot() {
 
               {/* ── Header ── */}
               <div style={{
-                padding: "12px 14px 11px",
+                padding: "11px 14px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: 10,
-                background: "linear-gradient(135deg, #0084FF 0%, #00A6FF 54%, #6D5DFB 100%)",
-                borderBottom: "1px solid rgba(255,255,255,0.42)",
-                boxShadow: "0 12px 28px rgba(0,132,255,0.22), inset 0 1px 0 rgba(255,255,255,0.36)",
+                gap: 8,
+                background: "radial-gradient(circle at 20% 0%, rgba(212,168,67,0.22), transparent 45%), radial-gradient(circle at 80% 100%, rgba(100,150,255,0.06), transparent 40%), linear-gradient(180deg, rgba(10,18,34,0.99) 0%, rgba(5,10,22,0.98) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.22)",
+                boxShadow: "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 30px rgba(0,0,0,0.45)",
                 flexShrink: 0,
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
                   {/* Header avatar with premium glow */}
                   <div style={{
-                    width: 44, height: 44,
-                    borderRadius: "50%",
-                    overflow: "visible",
+                    width: 46, height: 46,
+                    borderRadius: "18px",
+                    overflow: "hidden",
                     flexShrink: 0,
                     padding: 2,
-                    background: "rgba(255,255,255,0.96)",
-                    boxShadow: "0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.75)",
-                    position: "relative",
+                    background: "linear-gradient(135deg, rgba(244,213,125,0.98), rgba(201,168,76,0.3), rgba(244,213,125,0.8))",
+                    boxShadow: "0 0 0 1px rgba(212,168,67,0.3), 0 12px 28px rgba(212,168,67,0.22), 0 0 20px rgba(212,168,67,0.1)",
                   }}>
-                    <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#e5efff" }}>
+                    <div style={{ width: "100%", height: "100%", borderRadius: 16, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
                       <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         onError={(e) => {
                           const t = e.currentTarget;
@@ -2996,25 +2991,26 @@ export default function AIChatbot() {
                           t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:800;font-size:0.72rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#F0D080,#C9A84C);">AI</span>';
                         }} />
                     </div>
-                    <span aria-hidden="true" style={{ position: "absolute", right: 1, bottom: 1, width: 11, height: 11, borderRadius: "50%", background: "#31A24C", border: "2px solid #ffffff", boxShadow: "0 0 0 1px rgba(0,0,0,0.05)" }} />
                   </div>
-                  <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
                     {/* Shimmer title */}
                     <div style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontWeight: 800,
-                      fontSize: "0.9rem",
-                      letterSpacing: "0.005em",
-                      lineHeight: 1.12,
+                      fontSize: "0.86rem",
+                      letterSpacing: "0.01em",
+                      lineHeight: 1.1,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      color: "#ffffff",
-                      textShadow: "0 1px 8px rgba(0,0,0,0.18)",
+                      background: "linear-gradient(90deg, #F7E4A5 0%, #D4A843 46%, #FFF1B8 68%, #C9A84C 100%)",
+                      backgroundSize: "220% auto",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      animation: "chatbot-shimmer 4s linear infinite",
                     }}>
-                      মাহবুব সরদার সবুজ
+                      মাহবুব সরদার সবুজ AI Agent
                     </div>
-                    <div style={{ fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", color: "rgba(255,255,255,0.78)", fontSize: "0.62rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Active now • AI Messenger</div>
                   </div>
                 </div>
 
@@ -3037,10 +3033,10 @@ export default function AIChatbot() {
                     style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                       fontSize: "0.62rem",
-                      color: "#ffffff",
-                      background: "rgba(255,255,255,0.18)",
-                      border: "1px solid rgba(255,255,255,0.3)",
-                      borderRadius: 999,
+                      color: "rgba(212,168,67,0.65)",
+                      background: "rgba(212,168,67,0.05)",
+                      border: "1px solid rgba(212,168,67,0.16)",
+                      borderRadius: 8,
                       padding: "3px 8px",
                       cursor: "pointer",
                       fontWeight: 600,
@@ -3055,12 +3051,12 @@ export default function AIChatbot() {
                     aria-label="বন্ধ করুন"
                     className="chatbot-icon-btn"
                     style={{
-                      width: 34, height: 34,
+                      width: 26, height: 26,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       borderRadius: "50%",
-                      border: "1px solid rgba(255,255,255,0.28)",
-                      color: "#ffffff",
-                      background: "rgba(255,255,255,0.16)",
+                      border: "1px solid rgba(255,90,90,0.18)",
+                      color: "rgba(200,110,110,0.55)",
+                      background: "rgba(255,70,70,0.04)",
                       cursor: "pointer",
                       fontSize: "0.72rem",
                       fontWeight: 700,
@@ -3076,10 +3072,10 @@ export default function AIChatbot() {
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: 8,
-                padding: "10px 12px",
-                background: "rgba(255,255,255,0.78)",
-                borderBottom: "1px solid rgba(15,23,42,0.06)",
+                gap: 6,
+                padding: "8px 10px",
+                background: "rgba(4,8,16,0.76)",
+                borderBottom: "1px solid rgba(212,168,67,0.08)",
                 flexShrink: 0,
               }}>
                 {[
@@ -3094,16 +3090,16 @@ export default function AIChatbot() {
                       aria-pressed={active}
                       className="chatbot-touch-target"
                       style={{
-                        border: `1px solid ${active ? "rgba(0,132,255,0.22)" : "rgba(15,23,42,0.08)"}`,
-                        background: active ? "linear-gradient(135deg, rgba(0,132,255,0.12), rgba(0,178,255,0.07))" : "rgba(241,245,249,0.9)",
-                        color: active ? "#006AFF" : "rgba(51,65,85,0.72)",
-                        borderRadius: 16,
-                        padding: "9px 11px",
+                        border: `1px solid ${active ? "rgba(212,168,67,0.48)" : "rgba(212,168,67,0.13)"}`,
+                        background: active ? "linear-gradient(135deg, rgba(212,168,67,0.18), rgba(212,168,67,0.07))" : "rgba(255,255,255,0.025)",
+                        color: active ? "#F7E4A5" : "rgba(240,232,212,0.58)",
+                        borderRadius: 13,
+                        padding: "9px 10px",
                         minHeight: 44,
                         cursor: "pointer",
                         textAlign: "left",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        boxShadow: active ? "0 8px 20px rgba(0,132,255,0.12)" : "none",
+                        boxShadow: active ? "0 8px 22px rgba(212,168,67,0.08)" : "none",
                       }}
                     >
                       <span style={{ display: "block", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.02em" }}>{tab.label}</span>
@@ -3116,18 +3112,18 @@ export default function AIChatbot() {
               {/* ── Messages / Live chat ── */}
               {activeTab === "ai" ? (
                 <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
-                <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 8px", background: "linear-gradient(180deg, rgba(245,248,255,0.35), rgba(238,244,255,0.6))" }}>
+                <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
                   {messages.length <= 1 && (
                     <div style={{
                       marginBottom: 12,
                       padding: 12,
                       borderRadius: 18,
-                      border: "1px solid rgba(0,132,255,0.12)",
-                      background: "linear-gradient(145deg, rgba(255,255,255,0.96), rgba(235,243,255,0.88))",
-                      boxShadow: "0 12px 30px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.82)",
+                      border: "1px solid rgba(212,168,67,0.2)",
+                      background: "linear-gradient(145deg, rgba(212,168,67,0.08), rgba(15,23,42,0.52))",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
                     }}>
                       <div style={{
-                        color: "#0f172a",
+                        color: "#F7E4A5",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontSize: "0.76rem",
                         fontWeight: 800,
@@ -3139,12 +3135,12 @@ export default function AIChatbot() {
                           <div key={item.label} style={{
                             padding: "8px 9px",
                             borderRadius: 12,
-                            background: "rgba(255,255,255,0.78)",
-                            border: "1px solid rgba(0,132,255,0.1)",
+                            background: "linear-gradient(135deg, rgba(212,168,67,0.06), rgba(2,6,18,0.7))",
+                            border: "1px solid rgba(212,168,67,0.14)",
                             transition: "all 0.2s",
                           }}>
-                            <div style={{ color: "#006AFF", fontSize: "0.62rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", letterSpacing: "0.01em" }}>{item.label}</div>
-                            <div style={{ color: "rgba(51,65,85,0.66)", fontSize: "0.52rem", lineHeight: 1.4, marginTop: 3, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.detail}</div>
+                            <div style={{ color: "rgba(247,228,165,0.95)", fontSize: "0.6rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", letterSpacing: "0.01em" }}>{item.label}</div>
+                            <div style={{ color: "rgba(240,232,212,0.55)", fontSize: "0.5rem", lineHeight: 1.4, marginTop: 3, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.detail}</div>
                           </div>
                         ))}
                       </div>
@@ -3275,9 +3271,9 @@ export default function AIChatbot() {
               {/* ── Input ── */}
               {activeTab === "ai" && (
               <div style={{
-                padding: "10px 10px 12px",
-                borderTop: "1px solid rgba(15,23,42,0.07)",
-                background: "rgba(255,255,255,0.94)",
+                padding: "8px 10px 10px",
+                borderTop: "1px solid rgba(212,168,67,0.08)",
+                background: "rgba(4,8,16,0.97)",
                 flexShrink: 0,
               }}>
                 {/* Hidden file inputs */}
@@ -3578,14 +3574,14 @@ export default function AIChatbot() {
                     className="chatbot-icon-btn"
                     style={{
                       width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      background: imagePreview ? "rgba(0,132,255,0.12)" : "rgba(241,245,249,0.95)",
-                      border: `1px solid ${imagePreview ? "rgba(0,132,255,0.3)" : "rgba(148,163,184,0.18)"}`,
+                      background: imagePreview ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${imagePreview ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
                       cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke={imagePreview ? "#0084FF" : "rgba(71,85,105,0.56)"}
+                      stroke={imagePreview ? "#D4A843" : "rgba(212,168,67,0.4)"}
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                       <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -3601,14 +3597,14 @@ export default function AIChatbot() {
                     className="chatbot-icon-btn"
                     style={{
                       width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      background: isAudioMode ? "rgba(0,132,255,0.12)" : "rgba(241,245,249,0.95)",
-                      border: `1px solid ${isAudioMode ? "rgba(0,132,255,0.3)" : "rgba(148,163,184,0.18)"}`,
+                      background: isAudioMode ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
                       cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke={isAudioMode ? "#0084FF" : "rgba(71,85,105,0.56)"}
+                      stroke={isAudioMode ? "#D4A843" : "rgba(212,168,67,0.4)"}
                       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 18V5l12-2v13"/>
                       <circle cx="6" cy="18" r="3"/>
@@ -3625,8 +3621,8 @@ export default function AIChatbot() {
                     disabled={audioProcessing || videoConverting}
                     style={{
                       width: 40, height: 40, borderRadius: 10,
-                      background: "rgba(241,245,249,0.95)",
-                      border: "1px solid rgba(99,102,241,0.16)",
+                      background: "rgba(99,102,241,0.07)",
+                      border: "1px solid rgba(99,102,241,0.2)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       cursor: audioProcessing || videoConverting ? "not-allowed" : "pointer",
                       flexShrink: 0,
@@ -3661,12 +3657,12 @@ export default function AIChatbot() {
                       style={{
                         width: "100%",
                         boxSizing: "border-box",
-                        background: "#F0F2F5",
-                        color: "#0f172a",
-                        border: "1px solid rgba(148,163,184,0.18)",
-                        borderRadius: 22,
-                        padding: "11px 15px",
-                        fontSize: "0.82rem",
+                        background: "rgba(8,15,28,0.97)",
+                        color: "rgba(240,232,212,0.95)",
+                        border: "1px solid rgba(40,60,90,0.9)",
+                        borderRadius: 14,
+                        padding: "10px 13px",
+                        fontSize: "0.78rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         resize: "none",
                         minHeight: 36,
@@ -3677,11 +3673,11 @@ export default function AIChatbot() {
                         display: "block",
                       }}
                       onFocus={e => {
-                        e.currentTarget.style.borderColor = "rgba(0,132,255,0.28)";
-                        e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,132,255,0.08)";
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.45)";
+                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(212,168,67,0.06)";
                       }}
                       onBlur={e => {
-                        e.currentTarget.style.borderColor = "rgba(148,163,184,0.18)";
+                        e.currentTarget.style.borderColor = "rgba(35,50,68,0.9)";
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     />
@@ -3696,12 +3692,12 @@ export default function AIChatbot() {
                     }
                     style={{
                       width: 44, height: 44,
-                      borderRadius: "50%",
+                      borderRadius: 14,
                       background: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
-                        ? "linear-gradient(135deg, #0084FF 0%, #00B2FF 100%)"
-                        : "rgba(0,132,255,0.1)",
+                        ? "linear-gradient(135deg, #D8B84E 0%, #C9A84C 100%)"
+                        : "rgba(212,168,67,0.1)",
                       border: "none",
-                      color: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#ffffff" : "rgba(0,132,255,0.35)",
+                      color: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.3)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -3743,7 +3739,7 @@ export default function AIChatbot() {
                     margin: 0,
                     fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                     letterSpacing: "0.02em",
-                  }}>Messenger-style AI • ছবি, অডিও, ভিডিও ও লাইভ সাপোর্ট • Enter = পাঠান</p>
+                  }}>সবুজ AI Agent • General AI + Vision + Audio Studio • Enter = পাঠান</p>
                   {input.length > 0 && (
                     <span style={{
                       color: input.length > 500 ? "rgba(239,68,68,0.6)" : "rgba(80,100,120,0.3)",
