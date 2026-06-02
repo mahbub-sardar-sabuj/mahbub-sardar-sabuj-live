@@ -212,7 +212,12 @@ function buildRecitationReply(text) {
 
 function buildAuthorReply() {
   const { author } = WEBSITE_KNOWLEDGE;
-  return `${author.name} ${author.identity}\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: ${author.birthplace}\n- জন্মদিন: ${author.birthday || "তথ্য নেই"}\n- বর্তমান অবস্থান: ${author.currentLocation}\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “${author.signatureQuote}”\n\nআরও পড়ুন: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]`;
+  const identity = String(author.identity || "").trim();
+  const intro = identity.startsWith(author.name) ? identity : `${author.name} ${identity}`.trim();
+  const parentsLine = author.parents?.father && author.parents?.mother
+    ? `\n- পিতা-মাতা: ${author.parents.father} ও ${author.parents.mother}`
+    : "";
+  return `${intro}\n\nযাচাইকৃত পরিচিতি:\n- জন্মস্থান: ${author.birthplace}${parentsLine}\n- জন্মদিন: ${author.birthday || "তথ্য নেই"}\n- বর্তমান অবস্থান: ${author.currentLocation}\n\nতিনি নিজেকে এভাবে প্রকাশ করেন: “${author.signatureQuote}”\n\nআরও পড়ুন: [BUTTON:/about]\nলেখালেখি: [BUTTON:/writings]\nই-বুক: [BUTTON:/ebooks]`;
 }
 
 function buildSocialReply() {
@@ -227,15 +232,21 @@ function buildContactReply() {
 }
 
 function buildSiteReply(text) {
-  const matchedPage = findBestByKeywords(text, WEBSITE_KNOWLEDGE.pages);
-  if (matchedPage) {
-    return `${matchedPage.label} পেজে যেতে এখানে চাপুন: [BUTTON:${matchedPage.path}]\n\nআরও গুরুত্বপূর্ণ পেজ দেখতে লিখুন—“সব পেজ দেখাও”।`;
-  }
-
+  const wantsAllPages = /সব|সকল|সবগুলো|পেজগুলো|মেনু|all|menu/i.test(text);
   const pageList = WEBSITE_KNOWLEDGE.pages
     .filter((page) => page.key !== "home")
     .map((page) => pageButton(page.path, page.label))
     .join("\n");
+
+  if (wantsAllPages) {
+    return `ওয়েবসাইটের গুরুত্বপূর্ণ পেজগুলো:\n\n${pageList}\n\nআপনি কী খুঁজছেন বললে আমি সরাসরি সঠিক পেজে নিয়ে যেতে পারি।`;
+  }
+
+  const matchedPage = findBestByKeywords(text, WEBSITE_KNOWLEDGE.pages);
+  if (matchedPage && matchedPage.key !== "home") {
+    return `${matchedPage.label} পেজে যেতে এখানে চাপুন: [BUTTON:${matchedPage.path}]\n\nআরও গুরুত্বপূর্ণ পেজ দেখতে লিখুন—“সব পেজ দেখাও”।`;
+  }
+
   return `ওয়েবসাইটের গুরুত্বপূর্ণ পেজগুলো:\n\n${pageList}\n\nআপনি কী খুঁজছেন বললে আমি সরাসরি সঠিক পেজে নিয়ে যেতে পারি।`;
 }
 
