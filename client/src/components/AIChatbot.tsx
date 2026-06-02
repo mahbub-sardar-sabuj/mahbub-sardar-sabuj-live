@@ -145,15 +145,6 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
-const AI_CAPABILITIES = [
-  { label: "✨ সাধারণ AI", detail: "যেকোনো প্রশ্নের গভীর ও গুছানো উত্তর" },
-  { label: "📚 ওয়েবসাইট গাইড", detail: "লেখক, বই, লেখা, আবৃত্তি ও সকল পেজ" },
-  { label: "🖼️ ভিশন সহায়ক", detail: "ছবি দেখে বিশ্লেষণ ও বিস্তারিত ব্যাখ্যা" },
-  { label: "🎧 অডিও স্টুডিও", detail: "নয়েজ রিমুভ, মাস্টারিং, ভয়েস বিউটিফাই" },
-  { label: "🎬 ভিডিও → অডিও", detail: "ভিডিও থেকে অডিও বের করে প্রফেশনাল এডিট" },
-  { label: "💬 লাইভ সাপোর্ট", detail: "প্রয়োজনে সরাসরি লেখকের সাথে যোগাযোগ" },
-];
-
 const QUICK_ACTIONS = [
   { label: "👤 লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
   { label: "📖 বই ও ই-বুক", prompt: "মাহবুব সরদার সবুজের সকল বই ও ই-বুকের তালিকা করো — পড়ার ও কেনার লিংকসহ বিস্তারিত দেখাও।", context: "book" },
@@ -2702,6 +2693,18 @@ export default function AIChatbot() {
     ));
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isOpen]);
+
   const clearChat = () => {
     setMessages([{
       id: "welcome-new",
@@ -2851,6 +2854,28 @@ export default function AIChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            key="chatbot-page-lock"
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onWheel={(e) => e.preventDefault()}
+            onTouchMove={(e) => e.preventDefault()}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 120,
+              background: "rgba(0,0,0,0.18)",
+              backdropFilter: "blur(1.5px)",
+              WebkitBackdropFilter: "blur(1.5px)",
+              cursor: "default",
+              touchAction: "none",
+            }}
+          />
+        )}
+        {isOpen && (
+          <motion.div
             id="ai-chatbot-dialog"
             role="dialog"
             aria-modal="false"
@@ -2885,12 +2910,12 @@ export default function AIChatbot() {
               position: "fixed",
               top: isCompactChatViewport ? Math.max(6, visualViewportBox.offsetTop + 6) : undefined,
               bottom: isCompactChatViewport ? "auto" : 80,
-              right: isCompactChatViewport ? 8 : 12,
+              right: isCompactChatViewport ? 16 : 16,
               zIndex: 150,
-              width: isCompactChatViewport ? "calc(100vw - 16px)" : 420,
-              maxWidth: "calc(100vw - 16px)",
-              height: isCompactChatViewport ? `min(680px, ${keyboardSafeChatHeight}px)` : "min(680px, calc(100vh - 100px))",
-              maxHeight: isCompactChatViewport ? `calc(${visualViewportBox.height}px - 12px)` : undefined,
+              width: isCompactChatViewport ? "calc(100vw - 32px)" : 390,
+              maxWidth: "calc(100vw - 32px)",
+              height: isCompactChatViewport ? `min(610px, ${keyboardSafeChatHeight}px)` : "min(620px, calc(100vh - 110px))",
+              maxHeight: isCompactChatViewport ? `calc(${visualViewportBox.height}px - 20px)` : undefined,
               borderRadius: isKeyboardViewport ? 18 : 24,
               display: "flex",
               flexDirection: "column",
@@ -3112,39 +3137,6 @@ export default function AIChatbot() {
               {activeTab === "ai" ? (
                 <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
                 <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
-                  {messages.length <= 1 && (
-                    <div style={{
-                      marginBottom: 12,
-                      padding: 12,
-                      borderRadius: 18,
-                      border: "1px solid rgba(212,168,67,0.2)",
-                      background: "linear-gradient(145deg, rgba(212,168,67,0.08), rgba(15,23,42,0.52))",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
-                    }}>
-                      <div style={{
-                        color: "#F7E4A5",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.76rem",
-                        fontWeight: 800,
-                        marginBottom: 8,
-                        letterSpacing: "0.01em",
-                      }}>✨ আমি যা যা পারি</div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
-                        {AI_CAPABILITIES.map(item => (
-                          <div key={item.label} style={{
-                            padding: "8px 9px",
-                            borderRadius: 12,
-                            background: "linear-gradient(135deg, rgba(212,168,67,0.06), rgba(2,6,18,0.7))",
-                            border: "1px solid rgba(212,168,67,0.14)",
-                            transition: "all 0.2s",
-                          }}>
-                            <div style={{ color: "rgba(247,228,165,0.95)", fontSize: "0.6rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", letterSpacing: "0.01em" }}>{item.label}</div>
-                            <div style={{ color: "rgba(240,232,212,0.55)", fontSize: "0.5rem", lineHeight: 1.4, marginTop: 3, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{item.detail}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                   {messages.map((msg, idx) => (
                     <MessageBubble
                       key={msg.id}
