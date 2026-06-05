@@ -27,6 +27,8 @@ interface Message {
   processingVersion?: string;  // processing engine version (v9.0)
   operationsApplied?: string[]; // list of applied operation names
   outputSizeKB?: number;       // output file size in KB
+  originalAudioUrl?: string;   // original (pre-edit) audio URL for Before/After comparison
+  originalAudioName?: string;  // original audio filename
   isCopied?: boolean;          // message copy state
   reaction?: "up" | "down" | null; // user reaction
   isStreaming?: boolean;         // true while streaming token-by-token
@@ -377,6 +379,14 @@ const AUDIO_EDIT_KEYWORDS = [
   "গোল্ডেন ভয়েস", "golden voice", "সোনালি কণ্ঠ",
   "ডায়মন্ড ভয়েস", "diamond voice", "হীরার মতো",
   "ভেলভেট ভয়েস", "velvet voice", "মখমল কণ্ঠ",
+  // New tool keywords
+  "ট্রিম", "trim", "কাটো", "কাট", "clip", "ক্লিপ",
+  "সাইলেন্স রিমুভ", "silence remove", "নীরব অংশ",
+  "speed up", "slow down", "দ্রুত", "ধীরে", "তাড়াতাড়ি",
+  "pitch up", "pitch down", "পিচ বাড়াও", "পিচ কমাও",
+  "bass boost", "treble boost", "বেস বুস্ট", "ট্রেবল বুস্ট",
+  "fade in", "fade out", "ফেড ইন", "ফেড আউট",
+  "mono to stereo", "মনো স্টেরিও",
 ];
 
 // Keywords that indicate the user is asking about poetry/recitation as CONTENT (not audio editing)
@@ -1134,6 +1144,8 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
             audioPipeline={message.audioPipeline}
             audioTechnicalNote={message.audioTechnicalNote}
             outputSizeKB={message.outputSizeKB}
+            originalAudioUrl={message.originalAudioUrl}
+            originalAudioName={message.originalAudioName}
           />
         )}
         {/* ── LEGACY: keep for backward compat — hidden via display:none ── */}
@@ -1994,6 +2006,7 @@ export default function AIChatbot() {
         if (audioProcessing) return;
         setAudioProcessing(true);
         setError(null);
+        const autoRunOriginalUrl = URL.createObjectURL(file);
         const userMsg: Message = {
           id: `user-audio-${Date.now()}`,
           role: "user",
@@ -2002,7 +2015,7 @@ export default function AIChatbot() {
           userAudioName: file.name,
           userAudioSize: file.size,
           userAudioMime: file.type || "audio/wav",
-          userAudioUrl: URL.createObjectURL(file),
+          userAudioUrl: autoRunOriginalUrl,
           userAudioInstruction: pendingInstruction,
         };
         setMessages(prev => [...prev, userMsg]);
@@ -2073,6 +2086,7 @@ export default function AIChatbot() {
           const audioFilename = `edited_${Date.now()}.mp3`;
           // Save for iterative editing
           lastAudioBlobRef.current = { blob: wavBlob, name: audioFilename };
+          const autoRunOutputSizeKB = Math.round(resultBytes.byteLength / 1024);
           setMessages(prev => [...prev, {
             id: `ai-audio-${Date.now()}`,
             role: "assistant",
@@ -2085,6 +2099,9 @@ export default function AIChatbot() {
             audioIntent: intent,
             audioPipeline: pipeline,
             audioTechnicalNote: technicalNote,
+            outputSizeKB: autoRunOutputSizeKB,
+            originalAudioUrl: autoRunOriginalUrl,
+            originalAudioName: file.name,
           }]);
           notifyChatbotActivity({
             type: "audio_edit_completed",
@@ -2168,6 +2185,8 @@ export default function AIChatbot() {
     if (!instruction) instruction = "অডিওটি স্বয়ংক্রিয়ভাবে মান উন্নত করো, নয়েজ কমাও";
 
     const sourceName = audioFile?.name || lastAudioBlobRef.current?.name || "audio.wav";
+    // Create original audio URL for Before/After comparison
+    const originalAudioObjectUrl = URL.createObjectURL(sourceFile);
     const userMsg: Message = {
       id: `user-audio-${Date.now()}`,
       role: "user",
@@ -2176,13 +2195,13 @@ export default function AIChatbot() {
       userAudioName: sourceName,
       userAudioSize: sourceFile.size,
       userAudioMime: sourceFile.type || "audio/wav",
-      userAudioUrl: URL.createObjectURL(sourceFile),
+      userAudioUrl: originalAudioObjectUrl,
       userAudioInstruction: instruction,
     };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setAudioProcessing(true);
-    setAudioProcessingStage("অডিও ফাইল পড়া হচ্ছে...");
+    setAudioProcessingStage("অডিও ফাইল পড়া হচ্ছে...");
     setError(null);
     // Clear audioFile immediately so the banner disappears right away
     setAudioFile(null);
@@ -2299,6 +2318,8 @@ export default function AIChatbot() {
         processingVersion,
         operationsApplied,
         outputSizeKB,
+        originalAudioUrl: originalAudioObjectUrl,
+        originalAudioName: sourceName,
       }]);
       notifyChatbotActivity({
         type: "audio_edit_completed",
@@ -2344,6 +2365,34 @@ export default function AIChatbot() {
   // setInput + setTimeout এর race condition এড়াতে এই ফাংশন ব্যবহার করা হয়
   const handleSendWithText = useCallback(async (chipText: string) => {
     if (!chipText.trim() || isLoading) return;
+
+    // ── Audio mode: if audio file is selected OR last audio exists, run audio edit ──
+    if (isAudioEditRequest(chipText)) {
+      if (audioFile || lastAudioBlobRef.current) {
+        // Set input so handleAudioEdit picks it up
+        setInput(chipText.trim());
+        // Use setTimeout to ensure input state is set before calling
+        setTimeout(() => handleAudioEdit(chipText.trim()), 50);
+        return;
+      }
+      // No audio file — show prompt to upload
+      const userMsgAudio: Message = {
+        id: `user-${Date.now()}`,
+        role: "user",
+        content: chipText.trim(),
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, userMsgAudio]);
+      setMessages(prev => [...prev, {
+        id: `ai-audio-prompt-${Date.now()}`,
+        role: "assistant",
+        content: `অডিও এডিটিংয়ের জন্য প্রস্তুত! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি "${chipText.trim()}" অনুযায়ী এডিট করে দেব।`,
+        timestamp: new Date(),
+      }]);
+      setTimeout(() => audioFileInputRef.current?.click(), 400);
+      return;
+    }
+
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -2387,7 +2436,7 @@ export default function AIChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, messages]);
+  }, [isLoading, messages, audioFile, handleAudioEdit, isAudioEditRequest]);
 
   const handleSend = useCallback(async () => {
     // Case 1: Audio file already selected + any text = run edit immediately
@@ -3478,6 +3527,20 @@ export default function AIChatbot() {
                           // ── অ্যাডভান্সড ──
                           { label: "🎹 হার্মনি", cmd: "ভোকাল হার্মনি যোগ করো" },
                           { label: "🌐 স্টেরিও ওয়াইড", cmd: "স্টেরিও ফিল্ড প্রশস্ত করো" },
+                          // ── নতুন টুলস ──
+                          { label: "✂️ ট্রিম", cmd: "অডিওর শুরু ও শেষ ট্রিম করো" },
+                          { label: "🔇 সাইলেন্স রিমুভ", cmd: "নীরব অংশ সরাও silence remove" },
+                          { label: "⚡ স্পিড আপ", cmd: "অডিও speed up দ্রুত করো" },
+                          { label: "🐢 স্লো ডাউন", cmd: "অডিও slow down ধীরে করো" },
+                          { label: "🎵 পিচ বাড়াও", cmd: "পিচ বাড়াও pitch up" },
+                          { label: "🎵 পিচ কমাও", cmd: "পিচ কমাও pitch down" },
+                          { label: "🔊 বেস বুস্ট", cmd: "বেস বুস্ট bass boost করো" },
+                          { label: "🎛️ ট্রেবল বুস্ট", cmd: "treble boost ট্রেবল বাড়াও" },
+                          { label: "🔁 ইকো যোগ", cmd: "ইকো echo যোগ করো" },
+                          { label: "🏛️ রিভার্ব যোগ", cmd: "রিভার্ব reverb যোগ করো" },
+                          { label: "🌅 ফেড ইন", cmd: "শুরুতে ফেড fade in যোগ করো" },
+                          { label: "🌇 ফেড আউট", cmd: "শেষে ফেড fade out যোগ করো" },
+                          { label: "🔄 মনো → স্টেরিও", cmd: "মনো থেকে স্টেরিও রূপান্তর mono to stereo" },
                         ] : []),
                       ].map(preset => (
                         <button

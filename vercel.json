@@ -16,10 +16,12 @@
       "memory": 256
     },
     "api/audio-edit.js": {
+      "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     },
     "api/video-to-audio.js": {
+      "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     },

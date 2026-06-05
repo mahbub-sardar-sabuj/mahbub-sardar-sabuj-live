@@ -809,6 +809,31 @@ function deterministicAudioPlan(prompt = "") {
   if (has(/vinyl|ভিনাইল|পুরনো রেকর্ড/)) addOpOnce(operations, "vinyl_effect");
   if (has(/tape|cassette|ক্যাসেট/)) addOpOnce(operations, "tape_saturation", { drive: 0.8 });
   if (has(/reverse|রিভার্স|উল্টো/)) addOpOnce(operations, "reverse");
+  // ── Trim / Cut ──────────────────────────────────────────────────────────────
+  if (has(/trim|ট্রিম|কাটো|কাট|শুরু থেকে|শেষ থেকে|clip|ক্লিপ/) && !operations.some(op => op.type === "trim")) addOpOnce(operations, "trim", { start_ms: 0 });
+  if (has(/silence.*remove|নীরবতা.*সরাও|নীরব অংশ|silence remove/)) addOpOnce(operations, "silence_remove", { threshold_db: -40 });
+  // ── Speed / Tempo ────────────────────────────────────────────────────────────
+  if (has(/speed.*up|দ্রুত.*করো|গতি.*বাড়াও|faster|তাড়াতাড়ি|দ্রুততর/) && !operations.some(op => op.type === "speed_change")) addOpOnce(operations, "speed_change", { factor: 1.25 });
+  if (has(/slow.*down|ধীর.*করো|গতি.*কমাও|slower|আস্তে|ধীরে/) && !operations.some(op => op.type === "speed_change")) addOpOnce(operations, "speed_change", { factor: 0.8 });
+  if (has(/speed|গতি|tempo|টেম্পো/) && !operations.some(op => op.type === "speed_change")) addOpOnce(operations, "speed_change", { factor: 1.0 });
+  // ── Pitch ────────────────────────────────────────────────────────────────────
+  if (has(/pitch.*up|পিচ.*বাড়াও|উঁচু.*পিচ|higher.*pitch|তীক্ষ্ণ.*কণ্ঠ/) && !operations.some(op => op.type === "pitch_shift")) addOpOnce(operations, "pitch_shift", { semitones: 2 });
+  if (has(/pitch.*down|পিচ.*কমাও|নিচু.*পিচ|lower.*pitch|গভীর.*পিচ/) && !operations.some(op => op.type === "pitch_shift")) addOpOnce(operations, "pitch_shift", { semitones: -2 });
+  if (has(/pitch|পিচ/) && !operations.some(op => op.type === "pitch_shift" || op.type === "pitch_without_speed")) addOpOnce(operations, "pitch_without_speed", { semitones: 0 });
+  // ── Bass / Treble ────────────────────────────────────────────────────────────
+  if (has(/bass.*boost|বেস.*বাড়াও|বেস.*বেশি|more.*bass|heavy.*bass/)) addOpOnce(operations, "bass_boost", { db: 5 });
+  if (has(/bass.*cut|বেস.*কমাও|বেস.*কম|less.*bass|reduce.*bass/)) addOpOnce(operations, "bass_cut", { db: 4 });
+  if (has(/treble.*boost|ট্রেবল.*বাড়াও|উচ্চ.*ফ্রিকোয়েন্সি.*বাড়াও/)) addOpOnce(operations, "treble_boost", { db: 4 });
+  if (has(/treble.*cut|ট্রেবল.*কমাও|উচ্চ.*ফ্রিকোয়েন্সি.*কমাও/)) addOpOnce(operations, "treble_cut", { db: 4 });
+  // ── Echo / Reverb ────────────────────────────────────────────────────────────
+  if (has(/echo|ইকো/) && !operations.some(op => op.type === "echo")) addOpOnce(operations, "echo", { delay_ms: 300, decay: 0.4 });
+  if (has(/reverb|রিভার্ব/) && !operations.some(op => op.type === "reverb")) addOpOnce(operations, "reverb", { room_size: 0.5 });
+  // ── Stereo ───────────────────────────────────────────────────────────────────
+  if (has(/stereo.*mono|স্টেরিও.*মনো|mono.*convert|মনো.*রূপান্তর/)) addOpOnce(operations, "stereo_to_mono");
+  if (has(/mono.*stereo|মনো.*স্টেরিও/)) addOpOnce(operations, "mono_to_stereo");
+  // ── Fade ─────────────────────────────────────────────────────────────────────
+  if (has(/fade.*in|ফেড.*ইন|শুরুতে.*ফেড/) && !operations.some(op => op.type === "fade_in")) addOpOnce(operations, "fade_in", { duration_ms: 1500 });
+  if (has(/fade.*out|ফেড.*আউট|শেষে.*ফেড/) && !operations.some(op => op.type === "fade_out")) addOpOnce(operations, "fade_out", { duration_ms: 2000 });
   if (has(/normalize|নরমাল|লেভেল|volume|ভলিউম|loud|জোরে/)) addOpOnce(operations, "loudness_normalize", { target_lufs: -16 });
 
   if (operations.length && !operations.some(op => ["loudness_normalize", "normalize", "limiter", "true_peak_limit"].includes(op.type))) {
