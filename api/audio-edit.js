@@ -821,13 +821,13 @@ function deterministicAudioPlan(prompt = "") {
   if (has(/pitch.*down|পিচ.*কমাও|নিচু.*পিচ|lower.*pitch|গভীর.*পিচ/) && !operations.some(op => op.type === "pitch_shift")) addOpOnce(operations, "pitch_shift", { semitones: -2 });
   if (has(/pitch|পিচ/) && !operations.some(op => op.type === "pitch_shift" || op.type === "pitch_without_speed")) addOpOnce(operations, "pitch_without_speed", { semitones: 0 });
   // ── Bass / Treble ────────────────────────────────────────────────────────────
-  if (has(/bass.*boost|বেস.*বাড়াও|বেস.*বেশি|more.*bass|heavy.*bass/)) addOpOnce(operations, "bass_boost", { db: 5 });
+  if (has(/bass.*boost|বেস.*বাড়াও|বেস.*বেশি|বেস.*বৃদ্ধি|more.*bass|heavy.*bass/)) addOpOnce(operations, "bass_boost", { db: 6 });
   if (has(/bass.*cut|বেস.*কমাও|বেস.*কম|less.*bass|reduce.*bass/)) addOpOnce(operations, "bass_cut", { db: 4 });
-  if (has(/treble.*boost|ট্রেবল.*বাড়াও|উচ্চ.*ফ্রিকোয়েন্সি.*বাড়াও/)) addOpOnce(operations, "treble_boost", { db: 4 });
+  if (has(/treble.*boost|ট্রেবল.*বাড়াও|উচ্চ.*ফ্রিকোয়েন্সি.*বাড়াও|ট্রেবল.*বৃদ্ধি/)) addOpOnce(operations, "treble_boost", { db: 5 });
   if (has(/treble.*cut|ট্রেবল.*কমাও|উচ্চ.*ফ্রিকোয়েন্সি.*কমাও/)) addOpOnce(operations, "treble_cut", { db: 4 });
   // ── Echo / Reverb ────────────────────────────────────────────────────────────
-  if (has(/echo|ইকো/) && !operations.some(op => op.type === "echo")) addOpOnce(operations, "echo", { delay_ms: 300, decay: 0.4 });
-  if (has(/reverb|রিভার্ব/) && !operations.some(op => op.type === "reverb")) addOpOnce(operations, "reverb", { room_size: 0.5 });
+  if (has(/echo|ইকো|প্রতিধ্বনি/) && !operations.some(op => op.type === "echo")) addOpOnce(operations, "echo", { delay_ms: 300, decay: 0.4 });
+  if (has(/reverb|রিভার্ব|হল.*ইফেক্ট|গুমগুম/) && !operations.some(op => op.type === "reverb")) addOpOnce(operations, "reverb", { room_size: 0.6 });
   // ── Stereo ───────────────────────────────────────────────────────────────────
   if (has(/stereo.*mono|স্টেরিও.*মনো|mono.*convert|মনো.*রূপান্তর/)) addOpOnce(operations, "stereo_to_mono");
   if (has(/mono.*stereo|মনো.*স্টেরিও/)) addOpOnce(operations, "mono_to_stereo");
@@ -1449,8 +1449,8 @@ function buildFFmpegFilter(operations, vocalDuration) {
         const delay = params.delay_ms || 300;
         const decay = params.decay || 0.5;
         const reps = Math.min(params.repeats || 3, 5);
-        let echoStr = "aecho=0.8:0.7";
-        for (let i = 1; i <= reps; i++) echoStr += `:${delay*i}:${Math.pow(decay,i).toFixed(2)}`;
+        let echoStr = `aecho=0.8:0.7:${delay}:${decay}`;
+        for (let i = 2; i <= reps; i++) echoStr += `|${delay*i}:${Math.pow(decay,i).toFixed(2)}`;
         filters.push(echoStr);
         break;
       }
@@ -2332,9 +2332,16 @@ export default async function handler(req, res) {
         });
       }
 
-      res.setHeader("Content-Type", "audio/mpeg");
-      res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation || "Smart mix completed"));
-      return res.send(resultBuffer);
+      // Force JSON for chatbot consistency
+      return res.status(200).json({
+        ...aiResponse,
+        audioData: resultBuffer.toString("base64"),
+        audioMime: "audio/mpeg",
+        pipeline: mixPipeline,
+        intent: "smart_mix",
+        vocalContext,
+        description: aiResponse.explanation || `স্মার্ট মিক্স সম্পন্ন — ${vocalContext} কণ্ঠের জন্য অপ্টিমাইজড মিউজিক মিক্সিং করা হয়েছে।`,
+      });
     }
 
     // ── Standard processing (no music file) ──────────────────────────────────
@@ -2387,10 +2394,17 @@ export default async function handler(req, res) {
       });
     }
 
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("X-AI-Explanation", encodeURIComponent(aiResponse.explanation || ""));
-    return res.send(resultBuffer);
-
+        // Force JSON for chatbot consistency
+    return res.status(200).json({
+      ...aiResponse,
+      audioData: resultBuffer.toString("base64"),
+      audioMime: "audio/mpeg",
+      vocalContext,
+      vocalDuration: vocalDuration ? Math.round(vocalDuration) : null,
+      processingVersion: "v9.0",
+      operationsApplied: operations.map(op => op.type),
+      outputSizeKB: Math.round(resultBuffer.length / 1024),
+    });
   } catch (error) {
     console.error("Audio processing error:", error);
     // Cleanup on error
