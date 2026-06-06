@@ -1645,7 +1645,7 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম! আমি **মাহবুব সরদার সবুজ AI Agent Pro Max** — লেখক মাহবুব সরদার সবুজের অফিশিয়াল ওয়েবসাইটের সর্বোচ্চ মানের AI সহকারী।
+    content: `আস্সালামু আলাইকুম! আমি **মাহবুব সরদার সবুজ AI Agent** — লেখক মাহবুব সরদার সবুজের অফিশিয়াল ওয়েবসাইটের বিশ্বমানের AI সহকারী।
 
 ✨ **Pro Max সক্ষমতা:**
 • লেখক, বই, লেখা ও আবৃত্তি — সম্পূর্ণ তথ্যভাণ্ডার
@@ -2763,7 +2763,7 @@ export default function AIChatbot() {
       role: "assistant",
       content: `নতুন কথোপকথন শুরু হয়েছে! ✨
 
-আমি **মাহবুব সরদার সবুজ AI Agent Pro Max** — আপনাকে সবসময় সহায়তা করতে প্রস্তুত।
+আমি **মাহবুব সরদার সবুজ AI Agent** — আপনাকে সবসময় সহায়তা করতে প্রস্তুত।
 
 🎧 **অডিও এডিটিং:** ফাইল আপলোড করুন → বাংলায় নির্দেশ দিন → AI স্বয়ংক্রিয়ভাবে এডিট করবে
 
@@ -3088,7 +3088,6 @@ export default function AIChatbot() {
                       animation: "chatbot-shimmer 4s linear infinite",
                     }}>
                       মাহবুব সরদার সবুজ AI Agent
-                      <span style={{ fontSize: "0.42rem", fontWeight: 900, letterSpacing: "0.08em", padding: "1px 5px", background: "linear-gradient(135deg, rgba(212,168,67,0.25), rgba(255,200,50,0.15))", border: "1px solid rgba(212,168,67,0.5)", borderRadius: 4, color: "#F7E4A5", marginLeft: 4, verticalAlign: "middle", display: "inline-block" }}>PRO MAX</span>
                     </div>
                   </div>
                 </div>
@@ -3158,7 +3157,7 @@ export default function AIChatbot() {
                 flexShrink: 0,
               }}>
                 {[
-                  { key: "ai", label: "AI Agent Pro Max", sub: "প্রশ্ন, ছবি, অডিও এডিটিং" },
+                  { key: "ai", label: "AI Agent", sub: "প্রশ্ন, ছবি, অডিও এডিটিং" },
                   { key: "live", label: "Live Chat", sub: "সরাসরি সহায়তা" },
                 ].map(tab => {
                   const active = activeTab === tab.key;
