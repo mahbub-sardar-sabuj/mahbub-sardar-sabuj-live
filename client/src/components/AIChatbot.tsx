@@ -148,15 +148,15 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
 const QUICK_ACTIONS = [
-  { label: "👤 লেখক পরিচিতি", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
-  { label: "📖 বই ও ই-বুক", prompt: "মাহবুব সরদার সবুজের সকল বই ও ই-বুকের তালিকা করো — পড়ার ও কেনার লিংকসহ বিস্তারিত দেখাও।", context: "book" },
-  { label: "✍️ লেখা পড়বো", prompt: "ওয়েবসাইটে ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, কবিতা ও ছোট লেখা কীভাবে পড়ব? বিভাগ অনুযায়ী বলো।", context: "writing" },
-  { label: "🎓 কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও — বিষয় নির্বাচন, আবেগ, চিত্রকল্প, ছন্দ ও সম্পাদনা সহ।", context: "teaching" },
+  { label: "👤 লেখক কে?", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
+  { label: "📖 বই দেখাও", prompt: "মাহবুব সরদার সবুজের সকল বই ও ই-বুকের তালিকা করো — পড়ার ও কেনার লিংকসহ বিস্তারিত দেখাও।", context: "book" },
+  { label: "💔 বিচ্ছেদের লেখা", prompt: "বিচ্ছেদ ও ভালোবাসার সেরা লেখাগুলো দেখাও — আমি পড়তে চাই।", context: "writing" },
   { label: "🎙️ আবৃত্তি শুনবো", prompt: "মাহবুব সরদার সবুজের জনপ্রিয় আবৃত্তিগুলোর তালিকা দেখাও এবং কোথায় শুনব বলো।", context: "recitation" },
-  { label: "🎨 ডিজাইন স্টুডিও", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা বা উক্তির সুন্দর কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
-  { label: "🎧 অডিও এডিট করুন", prompt: "আমি একটি অডিও ফাইল এডিট করতে চাই। নিচের 🎧 বাটনে ক্লিক করে ফাইল আপলোড করুন, তারপর বলুন কী করতে চান — নয়েজ রিমুভ, ভয়েস ক্লিন, মাস্টারিং ইত্যাদি।", context: "audio" },
-  { label: "📞 যোগাযোগ", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই — ইমেইল, সোশ্যাল মিডিয়া লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
-  { label: "🌐 সোশ্যাল মিডিয়া", prompt: "মাহবুব সরদার সবুজের Facebook প্রোফাইল, পেজ, Instagram, YouTube ও Pinterest লিংক দেখাও।", context: "social" },
+  { label: "✍️ কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও — বিষয় নির্বাচন, আবেগ, চিত্রকল্প, ছন্দ ও সম্পাদনা সহ।", context: "teaching" },
+  { label: "🎨 কার্ড বানাবো", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা বা উক্তির সুন্দর কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
+  { label: "🎧 অডিও এডিট", prompt: "আমি একটি অডিও ফাইল এডিট করতে চাই। নিচের 🎧 বাটনে ক্লিক করে ফাইল আপলোড করুন, তারপর বলুন কী করতে চান।", context: "audio" },
+  { label: "📩 যোগাযোগ করবো", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই — ইমেইল, সোশ্যাল মিডিয়া লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
+  { label: "🌐 সোশ্যাল লিংক", prompt: "মাহবুব সরদার সবুজের Facebook, Instagram, YouTube ও Pinterest লিংক দেখাও।", context: "social" },
 ];
 
 // ── Dynamic context-aware quick actions ──────────────────────────────────────
@@ -841,8 +841,8 @@ if (!document.getElementById(STYLE_ID)) {
       font-size: 0.78rem !important;
     }
     .chatbot-input:focus {
-      border-color: rgba(255,255,255,0.10) !important;
-      box-shadow: none !important;
+      border-color: rgba(212,168,67,0.35) !important;
+      box-shadow: 0 0 0 2px rgba(212,168,67,0.08) !important;
     }
     .chatbot-suggestion-btn {
       transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
@@ -893,6 +893,55 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-tab-btn:hover:not(.active) {
       color: rgba(212,168,67,0.75) !important;
       background: rgba(212,168,67,0.04) !important;
+    }
+    /* ── Visitor-Friendly New Animations ── */
+    @keyframes chatbot-float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes chatbot-notification-pop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes chatbot-wave {
+      0% { transform: rotate(0deg); }
+      10% { transform: rotate(14deg); }
+      20% { transform: rotate(-8deg); }
+      30% { transform: rotate(14deg); }
+      40% { transform: rotate(-4deg); }
+      50% { transform: rotate(10deg); }
+      60% { transform: rotate(0deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes chatbot-heartbeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.15); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.1); }
+      70% { transform: scale(1); }
+    }
+    @keyframes chatbot-slide-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes chatbot-typing-wave {
+      0%, 60%, 100% { transform: initial; }
+      30% { transform: translateY(-8px); }
+    }
+    @keyframes chatbot-badge-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+      50% { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+    }
+    .chatbot-suggestion-chip {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .chatbot-suggestion-chip:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 4px 16px rgba(212,168,67,0.2);
+    }
+    .chatbot-suggestion-chip:active {
+      transform: scale(0.96);
     }
     .chatbot-audio-player {
       accent-color: #D4A843;
@@ -1576,10 +1625,14 @@ function TypingIndicator({ stage }: { stage?: string | null }) {
           {[0, 1, 2].map(i => (
             <div key={i} style={{
               width: 7, height: 7, borderRadius: "50%",
-              background: "linear-gradient(135deg, #E8C060, #D4A843)",
-              boxShadow: "0 0 5px rgba(212,168,67,0.45)",
-              animation: `chatbot-dot-bounce 1.2s ease-in-out infinite`,
-              animationDelay: `${i * 0.2}s`,
+              background: i === 0
+                ? "linear-gradient(135deg, #F7E4A5, #D4A843)"
+                : i === 1
+                ? "linear-gradient(135deg, #E8C060, #C9A84C)"
+                : "linear-gradient(135deg, #D4A843, #B8922E)",
+              boxShadow: `0 0 ${6 + i * 2}px rgba(212,168,67,${0.4 + i * 0.1})`,
+              animation: `chatbot-typing-wave 1.4s ease-in-out infinite`,
+              animationDelay: `${i * 0.18}s`,
             }} />
           ))}
           {stage && (
@@ -1645,18 +1698,17 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আস্সালামু আলাইকুম! আমি **মাহবুব সরদার সবুজ AI Agent** — লেখক মাহবুব সরদার সবুজের অফিশিয়াল ওয়েবসাইটের বিশ্বমানের AI সহকারী।
+    content: `স্বাগতম! 👋 আমি **মাহবুব সরদার সবুজের AI সহকারী** — আপনাকে সাহায্য করতে সদা প্রস্তুত।
 
-✨ **Pro Max সক্ষমতা:**
-• লেখক, বই, লেখা ও আবৃত্তি — সম্পূর্ণ তথ্যভাণ্ডার
-• ছবি আপলোড করে বিশ্লেষণ ও প্রশ্ন করুন
-• 🎧 **অডিও এডিটিং** — ফাইল আপলোড করে বাংলায় নির্দেশ দিন, AI স্বয়ংক্রিয়ভাবে এডিট করবে
-• ভিডিও থেকে অডিও বের করা ও প্রসেসিং
-• যেকোনো বিষয়ে গভীর ও বিস্তারিত উত্তর
+আপনি যা চাইতে পারেন:
+📚 লেখক ও তাঁর বই সম্পর্কে জানুন
+✍️ কবিতা ও লেখা পড়ুন বা শিখুন
+🎙️ আবৃত্তি শুনুন
+🎧 অডিও ফাইল এডিট করুন — শুধু ফাইল দিন ও বলুন কী চান
+🖼️ ছবি আপলোড করে প্রশ্ন করুন
+💬 যেকোনো বিষয়ে কথা বলুন
 
-💡 **অডিও এডিট করতে:** নিচের 🎧 বাটনে ক্লিক করে ফাইল আপলোড করুন, তারপর বাংলায় লিখুন কী করতে চান — যেমন "নয়েজ কমাও", "ভোকাল ক্লিন করো", "কবিতার জন্য উপযুক্ত করো"
-
-কী জানতে চান? নিচের বিষয়গুলো থেকে বেছে নিন বা সরাসরি প্রশ্ন করুন!`,
+নিচের বিষয়গুলো থেকে বেছে নিন অথবা সরাসরি লিখুন — আমি এখানেই আছি! 😊`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2760,13 +2812,9 @@ export default function AIChatbot() {
     setMessages([{
       id: "welcome-new",
       role: "assistant",
-      content: `নতুন কথোপকথন শুরু হয়েছে! ✨
+      content: `নতুন কথোপকথন শুরু! ✨ কী জানতে চান আজ?
 
-আমি **মাহবুব সরদার সবুজ AI Agent** — আপনাকে সবসময় সহায়তা করতে প্রস্তুত।
-
-🎧 **অডিও এডিটিং:** ফাইল আপলোড করুন → বাংলায় নির্দেশ দিন → AI স্বয়ংক্রিয়ভাবে এডিট করবে
-
-লেখক, বই, লেখা, আবৃত্তি, ডিজাইন স্টুডিও, অডিও এডিট বা যেকোনো প্রশ্ন — নির্দ্বিধায় জিজ্ঞেস করুন!`,
+আমি সবসময় এখানে আছি — লেখক, বই, কবিতা, অডিও এডিট, ছবি বিশ্লেষণ বা যেকোনো প্রশ্নের জন্য। নির্দ্বিধায় বলুন! 😊`,
       timestamp: new Date(),
     }]);
     setError(null);
@@ -2847,6 +2895,28 @@ export default function AIChatbot() {
                 animation: !isOpen ? "chatbot-glow-pulse 2.5s ease-in-out infinite" : "none",
               }}
             >
+              {/* Notification badge — shows when chatbot is not open */}
+              {!isOpen && (
+                <div style={{
+                  position: "absolute",
+                  top: -3,
+                  right: -3,
+                  width: 16,
+                  height: 16,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                  border: "2px solid rgba(10,18,34,0.9)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                  animation: "chatbot-notification-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards, chatbot-badge-pulse 2s ease-in-out 1s infinite",
+                  fontSize: "7px",
+                  color: "#fff",
+                  fontWeight: 900,
+                  fontFamily: "monospace",
+                }}>1</div>
+              )}
               {/* Pulse rings */}
               {!isOpen && (
                 <>
@@ -3087,6 +3157,23 @@ export default function AIChatbot() {
                       animation: "chatbot-shimmer 4s linear infinite",
                     }}>
                       মাহবুব সরদার সবুজ AI Agent
+                    </div>
+                    {/* Online status */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                      <div style={{
+                        width: 6, height: 6, borderRadius: "50%",
+                        background: "#22c55e",
+                        boxShadow: "0 0 0 2px rgba(34,197,94,0.25)",
+                        animation: "chatbot-heartbeat 2s ease-in-out infinite",
+                        flexShrink: 0,
+                      }} />
+                      <span style={{
+                        color: "rgba(134,239,172,0.75)",
+                        fontSize: "0.5rem",
+                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontWeight: 600,
+                        letterSpacing: "0.02em",
+                      }}>সক্রিয় • সাথে আছি</span>
                     </div>
                   </div>
                 </div>
@@ -3578,7 +3665,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "অডিও এডিটিং নির্দেশনা দিন... (যেমন: সিনেমাটিক বাংলা, রেডিও জকি, নয়েজ রিমুভ)" : lastAudioBlobRef.current ? "পূর্ববর্তী অডিওতে আরো পরিবর্তন করুন..." : "যে কোনো প্রশ্ন করুন, ছবি দিন, বই/লেখা খুঁজুন বা অডিও এডিট করুন..."}
+                      placeholder={audioFile ? "বলুন কী করতে চান — যেমন: নয়েজ কমাও, ভোকাল ক্লিন করো, YouTube ভয়েস বানাও..." : lastAudioBlobRef.current ? "আরো পরিবর্তন করুন — যেমন: আরো ক্লিয়ার করো, বেস বাড়াও..." : "প্রশ্ন করুন, ছবি দিন বা যেকোনো বিষয়ে কথা বলুন..."}
                       rows={1}
                       disabled={isLoading}
                       aria-label="চ্যাট বার্তা"

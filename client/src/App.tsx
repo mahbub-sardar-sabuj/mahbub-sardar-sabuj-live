@@ -160,7 +160,7 @@ function App() {
       connection?: { saveData?: boolean; effectiveType?: string };
     }).connection;
     const isSlowConnection = connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || "");
-    const delay = isSlowConnection ? 6500 : 2500;
+    const delay = isSlowConnection ? 4000 : 1200;
 
     const idleCallback = window.requestIdleCallback?.(() => setLoadAssistant(true), { timeout: delay });
     const timeout = window.setTimeout(() => setLoadAssistant(true), delay);
