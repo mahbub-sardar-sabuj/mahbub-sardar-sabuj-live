@@ -1678,7 +1678,6 @@ export default function AIChatbot() {
   const [videoConverting, setVideoConverting] = useState(false);
   const [audioProcessing, setAudioProcessing] = useState(false);
   const [audioProcessingStage, setAudioProcessingStage] = useState<string | null>(null);
-  const [showPresets, setShowPresets] = useState(false);
   // lastAudioBlob: stores the most recently edited audio so user can iterate
   const lastAudioBlobRef = useRef<{ blob: Blob; name: string } | null>(null);
   const isDragging = useRef(false);
@@ -1926,7 +1925,7 @@ export default function AIChatbot() {
         if (updated[lastIdx]?.role === "assistant") {
           updated[lastIdx] = {
             ...updated[lastIdx],
-            content: `✅ অডিও এক্সট্রাক্শন সফল${durationStr}!\n\nএখন আপনি অডিওটি এডিট করতে পারেন। যেমন বলতে পারেন:\n• ভোকাল ক্লিন করো\n• নয়েজ কমাও\n• কবিতার জন্য উপযুক্ত করো\n• অথবা আপনার মতো নির্দেশ দিন`,
+            content: `✅ অডিও এক্সট্রাক্শন সফল${durationStr}!\n\nএখন নিচে লিখুন কী করতে চান — যেমন: "নয়েজ কমাও", "ভোকাল ক্লিন করো", "কবিতার জন্য উপযুক্ত করো", "YouTube ভয়েস বানাও" — যা মনে চায় বাংলায় বলুন, AI বাকি কাজ করবে।`,
           };
         }
         return updated;
@@ -2154,7 +2153,7 @@ export default function AIChatbot() {
         {
           id: `ai-ask-instruction-${Date.now()}`,
           role: "assistant" as const,
-          content: `ফাইলটি (${fileSizeMB} MB) পেয়েছি। আপনি কী করতে চান?\n\nযেমন বলতে পারেন:\n• ভোকাল ক্লিন করো\n• নয়েজ কমাও\n• কবিতার জন্য উপযুক্ত করো\n• অথবা আপনার মতো নির্দেশ দিন`,
+          content: `🎧 ফাইলটি (${fileSizeMB} MB) পেয়েছি!\n\nএখন নিচে লিখুন কী করতে চান — যেমন: "নয়েজ কমাও", "ভোকাল ক্লিন করো", "কবিতার জন্য উপযুক্ত করো", "YouTube ভয়েস বানাও", "স্টুডিও মাস্টারিং করো" — যা মনে চায় বাংলায় বলুন, AI বাকি কাজ করবে।`,
           timestamp: new Date(),
         }
       ]);
@@ -3451,130 +3450,8 @@ export default function AIChatbot() {
                   </div>
                 )}
 
-                {/* ── Quick Preset Chips — show when audio file is ready ── */}
-                {(audioFile || lastAudioBlobRef.current) && !audioProcessing && (
-                  <div style={{ marginBottom: 7 }}>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 5,
-                    }}>
-                      <span style={{
-                        color: "rgba(212,168,67,0.5)",
-                        fontSize: "0.54rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontWeight: 600,
-                        letterSpacing: "0.02em",
-                      }}>⚡ দ্রুত প্রিসেট</span>
-                      <button
-                        onClick={() => setShowPresets(p => !p)}
-                        className="chatbot-touch-target"
-                        aria-expanded={showPresets}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "rgba(212,168,67,0.4)",
-                          fontSize: "0.54rem",
-                          cursor: "pointer",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          padding: "1px 4px",
-                        }}
-                      >{showPresets ? "▲ কম" : "▼ আরো"}</button>
-                    </div>
-                    <div style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 4,
-                    }}>
-                      {[
-                        // ── সবচেয়ে গুরুত্বপূর্ণ (সবসময় দেখা যাবে) ──
-                        { label: "🧹 নয়েজ রিমুভ", cmd: "উচ্চ ভলিউম নয়েজ রিমুভ করো, কণ্ঠের টোন ঠিক রাখো" },
-                        { label: "✨ নিখুঁত স্টুডিও", cmd: "নিখুঁত স্টুডিও মাস্টারিং করো" },
-                        { label: "🌟 গোল্ডেন ভয়েস", cmd: "গোল্ডেন ভয়েস প্রয়োগ করো" },
-                        { label: "🔧 অটো রিপেয়ার", cmd: "অটো রিপেয়ার করো" },
-                        { label: "🎬 আবৃত্তি প্রো", cmd: "বাংলা আবৃত্তি প্রো প্রিসেট দিয়ে প্রসেস করো" },
-                        { label: "🎵 মিউজিক মিক্স", cmd: "ব্যাকগ্রাউন্ড মিউজিক মিক্স করো" },
-                        ...(showPresets ? [
-                          // ── ভয়েস ক্লিনআপ ──
-                          { label: "🔇 ডি-ব্রিদ", cmd: "শ্বাস-প্রশ্বাসের শব্দ দূর করো" },
-                          { label: "🎵 ডি-রিভার্ব", cmd: "রুমের প্রতিধ্বনি কমানো" },
-                          { label: "🔬 স্পেকট্রাল ডিনয়েজ", cmd: "স্পেকট্রাল ডিনয়েজ দিয়ে গভীর নয়েজ রিমুভ করো" },
-                          { label: "✨ ক্লারিটি বুস্ট", cmd: "ভয়েস ক্লারিটি বাড়াও" },
-                          { label: "🔊 লাউডনেস নর্মালাইজ", cmd: "লাউডনেস নর্মালাইজ করো" },
-                          { label: "🌞 ওয়ার্মথ", cmd: "কণ্ঠে উষ্ণতা যোগ করো" },
-                          // ── কনটেন্ট টাইপ ──
-                          { label: "🎹 পডকাস্ট", cmd: "পডকাস্ট প্রো প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "🎥 YouTube", cmd: "YouTube ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "🎧 অডিওবুক", cmd: "অডিওবুক ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "🎤 নিউজ অ্যাঙ্কর", cmd: "নিউজ অ্যাঙ্কর ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "🎙️ WhatsApp ক্লিন", cmd: "ভয়েস মেসেজ ক্লিন প্রিসেস করো" },
-                          // ── ভয়েস স্টাইল ──
-                          { label: "📡 ব্রডকাস্ট", cmd: "ব্রডকাস্ট ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "🎬 সিনেমাটিক বাংলা", cmd: "সিনেমাটিক বাংলা ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "📻 রেডিও জকি", cmd: "রেডিও জকি ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "🎭 ড্রামা ভয়েস", cmd: "ড্রামা ভয়েস প্রিসেট দিয়ে প্রসেস করো" },
-                          { label: "📖 ন্যারেটর", cmd: "ন্যারেটর ভয়েস ক্লোন প্রিসেট দিয়ে প্রসেস করো" },
-                          // ── মিউজিক মিক্স ──
-                          { label: "🎼 মাল্টি-সেগমেন্ট মিক্স", cmd: "ইন্ট্রো-ভার্স-আউট্রো স্টাইলে মিউজিক মিক্স করো" },
-                          { label: "🔀 অ্যাডাপ্টিভ ডাকিং", cmd: "অ্যাডাপ্টিভ সাইডচেইন ডাকিং দিয়ে মিউজিক মিক্স করো" },
-                          // ── v10.0 নিখুঁত এডিটিং ──
-                          { label: "💎 ডায়মন্ড ভয়েস", cmd: "ডায়মন্ড ভয়েস প্রয়োগ করো" },
-                          { label: "🧣 ভেলভেট ভয়েস", cmd: "ভেলভেট ভয়েস প্রয়োগ করো" },
-                          { label: "🔊 আল্ট্রা ক্লিন", cmd: "আল্ট্রা ক্লিন ভয়েস প্রয়োগ করো" },
-                          { label: "🔬 গভীর ডিনয়েজ", cmd: "3-পাস গভীর নয়েজ রিডাকশন করো" },
-                          { label: "🎞️ ভোকাল রেস্টোর", cmd: "পুরনো রেকর্ডিং ভোকাল রেস্টোরেশন করো" },
-                          { label: "🎙️ শ্বাস-পপ রিমুভ", cmd: "শ্বাস ও পপ শব্দ সম্পূর্ণ দূর করো" },
-                          { label: "🎹 7-ব্যান্ড EQ", cmd: "7-ব্যান্ড প্যারামেট্রিক EQ প্রয়োগ করো" },
-                          { label: "🌊 3D বাইনোরাল", cmd: "3D বাইনোরাল স্পেশিয়াল অডিও প্রয়োগ করো" },
-                          { label: "📺 স্ট্রিমিং মাস্টার", cmd: "স্ট্রিমিং প্ল্যাটফর্ম মাস্টারিং করো" },
-                          { label: "🎬 সিনেমা মাস্টার", cmd: "সিনেমাটিক মাস্টারিং করো" },
-                          // ── অ্যাডভান্সড ──
-                          { label: "🎹 হার্মনি", cmd: "ভোকাল হার্মনি যোগ করো" },
-                          { label: "🌐 স্টেরিও ওয়াইড", cmd: "স্টেরিও ফিল্ড প্রশস্ত করো" },
-                          // ── নতুন টুলস ──
-                          { label: "✂️ ট্রিম", cmd: "অডিওর শুরু ও শেষ ট্রিম করো" },
-                          { label: "🔇 সাইলেন্স রিমুভ", cmd: "নীরব অংশ সরাও silence remove" },
-                          { label: "⚡ স্পিড আপ", cmd: "অডিও speed up দ্রুত করো" },
-                          { label: "🐢 স্লো ডাউন", cmd: "অডিও slow down ধীরে করো" },
-                          { label: "🎵 পিচ বাড়াও", cmd: "পিচ বাড়াও pitch up" },
-                          { label: "🎵 পিচ কমাও", cmd: "পিচ কমাও pitch down" },
-                          { label: "🔊 বেস বুস্ট", cmd: "বেস বুস্ট bass boost করো" },
-                          { label: "🎛️ ট্রেবল বুস্ট", cmd: "treble boost ট্রেবল বাড়াও" },
-                          { label: "🔁 ইকো যোগ", cmd: "ইকো echo যোগ করো" },
-                          { label: "🏛️ রিভার্ব যোগ", cmd: "রিভার্ব reverb যোগ করো" },
-                          { label: "🌅 ফেড ইন", cmd: "শুরুতে ফেড fade in যোগ করো" },
-                          { label: "🌇 ফেড আউট", cmd: "শেষে ফেড fade out যোগ করো" },
-                          { label: "🔄 মনো → স্টেরিও", cmd: "মনো থেকে স্টেরিও রূপান্তর mono to stereo" },
-                        ] : []),
-                      ].map(preset => (
-                        <button
-                          key={preset.label}
-                          onClick={() => {
-                            handleSendWithText(preset.cmd);
-                          }}
-                          className="chatbot-suggestion-btn"
-                          style={{
-                            padding: "3px 8px",
-                            background: "rgba(212,168,67,0.05)",
-                            border: "1px solid rgba(212,168,67,0.2)",
-                            borderRadius: 999,
-                            color: "rgba(212,168,67,0.7)",
-                            fontSize: "0.58rem",
-                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                            cursor: "pointer",
-                            fontWeight: 600,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
-                {/* Image preview strip */}
+                                {/* Image preview strip */}
                 {imagePreview && (
                   <div style={{
                     marginBottom: 8,
