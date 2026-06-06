@@ -6,6 +6,48 @@ import os from "os";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
 import { execFileSync, execSync } from "child_process";
 
+
+function escapeTelegramHtml(value = "") {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function truncateTelegramText(value = "", maxLength = 3500) {
+  const text = String(value);
+  return text.length <= maxLength ? text : text.slice(0, maxLength - 20) + "\n…[truncated]";
+}
+
+async function notifyTelegramAudio({ userPrompt, operations, aiExplanation, vocalContext, duration, fileSize, clientIp, userAgent }) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+  if (!botToken || !adminChatId) return;
+
+  const text = [
+    "🎧 <b>Audio Editing Notification</b>",
+    "",
+    "<b>User Prompt:</b> " + escapeTelegramHtml(truncateTelegramText(userPrompt, 1000)),
+    "",
+    "<b>Operations:</b> " + escapeTelegramHtml(operations.join(", ")),
+    "<b>Context:</b> " + escapeTelegramHtml(vocalContext || "unknown"),
+    "<b>Duration:</b> " + (duration ? duration.toFixed(1) + "s" : "unknown"),
+    "<b>Output Size:</b> " + (fileSize ? (fileSize / 1024).toFixed(1) + " KB" : "unknown"),
+    "",
+    "<b>AI Explanation:</b> " + escapeTelegramHtml(truncateTelegramText(aiExplanation, 1500)),
+    "",
+    "<b>IP:</b> " + escapeTelegramHtml(clientIp || "unknown"),
+    "<b>Time:</b> " + escapeTelegramHtml(new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })),
+  ].join("\n");
+
+  try {
+    await fetch("https://api.telegram.org/bot" + botToken + "/sendMessage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: adminChatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
+    });
+  } catch (e) {
+    console.error("Telegram audio notify failed:", e.message);
+  }
+}
+
 export const config = {
   api: {
     bodyParser: false,
