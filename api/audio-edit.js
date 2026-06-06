@@ -126,13 +126,13 @@ function getAudioDuration(filePath, ffmpegPath) {
 function buildVocalDoubler(ffmpegPath, inputPath, outputPath) {
   // Creates a subtle pitch-shifted copy and mixes with original for thickness
   execFileSync(ffmpegPath, [
-    "-i", inputPath,
+    "-threads", "0", "-i", inputPath,
     "-filter_complex",
     "[0:a]asplit=2[a][b];[a]aecho=0.8:0.88:12:0.4[a1];[b]aecho=0.8:0.88:25:0.3[b1];[a1][b1]amix=inputs=2:weights=1 0.4[out]",
     "-map", "[out]",
     "-ar", "44100",
     "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 60000 });
 }
 
 // ── Classify vocal context from AI response ──────────────────────────────────
@@ -351,7 +351,7 @@ async function buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, optio
   ], {
     stdio: ["ignore", "pipe", "pipe"],
     maxBuffer: 50 * 1024 * 1024,
-    timeout: 55000,
+    timeout: 60000,
   });
 }
 
@@ -387,7 +387,7 @@ async function buildMultiSegmentMix(ffmpegPath, vocalPath, musicPath, outputPath
     "-i", vocalPath, "-i", musicPath,
     "-filter_complex", filterComplex,
     "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 60000 });
   return { totalDuration, introDuration, vocalDuration, outroDuration };
 }
 
@@ -418,7 +418,7 @@ function buildAdaptiveDucking(ffmpegPath, vocalPath, musicPath, outputPath, opti
       "-i", vocalPath, "-i", musicPath,
       "-filter_complex", filterComplex,
       "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-y", outputPath
-    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
+    ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 60000 });
   } catch (e) {
     // Fallback to standard smart mix if sidechaincompress not available
     buildSmartMix(ffmpegPath, vocalPath, musicPath, outputPath, {
@@ -510,13 +510,13 @@ function buildPerfectMasteringChain(ffmpegPath, inputPath, outputPath, options =
   const filterChain = (styleFilters[style] || styleFilters.studio).join(",");
 
   execFileSync(ffmpegPath, [
-    "-i", inputPath,
+    "-threads", "0", "-i", inputPath,
     "-af", filterChain,
     "-ar", "44100",
     "-ac", "2",
     "-b:a", "320k",
     "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 60000 });
 }
 
 // ── v10.0: 3-Pass Deep Denoise — maximum noise removal ───────────────────────
@@ -641,7 +641,7 @@ function buildSidechainDucking(ffmpegPath, vocalPath, musicPath, outputPath, opt
     "-map", "[out]",
     "-ar", "44100",
     "-y", outputPath
-  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 55000 });
+  ], { stdio: ["ignore", "pipe", "pipe"], maxBuffer: 50 * 1024 * 1024, timeout: 60000 });
 }
 
 // ── AI Config ────────────────────────────────────────────────────────────────
@@ -2428,10 +2428,10 @@ export default async function handler(req, res) {
 
     // ── Run FFmpeg with filter ────────────────────────────────────────────────
     const safeFilterStr = `aresample=44100,${filterStr}`;
-    execFileSync(ffmpegPath, ["-i", tempFilePath, "-af", safeFilterStr, "-ar", "44100", "-y", outputPath], {
+    execFileSync(ffmpegPath, ["-threads", "0", "-i", tempFilePath, "-af", safeFilterStr, "-ar", "44100", "-y", outputPath], {
       stdio: ["ignore", "pipe", "pipe"],
       maxBuffer: 50 * 1024 * 1024,
-      timeout: 55000,
+      timeout: 60000,
     });
 
     const resultBuffer = fs.readFileSync(outputPath);

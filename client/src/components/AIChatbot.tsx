@@ -2175,7 +2175,7 @@ export default function AIChatbot() {
     setVideoFile(null);
     setVideoConverting(false);
         } catch (err: any) {
-          setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
+          setError(`অডিওটি বড় হওয়ায় প্রসেসিংয়ে সময় লাগছে। অনুগ্রহ করে ছোট ক্লিপ ব্যবহার করুন অথবা কিছুক্ষণ পর আবার চেষ্টা করুন।`);
         } finally {
           setAudioProcessing(false);
         }
@@ -2390,7 +2390,7 @@ export default function AIChatbot() {
       });
       setAudioFile(null);
     } catch (err: any) {
-      setError(`অডিও এডিটিং ব্যর্থ: ${err.message}`);
+      setError(`অডিওটি বড় হওয়ায় প্রসেসিংয়ে সময় লাগছে। অনুগ্রহ করে ছোট ক্লিপ ব্যবহার করুন অথবা কিছুক্ষণ পর আবার চেষ্টা করুন।`);
     } finally {
       setAudioProcessing(false);
       setAudioProcessingStage(null);
