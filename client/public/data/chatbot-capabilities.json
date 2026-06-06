@@ -1,0 +1,65 @@
+{
+  "name": "মাহবুব সরদার সবুজ AI Agent Pro Max",
+  "version": "10.0.0",
+  "lastUpdated": "2026-06-06T22:02:48.715Z",
+  "capabilities": {
+    "textChat": true,
+    "imageAnalysis": true,
+    "audioEditing": {
+      "enabled": true,
+      "version": "v10.0",
+      "operations": [
+        "noise_reduction",
+        "vocal_enhance",
+        "studio_mastering",
+        "podcast_preset",
+        "bangla_recitation_pro",
+        "youtube_voice",
+        "tiktok_voice",
+        "audiobook_voice",
+        "meditation_voice",
+        "smart_mix",
+        "adaptive_ducking",
+        "perfect_mastering",
+        "sibilance_control_pro",
+        "breath_plosive_remover"
+      ],
+      "supportedFormats": [
+        "mp3",
+        "wav",
+        "ogg",
+        "m4a",
+        "aac",
+        "webm"
+      ],
+      "maxFileSizeMB": 10,
+      "instructions": "নিচের 🎧 বাটনে ক্লিক করে অডিও ফাইল আপলোড করুন, তারপর বাংলায় লিখুন কী করতে চান"
+    },
+    "videoToAudio": true,
+    "liveChat": true,
+    "autoUpdate": true
+  },
+  "audioInstructions": {
+    "howToUse": [
+      "১. চ্যাটবটে 🎧 বাটনে ক্লিক করুন",
+      "২. অডিও ফাইল আপলোড করুন (MP3/WAV/OGG/M4A)",
+      "৩. বাংলায় লিখুন কী করতে চান",
+      "৪. AI স্বয়ংক্রিয়ভাবে এডিট করবে",
+      "৫. ডাউনলোড করুন"
+    ],
+    "exampleInstructions": [
+      "নয়েজ কমাও",
+      "ভোকাল ক্লিন করো",
+      "কবিতার জন্য উপযুক্ত করো",
+      "YouTube ভয়েস বানাও",
+      "স্টুডিও মাস্টারিং করো",
+      "ASMR ভয়েস বানাও",
+      "পডকাস্ট প্রিসেট লাগাও"
+    ]
+  },
+  "autoUpdateSchedule": "Every Sunday at 8:00 AM Bangladesh Time",
+  "supportedLanguages": [
+    "Bengali",
+    "English"
+  ]
+}

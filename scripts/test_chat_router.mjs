@@ -6,7 +6,7 @@ const cases = [
   { name: 'writing route', text: 'জীবনদর্শন লেখা দেখাও', expect: ['/writings', 'জীবনদর্শন'] },
   { name: 'recitation route', text: 'জানেন বাবা আবৃত্তি শুনব', expect: ['/facebook-recitations', 'জানেন বাবা'] },
   { name: 'contact route', text: 'যোগাযোগ ইমেইল দাও', expect: ['/contact', 'lekhokmahbubsardarsabuj'] },
-  { name: 'audio route', text: 'অডিও নয়েজ কমাতে পারো?', expect: ['Audio Studio', 'নয়েজ'] },
+  { name: 'audio route (Pro Max in-chat)', text: 'অডিও নয়েজ কমাতে পারো?', expect: ['অডিও', 'আপলোড'] },
   { name: 'site route', text: 'ওয়েবসাইটের সব পেজ দেখাও', expect: ['/writings', '/contact'] },
 ];
 

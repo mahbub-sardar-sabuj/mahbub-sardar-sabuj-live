@@ -15,7 +15,10 @@
     "indexnow:submit": "node scripts/submit-indexnow.cjs",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "promax:sync": "node scripts/pro-max-auto-sync.mjs",
+    "promax:sync:knowledge": "UPDATE_TYPE=knowledge_only node scripts/pro-max-auto-sync.mjs",
+    "promax:sync:audio": "UPDATE_TYPE=audio_only node scripts/pro-max-auto-sync.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1041.0",

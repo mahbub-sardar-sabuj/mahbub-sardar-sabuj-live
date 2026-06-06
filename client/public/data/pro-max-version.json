@@ -1,0 +1,39 @@
+{
+  "version": "10.0.0",
+  "lastSync": "2026-06-06T22:02:48.698Z",
+  "chatbotVersion": "Pro Max v10.0",
+  "audioEngineVersion": "v10.0",
+  "features": [
+    "integrated_audio_editing",
+    "pro_max_badge",
+    "auto_update_system",
+    "multi_modal_support",
+    "10_stage_mastering",
+    "sibilance_control_pro",
+    "breath_plosive_remover",
+    "streaming_ready_mastering",
+    "bangla_recitation_pro",
+    "youtube_tiktok_voice",
+    "smart_mix_v4",
+    "adaptive_ducking",
+    "multi_segment_mix"
+  ],
+  "audioOperationsCount": 80,
+  "supportedFormats": [
+    "mp3",
+    "wav",
+    "ogg",
+    "m4a",
+    "aac",
+    "flac",
+    "webm"
+  ],
+  "maxFileSizeMB": 10,
+  "updateHistory": [
+    {
+      "date": "2026-06-06T22:02:48.711Z",
+      "type": "all",
+      "description": "Pro Max v10.0 auto-sync"
+    }
+  ]
+}

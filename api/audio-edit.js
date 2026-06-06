@@ -867,7 +867,7 @@ function fallbackAudioPlan(prompt = "") {
 }
 
 // ── AI System Prompt ─────────────────────────────────────────────────────────
-const AUDIO_SYSTEM_PROMPT = `You are a world-class AI audio engineer named "Sardar Audio Studio". You understand ANY instruction in Bengali or English and return correct audio operations as JSON.
+const AUDIO_SYSTEM_PROMPT = `You are a world-class AI audio engineer named "Sardar Audio Pro Max Engine v10.0". You understand ANY instruction in Bengali or English and return correct audio operations as JSON.
 
 RULE: ALWAYS return valid JSON with at least one operation. NEVER return empty operations list.
 
@@ -1073,6 +1073,21 @@ NEW v9.0 SMART RULES:
 - "স্পেকট্রাল ডিনয়েজ"/ "spectral denoise"/ "গভীর নয়েজ" → spectral_denoise
 - "AI নয়েজ গেট"/ "ai noise gate"/ "smart noise gate" → ai_noise_gate
 - "ভয়েস এনহ্যান্সার প্রো"/ "voice enhancer pro"/ "প্রো এনহ্যান্স" → voice_enhancer_pro
+
+NEW PRO MAX v10.0 OPERATIONS:
+- perfect_mastering{style:"studio"|"broadcast"|"streaming"|"vinyl"|"cinema"} = 10-স্তরের স্টুডিও মাস্টারিং চেইন
+- sibilance_control_pro{strength:0.2-1.0} = উন্নত ডি-এসার — সিবিলেন্স কন্ট্রোল
+- breath_plosive_remover{} = শ্বাস ও পলোসিভ সাউন্ড রিমুভার
+- voice_fingerprint{} = ভয়েস ফিঙ্গারপ্রিন্ট — ইউনিক ভয়েস সিগনেচার
+- auto_mastering{target:"streaming"|"broadcast"|"cinema"} = অটো মাস্টারিং — টার্গেট প্ল্যাটফর্ম অনুযায়ী
+
+NEW PRO MAX v10.0 SMART RULES:
+- "পারফেক্ট মাস্টারিং"/ "perfect mastering"/ "স্টুডিও মাস্টার" → perfect_mastering(studio)
+- "ব্রডকাস্ট মাস্টারিং"/ "broadcast mastering" → perfect_mastering(broadcast)
+- "স্ট্রিমিং রেডি"/ "streaming ready"/ "Spotify ready" → perfect_mastering(streaming)
+- "সিবিলেন্স কমাও"/ "sibilance control"/ "হিসিং সাউন্ড" → sibilance_control_pro(0.6)
+- "শ্বাস সরাও"/ "breath remover"/ "পলোসিভ" → breath_plosive_remover
+- "অটো মাস্টার"/ "auto master" → auto_mastering(streaming)
 OUTPUT FORMAT (JSON only):
 {
   "operations": [{"type": "OPERATION_NAME", "params": {"key": value}}, ...],
@@ -2106,7 +2121,8 @@ function buildFFmpegFilter(operations, vocalDuration) {
 }
 
 
-// ── Main Handler ─────────────────────────────────────────────────────────────
+// ── Pro Max v10.0 Main Handler ──────────────────────────────────────────────────
+// Version: Pro Max v10.0 | Integrated Audio Editing | Auto-Update Ready
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -2388,7 +2404,7 @@ export default async function handler(req, res) {
         audioMime: "audio/mpeg",
         vocalContext,
         vocalDuration: vocalDuration ? Math.round(vocalDuration) : null,
-        processingVersion: "v9.0",
+        processingVersion: "v10.0",
         operationsApplied: operations.map(op => op.type),
         outputSizeKB: Math.round(resultBuffer.length / 1024),
       });
@@ -2401,7 +2417,7 @@ export default async function handler(req, res) {
       audioMime: "audio/mpeg",
       vocalContext,
       vocalDuration: vocalDuration ? Math.round(vocalDuration) : null,
-      processingVersion: "v9.0",
+      processingVersion: "v10.0",
       operationsApplied: operations.map(op => op.type),
       outputSizeKB: Math.round(resultBuffer.length / 1024),
     });
