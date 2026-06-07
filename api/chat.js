@@ -423,6 +423,12 @@ const rawText = extractUserText(messages);
 const userText = normalizeForIntent(rawText);
 if (!userText) return null;
 
+// ── Greeting detection (must be FIRST, before any intent matching) ────────
+const greetingPattern = /^(hi|hello|hey|হ্যালো|হ্যালো|হ্যাই|হাই|আস্সালামু|সালাম|নমস্কার|শুভেচ্ছা|কেমন আছ|কেমন আছেন|ভালো আছ|ভালো আছেন|শুভ সকাল|শুভ বিকাল|শুভ সন্ধ্যা|শুভ রাত|good morning|good evening|good night|good afternoon)/i;
+if (greetingPattern.test(userText.trim())) {
+  return "আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজের AI সহকারী।\n\nআপনাকে কীভাবে সাহায্য করতে পারি?\n- লেখক সম্পর্কে জানতে: [BUTTON:/about]\n- বই ও ই-বুক দেখতে: [BUTTON:/ebooks]\n- লেখালেখি পড়তে: [BUTTON:/writings]\n- যোগাযোগ করতে: [BUTTON:/contact]";
+}
+
 // ── Writing search: check if user is looking for a specific writing ──────
 const { hasSearchPattern, isLikelyTitleSearch } = detectWritingSearchIntent(rawText);
 if (hasSearchPattern) {
@@ -447,6 +453,16 @@ switch (intent.intent) {
 case "book":
 return buildBookReply(userText);
 case "writing":
+// "কবিতা দাও", "একটি লেখা দাও" — give a random writing
+if (/দাও|দিন|দেখাও|দেখান|পড়তে চাই|পড়তে চান/.test(userText) && !isLikelyTitleSearch) {
+  const writings = getWritingsArchive();
+  if (writings && writings.length > 0) {
+    const poems = writings.filter((w) => w.category === "কবিতা");
+    const pool = poems.length > 0 ? poems : writings;
+    const random = pool[Math.floor(Math.random() * pool.length)];
+    return formatWritingReply(random);
+  }
+}
 if (isLikelyTitleSearch || hasSearchPattern) {
   const writingReply = buildWritingSearchReply(rawText);
   if (writingReply) return writingReply;
