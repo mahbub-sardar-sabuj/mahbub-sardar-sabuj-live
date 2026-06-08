@@ -856,6 +856,56 @@ export default function Home() {
               transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
               style={{ position: "relative" }}
             >
+              {/* Floating decorative orbs — deep Parallax depth 1 */}
+              <motion.div
+                animate={{ x: mousePos.x * -0.8, y: mousePos.y * -0.8 }}
+                transition={{ type: "spring", stiffness: 40, damping: 18 }}
+                style={{
+                  position: "absolute", top: "-18%", right: "-22%",
+                  width: 180, height: 180, borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 70%)",
+                  filter: "blur(30px)", pointerEvents: "none", zIndex: 0,
+                }}
+              />
+              {/* Floating stat badge — depth 2 */}
+              <motion.div
+                animate={{ x: mousePos.x * 0.6, y: mousePos.y * 0.6 }}
+                transition={{ type: "spring", stiffness: 50, damping: 22 }}
+                style={{
+                  position: "absolute", top: "-5%", left: "-18%",
+                  background: "rgba(10,18,34,0.92)",
+                  border: "1px solid rgba(201,168,76,0.3)",
+                  borderRadius: 16,
+                  padding: "10px 18px",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(12px)",
+                  zIndex: 10, pointerEvents: "none",
+                  display: "flex", flexDirection: "column", gap: 2,
+                }}
+              >
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(201,168,76,0.7)" }}>প্রকাশিত বই</span>
+                <span style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1.5rem", fontWeight: 700, color: "#FAF6EF", lineHeight: 1 }}>৫+</span>
+              </motion.div>
+              {/* Floating stat badge — depth 3 */}
+              <motion.div
+                animate={{ x: mousePos.x * -0.5, y: mousePos.y * 0.5 }}
+                transition={{ type: "spring", stiffness: 45, damping: 20 }}
+                style={{
+                  position: "absolute", bottom: "8%", right: "-20%",
+                  background: "rgba(10,18,34,0.92)",
+                  border: "1px solid rgba(201,168,76,0.25)",
+                  borderRadius: 16,
+                  padding: "10px 18px",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(12px)",
+                  zIndex: 10, pointerEvents: "none",
+                  display: "flex", flexDirection: "column", gap: 2,
+                }}
+              >
+                <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.58rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(201,168,76,0.7)" }}>লেখার সংখ্যা</span>
+                <span style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1.5rem", fontWeight: 700, color: "#FAF6EF", lineHeight: 1 }}>১০০০+</span>
+              </motion.div>
+
               {/* Portrait frame */}
               <motion.div
                 animate={{

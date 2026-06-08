@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo, { SITE_URL } from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
+import QuoteCardGeneratorLazy from "@/components/QuoteCardGenerator";
 import { loadWritingsArchive } from "@/lib/loadWritingsArchive";
 import type { Writing } from "@/data/writingsArchive";
 import {
@@ -1166,6 +1167,8 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   const [progress, setProgress] = useState(0);
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [showQuoteCard, setShowQuoteCard] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const shareRef = useRef<HTMLDivElement>(null);
 
@@ -1191,16 +1194,34 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
     el.addEventListener("scroll", fn); return () => el.removeEventListener("scroll", fn);
   }, [writing]);
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); if (e.key === "ArrowLeft" && prev) onNavigate(prev); if (e.key === "ArrowRight" && next) onNavigate(next); };
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { if (focusMode) { setFocusMode(false); } else { onClose(); } }
+      if (e.key === "ArrowLeft" && prev && !focusMode) onNavigate(prev);
+      if (e.key === "ArrowRight" && next && !focusMode) onNavigate(next);
+      if (e.key === "f" || e.key === "F") { if ((e.target as HTMLElement).tagName !== "INPUT" && (e.target as HTMLElement).tagName !== "TEXTAREA") setFocusMode(v => !v); }
+    };
     window.addEventListener("keydown", fn); return () => window.removeEventListener("keydown", fn);
-  }, [prev, next, onClose, onNavigate]);
+  }, [prev, next, onClose, onNavigate, focusMode]);
   useEffect(() => {
     const fn = (e: MouseEvent) => { if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShowShare(false); };
     document.addEventListener("mousedown", fn); return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  return createPortal(
-    <motion.div className="rm2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .3 }} onClick={e => e.target === e.currentTarget && onClose()}>
+  return (
+    <>
+      {createPortal(
+        <>
+        {showQuoteCard && (
+          <QuoteCardGeneratorLazy
+            quote={writing.content.slice(0, 300)}
+            author="মাহবুব সরদার সবুজ"
+            category={writing.category}
+            onClose={() => setShowQuoteCard(false)}
+          />
+        )}
+        <motion.div className="rm2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .3 }}
+          style={{ background: focusMode ? "rgba(0,0,0,0.97)" : undefined }}
+          onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div className="rm2-box" style={{ background: T.bg }}
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 36, stiffness: 310 }}>
@@ -1208,7 +1229,9 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         <div className="rm2-prog" style={{ background: "rgba(255,255,255,.055)" }}>
           <div className="rm2-pf" style={{ width: `${progress}%`, background: T.prog }}/>
         </div>
-        <div className="rm2-hd" style={{ borderColor: T.bdr }}>
+        <motion.div className="rm2-hd" style={{ borderColor: T.bdr }}
+          animate={{ opacity: focusMode ? 0 : 1, height: focusMode ? 0 : "auto", overflow: "hidden" }}
+          transition={{ duration: 0.3 }}>
           <div className="rm2-hdl">
             {!hideShortWritingLabel && (
               <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 13px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".71rem", fontWeight:600 }}>
@@ -1257,10 +1280,60 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             >
               {copied ? <Check size={13}/> : <Copy size={13}/>}
             </button>
+            {/* Quote Card button */}
+            <button
+              className="rm2-btn"
+              title="কোটেশন কার্ড তৈরি"
+              style={{ color: T.sub, borderColor: T.bdr }}
+              onClick={() => setShowQuoteCard(true)}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
+                <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+              </svg>
+            </button>
+            {/* Focus Mode button */}
+            <button
+              className="rm2-btn"
+              title="ফোকাস মোড (F)"
+              style={{
+                color: focusMode ? "#C9A84C" : T.sub,
+                borderColor: focusMode ? "rgba(201,168,76,0.5)" : T.bdr,
+                background: focusMode ? "rgba(201,168,76,0.1)" : "transparent",
+                transition: "all .2s",
+              }}
+              onClick={() => setFocusMode(v => !v)}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
             <button className="rm2-btn" style={{ color: T.sub, borderColor: T.bdr }} onClick={onClose}><X size={14}/></button>
           </div>
-        </div>
-        <div className="rm2-body" ref={bodyRef}>
+        </motion.div>
+        {/* Focus mode exit hint */}
+        <AnimatePresence>
+          {focusMode && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)",
+                background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.25)",
+                borderRadius: 20, padding: "5px 14px",
+                color: "rgba(201,168,76,0.8)", fontSize: ".67rem",
+                fontFamily: "var(--f)", letterSpacing: ".08em",
+                pointerEvents: "none", zIndex: 10,
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              ফোকাস মোড সক্রিয় — Esc বা F চাপুন বাহির হতে
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div className="rm2-body" ref={bodyRef} style={focusMode ? { paddingTop: "3rem" } : {}}>
           {!hideShortWritingLabel && <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>}
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:"1.3rem", opacity:.52 }}>
             <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
@@ -1288,7 +1361,9 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             </div>
           )}
         </div>
-        <div className="rm2-nav" style={{ borderColor: T.bdr }}>
+        <motion.div className="rm2-nav" style={{ borderColor: T.bdr }}
+          animate={{ opacity: focusMode ? 0 : 1, height: focusMode ? 0 : "auto", overflow: "hidden" }}
+          transition={{ duration: 0.3 }}>
           <button className="rm2-nb" style={{ borderColor:T.bdr }} onClick={() => prev && onNavigate(prev)} disabled={!prev}>
             <ChevronLeft size={16} style={{ color:prev?c.accent:T.sub, flexShrink:0 }}/>
             <span><span className="rm2-nl" style={{ color:T.sub }}>পূর্ববর্তী</span><span className="rm2-nt" style={{ color:T.txt }}>{prev?.title ?? "—"}</span></span>
@@ -1297,10 +1372,13 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             <span style={{ textAlign:"right" }}><span className="rm2-nl" style={{ color:T.sub }}>পরবর্তী</span><span className="rm2-nt" style={{ color:T.txt }}>{next?.title ?? "—"}</span></span>
             <ChevronRight size={16} style={{ color:next?c.accent:T.sub, flexShrink:0 }}/>
           </button>
-        </div>
+        </motion.div>
       </motion.div>
-    </motion.div>,
-    document.body
+      </motion.div>
+      </>,
+      document.body
+    )}
+    </>
   );
 }
 
@@ -1521,8 +1599,13 @@ export default function Writings() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<Writing|null>(null);
   const [viewMode, setViewMode] = useState<"grid"|"list">("grid");
+  const [sortBy, setSortBy] = useState<"default"|"popular"|"short"|"long">("default");
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const [visibleCount, setVisibleCount] = useState(WRITINGS_PAGE_SIZE);
   const [visibleShortCount, setVisibleShortCount] = useState(WRITINGS_PAGE_SIZE);
+  // Infinite scroll sentinel ref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreShortRef = useRef<HTMLDivElement>(null);
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/writings/:slug");
   const [archive, setArchive] = useState<Writing[]>([]);
@@ -1540,14 +1623,26 @@ export default function Writings() {
   const filtered = useMemo(() => {
     let list = archive;
     if (cat === "পাঠকের পছন্দ") {
-      // লোকাল স্টোরেজ থেকে লাইক করা লেখাগুলো ফিল্টার করা
       list = list.filter(w => localStorage.getItem(`like_${w.id}`) === "1");
     } else if (cat !== "all") {
       list = list.filter(w => w.category === cat);
     }
     if (deferredQuery.trim()) { const qn = deferredQuery.trim().toLowerCase(); list = list.filter(w => w.title.toLowerCase().includes(qn) || w.content.toLowerCase().includes(qn)); }
+    // সর্টিং
+    if (sortBy === "popular") {
+      list = [...list].sort((a, b) => {
+        const aLiked = localStorage.getItem(`like_${a.id}`) === "1" ? 1 : 0;
+        const bLiked = localStorage.getItem(`like_${b.id}`) === "1" ? 1 : 0;
+        if (bLiked !== aLiked) return bLiked - aLiked;
+        return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      });
+    } else if (sortBy === "short") {
+      list = [...list].sort((a, b) => a.content.length - b.content.length);
+    } else if (sortBy === "long") {
+      list = [...list].sort((a, b) => b.content.length - a.content.length);
+    }
     return list;
-  }, [archive, cat, deferredQuery]);
+  }, [archive, cat, deferredQuery, sortBy]);
 
   // সব লেখা ফিল্টারে: বড় লেখা ও ছোট লেখা আলাদা সেকশনে দেখাবে
   // নির্দিষ্ট ক্যাটাগরি ফিল্টারে: সব লেখা এক সেকশনে
@@ -1561,7 +1656,39 @@ export default function Writings() {
     return filtered.filter(w => w.category === "ছোট লেখা");
   }, [filtered, showSplitSections]);
 
-  useEffect(() => { setVisibleCount(WRITINGS_PAGE_SIZE); setVisibleShortCount(WRITINGS_PAGE_SIZE); }, [cat, deferredQuery]);
+  useEffect(() => { setVisibleCount(WRITINGS_PAGE_SIZE); setVisibleShortCount(WRITINGS_PAGE_SIZE); }, [cat, deferredQuery, sortBy]);
+
+  // Infinite scroll — IntersectionObserver for main list
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleCount < mainList.length) {
+          setVisibleCount(prev => Math.min(prev + WRITINGS_PAGE_SIZE, mainList.length));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [visibleCount, mainList.length]);
+
+  // Infinite scroll — IntersectionObserver for short writings
+  useEffect(() => {
+    const sentinel = loadMoreShortRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleShortCount < shortWritings.length) {
+          setVisibleShortCount(prev => Math.min(prev + WRITINGS_PAGE_SIZE, shortWritings.length));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [visibleShortCount, shortWritings.length]);
 
   const mainList = showSplitSections ? longWritings : filtered;
   const visibleWritings = useMemo(() => mainList.slice(0, visibleCount), [mainList, visibleCount]);
@@ -1665,6 +1792,73 @@ export default function Writings() {
                 <button className={`sf-vb${viewMode==="grid"?" on":""}`} onClick={() => setViewMode("grid")} title="গ্রিড" aria-label="গ্রিড ভিউ" aria-pressed={viewMode==="grid"}><Grid3X3 size={13}/></button>
                 <button className={`sf-vb${viewMode==="list"?" on":""}`} onClick={() => setViewMode("list")} title="লিস্ট" aria-label="লিস্ট ভিউ" aria-pressed={viewMode==="list"}><List size={13}/></button>
               </div>
+              {/* Sort dropdown */}
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <button
+                  onClick={() => setShowSortMenu(v => !v)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    background: sortBy !== "default" ? "rgba(201,168,76,0.12)" : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${sortBy !== "default" ? "rgba(201,168,76,0.35)" : "rgba(255,255,255,0.1)"}`,
+                    borderRadius: 10, padding: "6px 11px",
+                    color: sortBy !== "default" ? "#C9A84C" : "rgba(242,237,228,0.6)",
+                    cursor: "pointer", fontSize: ".72rem",
+                    fontFamily: "var(--f)", transition: "all .2s",
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                  {
+                    sortBy === "default" ? "সাজান" :
+                    sortBy === "popular" ? "জনপ্রিয়" :
+                    sortBy === "short" ? "ছোট থেকে বড়" :
+                    "বড় থেকে ছোট"
+                  }
+                  <ChevronDown size={11} style={{ transition: "transform .2s", transform: showSortMenu ? "rotate(180deg)" : "rotate(0deg)" }} />
+                </button>
+                <AnimatePresence>
+                  {showSortMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        position: "absolute", top: "calc(100% + 6px)", right: 0,
+                        background: "rgba(8,14,26,0.98)",
+                        border: "1px solid rgba(201,168,76,0.2)",
+                        borderRadius: 12,
+                        boxShadow: "0 20px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
+                        minWidth: 160, zIndex: 200, overflow: "hidden",
+                      }}
+                    >
+                      {([
+                        { id: "default", label: "ডিফল্ট সাজান", icon: "≡" },
+                        { id: "popular", label: "জনপ্রিয় প্রথম", icon: "♥" },
+                        { id: "short",   label: "ছোট থেকে বড়",  icon: "↓" },
+                        { id: "long",    label: "বড় থেকে ছোট",  icon: "↑" },
+                      ] as const).map(opt => (
+                        <button
+                          key={opt.id}
+                          onClick={() => { setSortBy(opt.id); setShowSortMenu(false); }}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 8,
+                            width: "100%", padding: "9px 14px",
+                            background: sortBy === opt.id ? "rgba(201,168,76,0.1)" : "none",
+                            border: "none", cursor: "pointer",
+                            color: sortBy === opt.id ? "#C9A84C" : "rgba(242,237,228,0.7)",
+                            fontSize: ".78rem", fontFamily: "var(--f)",
+                            textAlign: "left", transition: "background .15s",
+                          }}
+                        >
+                          <span style={{ fontSize: ".85rem", opacity: 0.8 }}>{opt.icon}</span>
+                          {opt.label}
+                          {sortBy === opt.id && <Check size={11} style={{ marginLeft: "auto", color: "#C9A84C" }} />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Active filter */}
@@ -1717,11 +1911,14 @@ export default function Writings() {
                         <WritingCard key={w.id} writing={w} index={i} onClick={() => handleCardClick(w)} viewMode={viewMode}/>
                       ))}
                     </div>
+                    {/* Infinite scroll sentinel — auto-loads more when visible */}
+                    <div ref={loadMoreRef} style={{ height: 1 }} aria-hidden="true" />
                     {hasMoreWritings && (
                       <div className="lm2">
-                        <motion.button className="lm2-btn" aria-label="আরও বড় লেখা দেখুন" onClick={() => setVisibleCount(n => Math.min(n + WRITINGS_PAGE_SIZE, mainList.length))} whileTap={{ scale:.96 }}>
-                          <ChevronDown size={15}/> আরও বড় লেখা দেখুন
-                        </motion.button>
+                        <motion.div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", color: "rgba(201,168,76,0.5)", fontSize: ".78rem", fontFamily: "var(--f)" }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+                          লোড হচ্ছে...
+                        </motion.div>
                         <span className="lm2-note">{visibleCount} / {mainList.length} লেখা দেখানো হচ্ছে</span>
                       </div>
                     )}
@@ -1746,11 +1943,14 @@ export default function Writings() {
                         <WritingCard key={w.id} writing={w} index={i} onClick={() => handleCardClick(w)} viewMode={viewMode}/>
                       ))}
                     </div>
+                    {/* Infinite scroll sentinel for short writings */}
+                    <div ref={loadMoreShortRef} style={{ height: 1 }} aria-hidden="true" />
                     {hasMoreShortWritings && (
                       <div className="lm2">
-                        <motion.button className="lm2-btn" aria-label="আরও ছোট লেখা দেখুন" onClick={() => setVisibleShortCount(n => Math.min(n + WRITINGS_PAGE_SIZE, shortWritings.length))} whileTap={{ scale:.96 }}>
-                          <ChevronDown size={15}/> আরও ছোট লেখা দেখুন
-                        </motion.button>
+                        <motion.div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", color: "rgba(52,211,153,0.5)", fontSize: ".78rem", fontFamily: "var(--f)" }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+                          লোড হচ্ছে...
+                        </motion.div>
                         <span className="lm2-note">{visibleShortCount} / {shortWritings.length} লেখা দেখানো হচ্ছে</span>
                       </div>
                     )}

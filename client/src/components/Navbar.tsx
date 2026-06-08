@@ -23,7 +23,9 @@ import {
   Phone,
   CreditCard,
   Sparkles,
+  Search,
 } from "lucide-react";
+import { openGlobalSearch } from "@/components/GlobalSearch";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
 
@@ -327,6 +329,54 @@ export default function Navbar() {
               })}
             </div>
           )}
+
+          {/* ── GLOBAL SEARCH BUTTON (visible on all screens) ── */}
+          <button
+            onClick={openGlobalSearch}
+            title="সার্চ করুন (Ctrl+K)"
+            style={{
+              color: "rgba(253,246,236,0.7)",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(201,168,76,0.2)",
+              borderRadius: 10,
+              padding: isDesktop ? "6px 12px" : "7px 9px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: isDesktop ? 7 : 0,
+              justifyContent: "center",
+              transition: "all 0.25s",
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(201,168,76,0.1)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(201,168,76,0.4)";
+              (e.currentTarget as HTMLButtonElement).style.color = "#E8C97A";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(201,168,76,0.2)";
+              (e.currentTarget as HTMLButtonElement).style.color = "rgba(253,246,236,0.7)";
+            }}
+          >
+            <Search size={16} />
+            {isDesktop && (
+              <span style={{
+                fontFamily: "'Noto Sans Bengali', sans-serif",
+                fontSize: "0.72rem",
+                display: "flex", alignItems: "center", gap: 6,
+              }}>
+                সার্চ
+                <kbd style={{
+                  padding: "1px 5px", borderRadius: 5,
+                  background: "rgba(255,255,255,0.07)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  fontSize: "0.6rem", fontFamily: "monospace",
+                  color: "rgba(250,246,239,0.4)",
+                }}>⌘K</kbd>
+              </span>
+            )}
+          </button>
 
           {/* ── HAMBURGER (only visible on mobile) ── */}
           {!isDesktop && (
