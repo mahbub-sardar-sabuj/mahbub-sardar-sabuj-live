@@ -64,12 +64,13 @@ function siteUrl(path: string): string {
 
 // ── Category System ───────────────────────────────────────────────────────────
 const CATS = [
-  { id:"all",       label:"সব লেখা",    icon:"✦", color:"#C9A84C", glow:"rgba(201,168,76,.4)"  },
+  { id:"all",       label:"সব লেখা",    icon:"❖", color:"#C9A84C", glow:"rgba(201,168,76,.4)"  },
   { id:"ছোট লেখা",  label:"ছোট লেখা",  icon:"✎", color:"#34D399", glow:"rgba(52,211,153,.4)"  },
   { id:"কবিতা",     label:"কবিতা",      icon:"❧", color:"#60A5FA", glow:"rgba(96,165,250,.4)"  },
   { id:"ভালোবাসা",  label:"ভালোবাসা",  icon:"♡", color:"#F472B6", glow:"rgba(244,114,182,.4)" },
   { id:"জীবনদর্শন", label:"জীবনদর্শন", icon:"◈", color:"#FBBF24", glow:"rgba(251,191,36,.4)"  },
   { id:"বিচ্ছেদ",   label:"বিচ্ছেদ",   icon:"◌", color:"#A78BFA", glow:"rgba(167,139,250,.4)" },
+  { id:"পাঠকের পছন্দ", label:"পাঠকের পছন্দ", icon:"❤", color:"#F87171", glow:"rgba(248,113,113,.4)" },
 ];
 function getCatStyle(cat: string) {
   const m: Record<string,{accent:string;glow:string;bg:string;badge:string;border:string;icon:string}> = {
@@ -1055,6 +1056,10 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
     const next = !liked; setLiked(next);
     if (next) localStorage.setItem(likeKey, "1"); else localStorage.removeItem(likeKey);
   };
+  // পড়ার সময় অনুমান
+  const wordCount = writing.content.trim().split(/\s+/).length;
+  const readMins = Math.max(1, Math.round(wordCount / 150));
+  const readTimeLabel = readMins === 1 ? "১ মিনিট" : `${readMins} মিনিট`;
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation(); e.preventDefault();
     const shareUrl = window.location.origin + "/writings/" + slug;
@@ -1101,6 +1106,10 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             <div className="wc2-foot" style={{ border: "none", padding: 0 }}>
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 12 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "rgba(242,237,228,.32)", fontSize: ".67rem", fontFamily: "var(--f)" }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {readTimeLabel}
+                </span>
                 <button onClick={handleLike} title="ভালো লেগেছে" style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".85rem", opacity: liked ? 1 : .42, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.24)" : "scale(1)" }}>
                   {liked ? "❤️" : "🤍"}
                 </button>
@@ -1123,6 +1132,10 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
             <div className="wc2-foot">
               <span className="wc2-date"><Calendar size={10}/>{writing.date}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "rgba(242,237,228,.32)", fontSize: ".67rem", fontFamily: "var(--f)" }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {readTimeLabel}
+                </span>
                 <button onClick={handleLike} title="ভালো লেগেছে" style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: ".85rem", opacity: liked ? 1 : .42, transition: "opacity .15s, transform .15s", transform: liked ? "scale(1.24)" : "scale(1)" }}>
                   {liked ? "❤️" : "🤍"}
                 </button>
@@ -1222,6 +1235,28 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
                 </div>
               )}
             </div>
+            <button
+              className="rm2-btn"
+              style={{ color: copied ? "#34D399" : T.sub, borderColor: copied ? "rgba(52,211,153,.4)" : T.bdr, transition: "color .2s, border-color .2s" }}
+              title="লেখা কপি করুন"
+              onClick={() => {
+                const textToCopy = `${writing.title}\n\n${writing.content}\n\n— মাহবুব সরদার সবুজ`;
+                navigator.clipboard.writeText(textToCopy)
+                  .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2200); })
+                  .catch(() => {
+                    const el = document.createElement('textarea');
+                    el.value = textToCopy;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2200);
+                  });
+              }}
+            >
+              {copied ? <Check size={13}/> : <Copy size={13}/>}
+            </button>
             <button className="rm2-btn" style={{ color: T.sub, borderColor: T.bdr }} onClick={onClose}><X size={14}/></button>
           </div>
         </div>
@@ -1504,7 +1539,12 @@ export default function Writings() {
 
   const filtered = useMemo(() => {
     let list = archive;
-    if (cat !== "all") list = list.filter(w => w.category === cat);
+    if (cat === "পাঠকের পছন্দ") {
+      // লোকাল স্টোরেজ থেকে লাইক করা লেখাগুলো ফিল্টার করা
+      list = list.filter(w => localStorage.getItem(`like_${w.id}`) === "1");
+    } else if (cat !== "all") {
+      list = list.filter(w => w.category === cat);
+    }
     if (deferredQuery.trim()) { const qn = deferredQuery.trim().toLowerCase(); list = list.filter(w => w.title.toLowerCase().includes(qn) || w.content.toLowerCase().includes(qn)); }
     return list;
   }, [archive, cat, deferredQuery]);
