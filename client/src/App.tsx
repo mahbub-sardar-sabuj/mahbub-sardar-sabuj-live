@@ -7,8 +7,6 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazyRoute, preloadRoute, preloadRoutesWhenIdle } from "./lib/routePreloader";
-import GlobalSearch from "./components/GlobalSearch";
-import ReadingProgressBar from "./components/ReadingProgressBar";
 
 // Keep only the landing page in the critical path. Content-heavy routes are lazy-loaded.
 import Home from "./pages/Home";
@@ -215,8 +213,6 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <ReadingProgressBar />
-          <GlobalSearch />
           <div className="cinematic-site-shell">
             <Router />
           </div>
