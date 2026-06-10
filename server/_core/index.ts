@@ -11,6 +11,7 @@ import { serveStatic, setupVite } from "./vite";
 import { handleTelegramWebhook, registerTelegramWebhook } from "../telegramService";
 import { registerContactRoute } from "../contactRoute";
 import { ENV } from "./env";
+import { registerStandaloneApiRoutes } from "../standaloneApiRoutes";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,6 +44,9 @@ async function startServer() {
   registerLocalAuthRoute(app);
   // Contact form & newsletter subscription
   registerContactRoute(app);
+  // Standalone Node hosting parity for file-based API routes used by Vercel.
+  registerStandaloneApiRoutes(app);
+
   // tRPC API
   app.use(
     "/api/trpc",

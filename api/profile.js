@@ -69,13 +69,25 @@ export default async function handler(req, res) {
 
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const db = await getDb();
-  await ensureProfileColumns(db);
+  let db;
 
   try {
     // ── GET: প্রোফাইল দেখা ──────────────────────────────────────────────────
     if (req.method === "GET") {
       const { openId } = req.query;
+
+      // নিজের প্রোফাইলের জন্য আগে auth যাচাই করা হয়, যাতে unauthenticated
+      // request অকারণে database connection failure হিসেবে না দেখায়।
+      let session = null;
+      if (!openId) {
+        const cookies = parseCookies(req.headers.cookie);
+        const token = cookies.get(COOKIE_NAME);
+        session = await verifySession(token);
+        if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
+      }
+
+      db = await getDb();
+      await ensureProfileColumns(db);
 
       if (openId) {
         // অন্যের পাবলিক প্রোফাইল
@@ -97,11 +109,6 @@ export default async function handler(req, res) {
       }
 
       // নিজের প্রোফাইল (auth required)
-      const cookies = parseCookies(req.headers.cookie);
-      const token = cookies.get(COOKIE_NAME);
-      const session = await verifySession(token);
-      if (!session?.openId) return res.status(401).json({ error: "লগইন করুন" });
-
       const [rows] = await db.execute(
         "SELECT openId, name, email, bio, avatarUrl, coverUrl, createdAt FROM local_users WHERE openId = ? LIMIT 1",
         [session.openId]
@@ -132,6 +139,9 @@ export default async function handler(req, res) {
 
       const { name, bio, avatarUrl, coverUrl } = req.body || {};
 
+      db = await getDb();
+      await ensureProfileColumns(db);
+
       if (!name?.trim()) return res.status(400).json({ error: "নাম দিন" });
       if (name.trim().length > 160) return res.status(400).json({ error: "নাম সর্বোচ্চ ১৬০ অক্ষর" });
       if (bio && bio.length > 500) return res.status(400).json({ error: "বায়ো সর্বোচ্চ ৫০০ অক্ষর" });
@@ -155,6 +165,6 @@ export default async function handler(req, res) {
     console.error("[profile]", err);
     return res.status(500).json({ error: "সার্ভার ত্রুটি" });
   } finally {
-    await db.end().catch(() => {});
+    await db?.end?.().catch(() => {});
   }
 }
