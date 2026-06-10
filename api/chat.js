@@ -26,6 +26,21 @@ console.error("[writings] Failed to load writingsArchive.json:", e.message);
 return [];
 }
 }
+let _chatbotIndexCache = null;
+function getChatbotIndex() {
+if (_chatbotIndexCache) return _chatbotIndexCache;
+try {
+const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const indexPath = join(__dirname, "_knowledge", "chatbotIndex.json");
+_chatbotIndexCache = require(indexPath);
+return _chatbotIndexCache;
+} catch (e) {
+console.error("[chatbot-index] Failed to load chatbotIndex.json:", e.message);
+return { items: [] };
+}
+}
+
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলা সাহিত্যের লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের বিশ্বমানের AI সহকারী। তুমি শুধু একটি সাধারণ চ্যাটবট নও — তুমি একজন বুদ্ধিমান, মানবসুলভ, প্রাসঙ্গিক এবং পেশাদার সহকারী যিনি বাংলা সাহিত্য ও লেখকের জগতকে গভীরভাবে চেনেন, এবং যেকোনো বিষয়ে সাহায্য করতে সক্ষম। অডিও এডিটিং, ইমেজ বিশ্লেষণ, ভিডিও প্রসেসিং সহ সকল মাল্টিমিডিয়া কাজ সরাসরি চ্যাটে করতে পারো।
 
 ## ব্যক্তিত্ব ও আচরণের মূলনীতি
@@ -111,6 +126,7 @@ sessions: new Set(),
 intents: {},
 recentQuestions: [],
 providerStats: {},
+feedback: { up: 0, down: 0 },
 };
 }
 return globalThis[CHATBOT_ANALYTICS_KEY];
@@ -184,7 +200,23 @@ topIntents: Object.entries(store.intents)
 .slice(0, 10),
 recentQuestions: store.recentQuestions,
 providerStats: store.providerStats,
+feedback: store.feedback || { up: 0, down: 0 },
 };
+}
+
+async function handleFeedbackRequest(req, res) {
+if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+try {
+const { reaction } = req.body || {};
+if (!["up", "down"].includes(reaction)) return res.status(400).json({ error: "Invalid reaction" });
+const store = getChatbotAnalyticsStore();
+store.feedback ||= { up: 0, down: 0 };
+store.feedback[reaction] += 1;
+return res.status(200).json({ ok: true, feedback: store.feedback });
+} catch (error) {
+console.error("[feedback] failed:", error);
+return res.status(500).json({ error: "Feedback failed" });
+}
 }
 
 function handleAnalyticsRequest(req, res) {
@@ -316,6 +348,67 @@ return items
 .map((item) => ({ item, score: keywordHits(text, [item.title, item.name, item.label, ...(item.keywords || [])].filter(Boolean)) }))
 .filter((match) => match.score > 0)
 .sort((a, b) => b.score - a.score)[0]?.item || null;
+}
+
+function scoreChatbotIndexItem(query, item) {
+const normalizedQuery = normalizeForIntent(query);
+if (!normalizedQuery || !item?.searchText) return 0;
+const title = normalizeForIntent(item.title || "");
+const keywords = (item.keywords || []).map((kw) => normalizeForIntent(kw));
+const words = normalizedQuery.split(/\s+/).filter((word) => word.length >= 2);
+let score = Number(item.priority || 0);
+if (title === normalizedQuery) score += 220;
+if (title.startsWith(normalizedQuery)) score += 160;
+if (title.includes(normalizedQuery)) score += 120;
+for (const keyword of keywords) {
+if (!keyword) continue;
+if (keyword === normalizedQuery) score += 100;
+else if (keyword.includes(normalizedQuery) || normalizedQuery.includes(keyword)) score += 65;
+}
+for (const word of words) {
+if (title.includes(word)) score += 28;
+if (item.searchText.includes(word)) score += 12;
+}
+if (item.type === "writing" && words.length <= 1 && score < 130) score -= 30;
+return score;
+}
+
+function searchChatbotIndex(query, options = {}) {
+const index = getChatbotIndex();
+const items = Array.isArray(index.items) ? index.items : [];
+const allowedTypes = options.types ? new Set(options.types) : null;
+return items
+.filter((item) => !allowedTypes || allowedTypes.has(item.type))
+.map((item) => ({ item, score: scoreChatbotIndexItem(query, item) }))
+.filter((match) => match.score >= (options.minScore || 95))
+.sort((a, b) => b.score - a.score || Number(b.item.priority || 0) - Number(a.item.priority || 0))
+.slice(0, options.limit || 3);
+}
+
+function buildIndexSearchReply(rawText) {
+const text = String(rawText || "").trim();
+if (text.length < 3) return null;
+const authorIdentityQuestion = /(কে|পরিচয়|পরিচয়|জন্ম|কুমিল্লা|বায়ো|bio|লেখক|কবি|মাহবুব|সবুজ)/i.test(text) && !/(বই|ই-বুক|লেখা|কবিতা|আবৃত্তি|সংবাদ|গ্যালারি|ডিজাইন|অডিও|যোগাযোগ|লিংক|link)/i.test(text);
+const contactInfoQuestion = /(যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|youtube|মেসেঞ্জার|messenger)/i.test(text) && !/(পেজ দেখাও|page|কোথায়|কোথায়)/i.test(text);
+const allPagesQuestion = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(text) && /(পেজ|page|ওয়েবসাইট|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(text);
+if (authorIdentityQuestion || contactInfoQuestion || allPagesQuestion) return null;
+const isSearchLike = /খুঁজ|দেখাও|দেখান|কোথায়|কোথায়|কোথা|পড়তে|পড়তে|লিংক|link|বই|ই-বুক|লেখা|কবিতা|আবৃত্তি|যোগাযোগ|গ্যালারি|সংবাদ|ডিজাইন|অডিও|লাইভ|contact|gallery|news/i.test(text);
+const matches = searchChatbotIndex(text, { limit: 3, minScore: isSearchLike ? 95 : 145 });
+if (matches.length === 0) return null;
+const best = matches[0].item;
+const typeLabel = {
+page: "ওয়েবসাইট পেজ",
+book: "বই/ই-বুক",
+writing_category: "লেখার বিভাগ",
+writing: "লেখা",
+recitation: "আবৃত্তি",
+tool: "চ্যাটবট টুল",
+}[best.type] || "তথ্য";
+const lines = matches.map(({ item }, index) => {
+const extra = item.type === "book" && item.buyUrl ? `\n   অর্ডার: ${item.buyUrl}` : "";
+return `${index + 1}. ${item.title} — ${item.description || typeLabel}\n   যেতে: [BUTTON:${item.path}]${extra}`;
+}).join("\n");
+return `আপনার প্রশ্নের জন্য সবচেয়ে প্রাসঙ্গিক ${typeLabel} খুঁজে পেলাম:\n\n${lines}\n\nআরও নির্দিষ্ট ফল চাইলে বই/লেখা/বিষয়ের নাম লিখুন।`;
 }
 
 function detectIntent(rawText = "") {
@@ -531,6 +624,13 @@ const greetingPattern = /^(hi|hello|hey|হ্যালো|হ্যালো|�
 if (greetingPattern.test(userText.trim())) {
   return "আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজের AI সহকারী।\n\nআপনাকে কীভাবে সাহায্য করতে পারি?\n- লেখক সম্পর্কে জানতে: [BUTTON:/about]\n- বই ও ই-বুক দেখতে: [BUTTON:/ebooks]\n- লেখালেখি পড়তে: [BUTTON:/writings]\n- যোগাযোগ করতে: [BUTTON:/contact]";
 }
+
+const wantsAllPagesEarly = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(rawText) && /(পেজ|page|ওয়েবসাইট|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(rawText);
+if (wantsAllPagesEarly) return buildSiteReply(rawText);
+
+// ── Unified knowledge search: route page/book/writing/tool questions first ─
+const indexSearchReply = buildIndexSearchReply(rawText);
+if (indexSearchReply) return indexSearchReply;
 
 // ── Writing search: check if user is looking for a specific writing ──────
 const { hasSearchPattern, isLikelyTitleSearch } = detectWritingSearchIntent(rawText);
@@ -955,7 +1055,9 @@ if (req.method === "OPTIONS") return res.status(200).end();
 // Detect special modes before enforcing POST-only chat behavior.
 const url = new URL(req.url || "/", "https://local.invalid");
 const isAnalytics = url.searchParams.get("analytics") === "1";
+const isFeedback = url.searchParams.get("feedback") === "1";
 if (isAnalytics) return handleAnalyticsRequest(req, res);
+if (isFeedback) return handleFeedbackRequest(req, res);
 
 if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 

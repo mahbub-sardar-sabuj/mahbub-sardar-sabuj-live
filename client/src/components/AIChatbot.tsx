@@ -147,6 +147,13 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
+const COMMAND_CENTER_ACTIONS = [
+  { title: "লেখক ও বই", subtitle: "পরিচিতি, বই, ই-বুক", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বলো এবং তাঁর বই ও ই-বুকের লিংক দেখাও।", accent: "rgba(212,168,67,0.18)" },
+  { title: "লেখা খুঁজুন", subtitle: "কবিতা, বিচ্ছেদ, ভালোবাসা", prompt: "বিচ্ছেদ, ভালোবাসা ও জীবনদর্শনের জনপ্রিয় লেখা দেখাও।", accent: "rgba(248,113,113,0.14)" },
+  { title: "Audio Studio", subtitle: "নয়েজ রিমুভ, ভয়েস ক্লিন", prompt: "আমি অডিও এডিট করতে চাই — কীভাবে ফাইল আপলোড করে নয়েজ কমাবো?", accent: "rgba(99,102,241,0.15)" },
+  { title: "লাইভ সাপোর্ট", subtitle: "সরাসরি কথা বলুন", prompt: "আমি লাইভ চ্যাটে সরাসরি কথা বলতে চাই।", accent: "rgba(34,197,94,0.13)" },
+];
+
 const QUICK_ACTIONS = [
   { label: "👤 লেখক কে?", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
   { label: "📖 বই দেখাও", prompt: "মাহবুব সরদার সবুজের সকল বই ও ই-বুকের তালিকা করো — পড়ার ও কেনার লিংকসহ বিস্তারিত দেখাও।", context: "book" },
@@ -2789,11 +2796,20 @@ export default function AIChatbot() {
   }, []);
 
   const handleReact = useCallback((msgId: string, reaction: "up" | "down") => {
-    setMessages(prev => prev.map(m =>
-      m.id === msgId
-        ? { ...m, reaction: m.reaction === reaction ? null : reaction }
-        : m
-    ));
+    let shouldSendFeedback = false;
+    setMessages(prev => prev.map(m => {
+      if (m.id !== msgId) return m;
+      const nextReaction = m.reaction === reaction ? null : reaction;
+      shouldSendFeedback = nextReaction === reaction;
+      return { ...m, reaction: nextReaction };
+    }));
+    if (shouldSendFeedback) {
+      fetch("/api/chat?feedback=1", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reaction, messageId: msgId }),
+      }).catch(() => {});
+    }
   }, []);
 
   useEffect(() => {
@@ -3277,7 +3293,54 @@ export default function AIChatbot() {
               {activeTab === "ai" ? (
                 <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
                 <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
-                  {messages.map((msg, idx) => (
+                    {messages.length <= 1 && (
+                      <div style={{
+                        marginBottom: 12,
+                        padding: "12px",
+                        borderRadius: 18,
+                        background: "linear-gradient(145deg, rgba(212,168,67,0.08), rgba(99,102,241,0.045))",
+                        border: "1px solid rgba(212,168,67,0.16)",
+                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                      }}>
+                        <div style={{
+                          color: "#F7E4A5",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.78rem",
+                          fontWeight: 800,
+                          marginBottom: 4,
+                        }}>আপনি কী করতে চান?</div>
+                        <div style={{
+                          color: "rgba(235,225,200,0.55)",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontSize: "0.62rem",
+                          lineHeight: 1.55,
+                          marginBottom: 10,
+                        }}>প্রশ্ন করুন, লেখা খুঁজুন, অডিও/ভিডিও প্রসেস করুন বা লাইভ সাপোর্ট নিন।</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                          {COMMAND_CENTER_ACTIONS.map((action) => (
+                            <button
+                              key={action.title}
+                              onClick={() => handleSendWithText(action.prompt)}
+                              className="chatbot-suggestion-chip chatbot-touch-target"
+                              style={{
+                                textAlign: "left",
+                                padding: "9px 10px",
+                                borderRadius: 13,
+                                background: action.accent,
+                                border: "1px solid rgba(212,168,67,0.18)",
+                                cursor: "pointer",
+                                minHeight: 58,
+                              }}
+                            >
+                              <span style={{ display: "block", color: "rgba(247,228,165,0.92)", fontSize: "0.66rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{action.title}</span>
+                              <span style={{ display: "block", color: "rgba(235,225,200,0.48)", fontSize: "0.54rem", marginTop: 2, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{action.subtitle}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {messages.map((msg, idx) => (
+
                     <MessageBubble
                       key={msg.id}
                       message={msg}
@@ -3430,6 +3493,33 @@ export default function AIChatbot() {
                   style={{ display: "none" }}
                 />
 
+
+                {!audioFile && !imagePreview && !videoConverting && (
+                  <div style={{ display: "flex", gap: 6, marginBottom: 8, overflowX: "auto", paddingBottom: 1 }}>
+                    {getContextualActions(messages).slice(0, 4).map((action) => (
+                      <button
+                        key={action.label}
+                        onClick={() => handleSendWithText(action.prompt)}
+                        className="chatbot-suggestion-btn chatbot-touch-target"
+                        style={{
+                          flexShrink: 0,
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          background: "rgba(212,168,67,0.045)",
+                          border: "1px solid rgba(212,168,67,0.16)",
+                          color: "rgba(247,228,165,0.72)",
+                          fontSize: "0.62rem",
+                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Video converting banner */}
                 {videoConverting && videoFile && (

@@ -14,6 +14,7 @@ interface AnalyticsData {
   topIntents: { intent: string; count: number }[];
   recentQuestions: { text: string; intent: string; timestamp: number }[];
   providerStats: Record<string, { success: number; fail: number }>;
+  feedback?: { up: number; down: number };
 }
 
 const INTENT_LABELS: Record<string, string> = {
@@ -203,6 +204,7 @@ export default function AdminChatbotAnalytics() {
               <StatCard label="মোট বার্তা" value={data.summary.totalMessages} sub="সব সময়ের" />
               <StatCard label="ফলব্যাক" value={data.summary.fallbackCount} sub={`হার: ${data.summary.fallbackRate}`} color="rgba(251,146,60,0.9)" />
               <StatCard label="সেশন" value={data.summary.sessionCount} sub="মোট সেশন" color="rgba(34,197,94,0.9)" />
+              <StatCard label="পজিটিভ" value={data.feedback?.up || 0} sub={`নেগেটিভ: ${data.feedback?.down || 0}`} color="rgba(74,222,128,0.9)" />
               <StatCard label="আপটাইম" value={data.summary.uptime} color="rgba(99,102,241,0.9)" />
             </div>
 
