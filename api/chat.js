@@ -97,6 +97,109 @@ limitJsonBodySize,
 normalizeText,
 } from "./_utils/security.js";
 
+// ── Lightweight chatbot analytics ──────────────────────────────────────────
+const CHATBOT_ANALYTICS_KEY = "__mahbub_chatbot_analytics_v1";
+const CHATBOT_ANALYTICS_STARTED_AT = Date.now();
+
+function getChatbotAnalyticsStore() {
+if (!globalThis[CHATBOT_ANALYTICS_KEY]) {
+globalThis[CHATBOT_ANALYTICS_KEY] = {
+startedAt: CHATBOT_ANALYTICS_STARTED_AT,
+totalMessages: 0,
+fallbackCount: 0,
+sessions: new Set(),
+intents: {},
+recentQuestions: [],
+providerStats: {},
+};
+}
+return globalThis[CHATBOT_ANALYTICS_KEY];
+}
+
+function formatAnalyticsUptime(ms) {
+const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+const days = Math.floor(totalMinutes / 1440);
+const hours = Math.floor((totalMinutes % 1440) / 60);
+const minutes = totalMinutes % 60;
+if (days > 0) return `${days}d ${hours}h`;
+if (hours > 0) return `${hours}h ${minutes}m`;
+return `${minutes}m`;
+}
+
+function resolveAnalyticsSessionId(req) {
+const cookie = req.headers?.cookie || "";
+const match = cookie.match(/(?:^|;\s*)chatbot_session=([^;]+)/);
+if (match?.[1]) return match[1];
+const ip = req.headers?.["x-forwarded-for"]?.split?.(",")?.[0]?.trim?.() || req.socket?.remoteAddress || "unknown";
+const ua = req.headers?.["user-agent"] || "unknown";
+return `${ip}:${String(ua).slice(0, 80)}`;
+}
+
+function detectAnalyticsIntent(rawText = "") {
+const normalized = normalizeForIntent(rawText);
+if (/^(hi|hello|hey|হ্যালো|হাই|সালাম|নমস্কার|শুভেচ্ছা)/i.test(normalized)) return "greeting";
+const writingSearch = detectWritingSearchIntent(rawText);
+if (writingSearch.hasSearchPattern || writingSearch.isLikelyTitleSearch) return "writing_search";
+const intent = detectIntent(normalized);
+return intent?.intent || "general_ai";
+}
+
+function recordChatbotMessage({ req, text, intent, fallback = false, provider }) {
+try {
+const store = getChatbotAnalyticsStore();
+const finalIntent = intent || detectAnalyticsIntent(text);
+store.totalMessages += 1;
+if (fallback) store.fallbackCount += 1;
+store.sessions.add(resolveAnalyticsSessionId(req));
+store.intents[finalIntent] = (store.intents[finalIntent] || 0) + 1;
+store.recentQuestions.unshift({ text: String(text || "").slice(0, 240), intent: finalIntent, timestamp: Date.now() });
+store.recentQuestions = store.recentQuestions.slice(0, 30);
+} catch (error) {
+console.warn("[analytics] record skipped:", error.message);
+}
+}
+
+function recordProviderAttempt(provider, success) {
+try {
+const store = getChatbotAnalyticsStore();
+store.providerStats[provider] ||= { success: 0, fail: 0 };
+store.providerStats[provider][success ? "success" : "fail"] += 1;
+} catch {}
+}
+
+function buildAnalyticsPayload() {
+const store = getChatbotAnalyticsStore();
+const fallbackRate = store.totalMessages > 0 ? `${Math.round((store.fallbackCount / store.totalMessages) * 100)}%` : "0%";
+return {
+summary: {
+totalMessages: store.totalMessages,
+fallbackCount: store.fallbackCount,
+fallbackRate,
+sessionCount: store.sessions.size,
+uptime: formatAnalyticsUptime(Date.now() - store.startedAt),
+},
+topIntents: Object.entries(store.intents)
+.map(([intent, count]) => ({ intent, count }))
+.sort((a, b) => b.count - a.count)
+.slice(0, 10),
+recentQuestions: store.recentQuestions,
+providerStats: store.providerStats,
+};
+}
+
+function handleAnalyticsRequest(req, res) {
+const expectedKey = process.env.CHATBOT_ANALYTICS_KEY || process.env.ADMIN_ANALYTICS_KEY || process.env.ADMIN_KEY || "";
+if (!expectedKey && process.env.NODE_ENV === "production") {
+return res.status(403).json({ error: "Analytics admin key is not configured" });
+}
+if (expectedKey) {
+const providedKey = req.headers?.["x-admin-key"] || new URL(req.url || "/", "https://local.invalid").searchParams.get("key") || "";
+if (providedKey !== expectedKey) return res.status(403).json({ error: "Forbidden" });
+}
+res.setHeader("Cache-Control", "no-store");
+return res.status(200).json(buildAnalyticsPayload());
+}
+
 // ── AI provider configuration ──────────────────────────────────────────────
 // Provider priority order:
 // 1. Groq API (primary, free tier, fast inference, no credit card required)
@@ -577,7 +680,10 @@ throw new Error("No AI API key configured. Set OPENAI_API_KEY, GEMINI_API_KEY, o
 let lastError;
 for (const config of configs) {
 try {
-return await callAIWithConfig(messages, config);
+	const reply = await callAIWithConfig(messages, config);
+	recordProviderAttempt(config.source, true);
+	return { reply, provider: config.source };
+
 } catch (err) {
 lastError = err;
 const is429 = err.message?.includes("429");
@@ -595,8 +701,10 @@ console.warn(`[AI] ${config.source} rate-limited/overloaded (${is429 ? 429 : 503
 continue;
 }
 
-console.error(`[AI] ${config.source} failed:`, err.message);
-// For other errors (auth, network, etc.) also try next provider
+	recordProviderAttempt(config.source, false);
+	console.error(`[AI] ${config.source} failed:`, err.message);
+	// For other errors (auth, network, etc.) also try next provider
+
 }
 }
 throw lastError || new Error("All AI providers failed");
@@ -843,12 +951,17 @@ res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
 res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
 if (req.method === "OPTIONS") return res.status(200).end();
+
+// Detect special modes before enforcing POST-only chat behavior.
+const url = new URL(req.url || "/", "https://local.invalid");
+const isAnalytics = url.searchParams.get("analytics") === "1";
+if (isAnalytics) return handleAnalyticsRequest(req, res);
+
 if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
 if (limitJsonBodySize(req, res, 2 * 1024 * 1024)) return;
 
 // Detect streaming mode: ?stream=1 query param (used by /api/chat-stream redirect)
-const url = new URL(req.url || "/", "https://local.invalid");
 const isStream = url.searchParams.get("stream") === "1";
 
 const rate = checkRateLimit(req, res, { keyPrefix: isStream ? "chat-stream" : "chat", windowMs: 60 * 1000, max: 20 });
@@ -876,6 +989,8 @@ const allMessages = [{ role: "system", content: SYSTEM_PROMPT }, ...filteredMess
 
 // Streaming mode — SSE response
 if (isStream) {
+recordProviderAttempt("stream", true);
+recordChatbotMessage({ req, text: lastUserText, intent: detectAnalyticsIntent(lastUserText), provider: "stream" });
 return await handleStream(req, res, allMessages);
 }
 
@@ -899,11 +1014,15 @@ clientIp: rate.clientIp,
 userAgent: req.headers["user-agent"],
 imageData: lastUserImgPart || null,
 }).catch((e) => console.error("Telegram notification failed:", e.message));
+recordProviderAttempt("canonical", true);
+recordChatbotMessage({ req, text: userMsgText, intent: detectAnalyticsIntent(userMsgText), provider: "canonical" });
 return res.status(200).json({ reply: sanitizeReply(canonicalReply), source: "canonical" });
 }
 
 try {
-const reply = await callAI(allMessages);
+const aiResult = await callAI(allMessages);
+const reply = typeof aiResult === "string" ? aiResult : aiResult.reply;
+const provider = typeof aiResult === "string" ? "ai" : aiResult.provider;
 await notifyTelegram({
 userMessage: userMsgText,
 aiResponse: reply,
@@ -911,6 +1030,7 @@ clientIp: rate.clientIp,
 userAgent: req.headers["user-agent"],
 imageData: lastUserImgPart || null,
 }).catch((e) => console.error("Telegram notification failed:", e.message));
+recordChatbotMessage({ req, text: userMsgText, intent: detectAnalyticsIntent(userMsgText), provider });
 return res.status(200).json({ reply: sanitizeReply(reply) });
 } catch (err) {
 const is429 = err.message?.includes("429");
@@ -929,6 +1049,8 @@ imageData: lastUserImgPart || null,
 console.warn("[AI] Skipping Telegram notification for 429 quota error (not actionable)");
 }
 
+recordProviderAttempt("fallback", false);
+recordChatbotMessage({ req, text: userMsgText, intent: detectAnalyticsIntent(userMsgText), fallback: true, provider: "fallback" });
 return res.status(200).json({ reply: sanitizeReply(fallbackReply), fallback: true });
 }
 } catch (err) {

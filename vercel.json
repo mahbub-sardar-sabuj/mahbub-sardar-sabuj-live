@@ -87,11 +87,15 @@
     },
     {
       "src": "/api/chatbot-notify",
-      "dest": "/api/trpc-bundled"
+      "dest": "/api/chatbot-notify.js"
     },
     {
       "src": "/api/chat-stream",
       "dest": "/api/chat?stream=1"
+    },
+    {
+      "src": "/api/analytics",
+      "dest": "/api/chat?analytics=1"
     },
     {
       "src": "/api/image-upscale",

@@ -57,6 +57,8 @@ export function registerStandaloneApiRoutes(app: Express) {
   registerApiHandler(app, "/api/upload", "upload.js");
   registerApiHandler(app, "/api/chat", "chat.js");
   registerApiHandler(app, "/api/chat-stream", "chat.js", "stream=1");
+  registerApiHandler(app, "/api/analytics", "chat.js", "analytics=1");
+  registerApiHandler(app, "/api/chatbot-notify", "chatbot-notify.js");
   registerApiHandler(app, "/api/image-upscale", "image-upscale.js");
   registerApiHandler(app, "/api/audio-edit", "audio-edit.js");
   registerApiHandler(app, "/api/video-to-audio", "video-to-audio.js");
