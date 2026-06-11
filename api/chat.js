@@ -9,7 +9,7 @@ buildKnowledgeContext,
 buildTrainingExampleContext,
 } from "./_knowledge/trainingExamples.js";
 
-// api/chat.js — v6.0: লেখা খোঁজার সক্ষমতা যোগ, ইমোজি ও মুক্ত
+// api/chat.js — v7.0: context-aware writing/book discovery, guided help ও উন্নত UX
 
 // ── Writings Archive (lazy loaded) ──────────────────────────────────────────
 let _writingsCache = null;
@@ -557,15 +557,106 @@ return categories.find((item) => item.terms.some((term) => normalized.includes(t
 
 function buildWritingDiscoveryReply(rawText) {
 const text = String(rawText || "").trim();
-const wantsDiscovery = /(সেরা|জনপ্রিয়|জনপ্রিয়|কিছু|কয়েকটা|কয়েকটা|তালিকা|দেখাও|দেখান|পড়তে|পড়তে|suggest|recommend)/i.test(text);
+const wantsDiscovery = /(সেরা|জনপ্রিয়|জনপ্রিয়|কিছু|কয়েকটা|কয়েকটা|তালিকা|দেখাও|দেখান|পড়তে|পড়তে|suggest|recommend|recommendation|সাজেস্ট|রেকমেন্ড)/i.test(text);
 const category = inferWritingCategoryFromText(text);
 if (!wantsDiscovery && !category) return null;
 const query = category ? category + " " + text : text;
 const matches = searchWritingCandidates(query, { limit: 4, minScore: category ? 18 : 35, category });
 if (!matches.length) return null;
 const rows = matches.map(({ writing }, index) => String(index + 1) + ". " + writing.title + " — " + (writing.category || "লেখা") + "\n   পড়তে: [BUTTON:" + makeWritingSlug(writing.title, writing.id).replace(/^/, "/writings/") + "]").join("\n");
-const categoryLine = category ? category + " বিষয়ের কিছু লেখা পেলাম:" : "আপনার আগ্রহের সঙ্গে মিল আছে এমন কিছু লেখা পেলাম:";
-return categoryLine + "\n\n" + rows + "\n\nসব লেখা দেখতে: [BUTTON:/writings]\nনির্দিষ্ট কোনো শিরোনাম লিখলে আমি পুরো লেখাটিও দেখাতে পারি।";
+const categoryLine = category ? category + " বিষয়ের নির্বাচিত কিছু লেখা পেলাম:" : "আপনার আগ্রহের সঙ্গে মিল আছে এমন কিছু লেখা পেলাম:";
+return categoryLine + "\n\n" + rows + "\n\nযে লেখাটি পড়তে চান, তার নম্বর লিখুন—যেমন “১ নম্বরটা দেখাও”।\nসব লেখা দেখতে: [BUTTON:/writings]";
+}
+
+const BENGALI_NUMBER_MAP = new Map([
+["০", 0], ["১", 1], ["২", 2], ["৩", 3], ["৪", 4], ["৫", 5], ["৬", 6], ["৭", 7], ["৮", 8], ["৯", 9],
+["প্রথম", 1], ["দ্বিতীয়", 2], ["দ্বিতীয়", 2], ["তৃতীয়", 3], ["তৃতীয়", 3], ["চতুর্থ", 4], ["পঞ্চম", 5]
+]);
+
+function parseSelectionNumber(rawText = "") {
+const text = normalizeSearchText(rawText);
+for (const [word, value] of BENGALI_NUMBER_MAP.entries()) {
+if (value > 0 && text.includes(word)) return value;
+}
+const digitMatch = String(rawText || "").match(/(\d+|[০-৯]+)/);
+if (!digitMatch) return null;
+const normalizedDigits = digitMatch[1].replace(/[০-৯]/g, (digit) => String(BENGALI_NUMBER_MAP.get(digit)));
+const value = Number.parseInt(normalizedDigits, 10);
+return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function extractAssistantText(message) {
+const content = message?.content;
+if (typeof content === "string") return content;
+if (Array.isArray(content)) return content.map((part) => part?.text || "").join("\n");
+return "";
+}
+
+function parseAssistantListItems(reply = "") {
+const lines = String(reply || "").split(/\n+/);
+const items = [];
+let pending = null;
+const numberedPattern = /^\s*([0-9০-৯]+)[.)।-]?\s+(.+?)(?:\s+[—-]\s+.*)?$/;
+const inlinePattern = /^\s*([0-9০-৯]+)[.)।-]?\s+(.+?)(?:\s+[—-]\s+.*)?\s+.*?\[BUTTON:([^\]]+)\]/;
+for (const line of lines) {
+const inline = line.match(inlinePattern);
+if (inline) {
+items.push({ number: parseSelectionNumber(inline[1]), title: inline[2].trim(), path: inline[3].trim() });
+pending = null;
+continue;
+}
+const numbered = line.match(numberedPattern);
+if (numbered) {
+pending = { number: parseSelectionNumber(numbered[1]), title: numbered[2].trim() };
+continue;
+}
+const button = line.match(/\[BUTTON:([^\]]+)\]/);
+if (button && pending) {
+items.push({ number: pending.number, title: pending.title, path: button[1].trim() });
+pending = null;
+}
+}
+return items.filter((item) => item.number && item.path);
+}
+
+function buildContextualSelectionReply(rawText, messages = []) {
+const selection = parseSelectionNumber(rawText);
+if (!selection) return null;
+const asksForSelection = /(নম্বর|নং|number|no|টা|টি|এটা|ওটা|লিংক|link|খুলো|দেখাও|পড়তে|পড়তে)/i.test(rawText);
+if (!asksForSelection) return null;
+const recentAssistant = [...messages].reverse().find((message) => message?.role === "assistant" && extractAssistantText(message).includes("[BUTTON:"));
+const items = parseAssistantListItems(extractAssistantText(recentAssistant));
+const selected = items.find((item) => item.number === selection);
+if (!selected) return null;
+const writingMatch = selected.path.startsWith("/writings/") ? searchWritingByTitle(selected.title) : null;
+if (writingMatch && /(পুরো|সম্পূর্ণ|লেখা|কবিতা|পড়তে|পড়তে|দেখাও|দাও|দিন)/i.test(rawText)) {
+return formatWritingReply(writingMatch.writing);
+}
+return "আপনি " + selection + " নম্বরটি বেছে নিয়েছেন: " + selected.title + "।\n\nখুলতে এখানে যান: [BUTTON:" + selected.path + "]\n\nআরও সাহায্য চাইলে লিখুন—“আরও এমন লেখা দেখাও” অথবা নির্দিষ্ট প্রশ্ন করুন।";
+}
+
+function buildHelpMenuReply() {
+return "আমি আপনাকে দ্রুত সাহায্য করতে পারি—\n\n১. লেখক পরিচিতি: [BUTTON:/about]\n২. বই ও ই-বুক: [BUTTON:/ebooks]\n৩. লেখা খোঁজা বা পড়া: [BUTTON:/writings]\n৪. আবৃত্তি দেখা: [BUTTON:/facebook-recitations]\n৫. ডিজাইন স্টুডিও: [BUTTON:/editor]\n৬. সরাসরি যোগাযোগ: [BUTTON:/contact]\n\nআপনি চাইলে লিখতে পারেন—“বিচ্ছেদের সেরা লেখা দেখাও”, “কোন বই দিয়ে শুরু করব”, অথবা “লেখকের পরিচয় দাও”।";
+}
+
+function buildBookRecommendationReply(rawText = "") {
+const text = normalizeSearchText(rawText);
+const asksRecommendation = /(কোন|শুরু|প্রথম|recommend|suggest|সাজেস্ট|রেকমেন্ড|পড়ব|পড়ব|পড়া উচিত)/i.test(rawText);
+if (!asksRecommendation) return null;
+let book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "dukkhovilash");
+let reason = "আপনি যদি বিচ্ছেদ, অপেক্ষা ও গভীর আবেগের লেখা পছন্দ করেন, তাহলে এটি সবচেয়ে উপযুক্ত শুরু।";
+if (/স্মৃতি|নস্টালজিয়া|nostalgia/.test(text)) {
+book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "smritir-boshonte") || book;
+reason = "স্মৃতি ও কোমল আবেগ দিয়ে শুরু করতে চাইলে এই ই-বুকটি ভালো পছন্দ।";
+} else if (/প্রেম|ভালোবাসা|রোমান্টিক|love/.test(text)) {
+book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "chand-phool") || book;
+reason = "ভালোবাসা ও কোমল রোমান্টিক অনুভূতির জন্য এটি সহজ ও সুন্দর শুরু।";
+} else if (/জীবন|বাস্তব|অনুপ্রেরণা|সময়|সময়/.test(text)) {
+book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "shomoyer-gohvore") || book;
+reason = "জীবন, সময় ও বাস্তবতার ভাবনা পড়তে চাইলে এটি বেশি মানানসই।";
+}
+const buyLine = book.buyUrl ? "\nঅর্ডার করতে: " + book.buyUrl : "";
+return "শুরু করার জন্য আমি “" + book.title + "” সাজেস্ট করব।\n\nকারণ: " + reason + "\nধরন: " + book.type + "\nপ্রকাশ/সময়: " + book.year + "\n\nপড়তে যান: [BUTTON:" + book.readPath + "]" + buyLine + "\nসব বই দেখতে: [BUTTON:/ebooks]";
 }
 
 function detectWritingSearchIntent(rawText) {
@@ -702,6 +793,12 @@ const rawText = extractUserText(messages);
 const userText = normalizeForIntent(rawText);
 if (!userText) return null;
 
+const helpPattern = /(কি করতে পারো|কী করতে পারো|কি পারো|কী পারো|সাহায্য|হেল্প|help|commands|মেনু)/i;
+if (helpPattern.test(rawText)) return buildHelpMenuReply();
+
+const contextualReply = buildContextualSelectionReply(rawText, messages);
+if (contextualReply) return contextualReply;
+
 // ── Greeting detection (must be FIRST, before any intent matching) ────────
 const greetingPattern = /^(hi|hello|hey|হ্যালো|হ্যালো|হ্যাই|হাই|আস্সালামু|সালাম|নমস্কার|শুভেচ্ছা|কেমন আছ|কেমন আছেন|ভালো আছ|ভালো আছেন|শুভ সকাল|শুভ বিকাল|শুভ সন্ধ্যা|শুভ রাত|good morning|good evening|good night|good afternoon)/i;
 if (greetingPattern.test(userText.trim())) {
@@ -710,6 +807,9 @@ if (greetingPattern.test(userText.trim())) {
 
 const wantsAllPagesEarly = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(rawText) && /(পেজ|page|ওয়েবসাইট|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(rawText);
 if (wantsAllPagesEarly) return buildSiteReply(rawText);
+
+const earlyBookRecommendation = buildBookRecommendationReply(rawText);
+if (earlyBookRecommendation && /(বই|ই-বুক|ebook|book|পড়ব|পড়ব|শুরু|সাজেস্ট|রেকমেন্ড|recommend|suggest)/i.test(rawText)) return earlyBookRecommendation;
 
 // ── Unified knowledge search: route page/book/writing/tool questions first ─
 const indexSearchReply = buildIndexSearchReply(rawText);
@@ -736,8 +836,11 @@ return "অবশ্যই, আমি ধাপে ধাপে শেখাত�
 }
 
 switch (intent.intent) {
-case "book":
+case "book": {
+const recommendedBook = buildBookRecommendationReply(rawText);
+if (recommendedBook) return recommendedBook;
 return buildBookReply(userText);
+}
 case "writing": {
 const discoveryReply = buildWritingDiscoveryReply(rawText);
 if (discoveryReply) return discoveryReply;
@@ -837,7 +940,7 @@ return "\"আমি বিচ্ছেদকে বলি দুঃখবিল�
 }
 
 // Default: helpful navigation response instead of a dead-end error message
-return "আপনার প্রশ্নটি বুঝতে পারিনি, কিন্তু আমি সাহায্য করতে পারি:\n\n• লেখক সম্পর্কে জানতে: [BUTTON:/about]\n• বই ও ই-বুক দেখতে: [BUTTON:/ebooks]\n• লেখালেখি পড়তে: [BUTTON:/writings]\n• সরাসরি যোগাযোগ: [BUTTON:/contact]\n\nবিস্তারিত প্রশ্ন থাকলে আবার জিজ্ঞেস করুন অথবা লাইভ চ্যাটে সরাসরি কথা বলুন।";
+return "আপনার প্রশ্নটি পুরোপুরি বুঝতে পারিনি, তবে আমি কয়েকভাবে সাহায্য করতে পারি:\n\n১. লেখক পরিচিতি: [BUTTON:/about]\n২. বই ও ই-বুক: [BUTTON:/ebooks]\n৩. লেখা পড়া বা খোঁজা: [BUTTON:/writings]\n৪. সরাসরি যোগাযোগ: [BUTTON:/contact]\n\nউদাহরণ হিসেবে লিখতে পারেন—“ভালোবাসার লেখা দেখাও”, “কোন বই দিয়ে শুরু করব”, অথবা “লেখকের জন্মস্থান কোথায়?”";
 }
 
 function sanitizeReply(reply) {

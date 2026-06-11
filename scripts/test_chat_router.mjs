@@ -6,6 +6,17 @@ const cases = [
   { name: 'writing route', text: 'জীবনদর্শন লেখা দেখাও', expect: ['/writings', 'জীবনদর্শন'] },
   { name: 'writing discovery route', text: 'বিচ্ছেদের সেরা লেখাগুলো দেখাও', expect: ['/writings/', 'বিচ্ছেদ'] },
   { name: 'writing title search route', text: 'কিছু স্মৃতি কখনো ভোলা যায় না লেখাটি পড়তে চাই', expect: ['কিছু স্মৃতি কখনো ভোলা যায় না', '/writings/'] },
+  { name: 'help menu route', text: 'তুমি কী কী করতে পারো help', expect: ['লেখক পরিচিতি', '/ebooks', '/contact'] },
+  { name: 'book recommendation route', text: 'আমি কোন বই দিয়ে শুরু করব', expect: ['সাজেস্ট', '/ebooks/read/dukkhovilash'] },
+  {
+    name: 'numbered follow-up route',
+    messages: [
+      { role: 'user', content: 'বিচ্ছেদের সেরা লেখাগুলো দেখাও' },
+      { role: 'assistant', content: 'বিচ্ছেদ বিষয়ের নির্বাচিত কিছু লেখা পেলাম:\n\n1. কিছু স্মৃতি কখনো ভোলা যায় না — বিচ্ছেদ\n   পড়তে: [BUTTON:/writings/1241-kichu-smriti-kokhono-vula-zay-na]' },
+      { role: 'user', content: '১ নম্বরটা দেখাও' },
+    ],
+    expect: ['কিছু স্মৃতি কখনো ভোলা যায় না', 'পুরো লেখা পড়তে: [BUTTON:/writings/'],
+  },
   { name: 'recitation route', text: 'জানেন বাবা আবৃত্তি শুনব', expect: ['/facebook-recitations', 'জানেন বাবা'] },
   { name: 'contact route', text: 'যোগাযোগ ইমেইল দাও', expect: ['/contact', 'lekhokmahbubsardarsabuj'] },
   { name: 'audio route (Pro Max in-chat)', text: 'অডিও নয়েজ কমাতে পারো?', expect: ['অডিও', 'আপলোড'] },
@@ -38,7 +49,7 @@ for (const testCase of cases) {
   const req = {
     method: 'POST',
     headers: { 'x-forwarded-for': `127.0.0.${Math.floor(Math.random() * 200) + 1}`, 'user-agent': 'router-regression-test' },
-    body: { messages: [{ role: 'user', content: testCase.text }] },
+    body: { messages: testCase.messages || [{ role: 'user', content: testCase.text }] },
     socket: { remoteAddress: '127.0.0.1' },
   };
   const res = createMockResponse();
