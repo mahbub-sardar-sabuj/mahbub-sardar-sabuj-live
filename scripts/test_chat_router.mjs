@@ -4,6 +4,8 @@ const cases = [
   { name: 'book route', text: 'দুঃখবিলাস বই কোথায় কিনব', expect: ['/ebooks/read/dukkhovilash', 'rkmri.co'] },
   { name: 'author route', text: 'মাহবুব সরদার সবুজ কে', expect: ['/about', 'কুমিল্লা'] },
   { name: 'writing route', text: 'জীবনদর্শন লেখা দেখাও', expect: ['/writings', 'জীবনদর্শন'] },
+  { name: 'writing discovery route', text: 'বিচ্ছেদের সেরা লেখাগুলো দেখাও', expect: ['/writings/', 'বিচ্ছেদ'] },
+  { name: 'writing title search route', text: 'কিছু স্মৃতি কখনো ভোলা যায় না লেখাটি পড়তে চাই', expect: ['কিছু স্মৃতি কখনো ভোলা যায় না', '/writings/'] },
   { name: 'recitation route', text: 'জানেন বাবা আবৃত্তি শুনব', expect: ['/facebook-recitations', 'জানেন বাবা'] },
   { name: 'contact route', text: 'যোগাযোগ ইমেইল দাও', expect: ['/contact', 'lekhokmahbubsardarsabuj'] },
   { name: 'audio route (Pro Max in-chat)', text: 'অডিও নয়েজ কমাতে পারো?', expect: ['অডিও', 'আপলোড'] },

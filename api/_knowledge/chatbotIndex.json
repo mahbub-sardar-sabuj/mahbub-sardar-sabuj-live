@@ -1,6 +1,6 @@
 {
   "version": "2026.06-chatbot-index-v1",
-  "generatedAt": "2026-06-10T16:46:30.400Z",
+  "generatedAt": "2026-06-11T18:12:49.945Z",
   "totals": {
     "items": 2292,
     "writings": 2260,
@@ -385,11 +385,11 @@
         "অনুপ্রেরণা",
         "life",
         "বাস্তব",
-        "570 লেখা"
+        "662 লেখা"
       ],
-      "searchText": "writing_category জীবনদর্শন ও বাস্তবতা জীবনের গভীর সত্য, বাস্তবতা ও অনুপ্রেরণামূলক লেখা /writings জীবনদর্শন জীবন বাস্তবতা অনুপ্রেরণা life বাস্তব 570 লেখা",
+      "searchText": "writing_category জীবনদর্শন ও বাস্তবতা জীবনের গভীর সত্য, বাস্তবতা ও অনুপ্রেরণামূলক লেখা /writings জীবনদর্শন জীবন বাস্তবতা অনুপ্রেরণা life বাস্তব 662 লেখা",
       "priority": 90,
-      "count": 570
+      "count": 662
     },
     {
       "type": "writing_category",
@@ -422,11 +422,11 @@
         "প্রেম",
         "love",
         "রোমান্টিক",
-        "168 লেখা"
+        "190 লেখা"
       ],
-      "searchText": "writing_category ভালোবাসা ও প্রেম প্রেম, ভালোবাসা ও রোমান্টিক অনুভূতির লেখা /writings ভালোবাসা প্রেম love রোমান্টিক 168 লেখা",
+      "searchText": "writing_category ভালোবাসা ও প্রেম প্রেম, ভালোবাসা ও রোমান্টিক অনুভূতির লেখা /writings ভালোবাসা প্রেম love রোমান্টিক 190 লেখা",
       "priority": 90,
-      "count": 168
+      "count": 190
     },
     {
       "type": "writing_category",
@@ -441,11 +441,11 @@
         "স্ট্যাটাস",
         "quotes",
         "status",
-        "55 লেখা"
+        "1117 লেখা"
       ],
-      "searchText": "writing_category ছোট লেখা ও উক্তি সংক্ষিপ্ত কিন্তু গভীর অর্থবহ লেখা ও উক্তি /writings ছোট লেখা short উক্তি স্ট্যাটাস quotes status 55 লেখা",
+      "searchText": "writing_category ছোট লেখা ও উক্তি সংক্ষিপ্ত কিন্তু গভীর অর্থবহ লেখা ও উক্তি /writings ছোট লেখা short উক্তি স্ট্যাটাস quotes status 1117 লেখা",
       "priority": 90,
-      "count": 55
+      "count": 1117
     },
     {
       "type": "writing_category",

@@ -454,35 +454,118 @@ function makeWritingSlug(title, id) {
 return `${makeLegacySlug(title)}-${id}`;
 }
 
-// ── Writing search: find writing by title ─────────────────────────────────────
-function searchWritingByTitle(query) {
-const writings = getWritingsArchive();
-if (!writings || writings.length === 0) return null;
-const normalizedQuery = query.trim().toLowerCase();
-if (normalizedQuery.length < 2) return null;
-// 1. Exact match
-const exactMatch = writings.find((w) => w.title.toLowerCase() === normalizedQuery);
-if (exactMatch) return { writing: exactMatch, matchType: "exact" };
-// 2. Starts-with match
-const startsWithMatch = writings.find((w) => w.title.toLowerCase().startsWith(normalizedQuery));
-if (startsWithMatch) return { writing: startsWithMatch, matchType: "startsWith" };
-// 3. Contains match
-const containsMatch = writings.find((w) => w.title.toLowerCase().includes(normalizedQuery));
-if (containsMatch) return { writing: containsMatch, matchType: "contains" };
-// 4. Partial word match
-const queryWords = normalizedQuery.split(/\s+/).filter((w) => w.length >= 2);
-if (queryWords.length > 0) {
-const scored = writings
-.map((w) => {
-const titleLower = w.title.toLowerCase();
-const hits = queryWords.filter((word) => titleLower.includes(word)).length;
-return { writing: w, hits };
-})
-.filter((r) => r.hits > 0)
-.sort((a, b) => b.hits - a.hits);
-if (scored.length > 0) return { writing: scored[0].writing, matchType: "partial" };
+// ── Writing search: robust title/category/content discovery ───────────────────
+const BENGALI_QUERY_STOPWORDS = new Set([
+"আমি", "আমার", "আমাকে", "আপনি", "আপনার", "একটা", "একটি", "কোনো", "কিছু", "সব", "সেরা",
+"লেখা", "লেখাটা", "লেখাটি", "কবিতা", "কবিতাটা", "কবিতাটি", "দাও", "দিন", "দেখাও", "দেখান",
+"খুঁজে", "পড়তে", "পড়তে", "চাই", "চান", "সম্পূর্ণ", "পুরো", "দয়া", "দয়া", "করে", "প্লিজ"
+]);
+
+function normalizeSearchText(value = "") {
+return String(value || "")
+.toLowerCase()
+.normalize("NFC")
+.replace(/[“”‘’'"\x60]/g, "")
+.replace(/[।,!?;:()\[\]{}<>]/g, " ")
+.replace(/\s+/g, " ")
+.trim();
 }
-return null;
+
+function tokenizeSearchQuery(value = "") {
+return normalizeSearchText(value)
+.split(/\s+/)
+.map((word) => word.trim())
+.filter((word) => word.length >= 2 && !BENGALI_QUERY_STOPWORDS.has(word));
+}
+
+function levenshteinDistance(a = "", b = "") {
+if (Math.abs(a.length - b.length) > 3) return 99;
+const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+for (let j = 1; j <= b.length; j += 1) dp[0][j] = j;
+for (let i = 1; i <= a.length; i += 1) {
+for (let j = 1; j <= b.length; j += 1) {
+const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+}
+}
+return dp[a.length][b.length];
+}
+
+function scoreWritingCandidate(query, writing) {
+const normalizedQuery = normalizeSearchText(query);
+if (!normalizedQuery || !writing?.title) return 0;
+const title = normalizeSearchText(writing.title);
+const category = normalizeSearchText(writing.category || "");
+const content = normalizeSearchText(String(writing.content || "").slice(0, 500));
+const tokens = tokenizeSearchQuery(query);
+let score = 0;
+if (title === normalizedQuery) score += 260;
+if (title.startsWith(normalizedQuery)) score += 200;
+if (title.includes(normalizedQuery)) score += 165;
+if (normalizedQuery.includes(title) && title.length >= 5) score += 145;
+if (category && normalizedQuery.includes(category)) score += 55;
+for (const token of tokens) {
+if (title === token) score += 95;
+else if (title.startsWith(token)) score += 72;
+else if (title.includes(token)) score += 48;
+if (category.includes(token)) score += 22;
+if (content.includes(token)) score += 8;
+const titleWords = title.split(/\s+/).filter(Boolean);
+if (titleWords.some((word) => word.length >= 4 && levenshteinDistance(word, token) <= 1)) score += 20;
+}
+score += Math.min(String(writing.content || "").length / 1200, 12);
+return score;
+}
+
+function searchWritingCandidates(query, { limit = 5, minScore = 45, category = null } = {}) {
+const writings = getWritingsArchive();
+if (!Array.isArray(writings) || writings.length === 0) return [];
+const normalizedCategory = category ? normalizeSearchText(category) : null;
+return writings
+.filter((writing) => !normalizedCategory || normalizeSearchText(writing.category || "").includes(normalizedCategory))
+.map((writing) => ({ writing, score: scoreWritingCandidate(query, writing) }))
+.filter((match) => match.score >= minScore)
+.sort((a, b) => b.score - a.score || Number(b.writing.id || 0) - Number(a.writing.id || 0))
+.slice(0, limit);
+}
+
+function searchWritingByTitle(query) {
+const normalizedQuery = normalizeSearchText(query);
+if (normalizedQuery.length < 2) return null;
+const [best] = searchWritingCandidates(query, { limit: 1, minScore: normalizedQuery.length <= 3 ? 65 : 45 });
+if (!best) return null;
+let matchType = "partial";
+const title = normalizeSearchText(best.writing.title);
+if (title === normalizedQuery) matchType = "exact";
+else if (title.startsWith(normalizedQuery)) matchType = "startsWith";
+else if (title.includes(normalizedQuery)) matchType = "contains";
+else if (best.score >= 70) matchType = "fuzzy";
+return { writing: best.writing, matchType, score: best.score };
+}
+
+function inferWritingCategoryFromText(text = "") {
+const normalized = normalizeSearchText(text);
+const categories = [
+{ category: "বিচ্ছেদ", terms: ["বিচ্ছেদ", "বিরহ", "কষ্ট", "দূরত্ব", "ভুলে", "হারানো"] },
+{ category: "ভালোবাসা", terms: ["ভালোবাসা", "প্রেম", "মায়া", "মায়া", "প্রিয়", "প্রিয়"] },
+{ category: "জীবনদর্শন", terms: ["জীবন", "বাস্তব", "মানুষ", "শিক্ষা", "দর্শন", "অনুপ্রেরণা"] },
+{ category: "কবিতা", terms: ["কবিতা", "ছন্দ", "কাব্য"] },
+{ category: "ছোট লেখা", terms: ["ছোট", "উক্তি", "স্ট্যাটাস"] },
+];
+return categories.find((item) => item.terms.some((term) => normalized.includes(term)))?.category || null;
+}
+
+function buildWritingDiscoveryReply(rawText) {
+const text = String(rawText || "").trim();
+const wantsDiscovery = /(সেরা|জনপ্রিয়|জনপ্রিয়|কিছু|কয়েকটা|কয়েকটা|তালিকা|দেখাও|দেখান|পড়তে|পড়তে|suggest|recommend)/i.test(text);
+const category = inferWritingCategoryFromText(text);
+if (!wantsDiscovery && !category) return null;
+const query = category ? category + " " + text : text;
+const matches = searchWritingCandidates(query, { limit: 4, minScore: category ? 18 : 35, category });
+if (!matches.length) return null;
+const rows = matches.map(({ writing }, index) => String(index + 1) + ". " + writing.title + " — " + (writing.category || "লেখা") + "\n   পড়তে: [BUTTON:" + makeWritingSlug(writing.title, writing.id).replace(/^/, "/writings/") + "]").join("\n");
+const categoryLine = category ? category + " বিষয়ের কিছু লেখা পেলাম:" : "আপনার আগ্রহের সঙ্গে মিল আছে এমন কিছু লেখা পেলাম:";
+return categoryLine + "\n\n" + rows + "\n\nসব লেখা দেখতে: [BUTTON:/writings]\nনির্দিষ্ট কোনো শিরোনাম লিখলে আমি পুরো লেখাটিও দেখাতে পারি।";
 }
 
 function detectWritingSearchIntent(rawText) {
@@ -655,7 +738,9 @@ return "অবশ্যই, আমি ধাপে ধাপে শেখাত�
 switch (intent.intent) {
 case "book":
 return buildBookReply(userText);
-case "writing":
+case "writing": {
+const discoveryReply = buildWritingDiscoveryReply(rawText);
+if (discoveryReply) return discoveryReply;
 // "কবিতা দাও", "একটি লেখা দাও" — give a random writing
 if (/দাও|দিন|দেখাও|দেখান|পড়তে চাই|পড়তে চান/.test(userText) && !isLikelyTitleSearch) {
   const writings = getWritingsArchive();
@@ -671,6 +756,7 @@ if (isLikelyTitleSearch || hasSearchPattern) {
   if (writingReply) return writingReply;
 }
 return buildWritingReply(userText);
+}
 case "recitation":
 return buildRecitationReply(userText);
 case "author":
