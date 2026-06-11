@@ -1,6 +1,9 @@
 import handler from '../api/chat.js';
 
 const cases = [
+  { name: 'natural wellbeing chat', text: 'কেমন আছেন?', expect: ['আলহামদুলিল্লাহ', 'আপনি কেমন আছেন'] },
+  { name: 'natural greeting chat', text: 'আসসালামু আলাইকুম', expect: ['ওয়ালাইকুম আসসালাম', 'কথা বলতে'] },
+  { name: 'natural emotional support chat', text: 'আজ মনটা ভালো নেই', expect: ['খারাপ লাগল', 'বলতে পারেন'] },
   { name: 'book route', text: 'দুঃখবিলাস বই কোথায় কিনব', expect: ['/ebooks/read/dukkhovilash', 'rkmri.co'] },
   { name: 'author route', text: 'মাহবুব সরদার সবুজ কে', expect: ['/about', 'কুমিল্লা'] },
   { name: 'writing route', text: 'জীবনদর্শন লেখা দেখাও', expect: ['/writings', 'জীবনদর্শন'] },

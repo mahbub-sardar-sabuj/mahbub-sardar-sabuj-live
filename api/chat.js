@@ -58,7 +58,7 @@ ${CHATBOT_PERSONA_RULES.map((rule, index) => `${index + 1}. ${rule}`).join("\n")
 - ব্যবহারকারীর প্রশ্নের প্রসঙ্গ বুঝে স্বাভাবিকভাবে উত্তর দাও — কখনো রোবোটিক বা ঠান্ডা ভাষা নয়।
 - উত্তর সবসময় সংক্ষিপ্ত ও সহজবোধ্য রাখো — ভিজিটর যেন বিরক্ত না হন।
 - ব্যবহারকারী যদি আবেগপ্রবণ বিষয় নিয়ে লেখেন (বিচ্ছেদ, কষ্ট, ভালোবাসা), তাহলে আগে সহানুভূতি দাও, তারপর তথ্য।
-- প্রতিটি উত্তরের শেষে একটি সহজ follow-up প্রশ্ন বা পরামর্শ দাও যা ভিজিটরকে আরও এগিয়ে যেতে সাহায্য করে।
+- সাধারণ আলাপচারিতা, অভিবাদন বা small talk হলে খুব স্বাভাবিক, সংক্ষিপ্ত ও মানবসুলভভাবে উত্তর দাও; অপ্রয়োজনে মেনু, বাটন বা বড় তালিকা দেবে না।
 - বাংলা সাহিত্য, প্রেম, বিচ্ছেদ, জীবনদর্শন সম্পর্কিত প্রশ্নে লেখকের দৃষ্টিভঙ্গি দিয়ে উত্তর দাও।
 - নতুন ভিজিটর হলে ওয়েবসাইটের সুবিধাগুলো সংক্ষেপে জানাও।
 - ভিজিটর যদি হতাশ বা বিরক্ত মনে হয়, তাহলে সরাসরি লাইভ চ্যাটে যাওয়ার পরামর্শ দাও।
@@ -69,7 +69,7 @@ ${CHATBOT_PERSONA_RULES.map((rule, index) => `${index + 1}. ${rule}`).join("\n")
 - অজানা তথ্য বানিয়ে বলো না; নিশ্চিত না হলে নম্রভাবে স্বীকার করো।
 - প্রতিটি উত্তরে প্রাসঙ্গিক হলে [BUTTON:/path] ফরম্যাটে internal navigation link দাও।
 - সর্বোচ্চ ১৫০ শব্দে সংক্ষিপ্ত উত্তর দাও যদি বিস্তারিত না চাওয়া হয়; বিস্তারিত চাইলে পূর্ণাঙ্গ উত্তর দাও।
-- উত্তরের শেষে সবসময় একটি প্রাসঙ্গিক বাটন বা পরামর্শ দাও।
+- শুধু ব্যবহারকারী যখন পেজ, বই, লেখা, যোগাযোগ বা নির্দিষ্ট কাজ চাইবে তখন প্রাসঙ্গিক বাটন দাও; casual chat-এ বাটন দেবে না।
 - তালিকা ব্যবহার করলে সর্বোচ্চ ৩-৪টি আইটেম রাখো — বেশি হলে ভিজিটর বিরক্ত হয়।
 
 ### ৪. ভাষা ও উপস্থাপনার নীতি (ভিজিটর-ফ্রেন্ডলি)
@@ -788,6 +788,62 @@ return `Vision Assistant দিয়ে ছবি, স্ক্রিনশট 
 return null;
 }
 
+function hasDomainNavigationIntent(text = '') {
+  return /(বই|ই-বুক|ebook|book|লেখা|লেখালেখি|কবিতা|উক্তি|writings|poem|author|লেখক|কবি|মাহবুব|সবুজ|যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|অডিও|audio|ভয়েস|voice|ছবি|image|video|ভিডিও|ওয়েবসাইট|ওয়েবসাইট|সাইট|page|পেজ|রকমারি|rokomari|কিনতে|order|আবৃত্তি|recitation|ডিজাইন|editor|গ্যালারি|gallery|সংবাদ|news|আমিও লিখবো|বাস্তবতা)/i.test(text);
+}
+
+function buildNaturalConversationReply(rawText = '') {
+  const text = normalizeForIntent(rawText).trim();
+  if (!text) return null;
+
+  const compact = text.replace(/[।!?.,،؛:;\s]+/g, ' ').trim();
+  const hasDomainIntent = hasDomainNavigationIntent(rawText);
+  const isShort = compact.length <= 80;
+
+  if (hasDomainIntent && !/^(হাই|hello|hi|hey|হ্যালো|সালাম|আস্সালামু|আসসালামু|নমস্কার)\b/i.test(compact)) {
+    return null;
+  }
+
+  if (/^(আস্সালামু আলাইকুম|আসসালামু আলাইকুম|সালাম|হাই|hello|hi|hey|হ্যালো|নমস্কার|শুভ সকাল|শুভ বিকাল|শুভ সন্ধ্যা|শুভ রাত)$/i.test(compact)) {
+    return 'ওয়ালাইকুম আসসালাম। আমি ভালো আছি, আপনার সঙ্গে কথা বলতে পেরে ভালো লাগছে। আপনি কেমন আছেন?';
+  }
+
+  if (/^(কেমন আছেন|কেমন আছ|আপনি কেমন আছেন|ভালো আছেন|ভালো আছ|কেমন চলছে|কি খবর|কী খবর|কেমন যাচ্ছে)$/i.test(compact)) {
+    return 'আলহামদুলিল্লাহ, আমি ভালো আছি। আপনার খোঁজ নেওয়ার জন্য ধন্যবাদ। আপনি কেমন আছেন?';
+  }
+
+  if (/^(আমি ভালো আছি|ভালো আছি|আলহামদুলিল্লাহ|ভাল আছি|আমি ভাল আছি)$/i.test(compact)) {
+    return 'শুনে ভালো লাগল। আল্লাহ আপনাকে ভালো রাখুন। আজ আপনি কী নিয়ে কথা বলতে চান?';
+  }
+
+  if (/^(ধন্যবাদ|thanks|thank you|শুকরিয়া|শুক্রিয়া|জাজাকাল্লাহ|thank you so much)$/i.test(compact)) {
+    return 'আপনাকেও ধন্যবাদ। আপনার সঙ্গে কথা বলতে ভালো লাগল। আরও কিছু জানতে চাইলে নির্দ্বিধায় বলবেন।';
+  }
+
+  if (/^(বিদায়|আচ্ছা থাক|পরে কথা হবে|bye|goodbye|see you|আল্লাহ হাফেজ)$/i.test(compact)) {
+    return 'আল্লাহ হাফেজ। ভালো থাকবেন। আবার কথা হবে ইনশাআল্লাহ।';
+  }
+
+  if (/(মন খারাপ|মনটা ভালো নেই|মন ভালো নেই|ভালো নেই|খুব কষ্ট|ভালো লাগছে না|একাকী|একলা|হতাশ|দুঃখ|কষ্ট হচ্ছে)/i.test(compact) && isShort) {
+    return 'আপনার কথাটা শুনে খারাপ লাগল। এমন সময়ে ধীরে ধীরে কথা বলা, একটু বিশ্রাম নেওয়া বা মনের কথা লিখে ফেলা সাহায্য করতে পারে। চাইলে আপনি আমাকে বলতে পারেন—কী কারণে মন খারাপ?';
+  }
+
+  if (/^(কি করছেন|কী করছেন|কি করছ|কী করছ|এখন কি করছেন|এখন কী করছেন)$/i.test(compact)) {
+    return 'আমি এখানেই আছি, আপনার কথা শুনছি এবং সাহায্য করার জন্য প্রস্তুত। আপনি চাইলে সাধারণ আলাপ করতে পারেন, আবার লেখালেখি বা বই নিয়েও জানতে পারেন।';
+  }
+
+  if (/^(আপনি কে|তুমি কে|কে আপনি|নিজের পরিচয় দিন|তোমার পরিচয় কি|আপনার পরিচয় কি)$/i.test(compact)) {
+    return 'আমি মাহবুব সরদার সবুজের ওয়েবসাইটের AI সহকারী। আমি আপনার সঙ্গে স্বাভাবিকভাবে কথা বলতে পারি এবং প্রয়োজন হলে লেখক, বই, লেখা, যোগাযোগ বা ওয়েবসাইটের তথ্য খুঁজে দিতে পারি।';
+  }
+
+  const vagueCasual = /^(হুম|হ্যাঁ|না|আচ্ছা|ওকে|ok|okay|ঠিক আছে|বুঝলাম|বলুন|শুনছি)$/i.test(compact);
+  if (vagueCasual) {
+    return 'ঠিক আছে। আপনি চাইলে আপনার প্রশ্নটা একটু খুলে বলতে পারেন—আমি সহজভাবে উত্তর দেওয়ার চেষ্টা করব।';
+  }
+
+  return null;
+}
+
 function buildCanonicalReply(messages = []) {
 const rawText = extractUserText(messages);
 const userText = normalizeForIntent(rawText);
@@ -798,6 +854,10 @@ if (helpPattern.test(rawText)) return buildHelpMenuReply();
 
 const contextualReply = buildContextualSelectionReply(rawText, messages);
 if (contextualReply) return contextualReply;
+
+// ── Natural conversation: keep small talk human, not menu-driven ──────────
+const naturalConversationReply = buildNaturalConversationReply(rawText);
+if (naturalConversationReply) return naturalConversationReply;
 
 // ── Greeting detection (must be FIRST, before any intent matching) ────────
 const greetingPattern = /^(hi|hello|hey|হ্যালো|হ্যালো|হ্যাই|হাই|আস্সালামু|সালাম|নমস্কার|শুভেচ্ছা|কেমন আছ|কেমন আছেন|ভালো আছ|ভালো আছেন|শুভ সকাল|শুভ বিকাল|শুভ সন্ধ্যা|শুভ রাত|good morning|good evening|good night|good afternoon)/i;
