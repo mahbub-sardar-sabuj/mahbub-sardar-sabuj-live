@@ -159,7 +159,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(Googlebot|Googlebot-News|Googlebot-Image|Googlebot-Video|AdsBot-Google|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|Claude-User|anthropic-ai|PerplexityBot|Perplexity-User|YouBot|CCBot|Bytespider|Meta-ExternalAgent|Meta-ExternalFetcher|Amazonbot|Diffbot|cohere-ai|MistralAI-User|AI2Bot|omgili|omgilibot).*"
+          "value": "(?i).*(Googlebot|Googlebot-News|Googlebot-Image|Googlebot-Video|AdsBot-Google|Mediapartners-Google|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|Claude-User|anthropic-ai|PerplexityBot|Perplexity-User|YouBot|CCBot|Bytespider|Meta-ExternalAgent|Meta-ExternalFetcher|Amazonbot|Diffbot|cohere-ai|MistralAI-User|AI2Bot|omgili|omgilibot).*"
         }
       ],
       "dest": "/api/ssr-og?path=/$1"
@@ -170,7 +170,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(Googlebot|Googlebot-News|Googlebot-Image|Googlebot-Video|AdsBot-Google|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|Claude-User|anthropic-ai|PerplexityBot|Perplexity-User|YouBot|CCBot|Bytespider|Meta-ExternalAgent|Meta-ExternalFetcher|Amazonbot|Diffbot|cohere-ai|MistralAI-User|AI2Bot|omgili|omgilibot).*"
+          "value": "(?i).*(Googlebot|Googlebot-News|Googlebot-Image|Googlebot-Video|AdsBot-Google|Mediapartners-Google|Google-InspectionTool|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|Applebot|ia_archiver|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|Claude-User|anthropic-ai|PerplexityBot|Perplexity-User|YouBot|CCBot|Bytespider|Meta-ExternalAgent|Meta-ExternalFetcher|Amazonbot|Diffbot|cohere-ai|MistralAI-User|AI2Bot|omgili|omgilibot).*"
         }
       ],
       "dest": "/api/ssr-og?path=/"
