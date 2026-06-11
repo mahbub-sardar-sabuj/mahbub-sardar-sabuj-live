@@ -3597,21 +3597,21 @@ export default function AIChatbot() {
                     />
                   </div>
                   <button
-                    onClick={(audioFile || lastAudioBlobRef.current) ? () => handleAudioEdit() : handleSend}
-                    aria-label={(audioFile || lastAudioBlobRef.current) ? "অডিও নির্দেশনা পাঠান" : "বার্তা পাঠান"}
+                    onClick={handleSend}
+                    aria-label={audioFile ? "অডিও নির্দেশনা পাঠান" : "বার্তা পাঠান"}
                     className="chatbot-send-btn"
-                    disabled={(audioFile || lastAudioBlobRef.current)
+                    disabled={audioFile
                       ? audioProcessing
-                      : ((!input.trim() && !imagePreview) || isLoading)
+                      : ((!input.trim() && !imagePreview) || isLoading || audioProcessing)
                     }
                     style={{
                       width: 44, height: 44,
                       borderRadius: 14,
-                      background: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading))
+                      background: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
                         ? "linear-gradient(135deg, #D8B84E 0%, #C9A84C 100%)"
                         : "rgba(212,168,67,0.1)",
                       border: "none",
-                      color: ((audioFile || lastAudioBlobRef.current) ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading)) ? "#0A1628" : "rgba(212,168,67,0.3)",
+                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing)) ? "#0A1628" : "rgba(212,168,67,0.3)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
