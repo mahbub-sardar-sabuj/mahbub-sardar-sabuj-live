@@ -147,13 +147,6 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
-const COMMAND_CENTER_ACTIONS = [
-  { title: "স্বাভাবিক আলাপ", subtitle: "মানুষের মতো কথা বলুন", prompt: "কেমন আছেন? আজ একটু গল্প করি।", accent: "rgba(212,168,67,0.18)" },
-  { title: "লেখা খুঁজুন", subtitle: "শিরোনাম, বিষয়, তালিকা", prompt: "বিচ্ছেদের নির্বাচিত কিছু লেখা দেখাও, তারপর আমি নম্বর বেছে নেব।", accent: "rgba(248,113,113,0.14)" },
-  { title: "বই সাজেশন", subtitle: "কোন বই দিয়ে শুরু করবেন", prompt: "আমি কোন বই দিয়ে শুরু করব? আমার জন্য একটি বই সাজেস্ট করো।", accent: "rgba(99,102,241,0.15)" },
-  { title: "সহায়তা মেনু", subtitle: "সব কাজ এক নজরে", prompt: "তুমি কী কী করতে পারো? সাহায্য মেনু দেখাও।", accent: "rgba(34,197,94,0.13)" },
-];
-
 const QUICK_ACTIONS = [
   { label: "কেমন আছেন?", prompt: "কেমন আছেন? আজ একটু স্বাভাবিকভাবে কথা বলি।", context: "casual" },
   { label: "লেখক কে?", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
@@ -1706,11 +1699,7 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `স্বাগতম। আমি **মাহবুব সরদার সবুজের AI সহকারী**। আপনি চাইলে আমার সঙ্গে স্বাভাবিকভাবে কথা বলতে পারেন—যেমন “কেমন আছেন?”, “আজ মনটা ভালো নেই”, “একটু গল্প করি”।
-
-প্রয়োজনে আমি লেখক, বই, লেখা, আবৃত্তি, যোগাযোগ, অডিও এডিটিং ও সাইট নেভিগেশনেও সাহায্য করব। সাধারণ আলাপে আমি সংক্ষিপ্ত ও মানবসুলভ উত্তর দেব; আর নির্দিষ্ট কিছু চাইলে তখন প্রাসঙ্গিক লিংক বা বাটন দেখাব।
-
-সরাসরি লিখুন—আমি শুনছি।`,
+    content: `আপনাকে স্বাগতম মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট AI Agent রুমে।`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -3288,52 +3277,6 @@ export default function AIChatbot() {
               {activeTab === "ai" ? (
                 <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
                 <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
-                    {messages.length <= 1 && (
-                      <div style={{
-                        marginBottom: 12,
-                        padding: "12px",
-                        borderRadius: 18,
-                        background: "linear-gradient(145deg, rgba(212,168,67,0.08), rgba(99,102,241,0.045))",
-                        border: "1px solid rgba(212,168,67,0.16)",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
-                      }}>
-                        <div style={{
-                          color: "#F7E4A5",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.78rem",
-                          fontWeight: 800,
-                          marginBottom: 4,
-                        }}>আপনি কী করতে চান?</div>
-                        <div style={{
-                          color: "rgba(235,225,200,0.55)",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontSize: "0.62rem",
-                          lineHeight: 1.55,
-                          marginBottom: 10,
-                        }}>স্বাভাবিকভাবে কথা বলুন, প্রশ্ন করুন, লেখা খুঁজুন অথবা প্রয়োজন হলে নির্দিষ্ট সহায়তা নিন।</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-                          {COMMAND_CENTER_ACTIONS.map((action) => (
-                            <button
-                              key={action.title}
-                              onClick={() => handleSendWithText(action.prompt)}
-                              className="chatbot-suggestion-chip chatbot-touch-target"
-                              style={{
-                                textAlign: "left",
-                                padding: "9px 10px",
-                                borderRadius: 13,
-                                background: action.accent,
-                                border: "1px solid rgba(212,168,67,0.18)",
-                                cursor: "pointer",
-                                minHeight: 58,
-                              }}
-                            >
-                              <span style={{ display: "block", color: "rgba(247,228,165,0.92)", fontSize: "0.66rem", fontWeight: 800, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{action.title}</span>
-                              <span style={{ display: "block", color: "rgba(235,225,200,0.48)", fontSize: "0.54rem", marginTop: 2, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>{action.subtitle}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                     {messages.map((msg, idx) => (
 
                     <MessageBubble
