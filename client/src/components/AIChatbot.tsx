@@ -328,6 +328,35 @@ const IMAGE_EDIT_EXCLUSION_KEYWORDS = [
   "image editor", "photo editor",
 ];
 
+const BOUNDARY_REQUIRED_AUDIO_KEYWORDS = new Set([
+  "হাম", "hum",
+  "পপ", "pop",
+  "এয়ার", "air",
+  "গেট", "gate",
+  "কাট", "clip",
+  "রুম", "room",
+]);
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function matchesAudioEditKeyword(text: string, keyword: string): boolean {
+  const normalizedKeyword = keyword.toLowerCase().trim();
+  if (!normalizedKeyword) return false;
+
+  // Very short or common words must match as standalone tokens only. Without this,
+  // normal Bengali phrases such as "আলহামদুলিল্লাহ ভালো" falsely match "হাম"
+  // (audio hum) inside "আলহামদুলিল্লাহ" and incorrectly enter audio-edit mode.
+  if (BOUNDARY_REQUIRED_AUDIO_KEYWORDS.has(normalizedKeyword) || normalizedKeyword.length <= 3) {
+    const escapedKeyword = escapeRegExp(normalizedKeyword);
+    const tokenPattern = new RegExp(`(^|[\\s\\p{P}\\p{S}])${escapedKeyword}(?=$|[\\s\\p{P}\\p{S}])`, "iu");
+    return tokenPattern.test(text);
+  }
+
+  return text.includes(normalizedKeyword);
+}
+
 function isAudioEditRequest(text: string): boolean {
   const lower = text.toLowerCase();
 
@@ -351,7 +380,7 @@ function isAudioEditRequest(text: string): boolean {
   const poetryQuestionPattern = /কবিতা.{0,20}(কোথা|কী|কি|কেন|কিভাবে|কিভাব|পাব|পায়|দেখান|লিখেদিন|লিখে দিন)|আবৃত্তি.{0,20}(কোথা|কী|কি|ভিডিও|পাব|দেখতে)/;
   if (poetryQuestionPattern.test(lower)) return false;
 
-  return AUDIO_EDIT_KEYWORDS.some(kw => lower.includes(kw));
+  return AUDIO_EDIT_KEYWORDS.some(kw => matchesAudioEditKeyword(lower, kw));
 }
 
 // ── Photo request detection ───────────────────────────────────────────────────
