@@ -147,95 +147,6 @@ function notifyChatbotActivity(payload: Record<string, any>) {
 
 const AUTHOR_PHOTO = "/images/author-photo.jpg";
 
-const QUICK_ACTIONS = [
-  { label: "কেমন আছেন?", prompt: "কেমন আছেন? আজ একটু স্বাভাবিকভাবে কথা বলি।", context: "casual" },
-  { label: "লেখক কে?", prompt: "মাহবুব সরদার সবুজ সম্পর্কে বিস্তারিত বলো — তিনি কে, কী লেখেন, কোথায় জন্ম, কোথায় থাকেন, তাঁর দর্শন কী?", context: "author" },
-  { label: "বই সাজেস্ট", prompt: "আমি কোন বই দিয়ে শুরু করব? আমার আগ্রহ অনুযায়ী একটি বই সাজেস্ট করো।", context: "book" },
-  { label: "লেখা সাজেস্ট", prompt: "বিচ্ছেদ ও ভালোবাসার নির্বাচিত লেখাগুলো নম্বরসহ দেখাও — আমি পরে নম্বর বেছে নেব।", context: "writing" },
-  { label: "আবৃত্তি শুনবো", prompt: "মাহবুব সরদার সবুজের জনপ্রিয় আবৃত্তিগুলোর তালিকা দেখাও এবং কোথায় শুনব বলো।", context: "recitation" },
-  { label: "কবিতা শেখাও", prompt: "আমাকে বাংলা কবিতা লেখা ধাপে ধাপে শেখাও — বিষয় নির্বাচন, আবেগ, চিত্রকল্প, ছন্দ ও সম্পাদনা সহ।", context: "teaching" },
-  { label: "কার্ড বানাবো", prompt: "সরদার ডিজাইন স্টুডিওতে কবিতা বা উক্তির সুন্দর কার্ড বানাতে কীভাবে শুরু করব?", context: "design" },
-  { label: "অডিও এডিট", prompt: "আমি একটি অডিও ফাইল এডিট করতে চাই। নিচের অডিও আপলোড বাটনে ক্লিক করে ফাইল আপলোড করুন, তারপর বলুন কী করতে চান।", context: "audio" },
-  { label: "যোগাযোগ করবো", prompt: "আমি লেখকের সাথে যোগাযোগ করতে চাই — ইমেইল, সোশ্যাল মিডিয়া লিংক ও যোগাযোগ পেজ দেখাও।", context: "contact" },
-  { label: "সোশ্যাল লিংক", prompt: "মাহবুব সরদার সবুজের Facebook, Instagram, YouTube ও Pinterest লিংক দেখাও।", context: "social" },
-];
-
-// ── Dynamic context-aware quick actions ──────────────────────────────────────
-const CONTEXT_FOLLOW_UP_ACTIONS: Record<string, { label: string; prompt: string }[]> = {
-  author: [
-    { label: "বই দেখাও", prompt: "মাহবুব সরদার সবুজের সব বই ও ই-বুক দেখাও।" },
-    { label: "লেখা পড়বো", prompt: "লেখকের জনপ্রিয় লেখাগুলো কোথায় পড়ব?" },
-    { label: "যোগাযোগ করবো", prompt: "লেখকের সাথে কীভাবে যোগাযোগ করব?" },
-  ],
-  book: [
-    { label: "কোন বই শুরু করব", prompt: "আমি কোন বই দিয়ে শুরু করব? আমার জন্য একটি বই সাজেস্ট করো।" },
-    { label: "দুঃখবিলাস কিনবো", prompt: "'আমি বিচ্ছেদকে বলি দুঃখবিলাস' বইটি কোথায় কিনব?" },
-    { label: "ই-বুক পড়বো", prompt: "ই-বুকগুলো অনলাইনে কীভাবে পড়ব?" },
-  ],
-  writing: [
-    { label: "১ নম্বরটা দেখাও", prompt: "১ নম্বরটা দেখাও।" },
-    { label: "আরও এমন লেখা", prompt: "আরও এমন লেখা দেখাও।" },
-    { label: "ভালোবাসার লেখা", prompt: "ভালোবাসার নির্বাচিত লেখাগুলো নম্বরসহ দেখাও।" },
-  ],
-  teaching: [
-    { label: "ছন্দ শেখাও", prompt: "বাংলা কবিতার ছন্দ কীভাবে শিখব?" },
-    { label: "চিত্রকল্প কী", prompt: "কবিতায় চিত্রকল্প কী এবং কীভাবে ব্যবহার করব?" },
-    { label: "লেখার অনুশীলন", prompt: "আমাকে একটি কবিতা লেখার অনুশীলন দাও।" },
-  ],
-  recitation: [
-    { label: "জনপ্রিয় আবৃত্তি", prompt: "সবচেয়ে জনপ্রিয় আবৃত্তিগুলোর নাম বলো।" },
-    { label: "Facebook পেজ", prompt: "লেখকের Facebook পেজের লিংক দাও।" },
-    { label: "YouTube চ্যানেল", prompt: "লেখকের YouTube চ্যানেলের লিংক দাও।" },
-  ],
-  design: [
-    { label: "কার্ড বানাবো", prompt: "কবিতার কার্ড বানাতে ডিজাইন স্টুডিওতে কীভাবে শুরু করব?" },
-    { label: "পোস্টার ডিজাইন", prompt: "পোস্টার ডিজাইনের জন্য কোন ফিচার ব্যবহার করব?" },
-    { label: "ফন্ট নির্বাচন", prompt: "বাংলা কবিতার কার্ডের জন্য কোন ফন্ট ভালো?" },
-  ],
-  audio: [
-    { label: "নয়েজ রিমুভ", prompt: "অডিও থেকে নয়েজ রিমুভ করতে কী করব?" },
-    { label: "ভয়েস ক্লিন", prompt: "ভয়েস রেকর্ডিং ক্লিন করার সেরা উপায় কী?" },
-    { label: "মাস্টারিং", prompt: "অডিও মাস্টারিং কী এবং কীভাবে করব?" },
-  ],
-  contact: [
-    { label: "ইমেইল করবো", prompt: "লেখকের ইমেইল ঠিকানা কী?" },
-    { label: "Facebook মেসেজ", prompt: "Facebook-এ লেখককে কীভাবে মেসেজ করব?" },
-    { label: "লাইভ চ্যাট", prompt: "সরাসরি লাইভ চ্যাটে কথা বলতে চাই।" },
-  ],
-  social: [
-    { label: "Facebook প্রোফাইল", prompt: "লেখকের Facebook প্রোফাইল লিংক দাও।" },
-    { label: "YouTube চ্যানেল", prompt: "লেখকের YouTube চ্যানেলের লিংক দাও।" },
-    { label: "Instagram", prompt: "লেখকের Instagram লিংক দাও।" },
-  ],
-};
-
-function getContextualActions(messages: Message[]): { label: string; prompt: string }[] {
-  if (messages.length <= 1) return QUICK_ACTIONS;
-  // Detect context from last few messages
-  const recentText = messages
-    .slice(-4)
-    .filter(m => m.role === "user" || m.role === "assistant")
-    .map(m => (typeof m.content === "string" ? m.content : "").toLowerCase())
-    .join(" ");
-  const contextMap: [string, string[]][] = [
-    ["author", ["লেখক", "পরিচয়", "মাহবুব", "সবুজ", "জীবনী", "কে তিনি"]],
-    ["book", ["বই", "ই-বুক", "দুঃখবিলাস", "স্মৃতির", "চাঁদফুল", "কিনতে", "পড়তে"]],
-    ["writing", ["লেখা", "কবিতা", "বিচ্ছেদ", "ভালোবাসা", "জীবনদর্শন", "writings"]],
-    ["teaching", ["শেখাও", "শিখতে", "কীভাবে লিখব", "ছন্দ", "চিত্রকল্প"]],
-    ["recitation", ["আবৃত্তি", "ভিডিও", "রিল", "শুনব"]],
-    ["design", ["ডিজাইন", "কার্ড", "পোস্টার", "স্টুডিও", "editor"]],
-    ["audio", ["অডিও", "নয়েজ", "ভয়েস", "মাস্টারিং", "রেকর্ড"]],
-    ["contact", ["যোগাযোগ", "ইমেইল", "ফেসবুক", "মেসেজ", "contact"]],
-    ["social", ["সোশ্যাল", "প্রোফাইল আইডি", "পেজ আইডি", "ফলোয়ার", "social media", "লিংক", "instagram", "youtube"]],
-  ];
-  for (const [ctx, keywords] of contextMap) {
-    if (keywords.some(kw => recentText.includes(kw))) {
-      return CONTEXT_FOLLOW_UP_ACTIONS[ctx] || QUICK_ACTIONS;
-    }
-  }
-  return QUICK_ACTIONS;
-}
-
 // ── Page map ─────────────────────────────────────────────────────────────────
 const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/about",    label: "পরিচিতি পেজ দেখুন",    keywords: ["about", "পরিচিতি", "পরিচয়", "জীবনী"] },
@@ -842,18 +753,8 @@ if (!document.getElementById(STYLE_ID)) {
       font-size: 0.78rem !important;
     }
     .chatbot-input:focus {
-      border-color: rgba(212,168,67,0.35) !important;
-      box-shadow: 0 0 0 2px rgba(212,168,67,0.08) !important;
-    }
-    .chatbot-suggestion-btn {
-      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
-    }
-    .chatbot-suggestion-btn:hover {
-      background: rgba(212,168,67,0.1) !important;
-      border-color: rgba(212,168,67,0.45) !important;
-      color: #E8C060 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 12px rgba(212,168,67,0.12);
+      border-color: rgba(255,255,255,0.10) !important;
+      box-shadow: none !important;
     }
     .chatbot-nav-btn {
       transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
@@ -975,12 +876,15 @@ if (!document.getElementById(STYLE_ID)) {
     }
 
     .chatbot-adorsho button:focus-visible,
-    .chatbot-adorsho textarea:focus-visible,
     .chatbot-adorsho input:focus-visible,
     .chatbot-launcher:focus-visible {
       outline: 2px solid rgba(247,228,165,0.9) !important;
       outline-offset: 3px !important;
       box-shadow: 0 0 0 4px rgba(212,168,67,0.16) !important;
+    }
+    .chatbot-adorsho textarea:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
     }
     .chatbot-adorsho button,
     .chatbot-launcher {
@@ -999,11 +903,6 @@ if (!document.getElementById(STYLE_ID)) {
         min-width: 44px;
         min-height: 44px;
       }
-      .chatbot-suggestion-btn {
-        min-height: 34px;
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-      }
       .chatbot-input::placeholder {
         font-size: 0.72rem !important;
       }
@@ -1018,7 +917,6 @@ if (!document.getElementById(STYLE_ID)) {
         scroll-behavior: auto !important;
       }
       .chatbot-msg-animate,
-      .chatbot-suggestion-btn:hover,
       .chatbot-nav-btn:hover,
       .chatbot-download-btn:hover,
       .chatbot-send-btn:not(:disabled):hover {
@@ -3430,34 +3328,6 @@ export default function AIChatbot() {
                   onChange={handleVideoSelect}
                   style={{ display: "none" }}
                 />
-
-
-                {!audioFile && !imagePreview && !videoConverting && (
-                  <div style={{ display: "flex", gap: 6, marginBottom: 8, overflowX: "auto", paddingBottom: 1 }}>
-                    {getContextualActions(messages).slice(0, 4).map((action) => (
-                      <button
-                        key={action.label}
-                        onClick={() => handleSendWithText(action.prompt)}
-                        className="chatbot-suggestion-btn chatbot-touch-target"
-                        style={{
-                          flexShrink: 0,
-                          padding: "6px 10px",
-                          borderRadius: 999,
-                          background: "rgba(212,168,67,0.045)",
-                          border: "1px solid rgba(212,168,67,0.16)",
-                          color: "rgba(247,228,165,0.72)",
-                          fontSize: "0.62rem",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {action.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
 
                 {/* Video converting banner */}
                 {videoConverting && videoFile && (
