@@ -124,10 +124,10 @@ export const BOOKS = [
 ];
 
 export const WRITING_CATEGORIES = [
-  { name: "জীবনদর্শন ও বাস্তবতা", count: 570, path: "/writings", description: "জীবনের গভীর সত্য, বাস্তবতা ও অনুপ্রেরণামূলক লেখা", keywords: ["জীবনদর্শন", "জীবন", "বাস্তবতা", "অনুপ্রেরণা", "life", "বাস্তব"] },
+  { name: "জীবনদর্শন ও বাস্তবতা", count: 662, path: "/writings", description: "জীবনের গভীর সত্য, বাস্তবতা ও অনুপ্রেরণামূলক লেখা", keywords: ["জীবনদর্শন", "জীবন", "বাস্তবতা", "অনুপ্রেরণা", "life", "বাস্তব"] },
   { name: "বিচ্ছেদ ও বিরহ", count: 251, path: "/writings", description: "বিচ্ছেদ, কষ্ট, হারানো ও অপেক্ষার গভীর লেখা", keywords: ["বিচ্ছেদ", "কষ্ট", "হারানো", "অপেক্ষা", "breakup", "বিরহ", "কষ্টের কবিতা"] },
-  { name: "ভালোবাসা ও প্রেম", count: 168, path: "/writings", description: "প্রেম, ভালোবাসা ও রোমান্টিক অনুভূতির লেখা", keywords: ["ভালোবাসা", "প্রেম", "love", "রোমান্টিক"] },
-  { name: "ছোট লেখা ও উক্তি", count: 55, path: "/writings", description: "সংক্ষিপ্ত কিন্তু গভীর অর্থবহ লেখা ও উক্তি", keywords: ["ছোট লেখা", "short", "উক্তি", "স্ট্যাটাস", "quotes", "status"] },
+  { name: "ভালোবাসা ও প্রেম", count: 190, path: "/writings", description: "প্রেম, ভালোবাসা ও রোমান্টিক অনুভূতির লেখা", keywords: ["ভালোবাসা", "প্রেম", "love", "রোমান্টিক"] },
+  { name: "ছোট লেখা ও উক্তি", count: 1117, path: "/writings", description: "সংক্ষিপ্ত কিন্তু গভীর অর্থবহ লেখা ও উক্তি", keywords: ["ছোট লেখা", "short", "উক্তি", "স্ট্যাটাস", "quotes", "status"] },
   { name: "কবিতা ও কাব্য", count: 40, path: "/writings", description: "ছন্দময় ও আবেগঘন কবিতার সংগ্রহ", keywords: ["কবিতা", "poem", "poetry", "কাব্য"] },
 ];
 
