@@ -724,7 +724,7 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
 }
 
 // ── CSS Keyframes injected once ───────────────────────────────────────────────
-const STYLE_ID = "chatbot-premium-styles-v2";
+const STYLE_ID = "chatbot-ultra-v4";
 if (!document.getElementById(STYLE_ID)) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
@@ -740,160 +740,279 @@ if (!document.getElementById(STYLE_ID)) {
       font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
     }
 
-    /* ══════════════════════════════════════════════════════
-       PREMIUM CHATBOT v3 — ULTRA DESIGN SYSTEM
-    ══════════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════════════════
+       ULTRA PREMIUM CHATBOT v4 — WORLD-CLASS DESIGN SYSTEM
+       Inspired by: Linear, Vercel, Raycast, Arc Browser
+    ═══════════════════════════════════════════════════════════════ */
 
-    /* ── Core Animations ── */
+    /* ── Particle / Noise Texture Overlay ── */
+    .chatbot-noise::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      border-radius: inherit;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ── Aurora Background Effect ── */
+    .chatbot-aurora-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .chatbot-aurora-bg::before {
+      content: '';
+      position: absolute;
+      top: -60%;
+      left: -30%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(ellipse, rgba(212,168,67,0.07) 0%, transparent 70%);
+      animation: chatbot-aurora-drift 18s ease-in-out infinite;
+      border-radius: 50%;
+    }
+    .chatbot-aurora-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      right: -20%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%);
+      animation: chatbot-aurora-drift 22s ease-in-out infinite reverse;
+      border-radius: 50%;
+    }
+
+    /* ── ULTRA v4 Core Animations ── */
+
+    /* Aurora drift for background */
+    @keyframes chatbot-aurora-drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(8%, 5%) scale(1.08); }
+      66% { transform: translate(-5%, 8%) scale(0.95); }
+    }
+
+    /* Ping rings for launcher button */
     @keyframes chatbot-ping {
-      0% { transform: scale(1); opacity: 0.8; }
-      70% { transform: scale(2.0); opacity: 0; }
-      100% { transform: scale(2.0); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.9; }
+      70% { transform: scale(2.2); opacity: 0; }
+      100% { transform: scale(2.2); opacity: 0; }
     }
     @keyframes chatbot-ping2 {
-      0% { transform: scale(1); opacity: 0.4; }
-      70% { transform: scale(2.8); opacity: 0; }
-      100% { transform: scale(2.8); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.5; }
+      70% { transform: scale(3.0); opacity: 0; }
+      100% { transform: scale(3.0); opacity: 0; }
     }
+
+    /* Shimmer sweep */
     @keyframes chatbot-shimmer {
-      0% { background-position: -300% center; }
-      100% { background-position: 300% center; }
+      0% { background-position: -400% center; }
+      100% { background-position: 400% center; }
     }
+
+    /* Launcher glow pulse */
     @keyframes chatbot-glow-pulse {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(212,168,67,0.12), 0 0 24px rgba(212,168,67,0.28), 0 8px 32px rgba(0,0,0,0.6); }
-      50% { box-shadow: 0 0 0 4px rgba(212,168,67,0.22), 0 0 40px rgba(212,168,67,0.45), 0 8px 32px rgba(0,0,0,0.6); }
-    }
-    @keyframes chatbot-dot-bounce {
-      0%, 60%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
-      30% { transform: translateY(-7px) scale(0.85); opacity: 1; }
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    @keyframes chatbot-fade-in {
-      from { opacity: 0; transform: translateY(6px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes chatbot-border-glow {
       0%, 100% {
         box-shadow:
-          0 32px 80px rgba(0,0,0,0.85),
-          0 0 0 1px rgba(212,168,67,0.22),
-          inset 0 1px 0 rgba(212,168,67,0.14),
-          0 0 60px rgba(212,168,67,0.04);
+          0 0 0 0 rgba(212,168,67,0),
+          0 0 28px rgba(212,168,67,0.30),
+          0 10px 40px rgba(0,0,0,0.65);
       }
       50% {
         box-shadow:
-          0 32px 80px rgba(0,0,0,0.85),
-          0 0 0 1px rgba(212,168,67,0.45),
-          inset 0 1px 0 rgba(212,168,67,0.22),
-          0 0 80px rgba(212,168,67,0.08);
+          0 0 0 6px rgba(212,168,67,0.08),
+          0 0 48px rgba(212,168,67,0.55),
+          0 10px 40px rgba(0,0,0,0.65);
       }
     }
-    @keyframes chatbot-float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-5px); }
+
+    /* Typing dots */
+    @keyframes chatbot-dot-bounce {
+      0%, 80%, 100% { transform: translateY(0) scale(0.9); opacity: 0.5; }
+      40% { transform: translateY(-9px) scale(1.1); opacity: 1; }
     }
+
+    /* Spinner */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Window border glow */
+    @keyframes chatbot-border-glow {
+      0%, 100% {
+        box-shadow:
+          0 40px 100px rgba(0,0,0,0.9),
+          0 0 0 1px rgba(212,168,67,0.18),
+          inset 0 1px 0 rgba(255,255,255,0.06);
+      }
+      50% {
+        box-shadow:
+          0 40px 100px rgba(0,0,0,0.9),
+          0 0 0 1.5px rgba(212,168,67,0.50),
+          inset 0 1px 0 rgba(255,255,255,0.10),
+          0 0 100px rgba(212,168,67,0.07);
+      }
+    }
+
+    /* Notification badge pop */
     @keyframes chatbot-notification-pop {
-      0% { transform: scale(0) rotate(-15deg); opacity: 0; }
-      55% { transform: scale(1.35) rotate(5deg); opacity: 1; }
-      75% { transform: scale(0.9) rotate(-2deg); }
+      0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+      60% { transform: scale(1.4) rotate(6deg); opacity: 1; }
+      80% { transform: scale(0.88) rotate(-3deg); }
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
-    @keyframes chatbot-wave {
-      0% { transform: rotate(0deg); }
-      10% { transform: rotate(16deg); }
-      20% { transform: rotate(-9deg); }
-      30% { transform: rotate(16deg); }
-      40% { transform: rotate(-4deg); }
-      50% { transform: rotate(12deg); }
-      60% { transform: rotate(0deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes chatbot-heartbeat {
-      0% { transform: scale(1); }
-      14% { transform: scale(1.18); }
-      28% { transform: scale(1); }
-      42% { transform: scale(1.12); }
-      70% { transform: scale(1); }
-    }
-    @keyframes chatbot-slide-up {
-      from { opacity: 0; transform: translateY(14px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes chatbot-typing-wave {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-9px); }
-    }
     @keyframes chatbot-badge-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
-      50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.8); }
+      50% { box-shadow: 0 0 0 7px rgba(239,68,68,0); }
     }
+
+    /* Message entrance */
+    @keyframes chatbot-msg-in-user {
+      from { opacity: 0; transform: translateX(24px) scale(0.92) translateY(4px); }
+      to   { opacity: 1; transform: translateX(0) scale(1) translateY(0); }
+    }
+    @keyframes chatbot-msg-in-ai {
+      from { opacity: 0; transform: translateX(-20px) scale(0.92) translateY(4px); }
+      to   { opacity: 1; transform: translateX(0) scale(1) translateY(0); }
+    }
+
+    /* Header shine sweep */
+    @keyframes chatbot-header-shine {
+      0% { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+      40% { opacity: 0.18; }
+      100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+    }
+
+    /* Input glow pulse */
+    @keyframes chatbot-input-glow {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(212,168,67,0.14), 0 2px 14px rgba(0,0,0,0.35); }
+      50% { box-shadow: 0 0 0 2px rgba(212,168,67,0.30), 0 2px 22px rgba(212,168,67,0.10); }
+    }
+
+    /* Online indicator pulse */
+    @keyframes chatbot-online-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.7), 0 0 8px rgba(74,222,128,0.4); }
+      50% { box-shadow: 0 0 0 5px rgba(74,222,128,0), 0 0 14px rgba(74,222,128,0.6); }
+    }
+
+    /* Cursor blink */
     @keyframes chatbot-cursor-blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
     }
+
+    /* Slide up */
+    @keyframes chatbot-slide-up {
+      from { opacity: 0; transform: translateY(16px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Avatar ring rotate */
+    @keyframes chatbot-ring-rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Heartbeat */
+    @keyframes chatbot-heartbeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.2); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.14); }
+      70% { transform: scale(1); }
+    }
+
+    /* Fade in */
+    @keyframes chatbot-fade-in {
+      from { opacity: 0; transform: translateY(8px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Tab active slide */
+    @keyframes chatbot-tab-active-slide {
+      from { transform: scaleX(0); opacity: 0; }
+      to   { transform: scaleX(1); opacity: 1; }
+    }
+
+    /* Send button pulse when active */
+    @keyframes chatbot-send-ready {
+      0%, 100% { box-shadow: 0 4px 20px rgba(212,168,67,0.45), inset 0 1px 0 rgba(255,255,255,0.25); }
+      50% { box-shadow: 0 6px 32px rgba(212,168,67,0.70), inset 0 1px 0 rgba(255,255,255,0.35); }
+    }
+
+    /* Typing wave */
+    @keyframes chatbot-typing-wave {
+      0%, 60%, 100% { transform: translateY(0) scaleY(1); }
+      30% { transform: translateY(-10px) scaleY(0.85); }
+    }
+
+    /* Shimmer new */
     @keyframes chatbot-shimmer-new {
-      0% { background-position: -300% center; }
-      100% { background-position: 300% center; }
+      0% { background-position: -400% center; }
+      100% { background-position: 400% center; }
     }
-    @keyframes chatbot-msg-in-user {
-      from { opacity: 0; transform: translateX(20px) scale(0.94); }
-      to   { opacity: 1; transform: translateX(0) scale(1); }
-    }
-    @keyframes chatbot-msg-in-ai {
-      from { opacity: 0; transform: translateX(-16px) scale(0.94); }
-      to   { opacity: 1; transform: translateX(0) scale(1); }
-    }
-    @keyframes chatbot-header-shine {
-      0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
-      50% { opacity: 0.12; }
-      100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
-    }
-    @keyframes chatbot-input-glow {
-      0%, 100% { box-shadow: 0 0 0 1px rgba(212,168,67,0.18), 0 2px 12px rgba(0,0,0,0.3); }
-      50% { box-shadow: 0 0 0 1.5px rgba(212,168,67,0.38), 0 2px 20px rgba(212,168,67,0.08); }
-    }
+
+    /* Aurora legacy */
     @keyframes chatbot-aurora {
       0%, 100% { opacity: 0.04; transform: scale(1) rotate(0deg); }
-      33% { opacity: 0.07; transform: scale(1.05) rotate(1deg); }
-      66% { opacity: 0.05; transform: scale(0.97) rotate(-1deg); }
-    }
-    @keyframes chatbot-tab-active-slide {
-      from { transform: scaleX(0); }
-      to   { transform: scaleX(1); }
-    }
-    @keyframes chatbot-online-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
-      50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+      33% { opacity: 0.08; transform: scale(1.06) rotate(1.5deg); }
+      66% { opacity: 0.05; transform: scale(0.96) rotate(-1.5deg); }
     }
 
-    /* ── Scrollbar ── */
-    .chatbot-scrollbar::-webkit-scrollbar { width: 3px; }
-    .chatbot-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    /* Float */
+    @keyframes chatbot-float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* Wave */
+    @keyframes chatbot-wave {
+      0% { transform: rotate(0deg); }
+      10% { transform: rotate(18deg); }
+      20% { transform: rotate(-10deg); }
+      30% { transform: rotate(18deg); }
+      40% { transform: rotate(-5deg); }
+      50% { transform: rotate(14deg); }
+      60% { transform: rotate(0deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* ── Ultra Premium Scrollbar ── */
+    .chatbot-scrollbar::-webkit-scrollbar { width: 4px; }
+    .chatbot-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.02);
+      border-radius: 4px;
+    }
     .chatbot-scrollbar::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, rgba(212,168,67,0.35), rgba(212,168,67,0.15));
+      background: linear-gradient(180deg, rgba(212,168,67,0.5), rgba(212,168,67,0.18));
       border-radius: 8px;
+      border: 1px solid rgba(212,168,67,0.08);
     }
     .chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, rgba(212,168,67,0.6), rgba(212,168,67,0.3));
+      background: linear-gradient(180deg, rgba(212,168,67,0.8), rgba(212,168,67,0.4));
     }
 
-    /* ── Input ── */
+    /* ── Ultra Premium Input ── */
     .chatbot-input::placeholder {
-      color: rgba(160,140,100,0.35) !important;
+      color: rgba(180,160,110,0.30) !important;
       font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
-      font-size: 0.79rem !important;
+      font-size: 0.80rem !important;
     }
     .chatbot-input:focus {
-      border-color: rgba(212,168,67,0.32) !important;
-      box-shadow: 0 0 0 2px rgba(212,168,67,0.08) !important;
+      border-color: rgba(212,168,67,0.45) !important;
+      box-shadow: 0 0 0 3px rgba(212,168,67,0.10), 0 2px 16px rgba(0,0,0,0.4) !important;
       outline: none !important;
     }
 
-    /* ── Navigation Buttons ── */
+    /* ── Ultra Premium Navigation Buttons ── */
     .chatbot-nav-btn {
-      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
       position: relative;
       overflow: hidden;
     }
@@ -901,74 +1020,101 @@ if (!document.getElementById(STYLE_ID)) {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(212,168,67,0.12), transparent);
+      background: linear-gradient(135deg, rgba(212,168,67,0.18) 0%, rgba(212,168,67,0.06) 100%);
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity 0.22s;
+      border-radius: inherit;
+    }
+    .chatbot-nav-btn::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      transition: left 0.5s ease;
       border-radius: inherit;
     }
     .chatbot-nav-btn:hover::before { opacity: 1; }
+    .chatbot-nav-btn:hover::after { left: 150%; }
     .chatbot-nav-btn:hover {
-      background: rgba(212,168,67,0.10) !important;
-      border-color: rgba(212,168,67,0.65) !important;
-      color: #F0D070 !important;
-      box-shadow: 0 4px 16px rgba(212,168,67,0.22), 0 0 0 1px rgba(212,168,67,0.12);
-      transform: translateX(3px) translateY(-1px);
+      background: rgba(212,168,67,0.08) !important;
+      border-color: rgba(212,168,67,0.75) !important;
+      color: #F5E090 !important;
+      box-shadow: 0 6px 24px rgba(212,168,67,0.28), 0 0 0 1px rgba(212,168,67,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+      transform: translateX(4px) translateY(-1px);
     }
-    .chatbot-nav-btn:active { transform: translateX(1px) scale(0.97) !important; }
+    .chatbot-nav-btn:active { transform: translateX(2px) scale(0.97) !important; }
 
-    /* ── Icon Buttons ── */
+    /* ── Ultra Premium Icon Buttons ── */
     .chatbot-icon-btn {
-      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-      position: relative;
-    }
-    .chatbot-icon-btn:hover {
-      background: rgba(212,168,67,0.14) !important;
-      border-color: rgba(212,168,67,0.55) !important;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(212,168,67,0.16);
-    }
-    .chatbot-icon-btn:active { transform: scale(0.93) !important; }
-
-    /* ── Send Button ── */
-    .chatbot-send-btn {
       transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
       position: relative;
       overflow: hidden;
     }
-    .chatbot-send-btn::after {
+    .chatbot-icon-btn::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(255,255,255,0.18) 0%, transparent 70%);
+      background: radial-gradient(circle at center, rgba(212,168,67,0.15), transparent 70%);
       opacity: 0;
       transition: opacity 0.2s;
+      border-radius: inherit;
     }
-    .chatbot-send-btn:not(:disabled):hover::after { opacity: 1; }
-    .chatbot-send-btn:not(:disabled):hover {
-      transform: scale(1.08) translateY(-1px);
-      box-shadow: 0 6px 22px rgba(212,168,67,0.55), 0 0 0 2px rgba(212,168,67,0.2);
+    .chatbot-icon-btn:hover::after { opacity: 1; }
+    .chatbot-icon-btn:hover {
+      background: rgba(212,168,67,0.12) !important;
+      border-color: rgba(212,168,67,0.60) !important;
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 6px 18px rgba(212,168,67,0.22), 0 0 0 1px rgba(212,168,67,0.10);
     }
-    .chatbot-send-btn:not(:disabled):active { transform: scale(0.95) !important; }
+    .chatbot-icon-btn:active { transform: scale(0.92) !important; }
 
-    /* ── Download Button ── */
+    /* ── Ultra Premium Send Button ── */
+    .chatbot-send-btn {
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .chatbot-send-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+      transition: left 0.45s ease;
+    }
+    .chatbot-send-btn:not(:disabled):hover::before { left: 100%; }
+    .chatbot-send-btn:not(:disabled):hover {
+      transform: scale(1.10) translateY(-2px);
+      box-shadow: 0 8px 32px rgba(212,168,67,0.70), 0 0 0 3px rgba(212,168,67,0.18), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+    .chatbot-send-btn:not(:disabled):active { transform: scale(0.94) !important; }
+
+    /* ── Ultra Premium Download Button ── */
     .chatbot-download-btn {
-      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
     }
     .chatbot-download-btn:hover {
-      background: rgba(212,168,67,0.18) !important;
-      border-color: rgba(212,168,67,0.75) !important;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(212,168,67,0.25);
+      background: rgba(212,168,67,0.16) !important;
+      border-color: rgba(212,168,67,0.80) !important;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(212,168,67,0.30), inset 0 1px 0 rgba(255,255,255,0.08);
     }
 
-    /* ── Tab Buttons ── */
+    /* ── Ultra Premium Tab Buttons ── */
     .chatbot-tab-btn {
-      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
       position: relative;
+      overflow: hidden;
     }
-    .chatbot-tab-btn:hover:not(.active) {
-      color: rgba(212,168,67,0.8) !important;
-      background: rgba(212,168,67,0.06) !important;
+    .chatbot-tab-btn:hover:not([aria-pressed='true']) {
+      color: rgba(212,168,67,0.85) !important;
+      background: rgba(212,168,67,0.07) !important;
+      border-color: rgba(212,168,67,0.25) !important;
     }
 
     /* ── Suggestion Chips ── */
@@ -1000,54 +1146,60 @@ if (!document.getElementById(STYLE_ID)) {
       background: linear-gradient(135deg, rgba(12,22,38,0.98), rgba(8,15,28,0.98));
     }
 
-    /* ── Drag Over ── */
+    /* ── Ultra Drag Over ── */
     .chatbot-drag-over {
-      border-color: rgba(212,168,67,0.8) !important;
-      background: rgba(212,168,67,0.04) !important;
+      border-color: rgba(212,168,67,0.9) !important;
       box-shadow:
-        0 0 0 3px rgba(212,168,67,0.25),
+        0 0 0 4px rgba(212,168,67,0.20),
+        0 0 80px rgba(212,168,67,0.12),
         0 40px 100px rgba(0,0,0,0.92) !important;
     }
 
-    /* ── Message Animations ── */
+    /* ── Ultra Message Animations ── */
     .chatbot-msg-animate {
-      animation: chatbot-slide-up 0.32s cubic-bezier(0.34,1.56,0.64,1);
+      animation: chatbot-slide-up 0.35s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .chatbot-msg-user { animation: chatbot-msg-in-user 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-    .chatbot-msg-ai   { animation: chatbot-msg-in-ai   0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .chatbot-msg-user { animation: chatbot-msg-in-user 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    .chatbot-msg-ai   { animation: chatbot-msg-in-ai   0.35s cubic-bezier(0.34,1.56,0.64,1); }
 
-    /* ── Premium Message Bubble Hover ── */
+    /* ── Ultra Premium Message Bubble Hover ── */
     .chatbot-bubble-ai {
-      transition: box-shadow 0.2s, transform 0.2s;
+      transition: box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
     }
     .chatbot-bubble-ai:hover {
-      box-shadow: 0 6px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,168,67,0.18) !important;
-      transform: translateY(-1px);
+      box-shadow:
+        0 8px 36px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(212,168,67,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.06) !important;
+      transform: translateY(-2px);
     }
     .chatbot-bubble-user {
-      transition: box-shadow 0.2s, transform 0.2s;
+      transition: box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
     }
     .chatbot-bubble-user:hover {
-      box-shadow: 0 6px 24px rgba(212,168,67,0.38) !important;
-      transform: translateY(-1px);
+      box-shadow:
+        0 8px 32px rgba(212,168,67,0.55),
+        0 0 0 2px rgba(255,255,255,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.35) !important;
+      transform: translateY(-2px);
     }
 
-    /* ── Header Shine Effect ── */
+    /* ── Ultra Header Shine Effect ── */
     .chatbot-header-shine::after {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
-      width: 60%;
+      width: 55%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-      animation: chatbot-header-shine 6s ease-in-out infinite 2s;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+      animation: chatbot-header-shine 7s ease-in-out infinite 1.5s;
       pointer-events: none;
     }
 
-    /* ── Online Indicator ── */
+    /* ── Ultra Online Indicator ── */
     .chatbot-online-dot {
-      animation: chatbot-online-pulse 2.5s ease-in-out infinite, chatbot-heartbeat 2s ease-in-out infinite;
+      animation: chatbot-online-pulse 2s ease-in-out infinite;
     }
 
     /* ── Focus States ── */
@@ -1108,27 +1260,28 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: 18, y: 6, scale: 0.93 }}
+        initial={{ opacity: 0, x: 22, y: 8, scale: 0.90 }}
         animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 380, damping: 26 }}
+        transition={{ type: "spring", stiffness: 420, damping: 28 }}
         className="chatbot-msg-user"
-        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12, paddingLeft: 32 }}
+        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14, paddingLeft: 36, alignItems: "flex-end", gap: 8 }}
       >
         <div
           className="chatbot-bubble-user"
           style={{
-            background: "linear-gradient(145deg, #E8C060 0%, #D4A843 40%, #C09030 80%, #B8923A 100%)",
-            color: "#0A1628",
-            borderRadius: "20px 20px 5px 20px",
-            padding: "11px 15px",
-            maxWidth: "82%",
+            background: "linear-gradient(145deg, #F5E090 0%, #E8C060 25%, #D4A843 55%, #C09030 80%, #A87828 100%)",
+            color: "#0A1220",
+            borderRadius: "22px 22px 4px 22px",
+            padding: "12px 16px",
+            maxWidth: "80%",
             fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-            fontSize: "0.82rem",
-            lineHeight: 1.75,
-            fontWeight: 650,
-            boxShadow: "0 6px 24px rgba(212,168,67,0.38), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25)",
+            fontSize: "0.84rem",
+            lineHeight: 1.8,
+            fontWeight: 700,
+            boxShadow: "0 8px 32px rgba(212,168,67,0.50), 0 3px 12px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.08)",
             wordBreak: "break-word",
             position: "relative",
+            letterSpacing: "0.005em",
           }}>
           {message.imageUrl && (
             <img
@@ -1168,29 +1321,30 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -18, y: 6, scale: 0.93 }}
+      initial={{ opacity: 0, x: -22, y: 8, scale: 0.90 }}
       animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 380, damping: 26 }}
+      transition={{ type: "spring", stiffness: 420, damping: 28 }}
       className="chatbot-msg-ai"
-      style={{ display: "flex", gap: 9, marginBottom: 14, paddingRight: 24 }}
+      style={{ display: "flex", gap: 10, marginBottom: 16, paddingRight: 28 }}
     >
-      {/* Premium avatar */}
+      {/* Ultra Premium Avatar */}
       <div style={{
-        width: 34, height: 34,
-        borderRadius: "12px",
+        width: 36, height: 36,
+        borderRadius: "13px",
         overflow: "hidden",
         flexShrink: 0,
         marginTop: 2,
         padding: 2,
-        background: "linear-gradient(135deg, rgba(212,168,67,0.9), rgba(180,140,50,0.4), rgba(212,168,67,0.7))",
-        boxShadow: "0 4px 16px rgba(212,168,67,0.35), 0 0 0 1px rgba(212,168,67,0.2)",
+        background: "linear-gradient(135deg, #F0D070 0%, #D4A843 40%, #A87828 70%, #D4A843 100%)",
+        boxShadow: "0 6px 20px rgba(212,168,67,0.50), 0 0 0 1px rgba(212,168,67,0.25), inset 0 1px 0 rgba(255,255,255,0.3)",
+        animation: "chatbot-heartbeat 4s ease-in-out infinite",
       }}>
-        <div style={{ width: "100%", height: "100%", borderRadius: 10, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
+        <div style={{ width: "100%", height: "100%", borderRadius: 11, overflow: "hidden", background: "rgba(4,9,18,0.95)" }}>
           <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }}
             onError={(e) => {
               const t = e.currentTarget;
               t.style.display = "none";
-              t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:9px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#1a2e4a,#0d1b2e);font-weight:800;">AI</span>';
+              t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:10px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#1a2e4a,#0d1b2e);font-weight:900;letter-spacing:-0.5px;">AI</span>';
             }} />
         </div>
       </div>
@@ -1549,19 +1703,21 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
           <div
             className="chatbot-bubble-ai"
             style={{
-              background: "linear-gradient(145deg, rgba(14,24,44,0.98) 0%, rgba(10,18,34,0.98) 100%)",
-              borderRadius: "4px 18px 18px 18px",
-              padding: "11px 14px",
-              color: "rgba(240,232,212,0.94)",
+              background: "linear-gradient(145deg, rgba(16,26,48,0.97) 0%, rgba(11,19,36,0.98) 60%, rgba(8,14,28,0.99) 100%)",
+              borderRadius: "4px 20px 20px 20px",
+              padding: "13px 16px",
+              color: "rgba(242,235,215,0.96)",
               fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-              fontSize: "0.8rem",
-              lineHeight: 1.8,
+              fontSize: "0.82rem",
+              lineHeight: 1.85,
               whiteSpace: "pre-wrap",
-              border: "1px solid rgba(212,168,67,0.16)",
-              borderLeft: "2.5px solid rgba(212,168,67,0.65)",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.1)",
+              border: "1px solid rgba(212,168,67,0.18)",
+              borderLeft: "3px solid rgba(212,168,67,0.75)",
+              boxShadow: "0 6px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 0 0.5px rgba(212,168,67,0.08)",
               wordBreak: "break-word",
-              backdropFilter: "blur(4px)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              letterSpacing: "0.005em",
             }}>
             {renderedText}
             {(isLatest && !typingDone) || message.isStreaming ? (
@@ -1680,80 +1836,84 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
 function TypingIndicator({ stage }: { stage?: string | null }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -14, scale: 0.94 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: -8, scale: 0.96 }}
-      transition={{ type: "spring", stiffness: 380, damping: 26 }}
-      style={{ display: "flex", gap: 9, marginBottom: 14, paddingRight: 24 }}
+      initial={{ opacity: 0, x: -18, y: 6, scale: 0.90 }}
+      animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      exit={{ opacity: 0, x: -10, scale: 0.94, y: 4 }}
+      transition={{ type: "spring", stiffness: 420, damping: 28 }}
+      style={{ display: "flex", gap: 10, marginBottom: 16, paddingRight: 28 }}
     >
+      {/* Ultra Premium Avatar */}
       <div style={{
-        width: 34, height: 34,
-        borderRadius: "12px",
+        width: 36, height: 36,
+        borderRadius: "13px",
         overflow: "hidden",
         flexShrink: 0,
         marginTop: 2,
         padding: 2,
-        background: "linear-gradient(135deg, rgba(212,168,67,0.9), rgba(180,140,50,0.4), rgba(212,168,67,0.7))",
-        boxShadow: "0 4px 16px rgba(212,168,67,0.35), 0 0 0 1px rgba(212,168,67,0.2)",
+        background: "linear-gradient(135deg, #F0D070 0%, #D4A843 40%, #A87828 70%, #D4A843 100%)",
+        boxShadow: "0 6px 20px rgba(212,168,67,0.50), 0 0 0 1px rgba(212,168,67,0.25)",
+        animation: "chatbot-heartbeat 3s ease-in-out infinite",
       }}>
-        <div style={{ width: "100%", height: "100%", borderRadius: 10, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
+        <div style={{ width: "100%", height: "100%", borderRadius: 11, overflow: "hidden", background: "rgba(4,9,18,0.95)" }}>
           <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       </div>
+
       <div style={{
-        background: "linear-gradient(145deg, rgba(14,24,44,0.98) 0%, rgba(10,18,34,0.98) 100%)",
-        border: "1px solid rgba(212,168,67,0.16)",
-        borderLeft: "2.5px solid rgba(212,168,67,0.65)",
-        borderRadius: "4px 18px 18px 18px",
-        padding: stage ? "10px 14px" : "14px 16px",
+        background: "linear-gradient(145deg, rgba(16,26,48,0.97) 0%, rgba(11,19,36,0.98) 60%, rgba(8,14,28,0.99) 100%)",
+        border: "1px solid rgba(212,168,67,0.18)",
+        borderLeft: "3px solid rgba(212,168,67,0.75)",
+        borderRadius: "4px 20px 20px 20px",
+        padding: stage ? "12px 16px" : "16px 20px",
         display: "flex",
         flexDirection: stage ? "column" : "row",
-        gap: stage ? 7 : 5,
+        gap: stage ? 8 : 6,
         alignItems: stage ? "flex-start" : "center",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
-        minWidth: stage ? 150 : "auto",
-        backdropFilter: "blur(4px)",
+        boxShadow: "0 6px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)",
+        minWidth: stage ? 170 : "auto",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
       }}>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
-              width: 8, height: 8, borderRadius: "50%",
+              width: 10, height: 10, borderRadius: "50%",
               background: i === 0
-                ? "radial-gradient(circle, #FFF0B0, #D4A843)"
+                ? "radial-gradient(circle at 35% 35%, #FFF8D0, #E8C060, #C09030)"
                 : i === 1
-                ? "radial-gradient(circle, #F0D070, #C9A84C)"
-                : "radial-gradient(circle, #E8C060, #B8922E)",
-              boxShadow: `0 0 ${8 + i * 3}px rgba(212,168,67,${0.55 + i * 0.1})`,
-              animation: `chatbot-typing-wave 1.5s ease-in-out infinite`,
-              animationDelay: `${i * 0.2}s`,
+                ? "radial-gradient(circle at 35% 35%, #FFF0B0, #D4A843, #B07820)"
+                : "radial-gradient(circle at 35% 35%, #FFE880, #C09030, #9A6818)",
+              boxShadow: `0 0 ${10 + i * 4}px rgba(212,168,67,${0.60 + i * 0.12}), 0 2px 6px rgba(0,0,0,0.4)`,
+              animation: `chatbot-dot-bounce 1.4s ease-in-out infinite`,
+              animationDelay: `${i * 0.18}s`,
             }} />
           ))}
           {stage && (
             <span style={{
-              color: "rgba(212,168,67,0.7)",
-              fontSize: "0.62rem",
+              color: "rgba(212,168,67,0.80)",
+              fontSize: "0.65rem",
               fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-              fontWeight: 600,
-              marginLeft: 4,
-              letterSpacing: "0.01em",
+              fontWeight: 700,
+              marginLeft: 6,
+              letterSpacing: "0.02em",
             }}>{stage}</span>
           )}
         </div>
         {stage && (
           <div style={{
             width: "100%",
-            height: 2,
-            background: "rgba(212,168,67,0.12)",
-            borderRadius: 2,
+            height: 3,
+            background: "rgba(212,168,67,0.10)",
+            borderRadius: 3,
             overflow: "hidden",
           }}>
             <div style={{
               height: "100%",
-              background: "linear-gradient(90deg, #D4A843, #E8C060, #D4A843)",
-              backgroundSize: "200% 100%",
-              animation: "chatbot-shimmer 1.5s linear infinite",
-              borderRadius: 2,
-              width: "60%",
+              background: "linear-gradient(90deg, transparent, #D4A843, #F0D070, #D4A843, transparent)",
+              backgroundSize: "300% 100%",
+              animation: "chatbot-shimmer 1.8s linear infinite",
+              borderRadius: 3,
+              width: "70%",
             }} />
           </div>
         )}
@@ -3198,77 +3358,80 @@ export default function AIChatbot() {
 
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
 
-              {/* ── Header ── */}
+              {/* ── Ultra Premium Header ── */}
               <div
                 className="chatbot-header-shine"
                 style={{
-                  padding: "12px 14px",
+                  padding: "14px 16px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  gap: 8,
-                  background: "radial-gradient(ellipse at 15% 0%, rgba(212,168,67,0.28) 0%, transparent 50%), radial-gradient(ellipse at 85% 100%, rgba(100,150,255,0.07) 0%, transparent 45%), linear-gradient(180deg, rgba(10,18,36,0.995) 0%, rgba(5,10,22,0.99) 100%)",
-                  borderBottom: "1px solid rgba(212,168,67,0.25)",
-                  boxShadow: "0 1px 0 rgba(255,255,255,0.07) inset, 0 10px 36px rgba(0,0,0,0.5)",
+                  gap: 10,
+                  background: "radial-gradient(ellipse at 10% 0%, rgba(212,168,67,0.32) 0%, transparent 45%), radial-gradient(ellipse at 90% 100%, rgba(99,102,241,0.10) 0%, transparent 45%), linear-gradient(180deg, rgba(10,18,38,0.998) 0%, rgba(6,11,24,0.995) 100%)",
+                  borderBottom: "1px solid rgba(212,168,67,0.28)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(212,168,67,0.10)",
                   flexShrink: 0,
                   position: "relative",
                   overflow: "hidden",
                 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-                  {/* Header avatar with premium glow */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                  {/* Ultra Premium Header Avatar */}
                   <div style={{
-                    width: 46, height: 46,
+                    width: 48, height: 48,
                     borderRadius: "18px",
                     overflow: "hidden",
                     flexShrink: 0,
-                    padding: 2,
-                    background: "linear-gradient(135deg, rgba(244,213,125,0.98), rgba(201,168,76,0.3), rgba(244,213,125,0.8))",
-                    boxShadow: "0 0 0 1px rgba(212,168,67,0.3), 0 12px 28px rgba(212,168,67,0.22), 0 0 20px rgba(212,168,67,0.1)",
+                    padding: 2.5,
+                    background: "linear-gradient(135deg, #F5E090 0%, #D4A843 35%, #A87828 65%, #D4A843 100%)",
+                    boxShadow: "0 0 0 1px rgba(212,168,67,0.35), 0 14px 36px rgba(212,168,67,0.30), 0 0 30px rgba(212,168,67,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
+                    animation: "chatbot-heartbeat 5s ease-in-out infinite",
                   }}>
-                    <div style={{ width: "100%", height: "100%", borderRadius: 16, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
+                    <div style={{ width: "100%", height: "100%", borderRadius: 15, overflow: "hidden", background: "rgba(4,9,18,0.95)" }}>
                       <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ" style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         onError={(e) => {
                           const t = e.currentTarget;
                           t.style.display = "none";
-                          t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:800;font-size:0.72rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#F0D080,#C9A84C);">AI</span>';
+                          t.parentElement!.innerHTML = '<span style="color:#0A1628;font-weight:900;font-size:0.75rem;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#F0D080,#C9A84C);">AI</span>';
                         }} />
                     </div>
                   </div>
-                  <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-                    {/* Shimmer title */}
+                  <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                    {/* Ultra Premium Shimmer Title */}
                     <div style={{
                       fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                      fontWeight: 800,
-                      fontSize: "0.86rem",
-                      letterSpacing: "0.01em",
+                      fontWeight: 900,
+                      fontSize: "0.90rem",
+                      letterSpacing: "0.02em",
                       lineHeight: 1.1,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      background: "linear-gradient(90deg, #F7E4A5 0%, #D4A843 46%, #FFF1B8 68%, #C9A84C 100%)",
-                      backgroundSize: "220% auto",
+                      background: "linear-gradient(90deg, #FFF0C0 0%, #F0D070 20%, #D4A843 45%, #FFF8D0 65%, #E8C060 80%, #C9A84C 100%)",
+                      backgroundSize: "250% auto",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
-                      animation: "chatbot-shimmer 4s linear infinite",
+                      animation: "chatbot-shimmer 5s linear infinite",
+                      textShadow: "none",
                     }}>
                       মাহবুব সরদার সবুজ AI Agent
                     </div>
-                    {/* Online status */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                    {/* Ultra Premium Online status */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 1 }}>
                       <div
                         className="chatbot-online-dot"
                         style={{
-                          width: 7, height: 7, borderRadius: "50%",
-                          background: "radial-gradient(circle, #4ade80, #22c55e)",
-                          boxShadow: "0 0 0 2px rgba(34,197,94,0.3), 0 0 8px rgba(34,197,94,0.4)",
+                          width: 8, height: 8, borderRadius: "50%",
+                          background: "radial-gradient(circle at 35% 35%, #86efac, #4ade80, #16a34a)",
+                          boxShadow: "0 0 0 2px rgba(74,222,128,0.25), 0 0 10px rgba(74,222,128,0.55)",
                           flexShrink: 0,
                         }} />
                       <span style={{
-                        color: "rgba(134,239,172,0.82)",
-                        fontSize: "0.52rem",
+                        color: "rgba(134,239,172,0.90)",
+                        fontSize: "0.56rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         fontWeight: 700,
-                        letterSpacing: "0.03em",
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
                       }}>সক্রিয় • সাথে আছি</span>
                     </div>
                   </div>
@@ -3328,19 +3491,19 @@ export default function AIChatbot() {
                 </div>
               </div>
 
-              {/* ── Mode switch ── */}
+              {/* ── Ultra Premium Mode Switch ── */}
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: 7,
-                padding: "8px 12px",
-                background: "linear-gradient(180deg, rgba(5,10,20,0.92) 0%, rgba(4,8,16,0.88) 100%)",
-                borderBottom: "1px solid rgba(212,168,67,0.10)",
+                gap: 8,
+                padding: "10px 14px",
+                background: "linear-gradient(180deg, rgba(6,11,22,0.95) 0%, rgba(4,8,18,0.92) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.12)",
                 flexShrink: 0,
               }}>
                 {[
-                  { key: "ai", label: "AI Agent", sub: "প্রশ্ন, ছবি, অডিও এডিটিং" },
-                  { key: "live", label: "Live Chat", sub: "সরাসরি সহায়তা" },
+                  { key: "ai", label: "AI Agent", sub: "প্রশ্ন, ছবি, অডিও এডিটিং", icon: "✨" },
+                  { key: "live", label: "Live Chat", sub: "সরাসরি সহায়তা", icon: "💬" },
                 ].map(tab => {
                   const active = activeTab === tab.key;
                   return (
@@ -3348,38 +3511,50 @@ export default function AIChatbot() {
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key as "ai" | "live")}
                       aria-pressed={active}
-                      className="chatbot-touch-target"
+                      className="chatbot-touch-target chatbot-tab-btn"
                       style={{
-                        border: `1px solid ${active ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.12)"}`,
+                        border: `1px solid ${active ? "rgba(212,168,67,0.60)" : "rgba(212,168,67,0.10)"}`,
                         background: active
-                          ? "linear-gradient(135deg, rgba(212,168,67,0.22) 0%, rgba(212,168,67,0.10) 60%, rgba(180,140,50,0.08) 100%)"
-                          : "rgba(255,255,255,0.022)",
-                        color: active ? "#F7E4A5" : "rgba(240,232,212,0.52)",
-                        borderRadius: 14,
-                        padding: "9px 12px",
-                        minHeight: 44,
+                          ? "linear-gradient(135deg, rgba(212,168,67,0.25) 0%, rgba(212,168,67,0.12) 50%, rgba(180,140,50,0.08) 100%)"
+                          : "rgba(255,255,255,0.018)",
+                        color: active ? "#F7E4A5" : "rgba(240,232,212,0.45)",
+                        borderRadius: 16,
+                        padding: "10px 12px",
+                        minHeight: 46,
                         cursor: "pointer",
                         textAlign: "left",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         boxShadow: active
-                          ? "0 4px 20px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.15)"
-                          : "none",
-                        transition: "all 0.22s cubic-bezier(0.4,0,0.2,1)",
+                          ? "0 6px 24px rgba(212,168,67,0.18), inset 0 1px 0 rgba(212,168,67,0.20), inset 0 -1px 0 rgba(0,0,0,0.15)"
+                          : "inset 0 1px 0 rgba(255,255,255,0.03)",
+                        transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
                         position: "relative",
                         overflow: "hidden",
                       }}
                     >
                       {active && (
-                        <div style={{
-                          position: "absolute",
-                          top: 0, left: 0, right: 0,
-                          height: 2,
-                          background: "linear-gradient(90deg, transparent, rgba(212,168,67,0.8), transparent)",
-                          borderRadius: "14px 14px 0 0",
-                        }} />
+                        <>
+                          <div style={{
+                            position: "absolute",
+                            top: 0, left: 0, right: 0,
+                            height: 2.5,
+                            background: "linear-gradient(90deg, transparent 5%, rgba(212,168,67,0.90) 40%, rgba(255,240,150,1) 50%, rgba(212,168,67,0.90) 60%, transparent 95%)",
+                            borderRadius: "16px 16px 0 0",
+                          }} />
+                          <div style={{
+                            position: "absolute",
+                            inset: 0,
+                            background: "linear-gradient(135deg, rgba(212,168,67,0.06) 0%, transparent 60%)",
+                            borderRadius: "inherit",
+                            pointerEvents: "none",
+                          }} />
+                        </>
                       )}
-                      <span style={{ display: "block", fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.02em" }}>{tab.label}</span>
-                      <span style={{ display: "block", marginTop: 2, fontSize: "0.53rem", opacity: 0.68 }}>{tab.sub}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ fontSize: "0.75rem" }}>{tab.icon}</span>
+                        <span style={{ fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.02em" }}>{tab.label}</span>
+                      </div>
+                      <span style={{ display: "block", marginTop: 3, fontSize: "0.55rem", opacity: active ? 0.75 : 0.50, letterSpacing: "0.01em" }}>{tab.sub}</span>
                     </button>
                   );
                 })}
@@ -3512,14 +3687,14 @@ export default function AIChatbot() {
                 </div>
               )}
 
-              {/* ── Input ── */}
+              {/* ── Ultra Premium Input Area ── */}
               {activeTab === "ai" && (
               <div style={{
-                padding: "8px 12px 12px",
-                borderTop: "1px solid rgba(212,168,67,0.12)",
-                background: "linear-gradient(180deg, rgba(5,10,20,0.98) 0%, rgba(4,8,16,0.99) 100%)",
+                padding: "10px 14px 14px",
+                borderTop: "1px solid rgba(212,168,67,0.16)",
+                background: "linear-gradient(180deg, rgba(6,11,22,0.99) 0%, rgba(4,8,18,0.995) 100%)",
                 flexShrink: 0,
-                boxShadow: "0 -4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,168,67,0.06)",
+                boxShadow: "0 -8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(212,168,67,0.10), inset 0 2px 0 rgba(0,0,0,0.2)",
               }}>
                 {/* Hidden file inputs */}
                 <input
@@ -3786,32 +3961,35 @@ export default function AIChatbot() {
                       style={{
                         width: "100%",
                         boxSizing: "border-box",
-                        background: "linear-gradient(145deg, rgba(9,17,32,0.92), rgba(7,13,26,0.88))",
-                        color: "rgba(242,235,215,0.96)",
-                        border: "1px solid rgba(212,168,67,0.16)",
-                        borderRadius: 16,
-                        padding: "10px 14px",
-                        fontSize: "0.79rem",
+                        background: "linear-gradient(145deg, rgba(10,18,34,0.96), rgba(8,14,28,0.92))",
+                        color: "rgba(242,235,215,0.98)",
+                        border: "1px solid rgba(212,168,67,0.18)",
+                        borderRadius: 18,
+                        padding: "12px 16px",
+                        fontSize: "0.82rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         resize: "none",
-                        minHeight: 38,
-                        maxHeight: 92,
+                        minHeight: 40,
+                        maxHeight: 100,
                         overflowY: "auto",
                         outline: "none",
-                        lineHeight: 1.6,
+                        lineHeight: 1.7,
                         display: "block",
-                        boxShadow: "0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)",
-                        animation: "chatbot-input-glow 4s ease-in-out infinite",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15)",
+                        animation: "chatbot-input-glow 5s ease-in-out infinite",
+                        backdropFilter: "blur(4px)",
+                        WebkitBackdropFilter: "blur(4px)",
+                        letterSpacing: "0.005em",
                       }}
                       onFocus={e => {
-                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.38)";
-                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(212,168,67,0.10), 0 2px 12px rgba(0,0,0,0.3)";
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.45)";
+                        e.currentTarget.style.boxShadow = "0 0 0 2.5px rgba(212,168,67,0.12), 0 6px 20px rgba(212,168,67,0.15), inset 0 1px 0 rgba(255,255,255,0.05)";
                         e.currentTarget.style.animation = "none";
                       }}
                       onBlur={e => {
-                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.16)";
-                        e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)";
-                        e.currentTarget.style.animation = "chatbot-input-glow 4s ease-in-out infinite";
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.18)";
+                        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15)";
+                        e.currentTarget.style.animation = "chatbot-input-glow 5s ease-in-out infinite";
                       }}
                     />
                   </div>
@@ -3824,23 +4002,24 @@ export default function AIChatbot() {
                       : ((!input.trim() && !imagePreview) || isLoading || audioProcessing)
                     }
                     style={{
-                      width: 46, height: 46,
-                      borderRadius: 15,
+                      width: 50, height: 50,
+                      borderRadius: 16,
                       background: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
-                        ? "linear-gradient(145deg, #F0D070 0%, #D8B84E 40%, #C09030 100%)"
-                        : "rgba(212,168,67,0.08)",
+                        ? "linear-gradient(135deg, #FFF8D0 0%, #F0D070 20%, #D8B84E 45%, #C09030 100%)"
+                        : "rgba(212,168,67,0.06)",
                       border: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
-                        ? "1px solid rgba(212,168,67,0.4)"
-                        : "1px solid rgba(212,168,67,0.15)",
-                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing)) ? "#0A1628" : "rgba(212,168,67,0.28)",
+                        ? "1px solid rgba(212,168,67,0.50)"
+                        : "1px solid rgba(212,168,67,0.12)",
+                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing)) ? "#0A1628" : "rgba(212,168,67,0.25)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
                       flexShrink: 0,
                       boxShadow: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
-                        ? "0 4px 18px rgba(212,168,67,0.4), inset 0 1px 0 rgba(255,255,255,0.2)"
-                        : "none",
+                        ? "0 6px 24px rgba(212,168,67,0.50), inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.20)"
+                        : "inset 0 1px 0 rgba(255,255,255,0.02)",
+                      transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
                     }}
                   >
                     {(isLoading || audioProcessing) ? (
