@@ -724,7 +724,7 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
 }
 
 // ── CSS Keyframes injected once ───────────────────────────────────────────────
-const STYLE_ID = "chatbot-premium-styles";
+const STYLE_ID = "chatbot-premium-styles-v2";
 if (!document.getElementById(STYLE_ID)) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
@@ -739,203 +739,345 @@ if (!document.getElementById(STYLE_ID)) {
     .chatbot-adorsho, .chatbot-adorsho * {
       font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
     }
+
+    /* ══════════════════════════════════════════════════════
+       PREMIUM CHATBOT v3 — ULTRA DESIGN SYSTEM
+    ══════════════════════════════════════════════════════ */
+
+    /* ── Core Animations ── */
     @keyframes chatbot-ping {
-      0% { transform: scale(1); opacity: 0.7; }
-      70% { transform: scale(1.8); opacity: 0; }
-      100% { transform: scale(1.8); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.8; }
+      70% { transform: scale(2.0); opacity: 0; }
+      100% { transform: scale(2.0); opacity: 0; }
     }
     @keyframes chatbot-ping2 {
-      0% { transform: scale(1); opacity: 0.35; }
-      70% { transform: scale(2.4); opacity: 0; }
-      100% { transform: scale(2.4); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.4; }
+      70% { transform: scale(2.8); opacity: 0; }
+      100% { transform: scale(2.8); opacity: 0; }
     }
     @keyframes chatbot-shimmer {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
+      0% { background-position: -300% center; }
+      100% { background-position: 300% center; }
     }
     @keyframes chatbot-glow-pulse {
-      0%, 100% { opacity: 0.7; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.15); }
+      0%, 100% { box-shadow: 0 0 0 3px rgba(212,168,67,0.12), 0 0 24px rgba(212,168,67,0.28), 0 8px 32px rgba(0,0,0,0.6); }
+      50% { box-shadow: 0 0 0 4px rgba(212,168,67,0.22), 0 0 40px rgba(212,168,67,0.45), 0 8px 32px rgba(0,0,0,0.6); }
     }
     @keyframes chatbot-dot-bounce {
-      0%, 60%, 100% { transform: translateY(0) scale(1); }
-      30% { transform: translateY(-6px) scale(0.9); }
+      0%, 60%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+      30% { transform: translateY(-7px) scale(0.85); opacity: 1; }
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
     @keyframes chatbot-fade-in {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(6px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     @keyframes chatbot-border-glow {
-      0%, 100% { box-shadow: 0 0 0 1px rgba(212,168,67,0.25), 0 0 20px rgba(212,168,67,0.06); }
-      50%       { box-shadow: 0 0 0 1px rgba(212,168,67,0.5),  0 0 30px rgba(212,168,67,0.12); }
+      0%, 100% {
+        box-shadow:
+          0 32px 80px rgba(0,0,0,0.85),
+          0 0 0 1px rgba(212,168,67,0.22),
+          inset 0 1px 0 rgba(212,168,67,0.14),
+          0 0 60px rgba(212,168,67,0.04);
+      }
+      50% {
+        box-shadow:
+          0 32px 80px rgba(0,0,0,0.85),
+          0 0 0 1px rgba(212,168,67,0.45),
+          inset 0 1px 0 rgba(212,168,67,0.22),
+          0 0 80px rgba(212,168,67,0.08);
+      }
     }
-    .chatbot-scrollbar::-webkit-scrollbar { width: 2px; }
-    .chatbot-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .chatbot-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.2); border-radius: 4px; }
-    .chatbot-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.45); }
-    .chatbot-input::placeholder {
-      color: rgba(160,140,100,0.38) !important;
-      font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
-      font-size: 0.78rem !important;
-    }
-    .chatbot-input:focus {
-      border-color: rgba(255,255,255,0.10) !important;
-      box-shadow: none !important;
-    }
-    .chatbot-nav-btn {
-      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
-    }
-    .chatbot-nav-btn:hover {
-      background: rgba(212,168,67,0.12) !important;
-      border-color: rgba(212,168,67,0.6) !important;
-      color: #E8C060 !important;
-      box-shadow: 0 3px 10px rgba(212,168,67,0.18);
-      transform: translateX(2px);
-    }
-    .chatbot-icon-btn {
-      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
-    }
-    .chatbot-icon-btn:hover {
-      background: rgba(212,168,67,0.12) !important;
-      border-color: rgba(212,168,67,0.5) !important;
-    }
-    .chatbot-send-btn {
-      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
-    }
-    .chatbot-send-btn:not(:disabled):hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 16px rgba(212,168,67,0.4);
-    }
-    .chatbot-download-btn {
-      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
-    }
-    .chatbot-download-btn:hover {
-      background: rgba(212,168,67,0.2) !important;
-      border-color: rgba(212,168,67,0.7) !important;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(212,168,67,0.2);
-    }
-    .chatbot-tab-btn {
-      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
-    }
-    .chatbot-tab-btn:hover:not(.active) {
-      color: rgba(212,168,67,0.75) !important;
-      background: rgba(212,168,67,0.04) !important;
-    }
-    /* ── Visitor-Friendly New Animations ── */
     @keyframes chatbot-float {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-4px); }
+      50% { transform: translateY(-5px); }
     }
     @keyframes chatbot-notification-pop {
-      0% { transform: scale(0); opacity: 0; }
-      60% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
+      0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+      55% { transform: scale(1.35) rotate(5deg); opacity: 1; }
+      75% { transform: scale(0.9) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
     @keyframes chatbot-wave {
       0% { transform: rotate(0deg); }
-      10% { transform: rotate(14deg); }
-      20% { transform: rotate(-8deg); }
-      30% { transform: rotate(14deg); }
+      10% { transform: rotate(16deg); }
+      20% { transform: rotate(-9deg); }
+      30% { transform: rotate(16deg); }
       40% { transform: rotate(-4deg); }
-      50% { transform: rotate(10deg); }
+      50% { transform: rotate(12deg); }
       60% { transform: rotate(0deg); }
       100% { transform: rotate(0deg); }
     }
     @keyframes chatbot-heartbeat {
       0% { transform: scale(1); }
-      14% { transform: scale(1.15); }
+      14% { transform: scale(1.18); }
       28% { transform: scale(1); }
-      42% { transform: scale(1.1); }
+      42% { transform: scale(1.12); }
       70% { transform: scale(1); }
     }
     @keyframes chatbot-slide-up {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(14px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
     @keyframes chatbot-typing-wave {
-      0%, 60%, 100% { transform: initial; }
-      30% { transform: translateY(-8px); }
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-9px); }
     }
     @keyframes chatbot-badge-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
-      50% { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
-    }
-    .chatbot-suggestion-chip {
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .chatbot-suggestion-chip:hover {
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 4px 16px rgba(212,168,67,0.2);
-    }
-    .chatbot-suggestion-chip:active {
-      transform: scale(0.96);
-    }
-    .chatbot-audio-player {
-      accent-color: #D4A843;
-    }
-    .chatbot-audio-player::-webkit-media-controls-panel {
-      background: rgba(12,22,38,0.95);
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+      50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
     }
     @keyframes chatbot-cursor-blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
     }
-    @keyframes chatbot-slide-up {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .chatbot-drag-over {
-      border-color: rgba(212,168,67,0.7) !important;
-      background: rgba(212,168,67,0.06) !important;
-      box-shadow: 0 0 0 2px rgba(212,168,67,0.2), 0 40px 100px rgba(0,0,0,0.92) !important;
-    }
-    .chatbot-msg-animate {
-      animation: chatbot-slide-up 0.3s ease-out;
-    }
     @keyframes chatbot-shimmer-new {
       0% { background-position: -300% center; }
       100% { background-position: 300% center; }
     }
-    .chatbot-input:focus {
-      box-shadow: none !important;
+    @keyframes chatbot-msg-in-user {
+      from { opacity: 0; transform: translateX(20px) scale(0.94); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes chatbot-msg-in-ai {
+      from { opacity: 0; transform: translateX(-16px) scale(0.94); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes chatbot-header-shine {
+      0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+      50% { opacity: 0.12; }
+      100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
+    }
+    @keyframes chatbot-input-glow {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(212,168,67,0.18), 0 2px 12px rgba(0,0,0,0.3); }
+      50% { box-shadow: 0 0 0 1.5px rgba(212,168,67,0.38), 0 2px 20px rgba(212,168,67,0.08); }
+    }
+    @keyframes chatbot-aurora {
+      0%, 100% { opacity: 0.04; transform: scale(1) rotate(0deg); }
+      33% { opacity: 0.07; transform: scale(1.05) rotate(1deg); }
+      66% { opacity: 0.05; transform: scale(0.97) rotate(-1deg); }
+    }
+    @keyframes chatbot-tab-active-slide {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes chatbot-online-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+      50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); }
     }
 
+    /* ── Scrollbar ── */
+    .chatbot-scrollbar::-webkit-scrollbar { width: 3px; }
+    .chatbot-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .chatbot-scrollbar::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(212,168,67,0.35), rgba(212,168,67,0.15));
+      border-radius: 8px;
+    }
+    .chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(212,168,67,0.6), rgba(212,168,67,0.3));
+    }
+
+    /* ── Input ── */
+    .chatbot-input::placeholder {
+      color: rgba(160,140,100,0.35) !important;
+      font-family: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif !important;
+      font-size: 0.79rem !important;
+    }
+    .chatbot-input:focus {
+      border-color: rgba(212,168,67,0.32) !important;
+      box-shadow: 0 0 0 2px rgba(212,168,67,0.08) !important;
+      outline: none !important;
+    }
+
+    /* ── Navigation Buttons ── */
+    .chatbot-nav-btn {
+      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .chatbot-nav-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(212,168,67,0.12), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+      border-radius: inherit;
+    }
+    .chatbot-nav-btn:hover::before { opacity: 1; }
+    .chatbot-nav-btn:hover {
+      background: rgba(212,168,67,0.10) !important;
+      border-color: rgba(212,168,67,0.65) !important;
+      color: #F0D070 !important;
+      box-shadow: 0 4px 16px rgba(212,168,67,0.22), 0 0 0 1px rgba(212,168,67,0.12);
+      transform: translateX(3px) translateY(-1px);
+    }
+    .chatbot-nav-btn:active { transform: translateX(1px) scale(0.97) !important; }
+
+    /* ── Icon Buttons ── */
+    .chatbot-icon-btn {
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+    }
+    .chatbot-icon-btn:hover {
+      background: rgba(212,168,67,0.14) !important;
+      border-color: rgba(212,168,67,0.55) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212,168,67,0.16);
+    }
+    .chatbot-icon-btn:active { transform: scale(0.93) !important; }
+
+    /* ── Send Button ── */
+    .chatbot-send-btn {
+      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .chatbot-send-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.18) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .chatbot-send-btn:not(:disabled):hover::after { opacity: 1; }
+    .chatbot-send-btn:not(:disabled):hover {
+      transform: scale(1.08) translateY(-1px);
+      box-shadow: 0 6px 22px rgba(212,168,67,0.55), 0 0 0 2px rgba(212,168,67,0.2);
+    }
+    .chatbot-send-btn:not(:disabled):active { transform: scale(0.95) !important; }
+
+    /* ── Download Button ── */
+    .chatbot-download-btn {
+      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .chatbot-download-btn:hover {
+      background: rgba(212,168,67,0.18) !important;
+      border-color: rgba(212,168,67,0.75) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(212,168,67,0.25);
+    }
+
+    /* ── Tab Buttons ── */
+    .chatbot-tab-btn {
+      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+    }
+    .chatbot-tab-btn:hover:not(.active) {
+      color: rgba(212,168,67,0.8) !important;
+      background: rgba(212,168,67,0.06) !important;
+    }
+
+    /* ── Suggestion Chips ── */
+    .chatbot-suggestion-chip {
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .chatbot-suggestion-chip::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(212,168,67,0.15), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+      border-radius: inherit;
+    }
+    .chatbot-suggestion-chip:hover::before { opacity: 1; }
+    .chatbot-suggestion-chip:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 6px 20px rgba(212,168,67,0.25), 0 0 0 1px rgba(212,168,67,0.3);
+      border-color: rgba(212,168,67,0.55) !important;
+    }
+    .chatbot-suggestion-chip:active { transform: scale(0.95); }
+
+    /* ── Audio Player ── */
+    .chatbot-audio-player { accent-color: #D4A843; }
+    .chatbot-audio-player::-webkit-media-controls-panel {
+      background: linear-gradient(135deg, rgba(12,22,38,0.98), rgba(8,15,28,0.98));
+    }
+
+    /* ── Drag Over ── */
+    .chatbot-drag-over {
+      border-color: rgba(212,168,67,0.8) !important;
+      background: rgba(212,168,67,0.04) !important;
+      box-shadow:
+        0 0 0 3px rgba(212,168,67,0.25),
+        0 40px 100px rgba(0,0,0,0.92) !important;
+    }
+
+    /* ── Message Animations ── */
+    .chatbot-msg-animate {
+      animation: chatbot-slide-up 0.32s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .chatbot-msg-user { animation: chatbot-msg-in-user 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .chatbot-msg-ai   { animation: chatbot-msg-in-ai   0.3s cubic-bezier(0.34,1.56,0.64,1); }
+
+    /* ── Premium Message Bubble Hover ── */
+    .chatbot-bubble-ai {
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .chatbot-bubble-ai:hover {
+      box-shadow: 0 6px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,168,67,0.18) !important;
+      transform: translateY(-1px);
+    }
+    .chatbot-bubble-user {
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .chatbot-bubble-user:hover {
+      box-shadow: 0 6px 24px rgba(212,168,67,0.38) !important;
+      transform: translateY(-1px);
+    }
+
+    /* ── Header Shine Effect ── */
+    .chatbot-header-shine::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+      animation: chatbot-header-shine 6s ease-in-out infinite 2s;
+      pointer-events: none;
+    }
+
+    /* ── Online Indicator ── */
+    .chatbot-online-dot {
+      animation: chatbot-online-pulse 2.5s ease-in-out infinite, chatbot-heartbeat 2s ease-in-out infinite;
+    }
+
+    /* ── Focus States ── */
     .chatbot-adorsho button:focus-visible,
     .chatbot-adorsho input:focus-visible,
     .chatbot-launcher:focus-visible {
       outline: 2px solid rgba(247,228,165,0.9) !important;
       outline-offset: 3px !important;
-      box-shadow: 0 0 0 4px rgba(212,168,67,0.16) !important;
+      box-shadow: 0 0 0 4px rgba(212,168,67,0.18) !important;
     }
     .chatbot-adorsho textarea:focus-visible {
       outline: none !important;
       box-shadow: none !important;
     }
     .chatbot-adorsho button,
-    .chatbot-launcher {
-      -webkit-tap-highlight-color: transparent;
-    }
+    .chatbot-launcher { -webkit-tap-highlight-color: transparent; }
+
+    /* ── Touch Targets ── */
     .chatbot-icon-btn,
     .chatbot-send-btn,
-    .chatbot-touch-target {
-      min-width: 40px;
-      min-height: 40px;
-    }
+    .chatbot-touch-target { min-width: 40px; min-height: 40px; }
+
     @media (max-width: 480px) {
       .chatbot-icon-btn,
       .chatbot-send-btn,
-      .chatbot-touch-target {
-        min-width: 44px;
-        min-height: 44px;
-      }
-      .chatbot-input::placeholder {
-        font-size: 0.72rem !important;
-      }
+      .chatbot-touch-target { min-width: 44px; min-height: 44px; }
+      .chatbot-input::placeholder { font-size: 0.73rem !important; }
     }
+
+    /* ── Reduced Motion ── */
     @media (prefers-reduced-motion: reduce) {
       .chatbot-adorsho *,
       .chatbot-launcher,
@@ -946,11 +1088,13 @@ if (!document.getElementById(STYLE_ID)) {
         scroll-behavior: auto !important;
       }
       .chatbot-msg-animate,
+      .chatbot-msg-user,
+      .chatbot-msg-ai,
       .chatbot-nav-btn:hover,
       .chatbot-download-btn:hover,
-      .chatbot-send-btn:not(:disabled):hover {
-        transform: none !important;
-      }
+      .chatbot-send-btn:not(:disabled):hover,
+      .chatbot-bubble-ai:hover,
+      .chatbot-bubble-user:hover { transform: none !important; }
     }
   `;
   document.head.appendChild(style);
@@ -964,24 +1108,28 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, x: 14, y: 4 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ type: "spring", stiffness: 420, damping: 30 }}
-        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}
+        initial={{ opacity: 0, x: 18, y: 6, scale: 0.93 }}
+        animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 380, damping: 26 }}
+        className="chatbot-msg-user"
+        style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12, paddingLeft: 32 }}
       >
-        <div style={{
-          background: "linear-gradient(135deg, #D4A843 0%, #C9A84C 50%, #B8923A 100%)",
-          color: "#0A1628",
-          borderRadius: "18px 18px 4px 18px",
-          padding: "10px 14px",
-          maxWidth: "80%",
-          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-          fontSize: "0.8rem",
-          lineHeight: 1.7,
-          fontWeight: 600,
-          boxShadow: "0 4px 18px rgba(212,168,67,0.3), 0 2px 6px rgba(0,0,0,0.25)",
-          wordBreak: "break-word",
-        }}>
+        <div
+          className="chatbot-bubble-user"
+          style={{
+            background: "linear-gradient(145deg, #E8C060 0%, #D4A843 40%, #C09030 80%, #B8923A 100%)",
+            color: "#0A1628",
+            borderRadius: "20px 20px 5px 20px",
+            padding: "11px 15px",
+            maxWidth: "82%",
+            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontSize: "0.82rem",
+            lineHeight: 1.75,
+            fontWeight: 650,
+            boxShadow: "0 6px 24px rgba(212,168,67,0.38), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25)",
+            wordBreak: "break-word",
+            position: "relative",
+          }}>
           {message.imageUrl && (
             <img
               src={message.imageUrl}
@@ -1020,30 +1168,34 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -14, y: 4 }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ type: "spring", stiffness: 420, damping: 30 }}
-      style={{ display: "flex", gap: 8, marginBottom: 10 }}
+      initial={{ opacity: 0, x: -18, y: 6, scale: 0.93 }}
+      animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 380, damping: 26 }}
+      className="chatbot-msg-ai"
+      style={{ display: "flex", gap: 9, marginBottom: 14, paddingRight: 24 }}
     >
-      {/* Small avatar */}
+      {/* Premium avatar */}
       <div style={{
-        width: 32, height: 32,
-        borderRadius: "50%",
+        width: 34, height: 34,
+        borderRadius: "12px",
         overflow: "hidden",
         flexShrink: 0,
-        marginTop: 3,
-        border: "1.5px solid rgba(212,168,67,0.6)",
-        boxShadow: "0 0 12px rgba(212,168,67,0.3)",
+        marginTop: 2,
+        padding: 2,
+        background: "linear-gradient(135deg, rgba(212,168,67,0.9), rgba(180,140,50,0.4), rgba(212,168,67,0.7))",
+        boxShadow: "0 4px 16px rgba(212,168,67,0.35), 0 0 0 1px rgba(212,168,67,0.2)",
       }}>
-        <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          onError={(e) => {
-            const t = e.currentTarget;
-            t.style.display = "none";
-            t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:9px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#1a2e4a;font-weight:700;">AI</span>';
-          }} />
+        <div style={{ width: "100%", height: "100%", borderRadius: 10, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
+          <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            onError={(e) => {
+              const t = e.currentTarget;
+              t.style.display = "none";
+              t.parentElement!.innerHTML = '<span style="color:#D4A843;font-size:9px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#1a2e4a,#0d1b2e);font-weight:800;">AI</span>';
+            }} />
+        </div>
       </div>
 
-      <div style={{ maxWidth: "calc(100% - 44px)", flex: 1, minWidth: 0 }}>
+      <div style={{ maxWidth: "calc(100% - 46px)", flex: 1, minWidth: 0 }}>
         {showLiveChat && (
           <div style={{ marginBottom: 10 }}>
             <motion.button
@@ -1394,20 +1546,23 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
           </div>
         )}
         {renderedText && (
-          <div style={{
-            background: "linear-gradient(145deg, rgba(13,22,40,0.97) 0%, rgba(10,18,34,0.97) 100%)",
-            borderRadius: "3px 14px 14px 14px",
-            padding: "9px 12px",
-            color: "rgba(238,230,210,0.92)",
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-            fontSize: "0.78rem",
-            lineHeight: 1.75,
-            whiteSpace: "pre-wrap",
-            border: "1px solid rgba(212,168,67,0.13)",
-            borderLeft: "2px solid rgba(212,168,67,0.55)",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.02)",
-            wordBreak: "break-word",
-          }}>
+          <div
+            className="chatbot-bubble-ai"
+            style={{
+              background: "linear-gradient(145deg, rgba(14,24,44,0.98) 0%, rgba(10,18,34,0.98) 100%)",
+              borderRadius: "4px 18px 18px 18px",
+              padding: "11px 14px",
+              color: "rgba(240,232,212,0.94)",
+              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontSize: "0.8rem",
+              lineHeight: 1.8,
+              whiteSpace: "pre-wrap",
+              border: "1px solid rgba(212,168,67,0.16)",
+              borderLeft: "2.5px solid rgba(212,168,67,0.65)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.1)",
+              wordBreak: "break-word",
+              backdropFilter: "blur(4px)",
+            }}>
             {renderedText}
             {(isLatest && !typingDone) || message.isStreaming ? (
               <span style={{
@@ -1525,42 +1680,52 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
 function TypingIndicator({ stage }: { stage?: string | null }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      style={{ display: "flex", gap: 10, marginBottom: 14 }}
+      initial={{ opacity: 0, x: -14, scale: 0.94 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: -8, scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 380, damping: 26 }}
+      style={{ display: "flex", gap: 9, marginBottom: 14, paddingRight: 24 }}
     >
       <div style={{
-        width: 32, height: 32, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
-        border: "1.5px solid rgba(212,168,67,0.65)",
-        boxShadow: "0 0 10px rgba(212,168,67,0.35)",
+        width: 34, height: 34,
+        borderRadius: "12px",
+        overflow: "hidden",
+        flexShrink: 0,
+        marginTop: 2,
+        padding: 2,
+        background: "linear-gradient(135deg, rgba(212,168,67,0.9), rgba(180,140,50,0.4), rgba(212,168,67,0.7))",
+        boxShadow: "0 4px 16px rgba(212,168,67,0.35), 0 0 0 1px rgba(212,168,67,0.2)",
       }}>
-        <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <div style={{ width: "100%", height: "100%", borderRadius: 10, overflow: "hidden", background: "rgba(4,9,18,0.9)" }}>
+          <img src={AUTHOR_PHOTO} alt="মাহবুব সরদার সবুজ - AI সহকারী" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
       </div>
       <div style={{
-        background: "linear-gradient(145deg, rgba(16,28,48,0.98) 0%, rgba(12,22,40,0.98) 100%)",
-        border: "1px solid rgba(212,168,67,0.18)",
-        borderLeft: "3px solid rgba(212,168,67,0.7)",
+        background: "linear-gradient(145deg, rgba(14,24,44,0.98) 0%, rgba(10,18,34,0.98) 100%)",
+        border: "1px solid rgba(212,168,67,0.16)",
+        borderLeft: "2.5px solid rgba(212,168,67,0.65)",
         borderRadius: "4px 18px 18px 18px",
-        padding: stage ? "10px 14px" : "13px 16px",
+        padding: stage ? "10px 14px" : "14px 16px",
         display: "flex",
         flexDirection: stage ? "column" : "row",
-        gap: stage ? 6 : 5,
+        gap: stage ? 7 : 5,
         alignItems: stage ? "flex-start" : "center",
-        boxShadow: "0 4px 18px rgba(0,0,0,0.3)",
-        minWidth: stage ? 140 : "auto",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)",
+        minWidth: stage ? 150 : "auto",
+        backdropFilter: "blur(4px)",
       }}>
-        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
-              width: 7, height: 7, borderRadius: "50%",
+              width: 8, height: 8, borderRadius: "50%",
               background: i === 0
-                ? "linear-gradient(135deg, #F7E4A5, #D4A843)"
+                ? "radial-gradient(circle, #FFF0B0, #D4A843)"
                 : i === 1
-                ? "linear-gradient(135deg, #E8C060, #C9A84C)"
-                : "linear-gradient(135deg, #D4A843, #B8922E)",
-              boxShadow: `0 0 ${6 + i * 2}px rgba(212,168,67,${0.4 + i * 0.1})`,
-              animation: `chatbot-typing-wave 1.4s ease-in-out infinite`,
-              animationDelay: `${i * 0.18}s`,
+                ? "radial-gradient(circle, #F0D070, #C9A84C)"
+                : "radial-gradient(circle, #E8C060, #B8922E)",
+              boxShadow: `0 0 ${8 + i * 3}px rgba(212,168,67,${0.55 + i * 0.1})`,
+              animation: `chatbot-typing-wave 1.5s ease-in-out infinite`,
+              animationDelay: `${i * 0.2}s`,
             }} />
           ))}
           {stage && (
@@ -2959,24 +3124,23 @@ export default function AIChatbot() {
             style={{
               position: "fixed",
               top: isCompactChatViewport ? Math.max(6, visualViewportBox.offsetTop + 6) : undefined,
-              bottom: isCompactChatViewport ? "auto" : 80,
-              right: isCompactChatViewport ? 16 : 16,
+              bottom: isCompactChatViewport ? "auto" : 82,
+              right: isCompactChatViewport ? 16 : 18,
               zIndex: 150,
-              width: isCompactChatViewport ? "calc(100vw - 32px)" : 390,
+              width: isCompactChatViewport ? "calc(100vw - 32px)" : 400,
               maxWidth: "calc(100vw - 32px)",
-              height: isCompactChatViewport ? `min(610px, ${keyboardSafeChatHeight}px)` : "min(620px, calc(100vh - 110px))",
+              height: isCompactChatViewport ? `min(620px, ${keyboardSafeChatHeight}px)` : "min(640px, calc(100vh - 110px))",
               maxHeight: isCompactChatViewport ? `calc(${visualViewportBox.height}px - 20px)` : undefined,
-              borderRadius: isKeyboardViewport ? 18 : 24,
+              borderRadius: isKeyboardViewport ? 20 : 28,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              background: "linear-gradient(160deg, rgba(8,14,28,0.99) 0%, rgba(4,8,18,0.99) 100%)",
-              backdropFilter: "blur(22px)",
-              WebkitBackdropFilter: "blur(22px)",
-              border: "1px solid rgba(212,168,67,0.28)",
-              boxShadow: "0 24px 70px rgba(0,0,0,0.72), 0 0 0 1px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.12), 0 0 36px rgba(212,168,67,0.04)",
-              animation: "chatbot-border-glow 8s ease-in-out infinite",
-              transition: "border-color 0.2s, box-shadow 0.2s",
+              background: "linear-gradient(160deg, rgba(7,13,26,0.99) 0%, rgba(4,8,18,0.995) 60%, rgba(6,11,22,0.99) 100%)",
+              backdropFilter: "blur(28px)",
+              WebkitBackdropFilter: "blur(28px)",
+              border: "1px solid rgba(212,168,67,0.30)",
+              animation: "chatbot-border-glow 10s ease-in-out infinite",
+              transition: "border-color 0.25s, box-shadow 0.25s",
             }}
           >
             {/* Drag-and-drop overlay */}
@@ -3035,17 +3199,21 @@ export default function AIChatbot() {
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
 
               {/* ── Header ── */}
-              <div style={{
-                padding: "11px 14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                background: "radial-gradient(circle at 20% 0%, rgba(212,168,67,0.22), transparent 45%), radial-gradient(circle at 80% 100%, rgba(100,150,255,0.06), transparent 40%), linear-gradient(180deg, rgba(10,18,34,0.99) 0%, rgba(5,10,22,0.98) 100%)",
-                borderBottom: "1px solid rgba(212,168,67,0.22)",
-                boxShadow: "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 30px rgba(0,0,0,0.45)",
-                flexShrink: 0,
-              }}>
+              <div
+                className="chatbot-header-shine"
+                style={{
+                  padding: "12px 14px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  background: "radial-gradient(ellipse at 15% 0%, rgba(212,168,67,0.28) 0%, transparent 50%), radial-gradient(ellipse at 85% 100%, rgba(100,150,255,0.07) 0%, transparent 45%), linear-gradient(180deg, rgba(10,18,36,0.995) 0%, rgba(5,10,22,0.99) 100%)",
+                  borderBottom: "1px solid rgba(212,168,67,0.25)",
+                  boxShadow: "0 1px 0 rgba(255,255,255,0.07) inset, 0 10px 36px rgba(0,0,0,0.5)",
+                  flexShrink: 0,
+                  position: "relative",
+                  overflow: "hidden",
+                }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
                   {/* Header avatar with premium glow */}
                   <div style={{
@@ -3087,19 +3255,20 @@ export default function AIChatbot() {
                     </div>
                     {/* Online status */}
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-                      <div style={{
-                        width: 6, height: 6, borderRadius: "50%",
-                        background: "#22c55e",
-                        boxShadow: "0 0 0 2px rgba(34,197,94,0.25)",
-                        animation: "chatbot-heartbeat 2s ease-in-out infinite",
-                        flexShrink: 0,
-                      }} />
+                      <div
+                        className="chatbot-online-dot"
+                        style={{
+                          width: 7, height: 7, borderRadius: "50%",
+                          background: "radial-gradient(circle, #4ade80, #22c55e)",
+                          boxShadow: "0 0 0 2px rgba(34,197,94,0.3), 0 0 8px rgba(34,197,94,0.4)",
+                          flexShrink: 0,
+                        }} />
                       <span style={{
-                        color: "rgba(134,239,172,0.75)",
-                        fontSize: "0.5rem",
+                        color: "rgba(134,239,172,0.82)",
+                        fontSize: "0.52rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontWeight: 600,
-                        letterSpacing: "0.02em",
+                        fontWeight: 700,
+                        letterSpacing: "0.03em",
                       }}>সক্রিয় • সাথে আছি</span>
                     </div>
                   </div>
@@ -3163,10 +3332,10 @@ export default function AIChatbot() {
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: 6,
-                padding: "8px 10px",
-                background: "rgba(4,8,16,0.76)",
-                borderBottom: "1px solid rgba(212,168,67,0.08)",
+                gap: 7,
+                padding: "8px 12px",
+                background: "linear-gradient(180deg, rgba(5,10,20,0.92) 0%, rgba(4,8,16,0.88) 100%)",
+                borderBottom: "1px solid rgba(212,168,67,0.10)",
                 flexShrink: 0,
               }}>
                 {[
@@ -3181,20 +3350,36 @@ export default function AIChatbot() {
                       aria-pressed={active}
                       className="chatbot-touch-target"
                       style={{
-                        border: `1px solid ${active ? "rgba(212,168,67,0.48)" : "rgba(212,168,67,0.13)"}`,
-                        background: active ? "linear-gradient(135deg, rgba(212,168,67,0.18), rgba(212,168,67,0.07))" : "rgba(255,255,255,0.025)",
-                        color: active ? "#F7E4A5" : "rgba(240,232,212,0.58)",
-                        borderRadius: 13,
-                        padding: "9px 10px",
+                        border: `1px solid ${active ? "rgba(212,168,67,0.55)" : "rgba(212,168,67,0.12)"}`,
+                        background: active
+                          ? "linear-gradient(135deg, rgba(212,168,67,0.22) 0%, rgba(212,168,67,0.10) 60%, rgba(180,140,50,0.08) 100%)"
+                          : "rgba(255,255,255,0.022)",
+                        color: active ? "#F7E4A5" : "rgba(240,232,212,0.52)",
+                        borderRadius: 14,
+                        padding: "9px 12px",
                         minHeight: 44,
                         cursor: "pointer",
                         textAlign: "left",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        boxShadow: active ? "0 8px 22px rgba(212,168,67,0.08)" : "none",
+                        boxShadow: active
+                          ? "0 4px 20px rgba(212,168,67,0.12), inset 0 1px 0 rgba(212,168,67,0.15)"
+                          : "none",
+                        transition: "all 0.22s cubic-bezier(0.4,0,0.2,1)",
+                        position: "relative",
+                        overflow: "hidden",
                       }}
                     >
-                      <span style={{ display: "block", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.02em" }}>{tab.label}</span>
-                      <span style={{ display: "block", marginTop: 1, fontSize: "0.52rem", opacity: 0.72 }}>{tab.sub}</span>
+                      {active && (
+                        <div style={{
+                          position: "absolute",
+                          top: 0, left: 0, right: 0,
+                          height: 2,
+                          background: "linear-gradient(90deg, transparent, rgba(212,168,67,0.8), transparent)",
+                          borderRadius: "14px 14px 0 0",
+                        }} />
+                      )}
+                      <span style={{ display: "block", fontSize: "0.7rem", fontWeight: 800, letterSpacing: "0.02em" }}>{tab.label}</span>
+                      <span style={{ display: "block", marginTop: 2, fontSize: "0.53rem", opacity: 0.68 }}>{tab.sub}</span>
                     </button>
                   );
                 })}
@@ -3202,8 +3387,8 @@ export default function AIChatbot() {
 
               {/* ── Messages / Live chat ── */}
               {activeTab === "ai" ? (
-                <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
-                <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "14px 12px 6px" }}>
+                <div style={{ flex: 1, minHeight: 0, position: "relative", background: "linear-gradient(180deg, rgba(5,9,18,0.6) 0%, rgba(4,8,16,0.4) 100%)" }}>
+                <div ref={messagesContainerRef} className="chatbot-scrollbar" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", padding: "16px 12px 8px" }}>
                     {messages.map((msg, idx) => (
 
                     <MessageBubble
@@ -3330,10 +3515,11 @@ export default function AIChatbot() {
               {/* ── Input ── */}
               {activeTab === "ai" && (
               <div style={{
-                padding: "8px 10px 10px",
-                borderTop: "1px solid rgba(212,168,67,0.08)",
-                background: "rgba(4,8,16,0.97)",
+                padding: "8px 12px 12px",
+                borderTop: "1px solid rgba(212,168,67,0.12)",
+                background: "linear-gradient(180deg, rgba(5,10,20,0.98) 0%, rgba(4,8,16,0.99) 100%)",
                 flexShrink: 0,
+                boxShadow: "0 -4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(212,168,67,0.06)",
               }}>
                 {/* Hidden file inputs */}
                 <input
@@ -3600,28 +3786,32 @@ export default function AIChatbot() {
                       style={{
                         width: "100%",
                         boxSizing: "border-box",
-                        background: "rgba(8,15,28,0.82)",
-                        color: "rgba(240,232,212,0.95)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        borderRadius: 14,
-                        padding: "10px 13px",
-                        fontSize: "0.78rem",
+                        background: "linear-gradient(145deg, rgba(9,17,32,0.92), rgba(7,13,26,0.88))",
+                        color: "rgba(242,235,215,0.96)",
+                        border: "1px solid rgba(212,168,67,0.16)",
+                        borderRadius: 16,
+                        padding: "10px 14px",
+                        fontSize: "0.79rem",
                         fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                         resize: "none",
-                        minHeight: 36,
-                        maxHeight: 88,
+                        minHeight: 38,
+                        maxHeight: 92,
                         overflowY: "auto",
                         outline: "none",
-                        lineHeight: 1.55,
+                        lineHeight: 1.6,
                         display: "block",
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)",
+                        animation: "chatbot-input-glow 4s ease-in-out infinite",
                       }}
                       onFocus={e => {
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)";
-                        e.currentTarget.style.boxShadow = "none";
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.38)";
+                        e.currentTarget.style.boxShadow = "0 0 0 2px rgba(212,168,67,0.10), 0 2px 12px rgba(0,0,0,0.3)";
+                        e.currentTarget.style.animation = "none";
                       }}
                       onBlur={e => {
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                        e.currentTarget.style.boxShadow = "none";
+                        e.currentTarget.style.borderColor = "rgba(212,168,67,0.16)";
+                        e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)";
+                        e.currentTarget.style.animation = "chatbot-input-glow 4s ease-in-out infinite";
                       }}
                     />
                   </div>
@@ -3634,19 +3824,23 @@ export default function AIChatbot() {
                       : ((!input.trim() && !imagePreview) || isLoading || audioProcessing)
                     }
                     style={{
-                      width: 44, height: 44,
-                      borderRadius: 14,
+                      width: 46, height: 46,
+                      borderRadius: 15,
                       background: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
-                        ? "linear-gradient(135deg, #D8B84E 0%, #C9A84C 100%)"
-                        : "rgba(212,168,67,0.1)",
-                      border: "none",
-                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing)) ? "#0A1628" : "rgba(212,168,67,0.3)",
+                        ? "linear-gradient(145deg, #F0D070 0%, #D8B84E 40%, #C09030 100%)"
+                        : "rgba(212,168,67,0.08)",
+                      border: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
+                        ? "1px solid rgba(212,168,67,0.4)"
+                        : "1px solid rgba(212,168,67,0.15)",
+                      color: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing)) ? "#0A1628" : "rgba(212,168,67,0.28)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
                       flexShrink: 0,
-                      transition: "all 0.18s",
+                      boxShadow: (audioFile ? !audioProcessing : ((input.trim() || imagePreview) && !isLoading && !audioProcessing))
+                        ? "0 4px 18px rgba(212,168,67,0.4), inset 0 1px 0 rgba(255,255,255,0.2)"
+                        : "none",
                     }}
                   >
                     {(isLoading || audioProcessing) ? (
