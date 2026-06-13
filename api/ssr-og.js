@@ -3192,6 +3192,9 @@ export default async function handler(req) {
       <meta name="twitter:description" content="${description}">
       <meta name="twitter:image" content="${image}">
 
+      <!-- Google AdSense -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3350204114310360" crossorigin="anonymous"></script>
+
       <!-- Redirect human users to main site, keep bots here -->
       <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|facebookexternalhit|facebot|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot|discordbot|pinterest|applebot|gptbot|chatgpt-user|oai-searchbot|claudebot|claude-searchbot|claude-user|anthropic-ai|perplexitybot|perplexity-user|youbot|ccbot|bytespider|meta-externalagent|meta-externalfetcher|amazonbot|diffbot|cohere-ai|mistralai-user|ai2bot|omgili|omgilibot/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>
     </head>
