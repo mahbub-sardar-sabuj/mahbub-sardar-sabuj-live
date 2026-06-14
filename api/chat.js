@@ -791,6 +791,33 @@ return `Vision Assistant দিয়ে ছবি, স্ক্রিনশট 
 return null;
 }
 
+// ── General knowledge / open-ended question detector ──────────────────────
+// Detects questions that should be answered by AI, NOT routed to site index.
+// These patterns indicate the user wants factual/informational answers.
+function isGeneralKnowledgeQuestion(rawText = '') {
+  const text = rawText.trim();
+  if (text.length < 3) return false;
+
+  // Question patterns: কত, কী, কে, কোথায়, কখন, কেন, কীভাবে, কতটুকু, কতদিন, কতবছর
+  const questionWords = /কত[\s?।]|কতটুকু|কতদিন|কতবছর|কত বছর|কত সাল|কত কিলো|কত মাইল|কত দূর|কত উঁচু|কত গভীর|কত বড়|কত ছোট|কত লম্বা|কত ওজন|কত তাপমাত্রা|কত গতি|কত সময়|কত ঘণ্টা|কত মিনিট|কত সেকেন্ড|কত টাকা|কত ডলার|কত মানুষ|কত জনসংখ্যা|কত প্রজাতি/i;
+
+  // Science/geography/history specific keywords that indicate factual questions
+  const scienceTopics = /পৃথিবীর বয়স|পৃথিবীর ব্যাস|পৃথিবীর ওজন|পৃথিবীর তাপমাত্রা|সূর্যের বয়স|সূর্যের দূরত্ব|চাঁদের দূরত্ব|চাঁদের বয়স|মহাবিশ্বের বয়স|আলোর গতি|শব্দের গতি|পানির সংকেত|অক্সিজেনের সংকেত|কার্বন ডাই অক্সাইড|পর্যায় সারণি|পরমাণুর গঠন|ডিএনএ কী|জিন কী|ভাইরাস কী|ব্যাকটেরিয়া কী|ভ্যাকসিন কী|অ্যান্টিবায়োটিক কী|রক্তের গ্রুপ|হৃদপিণ্ড কী|মস্তিষ্ক কী|স্নায়ুতন্ত্র|হরমোন কী|এনজাইম কী|প্রোটিন কী|কার্বোহাইড্রেট|ভিটামিন কী|খনিজ লবণ|ফটোসিন্থেসিস|সালোকসংশ্লেষণ|বাষ্পীভবন|ঘনীভবন|অভিকর্ষ কী|মাধ্যাকর্ষণ|বিদ্যুৎ কী|চুম্বক কী|তরঙ্গ কী|কোয়ান্টাম|আপেক্ষিকতা|বিগ ব্যাং|ব্ল্যাক হোল|নিউট্রন তারা|গ্যালাক্সি কী|নেবুলা কী/i;
+
+  // History/geography factual questions
+  const historyGeoTopics = /কত সালে স্বাধীন|কত সালে প্রতিষ্ঠিত|কত সালে জন্ম|কত সালে মৃত্যু|কত সালে আবিষ্কার|কত সালে নির্মিত|কোন দেশের রাজধানী|রাজধানী কোথায়|আয়তন কত|জনসংখ্যা কত|দীর্ঘতম নদী|উচ্চতম পর্বত|গভীরতম সমুদ্র|বৃহত্তম মহাদেশ|ক্ষুদ্রতম দেশ|বৃহত্তম দেশ|বৃহত্তম শহর|সবচেয়ে বড় মহাসাগর|সবচেয়ে ছোট মহাসাগর/i;
+
+  // Math/calculation questions
+  const mathTopics = /কত হয়|যোগ করলে|বিয়োগ করলে|গুণ করলে|ভাগ করলে|বর্গমূল|ঘনমূল|শতকরা|শতাংশ|সুদ কত|লাভ কত|ক্ষতি কত|সমীকরণ|ত্রিভুজের ক্ষেত্রফল|বৃত্তের ক্ষেত্রফল|আয়তক্ষেত্রের ক্ষেত্রফল/i;
+
+  if (questionWords.test(text) && !/(লেখা|কবিতা|বই|ই-বুক|লেখক|মাহবুব|সবুজ|আবৃত্তি|ওয়েবসাইট)/i.test(text)) return true;
+  if (scienceTopics.test(text)) return true;
+  if (historyGeoTopics.test(text)) return true;
+  if (mathTopics.test(text)) return true;
+
+  return false;
+}
+
 function hasDomainNavigationIntent(text = '') {
   return /(বই|ই-বুক|ebook|book|লেখা|লেখালেখি|কবিতা|উক্তি|writings|poem|author|লেখক|কবি|মাহবুব|সবুজ|যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|অডিও|audio|ভয়েস|voice|ছবি|image|video|ভিডিও|ওয়েবসাইট|ওয়েবসাইট|সাইট|page|পেজ|রকমারি|rokomari|কিনতে|order|আবৃত্তি|recitation|ডিজাইন|editor|গ্যালারি|gallery|সংবাদ|news|আমিও লিখবো|বাস্তবতা)/i.test(text);
 }
@@ -889,9 +916,24 @@ function buildNaturalConversationReply(rawText = '') {
     return 'ইসলাম সম্পর্কে প্রশ্ন করেছেন। ইসলাম হলো শান্তির ধর্ম — যার মূল শিক্ষা হলো আল্লাহর উপর ইমান, সৎকাজ ও মানবসেবা। আপনি নির্দিষ্ট কোনো বিষয় সম্পর্কে জানতে চাইলে বলুন।';
   }
 
-  // বিজ্ঞান বিষয়ক প্রশ্ন
-  if (/(বিজ্ঞান|পুথিবী|মহাবিশ্ব|গ্রহ|তারা|মহাকাশ|বিবর্তন|ডারোয়িন|science|physics|chemistry|biology|space|universe)/i.test(compact) && isShort) {
-    return 'বিজ্ঞান সম্পর্কে প্রশ্ন করেছেন। বিজ্ঞান হলো মানুষের সবচেয়ে বড় কৌতূহলের ফসল। নির্দিষ্ট কোন বিষয় সম্পর্কে জানতে চাইলে বলুন — পুথিবীর বয়স, মহাবিশ্বের রহস্য, বিবর্তনের তত্ত্ব — যা চাইবেন।';
+  // পৃথিবীর বয়স সম্পর্কিত প্রশ্ন
+  if (/পৃথিবীর বয়স|পৃথিবী কত বছর|পৃথিবী কত পুরনো/i.test(compact)) {
+    return 'পৃথিবীর বয়স প্রায় ৪৫ ০০ কোটি বছর (৪.৫ বিলিয়ন বছর)। বিজ্ঞানীরা রেডিওমিট্রিক ডেটিং পদ্ধতিতে প্রাচীনতম শিলা বিশ্লেষণ করে এটি নির্ধারণ করেছেন। তুলনামূলকভাবে বলতে গেলে, সূর্যের বয়সও প্রায় একই — ৪.৬ বিলিয়ন বছর। আরও কিছু জানতে চাইলে বলুন।';
+  }
+
+  // মহাবিশ্বের বয়স
+  if (/মহাবিশ্বের বয়স|মহাবিশ্ব কত পুরনো|মহাবিশ্ব কত বছর/i.test(compact)) {
+    return 'মহাবিশ্বের বয়স প্রায় ১৩৮ কোটি বছর (১৩.৮ বিলিয়ন বছর)। বিজ্ঞানীরা মনে করেন বিগ ব্যাংয়ের মাধ্যমে মহাবিশ্বের সৃষ্টি হয়েছিল। বিশ্বব্রহ্মাণ্ড সম্পর্কে আরও জানতে চাইলে বলুন।';
+  }
+
+  // আলোর গতি
+  if (/আলোর গতি|আলো কত দ্রুত|আলো কত বেগে/i.test(compact)) {
+    return 'আলোর গতি প্রতি সেকেন্ডে প্রায় ৩ লক্ষ কিলোমিটার (৩,০০,০০০ কি..মি./সেকেন্ড)। আলো পৃথিবী থেকে চাঁদে পৌঁছাতে সময় নেয় প্রায় ১.৩ সেকেন্ড, আর সূর্য থেকে পৃথিবীতে পৌঁছাতে সময় নেয় প্রায় ৮ মিনিট ২০ সেকেন্ড। আরও জানতে চাইলে বলুন।';
+  }
+
+  // বিজ্ঞান বিষয়ক প্রশ্ন (সাধারণ)
+  if (/(বিজ্ঞান|পৃথিবী|মহাবিশ্ব|গ্রহ|তারা|মহাকাশ|বিবর্তন|ডারউইন|science|physics|chemistry|biology|space|universe|atom|পরমাণু|অণু|কোষ|cell|জীবাণু|ব্যাকটেরিয়া|ভাইরাস)/i.test(compact)) {
+    return 'বিজ্ঞান সম্পর্কে প্রশ্ন করেছেন। নির্দিষ্ট কোন বিষয় সম্পর্কে জানতে চাইলে বলুন — পৃথিবীর বয়স, মহাবিশ্বের রহস্য, বিবর্তনের তত্ত্ব, পরমাণুর গঠন — যা জানতে চাইবেন সরাসরি বলুন।';
   }
 
   return null;
@@ -924,9 +966,13 @@ if (wantsAllPagesEarly) return buildSiteReply(rawText);
 const earlyBookRecommendation = buildBookRecommendationReply(rawText);
 if (earlyBookRecommendation && /(বই|ই-বুক|ebook|book|পড়ব|পড়ব|শুরু|সাজেস্ট|রেকমেন্ড|recommend|suggest)/i.test(rawText)) return earlyBookRecommendation;
 
-// ── Unified knowledge search: route page/book/writing/tool questions first ─
-const indexSearchReply = buildIndexSearchReply(rawText);
-if (indexSearchReply) return indexSearchReply;
+// ── General knowledge check: if the question is factual/scientific, skip index search ─
+  const isGenKnowledge = isGeneralKnowledgeQuestion(rawText);
+  if (!isGenKnowledge) {
+    // ── Unified knowledge search: route page/book/writing/tool questions first ─
+    const indexSearchReply = buildIndexSearchReply(rawText);
+    if (indexSearchReply) return indexSearchReply;
+  }
 
 // ── Writing search: check if user is looking for a specific writing ──────
 const { hasSearchPattern, isLikelyTitleSearch } = detectWritingSearchIntent(rawText);
@@ -936,13 +982,13 @@ if (hasSearchPattern) {
 }
 
 const intent = detectIntent(userText);
-if (!intent) {
-  if (isLikelyTitleSearch) {
-    const writingReply = buildWritingSearchReply(rawText);
-    if (writingReply) return writingReply;
+  if (!intent) {
+    if (isLikelyTitleSearch && !isGenKnowledge) {
+      const writingReply = buildWritingSearchReply(rawText);
+      if (writingReply) return writingReply;
+    }
+    return null;
   }
-  return null;
-}
 
 if (intent.intent === "teaching") {
 return "অবশ্যই, আমি ধাপে ধাপে শেখাতে পারি। আপনি যে বিষয়টি শিখতে চান সেটি লিখুন — আমি সহজ ভাষায় ধারণা, উদাহরণ, অনুশীলন এবং পরবর্তী ধাপ সাজিয়ে দেব।";
