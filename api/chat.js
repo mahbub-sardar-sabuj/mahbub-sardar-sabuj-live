@@ -43,6 +43,8 @@ return { items: [] };
 
 const SYSTEM_PROMPT = `তুমি "মাহবুব সরদার সবুজ AI Agent" — বাংলা সাহিত্যের লেখক মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইটের বিশ্বমানের AI সহকারী। তুমি শুধু একটি সাধারণ চ্যাটবট নও — তুমি একজন সত্যিকারের বুদ্ধিমান, মানবসুলভ, উষ্ণহৃদয় ও সৃজনশীল সহকারী। তুমি বাংলা সাহিত্য ও লেখকের জগতকে গভীরভাবে চেনো, এবং যেকোনো বিষয়ে — সাধারণ জ্ঞান, বিজ্ঞান, ইতিহাস, প্রযুক্তি, গণিত, দর্শন, সাহিত্য, রান্না, ভ্রমণ, স্বাস্থ্য, সম্পর্ক, ক্যারিয়ার, ধর্ম, রাজনীতি — যেকোনো প্রশ্নের যথাযথ ও গভীর উত্তর দিতে সক্ষম। অডিও এডিটিং, ইমেজ বিশ্লেষণ, ভিডিও প্রসেসিং সহ সকল মাল্টিমিডিয়া কাজ সরাসরি চ্যাটে করতে পারো।
 
+তুমি ChatGPT ও Claude-এর মতো একজন সর্বজ্ঞ বুদ্ধিমান AI সহকারী। তুমি যেকোনো বিষয়ে গভীর, তথ্যপূর্ণ ও সহায়ক উত্তর দিতে সক্ষম। তুমার সক্ষমতা: বিজ্ঞান, গণিত, প্রযুক্তি, ইতিহাস, ভূগোল, রাজনীতি, দর্শন, সাহিত্য, স্বাস্থ্য, রান্না, ভ্রমণ, ক্যারিয়ার, সম্পর্ক, প্রোগ্রামিং, ডিবাগিং, AI/ML, সাধারণ কথোপকথন, আবেগময় বিষয়, দার্শনিক প্রশ্ন — সবকিছুতে মানবসুলভ সাড়া।
+
 তুমি কথা বলো যেন একজন বিশ্বস্ত বন্ধু — বুদ্ধিমান, আন্তরিক, হাস্যরসাত্মক যখন দরকার, গম্ভীর যখন প্রয়োজন। তুমি কখনো রোবোটিক বা ঠান্ডা নও। প্রতিটি মানুষের সাথে তুমি তার মতো করেই কথা বলো।
 
 ## ব্যক্তিত্ব ও আচরণের মূলনীতি
@@ -1065,6 +1067,100 @@ return null;
 }
 }
 
+// ── buildSiteSpecificReply: শুধুমাত্র ওয়েবসাইট-নির্দিষ্ট প্রশ্নের দ্রুত উত্তর ──────────────────────────
+// সাধারণ কথোপকথন, সাধারণ জ্ঞান, বিজ্ঞান, ইতিহাস — সবকিছু AI-তে যাবে।
+// শুধু বই/লেখা/পেজ/লেখক/অডিও এডিটিং সম্পর্কিত প্রশ্নে দ্রুত canonical উত্তর দেওয়া হবে।
+function buildSiteSpecificReply(messages = []) {
+  const rawText = extractUserText(messages);
+  const userText = normalizeForIntent(rawText);
+  if (!userText) return null;
+
+  // Help menu — সাইট-নির্দিষ্ট
+  const helpPattern = /(কি করতে পারো|কী করতে পারো|কি পারো|কী পারো|সাহায্য|হেল্প|help|commands|মেনু)/i;
+  if (helpPattern.test(rawText)) return buildHelpMenuReply();
+
+  // লেখা দেখানো/খোঁজা — সাইট-নির্দিষ্ট
+  const contextualReply = buildContextualSelectionReply(rawText, messages);
+  if (contextualReply) return contextualReply;
+
+  // অডিও এডিটিং — সাইট-নির্দিষ্ট
+  if (/(অডিও.*এডিট|অডিও.*প্রসেস|অডিও.*করো|audio.*edit|audio.*process|voice.*edit|voice.*enhance|noise.*remov|নয়েজ.*কমা|ভয়েস.*পরিষ্কার|ভয়েস.*এনহান্স)/i.test(rawText)) {
+    return " অডিও এডিটিং সুবিধা\n\nএই চ্যাটবটটি একটি শক্তিশালী AI অডিও এডিটর! আপনি যা করতে পারবেন:\n\n ভয়েস ক্লিনিং — নয়েজ কমানো, ভয়েস পরিষ্কার করা\n স্মার্ট মিক্স — ব্যাকগ্রাউন্ড মিউজিক যোগ করা\n পডকাস্ট মোড — রেডিও/পডকাস্ট কোয়ালিটি\n ইকো/রিভার্ব — কবিতা বা গজলের জন্য\n ভলিউম বুস্ট — সাউন্ড বাড়ানো/কমানো\n\n কীভাবে ব্যবহার করবেন:\n১. নিচের বাটনে ক্লিক করে অডিও ফাইল আপলোড করুন\n২. বলুন কী করতে চান (যেমন: 'নয়েজ কমাও', 'মিউজিক যোগ করো')\n৩. AI প্রসেস করে এডিটেড অডিও দিয়ে দেবে!";
+  }
+
+  // বই/ই-বুক — সাইট-নির্দিষ্ট
+  const earlyBookRecommendation = buildBookRecommendationReply(rawText);
+  if (earlyBookRecommendation && /(বই|ই-বুক|ebook|book|পড়ব|পড়ব|শুরু|সাজেস্ট|রেকমেন্ড|recommend|suggest)/i.test(rawText)) return earlyBookRecommendation;
+
+  // সাইট পেজ ন্যাভিগেশন — সাইট-নির্দিষ্ট
+  const wantsAllPages = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(rawText) && /(পেজ|page|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(rawText);
+  if (wantsAllPages) return buildSiteReply(rawText);
+
+  // লেখা খোঁজা — সাইট-নির্দিষ্ট
+  const { hasSearchPattern, isLikelyTitleSearch } = detectWritingSearchIntent(rawText);
+  if (hasSearchPattern) {
+    const writingReply = buildWritingSearchReply(rawText);
+    if (writingReply) return writingReply;
+  }
+
+  // Index-based search — শুধু সাইট-নির্দিষ্ট প্রশ্নে
+  if (!isGeneralKnowledgeQuestion(rawText)) {
+    const indexSearchReply = buildIndexSearchReply(rawText);
+    if (indexSearchReply) return indexSearchReply;
+  }
+
+  // Intent-based routing — শুধু সাইট-নির্দিষ্ট intent
+  const intent = detectIntent(userText);
+  if (intent) {
+    switch (intent.intent) {
+      case "book": {
+        const recommendedBook = buildBookRecommendationReply(rawText);
+        if (recommendedBook) return recommendedBook;
+        return buildBookReply(userText);
+      }
+      case "writing": {
+        const discoveryReply = buildWritingDiscoveryReply(rawText);
+        if (discoveryReply) return discoveryReply;
+        if (/দাও|দিন|দেখাও|দেখান|পড়তে চাই|পড়তে চান/.test(userText) && !isLikelyTitleSearch) {
+          const writings = getWritingsArchive();
+          if (writings && writings.length > 0) {
+            const poems = writings.filter((w) => w.category === "কবিতা");
+            const pool = poems.length > 0 ? poems : writings;
+            const random = pool[Math.floor(Math.random() * pool.length)];
+            return formatWritingReply(random);
+          }
+        }
+        if (isLikelyTitleSearch || hasSearchPattern) {
+          const writingReply = buildWritingSearchReply(rawText);
+          if (writingReply) return writingReply;
+        }
+        return buildWritingReply(userText);
+      }
+      case "recitation": return buildRecitationReply(userText);
+      case "author": return buildAuthorReply();
+      case "social": return buildSocialReply();
+      case "contact": return buildContactReply();
+      case "audio":
+      case "vision": return buildToolReply(intent.intent);
+      case "design": return "সরদার ডিজাইন স্টুডিওতে কবিতা, উক্তি বা লেখার কার্ড তৈরি করা যায়। ছবি, টেক্সট, স্টিকার, ফিল্টার ও ব্যাকগ্রাউন্ডসহ ডিজাইন করতে এখানে যান: [BUTTON:/editor]";
+      case "gallery": return "মাহবুব সরদার সবুজের ছবি ও গ্যালারি দেখতে এই পেজে যান: [BUTTON:/gallery]";
+      case "news": return "সর্বশেষ আপডেট ও সংবাদ পড়তে সরদার সংবাদ পেজে যান: [BUTTON:/news]";
+      case "community": return "আমিও লিখবো বাস্তবতা হলো একটি সোশ্যাল ফিড, যেখানে পাঠকেরা নিজের বাস্তব অনুভূতি ও গল্প শেয়ার করতে পারেন। পেজ: [BUTTON:/amio-likhbo-bastobota]";
+      case "site": return buildSiteReply(userText);
+      default: return null;
+    }
+  }
+
+  // লেখা শিরোনাম দিয়ে খোঁজা — সাইট-নির্দিষ্ট
+  if (isLikelyTitleSearch && !isGeneralKnowledgeQuestion(rawText)) {
+    const writingReply = buildWritingSearchReply(rawText);
+    if (writingReply) return writingReply;
+  }
+
+  // বাকি সব — AI-তে পাঠানোর জন্য null রিতার্ন করো
+  return null;
+}
+
 function buildFallbackReply(messages = [], originalError = null) {
 const canonicalReply = buildCanonicalReply(messages);
 if (canonicalReply) return canonicalReply;
@@ -1072,9 +1168,8 @@ if (canonicalReply) return canonicalReply;
 const userText = extractUserText(messages).toLowerCase();
 
 // Greetings — always respond warmly even in fallback mode
-if (/^(hi|hello|hey|হ্যালো|হ্যালো|হ্যাই|হাই|আস্সালামু|সালাম|নমস্কার|শুভেচ্ছা|কেমন আছ|কেমন আছেন|ভালো আছ|ভালো আছেন|শুভ সকাল|শুভ বিকাল|শুভ সন্ধ্যা|শুভ রাত|good morning|good evening|good night|good afternoon)/.test(userText.trim())) {
-return "আস্সালামু আলাইকুম! আমি মাহবুব সরদার সবুজের AI সহকারী।\n\nআপনাকে কীভাবে সাহায্য করতে পারি?\n• লেখক সম্পর্কে জানতে: [BUTTON:/about]\n• বই ও ই-বুক দেখতে: [BUTTON:/ebooks]\n• লেখালেখি পড়তে: [BUTTON:/writings]\n• যোগাযোগ করতে: [BUTTON:/contact]";
-}
+// গ্রিটিং — AI-তে পাঠানো হবে যাতে মানবসুলভ উত্তর পাওয়া যায়
+// (buildSiteSpecificReply-এ greeting নেই, তাই AI হ্যান্ডেল করবে)
 
 // Thank you messages
 if (/ধন্যবাদ|thanks|thank you|শুক্রিয়া|আপনাকে ধন্যবাদ/.test(userText)) {
@@ -1475,18 +1570,22 @@ const userMsgText = lastUserMsg
 ? (Array.isArray(lastUserMsg.content) ? lastUserMsg.content.find((p) => p.type === "text")?.text || "[ছবি পাঠানো হয়েছে]" : lastUserMsg.content)
 : "(অজানা)";
 
-const canonicalReply = buildCanonicalReply(messages);
-if (canonicalReply) {
+// ── AI-First Routing: ওয়েবসাইট-নির্দিষ্ট প্রশ্নে দ্রুত canonical উত্তর, বাকি সব AI-তে ──
+// শুধুমাত্র ওয়েবসাইট-নির্দিষ্ট প্রশ্ন (বই, লেখা, পেজ, লেখক পরিচিতি, অডিও এডিটিং)
+// canonical দিয়ে উত্তর দেওয়া হবে। সাধারণ কথোপকথন, সাধারণ জ্ঞান, দর্শন, বিজ্ঞান,
+// ইতিহাস — সবকিছু সরাসরি AI-তে যাবে যেন ChatGPT-এর মতো উত্তর পাওয়া যায়।
+const siteSpecificReply = buildSiteSpecificReply(messages);
+if (siteSpecificReply) {
 await notifyTelegram({
 userMessage: userMsgText,
-aiResponse: canonicalReply,
+aiResponse: siteSpecificReply,
 clientIp: rate.clientIp,
 userAgent: req.headers["user-agent"],
 imageData: lastUserImgPart || null,
 }).catch((e) => console.error("Telegram notification failed:", e.message));
 recordProviderAttempt("canonical", true);
 recordChatbotMessage({ req, text: userMsgText, intent: detectAnalyticsIntent(userMsgText), provider: "canonical" });
-return res.status(200).json({ reply: sanitizeReply(canonicalReply), source: "canonical" });
+return res.status(200).json({ reply: sanitizeReply(siteSpecificReply), source: "canonical" });
 }
 
 try {
@@ -1505,7 +1604,8 @@ return res.status(200).json({ reply: sanitizeReply(reply) });
 } catch (err) {
 const is429 = err.message?.includes("429");
 console.error("AI API failed; returning built-in fallback reply:", err.message);
-const fallbackReply = buildFallbackReply(messages, err);
+// AI ব্যর্থ হলে canonical fallback ব্যবহার করো
+const fallbackReply = buildCanonicalReply(messages) || buildFallbackReply(messages, err);
 
 if (!is429) {
 await notifyTelegram({
