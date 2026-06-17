@@ -272,7 +272,8 @@ export default function TextToSpeech() {
       <Seo
         title="আবৃত্তি টুল — লেখা থেকে মানুষের কণ্ঠে অডিও | মাহবুব সরদার সবুজ"
         description="বাংলা লেখা দিন, AI মানুষের মতো আবৃত্তি করে দেবে। কবিতা, গল্প, যেকোনো লেখা — ডাউনলোড করুন বিনামূল্যে।"
-        canonical="https://www.mahbubsardarsabuj.com/text-to-speech"
+        path="/text-to-speech"
+        keywords="আবৃত্তি টুল, বাংলা TTS, text to speech বাংলা, AI আবৃত্তি, বাংলা কণ্ঠ, কবিতা আবৃত্তি"
       />
       <Navbar />
 
