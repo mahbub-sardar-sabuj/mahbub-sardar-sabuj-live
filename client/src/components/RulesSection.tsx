@@ -2,83 +2,99 @@
  * RulesSection — "কেন ব্যবহার করবেন?" সেকশন
  * Design: "Ink & Gold" — World-Class Literary Premium
  * Placed below the app-launcher-shell on Home page
+ * Each card links directly to its respective tab/page
  */
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 import {
   UserRound, Mic2, BookOpen, Feather, Palette, Images,
   Newspaper, Mail, MailOpen, Phone, CreditCard, Sparkles,
-  Video, MessageCircle, Info, CheckCircle2
+  Video, MessageCircle, Info, CheckCircle2, ArrowUpRight
 } from "lucide-react";
 
 const tabs = [
   {
     icon: <UserRound size={20} strokeWidth={1.8} />,
     label: "পরিচিতি",
+    href: "/about",
     desc: "আমার ব্যক্তিগত পরিচিতি ও সংক্ষিপ্ত তথ্য পাবেন।",
   },
   {
     icon: <Mic2 size={20} strokeWidth={1.8} />,
     label: "আবৃত্তি",
+    href: "/facebook-recitations",
     desc: "আমার লেখার আবৃত্তিগুলোর লিংক এখানে পাওয়া যাবে।",
   },
   {
     icon: <BookOpen size={20} strokeWidth={1.8} />,
     label: "লেখালেখি ও বই",
+    href: "/writings",
     desc: "আমার প্রকাশিত ও অপ্রকাশিত বিভিন্ন লেখা এবং বই সম্পর্কিত তথ্য এখানে থাকবে।",
   },
   {
     icon: <Feather size={20} strokeWidth={1.8} />,
     label: "আমিও লিখবো বাস্তবতা",
+    href: "/amio-likhbo-bastobota",
     desc: "নিজের নামে অ্যাকাউন্ট খুলে ব্যক্তিগত ওয়েবসাইটের মতো ব্যবহার করতে পারবেন। লেখা, গল্প, কবিতা বা অন্যান্য পোস্ট প্রকাশ করতে পারবেন। আপনার অ্যাকাউন্টের সম্পূর্ণ নিয়ন্ত্রণ আপনার হাতেই থাকবে।",
   },
   {
     icon: <Palette size={20} strokeWidth={1.8} />,
     label: "ডিজাইন ফরম্যাট",
+    href: "/editor",
     desc: "নিজের লেখাকে পছন্দমতো ডিজাইন ও সাজানোর সুবিধা পাবেন।",
   },
   {
     icon: <Images size={20} strokeWidth={1.8} />,
     label: "গ্যালারি",
+    href: "/gallery",
     desc: "আমার ব্যক্তিগত ছবি ও স্মৃতির সংগ্রহশালা।",
   },
   {
     icon: <Newspaper size={20} strokeWidth={1.8} />,
     label: "সরদার সংবাদ",
+    href: "/news",
     desc: "বিভিন্ন সংবাদ ও তথ্যভিত্তিক লেখা এখানে প্রকাশ করা হয়।",
   },
   {
     icon: <Mail size={20} strokeWidth={1.8} />,
     label: "যোগাযোগ",
+    href: "/contact",
     desc: "আমার সঙ্গে সরাসরি যোগাযোগ করার প্রয়োজনীয় তথ্য ও পদ্ধতি পাবেন।",
   },
   {
     icon: <MailOpen size={20} strokeWidth={1.8} />,
     label: "টেম্পোরারি ইমেইল",
+    href: "/temp-email",
     desc: "কোনো নিবন্ধন ছাড়াই অস্থায়ী ইমেইল ব্যবহার করতে পারবেন। বিভিন্ন ওয়েবসাইটে পরীক্ষামূলকভাবে অ্যাকাউন্ট খোলার কাজে এটি ব্যবহার করা যেতে পারে।",
   },
   {
     icon: <Phone size={20} strokeWidth={1.8} />,
     label: "টেম্প নাম্বার",
+    href: "/temp-number",
     desc: "পাবলিক ভার্চুয়াল নাম্বারের মাধ্যমে পরীক্ষামূলক ভেরিফিকেশনের সুবিধা পাবেন। ব্যক্তিগত বা গুরুত্বপূর্ণ কাজে ব্যবহার না করাই ভালো।",
   },
   {
     icon: <CreditCard size={20} strokeWidth={1.8} />,
     label: "টেম্প কার্ড",
+    href: "/temp-card",
     desc: "বিভিন্ন ওয়েবসাইটের ফ্রি ট্রায়াল সুবিধা নেওয়ার জন্য ভার্চুয়াল কার্ড সম্পর্কিত তথ্য ও সুবিধা পাবেন।",
   },
   {
     icon: <Sparkles size={20} strokeWidth={1.8} />,
     label: "ইমেজ আপস্কেলার",
+    href: "/image-upscaler",
     desc: "ঝাপসা বা কম মানের ছবি উন্নত ও পরিষ্কার করতে পারবেন।",
   },
   {
     icon: <Video size={20} strokeWidth={1.8} />,
     label: "ভিডিও আপস্কেলার",
+    href: "/video-upscaler",
     desc: "ঝাপসা ভিডিওর মান উন্নত করে আরও পরিষ্কার করতে পারবেন।",
   },
   {
     icon: <MessageCircle size={20} strokeWidth={1.8} />,
     label: "চ্যাটবট",
+    href: "/",
     desc: "ওয়েবসাইটে প্রবেশ করলেই একটি চ্যাটবট পাবেন। এর মাধ্যমে বিভিন্ন তথ্য পাওয়ার পাশাপাশি অডিও এডিটিং সম্পর্কিত সহায়তাও নিতে পারবেন এবং সরাসরি লাইভ চ্যাট করতে পারবেন আমার টিমের সাথে।",
   },
 ];
@@ -212,58 +228,67 @@ export default function RulesSection() {
         <div className="rules-tabs-grid">
           {tabs.map((tab, i) => (
             <motion.div
-              key={tab.label}
-              className="rules-tab-card"
+              key={tab.href + tab.label}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: i * 0.045 }}
             >
-              {/* Icon */}
-              <div className="rules-tab-icon-wrap">
-                {tab.icon}
-              </div>
+              <Link href={tab.href} className="rules-tab-link" aria-label={`${tab.label} পেজে যান`}>
+                <div className="rules-tab-card">
+                  {/* Icon */}
+                  <div className="rules-tab-icon-wrap">
+                    {tab.icon}
+                  </div>
 
-              {/* Content */}
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <CheckCircle2
-                    size={13}
-                    color="rgba(201,168,76,0.55)"
-                    strokeWidth={2}
-                  />
-                  <h4
-                    style={{
-                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
-                      fontSize: "1.02rem",
-                      fontWeight: 700,
-                      color: "#FFF8EA",
-                      margin: 0,
-                      lineHeight: 1.25,
-                    }}
-                  >
-                    {tab.label}
-                  </h4>
+                  {/* Content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                        marginBottom: "0.45rem",
+                      }}
+                    >
+                      <CheckCircle2
+                        size={13}
+                        color="rgba(201,168,76,0.55)"
+                        strokeWidth={2}
+                      />
+                      <h4
+                        style={{
+                          fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                          fontSize: "1.02rem",
+                          fontWeight: 700,
+                          color: "#FFF8EA",
+                          margin: 0,
+                          lineHeight: 1.25,
+                          flex: 1,
+                        }}
+                      >
+                        {tab.label}
+                      </h4>
+                      <ArrowUpRight
+                        size={14}
+                        className="rules-arrow-icon"
+                        strokeWidth={2}
+                      />
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.84rem",
+                        color: "rgba(250,246,239,0.58)",
+                        margin: 0,
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      {tab.desc}
+                    </p>
+                  </div>
                 </div>
-                <p
-                  style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
-                    fontSize: "0.84rem",
-                    color: "rgba(250,246,239,0.58)",
-                    margin: 0,
-                    lineHeight: 1.65,
-                  }}
-                >
-                  {tab.desc}
-                </p>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -313,6 +338,12 @@ export default function RulesSection() {
 
       {/* ── Responsive CSS ─────────────────────────────────────────────── */}
       <style>{`
+        .rules-tab-link {
+          display: block;
+          text-decoration: none;
+          color: inherit;
+          height: 100%;
+        }
         .rules-tabs-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -327,13 +358,18 @@ export default function RulesSection() {
           border: 1px solid rgba(201,168,76,0.1);
           border-radius: 16px;
           transition: background 0.28s ease, border-color 0.28s ease, transform 0.28s ease, box-shadow 0.28s ease;
-          cursor: default;
+          cursor: pointer;
+          height: 100%;
         }
-        .rules-tab-card:hover {
-          background: linear-gradient(145deg, rgba(201,168,76,0.07), rgba(8,12,18,0.75));
-          border-color: rgba(201,168,76,0.24);
+        .rules-tab-link:hover .rules-tab-card {
+          background: linear-gradient(145deg, rgba(201,168,76,0.08), rgba(8,12,18,0.75));
+          border-color: rgba(201,168,76,0.28);
           transform: translateY(-4px);
-          box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 20px rgba(201,168,76,0.06);
+          box-shadow: 0 14px 36px rgba(0,0,0,0.35), 0 0 22px rgba(201,168,76,0.07);
+        }
+        .rules-tab-link:focus-visible .rules-tab-card {
+          outline: 2px solid rgba(201,168,76,0.5);
+          outline-offset: 2px;
         }
         .rules-tab-icon-wrap {
           width: 44px;
@@ -349,9 +385,18 @@ export default function RulesSection() {
           box-shadow: 0 4px 14px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
           transition: box-shadow 0.28s ease, transform 0.28s ease;
         }
-        .rules-tab-card:hover .rules-tab-icon-wrap {
-          box-shadow: 0 6px 18px rgba(0,0,0,0.28), 0 0 16px rgba(201,168,76,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
-          transform: scale(1.06);
+        .rules-tab-link:hover .rules-tab-icon-wrap {
+          box-shadow: 0 6px 18px rgba(0,0,0,0.28), 0 0 16px rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+          transform: scale(1.07);
+        }
+        .rules-arrow-icon {
+          color: rgba(201,168,76,0.35);
+          flex-shrink: 0;
+          transition: color 0.25s ease, transform 0.25s ease;
+        }
+        .rules-tab-link:hover .rules-arrow-icon {
+          color: rgba(201,168,76,0.85);
+          transform: translate(2px, -2px);
         }
         @media (max-width: 768px) {
           .rules-tabs-grid {
