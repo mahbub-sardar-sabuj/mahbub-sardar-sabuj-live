@@ -146,7 +146,7 @@
       "dest": "/robots.txt"
     },
     {
-      "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|PNG|JPG|JPEG|GIF|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map))$",
+      "src": "/(.*\.(?:js|css|png|jpg|jpeg|gif|svg|webp|PNG|JPG|JPEG|GIF|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map|wasm))$",
       "dest": "/$1"
     },
     {
@@ -180,7 +180,7 @@
       "dest": "/index.html"
     },
     {
-      "src": "/(facebook-recitations|writings|bangla-kobita|valobashar-kobita|bichched-kobita|jibon-dorshon|bangla-ebook|bangla-status|bangla-quotes|koster-kobita|romantic-bangla-kobita|bangla-golpo|mayer-kobita|babar-kobita|choto-kobita|mon-kharap-status|miss-you-bangla|ekla-thaka-kobita|rater-kobita|bhalobasha-kobita|bichhed-kobita|jibon-niye-ukti|premer-status|sad-bangla-status|brishti-kobita|swapno-kobita|bangla-caption|jibon-kobita|opekkhar-kobita|abhibab-kobita|shomoy-kobita|manush-kobita|bangla-kobita-2024|privacy-policy|terms|about|contact|ebooks|editor|news|gallery|amio-likhbo-bastobota|amio-likhbo-login|profile|temp-email|temp-number|temp-card|image-upscaler|404)/?",
+      "src": "/(facebook-recitations|writings|bangla-kobita|valobashar-kobita|bichched-kobita|jibon-dorshon|bangla-ebook|bangla-status|bangla-quotes|koster-kobita|romantic-bangla-kobita|bangla-golpo|mayer-kobita|babar-kobita|choto-kobita|mon-kharap-status|miss-you-bangla|ekla-thaka-kobita|rater-kobita|bhalobasha-kobita|bichhed-kobita|jibon-niye-ukti|premer-status|sad-bangla-status|brishti-kobita|swapno-kobita|bangla-caption|jibon-kobita|opekkhar-kobita|abhibab-kobita|shomoy-kobita|manush-kobita|bangla-kobita-2024|privacy-policy|terms|about|contact|ebooks|editor|news|gallery|amio-likhbo-bastobota|amio-likhbo-login|profile|temp-email|temp-number|temp-card|image-upscaler|video-upscaler|404)/?",
       "dest": "/index.html"
     },
     {
@@ -252,7 +252,15 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://cdn.msar.me; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.msar.me; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://ep1.adtrafficquality.google https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://pagead2.googlesyndication.com"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://cdn.msar.me; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.msar.me; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://ep1.adtrafficquality.google https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://pagead2.googlesyndication.com; worker-src 'self' blob:"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
         }
       ]
     },
@@ -307,6 +315,19 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/ffmpeg/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
         }
       ]
     }
