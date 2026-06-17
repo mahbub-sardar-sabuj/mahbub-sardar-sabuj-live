@@ -228,6 +228,10 @@ export default defineConfig({
           if (id.includes("newsData")) {
             return "news-data";
           }
+          // FFmpeg — keep in its own chunk so worker URL resolves correctly
+          if (id.includes("node_modules/@ffmpeg")) {
+            return "ffmpeg";
+          }
         },
       },
     },

@@ -139,17 +139,17 @@ export default function VideoUpscaler() {
         }
       });
 
-      // Use single-threaded (non-MT) core — no SharedArrayBuffer needed
-      // Works even without COEP/COOP headers
-      // Use direct URLs (not toBlobURL) so importScripts works in worker context
+      // Use single-threaded (non-MT) ESM core — no SharedArrayBuffer needed
+      // ESM version works with ES module workers via dynamic import()
+      // Worker chunk uses: self.createFFmpegCore = (await import(coreURL)).default
       const origin = window.location.origin;
       const baseURL = `${origin}/ffmpeg-st`;
 
       try {
         await ffmpegInstance.load({
-          coreURL: `${baseURL}/ffmpeg-core.js`,
+          // Use ESM version — supports dynamic import() in ES module worker
+          coreURL: `${baseURL}/ffmpeg-core-esm.js`,
           wasmURL: `${baseURL}/ffmpeg-core.wasm`,
-          workerURL: `${baseURL}/ffmpeg-worker.js`,
         });
         ffmpegLoaded = true;
       } catch (e) {
