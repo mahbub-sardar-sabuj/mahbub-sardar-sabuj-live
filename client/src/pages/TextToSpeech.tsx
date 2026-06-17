@@ -28,7 +28,7 @@ const VOICES = [
   { id: "Laomedeia", label: "লাওমেডিয়া", desc: "কৌতূহলী ও উদ্যমী", gender: "female", emoji: "🔮" },
   // ── পুরুষ কণ্ঠ ──
   { id: "Orus", label: "ওরাস", desc: "গভীর ও প্রজ্ঞাময়", gender: "male", emoji: "🌌" },
-  { id: "Charon", label: "শ্যারন", desc: "মসৃণ ও বিশ্বস্ত", gender: "male", emoji: "📖" },
+  { id: "Rasalgethi", label: "রাসালগেথি", desc: "উষ্ণ ও বিশ্বস্ত", gender: "male", emoji: "📖" },
   { id: "Fenrir", label: "ফেনরির", desc: "বন্ধুত্বপূর্ণ ও স্পষ্ট", gender: "male", emoji: "🔥" },
   { id: "Algieba", label: "আলজিবা", desc: "মসৃণ ও প্রবাহমান", gender: "male", emoji: "🎭" },
   { id: "Puck", label: "পাক", desc: "সরাসরি ও আন্তরিক", gender: "male", emoji: "🎯" },
@@ -36,7 +36,7 @@ const VOICES = [
   { id: "Sadachbia", label: "সাদাচবিয়া", desc: "গভীর ও ব্যক্তিত্বময়", gender: "male", emoji: "🎸" },
   { id: "Autonoe", label: "অটোনোয়ে", desc: "পরিপক্ব ও গম্ভীর", gender: "male", emoji: "🦅" },
   { id: "Umbriel", label: "আমব্রিয়েল", desc: "কর্তৃত্বপূর্ণ ও উষ্ণ", gender: "male", emoji: "🌊" },
-  { id: "Zubenelgenubi", label: "জুবেনেলজেনুবি", desc: "শক্তিশালী ও গম্ভীর", gender: "male", emoji: "⚡" },
+  { id: "Iapetus", label: "ইয়াপেটাস", desc: "শক্তিশালী ও গম্ভীর", gender: "male", emoji: "⚡" },
 ];
 
 const STYLE_PRESETS = [

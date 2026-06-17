@@ -2237,15 +2237,50 @@ async function handleTTS(req, res) {
   }
 
   const data = await response.json();
-  const audioData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+  const rawAudioData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
   const mimeType = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "audio/wav";
 
-  if (!audioData) {
+  if (!rawAudioData) {
     console.error("[TTS] No audio data in response");
     return res.status(502).json({ error: "No audio generated" });
   }
 
-  return res.status(200).json({ audioData, mimeType, voice, charCount: text.length });
+  // If raw PCM (audio/l16), wrap with proper WAV header so browsers can play it
+  let audioData = rawAudioData;
+  if (mimeType.startsWith("audio/l16") || mimeType.startsWith("audio/pcm")) {
+    // Parse sample rate from mimeType e.g. "audio/l16; rate=24000; channels=1"
+    const rateMatch = mimeType.match(/rate=(\d+)/);
+    const chMatch = mimeType.match(/channels=(\d+)/);
+    const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000;
+    const numChannels = chMatch ? parseInt(chMatch[1]) : 1;
+    const bitsPerSample = 16;
+
+    const pcmBuffer = Buffer.from(rawAudioData, "base64");
+    const pcmLength = pcmBuffer.length;
+    const wavHeader = Buffer.alloc(44);
+    // RIFF chunk
+    wavHeader.write("RIFF", 0);
+    wavHeader.writeUInt32LE(36 + pcmLength, 4);
+    wavHeader.write("WAVE", 8);
+    // fmt sub-chunk
+    wavHeader.write("fmt ", 12);
+    wavHeader.writeUInt32LE(16, 16);                                   // Subchunk1Size
+    wavHeader.writeUInt16LE(1, 20);                                    // PCM format
+    wavHeader.writeUInt16LE(numChannels, 22);
+    wavHeader.writeUInt32LE(sampleRate, 24);
+    wavHeader.writeUInt32LE(sampleRate * numChannels * (bitsPerSample / 8), 28); // ByteRate
+    wavHeader.writeUInt16LE(numChannels * (bitsPerSample / 8), 32);   // BlockAlign
+    wavHeader.writeUInt16LE(bitsPerSample, 34);
+    // data sub-chunk
+    wavHeader.write("data", 36);
+    wavHeader.writeUInt32LE(pcmLength, 40);
+
+    const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
+    audioData = wavBuffer.toString("base64");
+    console.log(`[TTS] Converted PCM (${pcmLength} bytes) to WAV (${wavBuffer.length} bytes), rate=${sampleRate}, ch=${numChannels}`);
+  }
+
+  return res.status(200).json({ audioData, mimeType: "audio/wav", voice, charCount: text.length });
 }
 
 export default async function handler(req, res) {
