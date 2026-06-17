@@ -541,37 +541,55 @@ export default function AudioEditor() {
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
                 style={{
                   border: `2px dashed ${isDragging ? "rgba(201,168,76,0.7)" : "rgba(201,168,76,0.25)"}`,
                   borderRadius: 20,
                   padding: "3.5rem 2rem",
                   textAlign: "center",
-                  cursor: "pointer",
                   background: isDragging ? "rgba(201,168,76,0.06)" : "rgba(255,255,255,0.02)",
                   transition: "all 0.25s ease",
                   marginBottom: "1.5rem",
                 }}
               >
-                <div style={{
-                  width: 72, height: 72, borderRadius: 20,
-                  background: "linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06))",
-                  border: "1px solid rgba(201,168,76,0.25)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  margin: "0 auto 1.2rem", color: "#E8C97A",
-                }}>
-                  <Upload size={28} strokeWidth={1.6} />
-                </div>
-                <h3 style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1.25rem", color: "#FFF8EA", margin: "0 0 0.5rem" }}>
-                  অডিও ফাইল আপলোড করুন
-                </h3>
-                <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "rgba(250,246,239,0.5)", margin: "0 0 1rem" }}>
-                  ড্র্যাগ করুন অথবা ক্লিক করে বেছে নিন
-                </p>
-                <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.72rem", color: "rgba(250,246,239,0.35)", letterSpacing: "0.05em" }}>
-                  MP3 · WAV · OGG · M4A · AAC · FLAC · WebM · সর্বোচ্চ ১০০ MB
-                </p>
-                <input ref={fileInputRef} type="file" accept="audio/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                {/* iOS-compatible: label wraps input so tap anywhere opens file picker */}
+                <label
+                  htmlFor="audio-file-input"
+                  style={{ display: "block", cursor: "pointer" }}
+                >
+                  <div style={{
+                    width: 72, height: 72, borderRadius: 20,
+                    background: "linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06))",
+                    border: "1px solid rgba(201,168,76,0.25)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    margin: "0 auto 1.2rem", color: "#E8C97A",
+                    pointerEvents: "none",
+                  }}>
+                    <Upload size={28} strokeWidth={1.6} />
+                  </div>
+                  <h3 style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1.25rem", color: "#FFF8EA", margin: "0 0 0.5rem", pointerEvents: "none" }}>
+                    অডিও ফাইল আপলোড করুন
+                  </h3>
+                  <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "rgba(250,246,239,0.5)", margin: "0 0 1rem", pointerEvents: "none" }}>
+                    ট্যাপ করুন অথবা ড্র্যাগ করে বেছে নিন
+                  </p>
+                  <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.72rem", color: "rgba(250,246,239,0.35)", letterSpacing: "0.05em", pointerEvents: "none" }}>
+                    MP3 · WAV · OGG · M4A · AAC · FLAC · WebM · সর্বোচ্চ ১০০ MB
+                  </p>
+                </label>
+                {/* Hidden input — outside label to avoid double-trigger on some browsers */}
+                <input
+                  ref={fileInputRef}
+                  id="audio-file-input"
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.opus,.mp4"
+                  style={{ position: "absolute", width: 1, height: 1, opacity: 0, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+                  onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) handleFile(f);
+                    // Reset so same file can be re-selected
+                    e.target.value = "";
+                  }}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -770,15 +788,14 @@ export default function AudioEditor() {
                   )}
                 </div>
 
-                {/* New file button */}
+                {/* New file button — iOS-compatible via label */}
                 <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
+                  <label
+                    htmlFor="audio-file-input"
                     style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(201,168,76,0.6)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: 6 }}
                   >
                     <Upload size={13} /> অন্য ফাইল লোড করুন
-                  </button>
-                  <input ref={fileInputRef} type="file" accept="audio/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                  </label>
                 </div>
               </motion.div>
             )}
