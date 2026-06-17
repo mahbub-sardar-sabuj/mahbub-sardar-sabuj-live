@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import {
   UserRound, Mic2, BookOpen, Feather, Palette, Images,
   Newspaper, Mail, MailOpen, Phone, CreditCard, Sparkles,
-  Video, MessageCircle, Info, CheckCircle2, ArrowUpRight
+  Video, MessageCircle, Music, Info, CheckCircle2, ArrowUpRight
 } from "lucide-react";
 
 const tabs = [
@@ -90,6 +90,12 @@ const tabs = [
     label: "ভিডিও আপস্কেলার",
     href: "/video-upscaler",
     desc: "ঝাপসা ভিডিওর মান উন্নত করে আরও পরিষ্কার করতে পারবেন।",
+  },
+  {
+    icon: <Music size={20} strokeWidth={1.8} />,
+    label: "অডিও এডিটর",
+    href: "/audio-editor",
+    desc: "ব্রাউজারেই অডিও ট্রিম, ফেড, স্পিড পরিবর্তন, রিভার্স ও নয়েজ রিডাকশন করুন — কোনো সফটওয়্যার ইনস্টল ছাড়াই।",
   },
   {
     icon: <MessageCircle size={20} strokeWidth={1.8} />,

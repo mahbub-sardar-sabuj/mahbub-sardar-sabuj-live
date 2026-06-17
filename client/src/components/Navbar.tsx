@@ -23,6 +23,7 @@ import {
   Phone,
   CreditCard,
   Sparkles,
+  Music,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
@@ -41,6 +42,7 @@ const navLinks = [
   { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", type: "page", icon: Phone },
   { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", type: "page", icon: CreditCard },
   { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", type: "page", icon: Sparkles },
+  { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", type: "page", icon: Music },
 ];
 
 const infoTabs = [
