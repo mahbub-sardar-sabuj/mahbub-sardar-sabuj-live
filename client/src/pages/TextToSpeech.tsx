@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic2, Play, Pause, Download, Loader2, AlertCircle,
   RefreshCw, Volume2, ChevronDown, Sparkles, Music2,
-  Square, Copy, Check, Info
+  Square, Copy, Check
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -779,30 +779,7 @@ export default function TextToSpeech() {
               )}
             </AnimatePresence>
 
-            {/* ── Info Note ── */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              style={{
-                display: "flex", alignItems: "flex-start", gap: 8,
-                padding: "12px 16px",
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 10,
-              }}
-            >
-              <Info size={14} color="rgba(212,168,67,0.5)" style={{ flexShrink: 0, marginTop: 2 }} />
-              <p style={{
-                color: "rgba(250,246,239,0.4)",
-                fontSize: "0.75rem",
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                lineHeight: 1.6,
-                margin: 0,
-              }}>
-                এই টুলটি উন্নত AI প্রযুক্তি ব্যবহার করে মানুষের মতো স্বাভাবিক কণ্ঠে বাংলা পড়তে পারে। সর্বোচ্চ {MAX_CHARS.toLocaleString()} অক্ষর পর্যন্ত একসাথে আবৃত্তি করা যাবে। অডিও WAV ফরম্যাটে ডাউনলোড হবে।
-              </p>
-            </motion.div>
+
 
           </div>
         </div>
