@@ -3704,22 +3704,7 @@ export default function AIChatbot() {
                   onChange={handleImageSelect}
                   style={{ display: "none" }}
                 />
-MB • নির্দেশ দিন
-                      </div>
-                    </div>
 
-                    <button
-                      onClick={() => { setAudioFile(null); setIsAudioMode(false); lastAudioBlobRef.current = null; }}
-                      style={{
-                        width: 20, height: 20, borderRadius: "50%",
-                        background: "#ef4444", border: "none",
-                        color: "#fff", fontSize: "9px", cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0, fontWeight: 700,
-                      }}
-                    >✕</button>
-                  </div>
-                )}
 
 
                                 {/* Image preview strip */}
