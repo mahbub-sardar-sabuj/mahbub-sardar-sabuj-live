@@ -17,7 +17,7 @@
     },
     "api/audio-edit.js": {
       "memory": 1024,
-      "maxDuration": 60,
+      "maxDuration": 120,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     },
     "api/video-to-audio.js": {
@@ -103,7 +103,7 @@
     },
     {
       "src": "/api/tts",
-      "dest": "/api/audio-edit"
+      "dest": "/api/audio-edit?tts=1"
     },
     {
       "src": "/api/(.*)",
@@ -184,7 +184,7 @@
       "dest": "/index.html"
     },
     {
-      "src": "/(facebook-recitations|writings|bangla-kobita|valobashar-kobita|bichched-kobita|jibon-dorshon|bangla-ebook|bangla-status|bangla-quotes|koster-kobita|romantic-bangla-kobita|bangla-golpo|mayer-kobita|babar-kobita|choto-kobita|mon-kharap-status|miss-you-bangla|ekla-thaka-kobita|rater-kobita|bhalobasha-kobita|bichhed-kobita|jibon-niye-ukti|premer-status|sad-bangla-status|brishti-kobita|swapno-kobita|bangla-caption|jibon-kobita|opekkhar-kobita|abhibab-kobita|shomoy-kobita|manush-kobita|bangla-kobita-2024|privacy-policy|terms|about|contact|ebooks|editor|news|gallery|amio-likhbo-bastobota|amio-likhbo-login|profile|temp-email|temp-number|temp-card|image-upscaler|video-upscaler|audio-editor|404)/?",
+      "src": "/(facebook-recitations|writings|bangla-kobita|valobashar-kobita|bichched-kobita|jibon-dorshon|bangla-ebook|bangla-status|bangla-quotes|koster-kobita|romantic-bangla-kobita|bangla-golpo|mayer-kobita|babar-kobita|choto-kobita|mon-kharap-status|miss-you-bangla|ekla-thaka-kobita|rater-kobita|bhalobasha-kobita|bichhed-kobita|jibon-niye-ukti|premer-status|sad-bangla-status|brishti-kobita|swapno-kobita|bangla-caption|jibon-kobita|opekkhar-kobita|abhibab-kobita|shomoy-kobita|manush-kobita|bangla-kobita-2024|privacy-policy|terms|about|contact|ebooks|editor|news|gallery|amio-likhbo-bastobota|amio-likhbo-login|profile|temp-email|temp-number|temp-card|image-upscaler|video-upscaler|audio-editor|text-to-speech|404)/?",
       "dest": "/index.html"
     },
     {

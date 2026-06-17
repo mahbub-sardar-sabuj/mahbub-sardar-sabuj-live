@@ -61,6 +61,7 @@ export function registerStandaloneApiRoutes(app: Express) {
   registerApiHandler(app, "/api/chatbot-notify", "chatbot-notify.js");
   registerApiHandler(app, "/api/image-upscale", "image-upscale.js");
   registerApiHandler(app, "/api/audio-edit", "audio-edit.js");
+  registerApiHandler(app, "/api/tts", "audio-edit.js", "tts=1");
   registerApiHandler(app, "/api/video-to-audio", "video-to-audio.js");
   registerApiHandler(app, "/api/sms-proxy", "sms-proxy.js");
   registerApiHandler(app, "/mahbubsardarsabuj2026bd.txt", "indexnow-key.js");

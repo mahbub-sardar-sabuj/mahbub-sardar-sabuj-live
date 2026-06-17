@@ -2233,7 +2233,9 @@ async function handleTTS(req, res) {
 
 export default async function handler(req, res) {
   // Route TTS requests to dedicated sub-handler
-  if (req.url?.includes("/api/tts") || req.headers["x-tts-request"] === "1") {
+  const _ttsUrlObj = new URL(req.url || "/", "https://local.invalid");
+  const _isTts = _ttsUrlObj.searchParams.get("tts") === "1" || (req.query && req.query.tts === "1") || req.url?.includes("/api/tts") || req.headers["x-tts-request"] === "1";
+  if (_isTts) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");

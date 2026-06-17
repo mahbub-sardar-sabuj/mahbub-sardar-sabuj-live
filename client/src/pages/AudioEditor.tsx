@@ -97,11 +97,11 @@ const PRESETS = [
     category: "📱 প্ল্যাটফর্ম অপ্টিমাইজ",
     color: "#38bdf8",
     items: [
-      { label: "YouTube ভয়েস", prompt: "YouTube ভয়েস করো", icon: <Film className="w-4 h-4" />, desc: "YouTube-এর জন্য অপ্টিমাইজড" },
-      { label: "TikTok/Reels", prompt: "TikTok ভয়েস করো", icon: <Zap className="w-4 h-4" />, desc: "শর্ট ভিডিওর জন্য" },
+      { label: "ভিডিও ভয়েস", prompt: "ভিডিও ভয়েস করো", icon: <Film className="w-4 h-4" />, desc: "ভিডিও কন্টেন্টের জন্য অপ্টিমাইজড" },
+      { label: "শর্ট ভিডিও ভয়েস", prompt: "শর্ট ভিডিও ভয়েস করো", icon: <Zap className="w-4 h-4" />, desc: "শর্ট ভিডিওর জন্য" },
       { label: "অডিওবুক", prompt: "অডিওবুক ভয়েস করো", icon: <BookOpen className="w-4 h-4" />, desc: "বই পড়ার মতো কণ্ঠ" },
       { label: "পডকাস্ট", prompt: "পডকাস্ট মান করো", icon: <Headphones className="w-4 h-4" />, desc: "পডকাস্ট কোয়ালিটি" },
-      { label: "ভয়েস মেসেজ", prompt: "ভয়েস মেসেজ পরিষ্কার করো", icon: <MessageSquare className="w-4 h-4" />, desc: "WhatsApp/Telegram মান" },
+      { label: "ভয়েস মেসেজ", prompt: "ভয়েস মেসেজ পরিষ্কার করো", icon: <MessageSquare className="w-4 h-4" />, desc: "মেসেজিং অ্যাপের মান" },
       { label: "মেডিটেশন ভয়েস", prompt: "মেডিটেশন ভয়েস — শান্ত কণ্ঠ", icon: <Waves className="w-4 h-4" />, desc: "শান্তিময় ধ্যানের কণ্ঠ" },
     ]
   },
@@ -110,7 +110,7 @@ const PRESETS = [
     color: "#fb923c",
     items: [
       { label: "স্টুডিও মাস্টার", prompt: "পারফেক্ট মাস্টারিং — স্টুডিও মান", icon: <Star className="w-4 h-4" />, desc: "১০-ধাপ স্টুডিও মাস্টারিং" },
-      { label: "স্ট্রিমিং রেডি", prompt: "স্ট্রিমিং রেডি — Spotify/YouTube মান", icon: <Music className="w-4 h-4" />, desc: "Spotify/YouTube LUFS" },
+      { label: "স্ট্রিমিং রেডি", prompt: "স্ট্রিমিং রেডি — স্ট্রিমিং মান", icon: <Music className="w-4 h-4" />, desc: "স্ট্রিমিং LUFS মান" },
       { label: "ব্রডকাস্ট মাস্টার", prompt: "ব্রডকাস্ট মাস্টারিং — TV মান", icon: <Radio className="w-4 h-4" />, desc: "টেলিভিশন সম্প্রচার মান" },
       { label: "সিনেমা মাস্টার", prompt: "সিনেমা মাস্টারিং — ফিল্ম মান", icon: <Film className="w-4 h-4" />, desc: "চলচ্চিত্র সাউন্ড মান" },
       { label: "ভিনাইল মাস্টার", prompt: "ভিনাইল মাস্টারিং — রেট্রো মান", icon: <Music className="w-4 h-4" />, desc: "ভিনাইল রেকর্ড স্টাইল" },
@@ -623,7 +623,7 @@ export default function AudioEditor() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-[#c9a84c]">AI প্রসেসিং চলছে...</p>
-                  <p className="text-xs text-white/40 mt-0.5">FFmpeg দিয়ে অডিও এডিট হচ্ছে। একটু অপেক্ষা করুন।</p>
+                  <p className="text-xs text-white/40 mt-0.5">সার্ভারে অডিও প্রসেস হচ্ছে। একটু অপেক্ষা করুন।</p>
                 </div>
               </div>
               <div className="mt-4 h-1.5 rounded-full bg-[#c9a84c]/10 overflow-hidden">
@@ -1146,7 +1146,7 @@ export default function AudioEditor() {
                 </div>
               ))}
             </div>
-            <p className="text-center text-xs text-white/20 mt-4">সার্ভার-সাইড FFmpeg প্রসেসিং — সব ডিভাইসে কাজ করে</p>
+            <p className="text-center text-xs text-white/20 mt-4">সার্ভার-সাইড প্রসেসিং — সব ডিভাইসে কাজ করে</p>
           </motion.div>
         )}
       </div>
