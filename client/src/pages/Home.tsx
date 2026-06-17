@@ -15,6 +15,7 @@ import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
+import RulesSection from "@/components/RulesSection";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
@@ -573,6 +574,11 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          RULES / WHY USE THIS WEBSITE SECTION
+      ══════════════════════════════════════════════════════════════════════ */}
+      <RulesSection />
 
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
