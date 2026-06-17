@@ -5,11 +5,17 @@
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  */
 import { useRef, useState, useEffect, useCallback } from "react";
+
+// PWA install prompt type
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette,
-  Star, Feather, MailOpen, Phone, CreditCard, Sparkles, Video, Music
+  Star, Feather, MailOpen, Phone, CreditCard, Sparkles, Video, Music, Download, Smartphone
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -44,6 +50,43 @@ const sections = [
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [pwaInstalled, setPwaInstalled] = useState(false);
+  const [pwaInstalling, setPwaInstalling] = useState(false);
+
+  // PWA install prompt listener
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setPwaInstalled(true);
+    }
+    window.addEventListener('appinstalled', () => {
+      setPwaInstalled(true);
+      setDeferredPrompt(null);
+    });
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) {
+      // Fallback: show instructions
+      alert('অ্যাপ ইনস্টল করতে:\n\nAndroid: Chrome মেনু > "অ্যাপ ইনস্টল করুন"\niPhone: Safari Share > "Add to Home Screen"');
+      return;
+    }
+    setPwaInstalling(true);
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setPwaInstalled(true);
+    }
+    setDeferredPrompt(null);
+    setPwaInstalling(false);
+  };
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
@@ -571,6 +614,71 @@ export default function Home() {
                   </motion.div>
                 );
               })}
+
+              {/* PWA Install Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: sections.length * 0.04 }}
+              >
+                <button
+                  onClick={handleInstallPWA}
+                  className="app-launcher-link"
+                  style={{ width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  aria-label="অ্যাপ ইনস্টল করুন"
+                >
+                  <motion.div
+                    className="app-launcher-card pwa-install-card"
+                    whileHover={{ y: -6, scale: 1.03 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      background: pwaInstalled
+                        ? 'linear-gradient(135deg, rgba(74,222,128,0.15), rgba(74,222,128,0.05))'
+                        : 'linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06))',
+                      border: pwaInstalled
+                        ? '1.5px solid rgba(74,222,128,0.35)'
+                        : '1.5px solid rgba(201,168,76,0.35)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* Glow effect */}
+                    <div style={{
+                      position: 'absolute', top: 0, left: 0, right: 0,
+                      height: '2px',
+                      background: pwaInstalled
+                        ? 'linear-gradient(90deg, transparent, rgba(74,222,128,0.8), transparent)'
+                        : 'linear-gradient(90deg, transparent, rgba(201,168,76,0.8), transparent)',
+                    }} />
+                    <div className="app-icon-wrap" style={{
+                      background: pwaInstalled
+                        ? 'rgba(74,222,128,0.15)'
+                        : 'rgba(201,168,76,0.15)',
+                      border: pwaInstalled
+                        ? '1px solid rgba(74,222,128,0.3)'
+                        : '1px solid rgba(201,168,76,0.3)',
+                    }}>
+                      {pwaInstalling ? (
+                        <Smartphone size={23} strokeWidth={1.8} style={{ color: '#c9a84c', animation: 'pulse 1s infinite' }} />
+                      ) : pwaInstalled ? (
+                        <Smartphone size={23} strokeWidth={1.8} style={{ color: '#4ade80' }} />
+                      ) : (
+                        <Download size={23} strokeWidth={1.8} style={{ color: '#c9a84c' }} />
+                      )}
+                    </div>
+                    <span className="app-label" style={{
+                      color: pwaInstalled ? '#4ade80' : '#c9a84c',
+                      fontWeight: 700,
+                    }}>
+                      {pwaInstalled ? 'ইনস্টল হয়েছে' : pwaInstalling ? 'ইনস্টল হচ্ছে...' : 'অ্যাপ ইনস্টল'}
+                    </span>
+                    <span className="app-subtitle">
+                      {pwaInstalled ? 'হোম স্ক্রিনে আছে ✓' : 'ফোনে অ্যাপ হিসেবে রাখুন'}
+                    </span>
+                  </motion.div>
+                </button>
+              </motion.div>
             </div>
           </motion.div>
         </div>
