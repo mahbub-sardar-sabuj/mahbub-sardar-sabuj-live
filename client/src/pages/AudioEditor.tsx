@@ -469,9 +469,7 @@ export default function AudioEditor() {
     return `${m}:${sec.toString().padStart(2, "0")}.${ms}`;
   };
 
-  const p = (v: number) => setParams(prev => ({ ...prev, ...v }));
-
-  // Cleanup
+    // Cleanup
   useEffect(() => () => { stopPlayback(); audioCtxRef.current?.close(); }, [stopPlayback]);
 
   return (
