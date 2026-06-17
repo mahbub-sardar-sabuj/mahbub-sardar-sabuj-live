@@ -230,6 +230,7 @@ export default function FacebookRecitations() {
             <Sparkles size={16} /> AI আবৃত্তি করুন
           </motion.a>
         </div>
+        </div>
 
         {/* Bottom fade */}
         <div style={{
