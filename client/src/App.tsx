@@ -36,6 +36,7 @@ const TempEmail = lazyRoute("TempEmail");
 const TempNumber = lazyRoute("TempNumber");
 const TempCard = lazyRoute("TempCard");
 const ImageUpscaler = lazyRoute("ImageUpscaler");
+const VideoUpscaler = lazyRoute("VideoUpscaler");
 
 // Page loading fallback — skeleton layout instead of blank spinner
 function PageLoader() {
@@ -144,6 +145,7 @@ function Router() {
         <Route path={"/temp-number"} component={TempNumber} />
         <Route path={"/temp-card"} component={TempCard} />
         <Route path={"/image-upscaler"} component={ImageUpscaler} />
+        <Route path={"/video-upscaler"} component={VideoUpscaler} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />
