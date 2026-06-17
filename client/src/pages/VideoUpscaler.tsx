@@ -14,7 +14,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import { fetchFile } from "@ffmpeg/util";
 
 type Stage =
   | "idle"
@@ -141,12 +141,15 @@ export default function VideoUpscaler() {
 
       // Use single-threaded (non-MT) core — no SharedArrayBuffer needed
       // Works even without COEP/COOP headers
-      const baseURL = "/ffmpeg-st";
+      // Use direct URLs (not toBlobURL) so importScripts works in worker context
+      const origin = window.location.origin;
+      const baseURL = `${origin}/ffmpeg-st`;
 
       try {
         await ffmpegInstance.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+          coreURL: `${baseURL}/ffmpeg-core.js`,
+          wasmURL: `${baseURL}/ffmpeg-core.wasm`,
+          workerURL: `${baseURL}/ffmpeg-worker.js`,
         });
         ffmpegLoaded = true;
       } catch (e) {
