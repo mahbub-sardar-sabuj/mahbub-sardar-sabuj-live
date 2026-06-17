@@ -55,6 +55,10 @@ export default function VideoUpscaler() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [outputFileSize, setOutputFileSize] = useState<number | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
+  const [isIOS] = useState(() =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
   const fileRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -269,8 +273,6 @@ export default function VideoUpscaler() {
     const fileName = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.mp4`;
 
     // iOS Safari: use Web Share API to allow saving to Photos/Files
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     if (isIOS && navigator.canShare) {
       try {
         const shareFile = new File([outputBlob], fileName, { type: "video/mp4" });
@@ -578,7 +580,7 @@ export default function VideoUpscaler() {
                     onClick={handleDownload}
                     className="flex-1 py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl font-bold text-sm shadow-lg shadow-green-600/20 hover:shadow-green-600/35 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    <Download size={15} /> ডাউনলোড / সেভ করুন
+                    <Download size={15} /> {isIOS ? "শেয়ার / সেভ করুন" : "ডাউনলোড করুন"}
                   </button>
                   <button
                     onClick={reset}
@@ -587,6 +589,15 @@ export default function VideoUpscaler() {
                     নতুন ভিডিও
                   </button>
                 </div>
+
+                {/* iOS save instruction */}
+                {isIOS && (
+                  <div className="bg-blue-500/8 border border-blue-500/20 rounded-2xl px-4 py-3 text-xs text-blue-300 leading-relaxed">
+                    <p className="font-semibold mb-1">iPhone-এ গ্যালারিতে সেভ করতে:</p>
+                    <p>"শেয়ার / সেভ করুন" বাটনে চাপুন → শেয়ার মেনু খুলবে → <strong>"Save to Photos"</strong> বা <strong>"Photos"</strong> বেছে নিন।</p>
+                    <p className="mt-1 text-blue-400/70">যদি Photos অপশন না দেখেন: Files app খুলুন → ভিডিওটি খুঁজুন → দীর্ঘ চাপ দিন → "Save to Photos" বেছে নিন।</p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
