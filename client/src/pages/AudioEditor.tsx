@@ -431,7 +431,7 @@ export default function AudioEditor() {
   const removeFromChain = (id: string) => setChainSteps(prev => prev.filter(s => s.id !== id));
 
   return (
-    <div className="min-h-screen bg-[#060E1A] text-white pb-24">
+    <div className="min-h-screen bg-[#060E1A] text-white pt-24 pb-24">
       <Seo
         title="অডিও এডিটর — প্রফেশনাল অডিও প্রসেসিং | মাহবুব সরদার সবুজ"
         description="নয়েজ রিমুভ, গোল্ডেন ভয়েস, স্টুডিও মাস্টারিং, পিচ কন্ট্রোল — সব এক জায়গায়।"
@@ -440,7 +440,7 @@ export default function AudioEditor() {
       />
       <Navbar />
 
-      <div className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
 
         {/* ── Hero Header ── */}
         <motion.div
