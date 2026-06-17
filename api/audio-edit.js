@@ -2281,17 +2281,33 @@ async function handleTTS(req, res) {
       }
     }
     console.error("[TTS] All TTS providers failed. Last Gemini error:", lastError);
-    const isRateLimit = lastError?.includes("429") || lastError?.includes("RESOURCE_EXHAUSTED");
+    const isRateLimit = lastError?.includes("429") || lastError?.includes("RESOURCE_EXHAUSTED") || lastError?.includes("quota") || lastError?.includes("Quota");
     const isKeyInvalid = lastError?.includes("401") || lastError?.includes("API_KEY_INVALID");
     const isModelNotFound = lastError?.includes("404") || lastError?.includes("not found");
+    // Extract retry time from Gemini error message if available
+    const retryMatch = lastError?.match(/retry in (\d+\.?\d*)s/i);
+    const retrySeconds = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : null;
     let details;
-    if (isRateLimit) details = "সার্ভার এখন ব্যস্ত। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
-    else if (isKeyInvalid) details = "API কনফিগারেশন সমস্যা। অ্যাডমিনকে জানান।";
-    else if (isModelNotFound) details = "TTS মডেল পাওয়া যাচ্ছে না। কিছুক্ষণ পরে চেষ্টা করুন।";
-    else details = "সার্ভার সাময়িকভাবে অনুপলব্ধ। পুনরায় চেষ্টা করুন।";
+    if (isRateLimit) {
+      if (retrySeconds && retrySeconds > 0) {
+        const mins = Math.ceil(retrySeconds / 60);
+        details = retrySeconds > 60
+          ? `আবৃত্তি সেবা সাময়িকভাবে ব্যস্ত। প্রায় ${mins} মিনিট পরে আবার চেষ্টা করুন।`
+          : `আবৃত্তি সেবা সাময়িকভাবে ব্যস্ত। ${retrySeconds} সেকেন্ড পরে আবার চেষ্টা করুন।`;
+      } else {
+        details = "আবৃত্তি সেবা এখন ব্যস্ত। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
+      }
+    } else if (isKeyInvalid) {
+      details = "API কনফিগারেশন সমস্যা। অ্যাডমিনকে জানান।";
+    } else if (isModelNotFound) {
+      details = "TTS মডেল পাওয়া যাচ্ছে না। কিছুক্ষণ পরে চেষ্টা করুন।";
+    } else {
+      details = "সার্ভার সাময়িকভাবে অনুপলব্ধ। পুনরায় চেষ্টা করুন।";
+    }
     return res.status(502).json({
       error: "TTS generation failed",
       details,
+      retryAfter: retrySeconds,
       lastError: process.env.NODE_ENV === 'development' ? lastError : undefined,
     });
   }

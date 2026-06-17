@@ -146,6 +146,7 @@ export default function TextToSpeech() {
   const [duration, setDuration] = useState(0);
   const [provider, setProvider] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [retryAfter, setRetryAfter] = useState<number | null>(null);
 
   // FIX: Use a single ref pointing to the native <audio> element in the DOM
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -215,6 +216,7 @@ export default function TextToSpeech() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.retryAfter) setRetryAfter(data.retryAfter);
         throw new Error(data.details || data.error || "আবৃত্তি তৈরি করতে ব্যর্থ হয়েছে।");
       }
 
@@ -307,6 +309,7 @@ export default function TextToSpeech() {
     setDuration(0);
     setProvider(null);
     setRetryCount(0);
+    setRetryAfter(null);
     textareaRef.current?.focus();
   }, []);
 
@@ -680,11 +683,18 @@ export default function TextToSpeech() {
                     display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1 }}>
                     <AlertCircle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <span style={{ color: "#fca5a5", fontSize: "0.88rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-                      {error}
-                    </span>
+                    <div>
+                      <span style={{ color: "#fca5a5", fontSize: "0.88rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                        {error}
+                      </span>
+                      {retryAfter && retryAfter > 0 && (
+                        <div style={{ color: "rgba(252,165,165,0.7)", fontSize: "0.78rem", marginTop: 4, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                          ⏱ {retryAfter > 60 ? `প্রায় ${Math.ceil(retryAfter / 60)} মিনিট` : `${retryAfter} সেকেন্ড`} পরে আবার চেষ্টা করুন
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {text.trim() && (
                     <button
