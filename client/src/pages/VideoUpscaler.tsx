@@ -8,8 +8,9 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle2,
-  Cpu,
-  Info,
+  Shield,
+  Zap,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -129,7 +130,7 @@ export default function VideoUpscaler() {
 
     if (!ffmpegLoaded) {
       setStage("loading_ffmpeg");
-      setStatusMsg("FFmpeg লোড হচ্ছে (~৩১MB)...");
+      setStatusMsg("প্রস্তুত হচ্ছে...");
       setProgress(5);
 
       ffmpegInstance.on("progress", ({ progress: p }) => {
@@ -139,15 +140,11 @@ export default function VideoUpscaler() {
         }
       });
 
-      // Use single-threaded (non-MT) ESM core — no SharedArrayBuffer needed
-      // ESM version works with ES module workers via dynamic import()
-      // Worker chunk uses: self.createFFmpegCore = (await import(coreURL)).default
       const origin = window.location.origin;
       const baseURL = `${origin}/ffmpeg-st`;
 
       try {
         await ffmpegInstance.load({
-          // Use ESM version — supports dynamic import() in ES module worker
           coreURL: `${baseURL}/ffmpeg-core-esm.js`,
           wasmURL: `${baseURL}/ffmpeg-core.wasm`,
         });
@@ -155,7 +152,7 @@ export default function VideoUpscaler() {
       } catch (e) {
         ffmpegInstance = null;
         ffmpegLoaded = false;
-        throw new Error(`FFmpeg লোড করতে ব্যর্থ: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(`প্রস্তুতিতে সমস্যা হয়েছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।`);
       }
     }
 
@@ -186,17 +183,16 @@ export default function VideoUpscaler() {
       await ffmpeg.writeFile(inputName, fileData);
       if (abortRef.current) return;
 
-      let inputW = inputSize?.w || 1280;
-      let inputH = inputSize?.h || 720;
+      const inputW = inputSize?.w || 1280;
+      const inputH = inputSize?.h || 720;
 
       const outputW = Math.min(inputW * scale, 7680);
       const outputH = Math.min(inputH * scale, 4320);
 
       setStage("processing");
       setProgress(20);
-      setStatusMsg("আপস্কেল শুরু হচ্ছে...");
+      setStatusMsg("আপস্কেল হচ্ছে...");
 
-      // Lanczos3 scaling + unsharp mask + slight contrast boost
       const vfFilter = [
         `scale=${outputW}:${outputH}:flags=lanczos`,
         `unsharp=luma_msize_x=5:luma_msize_y=5:luma_amount=1.2:chroma_msize_x=5:chroma_msize_y=5:chroma_amount=0.5`,
@@ -218,7 +214,7 @@ export default function VideoUpscaler() {
       if (abortRef.current) return;
 
       setProgress(96);
-      setStatusMsg("আউটপুট তৈরি হচ্ছে...");
+      setStatusMsg("সম্পন্ন করা হচ্ছে...");
 
       const outputData = await ffmpeg.readFile(outputName);
       const outputBlob = new Blob(
@@ -258,66 +254,82 @@ export default function VideoUpscaler() {
 
   const isProcessing = ["loading_ffmpeg", "reading", "processing"].includes(stage);
 
+  const scaleLabels: Record<2 | 4, { label: string; sub: string }> = {
+    2: { label: "২× আপস্কেল", sub: "4K মান" },
+    4: { label: "৪× আপস্কেল", sub: "8K মান" },
+  };
+
   return (
     <div className="min-h-screen bg-[#060E1A] text-white pt-24 pb-20">
       <Seo
-        title="AI ভিডিও আপস্কেলার — 4K/8K ফ্রিতে | Mahbub Sardar Sabuj"
-        description="ঝাপসা ভিডিও পরিষ্কার করুন। FFmpeg Lanczos + AI শার্পেনিং দিয়ে 2x বা 4x আপস্কেল করুন। সম্পূর্ণ ব্রাউজারে — কোনো আপলোড নেই।"
+        title="ভিডিও আপস্কেলার — 4K/8K | মাহবুব সরদার সবুজ"
+        description="ঝাপসা ভিডিও পরিষ্কার করুন। ২x বা ৪x আপস্কেল করুন। সম্পূর্ণ ব্রাউজারে — কোনো আপলোড নেই।"
         path="/video-upscaler"
-        keywords="video upscaler 4k, ভিডিও আপস্কেলার, video enhance free, মাহবুব সরদার সবুজ"
+        keywords="video upscaler 4k, ভিডিও আপস্কেলার, মাহবুব সরদার সবুজ"
       />
       <Navbar />
 
-      <div className="max-w-3xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
+
         {/* Header */}
         <div className="text-center mb-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 mb-4 text-xs font-bold tracking-widest uppercase"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/25 text-purple-400 mb-5 text-xs font-bold tracking-widest uppercase"
           >
-            <Sparkles size={13} /> AI Video Upscaler
+            <Sparkles size={12} /> ভিডিও আপস্কেলার
           </motion.div>
+
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 }}
-            className="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-r from-white to-purple-300 bg-clip-text text-transparent"
+            transition={{ delay: 0.07 }}
+            className="text-4xl md:text-5xl font-black mb-4 bg-gradient-to-br from-white via-purple-100 to-purple-400 bg-clip-text text-transparent leading-tight"
           >
-            ভিডিও আপস্কেলার
+            ঝাপসা ভিডিও<br />পরিষ্কার করুন
           </motion.h1>
+
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.14 }}
-            className="text-gray-400 text-base"
+            transition={{ delay: 0.13 }}
+            className="text-gray-400 text-sm max-w-sm mx-auto leading-relaxed"
           >
-            ঝাপসা ভিডিও পরিষ্কার করুন —{" "}
-            <span className="text-purple-400 font-semibold">2x (4K)</span> বা{" "}
-            <span className="text-purple-400 font-semibold">4x (8K)</span> আপস্কেল
+            আপনার ভিডিও সম্পূর্ণ ব্রাউজারে প্রসেস হয়।
+            কোনো তথ্য কোথাও পাঠানো হয় না।
           </motion.p>
+
+          {/* Feature pills */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs"
+            transition={{ delay: 0.19 }}
+            className="flex items-center justify-center gap-3 mt-5 flex-wrap"
           >
-            <Cpu size={11} />
-            ১০০% ব্রাউজারে প্রসেস — কোনো আপলোড নেই, সম্পূর্ণ প্রাইভেট
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
+              <Shield size={10} /> সম্পূর্ণ প্রাইভেট
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium">
+              <Zap size={10} /> কোনো আপলোড নেই
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium">
+              <Sparkles size={10} /> সম্পূর্ণ বিনামূল্যে
+            </span>
           </motion.div>
         </div>
 
         {/* Main Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gray-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-6"
+          transition={{ delay: 0.22 }}
+          className="bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-5"
         >
           {/* Scale selector */}
           <div>
-            <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wider">
-              আপস্কেল মাত্রা
+            <p className="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-widest">
+              মান নির্বাচন করুন
             </p>
             <div className="grid grid-cols-2 gap-3">
               {([2, 4] as const).map((s) => (
@@ -325,25 +337,31 @@ export default function VideoUpscaler() {
                   key={s}
                   onClick={() => setScale(s)}
                   disabled={isProcessing}
-                  className={`py-3 rounded-xl font-bold text-sm transition-all ${
+                  className={`relative py-4 px-4 rounded-2xl font-bold text-sm transition-all duration-200 text-left ${
                     scale === s
-                      ? "bg-purple-600 text-white shadow-lg shadow-purple-600/25"
-                      : "bg-white/5 text-gray-400 hover:bg-white/10"
-                  } disabled:opacity-40`}
+                      ? "bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-xl shadow-purple-600/30 ring-1 ring-purple-500/50"
+                      : "bg-white/5 text-gray-400 hover:bg-white/8 hover:text-gray-300 ring-1 ring-white/5"
+                  } disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
-                  {s === 2 ? "2× — 4K" : "4× — 8K"}
+                  <span className="block text-base font-black">{scaleLabels[s].label}</span>
+                  <span className={`block text-xs mt-0.5 font-normal ${scale === s ? "text-purple-200" : "text-gray-600"}`}>
+                    {scaleLabels[s].sub}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Upload zone */}
+          {/* Divider */}
+          <div className="border-t border-white/5" />
+
+          {/* Upload zone or file info */}
           {!file ? (
             <label
-              className={`flex flex-col items-center justify-center h-44 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
+              className={`flex flex-col items-center justify-center h-48 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 group ${
                 isDrag
                   ? "border-purple-500 bg-purple-500/10"
-                  : "border-white/10 hover:border-purple-500/40 hover:bg-white/3"
+                  : "border-white/8 hover:border-purple-500/50 hover:bg-purple-500/5"
               }`}
               onDragOver={(e) => { e.preventDefault(); setIsDrag(true); }}
               onDragLeave={() => setIsDrag(false)}
@@ -354,9 +372,18 @@ export default function VideoUpscaler() {
                 if (f) onFile(f);
               }}
             >
-              <Upload className="w-9 h-9 text-gray-600 mb-3" />
-              <p className="text-sm text-gray-400 font-medium">ভিডিও বেছে নিন</p>
-              <p className="text-xs text-gray-600 mt-1">MP4, WebM, MOV · সর্বোচ্চ ৫০০MB</p>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition-all duration-200 ${
+                isDrag ? "bg-purple-500/20" : "bg-white/5 group-hover:bg-purple-500/10"
+              }`}>
+                <Upload className={`w-6 h-6 transition-colors duration-200 ${
+                  isDrag ? "text-purple-400" : "text-gray-500 group-hover:text-purple-400"
+                }`} />
+              </div>
+              <p className="text-sm text-gray-300 font-semibold">ভিডিও বেছে নিন</p>
+              <p className="text-xs text-gray-600 mt-1.5">
+                MP4, WebM, MOV — সর্বোচ্চ ৫০০MB
+              </p>
+              <p className="text-xs text-gray-700 mt-1">অথবা টেনে এখানে ছাড়ুন</p>
               <input
                 ref={fileRef}
                 type="file"
@@ -371,22 +398,27 @@ export default function VideoUpscaler() {
           ) : (
             <div className="space-y-4">
               {/* File info */}
-              <div className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3">
-                <Video size={18} className="text-purple-400 shrink-0" />
+              <div className="flex items-center gap-3 bg-white/5 rounded-2xl px-4 py-3.5 ring-1 ring-white/8">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/15 flex items-center justify-center shrink-0">
+                  <Video size={16} className="text-purple-400" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-200 truncate">{file.name}</p>
+                  <p className="text-sm font-semibold text-gray-200 truncate">{file.name}</p>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {formatBytes(file.size)}
-                    {inputSize ? ` · ${inputSize.w}×${inputSize.h} → ${inputSize.w * scale}×${inputSize.h * scale}` : ""}
+                    {inputSize
+                      ? ` · ${inputSize.w}×${inputSize.h} → ${inputSize.w * scale}×${inputSize.h * scale}`
+                      : ""}
                   </p>
                 </div>
-                <button
-                  onClick={reset}
-                  disabled={isProcessing}
-                  className="text-gray-600 hover:text-gray-400 transition-colors disabled:opacity-30 shrink-0"
-                >
-                  <RefreshCw size={15} />
-                </button>
+                {!isProcessing && (
+                  <button
+                    onClick={reset}
+                    className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-500 hover:text-gray-300 transition-all shrink-0"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
               </div>
 
               {/* Action button */}
@@ -394,38 +426,51 @@ export default function VideoUpscaler() {
                 <button
                   onClick={handleUpscale}
                   disabled={isProcessing}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl font-black text-base shadow-xl shadow-purple-600/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl font-black text-base shadow-xl shadow-purple-600/25 hover:shadow-purple-600/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2.5"
                 >
                   {isProcessing ? (
-                    <><RefreshCw className="animate-spin" size={18} /> {statusMsg || "প্রসেস হচ্ছে..."}</>
+                    <>
+                      <RefreshCw className="animate-spin" size={17} />
+                      <span>{statusMsg || "প্রসেস হচ্ছে..."}</span>
+                    </>
                   ) : (
-                    <><Sparkles size={18} /> আপস্কেল করুন</>
+                    <>
+                      <Sparkles size={17} />
+                      <span>আপস্কেল করুন</span>
+                    </>
                   )}
                 </button>
               )}
 
               {/* Progress bar */}
-              {isProcessing && (
-                <div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-                    <span>{statusMsg}</span>
-                    <span className="flex items-center gap-2">
-                      {elapsedTime > 0 && <span className="text-gray-600">{formatTime(elapsedTime)}</span>}
-                      <span>{progress}%</span>
-                    </span>
-                  </div>
-                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-purple-500 to-indigo-400 rounded-full"
-                      animate={{ width: `${progress}%` }}
-                      transition={{ duration: 0.4 }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2 text-center">
-                    ব্রাউজার ট্যাব খোলা রাখুন · ভিডিও সাইজ অনুযায়ী সময় লাগতে পারে
-                  </p>
-                </div>
-              )}
+              <AnimatePresence>
+                {isProcessing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-2"
+                  >
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400">{statusMsg}</span>
+                      <span className="text-gray-500 flex items-center gap-2">
+                        {elapsedTime > 0 && <span>{formatTime(elapsedTime)}</span>}
+                        <span className="text-purple-400 font-bold">{progress}%</span>
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/8 rounded-full h-1.5 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-400 rounded-full"
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-700 text-center">
+                      ব্রাউজার ট্যাব খোলা রাখুন
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
@@ -436,10 +481,18 @@ export default function VideoUpscaler() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="flex gap-3 bg-red-500/10 border border-red-500/20 rounded-xl p-4"
+                className="flex gap-3 bg-red-500/8 border border-red-500/20 rounded-2xl p-4"
               >
-                <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-red-300 leading-relaxed">{error}</p>
+                <AlertCircle size={15} className="text-red-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs text-red-300 leading-relaxed">{error}</p>
+                  <button
+                    onClick={reset}
+                    className="text-xs text-red-400/70 hover:text-red-400 mt-2 underline underline-offset-2 transition-colors"
+                  >
+                    আবার চেষ্টা করুন
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -452,43 +505,42 @@ export default function VideoUpscaler() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4"
               >
-                <div className="flex items-center gap-2 text-green-400 text-sm font-bold flex-wrap">
-                  <CheckCircle2 size={16} />
-                  আপস্কেল সম্পন্ন!
-                  {outputSize && (
-                    <span className="text-gray-500 font-normal text-xs ml-1">
-                      {inputSize?.w}×{inputSize?.h} → {outputSize.w}×{outputSize.h}
-                    </span>
-                  )}
-                  {outputFileSize && (
-                    <span className="text-gray-600 font-normal text-xs">· {formatBytes(outputFileSize)}</span>
-                  )}
-                  {elapsedTime > 0 && (
-                    <span className="text-gray-600 font-normal text-xs">· {formatTime(elapsedTime)}</span>
-                  )}
+                {/* Success badge */}
+                <div className="flex items-center gap-2.5 bg-green-500/8 border border-green-500/20 rounded-2xl px-4 py-3">
+                  <CheckCircle2 size={16} className="text-green-400 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-green-400">আপস্কেল সম্পন্ন!</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {inputSize?.w}×{inputSize?.h} → {outputSize?.w}×{outputSize?.h}
+                      {outputFileSize ? ` · ${formatBytes(outputFileSize)}` : ""}
+                      {elapsedTime > 0 ? ` · ${formatTime(elapsedTime)}` : ""}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-2xl overflow-hidden bg-black border border-purple-500/20">
+                {/* Video preview */}
+                <div className="rounded-2xl overflow-hidden bg-black/60 ring-1 ring-white/8">
                   <video
                     src={outputUrl}
-                    className="w-full max-h-[360px] object-contain"
+                    className="w-full max-h-[340px] object-contain"
                     controls
                     playsInline
                   />
                 </div>
 
+                {/* Action buttons */}
                 <div className="flex gap-3">
                   <button
                     onClick={handleDownload}
-                    className="flex-1 py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 rounded-xl font-bold text-sm shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl font-bold text-sm shadow-lg shadow-green-600/20 hover:shadow-green-600/35 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    <Download size={16} /> ডাউনলোড করুন
+                    <Download size={15} /> ডাউনলোড করুন
                   </button>
                   <button
                     onClick={reset}
-                    className="px-5 py-3.5 bg-white/5 hover:bg-white/10 rounded-xl font-bold text-gray-400 text-sm transition-all"
+                    className="px-5 py-3.5 bg-white/5 hover:bg-white/10 ring-1 ring-white/8 rounded-2xl font-semibold text-gray-400 hover:text-gray-300 text-sm transition-all duration-200"
                   >
-                    নতুন
+                    নতুন ভিডিও
                   </button>
                 </div>
               </motion.div>
@@ -496,26 +548,15 @@ export default function VideoUpscaler() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Info note */}
-        <motion.div
+        {/* Bottom note */}
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mt-6 flex items-start gap-2 bg-blue-500/5 border border-blue-500/10 rounded-xl p-4"
+          transition={{ delay: 0.5 }}
+          className="text-center text-xs text-gray-700 mt-6"
         >
-          <Info size={14} className="text-blue-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-gray-500 leading-relaxed">
-            <span className="text-gray-400 font-medium">কীভাবে কাজ করে:</span>{" "}
-            আপনার ভিডিও সরাসরি ব্রাউজারে FFmpeg WebAssembly দিয়ে প্রসেস হয়।
-            Lanczos3 স্কেলিং, Unsharp Mask শার্পেনিং ও কনট্রাস্ট এনহান্সমেন্ট ব্যবহার করা হয়।
-            ভিডিও কোথাও আপলোড হয় না।{" "}
-            <span className="text-yellow-500/70">প্রথমবার ~৩১MB FFmpeg লোড হবে।</span>
-          </p>
-        </motion.div>
-
-        <p className="text-center text-xs text-gray-700 mt-4">
-          Lanczos3 স্কেলিং · Unsharp Mask শার্পেনিং · H.264 CRF 20 এনকোডিং · FFmpeg.wasm
-        </p>
+          আপনার ভিডিও শুধু আপনার ডিভাইসে প্রসেস হয় — কোথাও পাঠানো হয় না
+        </motion.p>
       </div>
     </div>
   );
