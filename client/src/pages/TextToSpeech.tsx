@@ -15,16 +15,28 @@ import Seo from "@/components/Seo";
 
 // ── Voice catalog (from TTS skill) ──────────────────────────────────────────
 const VOICES = [
+  // ── নারী কণ্ঠ ──
   { id: "Sulafat", label: "সুলাফাত", desc: "উষ্ণ ও আন্তরিক", gender: "female", emoji: "🌸" },
-  { id: "Aoede", label: "আওয়েদে", desc: "প্রবাহমান ও মনোরম", gender: "female", emoji: "🎵" },
-  { id: "Vindemiatrix", label: "ভিন্দেমিয়াট্রিক্স", desc: "কোমল ও মৃদু", gender: "female", emoji: "🌿" },
+  { id: "Despina", label: "দেসপিনা", desc: "মিষ্টি ও আমন্ত্রণমূলক", gender: "female", emoji: "💛" },
+  { id: "Aoede", label: "আওয়েদে", desc: "চিন্তাশীল ও প্রাণবন্ত", gender: "female", emoji: "🎵" },
+  { id: "Leda", label: "লেডা", desc: "পরিশীলিত ও আত্মবিশ্বাসী", gender: "female", emoji: "👑" },
+  { id: "Vindemiatrix", label: "ভিন্দেমিয়াট্রিক্স", desc: "শান্ত ও পরিপক্ব", gender: "female", emoji: "🌿" },
+  { id: "Gacrux", label: "গ্যাক্রাক্স", desc: "গভীর ও আবেগময়", gender: "female", emoji: "🌙" },
+  { id: "Kore", label: "কোরে", desc: "প্রাণবন্ত ও উজ্জ্বল", gender: "female", emoji: "⭐" },
+  { id: "Zephyr", label: "জেফির", desc: "উচ্ছল ও তারুণ্যময়", gender: "female", emoji: "🌬️" },
   { id: "Achernar", label: "আচেরনার", desc: "নরম ও মধুর", gender: "female", emoji: "✨" },
-  { id: "Gacrux", label: "গ্যাক্রাক্স", desc: "পরিপক্ব ও গভীর", gender: "female", emoji: "🌙" },
-  { id: "Charon", label: "শ্যারন", desc: "তথ্যপূর্ণ ও স্পষ্ট", gender: "male", emoji: "📖" },
+  { id: "Laomedeia", label: "লাওমেডিয়া", desc: "কৌতূহলী ও উদ্যমী", gender: "female", emoji: "🔮" },
+  // ── পুরুষ কণ্ঠ ──
+  { id: "Orus", label: "ওরাস", desc: "গভীর ও প্রজ্ঞাময়", gender: "male", emoji: "🌌" },
+  { id: "Charon", label: "শ্যারন", desc: "মসৃণ ও বিশ্বস্ত", gender: "male", emoji: "📖" },
+  { id: "Fenrir", label: "ফেনরির", desc: "বন্ধুত্বপূর্ণ ও স্পষ্ট", gender: "male", emoji: "🔥" },
   { id: "Algieba", label: "আলজিবা", desc: "মসৃণ ও প্রবাহমান", gender: "male", emoji: "🎭" },
-  { id: "Achird", label: "আচির্ড", desc: "বন্ধুত্বপূর্ণ ও উষ্ণ", gender: "male", emoji: "🤝" },
-  { id: "Sadaltager", label: "সাদালতাগের", desc: "জ্ঞানসম্পন্ন ও দৃঢ়", gender: "male", emoji: "🦁" },
-  { id: "Umbriel", label: "আমব্রিয়েল", desc: "সহজ ও স্বাভাবিক", gender: "male", emoji: "🌊" },
+  { id: "Puck", label: "পাক", desc: "সরাসরি ও আন্তরিক", gender: "male", emoji: "🎯" },
+  { id: "Achird", label: "আচির্ড", desc: "তরুণ ও উৎসাহী", gender: "male", emoji: "🤝" },
+  { id: "Sadachbia", label: "সাদাচবিয়া", desc: "গভীর ও ব্যক্তিত্বময়", gender: "male", emoji: "🎸" },
+  { id: "Autonoe", label: "অটোনোয়ে", desc: "পরিপক্ব ও গম্ভীর", gender: "male", emoji: "🦅" },
+  { id: "Umbriel", label: "আমব্রিয়েল", desc: "কর্তৃত্বপূর্ণ ও উষ্ণ", gender: "male", emoji: "🌊" },
+  { id: "Zubenelgenubi", label: "জুবেনেলজেনুবি", desc: "শক্তিশালী ও গম্ভীর", gender: "male", emoji: "⚡" },
 ];
 
 const STYLE_PRESETS = [
@@ -33,42 +45,42 @@ const STYLE_PRESETS = [
     label: "আবৃত্তি",
     icon: "🎙️",
     desc: "কবিতা আবৃত্তির ধাঁচে",
-    prompt: "Speak in Bengali with the passionate, rhythmic style of a professional Bengali poet reciting their own work. Use expressive pauses, emotional emphasis, and a flowing poetic cadence. Voice should feel deeply human and heartfelt",
+    prompt: "You are a deeply emotional Bengali poet reading your own poem aloud. Speak in natural, human Bengali — not robotic, not AI-like. Let your voice tremble slightly with feeling. Take real, natural breaths between lines. Pause meaningfully at commas and line breaks. Emphasize words that carry pain, longing, or love. Your voice should feel like a real person who has lived through what they are reading. Never sound mechanical or uniform — vary your pace, your pitch, your breath. This is a human heart speaking.",
   },
   {
     id: "story",
     label: "গল্প পাঠ",
     icon: "📖",
     desc: "গল্প বলার ভঙ্গিতে",
-    prompt: "Speak in Bengali with the warm, engaging tone of a skilled storyteller. Use natural pacing, gentle drama, and a conversational flow that draws the listener in",
+    prompt: "You are a warm, gifted Bengali storyteller speaking to a close friend. Your voice is completely natural and human — with real pauses, gentle sighs, and a conversational rhythm. Vary your pace: slow down for emotional moments, speed up for excitement. Let your voice smile when the story is joyful, and soften when it turns sad. Never sound like a machine reading text — sound like a real person who loves telling stories.",
   },
   {
     id: "news",
     label: "সংবাদ পাঠ",
     icon: "📰",
     desc: "সংবাদ পাঠকের কণ্ঠে",
-    prompt: "Speak in Bengali with the clear, authoritative, and professional tone of a Bengali news anchor. Maintain steady pacing and crisp pronunciation",
+    prompt: "You are a professional Bengali news anchor with a warm, human voice. Speak clearly and confidently, with natural breathing and measured pacing. Your voice carries authority but also warmth — like a trusted person delivering important news. Pronounce each word crisply but naturally, never robotic. Maintain a steady, calm rhythm with brief natural pauses between sentences.",
   },
   {
     id: "soft",
     label: "কোমল কণ্ঠ",
     icon: "🌸",
     desc: "নরম ও মৃদু স্বরে",
-    prompt: "Speak in Bengali with a very soft, gentle, and soothing voice. Like a mother reading a bedtime story — calm, warm, and comforting",
+    prompt: "You are a gentle, loving person speaking softly to someone who needs comfort. Your voice is barely above a whisper — warm, tender, and deeply human. Breathe naturally and slowly. Speak each word with care, as if each syllable is a gentle touch. Let there be soft, natural pauses. Your voice should feel like a warm embrace — completely real, completely human, full of quiet love.",
   },
   {
     id: "dramatic",
     label: "নাটকীয়",
     icon: "🎭",
     desc: "আবেগময় ও নাটকীয়",
-    prompt: "Speak in Bengali with dramatic flair and deep emotional intensity. Like a stage actor delivering a powerful monologue — expressive, passionate, and captivating",
+    prompt: "You are a passionate Bengali stage actor delivering a powerful, emotional monologue. Your voice is raw, human, and deeply felt — not theatrical in a fake way, but genuinely moved. Let your voice crack slightly at painful moments. Build intensity gradually. Use dramatic pauses that feel earned. Vary your volume — sometimes loud and powerful, sometimes dropping to a near-whisper for impact. This is real human emotion, not performance.",
   },
   {
     id: "natural",
     label: "স্বাভাবিক",
     icon: "💬",
     desc: "সাধারণ কথোপকথনের মতো",
-    prompt: "Speak in Bengali in a completely natural, conversational tone. Like a real person talking to a friend — relaxed, genuine, and human",
+    prompt: "You are simply a real person having a natural conversation in Bengali. Speak exactly as a human would — with natural hesitations, gentle breathing, varied pace, and authentic emotion. Do not sound like AI or a voice assistant. Sound like someone's friend, neighbor, or family member speaking from the heart. Be completely relaxed, genuine, and human in every way.",
   },
 ];
 

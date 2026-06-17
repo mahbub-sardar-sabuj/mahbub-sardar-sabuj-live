@@ -2190,7 +2190,7 @@ async function handleTTS(req, res) {
   if (!geminiKey) return res.status(500).json({ error: "TTS service not configured" });
 
   const styleInstruction = style?.trim() ||
-    "Speak in Bengali with a warm, expressive, and natural human voice. Read with the rhythm and emotion of a skilled Bengali poet reciting their own work. Use natural pauses, gentle emphasis on emotional words, and a flowing cadence. The voice should feel like a real person speaking from the heart";
+    "You are a deeply emotional Bengali poet reading your own poem aloud. Speak in natural, human Bengali — not robotic, not AI-like. Let your voice tremble slightly with feeling. Take real, natural breaths between lines. Pause meaningfully at commas and line breaks. Emphasize words that carry pain, longing, or love. Your voice should feel like a real person who has lived through what they are reading. Never sound mechanical or uniform — vary your pace, your pitch, your breath. This is a human heart speaking.";
 
   const prompt = `${styleInstruction}: ${text.trim()}`;
 
@@ -2202,20 +2202,37 @@ async function handleTTS(req, res) {
     }
   };
 
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKey}`;
+  // Try Gemini 3.1 Flash TTS first (most human-like), fallback to 2.5
+  const ttsModels = [
+    "gemini-3.1-flash-tts-preview",
+    "gemini-2.5-flash-preview-tts",
+  ];
+  let response = null;
+  let lastError = null;
+  for (const ttsModel of ttsModels) {
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${ttsModel}:generateContent?key=${geminiKey}`;
+    try {
+      response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      if (response.ok) break;
+      lastError = await response.text();
+      console.warn(`[TTS] ${ttsModel} failed (${response.status}), trying next model...`);
+      response = null;
+    } catch (e) {
+      lastError = e.message;
+      console.warn(`[TTS] ${ttsModel} error:`, e.message);
+      response = null;
+    }
+  }
 
-  const response = await fetch(geminiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestBody),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[TTS] Gemini API error:", response.status, errorText);
+  if (!response || !response.ok) {
+    console.error("[TTS] All models failed. Last error:", lastError);
     return res.status(502).json({
       error: "TTS generation failed",
-      details: response.status === 429 ? "Rate limit exceeded, please try again" : "Service temporarily unavailable"
+      details: lastError?.includes("429") ? "Rate limit exceeded, please try again" : "Service temporarily unavailable"
     });
   }
 
