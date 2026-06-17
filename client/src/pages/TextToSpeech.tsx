@@ -2,8 +2,9 @@
  * TextToSpeech.tsx — আবৃত্তি টুল
  * Design: Ink & Gold — Literary Premium
  * Feature: AI-powered Bengali TTS with human-like voice, download support
+ * Fixed: WaveformBars Math.random, audioRef sync, voice dropdown outside click, duplicate audio player
  */
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic2, Play, Pause, Download, Loader2, AlertCircle,
@@ -85,13 +86,23 @@ const STYLE_PRESETS = [
 ];
 
 // ── Waveform visualizer ──────────────────────────────────────────────────────
+// FIX: Math.random() values are memoized to prevent re-render flicker
 function WaveformBars({ isPlaying }: { isPlaying: boolean }) {
-  const bars = Array.from({ length: 32 }, (_, i) => i);
+  // Generate stable random values once using useMemo
+  const barData = useMemo(() =>
+    Array.from({ length: 32 }, (_, i) => ({
+      id: i,
+      maxHeight: Math.random() * 32 + 8,
+      duration: 0.4 + Math.random() * 0.4,
+      delay: i * 0.03,
+    })),
+  []);
+
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, height: 48 }}>
-      {bars.map((i) => (
+      {barData.map((bar) => (
         <motion.div
-          key={i}
+          key={bar.id}
           style={{
             width: 3,
             borderRadius: 2,
@@ -99,17 +110,17 @@ function WaveformBars({ isPlaying }: { isPlaying: boolean }) {
             transformOrigin: "bottom",
           }}
           animate={isPlaying ? {
-            height: [8, Math.random() * 32 + 8, 8],
+            height: [8, bar.maxHeight, 8],
             opacity: [0.6, 1, 0.6],
           } : {
             height: 6,
             opacity: 0.3,
           }}
           transition={isPlaying ? {
-            duration: 0.4 + Math.random() * 0.4,
+            duration: bar.duration,
             repeat: Infinity,
             repeatType: "reverse",
-            delay: i * 0.03,
+            delay: bar.delay,
           } : { duration: 0.3 }}
         />
       ))}
@@ -131,11 +142,27 @@ export default function TextToSpeech() {
   const [showVoiceDropdown, setShowVoiceDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
   const [generationTime, setGenerationTime] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // FIX: Use a single ref pointing to the native <audio> element in the DOM
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const voiceDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const MAX_CHARS = 5000;
+
+  // FIX: Close voice dropdown when clicking outside
+  useEffect(() => {
+    if (!showVoiceDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (voiceDropdownRef.current && !voiceDropdownRef.current.contains(e.target as Node)) {
+        setShowVoiceDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showVoiceDropdown]);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -160,9 +187,13 @@ export default function TextToSpeech() {
     setAudioUrl(null);
     setAudioBlob(null);
     setIsPlaying(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+    setCurrentTime(0);
+    setDuration(0);
+
+    // FIX: Stop any currently playing audio via the native element ref
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current.src = "";
     }
 
     const startTime = Date.now();
@@ -189,7 +220,7 @@ export default function TextToSpeech() {
         throw new Error("অডিও ডেটা পাওয়া যায়নি।");
       }
 
-      // Convert base64 to blob - Clean the base64 string first to avoid pattern matching errors
+      // Convert base64 to blob
       const base64Data = data.audioData.replace(/\s/g, "");
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
@@ -212,33 +243,27 @@ export default function TextToSpeech() {
     }
   }, [text, selectedVoice, selectedStyle]);
 
+  // FIX: handlePlayPause now uses the native <audio> element ref directly
   const handlePlayPause = useCallback(() => {
-    if (!audioUrl) return;
+    const audio = audioElementRef.current;
+    if (!audio || !audioUrl) return;
 
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
-      }
+    if (isPlaying) {
+      audio.pause();
     } else {
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      audio.onended = () => setIsPlaying(false);
-      audio.onpause = () => setIsPlaying(false);
-      audio.play();
-      setIsPlaying(true);
+      audio.play().catch(() => {
+        setError("অডিও চালাতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।");
+      });
     }
   }, [audioUrl, isPlaying]);
 
   const handleStop = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
+    const audio = audioElementRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    setIsPlaying(false);
+    setCurrentTime(0);
   }, []);
 
   const handleDownload = useCallback(() => {
@@ -246,7 +271,6 @@ export default function TextToSpeech() {
     const a = document.createElement("a");
     const url = URL.createObjectURL(audioBlob);
     a.href = url;
-    // Generate filename from first few words of text
     const words = text.trim().split(/\s+/).slice(0, 4).join("_").replace(/[^\u0980-\u09FF\w]/g, "");
     a.download = `আবৃত্তি_${words || "audio"}_${selectedVoice.label}.wav`;
     document.body.appendChild(a);
@@ -263,6 +287,11 @@ export default function TextToSpeech() {
   }, [text]);
 
   const handleReset = useCallback(() => {
+    const audio = audioElementRef.current;
+    if (audio) {
+      audio.pause();
+      audio.src = "";
+    }
     setText("");
     setCharCount(0);
     setAudioUrl(null);
@@ -270,12 +299,18 @@ export default function TextToSpeech() {
     setError(null);
     setIsPlaying(false);
     setGenerationTime(null);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
+    setCurrentTime(0);
+    setDuration(0);
     textareaRef.current?.focus();
   }, []);
+
+  // Format seconds to mm:ss
+  const formatTime = (secs: number) => {
+    if (!isFinite(secs) || isNaN(secs)) return "0:00";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   const femaleVoices = VOICES.filter(v => v.gender === "female");
   const maleVoices = VOICES.filter(v => v.gender === "male");
@@ -398,7 +433,7 @@ export default function TextToSpeech() {
                 ref={textareaRef}
                 value={text}
                 onChange={handleTextChange}
-                placeholder="এখানে বাংলা কবিতা, গল্প বা যেকোনো লেখা লিখুন অথবা পেস্ট করুন...&#10;&#10;উদাহরণ:&#10;আমার সোনার বাংলা, আমি তোমায় ভালোবাসি&#10;চিরদিন তোমার আকাশ, তোমার বাতাস, আমার প্রাণে বাজায় বাঁশি।"
+                placeholder={"এখানে বাংলা কবিতা, গল্প বা যেকোনো লেখা লিখুন অথবা পেস্ট করুন...\n\nউদাহরণ:\nআমার সোনার বাংলা, আমি তোমায় ভালোবাসি\nচিরদিন তোমার আকাশ, তোমার বাতাস, আমার প্রাণে বাজায় বাঁশি।"}
                 style={{
                   width: "100%",
                   minHeight: 200,
@@ -428,7 +463,12 @@ export default function TextToSpeech() {
                   পাঠের ধরন
                 </span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 8 }}>
+              {/* FIX: Added overflowX auto for mobile horizontal scroll */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                gap: 8,
+              }}>
                 {STYLE_PRESETS.map((preset) => (
                   <button
                     key={preset.id}
@@ -478,8 +518,8 @@ export default function TextToSpeech() {
                 </span>
               </div>
 
-              {/* Custom dropdown */}
-              <div style={{ position: "relative" }}>
+              {/* FIX: Added ref for outside click detection */}
+              <div style={{ position: "relative" }} ref={voiceDropdownRef}>
                 <button
                   onClick={() => setShowVoiceDropdown(!showVoiceDropdown)}
                   style={{
@@ -519,6 +559,8 @@ export default function TextToSpeech() {
                         overflow: "hidden",
                         zIndex: 50,
                         boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                        maxHeight: 320,
+                        overflowY: "auto",
                       }}
                     >
                       {/* Female voices */}
@@ -692,16 +734,64 @@ export default function TextToSpeech() {
                     </button>
                   </div>
 
+                  {/* FIX: Hidden native audio element with ref — single source of truth */}
+                  <audio
+                    ref={audioElementRef}
+                    src={audioUrl}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
+                    onTimeUpdate={() => {
+                      if (audioElementRef.current) setCurrentTime(audioElementRef.current.currentTime);
+                    }}
+                    onLoadedMetadata={() => {
+                      if (audioElementRef.current) setDuration(audioElementRef.current.duration);
+                    }}
+                    style={{ display: "none" }}
+                  />
+
                   {/* Waveform */}
                   <div style={{
                     background: "rgba(0,0,0,0.2)", borderRadius: 10, padding: "12px 16px",
-                    marginBottom: 16,
+                    marginBottom: 12,
                   }}>
                     <WaveformBars isPlaying={isPlaying} />
                   </div>
 
+                  {/* Progress bar */}
+                  <div style={{ marginBottom: 16 }}>
+                    <div
+                      style={{
+                        width: "100%", height: 4, background: "rgba(255,255,255,0.1)",
+                        borderRadius: 2, cursor: "pointer", position: "relative",
+                      }}
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const ratio = (e.clientX - rect.left) / rect.width;
+                        if (audioElementRef.current && duration > 0) {
+                          audioElementRef.current.currentTime = ratio * duration;
+                        }
+                      }}
+                    >
+                      <div style={{
+                        height: "100%", borderRadius: 2,
+                        background: "linear-gradient(90deg, #D4A843, #E8C97A)",
+                        width: duration > 0 ? `${(currentTime / duration) * 100}%` : "0%",
+                        transition: "width 0.1s linear",
+                      }} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                      <span style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "monospace" }}>
+                        {formatTime(currentTime)}
+                      </span>
+                      <span style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "monospace" }}>
+                        {formatTime(duration)}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Controls */}
-                  <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+                  <div style={{ display: "flex", gap: 10 }}>
                     <button
                       onClick={handlePlayPause}
                       style={{
@@ -767,20 +857,9 @@ export default function TextToSpeech() {
                     </button>
                   </div>
 
-                  {/* Native audio player as fallback */}
-                  <audio
-                    src={audioUrl}
-                    controls
-                    style={{ width: "100%", borderRadius: 8, opacity: 0.7 }}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
-                  />
                 </motion.div>
               )}
             </AnimatePresence>
-
-
 
           </div>
         </div>
