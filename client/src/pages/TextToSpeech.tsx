@@ -144,6 +144,8 @@ export default function TextToSpeech() {
   const [generationTime, setGenerationTime] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // FIX: Use a single ref pointing to the native <audio> element in the DOM
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -234,6 +236,8 @@ export default function TextToSpeech() {
       setAudioUrl(url);
       setAudioBlob(blob);
       setGenerationTime(Math.round((Date.now() - startTime) / 100) / 10);
+      setProvider(data.provider || "gemini");
+      setRetryCount(0);
 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "অজানা ত্রুটি হয়েছে।";
@@ -301,6 +305,8 @@ export default function TextToSpeech() {
     setGenerationTime(null);
     setCurrentTime(0);
     setDuration(0);
+    setProvider(null);
+    setRetryCount(0);
     textareaRef.current?.focus();
   }, []);
 
@@ -671,13 +677,34 @@ export default function TextToSpeech() {
                     border: "1px solid rgba(248,113,113,0.3)",
                     borderRadius: 10,
                     padding: "12px 16px",
-                    display: "flex", alignItems: "flex-start", gap: 10,
+                    display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10,
                   }}
                 >
-                  <AlertCircle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span style={{ color: "#fca5a5", fontSize: "0.88rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
-                    {error}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <AlertCircle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ color: "#fca5a5", fontSize: "0.88rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                      {error}
+                    </span>
+                  </div>
+                  {text.trim() && (
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      style={{
+                        flexShrink: 0,
+                        background: "rgba(248,113,113,0.15)",
+                        border: "1px solid rgba(248,113,113,0.4)",
+                        borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+                        color: "#fca5a5", fontSize: "0.75rem",
+                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        display: "flex", alignItems: "center", gap: 4,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <RefreshCw size={11} />
+                      পুনরায় চেষ্টা
+                    </button>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -715,6 +742,7 @@ export default function TextToSpeech() {
                         {generationTime && (
                           <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "monospace" }}>
                             {generationTime}s · {selectedVoice.label} · {selectedStyle.label}
+                            {provider === "openai" && " · OpenAI"}
                           </div>
                         )}
                       </div>

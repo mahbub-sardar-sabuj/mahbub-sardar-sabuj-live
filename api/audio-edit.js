@@ -2186,8 +2186,10 @@ async function handleTTS(req, res) {
     return res.status(400).json({ error: "text too long (max 5000 characters)" });
   }
 
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!geminiKey) return res.status(500).json({ error: "TTS service not configured" });
+  const geminiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  const openAiKey = process.env.OPENAI_API_KEY?.trim();
+  const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1";
+  if (!geminiKey && !openAiKey) return res.status(500).json({ error: "TTS service not configured" });
 
   const styleInstruction = style?.trim() ||
     "You are a deeply emotional Bengali poet reading your own poem aloud. Speak in natural, human Bengali — not robotic, not AI-like. Let your voice tremble slightly with feeling. Take real, natural breaths between lines. Pause meaningfully at commas and line breaks. Emphasize words that carry pain, longing, or love. Your voice should feel like a real person who has lived through what they are reading. Never sound mechanical or uniform — vary your pace, your pitch, your breath. This is a human heart speaking.";
@@ -2202,10 +2204,12 @@ async function handleTTS(req, res) {
     }
   };
 
-  // Try Gemini 3.1 Flash TTS first (most human-like), fallback to 2.5
+  // Try TTS models in order of preference (most human-like first)
   const ttsModels = [
     "gemini-3.1-flash-tts-preview",
     "gemini-2.5-flash-preview-tts",
+    "gemini-2.5-flash-tts",
+    "gemini-2.5-pro-preview-tts",
   ];
   let response = null;
   let lastError = null;
@@ -2234,11 +2238,61 @@ async function handleTTS(req, res) {
     }
   }
 
+  // ── OpenAI TTS Fallback ──────────────────────────────────────────────────────
   if (!response || !response.ok) {
-    console.error("[TTS] All models failed. Last error:", lastError);
+    console.warn("[TTS] Gemini failed, trying OpenAI TTS fallback. Last error:", lastError);
+    if (openAiKey) {
+      try {
+        // Map Gemini voice names to OpenAI voices
+        const voiceMap = {
+          Sulafat: "nova", Aoede: "shimmer", Despina: "alloy", Leda: "nova",
+          Kore: "shimmer", Zephyr: "alloy", Achernar: "nova", Gacrux: "shimmer",
+          Vindemiatrix: "alloy", Laomedeia: "nova",
+          Orus: "onyx", Rasalgethi: "echo", Fenrir: "fable", Algieba: "onyx",
+          Puck: "echo", Achird: "fable", Sadachbia: "onyx", Autonoe: "echo",
+          Umbriel: "onyx", Iapetus: "fable",
+        };
+        const openAiVoice = voiceMap[voice] || "nova";
+        const openAiTtsUrl = `${openAiBaseUrl}/audio/speech`;
+        const openAiResponse = await fetch(openAiTtsUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${openAiKey}`,
+          },
+          body: JSON.stringify({
+            model: "tts-1",
+            input: text.trim(),
+            voice: openAiVoice,
+            response_format: "mp3",
+          }),
+        });
+        if (openAiResponse.ok) {
+          const audioBuffer = await openAiResponse.arrayBuffer();
+          const audioData = Buffer.from(audioBuffer).toString("base64");
+          console.log(`[TTS] OpenAI fallback succeeded. Voice: ${openAiVoice}, Size: ${audioBuffer.byteLength} bytes`);
+          return res.status(200).json({ audioData, mimeType: "audio/mpeg", voice, charCount: text.length, provider: "openai" });
+        } else {
+          const errText = await openAiResponse.text();
+          console.error("[TTS] OpenAI fallback also failed:", openAiResponse.status, errText.slice(0, 200));
+        }
+      } catch (openAiErr) {
+        console.error("[TTS] OpenAI fallback error:", openAiErr.message);
+      }
+    }
+    console.error("[TTS] All TTS providers failed. Last Gemini error:", lastError);
+    const isRateLimit = lastError?.includes("429") || lastError?.includes("RESOURCE_EXHAUSTED");
+    const isKeyInvalid = lastError?.includes("401") || lastError?.includes("API_KEY_INVALID");
+    const isModelNotFound = lastError?.includes("404") || lastError?.includes("not found");
+    let details;
+    if (isRateLimit) details = "সার্ভার এখন ব্যস্ত। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
+    else if (isKeyInvalid) details = "API কনফিগারেশন সমস্যা। অ্যাডমিনকে জানান।";
+    else if (isModelNotFound) details = "TTS মডেল পাওয়া যাচ্ছে না। কিছুক্ষণ পরে চেষ্টা করুন।";
+    else details = "সার্ভার সাময়িকভাবে অনুপলব্ধ। পুনরায় চেষ্টা করুন।";
     return res.status(502).json({
       error: "TTS generation failed",
-      details: lastError?.includes("429") ? "Rate limit exceeded, please try again" : "Service temporarily unavailable"
+      details,
+      lastError: process.env.NODE_ENV === 'development' ? lastError : undefined,
     });
   }
 
