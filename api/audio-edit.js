@@ -2179,6 +2179,11 @@ async function handleTTS(req, res) {
 
   const { text, voice = "Sulafat", style = "" } = body;
 
+  // Set headers to help Cloudflare/CDN handle long-running requests
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.setHeader("Content-Type", "application/json");
+
   if (!text || typeof text !== "string" || text.trim().length === 0) {
     return res.status(400).json({ error: "text is required" });
   }
