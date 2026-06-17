@@ -2165,7 +2165,82 @@ function buildFFmpegFilter(operations, vocalDuration) {
 
 // ── Pro Max v10.0 Main Handler ──────────────────────────────────────────────────
 // Version: Pro Max v10.0 | Integrated Audio Editing | Auto-Update Ready
+// ── TTS sub-handler ─────────────────────────────────────────────────────────
+async function handleTTS(req, res) {
+  const body = await new Promise((resolve, reject) => {
+    let data = [];
+    req.on("data", chunk => data.push(chunk));
+    req.on("end", () => {
+      try { resolve(JSON.parse(Buffer.concat(data).toString())); }
+      catch (e) { reject(e); }
+    });
+    req.on("error", reject);
+  }).catch(() => ({}));
+
+  const { text, voice = "Sulafat", style = "" } = body;
+
+  if (!text || typeof text !== "string" || text.trim().length === 0) {
+    return res.status(400).json({ error: "text is required" });
+  }
+  if (text.length > 5000) {
+    return res.status(400).json({ error: "text too long (max 5000 characters)" });
+  }
+
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!geminiKey) return res.status(500).json({ error: "TTS service not configured" });
+
+  const styleInstruction = style?.trim() ||
+    "Speak in Bengali with a warm, expressive, and natural human voice. Read with the rhythm and emotion of a skilled Bengali poet reciting their own work. Use natural pauses, gentle emphasis on emotional words, and a flowing cadence. The voice should feel like a real person speaking from the heart";
+
+  const prompt = `${styleInstruction}: ${text.trim()}`;
+
+  const requestBody = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseModalities: ["AUDIO"],
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } }
+    }
+  };
+
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKey}`;
+
+  const response = await fetch(geminiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[TTS] Gemini API error:", response.status, errorText);
+    return res.status(502).json({
+      error: "TTS generation failed",
+      details: response.status === 429 ? "Rate limit exceeded, please try again" : "Service temporarily unavailable"
+    });
+  }
+
+  const data = await response.json();
+  const audioData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+  const mimeType = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "audio/wav";
+
+  if (!audioData) {
+    console.error("[TTS] No audio data in response");
+    return res.status(502).json({ error: "No audio generated" });
+  }
+
+  return res.status(200).json({ audioData, mimeType, voice, charCount: text.length });
+}
+
 export default async function handler(req, res) {
+  // Route TTS requests to dedicated sub-handler
+  if (req.url?.includes("/api/tts") || req.headers["x-tts-request"] === "1") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") return res.status(200).end();
+    return handleTTS(req, res);
+  }
+
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 

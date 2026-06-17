@@ -36,10 +36,6 @@
     "api/chat.js": {
       "maxDuration": 30
     },
-    "api/tts.js": {
-      "maxDuration": 60,
-      "memory": 512
-    }
   },
   "redirects": [
     {
@@ -104,6 +100,10 @@
     {
       "src": "/api/image-upscale",
       "dest": "/api/image-upscale.js"
+    },
+    {
+      "src": "/api/tts",
+      "dest": "/api/audio-edit"
     },
     {
       "src": "/api/(.*)",
