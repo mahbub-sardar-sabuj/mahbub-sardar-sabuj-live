@@ -121,3 +121,4 @@ client/public/__manus__/version.json
 .env.vercel
 .env.*
 .env*
+client/dist_test/

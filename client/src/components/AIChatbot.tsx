@@ -1951,7 +1951,16 @@ export default function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "welcome",
     role: "assistant",
-    content: `আপনাকে স্বাগতম মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট AI Agent রুমে।`,
+    content: `আস্সালামু আলাইকুম! 🌟 আমি মাহবুব সরদার সবুজের AI সহকারী।
+
+আপনি আমাকে যা জিজ্ঞেস করতে পারেন:
+• লেখক পরিচিতি ও জীবনী
+• কবিতা, গল্প ও লেখা সম্পর্কে
+• বই ও ই-বুক সম্পর্কে
+• ওয়েবসাইটের যেকোনো ফিচার
+• ছবি আপলোড করলে বিশ্লেষণ করব
+
+কী জানতে চান? 😊`,
     timestamp: new Date(),
   }]);
   const [input, setInput] = useState("");
@@ -2664,31 +2673,6 @@ export default function AIChatbot() {
     if (!chipText.trim() || isLoading) return;
 
     // ── Audio mode: if audio file is selected OR last audio exists, run audio edit ──
-    if (isAudioEditRequest(chipText)) {
-      if (audioFile || lastAudioBlobRef.current) {
-        // Set input so handleAudioEdit picks it up
-        setInput(chipText.trim());
-        // Use setTimeout to ensure input state is set before calling
-        setTimeout(() => handleAudioEdit(chipText.trim()), 50);
-        return;
-      }
-      // No audio file — show prompt to upload
-      const userMsgAudio: Message = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: chipText.trim(),
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, userMsgAudio]);
-      setMessages(prev => [...prev, {
-        id: `ai-audio-prompt-${Date.now()}`,
-        role: "assistant",
-        content: `অডিও এডিটিংয়ের জন্য প্রস্তুত! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি "${chipText.trim()}" অনুযায়ী এডিট করে দেব।`,
-        timestamp: new Date(),
-      }]);
-      setTimeout(() => audioFileInputRef.current?.click(), 400);
-      return;
-    }
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -2752,36 +2736,7 @@ export default function AIChatbot() {
       return;
     }
 
-    // Case 2: Text looks like audio edit instruction but no file yet
-    // Show a smart prompt asking to upload audio
-    if (isAudioEditRequest(text) && !audioFile) {
-      const userMsg: Message = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: text,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, userMsg]);
-      setInput("");
-      setIsLoading(false);
-      // Show AI response asking for audio file
-      const aiPromptMsg: Message = {
-        id: `ai-audio-prompt-${Date.now()}`,
-        role: "assistant",
-        content: `অডিও এডিটিংয়ের জন্য প্রস্তুত! নিচের 🎵 বাটনে ক্লিক করে অডিও ফাইলটি আপলোড করুন — তারপর আমি তাৎক্ষণিক "${text}" অনুযায়ী এডিট করে দেব।`,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiPromptMsg]);
-      notifyChatbotActivity({
-        type: "audio_edit_file_requested",
-        title: "AI Chatbot Audio Edit Request",
-        userMessage: text,
-        aiResponse: aiPromptMsg.content,
-      });
-      // Auto-open audio file picker
-      setTimeout(() => audioFileInputRef.current?.click(), 400);
-      return;
-    }
+
 
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -3064,9 +3019,9 @@ export default function AIChatbot() {
     setMessages([{
       id: "welcome-new",
       role: "assistant",
-      content: `নতুন কথোপকথন শুরু! ✨ কী জানতে চান আজ?
+      content: `নতুন কথোপকথন শুরু! ✨
 
-আমি সবসময় এখানে আছি — লেখক, বই, কবিতা, অডিও এডিট, ছবি বিশ্লেষণ বা যেকোনো প্রশ্নের জন্য। নির্দ্বিধায় বলুন! 😊`,
+আমি এখানে আছি — লেখক পরিচিতি, কবিতা, গল্প, বই, ওয়েবসাইটের ফিচার বা ছবি বিশ্লেষণ — যেকোনো প্রশ্ন করুন। 😊`,
       timestamp: new Date(),
     }]);
     setError(null);
@@ -3332,7 +3287,7 @@ export default function AIChatbot() {
                   fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
                   fontSize: "0.65rem",
                   textAlign: "center",
-                }}>অডিও, ভিডিও বা ছবি</div>
+                }}>ছবি ফাইল</div>
               </div>
             )}
 
