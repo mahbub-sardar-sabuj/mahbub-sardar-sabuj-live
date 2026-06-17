@@ -340,12 +340,38 @@ export default function ImageUpscaler() {
     }
   }, [file, scale]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (!outputUrl || !file) return;
+    const fileName = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.png`;
+
+    // iOS Safari: use Web Share API to allow saving to Photos/Files
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (isIOS && navigator.canShare) {
+      try {
+        // Convert data URL to blob for sharing
+        const res = await fetch(outputUrl);
+        const blob = await res.blob();
+        const shareFile = new File([blob], fileName, { type: "image/png" });
+        if (navigator.canShare({ files: [shareFile] })) {
+          await navigator.share({
+            files: [shareFile],
+            title: fileName,
+          });
+          return;
+        }
+      } catch (e) {
+        // User cancelled share or share failed — fall through to anchor download
+      }
+    }
+
+    // Standard download for non-iOS browsers
     const a = document.createElement("a");
     a.href = outputUrl;
-    a.download = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.png`;
+    a.download = fileName;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
   }, [outputUrl, file, scale]);
 
   const isProcessing = stage === "processing";
@@ -632,7 +658,7 @@ export default function ImageUpscaler() {
                     onClick={handleDownload}
                     className="flex-1 py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl font-bold text-sm shadow-lg shadow-green-600/20 hover:shadow-green-600/35 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    <Download size={15} /> ডাউনলোড করুন
+                    <Download size={15} /> ডাউনলোড / সেভ করুন
                   </button>
                   <button
                     onClick={reset}

@@ -54,6 +54,7 @@ export default function VideoUpscaler() {
   const [error, setError] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [outputFileSize, setOutputFileSize] = useState<number | null>(null);
+  const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -93,6 +94,7 @@ export default function VideoUpscaler() {
     setError(null);
     setElapsedTime(0);
     setOutputFileSize(null);
+    setOutputBlob(null);
     if (fileRef.current) fileRef.current.value = "";
     setTimeout(() => { abortRef.current = false; }, 100);
   }, [stopTimer]);
@@ -232,6 +234,7 @@ export default function VideoUpscaler() {
       setOutputSize({ w: outputW, h: outputH });
       setInputSize({ w: inputW, h: inputH });
       setOutputFileSize(outputBlob.size);
+      setOutputBlob(outputBlob);
       setStage("done");
       setStatusMsg("সম্পন্ন!");
     } catch (err: unknown) {
@@ -244,13 +247,36 @@ export default function VideoUpscaler() {
     }
   }, [file, scale, inputSize, getFFmpeg, startTimer, stopTimer]);
 
-  const handleDownload = useCallback(() => {
-    if (!outputUrl || !file) return;
+  const handleDownload = useCallback(async () => {
+    if (!outputUrl || !file || !outputBlob) return;
+    const fileName = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.mp4`;
+
+    // iOS Safari: use Web Share API to allow saving to Photos/Files
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (isIOS && navigator.canShare) {
+      try {
+        const shareFile = new File([outputBlob], fileName, { type: "video/mp4" });
+        if (navigator.canShare({ files: [shareFile] })) {
+          await navigator.share({
+            files: [shareFile],
+            title: fileName,
+          });
+          return;
+        }
+      } catch (e) {
+        // User cancelled share or share failed — fall through to anchor download
+      }
+    }
+
+    // Standard download for non-iOS browsers
     const a = document.createElement("a");
     a.href = outputUrl;
-    a.download = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.mp4`;
+    a.download = fileName;
+    document.body.appendChild(a);
     a.click();
-  }, [outputUrl, file, scale]);
+    document.body.removeChild(a);
+  }, [outputUrl, outputBlob, file, scale]);
 
   const isProcessing = ["loading_ffmpeg", "reading", "processing"].includes(stage);
 
@@ -534,7 +560,7 @@ export default function VideoUpscaler() {
                     onClick={handleDownload}
                     className="flex-1 py-3.5 bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl font-bold text-sm shadow-lg shadow-green-600/20 hover:shadow-green-600/35 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    <Download size={15} /> ডাউনলোড করুন
+                    <Download size={15} /> ডাউনলোড / সেভ করুন
                   </button>
                   <button
                     onClick={reset}
