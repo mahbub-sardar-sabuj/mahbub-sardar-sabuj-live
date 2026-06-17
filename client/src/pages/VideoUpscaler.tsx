@@ -59,12 +59,29 @@ export default function VideoUpscaler() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
   const abortRef = useRef<boolean>(false);
+  const videoPreviewRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  // iOS Safari fix: set video src via ref after blob is ready
+  useEffect(() => {
+    const videoEl = videoPreviewRef.current;
+    if (!videoEl || !outputBlob) return;
+    // Revoke previous object URL if any
+    if (videoEl.src && videoEl.src.startsWith('blob:')) {
+      URL.revokeObjectURL(videoEl.src);
+    }
+    const newUrl = URL.createObjectURL(outputBlob);
+    videoEl.src = newUrl;
+    videoEl.load();
+    return () => {
+      URL.revokeObjectURL(newUrl);
+    };
+  }, [outputBlob]);
 
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now();
@@ -547,10 +564,11 @@ export default function VideoUpscaler() {
                 {/* Video preview */}
                 <div className="rounded-2xl overflow-hidden bg-black/60 ring-1 ring-white/8">
                   <video
-                    src={outputUrl}
+                    ref={videoPreviewRef}
                     className="w-full max-h-[340px] object-contain"
                     controls
                     playsInline
+                    autoPlay={false}
                   />
                 </div>
 
