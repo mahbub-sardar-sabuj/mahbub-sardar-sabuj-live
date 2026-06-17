@@ -43,6 +43,7 @@ const navLinks = [
   { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", type: "page", icon: CreditCard },
   { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", type: "page", icon: Sparkles },
   { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", type: "page", icon: Music },
+  { label: "আবৃত্তি টুল", subtitle: "লেখা দিন, AI মানুষের কণ্ঠে পড়বে ও ডাউনলোড করুন", href: "/text-to-speech", type: "page", icon: Mic2 },
 ];
 
 const infoTabs = [

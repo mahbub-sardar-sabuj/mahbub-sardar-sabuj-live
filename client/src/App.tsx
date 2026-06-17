@@ -38,6 +38,7 @@ const TempCard = lazyRoute("TempCard");
 const ImageUpscaler = lazyRoute("ImageUpscaler");
 const VideoUpscaler = lazyRoute("VideoUpscaler");
 const AudioEditor = lazyRoute("AudioEditor");
+const TextToSpeech = lazyRoute("TextToSpeech");
 
 // Page loading fallback — skeleton layout instead of blank spinner
 function PageLoader() {
@@ -148,6 +149,7 @@ function Router() {
         <Route path={"/image-upscaler"} component={ImageUpscaler} />
         <Route path={"/video-upscaler"} component={VideoUpscaler} />
         <Route path={"/audio-editor"} component={AudioEditor} />
+        <Route path={"/text-to-speech"} component={TextToSpeech} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />
