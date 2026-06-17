@@ -213,6 +213,17 @@ export default function TextToSpeech() {
         }),
       });
 
+      // Handle non-JSON responses (e.g., Cloudflare 502 HTML error pages)
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const htmlText = await response.text();
+        console.error("[TTS] Non-JSON response:", htmlText.slice(0, 200));
+        if (response.status === 502 || response.status === 503 || response.status === 504) {
+          throw new Error("আবৃত্তি সেবা এখন ব্যস্ত। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+        }
+        throw new Error("সার্ভার থেকে অপ্রত্যাশিত রেসপন্স পাওয়া গেছে। পুনরায় চেষ্টা করুন।");
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -242,7 +253,11 @@ export default function TextToSpeech() {
       setRetryCount(0);
 
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "অজানা ত্রুটি হয়েছে।";
+      let message = err instanceof Error ? err.message : "অজানা ত্রুটি হয়েছে।";
+      // Handle JSON parse errors from non-JSON responses
+      if (message.includes("Unexpected token") || message.includes("JSON") || message.includes("<!DOCTYPE")) {
+        message = "আবৃত্তি সেবা সাময়িকভাবে অনুপলব্ধ। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
+      }
       setError(message);
     } finally {
       setIsGenerating(false);
