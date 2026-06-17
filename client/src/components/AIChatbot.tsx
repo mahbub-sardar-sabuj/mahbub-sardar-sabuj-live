@@ -3502,7 +3502,7 @@ export default function AIChatbot() {
                 flexShrink: 0,
               }}>
                 {[
-                  { key: "ai", label: "AI Agent", sub: "প্রশ্ন, ছবি, অডিও এডিটিং", icon: "✨" },
+                  { key: "ai", label: "AI Agent", sub: "প্রশ্ন, ছবি ব্যাখ্যা", icon: "✨" },
                   { key: "live", label: "Live Chat", sub: "সরাসরি সহায়তা", icon: "💬" },
                 ].map(tab => {
                   const active = activeTab === tab.key;
@@ -3704,111 +3704,7 @@ export default function AIChatbot() {
                   onChange={handleImageSelect}
                   style={{ display: "none" }}
                 />
-                <input
-                  ref={audioFileInputRef}
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.ogg,.flac,.aac,.m4a,.webm,.opus"
-                  onChange={handleAudioSelect}
-                  style={{ display: "none" }}
-                />
-                <input
-                  ref={videoFileInputRef}
-                  type="file"
-                  accept="video/*,.mp4,.mov,.avi,.mkv,.webm,.flv,.wmv,.m4v,.3gp"
-                  onChange={handleVideoSelect}
-                  style={{ display: "none" }}
-                />
-
-                {/* Video converting banner */}
-                {videoConverting && videoFile && (
-                  <div style={{
-                    marginBottom: 7,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 7,
-                    padding: "6px 10px",
-                    background: "rgba(99,102,241,0.07)",
-                    borderRadius: 9,
-                    border: "1px solid rgba(99,102,241,0.25)",
-                  }}>
-                    <div style={{
-                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-                      background: "rgba(99,102,241,0.12)",
-                      border: "1px solid rgba(99,102,241,0.3)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="23 7 16 12 23 17 23 7"/>
-                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                      </svg>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        color: "rgba(99,102,241,0.9)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.6rem",
-                        fontWeight: 700,
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}>{videoFile.name}</div>
-                      <div style={{
-                        color: "rgba(99,102,241,0.55)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.54rem", marginTop: 1,
-                        display: "flex", alignItems: "center", gap: 4,
-                      }}>
-                        <span style={{
-                          display: "inline-block", width: 8, height: 8, borderRadius: "50%",
-                          background: "#6366f1",
-                          animation: "pulse 1.2s ease-in-out infinite",
-                        }}/>
-                        অডিও এক্সট্রাক্ট হচ্ছে...
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {/* Audio mode banner — only show when a NEW file is selected, not after editing */}
-                {audioFile && (
-                  <div style={{
-                    marginBottom: 7,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 7,
-                    padding: "6px 10px",
-                    background: "rgba(212,168,67,0.05)",
-                    borderRadius: 9,
-                    border: "1px solid rgba(212,168,67,0.2)",
-                  }}>
-                    {/* Audio icon */}
-                    <div style={{
-                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-                      background: "rgba(212,168,67,0.1)",
-                      border: "1px solid rgba(212,168,67,0.3)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A843" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 18V5l12-2v13"/>
-                        <circle cx="6" cy="18" r="3"/>
-                        <circle cx="18" cy="16" r="3"/>
-                      </svg>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        color: "rgba(212,168,67,0.85)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.6rem",
-                        fontWeight: 700,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        letterSpacing: "0.01em",
-                      }}>{audioFile.name}</div>
-                      <div style={{
-                        color: "rgba(212,168,67,0.4)",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.54rem",
-                        marginTop: 1,
-                      }}>
-                        {(audioFile.size / (1024 * 1024)).toFixed(1)} MB • নির্দেশ দিন
+MB • নির্দেশ দিন
                       </div>
                     </div>
 
@@ -3869,8 +3765,7 @@ export default function AIChatbot() {
 
 
                 <div style={{ display: "flex", gap: 5, alignItems: "flex-end", paddingBottom: isKeyboardViewport ? "env(safe-area-inset-bottom, 0px)" : 0 }}>
-                  {/* Image attach button (hidden in audio mode) */}
-                  {!isAudioMode && (
+                  {/* Image attach button */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     title="ছবি যুক্ত করুন"
@@ -3892,53 +3787,6 @@ export default function AIChatbot() {
                       <polyline points="21 15 16 10 5 21"/>
                     </svg>
                   </button>
-                  )}
-                  {/* Audio attach button */}
-                  <button
-                    onClick={() => audioFileInputRef.current?.click()}
-                    title="অডিও ফাইল যুক্ত করুন"
-                    aria-label="অডিও ফাইল যুক্ত করুন"
-                    className="chatbot-icon-btn"
-                    style={{
-                      width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                      background: isAudioMode ? "rgba(212,168,67,0.15)" : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${isAudioMode ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.15)"}`,
-                      cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke={isAudioMode ? "#D4A843" : "rgba(212,168,67,0.4)"}
-                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18V5l12-2v13"/>
-                      <circle cx="6" cy="18" r="3"/>
-                      <circle cx="18" cy="16" r="3"/>
-                    </svg>
-                  </button>
-
-                  {/* Video upload button */}
-                  <button
-                    title="ভিডিও আপলোড করুন (অডিও এক্সট্রাক্ট হবে)"
-                    aria-label="ভিডিও আপলোড করুন"
-                    className="chatbot-icon-btn"
-                    onClick={() => videoFileInputRef.current?.click()}
-                    disabled={audioProcessing || videoConverting}
-                    style={{
-                      width: 40, height: 40, borderRadius: 10,
-                      background: "rgba(99,102,241,0.07)",
-                      border: "1px solid rgba(99,102,241,0.2)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: audioProcessing || videoConverting ? "not-allowed" : "pointer",
-                      flexShrink: 0,
-                      transition: "all 0.2s",
-                      opacity: audioProcessing || videoConverting ? 0.5 : 1,
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="23 7 16 12 23 17 23 7"/>
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                    </svg>
-                  </button>
 
 
 
@@ -3953,7 +3801,7 @@ export default function AIChatbot() {
                         ta.style.height = Math.min(ta.scrollHeight, 88) + "px";
                       }}
                       onKeyDown={handleKeyDown}
-                      placeholder={audioFile ? "বলুন কী করতে চান — যেমন: নয়েজ কমাও, ভোকাল ক্লিন করো, YouTube ভয়েস বানাও..." : lastAudioBlobRef.current ? "আরো পরিবর্তন করুন — যেমন: আরো ক্লিয়ার করো, বেস বাড়াও..." : "যেমন: কেমন আছেন, আজ মনটা ভালো নেই, বিচ্ছেদের লেখা দেখাও..."}
+                      placeholder="যেমন: কেমন আছেন, আজ মনটা ভালো নেই, বিচ্ছেদের লেখা দেখাও..."
                       rows={1}
                       disabled={isLoading}
                       aria-label="চ্যাট বার্তা"
