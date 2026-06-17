@@ -53,11 +53,15 @@ export default function VideoUpscaler() {
     setStatusMsg("ফাইল পড়া হচ্ছে...");
 
     try {
-      // Read file as base64
+      // Read file as base64 with safer error handling
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = reject;
+        reader.onload = (e) => {
+          const result = e.target?.result;
+          if (typeof result === 'string') resolve(result);
+          else reject(new Error("ফাইল পড়তে সমস্যা হয়েছে।"));
+        };
+        reader.onerror = () => reject(new Error("ফাইল পড়ার সময় এরর হয়েছে।"));
         reader.readAsDataURL(file);
       });
 
@@ -65,10 +69,22 @@ export default function VideoUpscaler() {
       setProgress(20);
       setStatusMsg("সার্ভারে পাঠানো হচ্ছে...");
 
+      // Large JSON bodies can sometimes fail in certain browsers/proxies
+      // Ensure we're sending a valid JSON structure
+      const payload = { 
+        action: "upscale", 
+        videoData: base64, 
+        videoName: file.name, 
+        scale 
+      };
+
       const res = await fetch("/api/video-to-audio", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "upscale", videoData: base64, videoName: file.name, scale }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload),
       });
 
       setStage("processing");

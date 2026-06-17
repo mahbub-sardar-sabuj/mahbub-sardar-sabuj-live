@@ -75,13 +75,18 @@ function getVideoInfo(filePath, ffmpegPath) {
 
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
-    let data = "";
-    req.on("data", chunk => data += chunk);
+    const chunks = [];
+    req.on("data", chunk => chunks.push(chunk));
     req.on("end", () => {
-      try { resolve(JSON.parse(data)); }
-      catch (e) { reject(new Error("Invalid JSON")); }
+      try {
+        const buffer = Buffer.concat(chunks);
+        const data = buffer.toString("utf-8");
+        resolve(JSON.parse(data));
+      } catch (e) {
+        reject(new Error("সার্ভার ডেটা গ্রহণে সমস্যা হয়েছে (Invalid JSON)"));
+      }
     });
-    req.on("error", reject);
+    req.on("error", (err) => reject(err));
   });
 }
 
