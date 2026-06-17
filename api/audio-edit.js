@@ -2212,7 +2212,24 @@ export default async function handler(req, res) {
     prompt = fields.prompt?.[0] || fields.instruction?.[0];
     const audioFile = files.audio?.[0];
     if (audioFile) {
-      tempFilePath = audioFile.filepath;
+      audioMime = audioFile.mimetype || audioFile.originalFilename?.match(/\.m4a$/i) ? "audio/mp4" : "audio/mpeg";
+      // Rename temp file with correct extension so FFmpeg auto-detects format
+      const mimeToExt = {
+        "audio/mp4": ".m4a", "audio/x-m4a": ".m4a", "audio/m4a": ".m4a",
+        "audio/aac": ".aac", "audio/x-aac": ".aac",
+        "audio/ogg": ".ogg", "audio/vorbis": ".ogg",
+        "audio/flac": ".flac", "audio/x-flac": ".flac",
+        "audio/wav": ".wav", "audio/x-wav": ".wav", "audio/wave": ".wav",
+        "audio/webm": ".webm",
+        "audio/mpeg": ".mp3", "audio/mp3": ".mp3",
+        "audio/opus": ".opus",
+      };
+      // Also check original filename extension
+      const origExt = audioFile.originalFilename ? audioFile.originalFilename.match(/\.[a-z0-9]+$/i)?.[0]?.toLowerCase() : null;
+      const extFromMime = mimeToExt[audioFile.mimetype] || origExt || ".mp3";
+      const renamedPath = audioFile.filepath + extFromMime;
+      fs.renameSync(audioFile.filepath, renamedPath);
+      tempFilePath = renamedPath;
       audioMime = audioFile.mimetype || "audio/mpeg";
     }
     // Music file (optional)

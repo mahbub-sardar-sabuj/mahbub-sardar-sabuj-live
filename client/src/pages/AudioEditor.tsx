@@ -1,306 +1,145 @@
-/*
- * AudioEditor.tsx — পূর্ণাঙ্গ ব্রাউজার-ভিত্তিক অডিও এডিটর
- * Design: "Ink & Gold" — World-Class Literary Premium
- * Features: Upload, Waveform, Trim, Speed, Volume, Fade, Reverse, Noise Filter, Download
- */
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Upload, Music, Play, Pause, Square, Download,
-  Scissors, Volume2, Zap, RotateCcw, Wind, RefreshCw,
-  ChevronRight, AlertCircle, CheckCircle2, X, Wand2,
-  SkipBack, SkipForward, Gauge,
+  Upload, Music, Play, Pause, Download, Loader2, CheckCircle,
+  AlertCircle, X, Wand2, Volume2, Mic, Sparkles, RefreshCw,
+  ChevronDown, ChevronUp, Info, Star, Zap, Shield, Headphones,
+  Radio, Waves, Film, BookOpen, MessageSquare, Cpu
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Seo from "@/components/Seo";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-interface AudioState {
-  buffer: AudioBuffer | null;
-  fileName: string;
-  duration: number;
-  sampleRate: number;
-  channels: number;
+// ── Types ──────────────────────────────────────────────────────────────────────
+interface AudioInfo {
+  file: File;
+  name: string;
+  size: number;
+  url: string; // object URL for preview
 }
 
-interface EditParams {
-  trimStart: number;
-  trimEnd: number;
-  volume: number;
-  speed: number;
-  fadeIn: number;
-  fadeOut: number;
-  noiseReduction: boolean;
-  reverse: boolean;
+interface ProcessResult {
+  audioUrl: string;
+  audioFilename: string;
+  description: string;
+  appliedSteps: string[];
+  pipeline: string[];
+  intent: string;
+  technicalNote?: string;
+  outputSizeKB?: number;
 }
 
-// ─── Waveform Canvas ────────────────────────────────────────────────────────
-function WaveformCanvas({
-  buffer,
-  trimStart,
-  trimEnd,
-  currentTime,
-  duration,
-  onSeek,
-}: {
-  buffer: AudioBuffer | null;
-  trimStart: number;
-  trimEnd: number;
-  currentTime: number;
-  duration: number;
-  onSeek: (t: number) => void;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+// ── Preset categories ──────────────────────────────────────────────────────────
+const PRESETS = [
+  {
+    category: "🎙️ ভয়েস ক্লিনআপ",
+    items: [
+      { label: "নয়েজ রিমুভ", prompt: "নয়েজ কমাও এবং কণ্ঠ পরিষ্কার করো", icon: <Shield className="w-4 h-4" /> },
+      { label: "গভীর নয়েজ রিমুভ", prompt: "গভীর নয়েজ রিমুভ করো — 3-পাস ডিনয়েজ", icon: <Shield className="w-4 h-4" /> },
+      { label: "শ্বাস সরাও", prompt: "শ্বাসের শব্দ এবং পপ সরাও", icon: <Mic className="w-4 h-4" /> },
+      { label: "হাম সরাও", prompt: "বৈদ্যুতিক হাম এবং ৫০Hz নয়েজ সরাও", icon: <Zap className="w-4 h-4" /> },
+      { label: "পুরনো রেকর্ড রিস্টোর", prompt: "পুরনো রেকর্ডিং রিস্টোর করো", icon: <RefreshCw className="w-4 h-4" /> },
+    ]
+  },
+  {
+    category: "✨ ভয়েস প্রিসেট",
+    items: [
+      { label: "স্টুডিও মান", prompt: "প্রফেশনাল স্টুডিও মান করো", icon: <Star className="w-4 h-4" /> },
+      { label: "গোল্ডেন ভয়েস", prompt: "গোল্ডেন ভয়েস — মধুময় উষ্ণ কণ্ঠ", icon: <Sparkles className="w-4 h-4" /> },
+      { label: "ডায়মন্ড ভয়েস", prompt: "ডায়মন্ড ভয়েস — স্ফটিক স্বচ্ছ কণ্ঠ", icon: <Sparkles className="w-4 h-4" /> },
+      { label: "ভেলভেট ভয়েস", prompt: "ভেলভেট ভয়েস — মখমলের মতো কণ্ঠ", icon: <Sparkles className="w-4 h-4" /> },
+      { label: "ভয়েস এনহ্যান্সার প্রো", prompt: "ভয়েস এনহ্যান্সার প্রো — সম্পূর্ণ প্রসেসিং", icon: <Cpu className="w-4 h-4" /> },
+    ]
+  },
+  {
+    category: "🎭 ক্যারেক্টার ভয়েস",
+    items: [
+      { label: "সিনেমাটিক বাংলা", prompt: "সিনেমাটিক বাংলা ভয়েস করো", icon: <Film className="w-4 h-4" /> },
+      { label: "রেডিও জকি", prompt: "রেডিও জকি ভয়েস করো", icon: <Radio className="w-4 h-4" /> },
+      { label: "সুফি ভয়েস", prompt: "সুফি ভয়েস — আধ্যাত্মিক গভীরতা", icon: <Waves className="w-4 h-4" /> },
+      { label: "ড্রামা ভয়েস", prompt: "ড্রামা ভয়েস — নাটকীয় কণ্ঠ", icon: <Mic className="w-4 h-4" /> },
+      { label: "বাংলা আবৃত্তি প্রো", prompt: "বাংলা আবৃত্তি প্রো — কবিতার জন্য", icon: <BookOpen className="w-4 h-4" /> },
+    ]
+  },
+  {
+    category: "📱 প্ল্যাটফর্ম অপ্টিমাইজ",
+    items: [
+      { label: "YouTube ভয়েস", prompt: "YouTube ভয়েস করো", icon: <Film className="w-4 h-4" /> },
+      { label: "TikTok/Reels", prompt: "TikTok ভয়েস করো", icon: <Zap className="w-4 h-4" /> },
+      { label: "অডিওবুক", prompt: "অডিওবুক ভয়েস করো", icon: <BookOpen className="w-4 h-4" /> },
+      { label: "পডকাস্ট", prompt: "পডকাস্ট মান করো", icon: <Headphones className="w-4 h-4" /> },
+      { label: "ভয়েস মেসেজ", prompt: "ভয়েস মেসেজ পরিষ্কার করো", icon: <MessageSquare className="w-4 h-4" /> },
+    ]
+  },
+  {
+    category: "🎚️ মাস্টারিং",
+    items: [
+      { label: "স্টুডিও মাস্টার", prompt: "পারফেক্ট মাস্টারিং — স্টুডিও মান", icon: <Star className="w-4 h-4" /> },
+      { label: "স্ট্রিমিং রেডি", prompt: "স্ট্রিমিং রেডি — Spotify/YouTube মান", icon: <Music className="w-4 h-4" /> },
+      { label: "ব্রডকাস্ট মাস্টার", prompt: "ব্রডকাস্ট মাস্টারিং — TV মান", icon: <Radio className="w-4 h-4" /> },
+      { label: "সিনেমা মাস্টার", prompt: "সিনেমা মাস্টারিং — ফিল্ম মান", icon: <Film className="w-4 h-4" /> },
+      { label: "অটো মাস্টার", prompt: "অটো মাস্টার করো", icon: <Cpu className="w-4 h-4" /> },
+    ]
+  },
+  {
+    category: "🎨 ইফেক্ট",
+    items: [
+      { label: "রিভার্ব যোগ", prompt: "রিভার্ব যোগ করো", icon: <Waves className="w-4 h-4" /> },
+      { label: "ইকো যোগ", prompt: "ইকো যোগ করো", icon: <Waves className="w-4 h-4" /> },
+      { label: "পিচ বাড়াও", prompt: "পিচ বাড়াও ২ সেমিটোন", icon: <ChevronUp className="w-4 h-4" /> },
+      { label: "পিচ কমাও", prompt: "পিচ কমাও ২ সেমিটোন", icon: <ChevronDown className="w-4 h-4" /> },
+      { label: "স্টেরিও বড় করো", prompt: "স্টেরিও ফিল্ড বড় করো", icon: <Headphones className="w-4 h-4" /> },
+    ]
+  },
+];
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !buffer) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const W = canvas.width;
-    const H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    // Background
-    ctx.fillStyle = "rgba(4,10,20,0.9)";
-    ctx.fillRect(0, 0, W, H);
-
-    // Trim region highlight
-    const s = (trimStart / duration) * W;
-    const e = (trimEnd / duration) * W;
-    ctx.fillStyle = "rgba(201,168,76,0.08)";
-    ctx.fillRect(s, 0, e - s, H);
-
-    // Waveform
-    const data = buffer.getChannelData(0);
-    const step = Math.ceil(data.length / W);
-    const mid = H / 2;
-
-    for (let i = 0; i < W; i++) {
-      let min = 1, max = -1;
-      for (let j = 0; j < step; j++) {
-        const v = data[i * step + j] || 0;
-        if (v < min) min = v;
-        if (v > max) max = v;
-      }
-      const xPos = i / W;
-      const inTrim = xPos >= trimStart / duration && xPos <= trimEnd / duration;
-      ctx.strokeStyle = inTrim
-        ? `rgba(201,168,76,0.85)`
-        : `rgba(201,168,76,0.28)`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(i, mid + min * mid * 0.9);
-      ctx.lineTo(i, mid + max * mid * 0.9);
-      ctx.stroke();
-    }
-
-    // Trim handles
-    ctx.strokeStyle = "rgba(232,201,122,0.9)";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 3]);
-    ctx.beginPath(); ctx.moveTo(s, 0); ctx.lineTo(s, H); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(e, 0); ctx.lineTo(e, H); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Playhead
-    if (duration > 0) {
-      const px = (currentTime / duration) * W;
-      ctx.strokeStyle = "#FAF6EF";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
-    }
-  }, [buffer, trimStart, trimEnd, currentTime, duration]);
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current;
-      if (!canvas || duration === 0) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const t = (x / rect.width) * duration;
-      onSeek(Math.max(0, Math.min(duration, t)));
-    },
-    [duration, onSeek]
-  );
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={800}
-      height={120}
-      onClick={handleClick}
-      style={{
-        width: "100%",
-        height: 120,
-        borderRadius: 12,
-        cursor: "crosshair",
-        border: "1px solid rgba(201,168,76,0.18)",
-        display: "block",
-      }}
-    />
-  );
+// ── Helper: format bytes ───────────────────────────────────────────────────────
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-// ─── Slider Component ────────────────────────────────────────────────────────
-function GoldSlider({
-  label,
-  value,
-  min,
-  max,
-  step,
-  unit,
-  onChange,
-  formatValue,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  unit?: string;
-  onChange: (v: number) => void;
-  formatValue?: (v: number) => string;
-}) {
-  const pct = ((value - min) / (max - min)) * 100;
-  return (
-    <div style={{ marginBottom: "1.1rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem" }}>
-        <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.7)" }}>
-          {label}
-        </span>
-        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.82rem", color: "#E8C97A", fontWeight: 600 }}>
-          {formatValue ? formatValue(value) : value}{unit}
-        </span>
-      </div>
-      <div style={{ position: "relative", height: 6, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
-        <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: `${pct}%`, borderRadius: 3, background: "linear-gradient(90deg, rgba(201,168,76,0.6), #E8C97A)" }} />
-        <input
-          type="range"
-          min={min} max={max} step={step} value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            opacity: 0, cursor: "pointer", margin: 0,
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Toggle Switch ────────────────────────────────────────────────────────────
-function GoldToggle({ label, desc, value, onChange }: { label: string; desc: string; value: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div
-      onClick={() => onChange(!value)}
-      style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0.9rem 1rem",
-        background: value ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)",
-        border: `1px solid ${value ? "rgba(201,168,76,0.3)" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 12, cursor: "pointer",
-        transition: "all 0.25s ease",
-        marginBottom: "0.75rem",
-      }}
-    >
-      <div>
-        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "#FFF8EA", fontWeight: 600 }}>{label}</div>
-        <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.75rem", color: "rgba(250,246,239,0.5)", marginTop: 2 }}>{desc}</div>
-      </div>
-      <div style={{
-        width: 40, height: 22, borderRadius: 11,
-        background: value ? "linear-gradient(90deg, #C9A84C, #E8C97A)" : "rgba(255,255,255,0.12)",
-        position: "relative", transition: "background 0.25s ease", flexShrink: 0,
-      }}>
-        <div style={{
-          position: "absolute", top: 3, left: value ? 21 : 3,
-          width: 16, height: 16, borderRadius: "50%",
-          background: "#fff", transition: "left 0.25s ease",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-        }} />
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function AudioEditor() {
-  const [audioState, setAudioState] = useState<AudioState>({
-    buffer: null, fileName: "", duration: 0, sampleRate: 0, channels: 0,
-  });
-  const [params, setParams] = useState<EditParams>({
-    trimStart: 0, trimEnd: 0,
-    volume: 1, speed: 1,
-    fadeIn: 0, fadeOut: 0,
-    noiseReduction: false, reverse: false,
-  });
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [audio, setAudio] = useState<AudioInfo | null>(null);
+  const [instruction, setInstruction] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processedBlob, setProcessedBlob] = useState<Blob | null>(null);
+  const [result, setResult] = useState<ProcessResult | null>(null);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(PRESETS[0].category);
+  const [showPipeline, setShowPipeline] = useState(false);
+  const [originalPlaying, setOriginalPlaying] = useState(false);
+  const [editedPlaying, setEditedPlaying] = useState(false);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
-  const startTimeRef = useRef(0);
-  const startOffsetRef = useRef(0);
-  const animFrameRef = useRef<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const originalAudioRef = useRef<HTMLAudioElement>(null);
+  const editedAudioRef = useRef<HTMLAudioElement>(null);
 
-  const getAudioCtx = useCallback(() => {
-    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    return audioCtxRef.current;
+  // Revoke object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (audio?.url) URL.revokeObjectURL(audio.url);
+      if (result?.audioUrl) URL.revokeObjectURL(result.audioUrl);
+    };
   }, []);
 
-  const stopPlayback = useCallback(() => {
-    if (sourceRef.current) {
-      try { sourceRef.current.stop(); } catch {}
-      sourceRef.current = null;
-    }
-    cancelAnimationFrame(animFrameRef.current);
-    setIsPlaying(false);
-  }, []);
-
-  const handleFile = useCallback(async (file: File) => {
-    setError("");
-    setSuccess("");
-    setProcessedBlob(null);
-    stopPlayback();
-    setCurrentTime(0);
-
-    const allowed = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/flac", "audio/webm"];
-    if (!allowed.some(t => file.type.startsWith(t.split("/")[0]) && file.type.includes(t.split("/")[1])) && !file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i)) {
+  // ── File handling ────────────────────────────────────────────────────────────
+  const handleFile = useCallback((file: File) => {
+    if (!file.type.startsWith("audio/") && !file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac|webm|opus|caf|mp4)$/i)) {
       setError("সমর্থিত ফরম্যাট: MP3, WAV, OGG, M4A, AAC, FLAC, WebM");
       return;
     }
-    if (file.size > 100 * 1024 * 1024) {
-      setError("ফাইলের সর্বোচ্চ আকার ১০০ MB।");
+    if (file.size > 200 * 1024 * 1024) {
+      setError("ফাইলের সর্বোচ্চ আকার ২০০ MB।");
       return;
     }
-
-    try {
-      const ctx = getAudioCtx();
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = await ctx.decodeAudioData(arrayBuffer);
-      setAudioState({
-        buffer, fileName: file.name,
-        duration: buffer.duration,
-        sampleRate: buffer.sampleRate,
-        channels: buffer.numberOfChannels,
-      });
-      setParams(p => ({ ...p, trimStart: 0, trimEnd: buffer.duration }));
-      setSuccess(`"${file.name}" সফলভাবে লোড হয়েছে।`);
-    } catch {
-      setError("অডিও ডিকোড করতে সমস্যা হয়েছে। অন্য ফাইল চেষ্টা করুন।");
-    }
-  }, [getAudioCtx, stopPlayback]);
+    if (audio?.url) URL.revokeObjectURL(audio.url);
+    if (result?.audioUrl) URL.revokeObjectURL(result.audioUrl);
+    const url = URL.createObjectURL(file);
+    setAudio({ file, name: file.name, size: file.size, url });
+    setResult(null);
+    setError("");
+    setInstruction("");
+  }, [audio, result]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -309,607 +148,479 @@ export default function AudioEditor() {
     if (file) handleFile(file);
   }, [handleFile]);
 
-  const playPreview = useCallback(() => {
-    const { buffer, duration } = audioState;
-    if (!buffer) return;
-    stopPlayback();
-
-    const ctx = getAudioCtx();
-    if (ctx.state === "suspended") ctx.resume();
-
-    const src = ctx.createBufferSource();
-    const gain = ctx.createGain();
-
-    src.buffer = buffer;
-    src.playbackRate.value = params.speed;
-    gain.gain.value = params.volume;
-
-    src.connect(gain);
-    gain.connect(ctx.destination);
-
-    const offset = Math.max(params.trimStart, currentTime >= params.trimEnd ? params.trimStart : currentTime);
-    const segDur = (params.trimEnd - offset) / params.speed;
-
-    // Fade in
-    if (params.fadeIn > 0) {
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(params.volume, ctx.currentTime + Math.min(params.fadeIn, segDur * 0.5));
-    }
-    // Fade out
-    if (params.fadeOut > 0) {
-      const fadeOutStart = ctx.currentTime + segDur - Math.min(params.fadeOut, segDur * 0.5);
-      gain.gain.setValueAtTime(params.volume, fadeOutStart);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + segDur);
-    }
-
-    src.start(0, offset, params.trimEnd - offset);
-    src.onended = () => {
-      setIsPlaying(false);
-      setCurrentTime(params.trimStart);
-      cancelAnimationFrame(animFrameRef.current);
-    };
-
-    sourceRef.current = src;
-    gainRef.current = gain;
-    startTimeRef.current = ctx.currentTime;
-    startOffsetRef.current = offset;
-    setIsPlaying(true);
-
-    const tick = () => {
-      const elapsed = (ctx.currentTime - startTimeRef.current) * params.speed;
-      const t = Math.min(startOffsetRef.current + elapsed, params.trimEnd);
-      setCurrentTime(t);
-      if (t < params.trimEnd) animFrameRef.current = requestAnimationFrame(tick);
-    };
-    animFrameRef.current = requestAnimationFrame(tick);
-  }, [audioState, params, currentTime, getAudioCtx, stopPlayback]);
-
-  const processAndDownload = useCallback(async () => {
-    const { buffer, sampleRate, channels } = audioState;
-    if (!buffer) return;
+  // ── Process audio via server API ─────────────────────────────────────────────
+  const processAudio = useCallback(async (prompt: string) => {
+    if (!audio || !prompt.trim()) return;
     setIsProcessing(true);
     setError("");
-    setSuccess("");
+    setResult(null);
 
     try {
-      const ctx = getAudioCtx();
-      const trimStart = params.trimStart;
-      const trimEnd = params.trimEnd;
-      const trimDur = trimEnd - trimStart;
-      const outSamples = Math.floor(trimDur * sampleRate);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 180000); // 3 min timeout
 
-      // Extract trimmed region
-      const offCtx = new OfflineAudioContext(channels, outSamples, sampleRate);
-      const src = offCtx.createBufferSource();
+      // Use FormData for reliable file upload on all devices including iOS
+      const formData = new FormData();
+      formData.append("audio", audio.file, audio.name);
+      formData.append("instruction", prompt);
+      formData.append("prompt", prompt);
 
-      // Build working buffer (possibly reversed)
-      let workBuf = buffer;
-      if (params.reverse) {
-        const rev = offCtx.createBuffer(channels, buffer.length, sampleRate);
-        for (let c = 0; c < channels; c++) {
-          const orig = buffer.getChannelData(c);
-          const revData = rev.getChannelData(c);
-          for (let i = 0; i < orig.length; i++) revData[i] = orig[orig.length - 1 - i];
-        }
-        workBuf = rev;
+      let response: Response;
+      try {
+        response = await fetch("/api/audio-edit", {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeout);
       }
 
-      src.buffer = workBuf;
-      src.playbackRate.value = 1; // speed handled by output length
-
-      const gain = offCtx.createGain();
-      gain.gain.value = params.volume;
-
-      let lastNode: AudioNode = src;
-
-      // Noise reduction (low-pass filter)
-      if (params.noiseReduction) {
-        const filter = offCtx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 8000;
-        filter.Q.value = 0.5;
-        lastNode.connect(filter);
-        lastNode = filter;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `সার্ভার ত্রুটি: HTTP ${response.status}`);
       }
 
-      lastNode.connect(gain);
+      const json = await response.json();
 
-      // Fade in
-      if (params.fadeIn > 0) {
-        gain.gain.setValueAtTime(0, 0);
-        gain.gain.linearRampToValueAtTime(params.volume, Math.min(params.fadeIn, trimDur * 0.45));
-      }
-      // Fade out
-      if (params.fadeOut > 0) {
-        const foStart = Math.max(0, trimDur - params.fadeOut);
-        gain.gain.setValueAtTime(params.volume, foStart);
-        gain.gain.linearRampToValueAtTime(0, trimDur);
+      if (json.needsMusicFile || json.intent === "ask_music_file") {
+        setError("এই ফিচারের জন্য ব্যাকগ্রাউন্ড মিউজিক ফাইল দরকার। চ্যাটবটে গিয়ে মিউজিক ফাইলসহ চেষ্টা করুন।");
+        return;
       }
 
-      gain.connect(offCtx.destination);
-      src.start(0, params.reverse ? (buffer.duration - trimEnd) : trimStart, trimDur);
+      const { audioData, audioMime: mime = "audio/mpeg", description, appliedSteps = [], pipeline = [], intent = "custom", technicalNote } = json;
 
-      const rendered = await offCtx.startRendering();
+      if (!audioData) throw new Error("সার্ভার থেকে অডিও ডেটা পাওয়া যায়নি।");
 
-      // Speed change via sample-rate trick
-      const finalSR = Math.round(rendered.sampleRate * params.speed);
-      const finalCtx = new OfflineAudioContext(channels, Math.floor(rendered.length / params.speed), finalSR);
-      const finalSrc = finalCtx.createBufferSource();
-      finalSrc.buffer = rendered;
-      finalSrc.connect(finalCtx.destination);
-      finalSrc.start();
-      const finalBuf = await finalCtx.startRendering();
+      const clean = audioData.replace(/^data:[^;]+;base64,/, "").replace(/\s/g, "");
+      const bytes = Uint8Array.from(atob(clean), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: mime });
+      const audioUrl = URL.createObjectURL(blob);
+      const audioFilename = `edited_${Date.now()}.mp3`;
 
-      // Encode to WAV
-      const wav = encodeWAV(finalBuf);
-      const blob = new Blob([wav], { type: "audio/wav" });
-      setProcessedBlob(blob);
-      setSuccess("প্রসেসিং সম্পন্ন! ডাউনলোড করুন।");
-    } catch (err) {
-      setError("প্রসেসিং ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+      setResult({
+        audioUrl,
+        audioFilename,
+        description: description || "অডিও প্রসেসিং সম্পন্ন।",
+        appliedSteps,
+        pipeline,
+        intent,
+        technicalNote,
+        outputSizeKB: Math.round(bytes.byteLength / 1024),
+      });
+    } catch (e: any) {
+      if (e.name === "AbortError") {
+        setError("সময়সীমা শেষ। ফাইলটি ছোট করে আবার চেষ্টা করুন।");
+      } else {
+        setError(e.message || "প্রসেসিং ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+      }
     } finally {
       setIsProcessing(false);
     }
-  }, [audioState, params, getAudioCtx]);
+  }, [audio]);
 
-  const downloadFile = useCallback(() => {
-    if (!processedBlob) return;
-    const base = audioState.fileName.replace(/\.[^.]+$/, "");
-    const url = URL.createObjectURL(processedBlob);
+  // ── Download ─────────────────────────────────────────────────────────────────
+  const downloadResult = useCallback(() => {
+    if (!result) return;
     const a = document.createElement("a");
-    a.href = url; a.download = `${base}_edited.wav`;
+    a.href = result.audioUrl;
+    a.download = result.audioFilename;
     a.click();
-    URL.revokeObjectURL(url);
-  }, [processedBlob, audioState.fileName]);
+  }, [result]);
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    const ms = Math.floor((s % 1) * 10);
-    return `${m}:${sec.toString().padStart(2, "0")}.${ms}`;
+  // ── Audio play/pause helpers ─────────────────────────────────────────────────
+  const toggleOriginal = () => {
+    const el = originalAudioRef.current;
+    if (!el) return;
+    if (el.paused) { el.play(); setOriginalPlaying(true); }
+    else { el.pause(); setOriginalPlaying(false); }
+  };
+  const toggleEdited = () => {
+    const el = editedAudioRef.current;
+    if (!el) return;
+    if (el.paused) { el.play(); setEditedPlaying(true); }
+    else { el.pause(); setEditedPlaying(false); }
   };
 
-    // Cleanup
-  useEffect(() => () => { stopPlayback(); audioCtxRef.current?.close(); }, [stopPlayback]);
-
   return (
-    <div style={{ minHeight: "100vh", background: "#060E1A", color: "#FAF6EF" }}>
-      <Seo
-        title="অডিও এডিটর — মাহবুব সরদার সবুজ"
-        description="ব্রাউজারেই অডিও ট্রিম, ফেড, স্পিড পরিবর্তন, রিভার্স ও নয়েজ রিডাকশন করুন। কোনো সফটওয়্যার ইনস্টল ছাড়াই।"
-        keywords="অডিও এডিটর, audio editor bangla, trim audio, audio cutter, noise reduction"
-      />
-      <Navbar />
-
-      <main style={{ paddingTop: "calc(var(--site-nav-offset, 98px) + 24px)", paddingBottom: "4rem" }}>
-        {/* ── Hero Header ─────────────────────────────────────────────── */}
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 1.25rem 2.5rem" }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{ textAlign: "center", marginBottom: "2.5rem" }}
-          >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: "0.8rem" }}>
-              <div style={{ width: 36, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
-              <Music size={14} color="#E8C97A" />
-              <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.66rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#E8C97A" }}>
-                Audio Editor
-              </span>
-              <div style={{ width: 36, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
-            </div>
-            <h1 style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 700, color: "#FAF6EF", margin: "0 0 0.8rem", textShadow: "0 4px 24px rgba(0,0,0,0.5)" }}>
-              অডিও এডিটর
-            </h1>
-            <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", color: "rgba(250,246,239,0.62)", fontSize: "0.97rem", lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-              ব্রাউজারেই অডিও ট্রিম, ফেড, স্পিড পরিবর্তন, রিভার্স ও নয়েজ রিডাকশন করুন — কোনো সফটওয়্যার ইনস্টল ছাড়াই।
-            </p>
-          </motion.div>
-
-          {/* ── Feature Badges ────────────────────────────────────────── */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", justifyContent: "center", marginBottom: "2.5rem" }}>
-            {[
-              { icon: <Scissors size={13} />, label: "ট্রিম / কাট" },
-              { icon: <Gauge size={13} />, label: "স্পিড কন্ট্রোল" },
-              { icon: <Volume2 size={13} />, label: "ভলিউম" },
-              { icon: <Wand2 size={13} />, label: "ফেড ইন/আউট" },
-              { icon: <Wind size={13} />, label: "নয়েজ রিডাকশন" },
-              { icon: <RotateCcw size={13} />, label: "রিভার্স" },
-              { icon: <Download size={13} />, label: "WAV ডাউনলোড" },
-            ].map(b => (
-              <span key={b.label} style={{
-                display: "inline-flex", alignItems: "center", gap: 5,
-                padding: "0.32rem 0.75rem",
-                background: "rgba(201,168,76,0.08)",
-                border: "1px solid rgba(201,168,76,0.18)",
-                borderRadius: 20,
-                fontFamily: "'Noto Sans Bengali', sans-serif",
-                fontSize: "0.75rem", color: "#E8C97A",
-              }}>
-                {b.icon}{b.label}
-              </span>
-            ))}
+    <div className="min-h-screen bg-[#0a0a0f] text-white pb-20">
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#c9a84c]/20 px-4 py-3">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c9a84c] to-[#a07830] flex items-center justify-center shadow-lg">
+            <Headphones className="w-5 h-5 text-black" />
           </div>
+          <div>
+            <h1 className="text-base font-bold text-[#c9a84c]">অডিও এডিটর</h1>
+            <p className="text-xs text-white/40">FFmpeg-চালিত প্রফেশনাল অডিও প্রসেসিং</p>
+          </div>
+        </div>
+      </div>
 
-          {/* ── Upload Zone ───────────────────────────────────────────── */}
-          <AnimatePresence>
-            {!audioState.buffer && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      <div className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
+
+        {/* ── Upload Zone ── */}
+        <AnimatePresence mode="wait">
+          {!audio ? (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <label
+                htmlFor="audio-file-input"
+                className={`block cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200 ${
+                  isDragging
+                    ? "border-[#c9a84c] bg-[#c9a84c]/10 scale-[1.01]"
+                    : "border-[#c9a84c]/30 bg-[#111118] hover:border-[#c9a84c]/60 hover:bg-[#c9a84c]/5"
+                }`}
+                onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
-                style={{
-                  border: `2px dashed ${isDragging ? "rgba(201,168,76,0.7)" : "rgba(201,168,76,0.25)"}`,
-                  borderRadius: 20,
-                  padding: "3.5rem 2rem",
-                  textAlign: "center",
-                  background: isDragging ? "rgba(201,168,76,0.06)" : "rgba(255,255,255,0.02)",
-                  transition: "all 0.25s ease",
-                  marginBottom: "1.5rem",
-                }}
               >
-                {/* iOS-compatible: label wraps input so tap anywhere opens file picker */}
-                <label
-                  htmlFor="audio-file-input"
-                  style={{ display: "block", cursor: "pointer" }}
-                >
-                  <div style={{
-                    width: 72, height: 72, borderRadius: 20,
-                    background: "linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06))",
-                    border: "1px solid rgba(201,168,76,0.25)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 1.2rem", color: "#E8C97A",
-                    pointerEvents: "none",
-                  }}>
-                    <Upload size={28} strokeWidth={1.6} />
+                <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 flex items-center justify-center mb-4 border border-[#c9a84c]/20">
+                    <Upload className="w-8 h-8 text-[#c9a84c]" />
                   </div>
-                  <h3 style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1.25rem", color: "#FFF8EA", margin: "0 0 0.5rem", pointerEvents: "none" }}>
-                    অডিও ফাইল আপলোড করুন
-                  </h3>
-                  <p style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "rgba(250,246,239,0.5)", margin: "0 0 1rem", pointerEvents: "none" }}>
-                    ট্যাপ করুন অথবা ড্র্যাগ করে বেছে নিন
-                  </p>
-                  <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.72rem", color: "rgba(250,246,239,0.35)", letterSpacing: "0.05em", pointerEvents: "none" }}>
-                    MP3 · WAV · OGG · M4A · AAC · FLAC · WebM · সর্বোচ্চ ১০০ MB
-                  </p>
-                </label>
-                {/* Hidden input — outside label to avoid double-trigger on some browsers */}
-                <input
-                  ref={fileInputRef}
-                  id="audio-file-input"
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.opus,.mp4"
-                  style={{ position: "absolute", width: 1, height: 1, opacity: 0, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
-                  onChange={e => {
-                    const f = e.target.files?.[0];
-                    if (f) handleFile(f);
-                    // Reset so same file can be re-selected
-                    e.target.value = "";
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── Alerts ───────────────────────────────────────────────── */}
-          <AnimatePresence>
-            {error && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.85rem 1.1rem", background: "rgba(220,50,50,0.1)", border: "1px solid rgba(220,50,50,0.25)", borderRadius: 12, marginBottom: "1rem" }}>
-                <AlertCircle size={16} color="#ff6b6b" />
-                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "#ff9999" }}>{error}</span>
-                <X size={14} color="#ff9999" style={{ marginLeft: "auto", cursor: "pointer" }} onClick={() => setError("")} />
-              </motion.div>
-            )}
-            {success && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.85rem 1.1rem", background: "rgba(50,200,100,0.08)", border: "1px solid rgba(50,200,100,0.2)", borderRadius: 12, marginBottom: "1rem" }}>
-                <CheckCircle2 size={16} color="#6bffaa" />
-                <span style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.88rem", color: "#9dffc8" }}>{success}</span>
-                <X size={14} color="#9dffc8" style={{ marginLeft: "auto", cursor: "pointer" }} onClick={() => setSuccess("")} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── Editor Panel ─────────────────────────────────────────── */}
-          <AnimatePresence>
-            {audioState.buffer && (
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {/* File info bar */}
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "0.9rem 1.2rem",
-                  background: "rgba(201,168,76,0.06)",
-                  border: "1px solid rgba(201,168,76,0.15)",
-                  borderRadius: 14, marginBottom: "1.25rem",
-                }}>
-                  <Music size={18} color="#E8C97A" />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.88rem", color: "#FFF8EA", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {audioState.fileName}
-                    </div>
-                    <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.72rem", color: "rgba(250,246,239,0.45)", marginTop: 2 }}>
-                      {formatTime(audioState.duration)} · {audioState.sampleRate} Hz · {audioState.channels}ch
-                    </div>
+                  <p className="text-[#c9a84c] font-semibold text-base mb-1">অডিও ফাইল আপলোড করুন</p>
+                  <p className="text-white/40 text-sm mb-3">ট্যাপ করুন বা ড্র্যাগ করুন</p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {["MP3", "WAV", "M4A", "OGG", "AAC", "FLAC"].map(f => (
+                      <span key={f} className="px-2 py-0.5 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/70 text-xs border border-[#c9a84c]/20">{f}</span>
+                    ))}
                   </div>
-                  <button
-                    onClick={() => { stopPlayback(); setAudioState({ buffer: null, fileName: "", duration: 0, sampleRate: 0, channels: 0 }); setProcessedBlob(null); setSuccess(""); setError(""); }}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(250,246,239,0.4)", padding: 4 }}
-                  >
-                    <X size={16} />
-                  </button>
+                  <p className="text-white/25 text-xs mt-3">সর্বোচ্চ ২০০ MB</p>
                 </div>
-
-                {/* Waveform */}
-                <div style={{ marginBottom: "1.25rem" }}>
-                  <WaveformCanvas
-                    buffer={audioState.buffer}
-                    trimStart={params.trimStart}
-                    trimEnd={params.trimEnd}
-                    currentTime={currentTime}
-                    duration={audioState.duration}
-                    onSeek={(t) => { stopPlayback(); setCurrentTime(t); }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.4rem" }}>
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "rgba(250,246,239,0.4)" }}>{formatTime(params.trimStart)}</span>
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "#E8C97A" }}>{formatTime(currentTime)}</span>
-                    <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.7rem", color: "rgba(250,246,239,0.4)" }}>{formatTime(params.trimEnd)}</span>
-                  </div>
-                </div>
-
-                {/* Playback Controls */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", marginBottom: "2rem" }}>
-                  <button onClick={() => { stopPlayback(); setCurrentTime(params.trimStart); }}
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(250,246,239,0.6)" }}>
-                    <SkipBack size={16} />
-                  </button>
-                  <button
-                    onClick={isPlaying ? stopPlayback : playPreview}
-                    style={{
-                      background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                      border: "none", borderRadius: 14, width: 56, height: 56,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", color: "#060E1A",
-                      boxShadow: "0 4px 20px rgba(201,168,76,0.35)",
-                    }}>
-                    {isPlaying ? <Pause size={22} strokeWidth={2.2} /> : <Play size={22} strokeWidth={2.2} />}
-                  </button>
-                  <button onClick={() => { stopPlayback(); setCurrentTime(params.trimEnd); }}
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, width: 42, height: 42, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(250,246,239,0.6)" }}>
-                    <SkipForward size={16} />
-                  </button>
-                </div>
-
-                {/* Edit Controls Grid */}
-                <div className="audio-edit-grid">
-                  {/* Trim */}
-                  <div className="audio-panel">
-                    <div className="audio-panel-title"><Scissors size={15} />ট্রিম / কাট</div>
-                    <GoldSlider label="শুরু" value={params.trimStart} min={0} max={params.trimEnd - 0.1} step={0.01}
-                      onChange={v => setParams(p => ({ ...p, trimStart: v }))} formatValue={formatTime} />
-                    <GoldSlider label="শেষ" value={params.trimEnd} min={params.trimStart + 0.1} max={audioState.duration} step={0.01}
-                      onChange={v => setParams(p => ({ ...p, trimEnd: v }))} formatValue={formatTime} />
-                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.78rem", color: "rgba(250,246,239,0.45)", textAlign: "center" }}>
-                      নির্বাচিত: {formatTime(params.trimEnd - params.trimStart)}
-                    </div>
-                  </div>
-
-                  {/* Volume & Speed */}
-                  <div className="audio-panel">
-                    <div className="audio-panel-title"><Volume2 size={15} />ভলিউম ও স্পিড</div>
-                    <GoldSlider label="ভলিউম" value={params.volume} min={0} max={2} step={0.01}
-                      onChange={v => setParams(p => ({ ...p, volume: v }))} formatValue={v => `${Math.round(v * 100)}%`} />
-                    <GoldSlider label="স্পিড" value={params.speed} min={0.25} max={3} step={0.05}
-                      onChange={v => setParams(p => ({ ...p, speed: v }))} formatValue={v => `${v.toFixed(2)}x`} />
-                  </div>
-
-                  {/* Fade */}
-                  <div className="audio-panel">
-                    <div className="audio-panel-title"><Wand2 size={15} />ফেড ইন / ফেড আউট</div>
-                    <GoldSlider label="ফেড ইন" value={params.fadeIn} min={0} max={Math.min(10, (params.trimEnd - params.trimStart) * 0.45)} step={0.1}
-                      onChange={v => setParams(p => ({ ...p, fadeIn: v }))} unit="s" formatValue={v => v.toFixed(1)} />
-                    <GoldSlider label="ফেড আউট" value={params.fadeOut} min={0} max={Math.min(10, (params.trimEnd - params.trimStart) * 0.45)} step={0.1}
-                      onChange={v => setParams(p => ({ ...p, fadeOut: v }))} unit="s" formatValue={v => v.toFixed(1)} />
-                  </div>
-
-                  {/* Effects */}
-                  <div className="audio-panel">
-                    <div className="audio-panel-title"><Zap size={15} />ইফেক্ট</div>
-                    <GoldToggle label="নয়েজ রিডাকশন" desc="উচ্চ-ফ্রিকোয়েন্সি নয়েজ কমায়" value={params.noiseReduction} onChange={v => setParams(p => ({ ...p, noiseReduction: v }))} />
-                    <GoldToggle label="রিভার্স" desc="অডিও উল্টো দিক থেকে বাজবে" value={params.reverse} onChange={v => setParams(p => ({ ...p, reverse: v }))} />
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div style={{ display: "flex", gap: "1rem", marginTop: "2rem", flexWrap: "wrap" }}>
-                  <button
-                    onClick={() => setParams({ trimStart: 0, trimEnd: audioState.duration, volume: 1, speed: 1, fadeIn: 0, fadeOut: 0, noiseReduction: false, reverse: false })}
-                    style={{
-                      flex: 1, minWidth: 140,
-                      padding: "0.85rem 1.2rem",
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: 12, cursor: "pointer",
-                      color: "rgba(250,246,239,0.65)",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.9rem",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    }}
-                  >
-                    <RefreshCw size={15} /> রিসেট
-                  </button>
-
-                  <button
-                    onClick={processAndDownload}
-                    disabled={isProcessing}
-                    style={{
-                      flex: 2, minWidth: 200,
-                      padding: "0.85rem 1.5rem",
-                      background: isProcessing ? "rgba(201,168,76,0.3)" : "linear-gradient(135deg, #C9A84C, #E8C97A)",
-                      border: "none", borderRadius: 12, cursor: isProcessing ? "not-allowed" : "pointer",
-                      color: "#060E1A", fontWeight: 700,
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
-                      fontSize: "0.95rem",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      boxShadow: isProcessing ? "none" : "0 4px 20px rgba(201,168,76,0.3)",
-                    }}
-                  >
-                    {isProcessing ? (
-                      <><RefreshCw size={16} style={{ animation: "spin 1s linear infinite" }} /> প্রসেস হচ্ছে...</>
-                    ) : (
-                      <><Zap size={16} /> প্রসেস করুন</>
-                    )}
-                  </button>
-
-                  {processedBlob && (
-                    <button
-                      onClick={downloadFile}
-                      style={{
-                        flex: 1, minWidth: 140,
-                        padding: "0.85rem 1.2rem",
-                        background: "rgba(50,200,100,0.1)",
-                        border: "1px solid rgba(50,200,100,0.25)",
-                        borderRadius: 12, cursor: "pointer",
-                        color: "#6bffaa",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
-                        fontSize: "0.9rem",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      }}
-                    >
-                      <Download size={15} /> WAV ডাউনলোড
-                    </button>
-                  )}
-                </div>
-
-                {/* New file button — iOS-compatible via label */}
-                <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-                  <label
-                    htmlFor="audio-file-input"
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(201,168,76,0.6)", fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", display: "inline-flex", alignItems: "center", gap: 6 }}
-                  >
-                    <Upload size={13} /> অন্য ফাইল লোড করুন
-                  </label>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── How to use ───────────────────────────────────────────── */}
-          {!audioState.buffer && (
+              </label>
+              <input
+                id="audio-file-input"
+                ref={fileInputRef}
+                type="file"
+                accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.opus,.mp4,.caf"
+                className="sr-only"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+              />
+            </motion.div>
+          ) : (
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              key="loaded"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              style={{ marginTop: "2rem" }}
+              exit={{ opacity: 0, y: -10 }}
+              className="rounded-2xl bg-[#111118] border border-[#c9a84c]/20 overflow-hidden"
             >
-              <h3 style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1.2rem", color: "#FFF8EA", marginBottom: "1.2rem", textAlign: "center" }}>
-                কীভাবে ব্যবহার করবেন?
-              </h3>
-              <div className="how-to-grid">
-                {[
-                  { n: "১", t: "ফাইল আপলোড", d: "MP3, WAV বা যেকোনো অডিও ফাইল ড্র্যাগ করুন বা ক্লিক করে বেছে নিন।" },
-                  { n: "২", t: "এডিট করুন", d: "ট্রিম, স্পিড, ভলিউম, ফেড ও ইফেক্ট সেটিংস পছন্দমতো ঠিক করুন।" },
-                  { n: "৩", t: "প্রিভিউ করুন", d: "প্লে বাটনে চাপ দিয়ে রিয়েল-টাইমে পরিবর্তন শুনুন।" },
-                  { n: "৪", t: "ডাউনলোড করুন", d: "'প্রসেস করুন' চাপুন, তারপর WAV ফাইল ডাউনলোড করুন।" },
-                ].map(s => (
-                  <div key={s.n} style={{
-                    padding: "1.2rem",
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(201,168,76,0.1)",
-                    borderRadius: 14,
-                  }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "0.75rem", fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "1rem", color: "#E8C97A", fontWeight: 700 }}>{s.n}</div>
-                    <div style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", fontSize: "0.98rem", color: "#FFF8EA", fontWeight: 700, marginBottom: "0.4rem" }}>{s.t}</div>
-                    <div style={{ fontFamily: "'Noto Sans Bengali', sans-serif", fontSize: "0.82rem", color: "rgba(250,246,239,0.55)", lineHeight: 1.6 }}>{s.d}</div>
-                  </div>
-                ))}
+              {/* File info bar */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#c9a84c]/10">
+                <div className="w-9 h-9 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0">
+                  <Music className="w-5 h-5 text-[#c9a84c]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{audio.name}</p>
+                  <p className="text-xs text-white/40">{formatBytes(audio.size)}</p>
+                </div>
+                <button
+                  onClick={() => { if (audio.url) URL.revokeObjectURL(audio.url); setAudio(null); setResult(null); setError(""); }}
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-4 h-4 text-white/50" />
+                </button>
+              </div>
+
+              {/* Original audio player */}
+              <div className="px-4 py-3 border-b border-[#c9a84c]/10">
+                <p className="text-xs text-white/40 mb-2">মূল অডিও</p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={toggleOriginal}
+                    className="w-10 h-10 rounded-xl bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 flex items-center justify-center transition-colors flex-shrink-0"
+                  >
+                    {originalPlaying ? <Pause className="w-5 h-5 text-[#c9a84c]" /> : <Play className="w-5 h-5 text-[#c9a84c]" />}
+                  </button>
+                  <audio
+                    ref={originalAudioRef}
+                    src={audio.url}
+                    onEnded={() => setOriginalPlaying(false)}
+                    onPause={() => setOriginalPlaying(false)}
+                    onPlay={() => setOriginalPlaying(true)}
+                    controls
+                    className="flex-1 h-9 rounded-lg"
+                    style={{ colorScheme: "dark" }}
+                    preload="metadata"
+                    playsInline
+                  />
+                </div>
+              </div>
+
+              {/* Instruction input */}
+              <div className="px-4 py-3">
+                <label className="text-xs text-white/40 mb-2 block">আপনি কী করতে চান? (বাংলায় লিখুন)</label>
+                <div className="flex gap-2">
+                  <textarea
+                    value={instruction}
+                    onChange={e => setInstruction(e.target.value)}
+                    placeholder="যেমন: নয়েজ কমাও, গোল্ডেন ভয়েস করো, স্টুডিও মান করো..."
+                    rows={2}
+                    className="flex-1 bg-[#0a0a0f] border border-[#c9a84c]/20 rounded-xl px-3 py-2 text-sm text-white placeholder-white/25 resize-none focus:outline-none focus:border-[#c9a84c]/50 transition-colors"
+                  />
+                  <button
+                    onClick={() => processAudio(instruction)}
+                    disabled={isProcessing || !instruction.trim()}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center gap-1.5 self-end"
+                  >
+                    {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    {isProcessing ? "..." : "শুরু"}
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
-        </div>
-      </main>
+        </AnimatePresence>
 
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .audio-edit-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
-        }
-        .audio-panel {
-          padding: 1.3rem;
-          background: linear-gradient(145deg, rgba(18,24,34,0.6), rgba(8,12,18,0.75));
-          border: 1px solid rgba(201,168,76,0.1);
-          border-radius: 16px;
-        }
-        .audio-panel-title {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: #E8C97A;
-          margin-bottom: 1rem;
-        }
-        .how-to-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 0.85rem;
-        }
-        @media (max-width: 768px) {
-          .audio-edit-grid { grid-template-columns: 1fr; }
-          .how-to-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 480px) {
-          .how-to-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
+        {/* ── Error ── */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+            >
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-300">{error}</p>
+              <button onClick={() => setError("")} className="ml-auto"><X className="w-4 h-4 text-red-400/60" /></button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Processing indicator ── */}
+        <AnimatePresence>
+          {isProcessing && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="rounded-2xl bg-[#111118] border border-[#c9a84c]/20 p-5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="relative w-12 h-12 flex-shrink-0">
+                  <div className="absolute inset-0 rounded-full border-2 border-[#c9a84c]/20" />
+                  <div className="absolute inset-0 rounded-full border-2 border-t-[#c9a84c] animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Wand2 className="w-5 h-5 text-[#c9a84c]" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#c9a84c]">প্রসেসিং চলছে...</p>
+                  <p className="text-xs text-white/40 mt-0.5">FFmpeg দিয়ে অডিও এডিট হচ্ছে। একটু অপেক্ষা করুন।</p>
+                </div>
+              </div>
+              <div className="mt-4 h-1.5 rounded-full bg-[#c9a84c]/10 overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-[#c9a84c] to-[#a07830] rounded-full"
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Result ── */}
+        <AnimatePresence>
+          {result && !isProcessing && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="rounded-2xl bg-[#111118] border border-[#c9a84c]/30 overflow-hidden"
+            >
+              {/* Success header */}
+              <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#c9a84c]/10 to-transparent border-b border-[#c9a84c]/20">
+                <CheckCircle className="w-5 h-5 text-[#c9a84c] flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#c9a84c]">প্রসেসিং সম্পন্ন!</p>
+                  <p className="text-xs text-white/40 truncate">{result.description}</p>
+                </div>
+                {result.outputSizeKB && (
+                  <span className="text-xs text-white/30 flex-shrink-0">{result.outputSizeKB} KB</span>
+                )}
+              </div>
+
+              {/* Edited audio player */}
+              <div className="px-4 py-3 border-b border-[#c9a84c]/10">
+                <p className="text-xs text-white/40 mb-2">এডিট করা অডিও</p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={toggleEdited}
+                    className="w-10 h-10 rounded-xl bg-[#c9a84c]/20 hover:bg-[#c9a84c]/30 flex items-center justify-center transition-colors flex-shrink-0"
+                  >
+                    {editedPlaying ? <Pause className="w-5 h-5 text-[#c9a84c]" /> : <Play className="w-5 h-5 text-[#c9a84c]" />}
+                  </button>
+                  <audio
+                    ref={editedAudioRef}
+                    src={result.audioUrl}
+                    onEnded={() => setEditedPlaying(false)}
+                    onPause={() => setEditedPlaying(false)}
+                    onPlay={() => setEditedPlaying(true)}
+                    controls
+                    className="flex-1 h-9 rounded-lg"
+                    style={{ colorScheme: "dark" }}
+                    preload="auto"
+                    playsInline
+                  />
+                </div>
+              </div>
+
+              {/* Applied steps */}
+              {result.appliedSteps.length > 0 && (
+                <div className="px-4 py-3 border-b border-[#c9a84c]/10">
+                  <p className="text-xs text-white/40 mb-2">প্রয়োগ করা ধাপসমূহ</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.appliedSteps.map((step, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/80 text-xs border border-[#c9a84c]/15">
+                        {step}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pipeline toggle */}
+              {result.pipeline.length > 0 && (
+                <div className="px-4 py-2 border-b border-[#c9a84c]/10">
+                  <button
+                    onClick={() => setShowPipeline(v => !v)}
+                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 transition-colors"
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                    প্রসেসিং পাইপলাইন
+                    {showPipeline ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                  <AnimatePresence>
+                    {showPipeline && (
+                      <motion.ol
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="mt-2 space-y-1 overflow-hidden"
+                      >
+                        {result.pipeline.map((step, i) => (
+                          <li key={i} className="text-xs text-white/50 flex gap-2">
+                            <span className="text-[#c9a84c]/50 flex-shrink-0">{i + 1}.</span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </motion.ol>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {/* Download + re-edit */}
+              <div className="px-4 py-3 flex gap-2">
+                <button
+                  onClick={downloadResult}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-semibold text-sm hover:opacity-90 transition-opacity"
+                >
+                  <Download className="w-4 h-4" />
+                  ডাউনলোড করুন
+                </button>
+                <button
+                  onClick={() => { setResult(null); setInstruction(""); }}
+                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-sm transition-colors flex items-center gap-1.5"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  আবার এডিট
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Preset Grid ── */}
+        {audio && !isProcessing && (
+          <div className="space-y-2">
+            <p className="text-xs text-white/40 px-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#c9a84c]" />
+              প্রিমিয়াম প্রিসেট — ট্যাপ করলেই শুরু হবে
+            </p>
+            {PRESETS.map((cat) => (
+              <div key={cat.category} className="rounded-xl bg-[#111118] border border-[#c9a84c]/15 overflow-hidden">
+                <button
+                  onClick={() => setExpandedCategory(expandedCategory === cat.category ? null : cat.category)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-sm font-medium text-white/80">{cat.category}</span>
+                  {expandedCategory === cat.category
+                    ? <ChevronUp className="w-4 h-4 text-[#c9a84c]/60" />
+                    : <ChevronDown className="w-4 h-4 text-white/30" />
+                  }
+                </button>
+                <AnimatePresence>
+                  {expandedCategory === cat.category && (
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: "auto" }}
+                      exit={{ height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-2 gap-2 px-3 pb-3">
+                        {cat.items.map((item) => (
+                          <button
+                            key={item.label}
+                            onClick={() => processAudio(item.prompt)}
+                            disabled={isProcessing}
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#c9a84c]/15 hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed group"
+                          >
+                            <span className="text-[#c9a84c]/60 group-hover:text-[#c9a84c] transition-colors flex-shrink-0">{item.icon}</span>
+                            <span className="text-xs text-white/70 group-hover:text-white transition-colors leading-tight">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Info box (when no file) ── */}
+        {!audio && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-2xl bg-[#111118] border border-[#c9a84c]/15 p-5"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-[#c9a84c]" />
+              <h2 className="text-sm font-semibold text-[#c9a84c]">কী কী করতে পারবেন?</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: <Shield className="w-4 h-4" />, label: "নয়েজ রিমুভ" },
+                { icon: <Star className="w-4 h-4" />, label: "স্টুডিও মাস্টারিং" },
+                { icon: <Sparkles className="w-4 h-4" />, label: "গোল্ডেন/ডায়মন্ড ভয়েস" },
+                { icon: <Film className="w-4 h-4" />, label: "সিনেমাটিক ইফেক্ট" },
+                { icon: <Radio className="w-4 h-4" />, label: "রেডিও জকি ভয়েস" },
+                { icon: <Waves className="w-4 h-4" />, label: "রিভার্ব / ইকো" },
+                { icon: <BookOpen className="w-4 h-4" />, label: "আবৃত্তি / পডকাস্ট" },
+                { icon: <Zap className="w-4 h-4" />, label: "পিচ / স্পিড কন্ট্রোল" },
+              ].map(f => (
+                <div key={f.label} className="flex items-center gap-2 text-xs text-white/50">
+                  <span className="text-[#c9a84c]/50">{f.icon}</span>
+                  {f.label}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-white/25 mt-4 text-center">
+              সার্ভার-সাইড FFmpeg প্রসেসিং — সব ডিভাইসে কাজ করে
+            </p>
+          </motion.div>
+        )}
+
+      </div>
     </div>
   );
-}
-
-// ─── WAV Encoder ─────────────────────────────────────────────────────────────
-function encodeWAV(buffer: AudioBuffer): ArrayBuffer {
-  const numCh = buffer.numberOfChannels;
-  const sr = buffer.sampleRate;
-  const numSamples = buffer.length;
-  const bitsPerSample = 16;
-  const blockAlign = numCh * (bitsPerSample / 8);
-  const byteRate = sr * blockAlign;
-  const dataSize = numSamples * blockAlign;
-  const ab = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(ab);
-
-  const writeStr = (offset: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
-  writeStr(0, "RIFF");
-  view.setUint32(4, 36 + dataSize, true);
-  writeStr(8, "WAVE");
-  writeStr(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, numCh, true);
-  view.setUint32(24, sr, true);
-  view.setUint32(28, byteRate, true);
-  view.setUint16(32, blockAlign, true);
-  view.setUint16(34, bitsPerSample, true);
-  writeStr(36, "data");
-  view.setUint32(40, dataSize, true);
-
-  let offset = 44;
-  for (let i = 0; i < numSamples; i++) {
-    for (let c = 0; c < numCh; c++) {
-      const s = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
-      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-      offset += 2;
-    }
-  }
-  return ab;
 }
