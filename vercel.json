@@ -22,7 +22,7 @@
     },
     "api/video-to-audio.js": {
       "memory": 1024,
-      "maxDuration": 60,
+      "maxDuration": 300,
       "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     },
     "api/sms-proxy.js": {
@@ -35,11 +35,6 @@
     },
     "api/chat.js": {
       "maxDuration": 30
-    },
-    "api/video-upscale.js": {
-      "memory": 1024,
-      "maxDuration": 300,
-      "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     }
   },
   "redirects": [

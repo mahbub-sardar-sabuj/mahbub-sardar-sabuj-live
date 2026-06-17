@@ -65,10 +65,10 @@ export default function VideoUpscaler() {
       setProgress(20);
       setStatusMsg("সার্ভারে পাঠানো হচ্ছে...");
 
-      const res = await fetch("/api/video-upscale", {
+      const res = await fetch("/api/video-to-audio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoData: base64, videoName: file.name, scale }),
+        body: JSON.stringify({ action: "upscale", videoData: base64, videoName: file.name, scale }),
       });
 
       setStage("processing");
