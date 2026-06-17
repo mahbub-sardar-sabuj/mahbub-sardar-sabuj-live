@@ -35,6 +35,11 @@
     },
     "api/chat.js": {
       "maxDuration": 30
+    },
+    "api/video-upscale.js": {
+      "memory": 1024,
+      "maxDuration": 300,
+      "includeFiles": "node_modules/.pnpm/@ffmpeg-installer+linux-x64@*/node_modules/@ffmpeg-installer/linux-x64/ffmpeg"
     }
   },
   "redirects": [
