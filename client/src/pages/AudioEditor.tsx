@@ -260,9 +260,7 @@ export default function AudioEditor() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center pt-4 pb-2"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/25 text-[#c9a84c] mb-4 text-xs font-bold tracking-widest uppercase">
-            <Headphones size={12} /> অডিও এডিটর
-          </div>
+
           <h1 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-br from-[#FFE39A] via-[#c9a84c] to-[#a07830] bg-clip-text text-transparent leading-tight">
             প্রফেশনাল অডিও<br />প্রসেসিং
           </h1>
