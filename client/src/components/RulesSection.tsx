@@ -6,11 +6,19 @@
  */
 import { motion } from "framer-motion";
 import { Link } from "wouter";
+import { useState, useEffect } from "react";
 import {
   UserRound, Mic2, BookOpen, Feather, Palette, Images,
   Newspaper, Mail, MailOpen, Phone, CreditCard, Sparkles,
-  Video, MessageCircle, Music, Info, CheckCircle2, ArrowUpRight
+  Video, MessageCircle, Music, Info, CheckCircle2, ArrowUpRight,
+  Download, Smartphone
 } from "lucide-react";
+
+// PWA install prompt type
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 const tabs = [
   {
@@ -106,6 +114,39 @@ const tabs = [
 ];
 
 export default function RulesSection() {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [pwaInstalled, setPwaInstalled] = useState(false);
+  const [pwaInstalling, setPwaInstalling] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setPwaInstalled(true);
+    }
+    window.addEventListener('appinstalled', () => {
+      setPwaInstalled(true);
+      setDeferredPrompt(null);
+    });
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) {
+      alert('অ্যাপ ইনস্টল করতে:\n\nAndroid: Chrome মেনু > "অ্যাপ ইনস্টল করুন"\niPhone: Safari Share > "Add to Home Screen"');
+      return;
+    }
+    setPwaInstalling(true);
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') setPwaInstalled(true);
+    setDeferredPrompt(null);
+    setPwaInstalling(false);
+  };
+
   return (
     <section
       style={{
@@ -230,7 +271,7 @@ export default function RulesSection() {
           </p>
         </motion.div>
 
-        {/* ── Tabs Grid ──────────────────────────────────────────────── */}
+        {/* ── Tabs Grid ────────────────────────────────────────────────────────────────────── */}
         <div className="rules-tabs-grid">
           {tabs.map((tab, i) => (
             <motion.div
@@ -297,6 +338,84 @@ export default function RulesSection() {
               </Link>
             </motion.div>
           ))}
+
+          {/* PWA Install Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: tabs.length * 0.045 }}
+          >
+            <button
+              onClick={handleInstallPWA}
+              className="rules-tab-link"
+              style={{ width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+              aria-label="অ্যাপ ইনস্টল করুন"
+            >
+              <div
+                className="rules-tab-card"
+                style={{
+                  background: pwaInstalled
+                    ? 'linear-gradient(135deg, rgba(74,222,128,0.1), rgba(74,222,128,0.04))'
+                    : 'linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04))',
+                  border: pwaInstalled
+                    ? '1px solid rgba(74,222,128,0.3)'
+                    : '1px solid rgba(201,168,76,0.28)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Top glow line */}
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+                  background: pwaInstalled
+                    ? 'linear-gradient(90deg, transparent, rgba(74,222,128,0.7), transparent)'
+                    : 'linear-gradient(90deg, transparent, rgba(201,168,76,0.7), transparent)',
+                }} />
+
+                {/* Icon */}
+                <div
+                  className="rules-tab-icon-wrap"
+                  style={{
+                    background: pwaInstalled ? 'rgba(74,222,128,0.12)' : 'rgba(201,168,76,0.12)',
+                    border: pwaInstalled ? '1px solid rgba(74,222,128,0.25)' : '1px solid rgba(201,168,76,0.25)',
+                  }}
+                >
+                  {pwaInstalling
+                    ? <Smartphone size={20} strokeWidth={1.8} color="#c9a84c" />
+                    : pwaInstalled
+                    ? <Smartphone size={20} strokeWidth={1.8} color="#4ade80" />
+                    : <Download size={20} strokeWidth={1.8} color="#c9a84c" />}
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: '0.45rem' }}>
+                    <CheckCircle2 size={13} color={pwaInstalled ? 'rgba(74,222,128,0.7)' : 'rgba(201,168,76,0.55)'} strokeWidth={2} />
+                    <h4 style={{
+                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                      fontSize: '1.02rem', fontWeight: 700,
+                      color: pwaInstalled ? '#4ade80' : '#FFF8EA',
+                      margin: 0, lineHeight: 1.25, flex: 1,
+                    }}>
+                      {pwaInstalled ? 'ইনস্টল হয়েছে ✓' : pwaInstalling ? 'ইনস্টল হচ্ছে...' : 'মাহবুব সরদার সবুজ App'}
+                    </h4>
+                    <ArrowUpRight size={14} className="rules-arrow-icon" strokeWidth={2} />
+                  </div>
+                  <p style={{
+                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontSize: '0.84rem',
+                    color: pwaInstalled ? 'rgba(74,222,128,0.7)' : 'rgba(250,246,239,0.58)',
+                    margin: 0, lineHeight: 1.65,
+                  }}>
+                    {pwaInstalled
+                      ? 'হোম স্ক্রিনে যোগ হয়েছে — সরাসরি অ্যাপ থেকে খুলুন'
+                      : 'ফোনে অ্যাপ হিসেবে ইনস্টল করুন — সম্পূর্ণ বিনামূল্যে'}
+                  </p>
+                </div>
+              </div>
+            </button>
+          </motion.div>
         </div>
 
         {/* ── Bottom Note ────────────────────────────────────────────── */}
