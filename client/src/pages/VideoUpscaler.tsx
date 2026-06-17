@@ -1,7 +1,7 @@
 /*
  * Video Upscaler Page — ভিডিও আপস্কেলার
  * Technology: WebGPU + WebCodecs (Client-side AI Upscaling)
- * Uses: WebSR SDK (Anime4K CNN networks) + webcodecs-utils
+ * Uses: WebSR SDK (Anime4K CNN networks) via dynamic ESM import
  * Zero server cost — all processing on user's device
  */
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, Video, Sparkles, Download, RefreshCw,
   AlertCircle, CheckCircle2, Zap, Shield, Cpu,
-  ChevronRight, Play, Pause, Info
+  ChevronRight, Play, Info
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -63,11 +63,12 @@ export default function VideoUpscaler() {
   useEffect(() => {
     const checkGPU = async () => {
       try {
-        if (!("gpu" in navigator)) {
+        const nav = navigator as Navigator & { gpu?: { requestAdapter: () => Promise<unknown> } };
+        if (!nav.gpu) {
           setGpuSupported(false);
           return;
         }
-        const adapter = await (navigator as Navigator & { gpu: { requestAdapter: () => Promise<unknown> } }).gpu.requestAdapter();
+        const adapter = await nav.gpu.requestAdapter();
         setGpuSupported(!!adapter);
       } catch {
         setGpuSupported(false);
@@ -124,164 +125,7 @@ export default function VideoUpscaler() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
-  // ── Core Upscaling Logic ───────────────────────────────────────────────────
-  const handleUpscale = useCallback(async () => {
-    if (!videoFile) return;
-    abortRef.current = false;
-
-    // Check WebCodecs support
-    if (typeof VideoDecoder === "undefined" || typeof VideoEncoder === "undefined") {
-      setProcessing({
-        stage: "error", progress: 0,
-        message: "আপনার ব্রাউজার WebCodecs সাপোর্ট করে না। Chrome 94+ বা Edge 94+ ব্যবহার করুন।"
-      });
-      return;
-    }
-
-    setProcessing({ stage: "loading", progress: 5, message: "WebSR SDK লোড হচ্ছে..." });
-
-    try {
-      // Dynamically import WebSR SDK and webcodecs-utils
-      const [{ default: WebSR }, webCodecsUtils] = await Promise.all([
-        import(/* @vite-ignore */ "https://esm.sh/@websr/websr@0.0.15"),
-        import(/* @vite-ignore */ "https://esm.sh/webcodecs-utils"),
-      ]);
-
-      if (abortRef.current) return;
-
-      setProcessing({ stage: "loading", progress: 15, message: "GPU ইনিশিয়ালাইজ হচ্ছে..." });
-
-      // Initialize WebGPU
-      const gpu = await WebSR.initWebGPU();
-      if (!gpu) {
-        // Fallback: use canvas-based bicubic upscaling
-        await handleFallbackUpscale();
-        return;
-      }
-
-      if (abortRef.current) return;
-
-      // Pick network based on user selection
-      const networkMap = {
-        small: "anime4k/cnn-2x-s",
-        medium: "anime4k/cnn-2x-m",
-        large: "anime4k/cnn-2x-l",
-      };
-      const networkName = networkMap[networkSize];
-
-      setProcessing({ stage: "loading", progress: 25, message: "AI মডেল লোড হচ্ছে..." });
-
-      // Load weights
-      const weightsUrl = `https://katana.video/files/cnn-2x-${networkSize === "small" ? "sm" : networkSize === "medium" ? "md" : "lg"}-2d-animation.json`;
-      let weights: unknown;
-      try {
-        const resp = await fetch(weightsUrl);
-        weights = await resp.json();
-      } catch {
-        // Try alternate weights URL
-        const altResp = await fetch("https://katana.video/files/cnn-2x-lg-2d-animation.json");
-        weights = await altResp.json();
-      }
-
-      if (abortRef.current) return;
-
-      // Create off-screen canvas for WebSR
-      const offscreenCanvas = document.createElement("canvas");
-      const scaleMultiplier = targetScale === "4x" ? 4 : 2;
-
-      const websr = new WebSR({
-        network_name: networkName,
-        weights,
-        gpu,
-        canvas: offscreenCanvas,
-      });
-
-      setProcessing({ stage: "decoding", progress: 35, message: "ভিডিও ডিকোড হচ্ছে..." });
-
-      const { SimpleDemuxer, VideoDecodeStream, VideoProcessStream, VideoEncodeStream, SimpleMuxer } = webCodecsUtils;
-
-      // Set canvas dimensions
-      const inputWidth = videoInfo?.width || 640;
-      const inputHeight = videoInfo?.height || 360;
-      offscreenCanvas.width = inputWidth * scaleMultiplier;
-      offscreenCanvas.height = inputHeight * scaleMultiplier;
-
-      // Set up demuxer
-      const demuxer = new SimpleDemuxer(videoFile);
-      await demuxer.load();
-      const decoderConfig = await demuxer.getVideoDecoderConfig();
-
-      const outputWidth = inputWidth * scaleMultiplier;
-      const outputHeight = inputHeight * scaleMultiplier;
-
-      const encoderConfig = {
-        codec: "avc1.4d0034",
-        width: outputWidth,
-        height: outputHeight,
-        bitrate: 8_000_000,
-        framerate: 30,
-      };
-
-      const muxer = new SimpleMuxer({ video: "avc" });
-
-      let frameCount = 0;
-      const estimatedFrames = Math.ceil((videoInfo?.duration || 10) * 30);
-
-      setProcessing({ stage: "upscaling", progress: 40, message: "AI দিয়ে ভিডিও উন্নত হচ্ছে..." });
-
-      await demuxer
-        .videoStream()
-        .pipeThrough(new VideoDecodeStream(decoderConfig))
-        .pipeThrough(
-          new VideoProcessStream(async (frame: VideoFrame) => {
-            if (abortRef.current) throw new Error("aborted");
-
-            frameCount++;
-            const pct = Math.min(40 + Math.floor((frameCount / estimatedFrames) * 50), 90);
-            if (frameCount % 10 === 0) {
-              setProcessing({
-                stage: "upscaling",
-                progress: pct,
-                message: `ফ্রেম প্রসেস হচ্ছে... (${frameCount}/${estimatedFrames})`,
-              });
-            }
-
-            await websr.render(frame);
-            const upscaledFrame = new VideoFrame(offscreenCanvas, {
-              timestamp: frame.timestamp,
-              duration: frame.duration,
-            });
-            frame.close();
-            return upscaledFrame;
-          })
-        )
-        .pipeThrough(new VideoEncodeStream(encoderConfig))
-        .pipeTo(muxer.videoSink());
-
-      if (abortRef.current) return;
-
-      setProcessing({ stage: "encoding", progress: 92, message: "ভিডিও এনকোড হচ্ছে..." });
-
-      const blob = await muxer.finalize();
-      const url = URL.createObjectURL(blob);
-      setOutputUrl(url);
-      setProcessing({ stage: "done", progress: 100, message: "সফলভাবে আপস্কেল হয়েছে!" });
-
-    } catch (err: unknown) {
-      if (abortRef.current) return;
-      const msg = err instanceof Error ? err.message : "অজানা সমস্যা হয়েছে।";
-      if (msg === "aborted") return;
-
-      // If WebSR fails, try fallback
-      if (msg.includes("fetch") || msg.includes("network") || msg.includes("weights")) {
-        await handleFallbackUpscale();
-      } else {
-        setProcessing({ stage: "error", progress: 0, message: `সমস্যা হয়েছে: ${msg}` });
-      }
-    }
-  }, [videoFile, videoInfo, targetScale, networkSize]);
-
-  // ── Fallback: Canvas-based bicubic upscaling ───────────────────────────────
+  // ── Fallback: Canvas-based upscaling via MediaRecorder ────────────────────
   const handleFallbackUpscale = useCallback(async () => {
     if (!videoFile || !videoPreviewRef.current) return;
 
@@ -301,10 +145,11 @@ export default function VideoUpscaler() {
 
       // Use MediaRecorder to capture upscaled frames
       const stream = canvas.captureStream(30);
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+        ? "video/webm;codecs=vp9"
+        : "video/webm";
       const recorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-          ? "video/webm;codecs=vp9"
-          : "video/webm",
+        mimeType,
         videoBitsPerSecond: 8_000_000,
       });
 
@@ -312,7 +157,7 @@ export default function VideoUpscaler() {
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
 
       const recordingDone = new Promise<Blob>((resolve) => {
-        recorder.onstop = () => resolve(new Blob(chunks, { type: recorder.mimeType }));
+        recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType }));
       });
 
       recorder.start(100);
@@ -320,7 +165,7 @@ export default function VideoUpscaler() {
       await new Promise<void>((res) => { video.onseeked = () => res(); });
       video.play();
 
-      const duration = videoInfo?.duration || 10;
+      const duration = videoInfo?.duration ?? 10;
       let lastTime = -1;
 
       const drawFrame = () => {
@@ -331,7 +176,6 @@ export default function VideoUpscaler() {
         }
         if (video.currentTime !== lastTime) {
           lastTime = video.currentTime;
-          // Apply sharpening filter
           ctx.filter = "contrast(1.1) saturate(1.05)";
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = "high";
@@ -362,12 +206,162 @@ export default function VideoUpscaler() {
     }
   }, [videoFile, videoInfo, targetScale]);
 
+  // ── Core Upscaling Logic ──────────────────────────────────────────────────
+  const handleUpscale = useCallback(async () => {
+    if (!videoFile) return;
+    abortRef.current = false;
+
+    // Check WebCodecs support
+    if (typeof VideoDecoder === "undefined" || typeof VideoEncoder === "undefined") {
+      // Fallback directly
+      await handleFallbackUpscale();
+      return;
+    }
+
+    setProcessing({ stage: "loading", progress: 5, message: "WebSR SDK লোড হচ্ছে..." });
+
+    try {
+      // Dynamically load WebSR and webcodecs-utils via ESM CDN
+      // Using Function constructor to avoid TypeScript static analysis of URL imports
+      const loadModule = new Function("url", "return import(url)") as (url: string) => Promise<{ default: unknown }>;
+      const loadModuleAny = new Function("url", "return import(url)") as (url: string) => Promise<Record<string, unknown>>;
+
+      const [webSRModule, webCodecsModule] = await Promise.all([
+        loadModule("https://esm.sh/@websr/websr@0.0.15"),
+        loadModuleAny("https://esm.sh/webcodecs-utils"),
+      ]);
+
+      if (abortRef.current) return;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const WebSR = webSRModule.default as any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const webCodecsUtils = webCodecsModule as any;
+
+      setProcessing({ stage: "loading", progress: 15, message: "GPU ইনিশিয়ালাইজ হচ্ছে..." });
+
+      const gpu = await WebSR.initWebGPU();
+      if (!gpu) {
+        await handleFallbackUpscale();
+        return;
+      }
+
+      if (abortRef.current) return;
+
+      const networkMap: Record<string, string> = {
+        small: "anime4k/cnn-2x-s",
+        medium: "anime4k/cnn-2x-m",
+        large: "anime4k/cnn-2x-l",
+      };
+      const networkName = networkMap[networkSize];
+
+      setProcessing({ stage: "loading", progress: 25, message: "AI মডেল লোড হচ্ছে..." });
+
+      let weights: unknown;
+      try {
+        const resp = await fetch("https://katana.video/files/cnn-2x-lg-2d-animation.json");
+        weights = await resp.json();
+      } catch {
+        await handleFallbackUpscale();
+        return;
+      }
+
+      if (abortRef.current) return;
+
+      const offscreenCanvas = document.createElement("canvas");
+      const scaleMultiplier = targetScale === "4x" ? 4 : 2;
+      const inputWidth = videoInfo?.width || 640;
+      const inputHeight = videoInfo?.height || 360;
+      offscreenCanvas.width = inputWidth * scaleMultiplier;
+      offscreenCanvas.height = inputHeight * scaleMultiplier;
+
+      const websr = new WebSR({
+        network_name: networkName,
+        weights,
+        gpu,
+        canvas: offscreenCanvas,
+      });
+
+      setProcessing({ stage: "decoding", progress: 35, message: "ভিডিও ডিকোড হচ্ছে..." });
+
+      const { SimpleDemuxer, VideoDecodeStream, VideoProcessStream, VideoEncodeStream, SimpleMuxer } = webCodecsUtils;
+
+      const outputWidth = inputWidth * scaleMultiplier;
+      const outputHeight = inputHeight * scaleMultiplier;
+
+      const encoderConfig = {
+        codec: "avc1.4d0034",
+        width: outputWidth,
+        height: outputHeight,
+        bitrate: 8_000_000,
+        framerate: 30,
+      };
+
+      const demuxer = new SimpleDemuxer(videoFile);
+      await demuxer.load();
+      const decoderConfig = await demuxer.getVideoDecoderConfig();
+      const muxer = new SimpleMuxer({ video: "avc" });
+
+      let frameCount = 0;
+      const estimatedFrames = Math.ceil((videoInfo?.duration ?? 10) * 30);
+
+      setProcessing({ stage: "upscaling", progress: 40, message: "AI দিয়ে ভিডিও উন্নত হচ্ছে..." });
+
+      await demuxer
+        .videoStream()
+        .pipeThrough(new VideoDecodeStream(decoderConfig))
+        .pipeThrough(
+          new VideoProcessStream(async (frame: VideoFrame) => {
+            if (abortRef.current) throw new Error("aborted");
+
+            frameCount++;
+            const pct = Math.min(40 + Math.floor((frameCount / estimatedFrames) * 50), 90);
+            if (frameCount % 10 === 0) {
+              setProcessing({
+                stage: "upscaling",
+                progress: pct,
+                message: `ফ্রেম প্রসেস হচ্ছে... (${frameCount}/${estimatedFrames})`,
+              });
+            }
+
+            await websr.render(frame);
+            const upscaledFrame = new VideoFrame(offscreenCanvas, {
+              timestamp: frame.timestamp,
+              duration: frame.duration ?? undefined,
+            });
+            frame.close();
+            return upscaledFrame;
+          })
+        )
+        .pipeThrough(new VideoEncodeStream(encoderConfig))
+        .pipeTo(muxer.videoSink());
+
+      if (abortRef.current) return;
+
+      setProcessing({ stage: "encoding", progress: 92, message: "ভিডিও এনকোড হচ্ছে..." });
+
+      const blob = await muxer.finalize();
+      const url = URL.createObjectURL(blob);
+      setOutputUrl(url);
+      setProcessing({ stage: "done", progress: 100, message: "সফলভাবে আপস্কেল হয়েছে!" });
+
+    } catch (err: unknown) {
+      if (abortRef.current) return;
+      const msg = err instanceof Error ? err.message : "অজানা সমস্যা হয়েছে।";
+      if (msg === "aborted") return;
+      // Fallback on any WebSR error
+      await handleFallbackUpscale();
+    }
+  }, [videoFile, videoInfo, targetScale, networkSize, handleFallbackUpscale]);
+
   const handleDownload = useCallback(() => {
     if (!outputUrl || !videoFile) return;
     const a = document.createElement("a");
     a.href = outputUrl;
-    const ext = videoFile.name.split(".").pop() || "mp4";
-    a.download = `upscaled_${targetScale}_${videoFile.name.replace(`.${ext}`, "")}.${ext === "mp4" ? "mp4" : "webm"}`;
+    const nameParts = videoFile.name.split(".");
+    const ext = nameParts.length > 1 ? nameParts.pop() : "mp4";
+    const baseName = nameParts.join(".");
+    a.download = `upscaled_${targetScale}_${baseName}.${ext === "mp4" ? "mp4" : "webm"}`;
     a.click();
   }, [outputUrl, videoFile, targetScale]);
 
@@ -422,7 +416,6 @@ export default function VideoUpscaler() {
             সম্পূর্ণ ব্রাউজারে প্রসেস হয় — কোনো আপলোড নেই, কোনো গোপনীয়তার ঝুঁকি নেই।
           </motion.p>
 
-          {/* Feature badges */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -441,7 +434,7 @@ export default function VideoUpscaler() {
           </motion.div>
         </div>
 
-        {/* ── GPU Support Warning ── */}
+        {/* GPU Support Warning */}
         {gpuSupported === false && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -451,8 +444,7 @@ export default function VideoUpscaler() {
             <AlertCircle className="text-amber-400 shrink-0 mt-0.5" size={18} />
             <div className="text-sm text-amber-200/80">
               <p className="font-bold mb-1">WebGPU সাপোর্ট পাওয়া যায়নি</p>
-              <p>আপনার ব্রাউজার WebGPU সাপোর্ট করে না। Canvas-ভিত্তিক ফলব্যাক মোডে কাজ করবে (কিছুটা ধীরগতির)।
-              সেরা ফলাফলের জন্য Chrome 113+ বা Edge 113+ ব্যবহার করুন।</p>
+              <p>Canvas-ভিত্তিক ফলব্যাক মোডে কাজ করবে। সেরা ফলাফলের জন্য Chrome 113+ বা Edge 113+ ব্যবহার করুন।</p>
             </div>
           </motion.div>
         )}
@@ -460,7 +452,6 @@ export default function VideoUpscaler() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* ── Left Panel: Controls ── */}
           <div className="lg:col-span-4 space-y-5">
-            {/* Settings Card */}
             <div className="bg-gray-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
               <h3 className="text-xl font-bold mb-5 flex items-center gap-2">
                 <Video className="text-purple-400" size={20} /> সেটিংস
@@ -511,13 +502,6 @@ export default function VideoUpscaler() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  {networkSize === "small"
-                    ? "দ্রুত প্রসেস, ভালো মান"
-                    : networkSize === "medium"
-                    ? "গতি ও মানের ভারসাম্য (প্রস্তাবিত)"
-                    : "সর্বোচ্চ মান, কিছুটা ধীর"}
-                </p>
               </div>
 
               {/* File Upload */}
@@ -666,17 +650,16 @@ export default function VideoUpscaler() {
                 <CheckCircle2 className="text-green-400 shrink-0" size={18} />
                 <div className="text-xs text-green-300 leading-relaxed">
                   <p className="font-bold mb-1">আপস্কেল সফল হয়েছে!</p>
-                  <p>ভিডিওটি {targetScale} স্কেলে উন্নত করা হয়েছে। ডাউনলোড করুন।</p>
+                  <p>ভিডিওটি {targetScale} স্কেলে উন্নত করা হয়েছে।</p>
                 </div>
               </motion.div>
             )}
 
-            {/* Info note */}
+            {/* Privacy note */}
             <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 flex gap-3">
               <Shield className="text-blue-400 shrink-0" size={16} />
               <p className="text-xs text-blue-200/60 leading-relaxed">
                 সম্পূর্ণ ক্লায়েন্ট-সাইড প্রসেসিং। আপনার ভিডিও কোনো সার্ভারে যায় না।
-                WebGPU দিয়ে AI নিউরাল নেটওয়ার্ক আপনার ডিভাইসেই চলে।
               </p>
             </div>
           </div>
@@ -792,7 +775,11 @@ export default function VideoUpscaler() {
                       <span className={highlight ? "font-bold" : ""}>{name}</span>
                       <span className={`text-center ${highlight ? "text-green-400 font-bold" : ""}`}>{price}</span>
                       <span className={`text-right ${highlight ? "text-green-400" : ""}`}>
-                        {highlight ? <span className="flex items-center justify-end gap-1"><CheckCircle2 size={10} /> {privacy}</span> : privacy}
+                        {highlight ? (
+                          <span className="flex items-center justify-end gap-1">
+                            <CheckCircle2 size={10} /> {privacy}
+                          </span>
+                        ) : privacy}
                       </span>
                     </div>
                   ))}
@@ -812,22 +799,10 @@ export default function VideoUpscaler() {
           <h2 className="text-2xl font-black text-center mb-8 text-gray-200">সাধারণ প্রশ্নোত্তর</h2>
           <div className="space-y-4">
             {[
-              {
-                q: "এটি কি সত্যিই ফ্রি?",
-                a: "হ্যাঁ, সম্পূর্ণ বিনামূল্যে। প্রসেসিং আপনার ডিভাইসেই হয়, তাই কোনো সার্ভার খরচ নেই।"
-              },
-              {
-                q: "কোন ব্রাউজার সবচেয়ে ভালো কাজ করে?",
-                a: "Chrome 113+ বা Edge 113+ সবচেয়ে ভালো। WebGPU সাপোর্টের কারণে এগুলো ২-৫ গুণ দ্রুত কাজ করে।"
-              },
-              {
-                q: "ভিডিওর মান কতটা উন্নত হবে?",
-                a: "AI নিউরাল নেটওয়ার্ক ভিডিওর প্রতিটি ফ্রেমের ডিটেইল পুনরুদ্ধার করে। ঝাপসা ভিডিও অনেকটাই পরিষ্কার হয়।"
-              },
-              {
-                q: "কতক্ষণ সময় লাগবে?",
-                a: "ভিডিওর দৈর্ঘ্য ও আপনার ডিভাইসের ক্ষমতার ওপর নির্ভর করে। সাধারণত প্রতি মিনিট ভিডিওর জন্য ২-১০ মিনিট লাগে।"
-              },
+              { q: "এটি কি সত্যিই ফ্রি?", a: "হ্যাঁ, সম্পূর্ণ বিনামূল্যে। প্রসেসিং আপনার ডিভাইসেই হয়, তাই কোনো সার্ভার খরচ নেই।" },
+              { q: "কোন ব্রাউজার সবচেয়ে ভালো কাজ করে?", a: "Chrome 113+ বা Edge 113+ সবচেয়ে ভালো। WebGPU সাপোর্টের কারণে এগুলো ২-৫ গুণ দ্রুত কাজ করে।" },
+              { q: "ভিডিওর মান কতটা উন্নত হবে?", a: "AI নিউরাল নেটওয়ার্ক ভিডিওর প্রতিটি ফ্রেমের ডিটেইল পুনরুদ্ধার করে। ঝাপসা ভিডিও অনেকটাই পরিষ্কার হয়।" },
+              { q: "কতক্ষণ সময় লাগবে?", a: "ভিডিওর দৈর্ঘ্য ও আপনার ডিভাইসের ক্ষমতার ওপর নির্ভর করে। সাধারণত প্রতি মিনিট ভিডিওর জন্য ২-১০ মিনিট লাগে।" },
             ].map(({ q, a }) => (
               <div key={q} className="bg-gray-900/40 border border-white/5 rounded-2xl p-5">
                 <p className="font-bold text-sm text-gray-200 flex items-center gap-2 mb-2">

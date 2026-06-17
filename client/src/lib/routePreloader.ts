@@ -26,6 +26,7 @@ const routeImporters = {
   TempNumber: () => import("../pages/TempNumber"),
   TempCard: () => import("../pages/TempCard"),
   ImageUpscaler: () => import("../pages/ImageUpscaler"),
+  VideoUpscaler: () => import("../pages/VideoUpscaler"),
 } satisfies Record<string, Importer>;
 
 type RouteKey = keyof typeof routeImporters;
