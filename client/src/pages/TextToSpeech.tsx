@@ -189,8 +189,9 @@ export default function TextToSpeech() {
         throw new Error("অডিও ডেটা পাওয়া যায়নি।");
       }
 
-      // Convert base64 to blob
-      const byteCharacters = atob(data.audioData);
+      // Convert base64 to blob - Clean the base64 string first to avoid pattern matching errors
+      const base64Data = data.audioData.replace(/\s/g, "");
+      const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);

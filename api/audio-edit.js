@@ -2218,8 +2218,14 @@ async function handleTTS(req, res) {
         body: JSON.stringify(requestBody),
       });
       if (response.ok) break;
-      lastError = await response.text();
-      console.warn(`[TTS] ${ttsModel} failed (${response.status}), trying next model...`);
+      const errorText = await response.text();
+      try {
+        const errorJson = JSON.parse(errorText);
+        lastError = errorJson.error?.message || errorText;
+      } catch (e) {
+        lastError = errorText;
+      }
+      console.warn(`[TTS] ${ttsModel} failed (${response.status}): ${lastError}`);
       response = null;
     } catch (e) {
       lastError = e.message;
