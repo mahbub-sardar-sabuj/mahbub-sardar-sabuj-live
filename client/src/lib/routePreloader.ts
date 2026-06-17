@@ -28,7 +28,6 @@ const routeImporters = {
   ImageUpscaler: () => import("../pages/ImageUpscaler"),
   VideoUpscaler: () => import("../pages/VideoUpscaler"),
   AudioEditor: () => import("../pages/AudioEditor"),
-  PoemReciter: () => import("../pages/PoemReciter"),
 } satisfies Record<string, Importer>;
 
 type RouteKey = keyof typeof routeImporters;
@@ -63,7 +62,6 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/temp-number") return routeImporters.TempNumber;
   if (path === "/temp-card") return routeImporters.TempCard;
   if (path === "/image-upscaler") return routeImporters.ImageUpscaler;
-  if (path === "/poem-reciter") return routeImporters.PoemReciter;
 
   if (
     path === "/bangla-kobita" ||
