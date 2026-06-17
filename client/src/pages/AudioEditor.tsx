@@ -6,13 +6,15 @@ import {
   ChevronDown, ChevronUp, Info, Star, Zap, Shield, Headphones,
   Radio, Waves, Film, BookOpen, MessageSquare, Cpu
 } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Seo from "@/components/Seo";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface AudioInfo {
   file: File;
   name: string;
   size: number;
-  url: string; // object URL for preview
+  url: string;
 }
 
 interface ProcessResult {
@@ -114,7 +116,6 @@ export default function AudioEditor() {
   const originalAudioRef = useRef<HTMLAudioElement>(null);
   const editedAudioRef = useRef<HTMLAudioElement>(null);
 
-  // Revoke object URLs on unmount
   useEffect(() => {
     return () => {
       if (audio?.url) URL.revokeObjectURL(audio.url);
@@ -157,9 +158,8 @@ export default function AudioEditor() {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 180000); // 3 min timeout
+      const timeout = setTimeout(() => controller.abort(), 180000);
 
-      // Use FormData for reliable file upload on all devices including iOS
       const formData = new FormData();
       formData.append("audio", audio.file, audio.name);
       formData.append("instruction", prompt);
@@ -243,100 +243,124 @@ export default function AudioEditor() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white pb-20">
-      {/* ── Header ── */}
-      <div className="sticky top-0 z-10 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#c9a84c]/20 px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c9a84c] to-[#a07830] flex items-center justify-center shadow-lg">
-            <Headphones className="w-5 h-5 text-black" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-[#c9a84c]">অডিও এডিটর</h1>
-            <p className="text-xs text-white/40">FFmpeg-চালিত প্রফেশনাল অডিও প্রসেসিং</p>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#060E1A] text-white pb-20">
+      <Seo
+        title="অডিও এডিটর — প্রফেশনাল অডিও প্রসেসিং | মাহবুব সরদার সবুজ"
+        description="নয়েজ রিমুভ, গোল্ডেন ভয়েস, স্টুডিও মাস্টারিং, পিচ কন্ট্রোল — সব এক জায়গায়।"
+        path="/audio-editor"
+        keywords="অডিও এডিটর, নয়েজ রিমুভ, ভয়েস এনহ্যান্সার, মাহবুব সরদার সবুজ"
+      />
+      <Navbar />
 
-      <div className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 pt-8 space-y-5">
 
-        {/* ── Upload Zone ── */}
-        <AnimatePresence mode="wait">
-          {!audio ? (
-            <motion.div
-              key="upload"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <label
-                htmlFor="audio-file-input"
-                className={`block cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200 ${
-                  isDragging
-                    ? "border-[#c9a84c] bg-[#c9a84c]/10 scale-[1.01]"
-                    : "border-[#c9a84c]/30 bg-[#111118] hover:border-[#c9a84c]/60 hover:bg-[#c9a84c]/5"
-                }`}
-                onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
+        {/* ── Hero Header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center pt-4 pb-2"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/25 text-[#c9a84c] mb-4 text-xs font-bold tracking-widest uppercase">
+            <Headphones size={12} /> অডিও এডিটর
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black mb-3 bg-gradient-to-br from-[#FFE39A] via-[#c9a84c] to-[#a07830] bg-clip-text text-transparent leading-tight">
+            প্রফেশনাল অডিও<br />প্রসেসিং
+          </h1>
+          <p className="text-white/50 text-sm max-w-sm mx-auto leading-relaxed">
+            নয়েজ রিমুভ, ভয়েস এনহ্যান্স, মাস্টারিং — সব এক ক্লিকে
+          </p>
+          <div className="flex items-center justify-center gap-3 mt-4 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/80 text-xs font-medium">
+              <Shield size={10} /> সার্ভার-সাইড প্রসেসিং
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/80 text-xs font-medium">
+              <Zap size={10} /> সব ডিভাইসে কাজ করে
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/80 text-xs font-medium">
+              <Sparkles size={10} /> সম্পূর্ণ বিনামূল্যে
+            </span>
+          </div>
+        </motion.div>
+
+        {/* ── Main Card ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/[0.03] backdrop-blur-xl border border-[#c9a84c]/15 rounded-3xl overflow-hidden"
+        >
+
+          {/* ── Upload Zone ── */}
+          <AnimatePresence mode="wait">
+            {!audio ? (
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-6"
               >
-                <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 flex items-center justify-center mb-4 border border-[#c9a84c]/20">
-                    <Upload className="w-8 h-8 text-[#c9a84c]" />
-                  </div>
-                  <p className="text-[#c9a84c] font-semibold text-base mb-1">অডিও ফাইল আপলোড করুন</p>
-                  <p className="text-white/40 text-sm mb-3">ট্যাপ করুন বা ড্র্যাগ করুন</p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {["MP3", "WAV", "M4A", "OGG", "AAC", "FLAC"].map(f => (
-                      <span key={f} className="px-2 py-0.5 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/70 text-xs border border-[#c9a84c]/20">{f}</span>
-                    ))}
-                  </div>
-                  <p className="text-white/25 text-xs mt-3">সর্বোচ্চ ২০০ MB</p>
-                </div>
-              </label>
-              <input
-                id="audio-file-input"
-                ref={fileInputRef}
-                type="file"
-                accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.opus,.mp4,.caf"
-                className="sr-only"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="loaded"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="rounded-2xl bg-[#111118] border border-[#c9a84c]/20 overflow-hidden"
-            >
-              {/* File info bar */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#c9a84c]/10">
-                <div className="w-9 h-9 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0">
-                  <Music className="w-5 h-5 text-[#c9a84c]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{audio.name}</p>
-                  <p className="text-xs text-white/40">{formatBytes(audio.size)}</p>
-                </div>
-                <button
-                  onClick={() => { if (audio.url) URL.revokeObjectURL(audio.url); setAudio(null); setResult(null); setError(""); }}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                <label
+                  htmlFor="audio-file-input"
+                  className={`block cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200 ${
+                    isDragging
+                      ? "border-[#c9a84c] bg-[#c9a84c]/10 scale-[1.01]"
+                      : "border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] hover:border-[#c9a84c]/50 hover:bg-[#c9a84c]/[0.06]"
+                  }`}
+                  onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
                 >
-                  <X className="w-4 h-4 text-white/50" />
-                </button>
-              </div>
-
-              {/* Original audio player */}
-              <div className="px-4 py-3 border-b border-[#c9a84c]/10">
-                <p className="text-xs text-white/40 mb-2">মূল অডিও</p>
-                <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 flex items-center justify-center mb-4 border border-[#c9a84c]/20">
+                      <Upload className="w-7 h-7 text-[#c9a84c]" />
+                    </div>
+                    <p className="text-[#c9a84c] font-bold text-base mb-1">অডিও ফাইল আপলোড করুন</p>
+                    <p className="text-white/40 text-sm mb-4">ট্যাপ করুন বা ড্র্যাগ করুন</p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {["MP3", "WAV", "M4A", "OGG", "AAC", "FLAC"].map(f => (
+                        <span key={f} className="px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/70 text-xs border border-[#c9a84c]/20 font-medium">{f}</span>
+                      ))}
+                    </div>
+                    <p className="text-white/25 text-xs mt-3">সর্বোচ্চ ২০০ MB</p>
+                  </div>
+                </label>
+                <input
+                  id="audio-file-input"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.opus,.mp4,.caf"
+                  className="sr-only"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="loaded"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {/* File info bar */}
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-[#c9a84c]/10">
+                  <div className="w-10 h-10 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0">
+                    <Music className="w-5 h-5 text-[#c9a84c]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{audio.name}</p>
+                    <p className="text-xs text-white/40">{formatBytes(audio.size)}</p>
+                  </div>
                   <button
-                    onClick={toggleOriginal}
-                    className="w-10 h-10 rounded-xl bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 flex items-center justify-center transition-colors flex-shrink-0"
+                    onClick={() => { if (audio.url) URL.revokeObjectURL(audio.url); setAudio(null); setResult(null); setError(""); }}
+                    className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
                   >
-                    {originalPlaying ? <Pause className="w-5 h-5 text-[#c9a84c]" /> : <Play className="w-5 h-5 text-[#c9a84c]" />}
+                    <X className="w-4 h-4 text-white/50" />
                   </button>
+                </div>
+
+                {/* Original audio player */}
+                <div className="px-5 py-4 border-b border-[#c9a84c]/10">
+                  <p className="text-xs text-white/40 mb-2 font-medium">মূল অডিও</p>
                   <audio
                     ref={originalAudioRef}
                     src={audio.url}
@@ -344,38 +368,38 @@ export default function AudioEditor() {
                     onPause={() => setOriginalPlaying(false)}
                     onPlay={() => setOriginalPlaying(true)}
                     controls
-                    className="flex-1 h-9 rounded-lg"
+                    className="w-full h-10 rounded-xl"
                     style={{ colorScheme: "dark" }}
                     preload="metadata"
                     playsInline
                   />
                 </div>
-              </div>
 
-              {/* Instruction input */}
-              <div className="px-4 py-3">
-                <label className="text-xs text-white/40 mb-2 block">আপনি কী করতে চান? (বাংলায় লিখুন)</label>
-                <div className="flex gap-2">
-                  <textarea
-                    value={instruction}
-                    onChange={e => setInstruction(e.target.value)}
-                    placeholder="যেমন: নয়েজ কমাও, গোল্ডেন ভয়েস করো, স্টুডিও মান করো..."
-                    rows={2}
-                    className="flex-1 bg-[#0a0a0f] border border-[#c9a84c]/20 rounded-xl px-3 py-2 text-sm text-white placeholder-white/25 resize-none focus:outline-none focus:border-[#c9a84c]/50 transition-colors"
-                  />
-                  <button
-                    onClick={() => processAudio(instruction)}
-                    disabled={isProcessing || !instruction.trim()}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center gap-1.5 self-end"
-                  >
-                    {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                    {isProcessing ? "..." : "শুরু"}
-                  </button>
+                {/* Instruction input */}
+                <div className="px-5 py-4">
+                  <label className="text-xs text-white/40 mb-2 block font-medium">আপনি কী করতে চান?</label>
+                  <div className="flex gap-2">
+                    <textarea
+                      value={instruction}
+                      onChange={e => setInstruction(e.target.value)}
+                      placeholder="যেমন: নয়েজ কমাও, গোল্ডেন ভয়েস করো, স্টুডিও মান করো..."
+                      rows={2}
+                      className="flex-1 bg-white/[0.04] border border-[#c9a84c]/20 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/25 resize-none focus:outline-none focus:border-[#c9a84c]/50 transition-colors"
+                    />
+                    <button
+                      onClick={() => processAudio(instruction)}
+                      disabled={isProcessing || !instruction.trim()}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center gap-1.5 self-end"
+                    >
+                      {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                      {isProcessing ? "..." : "শুরু"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* ── Error ── */}
         <AnimatePresence>
@@ -384,11 +408,11 @@ export default function AudioEditor() {
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+              className="flex items-start gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20"
             >
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-300">{error}</p>
-              <button onClick={() => setError("")} className="ml-auto"><X className="w-4 h-4 text-red-400/60" /></button>
+              <p className="text-sm text-red-300 flex-1">{error}</p>
+              <button onClick={() => setError("")}><X className="w-4 h-4 text-red-400/60" /></button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -400,7 +424,7 @@ export default function AudioEditor() {
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="rounded-2xl bg-[#111118] border border-[#c9a84c]/20 p-5"
+              className="bg-white/[0.03] border border-[#c9a84c]/20 rounded-2xl p-5"
             >
               <div className="flex items-center gap-4">
                 <div className="relative w-12 h-12 flex-shrink-0">
@@ -411,8 +435,8 @@ export default function AudioEditor() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#c9a84c]">প্রসেসিং চলছে...</p>
-                  <p className="text-xs text-white/40 mt-0.5">FFmpeg দিয়ে অডিও এডিট হচ্ছে। একটু অপেক্ষা করুন।</p>
+                  <p className="text-sm font-bold text-[#c9a84c]">প্রসেসিং চলছে...</p>
+                  <p className="text-xs text-white/40 mt-0.5">অডিও এডিট হচ্ছে। একটু অপেক্ষা করুন।</p>
                 </div>
               </div>
               <div className="mt-4 h-1.5 rounded-full bg-[#c9a84c]/10 overflow-hidden">
@@ -433,13 +457,13 @@ export default function AudioEditor() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="rounded-2xl bg-[#111118] border border-[#c9a84c]/30 overflow-hidden"
+              className="bg-white/[0.03] border border-[#c9a84c]/30 rounded-2xl overflow-hidden"
             >
               {/* Success header */}
-              <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#c9a84c]/10 to-transparent border-b border-[#c9a84c]/20">
+              <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-[#c9a84c]/10 to-transparent border-b border-[#c9a84c]/15">
                 <CheckCircle className="w-5 h-5 text-[#c9a84c] flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#c9a84c]">প্রসেসিং সম্পন্ন!</p>
+                  <p className="text-sm font-bold text-[#c9a84c]">প্রসেসিং সম্পন্ন!</p>
                   <p className="text-xs text-white/40 truncate">{result.description}</p>
                 </div>
                 {result.outputSizeKB && (
@@ -448,37 +472,29 @@ export default function AudioEditor() {
               </div>
 
               {/* Edited audio player */}
-              <div className="px-4 py-3 border-b border-[#c9a84c]/10">
-                <p className="text-xs text-white/40 mb-2">এডিট করা অডিও</p>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={toggleEdited}
-                    className="w-10 h-10 rounded-xl bg-[#c9a84c]/20 hover:bg-[#c9a84c]/30 flex items-center justify-center transition-colors flex-shrink-0"
-                  >
-                    {editedPlaying ? <Pause className="w-5 h-5 text-[#c9a84c]" /> : <Play className="w-5 h-5 text-[#c9a84c]" />}
-                  </button>
-                  <audio
-                    ref={editedAudioRef}
-                    src={result.audioUrl}
-                    onEnded={() => setEditedPlaying(false)}
-                    onPause={() => setEditedPlaying(false)}
-                    onPlay={() => setEditedPlaying(true)}
-                    controls
-                    className="flex-1 h-9 rounded-lg"
-                    style={{ colorScheme: "dark" }}
-                    preload="auto"
-                    playsInline
-                  />
-                </div>
+              <div className="px-5 py-4 border-b border-[#c9a84c]/10">
+                <p className="text-xs text-white/40 mb-2 font-medium">এডিট করা অডিও</p>
+                <audio
+                  ref={editedAudioRef}
+                  src={result.audioUrl}
+                  onEnded={() => setEditedPlaying(false)}
+                  onPause={() => setEditedPlaying(false)}
+                  onPlay={() => setEditedPlaying(true)}
+                  controls
+                  className="w-full h-10 rounded-xl"
+                  style={{ colorScheme: "dark" }}
+                  preload="auto"
+                  playsInline
+                />
               </div>
 
               {/* Applied steps */}
               {result.appliedSteps.length > 0 && (
-                <div className="px-4 py-3 border-b border-[#c9a84c]/10">
-                  <p className="text-xs text-white/40 mb-2">প্রয়োগ করা ধাপসমূহ</p>
+                <div className="px-5 py-3 border-b border-[#c9a84c]/10">
+                  <p className="text-xs text-white/40 mb-2">প্রয়োগ করা ধাপ</p>
                   <div className="flex flex-wrap gap-1.5">
                     {result.appliedSteps.map((step, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/80 text-xs border border-[#c9a84c]/15">
+                      <span key={i} className="px-2.5 py-0.5 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/80 text-xs border border-[#c9a84c]/15">
                         {step}
                       </span>
                     ))}
@@ -488,7 +504,7 @@ export default function AudioEditor() {
 
               {/* Pipeline toggle */}
               {result.pipeline.length > 0 && (
-                <div className="px-4 py-2 border-b border-[#c9a84c]/10">
+                <div className="px-5 py-3 border-b border-[#c9a84c]/10">
                   <button
                     onClick={() => setShowPipeline(v => !v)}
                     className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 transition-colors"
@@ -518,17 +534,17 @@ export default function AudioEditor() {
               )}
 
               {/* Download + re-edit */}
-              <div className="px-4 py-3 flex gap-2">
+              <div className="px-5 py-4 flex gap-2">
                 <button
                   onClick={downloadResult}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-semibold text-sm hover:opacity-90 transition-opacity"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm hover:opacity-90 transition-opacity"
                 >
                   <Download className="w-4 h-4" />
                   ডাউনলোড করুন
                 </button>
                 <button
                   onClick={() => { setResult(null); setInstruction(""); }}
-                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-sm transition-colors flex items-center gap-1.5"
+                  className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-sm transition-colors flex items-center gap-1.5"
                 >
                   <RefreshCw className="w-4 h-4" />
                   আবার এডিট
@@ -540,18 +556,23 @@ export default function AudioEditor() {
 
         {/* ── Preset Grid ── */}
         {audio && !isProcessing && (
-          <div className="space-y-2">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="space-y-2"
+          >
             <p className="text-xs text-white/40 px-1 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#c9a84c]" />
               প্রিমিয়াম প্রিসেট — ট্যাপ করলেই শুরু হবে
             </p>
             {PRESETS.map((cat) => (
-              <div key={cat.category} className="rounded-xl bg-[#111118] border border-[#c9a84c]/15 overflow-hidden">
+              <div key={cat.category} className="rounded-2xl bg-white/[0.03] border border-[#c9a84c]/15 overflow-hidden">
                 <button
                   onClick={() => setExpandedCategory(expandedCategory === cat.category ? null : cat.category)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-white/5 transition-colors"
                 >
-                  <span className="text-sm font-medium text-white/80">{cat.category}</span>
+                  <span className="text-sm font-semibold text-white/80">{cat.category}</span>
                   {expandedCategory === cat.category
                     ? <ChevronUp className="w-4 h-4 text-[#c9a84c]/60" />
                     : <ChevronDown className="w-4 h-4 text-white/30" />
@@ -571,7 +592,7 @@ export default function AudioEditor() {
                             key={item.label}
                             onClick={() => processAudio(item.prompt)}
                             disabled={isProcessing}
-                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#c9a84c]/15 hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed group"
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-[#c9a84c]/15 hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed group"
                           >
                             <span className="text-[#c9a84c]/60 group-hover:text-[#c9a84c] transition-colors flex-shrink-0">{item.icon}</span>
                             <span className="text-xs text-white/70 group-hover:text-white transition-colors leading-tight">{item.label}</span>
@@ -583,21 +604,22 @@ export default function AudioEditor() {
                 </AnimatePresence>
               </div>
             ))}
-          </div>
+          </motion.div>
         )}
 
         {/* ── Info box (when no file) ── */}
         {!audio && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="rounded-2xl bg-[#111118] border border-[#c9a84c]/15 p-5"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white/[0.03] border border-[#c9a84c]/15 rounded-2xl p-5"
           >
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-4 h-4 text-[#c9a84c]" />
-              <h2 className="text-sm font-semibold text-[#c9a84c]">কী কী করতে পারবেন?</h2>
+              <h2 className="text-sm font-bold text-[#c9a84c]">কী কী করতে পারবেন?</h2>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {[
                 { icon: <Shield className="w-4 h-4" />, label: "নয়েজ রিমুভ" },
                 { icon: <Star className="w-4 h-4" />, label: "স্টুডিও মাস্টারিং" },
@@ -608,9 +630,9 @@ export default function AudioEditor() {
                 { icon: <BookOpen className="w-4 h-4" />, label: "আবৃত্তি / পডকাস্ট" },
                 { icon: <Zap className="w-4 h-4" />, label: "পিচ / স্পিড কন্ট্রোল" },
               ].map(f => (
-                <div key={f.label} className="flex items-center gap-2 text-xs text-white/50">
-                  <span className="text-[#c9a84c]/50">{f.icon}</span>
-                  {f.label}
+                <div key={f.label} className="flex items-center gap-2.5 text-xs text-white/50 bg-white/[0.02] rounded-xl px-3 py-2.5 border border-white/5">
+                  <span className="text-[#c9a84c]/50 flex-shrink-0">{f.icon}</span>
+                  <span>{f.label}</span>
                 </div>
               ))}
             </div>
