@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Facebook, ExternalLink, Mic, Play, Copy, Check } from "lucide-react";
+import { Facebook, ExternalLink, Mic, Play, Copy, Check, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -177,6 +177,7 @@ export default function FacebookRecitations() {
           </motion.p>
 
           {/* Facebook Page Button */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <motion.a
             href={facebookPageUrl}
             target="_blank"
@@ -202,6 +203,31 @@ export default function FacebookRecitations() {
             }}
           >
             <Facebook size={17} /> Facebook পেইজ <ExternalLink size={14} />
+          </motion.a>
+          <motion.a
+            href="/poem-reciter"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.55 }}
+            whileHover={{ y: -3, boxShadow: "0 20px 40px rgba(201,168,76,0.2)" }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "0.85rem 1.8rem",
+              background: "rgba(201,168,76,0.1)",
+              color: "#C9A84C",
+              textDecoration: "none",
+              borderRadius: 999,
+              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontSize: "0.95rem",
+              fontWeight: 700,
+              border: "1.5px solid rgba(201,168,76,0.4)",
+              boxShadow: "0 4px 16px rgba(201,168,76,0.1)",
+              transition: "box-shadow 0.3s",
+            }}
+          >
+            <Sparkles size={16} /> AI আবৃত্তি করুন
           </motion.a>
         </div>
 
@@ -464,6 +490,66 @@ export default function FacebookRecitations() {
         </div>
       </section>
 
+      {/* AI Reciter Promo Banner */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem 2rem" }}>
+        <motion.a
+          href="/poem-reciter"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.01 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            background: "linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(30,45,61,0.55) 100%)",
+            border: "1.5px solid rgba(201,168,76,0.22)",
+            borderRadius: 16,
+            padding: "1.2rem 1.8rem",
+            textDecoration: "none",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%",
+              background: "rgba(201,168,76,0.13)",
+              border: "1px solid rgba(201,168,76,0.28)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <Mic size={22} color="#C9A84C" />
+            </div>
+            <div>
+              <p style={{
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                color: "#C9A84C", fontSize: "1rem", fontWeight: 700, margin: "0 0 3px",
+              }}>নিজের কবিতা AI দিয়ে আবৃত্তি করুন</p>
+              <p style={{
+                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                color: "rgba(250,246,239,0.5)", fontSize: "0.85rem", margin: 0, lineHeight: 1.5,
+              }}>কবিতা লিখুন — মানবিক কণ্ঠে আবৃত্তি শুনুন ও MP3 ডাউনলোড করুন</p>
+            </div>
+          </div>
+          <div style={{
+            background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
+            color: "#060E1A",
+            borderRadius: 999,
+            padding: "0.6rem 1.4rem",
+            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontSize: "0.9rem",
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            whiteSpace: "nowrap",
+          }}>
+            <Sparkles size={14} /> চেষ্টা করুন
+          </div>
+        </motion.a>
+      </div>
       {/* Gold shimmer keyframe */}
       <style>{`
         @keyframes goldShimmer {
