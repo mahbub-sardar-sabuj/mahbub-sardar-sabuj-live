@@ -146,7 +146,7 @@
       "dest": "/robots.txt"
     },
     {
-      "src": "/(.*\.(?:js|css|png|jpg|jpeg|gif|svg|webp|PNG|JPG|JPEG|GIF|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map|wasm))$",
+      "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|PNG|JPG|JPEG|GIF|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map|wasm))$",
       "dest": "/$1"
     },
     {
