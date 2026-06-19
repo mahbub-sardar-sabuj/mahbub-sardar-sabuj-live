@@ -954,26 +954,34 @@ async function ensureWritingPlatformTables(db) {
   if (writingTablesReady) return;
   if (!writingTablesReadyPromise) {
     writingTablesReadyPromise = (async () => {
-      await db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
-      await db.execute(sql2.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `content` longtext NOT NULL")).catch(() => {
-      });
-      await db.execute(sql2.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `mediaUrl` longtext")).catch(() => {
-      });
-      await db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))"));
-      await db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))"));
+      // Run all CREATE TABLE in parallel (no ALTER TABLE - already longtext in schema)
+      await Promise.all([
+        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` longtext, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))")).catch(() => {}),
+        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))")).catch(() => {}),
+        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))")).catch(() => {}),
+      ]);
       writingTablesReady = true;
     })().catch((error) => {
       writingTablesReadyPromise = null;
       console.error("[WritingPlatform] Failed to ensure tables:", error);
-      throw error;
     });
   }
   await writingTablesReadyPromise;
 }
+var _warmupDone = false;
+async function warmupWritingDb() {
+  if (_warmupDone) return;
+  _warmupDone = true;
+  try {
+    const db = await getDb();
+    if (db) await ensureWritingPlatformTables(db);
+  } catch {}
+}
+warmupWritingDb();
 async function getWritingDb() {
   const db = await getDb();
   if (!db) return null;
-  await ensureWritingPlatformTables(db);
+  if (!writingTablesReady) await ensureWritingPlatformTables(db);
   return db;
 }
 async function safeWritingRead(label, fallback, operation) {
@@ -984,9 +992,9 @@ async function safeWritingRead(label, fallback, operation) {
     return fallback;
   }
 }
-async function enrichPostsBatch(posts, userOpenId) {
+async function enrichPostsBatch(posts, userOpenId, _db) {
   if (posts.length === 0) return [];
-  const db = await getWritingDb();
+  const db = _db ?? await getWritingDb();
   const emptyEnrich = (post) => ({
     ...post,
     authorAvatarUrl: null,
@@ -998,8 +1006,8 @@ async function enrichPostsBatch(posts, userOpenId) {
   const postIds = posts.map((p) => p.id);
   const authorOpenIds = [...new Set(posts.map((p) => p.authorOpenId))];
   const [allReactions, allComments, avatarRows] = await Promise.all([
-    // Batch query 1: all reactions for all posts at once
-    db.select().from(writingReactions).where(inArray2(writingReactions.postId, postIds)),
+    // Batch query 1: reactions (only needed columns)
+    db.select({ postId: writingReactions.postId, type: writingReactions.type, userOpenId: writingReactions.userOpenId }).from(writingReactions).where(inArray2(writingReactions.postId, postIds)),
     // Batch query 2: approved comment counts for all posts at once
     db.select({ postId: writingComments.postId }).from(writingComments).where(
       and3(
@@ -1054,8 +1062,8 @@ async function enrichPostsBatch(posts, userOpenId) {
     };
   });
 }
-async function enrichPost(post, userOpenId) {
-  const results = await enrichPostsBatch([post], userOpenId);
+async function enrichPost(post, userOpenId, db) {
+  const results = await enrichPostsBatch([post], userOpenId, db);
   return results[0];
 }
 var writingPlatformRouter = router({
@@ -1079,7 +1087,7 @@ var writingPlatformRouter = router({
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
       const posts = await db.select(feedCols).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(input?.limit ?? 20);
-      return enrichPostsBatch(posts, ctx.user?.openId);
+      return enrichPostsBatch(posts, ctx.user?.openId, db);
     });
   }),
   listPostsPaginated: publicProcedure.input(z3.object({
@@ -1104,7 +1112,7 @@ var writingPlatformRouter = router({
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
       const posts = await db.select(feedCols2).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(limit).offset(input?.offset ?? 0);
-      const enriched = await enrichPostsBatch(posts, ctx.user?.openId);
+      const enriched = await enrichPostsBatch(posts, ctx.user?.openId, db);
       return { posts: enriched, hasMore: posts.length === limit };
     });
   }),
@@ -1131,7 +1139,7 @@ var writingPlatformRouter = router({
           like(writingPosts.authorName, searchTerm)
         )
       )).orderBy(desc2(writingPosts.createdAt)).limit(input.limit);
-      return enrichPostsBatch(posts, ctx.user?.openId);
+      return enrichPostsBatch(posts, ctx.user?.openId, db);
     });
   }),
   getPostBySlug: publicProcedure.input(z3.object({ slug: z3.string().min(1).max(180) })).query(async ({ ctx, input }) => {
@@ -1150,7 +1158,8 @@ var writingPlatformRouter = router({
       return {
         post: await enrichPost(
           { ...post, viewCount: post.status === "approved" ? post.viewCount + 1 : post.viewCount },
-          ctx.user?.openId
+          ctx.user?.openId,
+          db
         ),
         comments
       };
@@ -1169,7 +1178,7 @@ var writingPlatformRouter = router({
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
       const posts = await db.select(feedCols4).from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)).orderBy(desc2(writingPosts.createdAt)).limit(50);
-      return enrichPostsBatch(posts, ctx.user.openId);
+      return enrichPostsBatch(posts, ctx.user.openId, db);
     });
   }),
   createPost: protectedProcedure.input(z3.object({

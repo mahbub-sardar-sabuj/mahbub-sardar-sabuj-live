@@ -39,32 +39,46 @@ type WritingPost = typeof writingPosts.$inferSelect;
 let writingTablesReady = false;
 let writingTablesReadyPromise: Promise<void> | null = null;
 
+// Run table setup once in background — does NOT block API requests after first call
 async function ensureWritingPlatformTables(db: WritingDb) {
   if (writingTablesReady) return;
 
   if (!writingTablesReadyPromise) {
     writingTablesReadyPromise = (async () => {
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` text, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))"));
-      // Upgrade existing columns to LONGTEXT if they were created as TEXT
-      await db.execute(sql.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `content` longtext NOT NULL")).catch(() => {});
-      await db.execute(sql.raw("ALTER TABLE `writing_posts` MODIFY COLUMN `mediaUrl` longtext")).catch(() => {});
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))"));
-      await db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))"));
+      // Run CREATE TABLE statements in parallel to save time
+      await Promise.all([
+        db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` longtext, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))")).catch(() => {}),
+        db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))")).catch(() => {}),
+        db.execute(sql.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))")).catch(() => {}),
+      ]);
       writingTablesReady = true;
     })().catch((error) => {
       writingTablesReadyPromise = null;
       console.error("[WritingPlatform] Failed to ensure tables:", error);
-      throw error;
     });
   }
 
   await writingTablesReadyPromise;
 }
 
+// Warm up DB connection and tables in background at module load time
+let _warmupDone = false;
+async function warmupWritingDb() {
+  if (_warmupDone) return;
+  _warmupDone = true;
+  try {
+    const db = await getDb();
+    if (db) await ensureWritingPlatformTables(db);
+  } catch {}
+}
+// Fire-and-forget warmup so first real request is fast
+warmupWritingDb();
+
 async function getWritingDb() {
   const db = await getDb();
   if (!db) return null;
-  await ensureWritingPlatformTables(db);
+  // If tables not ready yet, wait; otherwise return immediately (already ready)
+  if (!writingTablesReady) await ensureWritingPlatformTables(db);
   return db;
 }
 
@@ -77,13 +91,11 @@ async function safeWritingRead<T>(label: string, fallback: T, operation: () => P
   }
 }
 
-// ── OPTIMIZED: Batch-enrich multiple posts in 3 queries instead of 3N queries ──
-// Old approach: N posts × 3 queries each = 3N DB round-trips (N+1 problem)
-// New approach: 3 batch queries regardless of post count = O(1) DB round-trips
-async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string) {
+// ── OPTIMIZED: Batch-enrich multiple posts in 3 parallel queries ──
+async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?: WritingDb) {
   if (posts.length === 0) return [];
 
-  const db = await getWritingDb();
+  const db = _db ?? await getWritingDb();
   const emptyEnrich = (post: WritingPost) => ({
     ...post,
     authorAvatarUrl: null as string | null,
@@ -97,15 +109,15 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string) {
   const postIds = posts.map((p) => p.id);
   const authorOpenIds = [...new Set(posts.map((p) => p.authorOpenId))];
 
-  // ── 3 parallel batch queries instead of 3N sequential queries ──
+  // ── 3 parallel batch queries ──
   const [allReactions, allComments, avatarRows] = await Promise.all([
-    // Batch query 1: all reactions for all posts at once
+    // Batch query 1: reactions (only needed columns)
     db
-      .select()
+      .select({ postId: writingReactions.postId, type: writingReactions.type, userOpenId: writingReactions.userOpenId })
       .from(writingReactions)
       .where(inArray(writingReactions.postId, postIds)),
 
-    // Batch query 2: approved comment counts for all posts at once
+    // Batch query 2: approved comment counts
     db
       .select({ postId: writingComments.postId })
       .from(writingComments)
@@ -116,7 +128,7 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string) {
         )
       ),
 
-    // Batch query 3: author avatars for all unique authors at once
+    // Batch query 3: author avatars
     authorOpenIds.length > 0
       ? db.execute(
           sql.raw(
@@ -179,9 +191,9 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string) {
   });
 }
 
-// ── Single-post enrich (for getPostBySlug) — still uses 3 queries but only for 1 post ──
-async function enrichPost(post: WritingPost, userOpenId?: string) {
-  const results = await enrichPostsBatch([post], userOpenId);
+// ── Single-post enrich (for getPostBySlug) ──
+async function enrichPost(post: WritingPost, userOpenId?: string, db?: WritingDb) {
+  const results = await enrichPostsBatch([post], userOpenId, db);
   return results[0];
 }
 
@@ -225,8 +237,8 @@ export const writingPlatformRouter = router({
           .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
           .limit(input?.limit ?? 20);
 
-        // OPTIMIZED: batch enrich — 3 queries total instead of 3N
-        return enrichPostsBatch(posts as any, ctx.user?.openId);
+        // OPTIMIZED: batch enrich — pass db to avoid extra getWritingDb() call
+        return enrichPostsBatch(posts as any, ctx.user?.openId, db);
       });
     }),
 
@@ -272,8 +284,8 @@ export const writingPlatformRouter = router({
           .limit(limit)
           .offset(input?.offset ?? 0);
 
-        // OPTIMIZED: batch enrich
-        const enriched = await enrichPostsBatch(posts as any, ctx.user?.openId);
+        // OPTIMIZED: batch enrich — pass db to avoid extra getWritingDb() call
+        const enriched = await enrichPostsBatch(posts as any, ctx.user?.openId, db);
         return { posts: enriched, hasMore: posts.length === limit };
       });
     }),
@@ -319,8 +331,8 @@ export const writingPlatformRouter = router({
           .orderBy(desc(writingPosts.createdAt))
           .limit(input.limit);
 
-        // OPTIMIZED: batch enrich
-        return enrichPostsBatch(posts as any, ctx.user?.openId);
+        // OPTIMIZED: batch enrich — pass db to avoid extra getWritingDb() call
+        return enrichPostsBatch(posts as any, ctx.user?.openId, db);
       });
     }),
 
@@ -358,7 +370,8 @@ export const writingPlatformRouter = router({
         return {
           post: await enrichPost(
             { ...post, viewCount: post.status === "approved" ? post.viewCount + 1 : post.viewCount },
-            ctx.user?.openId
+            ctx.user?.openId,
+            db
           ),
           comments,
         };
@@ -394,8 +407,8 @@ export const writingPlatformRouter = router({
         .orderBy(desc(writingPosts.createdAt))
         .limit(50);
 
-      // OPTIMIZED: batch enrich
-      return enrichPostsBatch(posts as any, ctx.user.openId);
+      // OPTIMIZED: batch enrich — pass db to avoid extra getWritingDb() call
+      return enrichPostsBatch(posts as any, ctx.user.openId, db);
     });
   }),
 
