@@ -213,7 +213,8 @@ export const writingPlatformRouter = router({
         if (input?.category) conditions.push(eq(writingPosts.category, input.category));
         if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
 
-        // Only select needed columns for feed (avoid fetching full longtext content)
+        // Only select needed columns for feed
+        // mediaUrl is truncated to 500 chars — base64 images can be 400KB+ each and destroy performance
         const posts = await db
           .select({
             id: writingPosts.id,
@@ -223,7 +224,7 @@ export const writingPlatformRouter = router({
             title: writingPosts.title,
             category: writingPosts.category,
             content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
-            mediaUrl: writingPosts.mediaUrl,
+            mediaUrl: sql<string>`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
             mediaType: writingPosts.mediaType,
             status: writingPosts.status,
             featured: writingPosts.featured,
@@ -259,7 +260,7 @@ export const writingPlatformRouter = router({
         if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
 
         const limit = input?.limit ?? 10;
-        // OPTIMIZED: truncate content for feed display
+        // OPTIMIZED: truncate content and mediaUrl for feed display
         const posts = await db
           .select({
             id: writingPosts.id,
@@ -269,7 +270,7 @@ export const writingPlatformRouter = router({
             title: writingPosts.title,
             category: writingPosts.category,
             content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
-            mediaUrl: writingPosts.mediaUrl,
+            mediaUrl: sql<string>`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
             mediaType: writingPosts.mediaType,
             status: writingPosts.status,
             featured: writingPosts.featured,
@@ -301,7 +302,7 @@ export const writingPlatformRouter = router({
         if (!db) return [];
 
         const searchTerm = `%${input.query.trim()}%`;
-        // OPTIMIZED: Search only title and authorName (avoid LIKE on longtext content column)
+        // OPTIMIZED: Search only title and authorName; truncate mediaUrl
         const posts = await db
           .select({
             id: writingPosts.id,
@@ -311,7 +312,7 @@ export const writingPlatformRouter = router({
             title: writingPosts.title,
             category: writingPosts.category,
             content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
-            mediaUrl: writingPosts.mediaUrl,
+            mediaUrl: sql<string>`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
             mediaType: writingPosts.mediaType,
             status: writingPosts.status,
             featured: writingPosts.featured,
@@ -383,7 +384,7 @@ export const writingPlatformRouter = router({
       const db = await getWritingDb();
       if (!db) return [];
 
-      // OPTIMIZED: truncate content for feed display
+      // OPTIMIZED: truncate content and mediaUrl for feed display
       const posts = await db
         .select({
           id: writingPosts.id,
@@ -393,7 +394,7 @@ export const writingPlatformRouter = router({
           title: writingPosts.title,
           category: writingPosts.category,
           content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
-          mediaUrl: writingPosts.mediaUrl,
+          mediaUrl: sql<string>`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
           mediaType: writingPosts.mediaType,
           status: writingPosts.status,
           featured: writingPosts.featured,

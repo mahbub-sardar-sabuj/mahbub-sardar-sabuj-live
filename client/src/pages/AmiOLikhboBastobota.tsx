@@ -844,8 +844,8 @@ const PostCard = memo(function PostCard({
         )}
       </div>
 
-      {/* Media */}
-      {post.mediaUrl && post.mediaType === "image" && (
+      {/* Media - skip base64 images in feed (they are truncated to 500 chars for performance) */}
+      {post.mediaUrl && post.mediaType === "image" && !post.mediaUrl.startsWith("data:") && (
         <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
           <img
             src={post.mediaUrl}
@@ -855,6 +855,15 @@ const PostCard = memo(function PostCard({
             loading="lazy"
             onClick={() => onOpenDetail(post.slug)}
           />
+        </div>
+      )}
+      {/* Show image icon placeholder when post has image but it's base64 (only full URL in detail view) */}
+      {post.mediaUrl && post.mediaType === "image" && post.mediaUrl.startsWith("data:") && (
+        <div
+          onClick={() => onOpenDetail(post.slug)}
+          style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", background: "rgba(232,201,122,0.07)", display: "flex", alignItems: "center", justifyContent: "center", height: 80, cursor: "pointer", gap: 8, color: "rgba(232,201,122,0.7)", fontSize: 14 }}
+        >
+          <span style={{ fontSize: 22 }}>🖼️</span> ছবি দেখতে পোস্টটি খুলুন
         </div>
       )}
       {post.mediaUrl && post.mediaType === "video" && (

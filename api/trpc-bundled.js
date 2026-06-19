@@ -1082,7 +1082,7 @@ var writingPlatformRouter = router({
         id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
         authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
         featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
@@ -1107,7 +1107,7 @@ var writingPlatformRouter = router({
         id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
         authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
         featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
@@ -1128,7 +1128,7 @@ var writingPlatformRouter = router({
         id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
         authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
         featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
@@ -1173,7 +1173,7 @@ var writingPlatformRouter = router({
         id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
         authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
         featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
         viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
       };
