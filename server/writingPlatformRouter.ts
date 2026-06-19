@@ -379,6 +379,23 @@ export const writingPlatformRouter = router({
       });
     }),
 
+  // Lightweight endpoint to fetch only the mediaUrl of a post (for lazy loading images in feed)
+  getPostMedia: publicProcedure
+    .input(z.object({ postId: z.number().int().positive() }))
+    .query(async ({ input }) => {
+      return safeWritingRead("getPostMedia", null, async () => {
+        const db = await getWritingDb();
+        if (!db) return null;
+        const rows = await db
+          .select({ mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType })
+          .from(writingPosts)
+          .where(and(eq(writingPosts.id, input.postId), eq(writingPosts.status, "approved")))
+          .limit(1);
+        if (rows.length === 0) return null;
+        return rows[0];
+      });
+    }),
+
   myPosts: protectedProcedure.query(async ({ ctx }) => {
     return safeWritingRead("myPosts", [], async () => {
       const db = await getWritingDb();

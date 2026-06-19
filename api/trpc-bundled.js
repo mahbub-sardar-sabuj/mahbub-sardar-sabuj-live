@@ -1165,6 +1165,15 @@ var writingPlatformRouter = router({
       };
     });
   }),
+  getPostMedia: publicProcedure.input(z3.object({ postId: z3.number().int().positive() })).query(async ({ input }) => {
+    return safeWritingRead("getPostMedia", null, async () => {
+      const db = await getWritingDb();
+      if (!db) return null;
+      const rows = await db.select({ mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType }).from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
+      if (rows.length === 0) return null;
+      return rows[0];
+    });
+  }),
   myPosts: protectedProcedure.query(async ({ ctx }) => {
     return safeWritingRead("myPosts", [], async () => {
       const db = await getWritingDb();

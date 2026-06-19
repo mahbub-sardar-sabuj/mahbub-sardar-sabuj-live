@@ -717,6 +717,16 @@ const PostCard = memo(function PostCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Lazy load image: only fetch mediaUrl when post has image (base64 is truncated in feed)
+  const hasImage = post.mediaType === "image" && post.mediaUrl;
+  const isBase64InFeed = hasImage && post.mediaUrl!.startsWith("data:");
+  const mediaQuery = trpc.writingPlatform.getPostMedia.useQuery(
+    { postId: post.id },
+    { enabled: !!isBase64InFeed, staleTime: 10 * 60 * 1000 }
+  );
+  const resolvedMediaUrl = isBase64InFeed
+    ? (mediaQuery.data?.mediaUrl ?? null)
+    : post.mediaUrl;
   const isLong = post.content.length > 280;
   const displayContent = isLong && !expanded ? post.content.slice(0, 280) + "..." : post.content;
   const isOwner = Boolean(currentUserOpenId && post.authorOpenId === currentUserOpenId);
@@ -844,26 +854,23 @@ const PostCard = memo(function PostCard({
         )}
       </div>
 
-      {/* Media - skip base64 images in feed (they are truncated to 500 chars for performance) */}
-      {post.mediaUrl && post.mediaType === "image" && !post.mediaUrl.startsWith("data:") && (
+      {/* Media: normal URL shown directly; base64 lazy-loaded via getPostMedia */}
+      {post.mediaType === "image" && hasImage && (
         <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
-          <img
-            src={post.mediaUrl}
-            alt={post.title}
-            className="amio-media-img"
-            style={{ width: "100%", maxHeight: 440, objectFit: "cover", display: "block" }}
-            loading="lazy"
-            onClick={() => onOpenDetail(post.slug)}
-          />
-        </div>
-      )}
-      {/* Show image icon placeholder when post has image but it's base64 (only full URL in detail view) */}
-      {post.mediaUrl && post.mediaType === "image" && post.mediaUrl.startsWith("data:") && (
-        <div
-          onClick={() => onOpenDetail(post.slug)}
-          style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", background: "rgba(232,201,122,0.07)", display: "flex", alignItems: "center", justifyContent: "center", height: 80, cursor: "pointer", gap: 8, color: "rgba(232,201,122,0.7)", fontSize: 14 }}
-        >
-          <span style={{ fontSize: 22 }}>🖼️</span> ছবি দেখতে পোস্টটি খুলুন
+          {resolvedMediaUrl ? (
+            <img
+              src={resolvedMediaUrl}
+              alt={post.title}
+              className="amio-media-img"
+              style={{ width: "100%", maxHeight: 440, objectFit: "cover", display: "block" }}
+              loading="lazy"
+              onClick={() => onOpenDetail(post.slug)}
+            />
+          ) : (
+            <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(232,201,122,0.5)", fontSize: 13 }}>
+              <RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite", marginRight: 8 }} /> ছবি লোড হচ্ছে...
+            </div>
+          )}
         </div>
       )}
       {post.mediaUrl && post.mediaType === "video" && (
