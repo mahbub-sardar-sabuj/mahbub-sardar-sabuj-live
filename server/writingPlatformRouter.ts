@@ -201,15 +201,32 @@ export const writingPlatformRouter = router({
         if (input?.category) conditions.push(eq(writingPosts.category, input.category));
         if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
 
+        // Only select needed columns for feed (avoid fetching full longtext content)
         const posts = await db
-          .select()
+          .select({
+            id: writingPosts.id,
+            slug: writingPosts.slug,
+            authorOpenId: writingPosts.authorOpenId,
+            authorName: writingPosts.authorName,
+            title: writingPosts.title,
+            category: writingPosts.category,
+            content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
+            mediaUrl: writingPosts.mediaUrl,
+            mediaType: writingPosts.mediaType,
+            status: writingPosts.status,
+            featured: writingPosts.featured,
+            boostedScore: writingPosts.boostedScore,
+            viewCount: writingPosts.viewCount,
+            createdAt: writingPosts.createdAt,
+            updatedAt: writingPosts.updatedAt,
+          })
           .from(writingPosts)
           .where(and(...conditions))
           .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
           .limit(input?.limit ?? 20);
 
         // OPTIMIZED: batch enrich — 3 queries total instead of 3N
-        return enrichPostsBatch(posts, ctx.user?.openId);
+        return enrichPostsBatch(posts as any, ctx.user?.openId);
       });
     }),
 
@@ -230,8 +247,25 @@ export const writingPlatformRouter = router({
         if (input?.featuredOnly) conditions.push(eq(writingPosts.featured, true));
 
         const limit = input?.limit ?? 10;
+        // OPTIMIZED: truncate content for feed display
         const posts = await db
-          .select()
+          .select({
+            id: writingPosts.id,
+            slug: writingPosts.slug,
+            authorOpenId: writingPosts.authorOpenId,
+            authorName: writingPosts.authorName,
+            title: writingPosts.title,
+            category: writingPosts.category,
+            content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
+            mediaUrl: writingPosts.mediaUrl,
+            mediaType: writingPosts.mediaType,
+            status: writingPosts.status,
+            featured: writingPosts.featured,
+            boostedScore: writingPosts.boostedScore,
+            viewCount: writingPosts.viewCount,
+            createdAt: writingPosts.createdAt,
+            updatedAt: writingPosts.updatedAt,
+          })
           .from(writingPosts)
           .where(and(...conditions))
           .orderBy(desc(writingPosts.featured), desc(writingPosts.boostedScore), desc(writingPosts.createdAt))
@@ -239,7 +273,7 @@ export const writingPlatformRouter = router({
           .offset(input?.offset ?? 0);
 
         // OPTIMIZED: batch enrich
-        const enriched = await enrichPostsBatch(posts, ctx.user?.openId);
+        const enriched = await enrichPostsBatch(posts as any, ctx.user?.openId);
         return { posts: enriched, hasMore: posts.length === limit };
       });
     }),
@@ -255,14 +289,30 @@ export const writingPlatformRouter = router({
         if (!db) return [];
 
         const searchTerm = `%${input.query.trim()}%`;
+        // OPTIMIZED: Search only title and authorName (avoid LIKE on longtext content column)
         const posts = await db
-          .select()
+          .select({
+            id: writingPosts.id,
+            slug: writingPosts.slug,
+            authorOpenId: writingPosts.authorOpenId,
+            authorName: writingPosts.authorName,
+            title: writingPosts.title,
+            category: writingPosts.category,
+            content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
+            mediaUrl: writingPosts.mediaUrl,
+            mediaType: writingPosts.mediaType,
+            status: writingPosts.status,
+            featured: writingPosts.featured,
+            boostedScore: writingPosts.boostedScore,
+            viewCount: writingPosts.viewCount,
+            createdAt: writingPosts.createdAt,
+            updatedAt: writingPosts.updatedAt,
+          })
           .from(writingPosts)
           .where(and(
             eq(writingPosts.status, "approved"),
             or(
               like(writingPosts.title, searchTerm),
-              like(writingPosts.content, searchTerm),
               like(writingPosts.authorName, searchTerm)
             )
           ))
@@ -270,7 +320,7 @@ export const writingPlatformRouter = router({
           .limit(input.limit);
 
         // OPTIMIZED: batch enrich
-        return enrichPostsBatch(posts, ctx.user?.openId);
+        return enrichPostsBatch(posts as any, ctx.user?.openId);
       });
     }),
 
@@ -320,15 +370,32 @@ export const writingPlatformRouter = router({
       const db = await getWritingDb();
       if (!db) return [];
 
+      // OPTIMIZED: truncate content for feed display
       const posts = await db
-        .select()
+        .select({
+          id: writingPosts.id,
+          slug: writingPosts.slug,
+          authorOpenId: writingPosts.authorOpenId,
+          authorName: writingPosts.authorName,
+          title: writingPosts.title,
+          category: writingPosts.category,
+          content: sql<string>`SUBSTRING(${writingPosts.content}, 1, 600)`,
+          mediaUrl: writingPosts.mediaUrl,
+          mediaType: writingPosts.mediaType,
+          status: writingPosts.status,
+          featured: writingPosts.featured,
+          boostedScore: writingPosts.boostedScore,
+          viewCount: writingPosts.viewCount,
+          createdAt: writingPosts.createdAt,
+          updatedAt: writingPosts.updatedAt,
+        })
         .from(writingPosts)
         .where(eq(writingPosts.authorOpenId, ctx.user.openId))
         .orderBy(desc(writingPosts.createdAt))
         .limit(50);
 
       // OPTIMIZED: batch enrich
-      return enrichPostsBatch(posts, ctx.user.openId);
+      return enrichPostsBatch(posts as any, ctx.user.openId);
     });
   }),
 

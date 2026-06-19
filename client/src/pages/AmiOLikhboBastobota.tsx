@@ -53,14 +53,13 @@ const glassStyle: CSSProperties = {
   border: "1px solid rgba(232,201,122,0.20)",
   background: "linear-gradient(145deg, rgba(255,255,255,0.085), rgba(255,255,255,0.038))",
   boxShadow: "0 32px 100px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.07)",
-  backdropFilter: "blur(28px)",
+  backdropFilter: "blur(16px)",
 };
 
 const cardStyle: CSSProperties = {
   border: "1px solid rgba(232,201,122,0.16)",
   background: "linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.045))",
   boxShadow: "0 10px 44px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
-  backdropFilter: "blur(12px)",
   borderRadius: 24,
   willChange: "auto",
 };
@@ -439,8 +438,8 @@ function ReactionBar({
   const utils = trpc.useUtils();
   const reactMutation = trpc.writingPlatform.reactToPost.useMutation({
     onSuccess: () => {
-      utils.writingPlatform.listPosts.invalidate();
       if (postSlug) utils.writingPlatform.getPostBySlug.invalidate({ slug: postSlug });
+      else utils.writingPlatform.listPosts.invalidate();
     },
   });
 
@@ -1765,24 +1764,28 @@ export default function AmiOLikhboBastobota() {
   const [showLocalAuth, setShowLocalAuth] = useState(() => Boolean(resetTokenFromUrl));
   const [localAuthMode, setLocalAuthMode] = useState<"login" | "register">("login");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchActive, setSearchActive] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [editingPost, setEditingPost] = useState<EnrichedPost | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const postsQuery = trpc.writingPlatform.listPosts.useQuery(
     undefined,
     {
-      refetchInterval: 120000,
+      refetchInterval: false,
       refetchIntervalInBackground: false,
       enabled: !searchActive,
       retry: false,
-      staleTime: 60000,
+      staleTime: 300000,
+      gcTime: 600000,
     }
   );
   const searchQuery_ = searchQuery.trim();
+  const debouncedSearch_ = debouncedSearch.trim();
   const searchResultsQuery = trpc.writingPlatform.searchPosts.useQuery(
-    { query: searchQuery_ || "_" },
-    { enabled: searchActive && searchQuery_.length >= 2, retry: false }
+    { query: debouncedSearch_ || "_" },
+    { enabled: searchActive && debouncedSearch_.length >= 2, retry: false, staleTime: 30000 }
   );
   const utils = trpc.useUtils();
   const deletePostMutation = trpc.writingPlatform.deletePost.useMutation({
@@ -1795,14 +1798,14 @@ export default function AmiOLikhboBastobota() {
     enabled: isAuthenticated && showMyPosts,
     retry: false,
   });
-  const activeFeedQuery = searchActive && searchQuery_.length >= 2 ? searchResultsQuery : postsQuery;
+  const activeFeedQuery = searchActive && debouncedSearch_.length >= 2 ? searchResultsQuery : postsQuery;
   const feedHasError = Boolean(activeFeedQuery.isError);
-  const feedIsLoading = Boolean(activeFeedQuery.isLoading || activeFeedQuery.isFetching);
+  const feedIsLoading = Boolean(activeFeedQuery.isLoading);
   const posts = useMemo(() => (
-    (searchActive && searchQuery_.length >= 2
+    (searchActive && debouncedSearch_.length >= 2
       ? (searchResultsQuery.data ?? [])
       : (postsQuery.data ?? [])) as EnrichedPost[]
-  ), [searchActive, searchQuery_, searchResultsQuery.data, postsQuery.data]);
+  ), [searchActive, debouncedSearch_, searchResultsQuery.data, postsQuery.data]);
   const filteredPosts = useMemo(() => (
     selectedCategory === "all" ? posts : posts.filter((p) => p.category === selectedCategory)
   ), [posts, selectedCategory]);
@@ -1849,13 +1852,13 @@ export default function AmiOLikhboBastobota() {
         @keyframes pulseGold { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); } 50% { box-shadow: 0 0 0 6px rgba(212,168,67,0.18); } }
         @keyframes reactionPop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 70% { transform: scale(0.92); } 100% { transform: scale(1); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        .post-card-enter { animation: fadeIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+        .post-card-enter { animation: fadeIn 0.3s ease-out forwards; }
         .amio-topbar-avatar { transition: opacity 0.15s, transform 0.18s; }
         .amio-topbar-avatar:hover { opacity: 0.85; transform: scale(1.07); }
         .amio-post-btn { transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s; }
         .amio-post-btn:hover { opacity: 0.92; transform: scale(1.04); box-shadow: 0 8px 28px rgba(212,168,67,0.38) !important; }
-        .amio-post-card { transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s; }
-        .amio-post-card:hover { border-color: rgba(232,201,122,0.38) !important; box-shadow: 0 18px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(232,201,122,0.12) !important; transform: translateY(-3px); }
+        .amio-post-card { transition: border-color 0.2s, box-shadow 0.2s; }
+        .amio-post-card:hover { border-color: rgba(232,201,122,0.38) !important; box-shadow: 0 14px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,201,122,0.12) !important; }
         .amio-cat-btn { transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.15s; }
         .amio-cat-btn:hover { background: rgba(232,201,122,0.16) !important; border-color: rgba(232,201,122,0.45) !important; transform: translateY(-1px); }
         .amio-action-btn { transition: background 0.15s, transform 0.12s; }
@@ -1890,7 +1893,7 @@ export default function AmiOLikhboBastobota() {
               background: "linear-gradient(180deg, rgba(212,168,67,0.14) 0%, rgba(255,255,255,0.05) 100%)",
               border: "1px solid rgba(232,201,122,0.22)",
               borderBottom: "none",
-              backdropFilter: "blur(28px)",
+              backdropFilter: "blur(16px)",
             }}>
               <div className="amio-gold-glow" style={{
                 width: 36,
@@ -1936,7 +1939,7 @@ export default function AmiOLikhboBastobota() {
               background: "linear-gradient(145deg, rgba(255,255,255,0.09), rgba(255,255,255,0.045))",
               border: "1px solid rgba(232,201,122,0.22)",
               borderTop: "none",
-              backdropFilter: "blur(28px)",
+              backdropFilter: "blur(16px)",
               boxShadow: "0 8px 36px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.07)",
               marginTop: "-1rem",
             }}>
@@ -1948,8 +1951,17 @@ export default function AmiOLikhboBastobota() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setSearchActive(e.target.value.trim().length >= 2);
+                    const val = e.target.value;
+                    setSearchQuery(val);
+                    if (val.trim().length >= 2) {
+                      setSearchActive(true);
+                      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                      searchDebounceRef.current = setTimeout(() => setDebouncedSearch(val), 400);
+                    } else {
+                      setSearchActive(false);
+                      setDebouncedSearch("");
+                      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                    }
                   }}
                   onFocus={() => searchQuery.trim().length >= 2 && setSearchActive(true)}
                   placeholder="পোস্ট বা লেখক খুঁজুন..."
@@ -1971,7 +1983,7 @@ export default function AmiOLikhboBastobota() {
                 {searchActive && (
                   <button
                     type="button"
-                    onClick={() => { setSearchQuery(""); setSearchActive(false); }}
+                    onClick={() => { setSearchQuery(""); setSearchActive(false); setDebouncedSearch(""); if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); }}
                     style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(253,246,236,0.45)", cursor: "pointer", padding: 2, display: "flex", alignItems: "center" }}
                   >
                     <X size={14} />
@@ -2210,7 +2222,7 @@ export default function AmiOLikhboBastobota() {
           ) : (
             <>
               {/* ── Guidance Panel (shown when not searching and not in my-posts mode) ── */}
-              {!searchActive && !showMyPosts && !slugFromUrl && posts.length === 0 && !feedIsLoading && !feedHasError && (
+              {!searchActive && !showMyPosts && !slugFromUrl && posts.length === 0 && !feedIsLoading && !feedHasError && !postsQuery.isFetching && (
                 <GuidancePanel
                   isAuthenticated={isAuthenticated}
                   onWrite={() => setShowCreateModal(true)}
@@ -2222,7 +2234,7 @@ export default function AmiOLikhboBastobota() {
               )}
 
               {/* ── Feed ── */}
-              <>{searchActive && searchQuery_.length < 2 ? (
+              <>{searchActive && debouncedSearch_.length < 2 ? (
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
                   অনুসন্ধানের জন্য কমপক্ষে ২টি অক্ষর লিখুন।
                 </div>
@@ -2276,13 +2288,13 @@ export default function AmiOLikhboBastobota() {
                 />
               ) : (
                 <div style={{ display: "grid", gap: "1rem" }}>
-                  {searchActive && (
+                  {searchActive && debouncedSearch_.length >= 2 && (
                     <div style={{ color: "rgba(253,246,236,0.5)", fontSize: "0.82rem", paddingLeft: 4 }}>
-                      "{searchQuery}" এর জন্য {posts.length}টি ফলাফল
+                      "{debouncedSearch_}" এর জন্য {posts.length}টি ফলাফল
                     </div>
                   )}
-                  {displayPosts.map((post) => (
-                    <div key={post.id} className="post-card-enter">
+                  {displayPosts.map((post, idx) => (
+                    <div key={post.id} className={idx < 5 ? "post-card-enter" : undefined}>
                       <PostCard
                         post={post}
                         isAuthenticated={isAuthenticated}

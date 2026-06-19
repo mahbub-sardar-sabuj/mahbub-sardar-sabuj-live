@@ -1070,7 +1070,15 @@ var writingPlatformRouter = router({
       const conditions = [eq4(writingPosts.status, "approved")];
       if (input?.category) conditions.push(eq4(writingPosts.category, input.category));
       if (input?.featuredOnly) conditions.push(eq4(writingPosts.featured, true));
-      const posts = await db.select().from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(input?.limit ?? 20);
+      const feedCols = {
+        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+        content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
+        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
+      };
+      const posts = await db.select(feedCols).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(input?.limit ?? 20);
       return enrichPostsBatch(posts, ctx.user?.openId);
     });
   }),
@@ -1087,7 +1095,15 @@ var writingPlatformRouter = router({
       if (input?.category) conditions.push(eq4(writingPosts.category, input.category));
       if (input?.featuredOnly) conditions.push(eq4(writingPosts.featured, true));
       const limit = input?.limit ?? 10;
-      const posts = await db.select().from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(limit).offset(input?.offset ?? 0);
+      const feedCols2 = {
+        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+        content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
+        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
+      };
+      const posts = await db.select(feedCols2).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(limit).offset(input?.offset ?? 0);
       const enriched = await enrichPostsBatch(posts, ctx.user?.openId);
       return { posts: enriched, hasMore: posts.length === limit };
     });
@@ -1100,11 +1116,18 @@ var writingPlatformRouter = router({
       const db = await getWritingDb();
       if (!db) return [];
       const searchTerm = `%${input.query.trim()}%`;
-      const posts = await db.select().from(writingPosts).where(and3(
+      const feedCols3 = {
+        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+        content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
+        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
+      };
+      const posts = await db.select(feedCols3).from(writingPosts).where(and3(
         eq4(writingPosts.status, "approved"),
         or(
           like(writingPosts.title, searchTerm),
-          like(writingPosts.content, searchTerm),
           like(writingPosts.authorName, searchTerm)
         )
       )).orderBy(desc2(writingPosts.createdAt)).limit(input.limit);
@@ -1137,7 +1160,15 @@ var writingPlatformRouter = router({
     return safeWritingRead("myPosts", [], async () => {
       const db = await getWritingDb();
       if (!db) return [];
-      const posts = await db.select().from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)).orderBy(desc2(writingPosts.createdAt)).limit(50);
+      const feedCols4 = {
+        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+        content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
+        mediaUrl: writingPosts.mediaUrl, mediaType: writingPosts.mediaType, status: writingPosts.status,
+        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
+      };
+      const posts = await db.select(feedCols4).from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)).orderBy(desc2(writingPosts.createdAt)).limit(50);
       return enrichPostsBatch(posts, ctx.user.openId);
     });
   }),
