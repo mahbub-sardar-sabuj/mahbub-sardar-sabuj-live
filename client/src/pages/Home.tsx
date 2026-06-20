@@ -21,6 +21,7 @@ import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
+import RulesSection from "@/components/RulesSection";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
@@ -29,21 +30,21 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
-  { label: "পরিচিতি",            subtitle: "জীবন, লেখা ও লেখকের পথচলা",                    href: "/about",                   icon: UserRound, size: "wide" },
-  { label: "লেখালেখি ও বই",      subtitle: "কবিতা, গদ্য ও প্রকাশিত বই",                href: "/writings",               icon: BookOpen,  size: "wide" },
-  { label: "আবৃত্তি",             subtitle: "কণ্ঠে কবিতা, অনুভবে উচ্চারণ",           href: "/facebook-recitations",   icon: Mic2,      size: "normal" },
-  { label: "গ্যালারি",             subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম",        href: "/gallery",               icon: Images,    size: "normal" },
-  { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর",         href: "/amio-likhbo-bastobota", icon: Feather,   size: "normal" },
-  { label: "সরদার সংবাদ",      subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর",       href: "/news",                  icon: Newspaper, size: "normal" },
-  { label: "ডিজাইন ফরম্যাট",   subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ",        href: "/editor",                icon: Palette,   size: "normal" },
-  { label: "যোগাযোগ",             subtitle: "বার্তা, ইমেইল ও সংযোগের পথ",                href: "/contact",               icon: Mail,      size: "normal" },
-  { label: "টেম্প ইমেইল",       subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন",  href: "/temp-email",            icon: MailOpen,  size: "normal" },
-  { label: "টেম্প নম্বর",       subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর",         href: "/temp-number",           icon: Phone,     size: "normal" },
-  { label: "টেম্প কার্ড",        subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড",            href: "/temp-card",             icon: CreditCard,size: "normal" },
-  { label: "ইমেজ আপস্কেলার",  subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান",          href: "/image-upscaler",        icon: Sparkles,  size: "normal" },
-  { label: "ভিডিও আপস্কেলার",  subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন",           href: "/video-upscaler",        icon: Video,     size: "normal" },
-  { label: "অডিও এডিটর",      subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন",    href: "/audio-editor",          icon: Music,     size: "normal" },
-  { label: "আবৃত্তি টুল",       subtitle: "লেখা দিন, AI মানুষের কণ্ঠে আবৃত্তি করবে",     href: "/text-to-speech",        icon: Mic2,      size: "normal" },
+  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
+  { label: "আবৃত্তি", subtitle: "কণ্ঠে কবিতা, অনুভবে উচ্চারণ", href: "/facebook-recitations", icon: Mic2 },
+  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
+  { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
+  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
+  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
+  { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
+  { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", icon: Phone },
+  { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", icon: CreditCard },
+  { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
+  { label: "ভিডিও আপস্কেলার", subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Video },
+  { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", icon: Music },
+  { label: "আবৃত্তি টুল", subtitle: "লেখা দিন, AI মানুষের কণ্ঠে আবৃত্তি করবে", href: "/text-to-speech", icon: Mic2 },
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════════
@@ -343,42 +344,24 @@ export default function Home() {
                             </div>
               </h1>
               {/* Tagline */}
-              {/* Quote / Tagline */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "1.2rem 0 0", maxWidth: 480 }}
+                style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
               >
                 <p style={{
                   fontFamily: "'AdorshoLipi', sans-serif",
-                  fontSize: "clamp(1.05rem, 2vw, 1.22rem)",
-                  color: "rgba(250,246,239,0.72)",
-                  lineHeight: 1.82,
+                  fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
+                  color: "rgba(250,246,239,0.68)",
+                  lineHeight: 1.75,
                   margin: 0,
-                  letterSpacing: "0.025em",
-                  borderLeft: "2.5px solid rgba(201,168,76,0.6)",
-                  paddingLeft: 20,
-                  fontStyle: "italic",
+                  letterSpacing: "0.02em",
+                  borderLeft: "2px solid rgba(201,168,76,0.5)",
+                  paddingLeft: 18,
                 }}>
-                  যে কথা বলতে পারিনি কখনো,<br />
-                  সেই কথাই লিখে রেখেছি শব্দের ভাঁজে।
+                  বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
                 </p>
-              </motion.div>
-
-              {/* CTA Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.85 }}
-                className="hero-cta-row"
-              >
-                <Link href="/writings" className="hero-cta-primary">
-                  লেখালেখি পড়ুন
-                </Link>
-                <Link href="/about" className="hero-cta-secondary">
-                  পরিচিতি জানুন
-                </Link>
               </motion.div>
 
             </div>
@@ -608,38 +591,25 @@ export default function Home() {
             <div className="app-launcher-grid">
               {sections.map((sec, i) => {
                 const Icon = sec.icon;
-                const isWide = sec.size === "wide";
                 return (
                   <motion.div
                     key={sec.href + sec.label}
-                    className={isWide ? "bento-wide" : ""}
-                    initial={{ opacity: 0, y: 22 }}
+                    initial={{ opacity: 0, y: 18 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.45, delay: i * 0.045, ease: [0.16,1,0.3,1] }}
+                    transition={{ duration: 0.4, delay: i * 0.04 }}
                   >
                     <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
                       <motion.div
-                        className={`app-launcher-card${isWide ? " bento-wide-card" : ""}`}
-                        whileHover={{ y: -8, scale: 1.04 }}
+                        className="app-launcher-card"
+                        whileHover={{ y: -6, scale: 1.03 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        {/* Top accent line */}
-                        <div className="card-top-line" />
-                        <div className={`app-icon-wrap${isWide ? " wide-icon" : ""}`}>
-                          <Icon size={isWide ? 26 : 23} strokeWidth={1.7} />
+                        <div className="app-icon-wrap">
+                          <Icon size={23} strokeWidth={1.8} />
                         </div>
-                        {isWide ? (
-                          <div className="bento-wide-card-text">
-                            <span className="app-label">{sec.label}</span>
-                            <span className="app-subtitle">{sec.subtitle}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <span className="app-label">{sec.label}</span>
-                            <span className="app-subtitle">{sec.subtitle}</span>
-                          </>
-                        )}
+                        <span className="app-label">{sec.label}</span>
+                        <span className="app-subtitle">{sec.subtitle}</span>
                       </motion.div>
                     </Link>
                   </motion.div>
@@ -715,7 +685,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* RulesSection removed — duplicate of app-launcher */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          RULES / WHY USE THIS WEBSITE SECTION
+      ══════════════════════════════════════════════════════════════════════ */}
+      <RulesSection />
 
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
@@ -832,54 +805,6 @@ export default function Home() {
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: clamp(0.9rem, 2.5vw, 1.3rem);
         }
-        /* Bento wide card — spans 2 columns */
-        .bento-wide {
-          grid-column: span 2;
-        }
-        .bento-wide-card {
-          flex-direction: row !important;
-          align-items: center !important;
-          justify-content: flex-start !important;
-          text-align: left !important;
-          gap: 1.1rem !important;
-          padding: 1.5rem 1.6rem !important;
-          min-height: 100px !important;
-          background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(16,30,52,0.97) 60%, rgba(8,18,32,0.92) 100%) !important;
-          border-color: rgba(201,168,76,0.38) !important;
-        }
-        .bento-wide-card .app-label {
-          font-size: clamp(1rem, 2.4vw, 1.14rem) !important;
-          min-height: unset !important;
-          justify-content: flex-start !important;
-          text-align: left !important;
-        }
-        .bento-wide-card .app-subtitle {
-          display: block !important;
-          text-align: left !important;
-          font-size: 0.72rem !important;
-          -webkit-line-clamp: 1 !important;
-        }
-        .bento-wide-card .card-top-line {
-          top: 0 !important;
-          left: 0 !important;
-          right: unset !important;
-          width: 3px !important;
-          height: 100% !important;
-          background: linear-gradient(180deg, rgba(201,168,76,0.9), rgba(201,168,76,0.2)) !important;
-        }
-        .wide-icon {
-          flex-shrink: 0;
-          width: 68px !important;
-          height: 68px !important;
-          border-radius: 22px !important;
-        }
-        .bento-wide-card-text {
-          display: flex;
-          flex-direction: column;
-          gap: 0.3rem;
-          flex: 1;
-          min-width: 0;
-        }
         .app-launcher-link {
           display: block;
           text-decoration: none;
@@ -909,21 +834,6 @@ export default function Home() {
           position: relative;
           overflow: hidden;
         }
-        /* Top accent line on each card */
-        .card-top-line {
-          position: absolute;
-          top: 0; left: 10%; right: 10%;
-          height: 1.5px;
-          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.75), transparent);
-          border-radius: 0 0 2px 2px;
-          pointer-events: none;
-          transition: opacity 0.28s ease;
-          opacity: 0.7;
-        }
-        .app-launcher-card:hover .card-top-line {
-          opacity: 1;
-          background: linear-gradient(90deg, transparent, rgba(232,201,122,1), transparent);
-        }
         .app-launcher-card::before {
           content: "";
           position: absolute;
@@ -932,63 +842,6 @@ export default function Home() {
           opacity: 0;
           transition: opacity 0.28s ease;
           pointer-events: none;
-        }
-        /* Hero CTA buttons */
-        .hero-cta-row {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          margin-top: 1.8rem;
-          flex-wrap: wrap;
-        }
-        .hero-cta-primary {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: clamp(0.9rem, 1.8vw, 1.02rem);
-          font-weight: 700;
-          color: #060E1A;
-          background: linear-gradient(135deg, #E8C97A 0%, #C9A84C 50%, #B8922E 100%);
-          border: none;
-          border-radius: 50px;
-          padding: 0.72rem 1.7rem;
-          text-decoration: none;
-          cursor: pointer;
-          box-shadow: 0 8px 28px rgba(201,168,76,0.38), 0 2px 8px rgba(0,0,0,0.25);
-          transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
-          letter-spacing: 0.02em;
-          white-space: nowrap;
-        }
-        .hero-cta-primary:hover {
-          transform: translateY(-3px) scale(1.03);
-          box-shadow: 0 14px 38px rgba(201,168,76,0.52), 0 4px 14px rgba(0,0,0,0.3);
-          filter: brightness(1.08);
-        }
-        .hero-cta-secondary {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: clamp(0.9rem, 1.8vw, 1.02rem);
-          font-weight: 600;
-          color: rgba(250,246,239,0.88);
-          background: transparent;
-          border: 1.5px solid rgba(201,168,76,0.45);
-          border-radius: 50px;
-          padding: 0.72rem 1.7rem;
-          text-decoration: none;
-          cursor: pointer;
-          backdrop-filter: blur(8px);
-          transition: transform 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
-          letter-spacing: 0.02em;
-          white-space: nowrap;
-        }
-        .hero-cta-secondary:hover {
-          transform: translateY(-3px);
-          border-color: rgba(201,168,76,0.82);
-          color: #E8C97A;
-          box-shadow: 0 8px 24px rgba(201,168,76,0.18);
         }
         .app-launcher-card:hover {
           border-color: rgba(201,168,76,0.62);
@@ -1086,11 +939,6 @@ export default function Home() {
           .floating-card { display: none; }
         }
 
-        /* Tablet */
-        @media (max-width: 1024px) {
-          .bento-wide { grid-column: span 2; }
-        }
-
         /* Mobile */
         @media (max-width: 768px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
@@ -1100,49 +948,36 @@ export default function Home() {
           .hero-left { min-width: 0; width: 100%; }
           .hero-title { width: 100%; }
           .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
-          .hero-cta-row { justify-content: center; }
           .app-launcher-shell { border-radius: 30px; padding: 1rem; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
-          .bento-wide { grid-column: span 2; }
-          .bento-wide-card { padding: 1.1rem 1.1rem !important; min-height: 88px !important; }
-          .wide-icon { width: 54px !important; height: 54px !important; }
-          .app-launcher-card { min-height: 130px; border-radius: 22px; padding: 1.1rem 0.6rem 0.9rem; }
+          .app-launcher-card { min-height: 124px; border-radius: 22px; padding: 0.98rem 0.42rem 0.82rem; }
           .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
           .app-label { font-size: 0.82rem; line-height: 1.25; }
-          .app-subtitle { display: block; font-size: 0.62rem; }
+          .app-subtitle { display: none; }
           .hero-portrait { height: 260px; }
         }
 
-        /* Small mobile — 2 column grid */
         @media (max-width: 480px) {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
           .hero-inner { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .hero-title span { font-size: clamp(2.28rem, 14.2vw, 4.4rem) !important; }
-          .hero-cta-row { gap: 0.7rem; }
-          .hero-cta-primary, .hero-cta-secondary { font-size: 0.88rem !important; padding: 0.65rem 1.3rem !important; }
           .app-launcher-shell { padding: 0.85rem; border-radius: 28px; }
-          .app-launcher-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; }
-          .bento-wide { grid-column: span 2; }
-          .bento-wide-card { flex-direction: row !important; padding: 1rem 1.1rem !important; min-height: 80px !important; }
-          .wide-icon { width: 48px !important; height: 48px !important; border-radius: 16px !important; }
-          .app-launcher-card { min-height: 130px; padding: 1.1rem 0.7rem 0.9rem; border-radius: 20px; }
-          .app-icon-wrap { width: 50px; height: 50px; border-radius: 16px; }
-          .app-icon-wrap svg { width: 22px; height: 22px; }
-          .app-label { font-size: 0.88rem; min-height: unset; }
-          .app-subtitle { display: block !important; font-size: 0.64rem; -webkit-line-clamp: 2; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
+          .app-launcher-card { min-height: 112px; padding: 0.82rem 0.26rem 0.7rem; border-radius: 20px; }
+          .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
+          .app-icon-wrap svg { width: 21px; height: 21px; }
+          .app-label { font-size: 0.78rem; min-height: 2.6em; }
           .hero-portrait { height: 240px; }
         }
-        /* Extra small mobile — 360px */
+        /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
           .hero-inner { gap: 0.75rem; padding-left: 0.55rem !important; padding-right: 0.55rem !important; }
           .hero-title span { font-size: clamp(2rem, 13.5vw, 3.8rem) !important; }
-          .app-launcher-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
-          .bento-wide { grid-column: span 2; }
-          .app-launcher-card { min-height: 118px; padding: 0.95rem 0.55rem 0.8rem; }
-          .app-icon-wrap { width: 44px; height: 44px; }
-          .app-label { font-size: 0.82rem; }
-          .app-subtitle { font-size: 0.6rem; }
+          .app-launcher-grid { gap: 0.44rem; }
+          .app-launcher-card { min-height: 108px; padding-left: 0.18rem; padding-right: 0.18rem; }
+          .app-icon-wrap { width: 42px; height: 42px; }
+          .app-label { font-size: 0.69rem; }
           .hero-portrait { height: 220px; }
         }
       `}</style>
