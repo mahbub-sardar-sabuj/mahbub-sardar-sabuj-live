@@ -39,7 +39,25 @@ const breakingNews = [
 ];
 
 export default function News() {
-  const [newsData] = useState<NewsItem[]>(allNewsData);
+  // Parse Bengali date string to sortable timestamp
+  const parseBengaliDate = (dateStr: string): number => {
+    const bengaliDigits: Record<string, string> = { '০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9' };
+    const bengaliMonths: Record<string, number> = {
+      'জানুয়ারি':1,'ফেব্রুয়ারি':2,'মার্চ':3,'এপ্রিল':4,'মে':5,'জুন':6,
+      'জুলাই':7,'আগস্ট':8,'সেপ্টেম্বর':9,'অক্টোবর':10,'নভেম্বর':11,'ডিসেম্বর':12
+    };
+    const toEn = (s: string) => s.replace(/[০-৯]/g, c => bengaliDigits[c] || c);
+    const parts = dateStr.trim().split(' ');
+    if (parts.length < 3) return 0;
+    const day = parseInt(toEn(parts[0]), 10);
+    const month = bengaliMonths[parts[1]] ?? 0;
+    const year = parseInt(toEn(parts[2]), 10);
+    return new Date(year, month - 1, day).getTime();
+  };
+
+  const [newsData] = useState<NewsItem[]>(
+    [...allNewsData].sort((a, b) => parseBengaliDate(b.date) - parseBengaliDate(a.date))
+  );
   const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
