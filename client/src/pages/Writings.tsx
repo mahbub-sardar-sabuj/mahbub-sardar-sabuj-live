@@ -1473,10 +1473,10 @@ export default function Writings() {
   const handleNavigate = useCallback((w: Writing) => { setSel(w); setLocation(`/writings/${makeSlug(w.title, w.id)}`); }, [setLocation]);
 
   const seoPath = sel ? `/writings/${makeSlug(sel.title, sel.id)}` : "/writings";
-  const seoTitle = sel ? `${sel.title} — মাহবুব সরদার সবুজ` : "লেখালেখি ও বই — মাহবুব সরদার সবুজ | ২২৫৮+ কবিতা ও লেখা";
+  const seoTitle = sel ? `${sel.title} — মাহবুব সরদার সবুজ` : "লেখালেখি ও বই — মাহবুব সরদার সবুজ | ২৩৩৩+ কবিতা ও লেখা";
   const seoDescription = sel
     ? `${makeExcerpt(sel.content, 155)} — মাহবুব সরদার সবুজ`
-    : "মাহবুব সরদার সবুজের ২২৫৮+ বাংলা কবিতা, ছোট লেখা, ভালোবাসার লেখা, বিচ্ছেদের কবিতা ও জীবনদর্শন। বিনামূল্যে পড়ুন।";
+    : "মাহবুব সরদার সবুজের ২৩৩৩+ বাংলা কবিতা, ছোট লেখা, ভালোবাসার লেখা, বিচ্ছেদের কবিতা ও জীবনদর্শন। বিনামূল্যে পড়ুন।";
   const catKeywordMap: Record<string, string> = {
     "ভালোবাসা": "ভালোবাসার কবিতা, প্রেমের লেখা, love poem bangla",
     "বিচ্ছেদ": "বিচ্ছেদের কবিতা, বিরহের লেখা, কষ্টের কবিতা",
@@ -1494,7 +1494,7 @@ export default function Writings() {
       { "@type":"CollectionPage", "@id":siteUrl("/writings#collection"), "name":"লেখালেখি ও বই — মাহবুব সরদার সবুজ", "url":siteUrl("/writings"), "inLanguage":"bn-BD", "description":"মাহবুব সরদার সবুজের বই, ই-বুক, কবিতা, ভালোবাসা, বিচ্ছেদ ও জীবনদর্শনের লেখাগুলোর curated সংগ্রহ।", "isPartOf":{ "@type":"WebSite", "@id":siteUrl("/#website"), "name":"মাহবুব সরদার সবুজ" }, "about":{ "@id":siteUrl("/about#author") } },
       { "@type":"Person", "@id":siteUrl("/about#author"), "name":"মাহবুব সরদার সবুজ", "alternateName":"Mahbub Sardar Sabuj", "url":siteUrl("/about"), "knowsLanguage":["bn-BD","en"] },
       { "@type":"BreadcrumbList", "itemListElement":[ { "@type":"ListItem","position":1,"name":"হোম","item":siteUrl("/") }, { "@type":"ListItem","position":2,"name":"লেখালেখি ও বই","item":siteUrl("/writings") }, ...(sel?[{ "@type":"ListItem","position":3,"name":sel.title,"item":siteUrl(seoPath) }]:[]) ] },
-      { "@type":"ItemList", "@id":siteUrl("/writings#latest-writings"), "name":"নির্বাচিত অনুভূতির আর্কাইভ — মাহবুব সরদার সবুজের ২২৫৮+ লেখা", "itemListElement":archive.slice(0,24).map((writing,index) => ({ "@type":"ListItem","position":index+1,"url":siteUrl(`/writings/${makeSlug(writing.title,writing.id)}`),"name":writing.title })) },
+      { "@type":"ItemList", "@id":siteUrl("/writings#latest-writings"), "name":"নির্বাচিত অনুভূতির আর্কাইভ — মাহবুব সরদার সবুজের ২৩৩৩+ লেখা", "itemListElement":archive.slice(0,24).map((writing,index) => ({ "@type":"ListItem","position":index+1,"url":siteUrl(`/writings/${makeSlug(writing.title,writing.id)}`),"name":writing.title })) },
       ...ebooks.map(book => ({ "@type":"Book","@id":siteUrl(`/ebooks/read/${book.slug}#book`),"name":book.title,"inLanguage":"bn-BD","author":{"@id":siteUrl("/about#author")},"url":siteUrl(`/ebooks/read/${book.slug}`),"image":siteUrl(book.cover),"description":book.description,"genre":book.genre,"bookFormat":book.badge.includes("ফিজিক্যাল")?"https://schema.org/Hardcover":"https://schema.org/EBook","isAccessibleForFree":!book.buyLink })),
       ...(sel?[{ "@type":"CreativeWork","@id":siteUrl(`${seoPath}#writing`),"name":sel.title,"headline":sel.title,"url":siteUrl(seoPath),"inLanguage":"bn-BD","text":makeExcerpt(sel.content,500),"description":makeExcerpt(sel.content),"datePublished":sel.date,"genre":sel.category,"author":{"@id":siteUrl("/about#author")},"isAccessibleForFree":true }]:[]),
     ],

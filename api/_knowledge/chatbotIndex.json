@@ -1,6 +1,6 @@
 {
   "version": "2026.06-chatbot-index-v1",
-  "generatedAt": "2026-06-20T17:31:02.418Z",
+  "generatedAt": "2026-06-20T19:08:39.339Z",
   "totals": {
     "items": 2372,
     "writings": 2333,
@@ -600,11 +600,11 @@
         "golpo",
         "সাহিত্য",
         "গল্পসাহিত্য",
-        "2 লেখা"
+        "3 লেখা"
       ],
-      "searchText": "writing_category গল্প মাহবুব সরদার সবুজের লেখা গল্পের সংগ্রহ /writings গল্প story golpo সাহিত্য গল্পসাহিত্য 2 লেখা",
+      "searchText": "writing_category গল্প মাহবুব সরদার সবুজের লেখা গল্পের সংগ্রহ /writings গল্প story golpo সাহিত্য গল্পসাহিত্য 3 লেখা",
       "priority": 90,
-      "count": 2
+      "count": 3
     },
     {
       "type": "recitation",
