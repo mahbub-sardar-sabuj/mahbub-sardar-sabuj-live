@@ -1021,7 +1021,7 @@ const CSS = `
     .lw-hero-stat { min-width: 0; }
   }
   @media (max-width: 480px) {
-    .lw-hero-h1 { font-size: clamp(2rem,11vw,2.8rem); line-height: 1.08; }
+    .lw-hero-h1 { font-size: clamp(1.45rem,7.5vw,2.8rem); line-height: 1.08; white-space: nowrap; }
     .lw-hero-sub { font-size: .9rem; line-height: 1.82; }
     .lw-hero { padding: 1.4rem 1.2rem; margin-bottom: 1rem; }
     .lw-hero-inner { gap: 1.2rem; }
