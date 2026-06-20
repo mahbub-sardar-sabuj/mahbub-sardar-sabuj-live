@@ -1,10 +1,10 @@
-// মাহবুব সরদার সবুজ — Service Worker v1.0
-const CACHE_NAME = 'mahbub-sardar-sabuj-v1';
+// মাহবুব সরদার সবুজ — Service Worker v3.0
+// v3: cache version bumped to clear stale v1/v2 caches; HTML pages never cached
+const CACHE_NAME = 'mahbub-sardar-sabuj-v3';
 const OFFLINE_URL = '/';
 
-// Cache essential assets on install
+// Cache essential static assets on install (NOT HTML pages)
 const PRECACHE_ASSETS = [
-  '/',
   '/manifest.json',
   '/favicon.ico',
   '/icon-192x192.png',
@@ -40,10 +40,23 @@ self.addEventListener('fetch', (event) => {
   // Skip API requests — always network
   if (event.request.url.includes('/api/')) return;
 
+  // IMPORTANT: Never cache HTML navigation requests — always fetch fresh
+  // This prevents stale HTML from being served after deployments
+  if (event.request.mode === 'navigate' ||
+      event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(OFFLINE_URL);
+      })
+    );
+    return;
+  }
+
+  // For static assets (JS, CSS, images, fonts) — network first, cache fallback
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful responses
+        // Only cache successful responses for non-HTML assets
         if (response && response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -53,14 +66,7 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Fallback to cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          // For navigation requests, return home page
-          if (event.request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
-        });
+        return caches.match(event.request);
       })
   );
 });
