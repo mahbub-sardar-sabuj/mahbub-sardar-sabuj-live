@@ -174,7 +174,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
       />
       <Navbar />
 
-      <main style={{ flex: 1, width: "100%", maxWidth: 860, margin: "0 auto", padding: "0 16px 64px" }}>
+      <main style={{ flex: 1, width: "100%", maxWidth: 860, margin: "0 auto", padding: "var(--site-nav-offset, 80px) 16px 64px" }}>
         <div ref={topRef} />
 
         {/* ── Back button ── */}
@@ -182,7 +182,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: .4 }}
-          style={{ paddingTop: 28, paddingBottom: 8 }}
+          style={{ paddingTop: 8, paddingBottom: 8 }}
         >
           <button
             onClick={() => setLocation("/writings")}
