@@ -1,91 +1,77 @@
 /**
- * Design: Literary Avant-Garde — Premium Edition v2
- * Navbar: Sticky top nav with navy background, gold accents
- * Desktop: Mega-dropdown grouped navigation with smooth animations
- * Responsive: JS-based window width detection (no Tailwind classes)
+ * Design: Literary Avant-Garde — Ultra Premium Edition v3
+ * Navbar: Center-logo layout, glassmorphism, animated gold accents
+ * Desktop: Elegant grouped nav with rich mega-dropdown panels
+ * Mobile: Full-screen immersive drawer
  */
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Menu,
-  X,
-  ChevronRight,
-  ChevronDown,
-  House,
-  UserRound,
-  BookOpen,
-  Mic2,
-  PenLine,
-  Images,
-  Newspaper,
-  Mail,
-  Palette,
-  Feather,
-  MailOpen,
-  Phone,
-  CreditCard,
-  Sparkles,
-  Music,
-  Layers,
-  Wrench,
+  Menu, X, ChevronDown, ChevronRight,
+  House, UserRound, Mic2, PenLine, Images,
+  Newspaper, Mail, Palette, Feather,
+  MailOpen, Phone, CreditCard, Sparkles, Music, Wrench,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
 
-// ── Nav groups for desktop mega-menu ──────────────────────────────────────────
+// ── Nav groups ─────────────────────────────────────────────────────────────────
 const navGroups = [
   {
     label: "প্রধান",
     icon: House,
+    color: "#D4A843",
     items: [
-      { label: "হোম", subtitle: "প্রথম পাতা ও প্রধান পরিচিতি", href: "/", icon: House },
-      { label: "পরিচিতি", subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ", href: "/about", icon: UserRound },
-      { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ", href: "/gallery", icon: Images },
-      { label: "যোগাযোগ", subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়", href: "/contact", icon: Mail },
+      { label: "হোম",              subtitle: "প্রথম পাতা ও প্রধান পরিচিতি",          href: "/",                        icon: House },
+      { label: "পরিচিতি",          subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ",       href: "/about",                   icon: UserRound },
+      { label: "গ্যালারি",          subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ",      href: "/gallery",                 icon: Images },
+      { label: "যোগাযোগ",          subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়",         href: "/contact",                 icon: Mail },
     ],
   },
   {
     label: "সাহিত্য",
     icon: PenLine,
+    color: "#A87FD4",
     items: [
-      { label: "লেখালেখি ও বই", subtitle: "কবিতা, লেখা ও প্রকাশিত বই সংগ্রহ", href: "/writings", icon: PenLine },
-      { label: "আবৃত্তি", subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations", icon: Mic2 },
-      { label: "আমিও লিখবো বাস্তবতা", subtitle: "সৃজনশীল লেখালেখির নতুন কমিউনিটি", href: "/amio-likhbo-bastobota", icon: Feather },
-      { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+      { label: "লেখালেখি ও বই",    subtitle: "কবিতা, লেখা ও প্রকাশিত বই সংগ্রহ",    href: "/writings",                icon: PenLine },
+      { label: "আবৃত্তি",           subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations",    icon: Mic2 },
+      { label: "আমিও লিখবো",       subtitle: "সৃজনশীল লেখালেখির নতুন কমিউনিটি",     href: "/amio-likhbo-bastobota",   icon: Feather },
+      { label: "সরদার সংবাদ",      subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর",    href: "/news",                    icon: Newspaper },
     ],
   },
   {
     label: "ডিজাইন",
     icon: Palette,
+    color: "#4AADCF",
     items: [
-      { label: "ডিজাইন ফরম্যাট", subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন", href: "/editor", icon: Palette },
-      { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
-      { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", icon: Music },
-      { label: "আবৃত্তি টুল", subtitle: "লেখা দিন, AI মানুষের কণ্ঠে পড়বে ও ডাউনলোড করুন", href: "/text-to-speech", icon: Mic2 },
+      { label: "ডিজাইন ফরম্যাট",   subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন",       href: "/editor",                  icon: Palette },
+      { label: "ইমেজ আপস্কেলার",   subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান",      href: "/image-upscaler",          icon: Sparkles },
+      { label: "অডিও এডিটর",       subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স",           href: "/audio-editor",            icon: Music },
+      { label: "আবৃত্তি টুল",       subtitle: "AI কণ্ঠে আবৃত্তি ও ডাউনলোড",          href: "/text-to-speech",          icon: Mic2 },
     ],
   },
   {
     label: "টুলস",
     icon: Wrench,
+    color: "#4ACF8A",
     items: [
-      { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
-      { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", icon: Phone },
-      { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", icon: CreditCard },
+      { label: "টেম্প ইমেইল",       subtitle: "ডিসপোজেবল ইমেইল তৈরি করুন",           href: "/temp-email",              icon: MailOpen },
+      { label: "টেম্প নম্বর",        subtitle: "ডিসপোজেবল ফোন নম্বর",                 href: "/temp-number",             icon: Phone },
+      { label: "টেম্প কার্ড",        subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড",    href: "/temp-card",               icon: CreditCard },
     ],
   },
 ];
 
-// Flat list for mobile
-const navLinks = navGroups.flatMap((g) => g.items.map((item) => ({ ...item, type: "page" })));
+const navLinks = navGroups.flatMap((g) =>
+  g.items.map((item) => ({ ...item, type: "page", groupColor: g.color }))
+);
 
 const infoTabs = [
-  { titleBn: "পরিচিতি পেজ", description: "লেখক পরিচিতি ও সংক্ষিপ্ত প্রেক্ষিত", href: "/about" },
-  { titleBn: "যোগাযোগ", description: "ইমেইল, সামাজিক মাধ্যম ও ওয়েবসাইট", href: "/contact" },
+  { titleBn: "পরিচিতি পেজ",   description: "লেখক পরিচিতি ও সংক্ষিপ্ত প্রেক্ষিত",    href: "/about" },
+  { titleBn: "যোগাযোগ",       description: "ইমেইল, সামাজিক মাধ্যম ও ওয়েবসাইট",      href: "/contact" },
   { titleBn: "প্রাইভেসি পলিসি", description: "তথ্য সংগ্রহ, cookies ও privacy ব্যাখ্যা", href: "/privacy-policy" },
-  { titleBn: "শর্তাবলি", description: "ব্যবহারের নিয়ম, অধিকার ও সীমাবদ্ধতা", href: "/terms" },
+  { titleBn: "শর্তাবলি",       description: "ব্যবহারের নিয়ম, অধিকার ও সীমাবদ্ধতা",   href: "/terms" },
 ];
-
-const isInfoTabActive = (href: string, location: string) => location === href;
 
 const isPrimaryNavActive = (href: string, location: string) => {
   if (href === "/") return location === "/";
@@ -96,53 +82,48 @@ const isPrimaryNavActive = (href: string, location: string) => {
 const isGroupActive = (group: typeof navGroups[0], location: string) =>
   group.items.some((item) => isPrimaryNavActive(item.href, location));
 
-// Small event emitter to open chatbot from outside
-export const openChatbot = () => {
-  window.dispatchEvent(new CustomEvent("open-chatbot"));
-};
+export const openChatbot = () => window.dispatchEvent(new CustomEvent("open-chatbot"));
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [scrolled, setScrolled]           = useState(false);
+  const [mobileOpen, setMobileOpen]       = useState(false);
+  const [isDesktop, setIsDesktop]         = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [location] = useLocation();
-  const dropdownTimerRef = useRef<number | null>(null);
+  const [location]                        = useLocation();
+  const dropdownTimer                     = useRef<number | null>(null);
+
   const isEBookReaderPage = location.startsWith("/ebooks/read/");
-  const isWritingsPage = location === "/writings" || location === "/ebooks";
-  const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
-  const navElevated = scrolled || isWritingsPage;
+  const isWritingsPage    = location === "/writings" || location === "/ebooks";
+  const isAmioLikhboPage  = location.startsWith("/amio-likhbo-bastobota");
+  const navElevated       = scrolled || isWritingsPage;
 
+  /* ── resize ── */
   useEffect(() => {
-    const checkWidth = () => setIsDesktop(window.innerWidth >= 1024);
-    checkWidth();
-    window.addEventListener("resize", checkWidth);
-    return () => window.removeEventListener("resize", checkWidth);
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Throttled scroll handler
-  const scrollThrottleRef = useRef<number | null>(null);
+  /* ── scroll ── */
+  const scrollRef = useRef<number | null>(null);
   useEffect(() => {
-    const handleScroll = () => {
-      if (scrollThrottleRef.current !== null) return;
-      scrollThrottleRef.current = window.setTimeout(() => {
-        setScrolled(window.scrollY > 50);
-        scrollThrottleRef.current = null;
-      }, 100);
+    const onScroll = () => {
+      if (scrollRef.current !== null) return;
+      scrollRef.current = window.setTimeout(() => {
+        setScrolled(window.scrollY > 40);
+        scrollRef.current = null;
+      }, 80);
     };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (scrollThrottleRef.current !== null) clearTimeout(scrollThrottleRef.current);
-    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); if (scrollRef.current) clearTimeout(scrollRef.current); };
   }, []);
 
-  const navHeight = scrolled ? (isDesktop ? 60 : 64) : (isDesktop ? 72 : 76);
-  const totalNavOffset = navHeight;
-
+  /* ── nav height ── */
+  const navHeight = scrolled ? (isDesktop ? 58 : 62) : (isDesktop ? 72 : 76);
   useEffect(() => {
-    document.documentElement.style.setProperty("--site-nav-offset", `${totalNavOffset}px`);
+    document.documentElement.style.setProperty("--site-nav-offset", `${navHeight}px`);
     document.documentElement.style.setProperty("--site-nav-height", `${navHeight}px`);
     document.documentElement.style.setProperty("--site-banner-height", "0px");
     return () => {
@@ -150,424 +131,436 @@ export default function Navbar() {
       document.documentElement.style.removeProperty("--site-nav-height");
       document.documentElement.style.removeProperty("--site-banner-height");
     };
-  }, [totalNavOffset, navHeight]);
+  }, [navHeight]);
 
+  /* ── body scroll lock ── */
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  useEffect(() => {
-    if (isDesktop && mobileOpen) setMobileOpen(false);
-  }, [isDesktop, mobileOpen]);
+  /* ── close on route change ── */
+  useEffect(() => { setMobileOpen(false); setActiveDropdown(null); }, [location]);
+  useEffect(() => { if (isDesktop && mobileOpen) setMobileOpen(false); }, [isDesktop, mobileOpen]);
 
-  useEffect(() => {
-    setMobileOpen(false);
-    setActiveDropdown(null);
-  }, [location]);
-
+  /* ── preload ── */
   useEffect(() => {
     if (!mobileOpen) return;
-    preloadRoutesWhenIdle([...navLinks.map((link) => link.href), ...infoTabs.map((tab) => tab.href)]);
+    preloadRoutesWhenIdle([...navLinks.map((l) => l.href), ...infoTabs.map((t) => t.href)]);
   }, [mobileOpen]);
 
-  const warmRoute = (href: string) => preloadRoute(href);
+  const warm = (href: string) => preloadRoute(href);
 
-  const handleDropdownEnter = (idx: number) => {
-    if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current);
+  const onEnter = (idx: number) => {
+    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
     setActiveDropdown(idx);
   };
-
-  const handleDropdownLeave = () => {
-    dropdownTimerRef.current = window.setTimeout(() => {
-      setActiveDropdown(null);
-    }, 120);
+  const onLeave = () => {
+    dropdownTimer.current = window.setTimeout(() => setActiveDropdown(null), 150);
   };
 
   if (isEBookReaderPage) return null;
 
+  /* ─────────────────────────────────────────────────────────────────────────── */
   return (
     <>
+      {/* ── Global keyframes & utility classes ── */}
       <style>{`
-        @keyframes logoMicPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.0), 0 2px 12px rgba(212,168,67,0.15); }
-          50% { box-shadow: 0 0 0 6px rgba(245,166,35,0.18), 0 2px 18px rgba(212,168,67,0.35); }
+        @keyframes navShimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position:  200% center; }
         }
-        @keyframes navDropdownIn {
-          from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes navGlow {
+          0%,100% { opacity:.6; }
+          50%      { opacity:1; }
         }
-        @keyframes navItemSlideIn {
-          from { opacity: 0; transform: translateX(-6px); }
-          to   { opacity: 1; transform: translateX(0); }
+        @keyframes dropIn {
+          from { opacity:0; transform:translateY(-10px) scale(.97); }
+          to   { opacity:1; transform:translateY(0)    scale(1);    }
         }
-        .nav-group-btn {
+        @keyframes slideItem {
+          from { opacity:0; transform:translateX(-8px); }
+          to   { opacity:1; transform:translateX(0); }
+        }
+        @keyframes borderGlow {
+          0%,100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
+          50%      { box-shadow: 0 0 18px 2px rgba(212,168,67,.22); }
+        }
+
+        /* ── Logo shimmer text ── */
+        .nb-logo-name {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 1.08rem;
+          font-weight: 800;
+          background: linear-gradient(90deg,#C49030 0%,#E8C97A 30%,#FFF5D6 50%,#E8C97A 70%,#C49030 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: navShimmer 5s linear infinite;
+          white-space: nowrap;
+        }
+        .nb-logo-sub {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .62rem;
+          letter-spacing: .12em;
+          color: rgba(232,201,122,.65);
+          margin-top: 2px;
+          white-space: nowrap;
+        }
+
+        /* ── Group button ── */
+        .nb-group {
           position: relative;
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          padding: 8px 14px;
-          border-radius: 10px;
+          padding: 7px 13px;
+          border-radius: 999px;
           border: 1px solid transparent;
           cursor: pointer;
-          transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
-          white-space: nowrap;
           background: transparent;
-          text-decoration: none;
           font-family: 'AdorshoLipi', sans-serif;
-          font-size: 0.88rem;
+          font-size: .85rem;
           font-weight: 500;
-          color: rgba(253,246,236,0.9);
-          letter-spacing: 0.01em;
+          color: rgba(253,246,236,.82);
+          letter-spacing: .01em;
+          transition: color .22s, background .22s, border-color .22s, box-shadow .22s;
+          white-space: nowrap;
+          outline: none;
         }
-        .nav-group-btn:hover, .nav-group-btn.active {
+        .nb-group:hover {
           color: #FAF6EF;
-          background: rgba(212,168,67,0.1);
-          border-color: rgba(212,168,67,0.28);
-          box-shadow: 0 2px 12px rgba(212,168,67,0.1);
+          background: rgba(212,168,67,.09);
+          border-color: rgba(212,168,67,.25);
+          box-shadow: 0 2px 14px rgba(212,168,67,.1);
         }
-        .nav-group-btn.active {
+        .nb-group.nb-active {
           color: #E8C97A;
-          background: rgba(212,168,67,0.12);
-          border-color: rgba(212,168,67,0.35);
+          background: rgba(212,168,67,.13);
+          border-color: rgba(212,168,67,.35);
+          box-shadow: 0 2px 18px rgba(212,168,67,.18);
         }
-        .nav-group-btn .nav-chevron {
-          transition: transform 0.22s ease;
+        .nb-group.nb-open {
+          color: #FAF6EF;
+          background: rgba(212,168,67,.12);
+          border-color: rgba(212,168,67,.3);
         }
-        .nav-group-btn.open .nav-chevron {
-          transform: rotate(180deg);
-        }
-        .nav-dropdown {
+        .nb-chevron { transition: transform .22s ease; }
+        .nb-group.nb-open .nb-chevron { transform: rotate(180deg); }
+
+        /* ── Active dot under group label ── */
+        .nb-active-dot {
           position: absolute;
-          top: calc(100% + 10px);
+          bottom: 4px;
           left: 50%;
           transform: translateX(-50%);
-          min-width: 300px;
-          background: rgba(6,14,26,0.97);
-          border: 1px solid rgba(212,168,67,0.2);
-          border-radius: 18px;
-          padding: 10px;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,168,67,0.08) inset;
-          backdrop-filter: blur(28px) saturate(1.6);
-          -webkit-backdrop-filter: blur(28px) saturate(1.6);
-          animation: navDropdownIn 0.22s cubic-bezier(0.16,1,0.3,1) forwards;
-          z-index: 200;
-        }
-        .nav-dropdown::before {
-          content: '';
-          position: absolute;
-          top: -6px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 12px;
-          height: 12px;
-          background: rgba(6,14,26,0.97);
-          border-left: 1px solid rgba(212,168,67,0.2);
-          border-top: 1px solid rgba(212,168,67,0.2);
-          transform: translateX(-50%) rotate(45deg);
-        }
-        .nav-dropdown-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 10px 12px;
-          border-radius: 12px;
-          border: 1px solid transparent;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-decoration: none;
-          animation: navItemSlideIn 0.2s ease forwards;
-          font-family: 'AdorshoLipi', sans-serif;
-        }
-        .nav-dropdown-item:hover {
-          background: rgba(212,168,67,0.08);
-          border-color: rgba(212,168,67,0.18);
-        }
-        .nav-dropdown-item.active {
-          background: linear-gradient(135deg, rgba(212,168,67,0.18) 0%, rgba(212,168,67,0.08) 100%);
-          border-color: rgba(212,168,67,0.3);
-        }
-        .nav-dropdown-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, rgba(212,168,67,0.14) 0%, rgba(212,168,67,0.06) 100%);
-          border: 1px solid rgba(212,168,67,0.2);
-          flex-shrink: 0;
-          transition: all 0.2s ease;
-        }
-        .nav-dropdown-item:hover .nav-dropdown-icon,
-        .nav-dropdown-item.active .nav-dropdown-icon {
-          background: linear-gradient(135deg, rgba(212,168,67,0.25) 0%, rgba(212,168,67,0.12) 100%);
-          border-color: rgba(212,168,67,0.4);
-          box-shadow: 0 2px 10px rgba(212,168,67,0.15);
-        }
-        .nav-dropdown-label {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: rgba(253,246,236,0.95);
-          line-height: 1.3;
-          transition: color 0.2s;
-        }
-        .nav-dropdown-item:hover .nav-dropdown-label,
-        .nav-dropdown-item.active .nav-dropdown-label {
-          color: #E8C97A;
-        }
-        .nav-dropdown-sub {
-          font-size: 0.71rem;
-          color: rgba(253,246,236,0.45);
-          line-height: 1.4;
-          margin-top: 2px;
-          transition: color 0.2s;
-        }
-        .nav-dropdown-item:hover .nav-dropdown-sub {
-          color: rgba(253,246,236,0.6);
-        }
-        .nav-group-indicator {
-          position: absolute;
-          bottom: 2px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 4px;
-          height: 4px;
+          width: 4px; height: 4px;
           border-radius: 50%;
           background: #D4A843;
           opacity: 0;
-          transition: opacity 0.2s;
+          transition: opacity .2s;
+          box-shadow: 0 0 6px rgba(212,168,67,.7);
         }
-        .nav-group-btn.active .nav-group-indicator {
-          opacity: 1;
+        .nb-group.nb-active .nb-active-dot { opacity: 1; }
+
+        /* ── Dropdown panel ── */
+        .nb-dropdown {
+          position: absolute;
+          top: calc(100% + 12px);
+          left: 50%;
+          transform: translateX(-50%);
+          min-width: 310px;
+          background: linear-gradient(160deg, rgba(8,16,32,.97) 0%, rgba(10,20,38,.99) 100%);
+          border: 1px solid rgba(212,168,67,.18);
+          border-radius: 20px;
+          padding: 8px;
+          box-shadow:
+            0 32px 80px rgba(0,0,0,.65),
+            0 0 0 1px rgba(255,255,255,.03) inset,
+            0 1px 0 rgba(212,168,67,.12) inset;
+          backdrop-filter: blur(32px) saturate(1.8);
+          -webkit-backdrop-filter: blur(32px) saturate(1.8);
+          animation: dropIn .2s cubic-bezier(.16,1,.3,1) forwards;
+          z-index: 200;
         }
-        /* Home link special */
-        .nav-home-link {
+        /* arrow */
+        .nb-dropdown::before {
+          content:'';
+          position:absolute;
+          top:-6px; left:50%;
+          width:12px; height:12px;
+          background: rgba(8,16,32,.97);
+          border-left:1px solid rgba(212,168,67,.18);
+          border-top:1px solid rgba(212,168,67,.18);
+          transform: translateX(-50%) rotate(45deg);
+        }
+
+        /* ── Dropdown header ── */
+        .nb-dd-header {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 9px 12px 10px;
+          border-bottom: 1px solid rgba(212,168,67,.1);
+          margin-bottom: 6px;
+        }
+        .nb-dd-header-icon {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: transparent;
+          width: 30px; height: 30px;
+          border-radius: 9px;
+          border: 1px solid rgba(212,168,67,.22);
+        }
+        .nb-dd-header-label {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .72rem;
+          font-weight: 700;
+          letter-spacing: .1em;
+          color: rgba(212,168,67,.85);
+        }
+
+        /* ── Dropdown item ── */
+        .nb-dd-item {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          padding: 9px 11px;
+          border-radius: 13px;
           border: 1px solid transparent;
           cursor: pointer;
-          transition: all 0.22s ease;
-          color: rgba(253,246,236,0.85);
           text-decoration: none;
+          font-family: 'AdorshoLipi', sans-serif;
+          transition: background .18s, border-color .18s, box-shadow .18s;
+          animation: slideItem .18s ease forwards;
         }
-        .nav-home-link:hover {
-          background: rgba(212,168,67,0.1);
-          border-color: rgba(212,168,67,0.28);
-          color: #E8C97A;
+        .nb-dd-item:hover {
+          background: rgba(212,168,67,.07);
+          border-color: rgba(212,168,67,.16);
+          box-shadow: 0 2px 12px rgba(0,0,0,.2);
         }
-        .nav-home-link.active {
-          background: rgba(212,168,67,0.15);
-          border-color: rgba(212,168,67,0.4);
-          color: #E8C97A;
+        .nb-dd-item.nb-dd-active {
+          background: linear-gradient(135deg, rgba(212,168,67,.16) 0%, rgba(212,168,67,.07) 100%);
+          border-color: rgba(212,168,67,.28);
+          box-shadow: 0 2px 16px rgba(212,168,67,.12);
         }
-        /* Divider in nav */
-        .nav-divider {
-          width: 1px;
-          height: 20px;
-          background: rgba(212,168,67,0.18);
-          margin: 0 4px;
+        .nb-dd-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px; height: 36px;
+          border-radius: 10px;
+          border: 1px solid rgba(212,168,67,.18);
+          background: linear-gradient(135deg,rgba(212,168,67,.12) 0%,rgba(212,168,67,.05) 100%);
           flex-shrink: 0;
+          transition: background .18s, border-color .18s, box-shadow .18s;
         }
-        /* Gold shimmer for active group label */
-        .nav-group-btn.active .nav-group-label {
-          background: linear-gradient(135deg, #E8C97A 0%, #D4A843 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .nb-dd-item:hover .nb-dd-icon,
+        .nb-dd-item.nb-dd-active .nb-dd-icon {
+          background: linear-gradient(135deg,rgba(212,168,67,.22) 0%,rgba(212,168,67,.1) 100%);
+          border-color: rgba(212,168,67,.38);
+          box-shadow: 0 2px 10px rgba(212,168,67,.18);
         }
+        .nb-dd-label {
+          font-size: .88rem;
+          font-weight: 700;
+          color: rgba(253,246,236,.92);
+          line-height: 1.3;
+          transition: color .18s;
+        }
+        .nb-dd-item:hover .nb-dd-label,
+        .nb-dd-item.nb-dd-active .nb-dd-label { color: #E8C97A; }
+        .nb-dd-sub {
+          font-size: .69rem;
+          color: rgba(253,246,236,.4);
+          line-height: 1.4;
+          margin-top: 2px;
+          transition: color .18s;
+        }
+        .nb-dd-item:hover .nb-dd-sub { color: rgba(253,246,236,.58); }
+
+        /* ── Active badge ── */
+        .nb-dd-badge {
+          margin-left: auto;
+          width: 7px; height: 7px;
+          border-radius: 50%;
+          background: #D4A843;
+          flex-shrink: 0;
+          box-shadow: 0 0 8px rgba(212,168,67,.7);
+          animation: navGlow 2s ease-in-out infinite;
+        }
+
+        /* ── Gold separator ── */
+        .nb-sep {
+          width: 1px; height: 18px;
+          background: linear-gradient(180deg, transparent, rgba(212,168,67,.25), transparent);
+          flex-shrink: 0;
+          margin: 0 2px;
+        }
+
+        /* ── Home icon btn ── */
+        .nb-home {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 34px; height: 34px;
+          border-radius: 10px;
+          border: 1px solid transparent;
+          cursor: pointer;
+          color: rgba(253,246,236,.75);
+          text-decoration: none;
+          transition: color .2s, background .2s, border-color .2s;
+        }
+        .nb-home:hover { color:#E8C97A; background:rgba(212,168,67,.1); border-color:rgba(212,168,67,.25); }
+        .nb-home.nb-home-active { color:#E8C97A; background:rgba(212,168,67,.14); border-color:rgba(212,168,67,.35); }
+
+        /* ── Bottom gold line on scroll ── */
+        .nb-gold-line {
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent 0%, rgba(212,168,67,.35) 30%, rgba(232,201,122,.55) 50%, rgba(212,168,67,.35) 70%, transparent 100%);
+          opacity: 0;
+          transition: opacity .4s;
+        }
+        .nb-gold-line.nb-line-show { opacity: 1; }
       `}</style>
 
       <motion.nav
-        initial={{ y: -100 }}
+        initial={{ y: -110 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0,
           zIndex: 100,
-          transition: "all 0.5s",
-          background: navElevated ? "rgba(6,14,26,0.93)" : "transparent",
-          backdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
-          WebkitBackdropFilter: navElevated ? "blur(24px) saturate(1.5)" : "none",
+          transition: "background .5s, box-shadow .5s, backdrop-filter .5s",
+          background: navElevated
+            ? "linear-gradient(180deg, rgba(5,12,24,.96) 0%, rgba(8,16,30,.94) 100%)"
+            : "transparent",
+          backdropFilter: navElevated ? "blur(28px) saturate(1.6)" : "none",
+          WebkitBackdropFilter: navElevated ? "blur(28px) saturate(1.6)" : "none",
           boxShadow: navElevated
-            ? "0 4px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(201,168,76,0.2), inset 0 1px 0 rgba(255,255,255,0.03)"
+            ? "0 8px 48px rgba(0,0,0,.55), 0 1px 0 rgba(212,168,67,.12)"
             : "none",
-          borderBottom: navElevated ? "1px solid rgba(201,168,76,0.12)" : "none",
         }}
       >
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: isDesktop ? "0 2rem" : "0 1rem", position: "relative", zIndex: 2 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: navHeight, transition: "height 0.4s ease", gap: 8 }}>
+        {/* Gold bottom line */}
+        <div className={`nb-gold-line${navElevated ? " nb-line-show" : ""}`} />
+
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: isDesktop ? "0 2.5rem" : "0 1rem", position: "relative" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: isDesktop ? "space-between" : "space-between",
+            height: navHeight,
+            transition: "height .4s ease",
+            gap: 12,
+          }}>
 
             {/* ── LOGO ── */}
-            <Link
-              href="/"
-              style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0, minWidth: 0 }}
-            >
+            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+              {/* Feather icon with animated ring */}
               <span style={{
+                position: "relative",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 38,
-                height: 38,
-                borderRadius: 11,
-                background: "linear-gradient(135deg, rgba(212,168,67,0.2) 0%, rgba(212,168,67,0.08) 100%)",
-                border: "1px solid rgba(212,168,67,0.38)",
-                boxShadow: "0 2px 14px rgba(212,168,67,0.18)",
+                width: 40, height: 40,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, rgba(212,168,67,.22) 0%, rgba(212,168,67,.08) 100%)",
+                border: "1px solid rgba(212,168,67,.4)",
+                boxShadow: "0 4px 18px rgba(212,168,67,.2), inset 0 1px 0 rgba(255,255,255,.06)",
                 flexShrink: 0,
-                transition: "all 0.25s",
+                animation: "borderGlow 3s ease-in-out infinite",
               }}>
-                <Feather size={17} color="#D4A843" />
+                <Feather size={17} color="#E8C97A" />
               </span>
-              <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-start", lineHeight: 1.05, minWidth: 0 }}>
-                <span style={{
-                  fontFamily: "'AdorshoLipi', sans-serif",
-                  fontSize: "1.08rem",
-                  fontWeight: 800,
-                  letterSpacing: "0.01em",
-                  background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  whiteSpace: "nowrap",
-                }}>
-                  মাহবুব সরদার সবুজ
-                </span>
-                <span style={{
-                  fontFamily: "'AdorshoLipi', sans-serif",
-                  fontSize: "0.63rem",
-                  letterSpacing: "0.1em",
-                  color: "rgba(232,201,122,0.7)",
-                  fontWeight: 400,
-                  marginTop: 2,
-                  lineHeight: 1.05,
-                  whiteSpace: "nowrap",
-                }}>
-                  লেখক ও কবি
-                </span>
+              <span style={{ display: "flex", flexDirection: "column" }}>
+                <span className="nb-logo-name">মাহবুব সরদার সবুজ</span>
+                <span className="nb-logo-sub">লেখক ও কবি</span>
               </span>
             </Link>
 
             {/* ── DESKTOP NAV ── */}
             {isDesktop && (
-              <div style={{ display: "flex", alignItems: "center", gap: 2, flex: 1, justifyContent: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
 
-                {/* Home quick link */}
+                {/* Home icon */}
                 <Link href="/">
-                  <span
-                    className={`nav-home-link${isPrimaryNavActive("/", location) ? " active" : ""}`}
-                    title="হোম"
-                    onPointerDown={() => warmRoute("/")}
-                  >
-                    <House size={17} />
+                  <span className={`nb-home${isPrimaryNavActive("/", location) ? " nb-home-active" : ""}`} title="হোম" onPointerDown={() => warm("/")}>
+                    <House size={16} />
                   </span>
                 </Link>
 
-                <span className="nav-divider" />
+                <span className="nb-sep" />
 
-                {/* Grouped dropdown menus — skip "প্রধান" group's Home item since it's above */}
+                {/* Groups */}
                 {navGroups.map((group, gIdx) => {
-                  const GroupIcon = group.icon;
-                  const isOpen = activeDropdown === gIdx;
+                  const GIcon    = group.icon;
+                  const isOpen   = activeDropdown === gIdx;
                   const isActive = isGroupActive(group, location);
 
                   return (
                     <div
                       key={gIdx}
                       style={{ position: "relative" }}
-                      onMouseEnter={() => handleDropdownEnter(gIdx)}
-                      onMouseLeave={handleDropdownLeave}
+                      onMouseEnter={() => onEnter(gIdx)}
+                      onMouseLeave={onLeave}
                     >
                       <button
-                        className={`nav-group-btn${isActive ? " active" : ""}${isOpen ? " open" : ""}`}
+                        className={`nb-group${isActive ? " nb-active" : ""}${isOpen ? " nb-open" : ""}`}
                         aria-haspopup="true"
                         aria-expanded={isOpen}
-                        style={{ outline: "none" }}
                       >
-                        <GroupIcon size={15} style={{ opacity: 0.85 }} />
-                        <span className="nav-group-label">{group.label}</span>
-                        <ChevronDown size={13} className="nav-chevron" style={{ opacity: 0.7 }} />
-                        <span className="nav-group-indicator" />
+                        <GIcon size={14} style={{ opacity: .85 }} />
+                        <span>{group.label}</span>
+                        <ChevronDown size={12} className="nb-chevron" style={{ opacity: .65 }} />
+                        <span className="nb-active-dot" />
                       </button>
 
-                      {/* Dropdown panel */}
                       <AnimatePresence>
                         {isOpen && (
                           <motion.div
-                            className="nav-dropdown"
-                            initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                            onMouseEnter={() => handleDropdownEnter(gIdx)}
-                            onMouseLeave={handleDropdownLeave}
+                            className="nb-dropdown"
+                            initial={{ opacity: 0, y: -10, scale: .97 }}
+                            animate={{ opacity: 1, y: 0,   scale: 1   }}
+                            exit   ={{ opacity: 0, y: -8,  scale: .97 }}
+                            transition={{ duration: .2, ease: [.16,1,.3,1] }}
+                            onMouseEnter={() => onEnter(gIdx)}
+                            onMouseLeave={onLeave}
                           >
-                            {/* Group header */}
-                            <div style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              padding: "8px 12px 10px",
-                              borderBottom: "1px solid rgba(212,168,67,0.1)",
-                              marginBottom: 6,
-                            }}>
-                              <span style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: 28,
-                                height: 28,
-                                borderRadius: 8,
-                                background: "linear-gradient(135deg, rgba(212,168,67,0.2) 0%, rgba(212,168,67,0.08) 100%)",
-                                border: "1px solid rgba(212,168,67,0.25)",
-                              }}>
-                                <GroupIcon size={13} color="#D4A843" />
+                            {/* Header */}
+                            <div className="nb-dd-header">
+                              <span
+                                className="nb-dd-header-icon"
+                                style={{ background: `linear-gradient(135deg, ${group.color}22 0%, ${group.color}0a 100%)` }}
+                              >
+                                <GIcon size={14} color={group.color} />
                               </span>
-                              <span style={{
-                                fontFamily: "'AdorshoLipi', sans-serif",
-                                fontSize: "0.72rem",
-                                fontWeight: 700,
-                                color: "rgba(212,168,67,0.85)",
-                                letterSpacing: "0.08em",
-                              }}>
-                                {group.label}
-                              </span>
+                              <span className="nb-dd-header-label" style={{ color: group.color }}>{group.label}</span>
                             </div>
 
                             {/* Items */}
                             {group.items.map((item, iIdx) => {
-                              const ItemIcon = item.icon;
-                              const itemActive = isPrimaryNavActive(item.href, location);
+                              const IIcon  = item.icon;
+                              const active = isPrimaryNavActive(item.href, location);
                               return (
                                 <Link key={item.href} href={item.href}>
                                   <span
-                                    className={`nav-dropdown-item${itemActive ? " active" : ""}`}
+                                    className={`nb-dd-item${active ? " nb-dd-active" : ""}`}
                                     style={{ animationDelay: `${iIdx * 0.04}s` }}
-                                    onPointerDown={() => warmRoute(item.href)}
+                                    onPointerDown={() => warm(item.href)}
                                   >
-                                    <span className="nav-dropdown-icon">
-                                      <ItemIcon size={15} color={itemActive ? "#E8C97A" : "#D4A843"} />
+                                    <span className="nb-dd-icon">
+                                      <IIcon size={15} color={active ? group.color : "#D4A843"} />
                                     </span>
-                                    <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                                      <span className="nav-dropdown-label">{item.label}</span>
-                                      <span className="nav-dropdown-sub">{item.subtitle}</span>
+                                    <span style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
+                                      <span className="nb-dd-label">{item.label}</span>
+                                      <span className="nb-dd-sub">{item.subtitle}</span>
                                     </span>
-                                    {itemActive && (
-                                      <span style={{
-                                        marginLeft: "auto",
-                                        width: 6,
-                                        height: 6,
-                                        borderRadius: "50%",
-                                        background: "#D4A843",
-                                        flexShrink: 0,
-                                        boxShadow: "0 0 6px rgba(212,168,67,0.6)",
-                                      }} />
-                                    )}
+                                    {active && <span className="nb-dd-badge" style={{ background: group.color, boxShadow: `0 0 8px ${group.color}99` }} />}
                                   </span>
                                 </Link>
                               );
@@ -581,296 +574,228 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* ── HAMBURGER (mobile only) ── */}
+            {/* ── HAMBURGER ── */}
             {!isDesktop && (
-              <button
+              <motion.button
+                whileTap={{ scale: .92 }}
                 onClick={() => setMobileOpen(!mobileOpen)}
                 style={{
-                  color: "rgba(253,246,236,0.85)",
-                  background: mobileOpen ? "rgba(212,168,67,0.12)" : "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(212,168,67,0.2)",
-                  borderRadius: 10,
+                  color: "rgba(253,246,236,.88)",
+                  background: mobileOpen ? "rgba(212,168,67,.14)" : "rgba(255,255,255,.05)",
+                  border: `1px solid ${mobileOpen ? "rgba(212,168,67,.35)" : "rgba(212,168,67,.18)"}`,
+                  borderRadius: 11,
                   padding: "7px 9px",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  transition: "all 0.25s",
+                  transition: "all .25s",
                   flexShrink: 0,
                 }}
               >
-                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
+                <AnimatePresence mode="wait">
+                  {mobileOpen
+                    ? <motion.span key="x"   initial={{rotate:-90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:90,opacity:0}} transition={{duration:.18}}><X    size={21}/></motion.span>
+                    : <motion.span key="men" initial={{rotate: 90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:-90,opacity:0}} transition={{duration:.18}}><Menu size={21}/></motion.span>
+                  }
+                </AnimatePresence>
+              </motion.button>
             )}
           </div>
         </div>
 
-        {/* ── MOBILE MENU ── */}
+        {/* ── MOBILE DRAWER ── */}
         <AnimatePresence>
           {mobileOpen && !isDesktop && (
             <motion.div
-              initial={{ opacity: 0, y: -12 }}
+              initial={{ opacity: 0, y: -14 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
+              exit  ={{ opacity: 0, y: -10 }}
+              transition={{ duration: .28, ease: "easeOut" }}
               style={{
-                background: "rgba(6,14,26,0.97)",
-                borderTop: "1px solid rgba(212,168,67,0.18)",
+                background: "linear-gradient(160deg, rgba(5,12,24,.98) 0%, rgba(8,18,34,.99) 100%)",
+                borderTop: "1px solid rgba(212,168,67,.15)",
                 position: "fixed",
-                top: totalNavOffset, left: 0, right: 0, bottom: 0,
-                height: `calc(100dvh - ${totalNavOffset}px)`,
-                minHeight: `calc(100vh - ${totalNavOffset}px)`,
+                top: navHeight, left: 0, right: 0, bottom: 0,
+                height: `calc(100dvh - ${navHeight}px)`,
                 overflowY: "auto",
                 WebkitOverflowScrolling: "touch",
                 overscrollBehavior: "contain",
-                touchAction: "pan-y",
                 zIndex: 300,
               }}
             >
               <div style={{
-                position: "relative",
                 minHeight: "100%",
                 padding: "1.2rem 1rem calc(2.5rem + env(safe-area-inset-bottom))",
                 display: "flex",
                 flexDirection: "column",
                 gap: 16,
-                scrollbarWidth: "thin",
-                scrollbarColor: "rgba(212,168,67,0.3) rgba(255,255,255,0.03)",
               }}>
-
-                {/* Author branding badge */}
+                {/* Author card */}
                 <div style={{
                   display: "flex",
-                  flexDirection: "row",
                   alignItems: "center",
                   gap: 16,
                   padding: "18px 16px",
                   borderRadius: 20,
-                  background: "linear-gradient(135deg, rgba(212,168,67,0.07) 0%, rgba(212,168,67,0.02) 100%)",
-                  border: "1px solid rgba(212,168,67,0.18)",
-                  marginBottom: 2,
+                  background: "linear-gradient(135deg,rgba(212,168,67,.07) 0%,rgba(212,168,67,.02) 100%)",
+                  border: "1px solid rgba(212,168,67,.18)",
                   position: "relative",
                   overflow: "hidden",
                 }}>
                   <div style={{
-                    position: "absolute",
-                    top: "50%", left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 200, height: 200,
-                    borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(212,168,67,0.06) 0%, transparent 70%)",
-                    pointerEvents: "none",
-                  }} />
+                    position:"absolute", top:"50%", left:"50%",
+                    transform:"translate(-50%,-50%)",
+                    width:200, height:200, borderRadius:"50%",
+                    background:"radial-gradient(circle,rgba(212,168,67,.06) 0%,transparent 70%)",
+                    pointerEvents:"none",
+                  }}/>
                   <div style={{
-                    width: 80, height: 90,
-                    borderRadius: 12,
-                    overflow: "hidden",
-                    flexShrink: 0,
-                    border: "1.5px solid rgba(212,168,67,0.35)",
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-                    position: "relative",
+                    width:80, height:90, borderRadius:12,
+                    overflow:"hidden", flexShrink:0,
+                    border:"1.5px solid rgba(212,168,67,.35)",
+                    boxShadow:"0 4px 16px rgba(0,0,0,.4)",
+                    position:"relative",
                   }}>
                     <img
                       src="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
                       alt="মাহবুব সরদার সবুজ"
-                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }}
+                      style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}
                     />
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(6,14,26,0.4) 100%)" }} />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom,transparent 50%,rgba(6,14,26,.4) 100%)" }}/>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", position: "relative", flex: 1, minWidth: 0 }}>
+                  <div style={{ display:"flex", flexDirection:"column", flex:1, minWidth:0 }}>
                     <div style={{
-                      fontFamily: "'AdorshoLipi', sans-serif",
-                      fontSize: "1.25rem",
-                      fontWeight: 800,
-                      lineHeight: 1.2,
-                      background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      marginBottom: 6,
-                      whiteSpace: "nowrap",
+                      fontFamily:"'AdorshoLipi',sans-serif",
+                      fontSize:"1.22rem", fontWeight:800, lineHeight:1.2,
+                      background:"linear-gradient(135deg,#E8C97A 0%,#D4A843 50%,#C49030 100%)",
+                      WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                      marginBottom:6, whiteSpace:"nowrap",
                     }}>মাহবুব সরদার সবুজ</div>
-                    <div style={{ width: 40, height: 1.5, background: "linear-gradient(90deg, #D4A843, transparent)", marginBottom: 6 }} />
-                    <div style={{ fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.72rem", color: "rgba(212,168,67,0.55)", letterSpacing: "0.06em" }}>লেখক ও কবি</div>
+                    <div style={{ width:40, height:1.5, background:"linear-gradient(90deg,#D4A843,transparent)", marginBottom:6 }}/>
+                    <div style={{ fontFamily:"'AdorshoLipi',sans-serif", fontSize:".72rem", color:"rgba(212,168,67,.55)", letterSpacing:".06em" }}>লেখক ও কবি</div>
                   </div>
                 </div>
 
-                {/* Primary nav links */}
+                {/* Nav links */}
                 <div style={{
-                  borderRadius: 22,
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.015) 100%)",
-                  border: "1px solid rgba(212,168,67,0.13)",
-                  padding: "10px",
-                  boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
+                  borderRadius:22,
+                  background:"linear-gradient(180deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.015) 100%)",
+                  border:"1px solid rgba(212,168,67,.13)",
+                  padding:"10px",
+                  boxShadow:"0 16px 40px rgba(0,0,0,.25)",
                 }}>
                   <motion.div
                     initial="hidden"
                     animate="visible"
-                    variants={{
-                      hidden: {},
-                      visible: { transition: { staggerChildren: 0.055, delayChildren: 0.03 } },
-                    }}
-                    style={{ display: "flex", flexDirection: "column", gap: 6 }}
+                    variants={{ hidden:{}, visible:{ transition:{ staggerChildren:.05, delayChildren:.03 } } }}
+                    style={{ display:"flex", flexDirection:"column", gap:5 }}
                   >
                     {navLinks.map((link) => {
                       const active = isPrimaryNavActive(link.href, location);
-                      const Icon = link.icon;
-                      const linkContent = (
-                        <motion.span
-                          variants={{
-                            hidden: { opacity: 0, x: -16, scale: 0.97 },
-                            visible: { opacity: 1, x: 0, scale: 1 },
-                          }}
-                          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                          whileTap={{ scale: 0.983 }}
-                          style={{
-                            fontFamily: "'AdorshoLipi', sans-serif",
-                            color: active ? "#0D1B2A" : "#FDF6EC",
-                            background: active
-                              ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
-                              : "transparent",
-                            border: active
-                              ? "1px solid rgba(212,168,67,0.5)"
-                              : "1px solid transparent",
-                            padding: "11px 12px",
-                            textDecoration: "none",
-                            borderRadius: 14,
-                            transition: "all 0.25s ease",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: 12,
-                            boxShadow: active ? "0 8px 24px rgba(212,168,67,0.28)" : "none",
-                          }}
-                        >
-                          <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
-                            <span style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: 38, height: 38,
-                              borderRadius: 11,
-                              background: active
-                                ? "rgba(10,22,40,0.15)"
-                                : "linear-gradient(135deg, rgba(212,168,67,0.12) 0%, rgba(212,168,67,0.05) 100%)",
-                              border: active
-                                ? "1px solid rgba(10,22,40,0.15)"
-                                : "1px solid rgba(212,168,67,0.2)",
-                              flexShrink: 0,
-                              boxShadow: active ? "none" : "0 2px 8px rgba(0,0,0,0.15)",
-                            }}>
-                              <Icon size={17} color={active ? "#0D1B2A" : "#D4A843"} />
-                            </span>
-                            <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                              <span style={{ fontSize: "0.98rem", fontWeight: 700, lineHeight: 1.3 }}>{link.label}</span>
-                              <span style={{
-                                fontSize: "0.73rem",
-                                lineHeight: 1.4,
-                                color: active ? "rgba(10,22,40,0.75)" : "rgba(253,246,236,0.5)",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}>
-                                {link.subtitle}
-                              </span>
-                            </span>
-                          </span>
-                          <span style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 30, height: 30,
-                            borderRadius: 999,
-                            background: active ? "rgba(10,22,40,0.12)" : "rgba(212,168,67,0.07)",
-                            border: active ? "1px solid rgba(10,22,40,0.12)" : "1px solid rgba(212,168,67,0.15)",
-                            flexShrink: 0,
-                          }}>
-                            <ChevronRight size={14} color={active ? "#0D1B2A" : "#D4A843"} />
-                          </span>
-                        </motion.span>
-                      );
-
+                      const Icon   = link.icon;
                       return (
                         <Link key={link.href} href={link.href}>
-                          <span
-                            onPointerDown={() => warmRoute(link.href)}
-                            onTouchStart={() => warmRoute(link.href)}
-                            onClick={() => {
-                              warmRoute(link.href);
-                              setMobileOpen(false);
+                          <motion.span
+                            variants={{ hidden:{opacity:0,x:-14,scale:.97}, visible:{opacity:1,x:0,scale:1} }}
+                            transition={{ duration:.3, ease:[.22,1,.36,1] }}
+                            whileTap={{ scale:.983 }}
+                            onPointerDown={() => warm(link.href)}
+                            onClick={() => setMobileOpen(false)}
+                            style={{
+                              fontFamily:"'AdorshoLipi',sans-serif",
+                              color: active ? "#0D1B2A" : "#FDF6EC",
+                              background: active ? "linear-gradient(135deg,#D4A843 0%,#E8C97A 100%)" : "transparent",
+                              border: active ? "1px solid rgba(212,168,67,.5)" : "1px solid transparent",
+                              padding:"10px 12px",
+                              borderRadius:13,
+                              cursor:"pointer",
+                              display:"flex",
+                              alignItems:"center",
+                              justifyContent:"space-between",
+                              gap:12,
+                              boxShadow: active ? "0 6px 22px rgba(212,168,67,.25)" : "none",
+                              transition:"all .2s",
                             }}
-                            style={{ display: "block" }}
                           >
-                            {linkContent}
-                          </span>
+                            <span style={{ display:"flex", alignItems:"center", gap:11, minWidth:0, flex:1 }}>
+                              <span style={{
+                                display:"inline-flex", alignItems:"center", justifyContent:"center",
+                                width:36, height:36, borderRadius:10, flexShrink:0,
+                                background: active ? "rgba(10,22,40,.15)" : `linear-gradient(135deg,${link.groupColor}20 0%,${link.groupColor}0a 100%)`,
+                                border: active ? "1px solid rgba(10,22,40,.15)" : `1px solid ${link.groupColor}33`,
+                                boxShadow: active ? "none" : "0 2px 8px rgba(0,0,0,.15)",
+                              }}>
+                                <Icon size={16} color={active ? "#0D1B2A" : link.groupColor} />
+                              </span>
+                              <span style={{ display:"flex", flexDirection:"column", gap:2, minWidth:0 }}>
+                                <span style={{ fontSize:".96rem", fontWeight:700, lineHeight:1.3 }}>{link.label}</span>
+                                <span style={{
+                                  fontSize:".71rem", lineHeight:1.4,
+                                  color: active ? "rgba(10,22,40,.72)" : "rgba(253,246,236,.45)",
+                                  overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+                                }}>{link.subtitle}</span>
+                              </span>
+                            </span>
+                            <span style={{
+                              display:"inline-flex", alignItems:"center", justifyContent:"center",
+                              width:28, height:28, borderRadius:999, flexShrink:0,
+                              background: active ? "rgba(10,22,40,.12)" : "rgba(212,168,67,.07)",
+                              border: active ? "1px solid rgba(10,22,40,.12)" : "1px solid rgba(212,168,67,.15)",
+                            }}>
+                              <ChevronRight size={13} color={active ? "#0D1B2A" : "#D4A843"} />
+                            </span>
+                          </motion.span>
                         </Link>
                       );
                     })}
                   </motion.div>
                 </div>
 
-                {/* Info tabs — 2×2 grid */}
+                {/* Info tabs */}
                 {!isAmioLikhboPage && (
-                  <div style={{ margin: "0 2px" }}>
+                  <div style={{ margin:"0 2px" }}>
                     <p style={{
-                      fontFamily: "'AdorshoLipi', sans-serif",
-                      color: "rgba(212,168,67,0.7)",
-                      fontSize: "0.7rem",
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase",
-                      margin: "0 4px 10px",
-                    }}>
-                      তথ্য ও নীতিমালা
-                    </p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      fontFamily:"'AdorshoLipi',sans-serif",
+                      color:"rgba(212,168,67,.65)",
+                      fontSize:".68rem",
+                      letterSpacing:".16em",
+                      textTransform:"uppercase",
+                      margin:"0 4px 10px",
+                    }}>তথ্য ও নীতিমালা</p>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                       {infoTabs.map((tab) => {
-                        const active = isInfoTabActive(tab.href, location);
+                        const active = location === tab.href;
                         return (
                           <Link key={tab.href} href={tab.href}>
                             <motion.span
-                              onPointerDown={() => warmRoute(tab.href)}
-                              onTouchStart={() => warmRoute(tab.href)}
-                              onClick={() => {
-                                warmRoute(tab.href);
-                                setMobileOpen(false);
-                              }}
-                              whileTap={{ scale: 0.97 }}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.28, ease: "easeOut" }}
+                              onPointerDown={() => warm(tab.href)}
+                              onClick={() => setMobileOpen(false)}
+                              whileTap={{ scale:.97 }}
+                              initial={{ opacity:0, y:10 }}
+                              animate={{ opacity:1, y:0 }}
+                              transition={{ duration:.28, ease:"easeOut" }}
                               style={{
-                                fontFamily: "'AdorshoLipi', sans-serif",
+                                fontFamily:"'AdorshoLipi',sans-serif",
                                 color: active ? "#0D1B2A" : "#FDF6EC",
                                 background: active
-                                  ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
-                                  : "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(212,168,67,0.04) 100%)",
-                                border: active
-                                  ? "1px solid rgba(212,168,67,0.6)"
-                                  : "1px solid rgba(212,168,67,0.18)",
-                                padding: "14px 13px",
-                                textDecoration: "none",
-                                borderRadius: 16,
-                                transition: "all 0.25s",
-                                cursor: "pointer",
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 5,
-                                minHeight: 82,
-                                justifyContent: "center",
-                                boxShadow: active
-                                  ? "0 8px 24px rgba(212,168,67,0.28)"
-                                  : "0 4px 16px rgba(0,0,0,0.15)",
+                                  ? "linear-gradient(135deg,#D4A843 0%,#E8C97A 100%)"
+                                  : "linear-gradient(180deg,rgba(255,255,255,.04) 0%,rgba(212,168,67,.04) 100%)",
+                                border: active ? "1px solid rgba(212,168,67,.6)" : "1px solid rgba(212,168,67,.16)",
+                                padding:"13px 12px",
+                                borderRadius:15,
+                                cursor:"pointer",
+                                display:"flex",
+                                flexDirection:"column",
+                                gap:5,
+                                minHeight:78,
+                                justifyContent:"center",
+                                boxShadow: active ? "0 8px 24px rgba(212,168,67,.28)" : "0 4px 16px rgba(0,0,0,.15)",
+                                transition:"all .22s",
                               }}
                             >
-                              <span style={{ fontSize: "0.9rem", fontWeight: 700, lineHeight: 1.3 }}>{tab.titleBn}</span>
-                              <span style={{
-                                fontSize: "0.7rem",
-                                lineHeight: 1.45,
-                                color: active ? "rgba(10,22,40,0.75)" : "rgba(253,246,236,0.5)",
-                              }}>
-                                {tab.description}
-                              </span>
+                              <span style={{ fontSize:".88rem", fontWeight:700, lineHeight:1.3 }}>{tab.titleBn}</span>
+                              <span style={{ fontSize:".68rem", lineHeight:1.45, color: active ? "rgba(10,22,40,.72)" : "rgba(253,246,236,.45)" }}>{tab.description}</span>
                             </motion.span>
                           </Link>
                         );
@@ -878,7 +803,6 @@ export default function Navbar() {
                     </div>
                   </div>
                 )}
-
               </div>
             </motion.div>
           )}
