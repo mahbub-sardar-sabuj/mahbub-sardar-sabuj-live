@@ -6,6 +6,7 @@
 
 import type { Express, Request, Response } from "express";
 import { ENV } from "./_core/env";
+import { upsertNewsletterSubscriber, getNewsletterSubscriberCount } from "./db";
 
 const TELEGRAM_API = `https://api.telegram.org/bot${ENV.telegramBotToken}`;
 
@@ -36,10 +37,6 @@ async function sendTelegramMessage(text: string): Promise<void> {
     console.error("[Contact] Telegram sendMessage error:", err);
   }
 }
-
-// In-memory newsletter store (persists as long as server is running)
-// For production, this should be moved to the database
-const newsletterSubscribers = new Set<string>();
 
 export function registerContactRoute(app: Express) {
   // ── Contact Form ────────────────────────────────────────────────────────────
@@ -75,12 +72,13 @@ export function registerContactRoute(app: Express) {
     const isNewsletter = safeSubject === "নিউজলেটার সাবস্ক্রিপশন";
 
     if (isNewsletter) {
-      newsletterSubscribers.add(safeEmail);
+      await upsertNewsletterSubscriber(safeEmail, safeName);
+      const totalCount = await getNewsletterSubscriberCount();
       const text =
         `📧 *নতুন নিউজলেটার সাবস্ক্রাইবার*\n\n` +
         `👤 *নাম:* ${escapeMarkdown(safeName)}\n` +
         `📩 *ইমেইল:* ${escapeMarkdown(safeEmail)}\n` +
-        `📊 *মোট সাবস্ক্রাইবার:* ${newsletterSubscribers.size}`;
+        `📊 *মোট সাবস্ক্রাইবার:* ${totalCount}`;
       await sendTelegramMessage(text);
     } else {
       const text =
@@ -96,7 +94,8 @@ export function registerContactRoute(app: Express) {
   });
 
   // ── Newsletter Subscriber Count (admin use) ─────────────────────────────────
-  app.get("/api/newsletter/count", (_req: Request, res: Response) => {
-    res.json({ count: newsletterSubscribers.size });
+  app.get("/api/newsletter/count", async (_req: Request, res: Response) => {
+    const count = await getNewsletterSubscriberCount();
+    res.json({ count });
   });
 }

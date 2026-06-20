@@ -114,7 +114,8 @@ function Router() {
         <Route path={"/ekla-thaka-kobita"} component={SeoKeywordLanding} />
         <Route path={"/rater-kobita"} component={SeoKeywordLanding} />
         <Route path={"/bhalobasha-kobita"} component={SeoKeywordLanding} />
-        <Route path={"/bichhed-kobita"} component={SeoKeywordLanding} />
+        {/* /bichhed-kobita is a duplicate of /bichched-kobita — redirect to canonical URL */}
+        <Route path={"/bichhed-kobita"}>{() => { window.location.replace("/bichched-kobita"); return null; }}</Route>
         <Route path={"/jibon-niye-ukti"} component={SeoKeywordLanding} />
         <Route path={"/premer-status"} component={SeoKeywordLanding} />
         <Route path={"/sad-bangla-status"} component={SeoKeywordLanding} />

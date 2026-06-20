@@ -130,3 +130,14 @@ export const passwordResetTokens = mysqlTable("password_reset_tokens", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
+// ── Newsletter Subscribers ────────────────────────────────────────────────────
+export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  name: varchar("name", { length: 160 }),
+  subscribedAt: timestamp("subscribedAt").defaultNow().notNull(),
+});
+
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;

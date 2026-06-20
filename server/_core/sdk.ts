@@ -155,7 +155,10 @@ class SDKServer {
   }
 
   private getSessionSecret() {
-    const secret = ENV.cookieSecret || "local-secret-fallback-32chars!!";
+    const secret = ENV.cookieSecret;
+    if (!secret) {
+      throw new Error("[sdk] cookieSecret (JWT_SECRET) env var is required. Refusing to use an insecure hardcoded fallback.");
+    }
     return new TextEncoder().encode(secret);
   }
 

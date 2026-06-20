@@ -1546,7 +1546,10 @@ var SDKServer = class {
     return new Map(Object.entries(parsed));
   }
   getSessionSecret() {
-    const secret = ENV.cookieSecret || "local-secret-fallback-32chars!!";
+    const secret = ENV.cookieSecret;
+    if (!secret) {
+      throw new Error("[trpc-bundled] cookieSecret (JWT_SECRET) env var is required. Refusing to use an insecure hardcoded fallback.");
+    }
     return new TextEncoder().encode(secret);
   }
   /**

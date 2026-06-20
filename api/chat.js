@@ -778,8 +778,8 @@ return `ওয়েবসাইটের গুরুত্বপূর্ণ �
 }
 
 function buildToolReply(intent) {
-if (intent === "audio") {
-return `Audio Studio Mode দিয়ে আপনি অডিও/ভয়েস আরও পরিষ্কার ও প্রফেশনাল করতে পারবেন।\n\nসম্ভব কাজগুলো:\n- নয়েজ কমানো ও voice cleanup\n- volume boost ও clarity enhancement\n- podcast/radio style processing\n- কবিতা/আবৃত্তির জন্য reverb ambience\n- music mix নির্দেশনা\n\nব্যবহার: ফাইল আপলোড করে লিখুন—“নয়েজ কমাও”, “ভয়েস ক্লিন করো” বা “মিউজিকের সাথে মিক্স করো”।`;
+if (intent === "audio" || intent === "audio_editor") {
+return `Audio Studio Mode দিয়ে আপনি অডিও/ভয়েস আরও পরিষ্কার ও প্রফেশনাল করতে পারবেন।\n\nসম্ভব কাজগুলো:\n- নয়েজ কমানো ও voice cleanup\n- volume boost ও clarity enhancement\n- podcast/radio style processing\n- কবিতা/আবৃত্তির জন্য reverb ambience\n- music mix নির্দেশনা\n\nব্যবহার: ফাইল আপলোড করে লিখুন—“নয়েজ কমাও”, “ভয়েস ক্লিন করো” বা “মিউজিকের সাথে মিক্স করো”।\n\nঅডিও এডিটরে যেতে: [BUTTON:/audio-editor]`;
 }
 if (intent === "vision") {
 return `Vision Assistant দিয়ে ছবি, স্ক্রিনশট বা ডিজাইন বিশ্লেষণ করা যায়।\n\nআপনি করতে পারেন:\n- ছবির caption বা description\n- design review ও improvement suggestion\n- screenshot error বুঝে সমাধান\n- ছবির লেখা পড়ে সারাংশ/অনুবাদ\n\nব্যবহার: ছবি আপলোড করে কী জানতে চান তা লিখুন।`;
@@ -1044,6 +1044,7 @@ return buildSocialReply();
 case "contact":
 return buildContactReply();
 case "audio":
+case "audio_editor":
 case "vision":
 return buildToolReply(intent.intent);
 case "design":
@@ -1135,6 +1136,7 @@ function buildSiteSpecificReply(messages = []) {
       case "social": return buildSocialReply();
       case "contact": return buildContactReply();
       case "audio":
+      case "audio_editor":
       case "vision": return buildToolReply(intent.intent);
       case "design": return "সরদার ডিজাইন স্টুডিওতে কবিতা, উক্তি বা লেখার কার্ড তৈরি করা যায়। ছবি, টেক্সট, স্টিকার, ফিল্টার ও ব্যাকগ্রাউন্ডসহ ডিজাইন করতে এখানে যান: [BUTTON:/editor]";
       case "gallery": return "মাহবুব সরদার সবুজের ছবি ও গ্যালারি দেখতে এই পেজে যান: [BUTTON:/gallery]";

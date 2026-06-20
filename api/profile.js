@@ -8,7 +8,10 @@ import { jwtVerify } from "jose";
 import mysql from "mysql2/promise";
 
 const COOKIE_NAME = "app_session_id";
-const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
+const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("[profile] COOKIE_SECRET or JWT_SECRET env var is required. Refusing to use an insecure hardcoded fallback.");
+}
 
 function getSecretKey() {
   return new TextEncoder().encode(JWT_SECRET);

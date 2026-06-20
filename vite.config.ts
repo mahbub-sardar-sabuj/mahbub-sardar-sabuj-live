@@ -228,6 +228,10 @@ export default defineConfig({
           if (id.includes("newsData")) {
             return "news-data";
           }
+          // Large writings archive — keep in its own chunk to avoid bloating main bundle
+          if (id.includes("writingsArchive")) {
+            return "writings-data";
+          }
           // FFmpeg — keep in its own chunk so worker URL resolves correctly
           if (id.includes("node_modules/@ffmpeg")) {
             return "ffmpeg";

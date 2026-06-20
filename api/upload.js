@@ -12,7 +12,10 @@ import path from "path";
 import mysql from "mysql2/promise";
 
 const COOKIE_NAME = "app_session_id";
-const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
+const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("[upload] COOKIE_SECRET or JWT_SECRET env var is required. Refusing to use an insecure hardcoded fallback.");
+}
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 
 export const config = { api: { bodyParser: false } };

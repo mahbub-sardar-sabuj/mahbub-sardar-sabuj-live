@@ -39,6 +39,11 @@
   },
   "redirects": [
     {
+      "source": "/bichhed-kobita",
+      "destination": "/bichched-kobita",
+      "permanent": true
+    },
+    {
       "source": "/ebooks",
       "destination": "/ebooks/",
       "permanent": true

@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, newsletterSubscribers, InsertNewsletterSubscriber } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -92,4 +92,46 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ── Newsletter Subscribers ────────────────────────────────────────────────────
+
+export async function upsertNewsletterSubscriber(
+  email: string,
+  name?: string
+): Promise<{ isNew: boolean }> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot save newsletter subscriber: database not available");
+    // Graceful degradation — still return success so UX is not broken
+    return { isNew: false };
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const values: InsertNewsletterSubscriber = {
+    email: normalizedEmail,
+    ...(name ? { name: name.trim().slice(0, 160) } : {}),
+  };
+
+  try {
+    await db
+      .insert(newsletterSubscribers)
+      .values(values)
+      .onDuplicateKeyUpdate({ set: { email: sql`email` } });
+    return { isNew: true };
+  } catch (error) {
+    console.error("[Database] Failed to upsert newsletter subscriber:", error);
+    throw error;
+  }
+}
+
+export async function getNewsletterSubscriberCount(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  try {
+    const result = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(newsletterSubscribers);
+    return Number(result[0]?.count ?? 0);
+  } catch {
+    return 0;
+  }
+}

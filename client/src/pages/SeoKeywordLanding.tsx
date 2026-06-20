@@ -179,16 +179,8 @@ const landingPages = {
     match: (w: Writing) => /ভালোবাসা|প্রেম|মায়া|তুমি|হৃদয়|অপেক্ষা|সম্পর্ক/.test(`${w.title} ${w.content}`),
     guide: "ভালোবাসা কবিতা পেজটি প্রেম ও ভালোবাসাভিত্তিক search intent ধরতে সাহায্য করে।",
   },
-  "/bichhed-kobita": {
-    icon: Sparkles,
-    title: "বিচ্ছেদ কবিতা ও কষ্টের লেখা — মাহবুব সরদার সবুজ",
-    h1: "বিচ্ছেদ কবিতা ও কষ্টের লেখা",
-    intro: "বিচ্ছেদ, হারানো, অভিমান এবং কষ্টের গভীর অনুভূতি নিয়ে লেখা বাংলা কবিতা।",
-    description: "বিচ্ছেদ কবিতা, কষ্টের লেখা ও sad Bangla poem পড়ুন মাহবুব সরদার সবুজের লেখায়।",
-    keywords: "বিচ্ছেদ কবিতা, bichhed kobita, কষ্টের কবিতা, sad bangla poem",
-    match: (w: Writing) => /বিচ্ছেদ|কষ্ট|হারানো|অভিমান|দুঃখ|একাকী|স্মৃতি/.test(`${w.title} ${w.content}`),
-    guide: "বিচ্ছেদ কবিতা পেজটি বিচ্ছেদ ও কষ্টভিত্তিক search intent ধরতে সাহায্য করে।",
-  },
+  // NOTE: /bichhed-kobita was a duplicate of /bichched-kobita.
+  // It has been removed from the data map. A 301 redirect is configured in vercel.json.
   "/brishti-kobita": {
     icon: Feather,
     title: "বৃষ্টির কবিতা ও বর্ষার লেখা — মাহবুব সরদার সবুজ",

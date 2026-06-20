@@ -12,7 +12,12 @@ const COOKIE_NAME = "app_session_id";
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com";
 const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 const APP_ID = process.env.APP_ID || process.env.VITE_APP_ID || "local-app";
-const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET || "local-secret-fallback-32chars!!";
+const JWT_SECRET = process.env.COOKIE_SECRET || process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  // Production guard: refuse to run with no secret
+  // In local dev, set COOKIE_SECRET or JWT_SECRET in .env
+  throw new Error("[local-auth] COOKIE_SECRET or JWT_SECRET env var is required. Refusing to use an insecure hardcoded fallback.");
+}
 const OWNER_BOOTSTRAP_PASSWORD_SHA256 =
   process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 ||
   "7ed1bc948ce36459e8fbdf9243fe0ab1c5c420ec3cc71c96b476e57cb4901305";
@@ -113,7 +118,7 @@ async function issueLoginResponse(res, db, user, email) {
 
 async function sendPasswordResetEmail(toEmail, userName, resetToken) {
   const FROM = process.env.CONTACT_EMAIL_FROM || "mahbubsardarsabuj@gmail.com";
-  const PASS = process.env.GMAIL_APP_PASSWORD || "ckqttkyndzxjfndb";
+  const PASS = process.env.GMAIL_APP_PASSWORD;
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
