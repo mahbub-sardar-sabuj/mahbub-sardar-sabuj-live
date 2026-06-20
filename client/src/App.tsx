@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 
 // Lazy load secondary/content pages to reduce first-load JavaScript on phones/tablets.
 const Writings = lazyRoute("Writings");
+const WritingDetailPage = lazyRoute("WritingDetailPage");
 const EBooks = lazyRoute("EBooks");
 const NotFound = lazyRoute("NotFound");
 const FacebookRecitations = lazyRoute("FacebookRecitations");
@@ -94,7 +95,7 @@ function Router() {
         <Route path={"/"} component={Home} />
         <Route path={"/facebook-recitations"} component={FacebookRecitations} />
         <Route path={"/writings"} component={Writings} />
-        <Route path={"/writings/:slug"} component={Writings} />
+        <Route path={"/writings/:slug"} component={WritingDetailPage} />
         <Route path={"/bangla-kobita"} component={SeoKeywordLanding} />
         <Route path={"/valobashar-kobita"} component={SeoKeywordLanding} />
         <Route path={"/bichched-kobita"} component={SeoKeywordLanding} />

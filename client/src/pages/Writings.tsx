@@ -1566,7 +1566,7 @@ export default function Writings() {
     }
   }, [archive, match, params?.slug, archiveReady, setLocation]);
 
-  const handleCardClick = useCallback((w: Writing) => { setSel(w); setLocation(`/writings/${makeSlug(w.title, w.id)}`); }, [setLocation]);
+  const handleCardClick = useCallback((w: Writing) => { setLocation(`/writings/${makeSlug(w.title, w.id)}`); }, [setLocation]);
   const handleModalClose = useCallback(() => { setSel(null); setLocation("/writings"); }, [setLocation]);
   const handleNavigate = useCallback((w: Writing) => { setSel(w); setLocation(`/writings/${makeSlug(w.title, w.id)}`); }, [setLocation]);
 
