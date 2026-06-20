@@ -7,6 +7,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazyRoute, preloadRoute, preloadRoutesWhenIdle } from "./lib/routePreloader";
+import SplashScreen, { shouldShowSplash } from "./components/SplashScreen";
 
 // Keep only the landing page in the critical path. Content-heavy routes are lazy-loaded.
 import Home from "./pages/Home";
@@ -161,6 +162,7 @@ function Router() {
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(() => shouldShowSplash());
   const [loadAssistant, setLoadAssistant] = useState(false);
 
   useEffect(() => {
@@ -221,6 +223,9 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          {showSplash && (
+            <SplashScreen onComplete={() => setShowSplash(false)} />
+          )}
           <div className="cinematic-site-shell">
             <Router />
           </div>
