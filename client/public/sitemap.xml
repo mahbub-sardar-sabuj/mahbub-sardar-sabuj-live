@@ -57,6 +57,15 @@
 
   <!-- ── সরদার সংবাদ (প্রতিটি নিউজ আলাদা URL) ── -->
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/48</loc>
+    <lastmod>2026-06-20</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <news:news>
+      <news:publication><news:name>সরদার সংবাদ</news:name><news:language>bn</news:language></news:publication>
+      <news:publication_date>2026-06-20T00:00:00+06:00</news:publication_date>
+      <news:title>গ্রামবাংলার সৌন্দর্য তুলে ধরছেন তরুণ কনটেন্ট ক্রিয়েটর রনি আকন্দ</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/47</loc>
     <lastmod>2026-05-03</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
     <news:news>

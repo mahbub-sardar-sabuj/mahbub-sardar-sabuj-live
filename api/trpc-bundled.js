@@ -954,11 +954,13 @@ async function ensureWritingPlatformTables(db) {
   if (writingTablesReady) return;
   if (!writingTablesReadyPromise) {
     writingTablesReadyPromise = (async () => {
-      // Run all CREATE TABLE in parallel (no ALTER TABLE - already longtext in schema)
       await Promise.all([
-        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` longtext, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))")).catch(() => {}),
-        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))")).catch(() => {}),
-        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))")).catch(() => {}),
+        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` longtext, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))")).catch(() => {
+        }),
+        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))")).catch(() => {
+        }),
+        db.execute(sql2.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))")).catch(() => {
+        })
       ]);
       writingTablesReady = true;
     })().catch((error) => {
@@ -975,7 +977,8 @@ async function warmupWritingDb() {
   try {
     const db = await getDb();
     if (db) await ensureWritingPlatformTables(db);
-  } catch {}
+  } catch {
+  }
 }
 warmupWritingDb();
 async function getWritingDb() {
@@ -992,9 +995,9 @@ async function safeWritingRead(label, fallback, operation) {
     return fallback;
   }
 }
-async function enrichPostsBatch(posts, userOpenId, _db) {
+async function enrichPostsBatch(posts, userOpenId, _db2) {
   if (posts.length === 0) return [];
-  const db = _db ?? await getWritingDb();
+  const db = _db2 ?? await getWritingDb();
   const emptyEnrich = (post) => ({
     ...post,
     authorAvatarUrl: null,
@@ -1008,14 +1011,14 @@ async function enrichPostsBatch(posts, userOpenId, _db) {
   const [allReactions, allComments, avatarRows] = await Promise.all([
     // Batch query 1: reactions (only needed columns)
     db.select({ postId: writingReactions.postId, type: writingReactions.type, userOpenId: writingReactions.userOpenId }).from(writingReactions).where(inArray2(writingReactions.postId, postIds)),
-    // Batch query 2: approved comment counts for all posts at once
+    // Batch query 2: approved comment counts
     db.select({ postId: writingComments.postId }).from(writingComments).where(
       and3(
         inArray2(writingComments.postId, postIds),
         eq4(writingComments.status, "approved")
       )
     ),
-    // Batch query 3: author avatars for all unique authors at once
+    // Batch query 3: author avatars
     authorOpenIds.length > 0 ? db.execute(
       sql2.raw(
         `SELECT openId, avatarUrl FROM local_users WHERE openId IN (${authorOpenIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(",")}) LIMIT ${authorOpenIds.length}`
@@ -1078,15 +1081,23 @@ var writingPlatformRouter = router({
       const conditions = [eq4(writingPosts.status, "approved")];
       if (input?.category) conditions.push(eq4(writingPosts.category, input.category));
       if (input?.featuredOnly) conditions.push(eq4(writingPosts.featured, true));
-      const feedCols = {
-        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
-        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+      const posts = await db.select({
+        id: writingPosts.id,
+        slug: writingPosts.slug,
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        title: writingPosts.title,
+        category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
-        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
-        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
-      };
-      const posts = await db.select(feedCols).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(input?.limit ?? 20);
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
+        mediaType: writingPosts.mediaType,
+        status: writingPosts.status,
+        featured: writingPosts.featured,
+        boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount,
+        createdAt: writingPosts.createdAt,
+        updatedAt: writingPosts.updatedAt
+      }).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(input?.limit ?? 20);
       return enrichPostsBatch(posts, ctx.user?.openId, db);
     });
   }),
@@ -1103,15 +1114,23 @@ var writingPlatformRouter = router({
       if (input?.category) conditions.push(eq4(writingPosts.category, input.category));
       if (input?.featuredOnly) conditions.push(eq4(writingPosts.featured, true));
       const limit = input?.limit ?? 10;
-      const feedCols2 = {
-        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
-        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+      const posts = await db.select({
+        id: writingPosts.id,
+        slug: writingPosts.slug,
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        title: writingPosts.title,
+        category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
-        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
-        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
-      };
-      const posts = await db.select(feedCols2).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(limit).offset(input?.offset ?? 0);
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
+        mediaType: writingPosts.mediaType,
+        status: writingPosts.status,
+        featured: writingPosts.featured,
+        boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount,
+        createdAt: writingPosts.createdAt,
+        updatedAt: writingPosts.updatedAt
+      }).from(writingPosts).where(and3(...conditions)).orderBy(desc2(writingPosts.featured), desc2(writingPosts.boostedScore), desc2(writingPosts.createdAt)).limit(limit).offset(input?.offset ?? 0);
       const enriched = await enrichPostsBatch(posts, ctx.user?.openId, db);
       return { posts: enriched, hasMore: posts.length === limit };
     });
@@ -1124,15 +1143,23 @@ var writingPlatformRouter = router({
       const db = await getWritingDb();
       if (!db) return [];
       const searchTerm = `%${input.query.trim()}%`;
-      const feedCols3 = {
-        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
-        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+      const posts = await db.select({
+        id: writingPosts.id,
+        slug: writingPosts.slug,
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        title: writingPosts.title,
+        category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
-        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
-        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
-      };
-      const posts = await db.select(feedCols3).from(writingPosts).where(and3(
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
+        mediaType: writingPosts.mediaType,
+        status: writingPosts.status,
+        featured: writingPosts.featured,
+        boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount,
+        createdAt: writingPosts.createdAt,
+        updatedAt: writingPosts.updatedAt
+      }).from(writingPosts).where(and3(
         eq4(writingPosts.status, "approved"),
         or(
           like(writingPosts.title, searchTerm),
@@ -1165,6 +1192,7 @@ var writingPlatformRouter = router({
       };
     });
   }),
+  // Lightweight endpoint to fetch only the mediaUrl of a post (for lazy loading images in feed)
   getPostMedia: publicProcedure.input(z3.object({ postId: z3.number().int().positive() })).query(async ({ input }) => {
     return safeWritingRead("getPostMedia", null, async () => {
       const db = await getWritingDb();
@@ -1178,15 +1206,23 @@ var writingPlatformRouter = router({
     return safeWritingRead("myPosts", [], async () => {
       const db = await getWritingDb();
       if (!db) return [];
-      const feedCols4 = {
-        id: writingPosts.id, slug: writingPosts.slug, authorOpenId: writingPosts.authorOpenId,
-        authorName: writingPosts.authorName, title: writingPosts.title, category: writingPosts.category,
+      const posts = await db.select({
+        id: writingPosts.id,
+        slug: writingPosts.slug,
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        title: writingPosts.title,
+        category: writingPosts.category,
         content: sql2`SUBSTRING(${writingPosts.content}, 1, 600)`,
-        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`, mediaType: writingPosts.mediaType, status: writingPosts.status,
-        featured: writingPosts.featured, boostedScore: writingPosts.boostedScore,
-        viewCount: writingPosts.viewCount, createdAt: writingPosts.createdAt, updatedAt: writingPosts.updatedAt,
-      };
-      const posts = await db.select(feedCols4).from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)).orderBy(desc2(writingPosts.createdAt)).limit(50);
+        mediaUrl: sql2`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
+        mediaType: writingPosts.mediaType,
+        status: writingPosts.status,
+        featured: writingPosts.featured,
+        boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount,
+        createdAt: writingPosts.createdAt,
+        updatedAt: writingPosts.updatedAt
+      }).from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)).orderBy(desc2(writingPosts.createdAt)).limit(50);
       return enrichPostsBatch(posts, ctx.user.openId, db);
     });
   }),
