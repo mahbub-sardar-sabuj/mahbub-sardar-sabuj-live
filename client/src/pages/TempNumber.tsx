@@ -266,7 +266,7 @@ export default function TempNumber() {
       <div
         className="min-h-screen pb-32"
         style={{
-          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+          fontFamily: "'AdorshoLipi', sans-serif",
           background: "linear-gradient(135deg, #060E1A 0%, #0a1628 40%, #0d1f3c 100%)",
           paddingTop: "100px",
         }}

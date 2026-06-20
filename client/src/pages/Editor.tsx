@@ -82,8 +82,8 @@ const FONT_CSS: Record<string, string> = {
   BHSabitAdorshoLightUnicode:   "'BHSabitAdorshoLightUnicode', serif",
   BLABNorhaGramUnicode:         "'BLABNorhaGramUnicode', serif",
   AkhandBengali:                "'AkhandBengali', serif",
-  TiroBangla:                   "'AdorshoLipi', 'Tiro Bangla', serif",
-  NotoSansBengali:              "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+  TiroBangla:                   "'AdorshoLipi', sans-serif",
+  NotoSansBengali:              "'AdorshoLipi', sans-serif",
   // new BH series
   BHAparajito:                  "'BHAparajito', serif",
   BHHadaVoda:                   "'BHHadaVoda', serif",
@@ -1805,7 +1805,7 @@ export default function Editor() {
         {/* Center: Title */}
         <div style={{ textAlign: "center", flex: 1, minWidth: 0 }}>
           <h1 style={{
-            fontFamily: "'AkhandBengali','Noto Sans Bengali',sans-serif",
+            fontFamily: "'AkhandBengali','AdorshoLipi',sans-serif",
             fontSize: "clamp(0.9rem,3.5vw,1.3rem)",
             fontWeight: 800,
             background: "linear-gradient(135deg,#f5e27a 0%,#D4A843 50%,#b8892a 100%)",
@@ -1816,7 +1816,7 @@ export default function Editor() {
           }}>সরদার ডিজাইন স্টুডিও</h1>
           {autoSaveStatus !== "idle" && (
             <p style={{
-              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontFamily: "'AdorshoLipi',sans-serif",
               fontSize: "0.6rem",
               color: autoSaveStatus === "saved" ? "#4ade80" : "#D4A843",
               margin: "1px 0 0",
@@ -1824,7 +1824,7 @@ export default function Editor() {
           )}
           {autoSaveStatus === "idle" && (
             <p style={{
-              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontFamily: "'AdorshoLipi',sans-serif",
               fontSize: "0.6rem", color: "rgba(212,168,67,0.4)",
               margin: "1px 0 0",
             }}>মাহবুব সরদার সবুজ</p>

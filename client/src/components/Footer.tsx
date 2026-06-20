@@ -121,7 +121,7 @@ export default function Footer() {
               {/* SEO collection links */}
               <div>
                 <div style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontSize: "0.65rem", letterSpacing: "0.25em",
                   textTransform: "uppercase", color: "#C9A84C",
                   marginBottom: "1.5rem",
@@ -138,7 +138,7 @@ export default function Footer() {
                           onMouseEnter={() => warmRoute(link.href)}
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
-                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'AdorshoLipi', sans-serif",
                             color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                             textDecoration: "none",
                             fontSize: "0.875rem",
@@ -160,7 +160,7 @@ export default function Footer() {
               {/* Legal links */}
               <div>
                 <div style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontSize: "0.65rem", letterSpacing: "0.25em",
                   textTransform: "uppercase", color: "#C9A84C",
                   marginBottom: "1.5rem",
@@ -177,7 +177,7 @@ export default function Footer() {
                           onMouseEnter={() => warmRoute(link.href)}
                           whileHover={{ x: 6, color: "#C9A84C" }}
                           style={{
-                            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                            fontFamily: "'AdorshoLipi', sans-serif",
                             color: active ? "#C9A84C" : "rgba(250,246,239,0.5)",
                             textDecoration: "none",
                             fontSize: "0.875rem",
@@ -199,7 +199,7 @@ export default function Footer() {
               {/* Social & contact */}
               <div>
                 <div style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontSize: "0.65rem", letterSpacing: "0.25em",
                   textTransform: "uppercase", color: "#C9A84C",
                   marginBottom: "1.5rem",
@@ -252,7 +252,7 @@ export default function Footer() {
                   borderRadius: 10, padding: "1rem",
                 }}>
                   <div style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "0.6rem", letterSpacing: "0.15em",
                     textTransform: "uppercase", color: "rgba(201,168,76,0.5)",
                     marginBottom: "0.5rem",
@@ -260,7 +260,7 @@ export default function Footer() {
                   <a
                     href="mailto:lekhokmahbubsardarsabuj@gmail.com"
                     style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       color: "rgba(250,246,239,0.5)",
                       fontSize: "0.75rem",
                       textDecoration: "none",
@@ -289,7 +289,7 @@ export default function Footer() {
           gap: "1rem",
         }}>
           <p style={{
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', sans-serif",
             color: "rgba(250,246,239,0.3)",
             fontSize: "0.8rem",
             margin: 0,
@@ -298,7 +298,7 @@ export default function Footer() {
             © ২০২৬ মাহবুব সরদার সবুজ। সর্বস্বত্ব সংরক্ষিত।
           </p>
           <p style={{
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', sans-serif",
             color: "rgba(250,246,239,0.25)",
             fontSize: "0.8rem",
             margin: 0,

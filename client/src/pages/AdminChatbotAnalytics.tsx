@@ -51,9 +51,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
       minWidth: 120,
       flex: 1,
     }}>
-      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.62rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginBottom: 4 }}>{label}</div>
+      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.62rem", fontFamily: "'AdorshoLipi', sans-serif", marginBottom: 4 }}>{label}</div>
       <div style={{ color: color || "#D4A843", fontSize: "1.6rem", fontWeight: 800, fontFamily: "monospace", lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.55rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginTop: 3 }}>{sub}</div>}
+      {sub && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.55rem", fontFamily: "'AdorshoLipi', sans-serif", marginTop: 3 }}>{sub}</div>}
     </div>
   );
 }
@@ -105,11 +105,11 @@ export default function AdminChatbotAnalytics() {
     return (
       <DashboardLayout>
         <div style={{ padding: 32, maxWidth: 400 }}>
-          <h2 style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginBottom: 16, fontSize: "1.1rem" }}>
+          <h2 style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', sans-serif", marginBottom: 16, fontSize: "1.1rem" }}>
             🔐 অ্যাডমিন অ্যাক্সেস
           </h2>
           {error && (
-            <div style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: 12, fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+            <div style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: 12, fontFamily: "'AdorshoLipi', sans-serif" }}>
               {error}
             </div>
           )}
@@ -140,7 +140,7 @@ export default function AdminChatbotAnalytics() {
                 color: "#D4A843",
                 cursor: "pointer",
                 fontSize: "0.75rem",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 fontWeight: 700,
               }}
             >
@@ -158,10 +158,10 @@ export default function AdminChatbotAnalytics() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
           <div>
-            <h1 style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "1.1rem", fontWeight: 800, margin: 0 }}>
+            <h1 style={{ color: "#D4A843", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "1.1rem", fontWeight: 800, margin: 0 }}>
               📊 চ্যাটবট অ্যানালিটিক্স
             </h1>
-            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.6rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginTop: 2 }}>
+            <div style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.6rem", fontFamily: "'AdorshoLipi', sans-serif", marginTop: 2 }}>
               রিয়েল-টাইম ইন্টেন্ট ট্র্যাকিং ও ফলব্যাক মনিটরিং
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function AdminChatbotAnalytics() {
               color: "#D4A843",
               cursor: loading ? "not-allowed" : "pointer",
               fontSize: "0.65rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontWeight: 700,
               opacity: loading ? 0.5 : 1,
             }}
@@ -186,13 +186,13 @@ export default function AdminChatbotAnalytics() {
         </div>
 
         {loading && !data && (
-          <div style={{ color: "rgba(212,168,67,0.6)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", padding: 20 }}>
+          <div style={{ color: "rgba(212,168,67,0.6)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.8rem", padding: 20 }}>
             ডেটা লোড হচ্ছে...
           </div>
         )}
 
         {error && error !== "অ্যাডমিন কী ভুল। সঠিক কী দিন।" && (
-          <div style={{ color: "#f87171", fontSize: "0.75rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", padding: 12, background: "rgba(239,68,68,0.08)", borderRadius: 10, border: "1px solid rgba(239,68,68,0.2)" }}>
+          <div style={{ color: "#f87171", fontSize: "0.75rem", fontFamily: "'AdorshoLipi', sans-serif", padding: 12, background: "rgba(239,68,68,0.08)", borderRadius: 10, border: "1px solid rgba(239,68,68,0.2)" }}>
             {error}
           </div>
         )}
@@ -210,12 +210,12 @@ export default function AdminChatbotAnalytics() {
 
             {/* Top Intents */}
             <div style={{ marginBottom: 20 }}>
-              <h3 style={{ color: "rgba(212,168,67,0.8)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", fontWeight: 700, marginBottom: 10 }}>
+              <h3 style={{ color: "rgba(212,168,67,0.8)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.8rem", fontWeight: 700, marginBottom: 10 }}>
                 🎯 শীর্ষ ইন্টেন্ট
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {data.topIntents.length === 0 ? (
-                  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>কোনো ডেটা নেই</div>
+                  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif" }}>কোনো ডেটা নেই</div>
                 ) : data.topIntents.map((item, i) => {
                   const maxCount = data.topIntents[0]?.count || 1;
                   const pct = Math.round((item.count / maxCount) * 100);
@@ -224,7 +224,7 @@ export default function AdminChatbotAnalytics() {
                   return (
                     <div key={item.intent} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 18, color: "rgba(255,255,255,0.3)", fontSize: "0.55rem", textAlign: "right", flexShrink: 0 }}>#{i + 1}</div>
-                      <div style={{ width: 120, color: isFallback ? "rgba(251,146,60,0.8)" : "rgba(255,255,255,0.7)", fontSize: "0.65rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", flexShrink: 0 }}>
+                      <div style={{ width: 120, color: isFallback ? "rgba(251,146,60,0.8)" : "rgba(255,255,255,0.7)", fontSize: "0.65rem", fontFamily: "'AdorshoLipi', sans-serif", flexShrink: 0 }}>
                         {label}
                       </div>
                       <div style={{ flex: 1, height: 8, background: "rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
@@ -246,7 +246,7 @@ export default function AdminChatbotAnalytics() {
             {/* Provider Stats */}
             {Object.keys(data.providerStats).length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <h3 style={{ color: "rgba(212,168,67,0.8)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", fontWeight: 700, marginBottom: 10 }}>
+                <h3 style={{ color: "rgba(212,168,67,0.8)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.8rem", fontWeight: 700, marginBottom: 10 }}>
                   🤖 AI প্রোভাইডার পারফরম্যান্স
                 </h3>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -285,12 +285,12 @@ export default function AdminChatbotAnalytics() {
 
             {/* Recent Questions */}
             <div>
-              <h3 style={{ color: "rgba(212,168,67,0.8)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", fontSize: "0.8rem", fontWeight: 700, marginBottom: 10 }}>
+              <h3 style={{ color: "rgba(212,168,67,0.8)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.8rem", fontWeight: 700, marginBottom: 10 }}>
                 💬 সাম্প্রতিক প্রশ্ন
               </h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {data.recentQuestions.length === 0 ? (
-                  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>কোনো প্রশ্ন নেই</div>
+                  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif" }}>কোনো প্রশ্ন নেই</div>
                 ) : data.recentQuestions.map((q, i) => {
                   const isFallback = q.intent === "fallback";
                   const label = INTENT_LABELS[q.intent] || q.intent;
@@ -304,7 +304,7 @@ export default function AdminChatbotAnalytics() {
                       border: `1px solid ${isFallback ? "rgba(251,146,60,0.2)" : "rgba(255,255,255,0.06)"}`,
                       borderRadius: 8,
                     }}>
-                      <div style={{ flex: 1, color: "rgba(255,255,255,0.7)", fontSize: "0.68rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", lineHeight: 1.5 }}>
+                      <div style={{ flex: 1, color: "rgba(255,255,255,0.7)", fontSize: "0.68rem", fontFamily: "'AdorshoLipi', sans-serif", lineHeight: 1.5 }}>
                         {q.text}
                       </div>
                       <div style={{ flexShrink: 0, textAlign: "right" }}>
@@ -315,14 +315,14 @@ export default function AdminChatbotAnalytics() {
                           borderRadius: 20,
                           color: isFallback ? "rgba(251,146,60,0.8)" : "rgba(212,168,67,0.7)",
                           fontSize: "0.52rem",
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                           fontWeight: 600,
                           whiteSpace: "nowrap",
                           marginBottom: 3,
                         }}>
                           {label}
                         </div>
-                        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.5rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+                        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.5rem", fontFamily: "'AdorshoLipi', sans-serif" }}>
                           {formatTime(q.timestamp)}
                         </div>
                       </div>

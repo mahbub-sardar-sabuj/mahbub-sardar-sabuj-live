@@ -436,7 +436,7 @@ export default function News() {
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
                   flexShrink: 0,
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   borderRadius: "10px 0 0 10px",
                   boxShadow: "2px 0 12px rgba(245,166,35,0.3)",
                 }}>
@@ -450,7 +450,7 @@ export default function News() {
                   height: 40,
                   display: "flex",
                   alignItems: "center",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontSize: "0.88rem",
                   color: "rgba(250,246,239,0.9)",
                   paddingLeft: 12,
@@ -505,7 +505,7 @@ export default function News() {
                 outline: "none",
                 transition: "all 0.3s",
                 boxSizing: "border-box",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 backdropFilter: "blur(12px)",
                 boxShadow: "0 2px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)",
               }}
@@ -556,7 +556,7 @@ export default function News() {
                 fontSize: "1rem",
                 fontWeight: 700,
                 transition: "all 0.25s",
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 boxShadow: selectedCategory === cat ? "0 4px 18px rgba(245,166,35,0.35)" : "0 2px 8px rgba(0,0,0,0.18)",
                 letterSpacing: "0.01em",
               }}
@@ -652,7 +652,7 @@ export default function News() {
                         fontWeight: 800,
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                       }}
                       className="category-badge"
@@ -678,7 +678,7 @@ export default function News() {
                           display: "flex",
                           alignItems: "center",
                           gap: 4,
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                         }}>
                           <Eye size={11} /> {item.views.toLocaleString('bn-BD')}
                         </span>
@@ -686,7 +686,7 @@ export default function News() {
                     </div>
 
                     <h3 style={{
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       fontSize: "1.25rem",
                       color: "#FAF6EF",
                       margin: "0 0 12px",
@@ -714,7 +714,7 @@ export default function News() {
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: "vertical",
                       overflow: "hidden",
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                     }}>
                       {item.excerpt}
                     </p>
@@ -724,7 +724,7 @@ export default function News() {
                       <span style={{
                         color: "rgba(250,246,239,0.35)",
                         fontSize: "0.78rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                       }}>
                         {item.date}
                       </span>
@@ -755,7 +755,7 @@ export default function News() {
                           gap: 5,
                           fontSize: "0.88rem",
                           fontWeight: 700,
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                         }}>
                           পড়ুন <ChevronRight size={14} />
                         </span>
@@ -883,7 +883,7 @@ export default function News() {
                         fontWeight: 800,
                         letterSpacing: "0.08em",
                         textTransform: "uppercase",
-                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                       }}>
                         {selectedNews.category}
                       </span>
@@ -895,7 +895,7 @@ export default function News() {
                 <div className="news-modal-content">
                   {/* Title */}
                   <h2 style={{
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "clamp(1.45rem, 3.6vw, 2rem)",
                     color: "#FAF6EF",
                     margin: "0 0 12px",
@@ -914,7 +914,7 @@ export default function News() {
                     alignItems: "center",
                     flexWrap: "wrap",
                   }}>
-                    <span style={{ color: "rgba(250,246,239,0.45)", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif" }}>
+                    <span style={{ color: "rgba(250,246,239,0.45)", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', sans-serif" }}>
                       {selectedNews.date}
                     </span>
                     {selectedNews.views && (
@@ -924,7 +924,7 @@ export default function News() {
                         display: "flex",
                         alignItems: "center",
                         gap: 4,
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                       }}>
                         <Eye size={13} /> {selectedNews.views.toLocaleString('bn-BD')} পাঠক
                       </span>
@@ -933,7 +933,7 @@ export default function News() {
                       <span style={{
                         color: "rgba(250,246,239,0.62)",
                         fontSize: "0.84rem",
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                       }}>
                         লেখক: {selectedNews.author}{selectedNews.location ? ` | ${selectedNews.location}` : ""}
                       </span>
@@ -946,7 +946,7 @@ export default function News() {
                       borderRadius: 50,
                       fontSize: "0.75rem",
                       fontWeight: 700,
-                      fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                     }}>
                       #{selectedNews.tag}
                     </span>
@@ -957,7 +957,7 @@ export default function News() {
                     color: "rgba(250,246,239,0.82)",
                     fontSize: "1.05rem",
                     lineHeight: 1.9,
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     marginBottom: 36,
                   }}>
                     {selectedNews.content.split(/\n\n+/).map((para, i) => (
@@ -984,7 +984,7 @@ export default function News() {
                         color: "rgba(250,246,239,0.65)",
                         fontSize: "0.95rem",
                         fontWeight: 600,
-                        fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                       }}>
                         শেয়ার করুন:
                       </span>
@@ -1051,7 +1051,7 @@ export default function News() {
                           transition: "all 0.3s",
                           fontSize: "0.82rem",
                           fontWeight: 700,
-                          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                           whiteSpace: "nowrap",
                         }}
                         title="লিঙ্ক কপি করুন"
@@ -1077,7 +1077,7 @@ export default function News() {
                           fontWeight: 800,
                           textDecoration: "none",
                           transition: "all 0.3s",
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                           boxShadow: "0 4px 20px rgba(245,166,35,0.3)",
                         }}
                         onMouseEnter={(e) => {
@@ -1141,7 +1141,7 @@ export default function News() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <h3 style={{
                   color: "#F5A623",
-                  fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   margin: 0,
                   fontSize: "1.2rem",
                 }}>
@@ -1168,7 +1168,7 @@ export default function News() {
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center",
                     gap: 7, color: "#1877F2", textDecoration: "none", fontSize: "0.75rem",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                   }}
                 >
                   <div style={{
@@ -1188,7 +1188,7 @@ export default function News() {
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center",
                     gap: 7, color: "#25D366", textDecoration: "none", fontSize: "0.75rem",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                   }}
                 >
                   <div style={{
@@ -1208,7 +1208,7 @@ export default function News() {
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center",
                     gap: 7, color: "#1DA1F2", textDecoration: "none", fontSize: "0.75rem",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                   }}
                 >
                   <div style={{
@@ -1236,7 +1236,7 @@ export default function News() {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                 }}>
                   {getNewsPageUrl(sharePopupId)}
                 </div>
@@ -1256,7 +1256,7 @@ export default function News() {
                     gap: 6,
                     whiteSpace: "nowrap",
                     transition: "all 0.3s",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                   }}
                 >
                   {copySuccessId === sharePopupId

@@ -113,7 +113,7 @@ export default function FacebookRecitations() {
           >
             <Mic size={14} color="#C9A84C" />
             <span style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               color: "#C9A84C",
               fontSize: "0.72rem",
               fontWeight: 700,
@@ -130,7 +130,7 @@ export default function FacebookRecitations() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             style={{
-              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontSize: "clamp(2.6rem, 6vw, 4rem)",
               fontWeight: 400,
               lineHeight: 1.25,
@@ -166,7 +166,7 @@ export default function FacebookRecitations() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
             style={{
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               color: "rgba(250,246,239,0.55)",
               fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
               lineHeight: 1.75,
@@ -194,7 +194,7 @@ export default function FacebookRecitations() {
               color: "#060E1A",
               textDecoration: "none",
               borderRadius: 999,
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontSize: "0.95rem",
               fontWeight: 700,
               boxShadow: "0 12px 28px rgba(201,168,76,0.25)",
@@ -250,7 +250,7 @@ export default function FacebookRecitations() {
           }}>
             <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.3), transparent)" }} />
             <span style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               color: "rgba(201,168,76,0.6)",
               fontSize: "0.75rem",
               fontWeight: 600,
@@ -338,7 +338,7 @@ export default function FacebookRecitations() {
                     color: "#C9A84C",
                     borderRadius: 999,
                     padding: "6px 12px",
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "0.68rem",
                     fontWeight: 700,
                     letterSpacing: "0.06em",
@@ -358,7 +358,7 @@ export default function FacebookRecitations() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "0.82rem",
                     fontWeight: 800,
                     boxShadow: "0 8px 20px rgba(201,168,76,0.35)",
@@ -398,7 +398,7 @@ export default function FacebookRecitations() {
                     left: 16, right: 16, bottom: 16,
                   }}>
                     <h2 style={{
-                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       color: "#FAF6EF",
                       fontSize: "1.1rem",
                       fontWeight: 400,
@@ -422,7 +422,7 @@ export default function FacebookRecitations() {
                   borderTop: "1px solid rgba(201,168,76,0.1)",
                 }}>
                   <span style={{
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     color: "#C9A84C",
                     fontSize: "0.88rem",
                     fontWeight: 700,

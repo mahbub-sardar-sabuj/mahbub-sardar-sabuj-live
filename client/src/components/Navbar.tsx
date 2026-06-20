@@ -212,7 +212,7 @@ export default function Navbar() {
             </span>
             <span style={{ display: "flex", flexDirection: isDesktop ? "column" : "row", justifyContent: "center", alignItems: isDesktop ? "flex-start" : "baseline", gap: isDesktop ? 0 : 5, lineHeight: 1.05, minWidth: 0 }}>
               <span style={{
-                fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 fontSize: isDesktop ? "1.12rem" : "1.04rem",
                 fontWeight: 800,
                 letterSpacing: "0.01em",
@@ -227,7 +227,7 @@ export default function Navbar() {
                 মাহবুব সরদার সবুজ
               </span>
               <span style={{
-                fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 fontSize: isDesktop ? "0.65rem" : "0.66rem",
                 letterSpacing: isDesktop ? "0.1em" : "0.015em",
                 color: isDesktop ? "rgba(232,201,122,0.78)" : "#FFF0BE",
@@ -252,7 +252,7 @@ export default function Navbar() {
                 const navItem = (
                   <span
                     style={{
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       color: isActive ? "#0D1B2A" : "rgba(253,246,236,0.88)",
                       padding: "6px 7px",
                       textDecoration: "none",
@@ -445,7 +445,7 @@ export default function Navbar() {
                 {/* Name display — single line */}
                 <div style={{ display: "flex", flexDirection: "column", position: "relative", flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "1.25rem",
                     fontWeight: 800,
                     lineHeight: 1.2,
@@ -464,7 +464,7 @@ export default function Navbar() {
                     marginBottom: 6,
                   }} />
                   <div style={{
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "0.72rem",
                     color: "rgba(212,168,67,0.55)",
                     letterSpacing: "0.06em",
@@ -501,7 +501,7 @@ export default function Navbar() {
                         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                         whileTap={{ scale: 0.983 }}
                         style={{
-                          fontFamily: "'Noto Sans Bengali', sans-serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                           color: active ? "#0D1B2A" : "#FDF6EC",
                           background: active
                             ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"
@@ -605,7 +605,7 @@ export default function Navbar() {
               {!isAmioLikhboPage && (
                 <div style={{ margin: "0 2px" }}>
                   <p style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     color: "rgba(212,168,67,0.7)",
                     fontSize: "0.7rem",
                     letterSpacing: "0.16em",
@@ -631,7 +631,7 @@ export default function Navbar() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.28, ease: "easeOut" }}
                             style={{
-                              fontFamily: "'Noto Sans Bengali', sans-serif",
+                              fontFamily: "'AdorshoLipi', sans-serif",
                               color: active ? "#0D1B2A" : "#FDF6EC",
                               background: active
                                 ? "linear-gradient(135deg, #D4A843 0%, #E8C97A 100%)"

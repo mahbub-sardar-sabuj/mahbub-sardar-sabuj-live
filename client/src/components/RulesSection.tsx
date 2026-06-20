@@ -227,7 +227,7 @@ export default function RulesSection() {
             <Info size={14} color="#E8C97A" />
             <span
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 fontSize: "0.68rem",
                 letterSpacing: "0.32em",
                 textTransform: "uppercase",
@@ -248,7 +248,7 @@ export default function RulesSection() {
 
           <h2
             style={{
-              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontSize: "clamp(1.9rem, 4.5vw, 2.8rem)",
               fontWeight: 700,
               color: "#FAF6EF",
@@ -263,7 +263,7 @@ export default function RulesSection() {
 
           <p
             style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               color: "rgba(250,246,239,0.65)",
               maxWidth: 680,
               margin: "0 auto",
@@ -311,7 +311,7 @@ export default function RulesSection() {
                       />
                       <h4
                         style={{
-                          fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                          fontFamily: "'AdorshoLipi', sans-serif",
                           fontSize: "1.02rem",
                           fontWeight: 700,
                           color: "#FFF8EA",
@@ -330,7 +330,7 @@ export default function RulesSection() {
                     </div>
                     <p
                       style={{
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                         fontSize: "0.84rem",
                         color: "rgba(250,246,239,0.58)",
                         margin: 0,
@@ -399,7 +399,7 @@ export default function RulesSection() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: '0.45rem' }}>
                     <CheckCircle2 size={13} color={pwaInstalled ? 'rgba(74,222,128,0.7)' : 'rgba(201,168,76,0.55)'} strokeWidth={2} />
                     <h4 style={{
-                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       fontSize: '1.02rem', fontWeight: 700,
                       color: pwaInstalled ? '#4ade80' : '#FFF8EA',
                       margin: 0, lineHeight: 1.25, flex: 1,
@@ -409,7 +409,7 @@ export default function RulesSection() {
                     <ArrowUpRight size={14} className="rules-arrow-icon" strokeWidth={2} />
                   </div>
                   <p style={{
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: '0.84rem',
                     color: pwaInstalled ? 'rgba(74,222,128,0.7)' : 'rgba(250,246,239,0.58)',
                     margin: 0, lineHeight: 1.65,
@@ -449,7 +449,7 @@ export default function RulesSection() {
           />
           <p
             style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontSize: "0.88rem",
               color: "rgba(250,246,239,0.72)",
               margin: 0,

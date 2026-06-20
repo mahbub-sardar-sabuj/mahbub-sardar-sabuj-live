@@ -7,7 +7,7 @@
 import { CSSProperties, useEffect, useState } from "react";
 import { KeyRound, UserPlus, X, Eye, EyeOff, RefreshCw, CheckCircle2, AlertCircle, Mail, Lock, ArrowLeft } from "lucide-react";
 
-const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
+const adorshoFont = "'AdorshoLipi', sans-serif";
 
 const overlayStyle: CSSProperties = {
   position: "fixed",

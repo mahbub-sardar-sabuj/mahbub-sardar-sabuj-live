@@ -23,7 +23,7 @@ import Seo from "@/components/Seo";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl, getSignupUrl, isLoginConfigured } from "@/const";
 
-const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
+const adorshoFont = "'AdorshoLipi', sans-serif";
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const pageStyle: CSSProperties = {

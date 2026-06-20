@@ -37,7 +37,7 @@ import { trpc } from "@/lib/trpc";
 import { getLoginUrl, getSignupUrl, isLoginConfigured } from "@/const";
 import LocalAuthModal from "@/components/LocalAuthModal";
 
-const adorshoFont = "'AdorshoLipi', 'Noto Sans Bengali', sans-serif";
+const adorshoFont = "'AdorshoLipi', sans-serif";
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 

@@ -368,13 +368,13 @@ export default function TextToSpeech() {
               borderRadius: 20, padding: "6px 16px", marginBottom: 16,
             }}>
               <Sparkles size={14} color="#D4A843" />
-              <span style={{ color: "#D4A843", fontSize: "0.78rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600 }}>
+              <span style={{ color: "#D4A843", fontSize: "0.78rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600 }}>
                 AI আবৃত্তি টুল
               </span>
             </div>
 
             <h1 style={{
-              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
               fontWeight: 800,
               background: "linear-gradient(135deg, #E8C97A 0%, #D4A843 50%, #C49030 100%)",
@@ -390,7 +390,7 @@ export default function TextToSpeech() {
             <p style={{
               color: "rgba(250,246,239,0.65)",
               fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               maxWidth: 520,
               margin: "0 auto",
               lineHeight: 1.7,
@@ -423,7 +423,7 @@ export default function TextToSpeech() {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Mic2 size={16} color="#D4A843" />
-                  <span style={{ color: "#E8C97A", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600, fontSize: "0.9rem" }}>
+                  <span style={{ color: "#E8C97A", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600, fontSize: "0.9rem" }}>
                     আপনার লেখা
                   </span>
                 </div>
@@ -436,7 +436,7 @@ export default function TextToSpeech() {
                         borderRadius: 6, padding: "4px 10px", cursor: "pointer",
                         display: "flex", alignItems: "center", gap: 4,
                         color: copied ? "#4ade80" : "rgba(232,201,122,0.7)",
-                        fontSize: "0.75rem", fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontSize: "0.75rem", fontFamily: "'AdorshoLipi', sans-serif",
                         transition: "all 0.2s",
                       }}
                     >
@@ -466,7 +466,7 @@ export default function TextToSpeech() {
                   outline: "none",
                   color: "#FAF6EF",
                   fontSize: "1rem",
-                  fontFamily: "'AdorshoLipi', 'Tiro Bangla', 'Noto Sans Bengali', serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   lineHeight: 1.8,
                   padding: "16px 20px",
                   resize: "vertical",
@@ -483,7 +483,7 @@ export default function TextToSpeech() {
             >
               <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
                 <Music2 size={14} color="#D4A843" />
-                <span style={{ color: "rgba(232,201,122,0.8)", fontSize: "0.82rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600 }}>
+                <span style={{ color: "rgba(232,201,122,0.8)", fontSize: "0.82rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600 }}>
                   পাঠের ধরন
                 </span>
               </div>
@@ -515,13 +515,13 @@ export default function TextToSpeech() {
                     <div style={{
                       color: selectedStyle.id === preset.id ? "#E8C97A" : "rgba(250,246,239,0.8)",
                       fontSize: "0.82rem",
-                      fontFamily: "'Noto Sans Bengali', sans-serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       fontWeight: selectedStyle.id === preset.id ? 700 : 400,
                       marginBottom: 2,
                     }}>
                       {preset.label}
                     </div>
-                    <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                    <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif" }}>
                       {preset.desc}
                     </div>
                   </button>
@@ -537,7 +537,7 @@ export default function TextToSpeech() {
             >
               <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
                 <Volume2 size={14} color="#D4A843" />
-                <span style={{ color: "rgba(232,201,122,0.8)", fontSize: "0.82rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600 }}>
+                <span style={{ color: "rgba(232,201,122,0.8)", fontSize: "0.82rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600 }}>
                   কণ্ঠ নির্বাচন
                 </span>
               </div>
@@ -555,7 +555,7 @@ export default function TextToSpeech() {
                     cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     color: "#FAF6EF",
-                    fontFamily: "'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -588,7 +588,7 @@ export default function TextToSpeech() {
                       }}
                     >
                       {/* Female voices */}
-                      <div style={{ padding: "8px 12px 4px", color: "rgba(212,168,67,0.6)", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600, letterSpacing: "0.05em" }}>
+                      <div style={{ padding: "8px 12px 4px", color: "rgba(212,168,67,0.6)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600, letterSpacing: "0.05em" }}>
                         🌸 নারী কণ্ঠ
                       </div>
                       {femaleVoices.map((voice) => (
@@ -606,13 +606,13 @@ export default function TextToSpeech() {
                         >
                           <span style={{ fontSize: "1rem" }}>{voice.emoji}</span>
                           <div style={{ textAlign: "left" }}>
-                            <div style={{ color: selectedVoice.id === voice.id ? "#E8C97A" : "#FAF6EF", fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: selectedVoice.id === voice.id ? 600 : 400 }}>{voice.label}</div>
-                            <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>{voice.desc}</div>
+                            <div style={{ color: selectedVoice.id === voice.id ? "#E8C97A" : "#FAF6EF", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: selectedVoice.id === voice.id ? 600 : 400 }}>{voice.label}</div>
+                            <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif" }}>{voice.desc}</div>
                           </div>
                         </button>
                       ))}
                       {/* Male voices */}
-                      <div style={{ padding: "8px 12px 4px", color: "rgba(212,168,67,0.6)", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600, letterSpacing: "0.05em", borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 4 }}>
+                      <div style={{ padding: "8px 12px 4px", color: "rgba(212,168,67,0.6)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600, letterSpacing: "0.05em", borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 4 }}>
                         🦁 পুরুষ কণ্ঠ
                       </div>
                       {maleVoices.map((voice) => (
@@ -630,8 +630,8 @@ export default function TextToSpeech() {
                         >
                           <span style={{ fontSize: "1rem" }}>{voice.emoji}</span>
                           <div style={{ textAlign: "left" }}>
-                            <div style={{ color: selectedVoice.id === voice.id ? "#E8C97A" : "#FAF6EF", fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: selectedVoice.id === voice.id ? 600 : 400 }}>{voice.label}</div>
-                            <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>{voice.desc}</div>
+                            <div style={{ color: selectedVoice.id === voice.id ? "#E8C97A" : "#FAF6EF", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: selectedVoice.id === voice.id ? 600 : 400 }}>{voice.label}</div>
+                            <div style={{ color: "rgba(250,246,239,0.4)", fontSize: "0.7rem", fontFamily: "'AdorshoLipi', sans-serif" }}>{voice.desc}</div>
                           </div>
                         </button>
                       ))}
@@ -662,7 +662,7 @@ export default function TextToSpeech() {
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                   color: isGenerating || !text.trim() ? "rgba(212,168,67,0.5)" : "#060E1A",
                   fontSize: "1rem",
-                  fontFamily: "'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontWeight: 700,
                   transition: "all 0.3s",
                   boxShadow: isGenerating || !text.trim() ? "none" : "0 4px 24px rgba(212,168,67,0.35)",
@@ -701,11 +701,11 @@ export default function TextToSpeech() {
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, flex: 1 }}>
                     <AlertCircle size={18} color="#f87171" style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                      <span style={{ color: "#fca5a5", fontSize: "0.88rem", fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                      <span style={{ color: "#fca5a5", fontSize: "0.88rem", fontFamily: "'AdorshoLipi', sans-serif" }}>
                         {error}
                       </span>
                       {retryAfter && retryAfter > 0 && (
-                        <div style={{ color: "rgba(252,165,165,0.7)", fontSize: "0.78rem", marginTop: 4, fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+                        <div style={{ color: "rgba(252,165,165,0.7)", fontSize: "0.78rem", marginTop: 4, fontFamily: "'AdorshoLipi', sans-serif" }}>
                           ⏱ {retryAfter > 60 ? `প্রায় ${Math.ceil(retryAfter / 60)} মিনিট` : `${retryAfter} সেকেন্ড`} পরে আবার চেষ্টা করুন
                         </div>
                       )}
@@ -721,7 +721,7 @@ export default function TextToSpeech() {
                         border: "1px solid rgba(248,113,113,0.4)",
                         borderRadius: 6, padding: "4px 10px", cursor: "pointer",
                         color: "#fca5a5", fontSize: "0.75rem",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                         display: "flex", alignItems: "center", gap: 4,
                         whiteSpace: "nowrap",
                       }}
@@ -761,7 +761,7 @@ export default function TextToSpeech() {
                         <Mic2 size={16} color="#4ade80" />
                       </div>
                       <div>
-                        <div style={{ color: "#4ade80", fontSize: "0.85rem", fontFamily: "'Noto Sans Bengali', sans-serif", fontWeight: 600 }}>
+                        <div style={{ color: "#4ade80", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 600 }}>
                           আবৃত্তি প্রস্তুত!
                         </div>
                         {generationTime && (
@@ -778,7 +778,7 @@ export default function TextToSpeech() {
                         background: "none", border: "1px solid rgba(255,255,255,0.1)",
                         borderRadius: 6, padding: "4px 10px", cursor: "pointer",
                         color: "rgba(250,246,239,0.5)", fontSize: "0.75rem",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                         display: "flex", alignItems: "center", gap: 4,
                       }}
                     >
@@ -858,7 +858,7 @@ export default function TextToSpeech() {
                         cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         color: isPlaying ? "#E8C97A" : "#060E1A",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                         fontWeight: 700,
                         fontSize: "0.9rem",
                         transition: "all 0.2s",
@@ -897,7 +897,7 @@ export default function TextToSpeech() {
                         cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                         color: "#4ade80",
-                        fontFamily: "'Noto Sans Bengali', sans-serif",
+                        fontFamily: "'AdorshoLipi', sans-serif",
                         fontWeight: 700,
                         fontSize: "0.9rem",
                         transition: "all 0.2s",

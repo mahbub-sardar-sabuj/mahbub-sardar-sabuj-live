@@ -268,7 +268,7 @@ export default function Home() {
                   }} />
                 </span>
                 <span style={{
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontSize: "0.84rem",
                   letterSpacing: "0.22em",
                   color: "#E8C97A",
@@ -284,7 +284,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 0.95,
@@ -306,7 +306,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
                     fontWeight: 700,
                     lineHeight: 1.1,
@@ -351,7 +351,7 @@ export default function Home() {
                 style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
               >
                 <p style={{
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
                   color: "rgba(250,246,239,0.68)",
                   lineHeight: 1.75,
@@ -462,12 +462,12 @@ export default function Home() {
                     background: "linear-gradient(to top, rgba(4,10,20,0.9) 0%, transparent 100%)",
                   }}>
                     <div style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       fontSize: "0.6rem", letterSpacing: "0.22em",
                       textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
                     }}>লেখক ও কবি</div>
                     <div style={{
-                      fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+                      fontFamily: "'AdorshoLipi', sans-serif",
                       fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
                       textShadow: "0 2px 12px rgba(0,0,0,0.5)",
                     }}>মাহবুব সরদার সবুজ</div>
@@ -491,7 +491,7 @@ export default function Home() {
         >
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
             <span style={{
-              fontFamily: "'Space Grotesk', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               color: "rgba(250,246,239,0.3)",
               fontSize: "0.62rem",
               letterSpacing: "0.25em",
@@ -552,7 +552,7 @@ export default function Home() {
             <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "0.95rem" }}>
               <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
               <span style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "'AdorshoLipi', sans-serif",
                 fontSize: "0.66rem", letterSpacing: "0.34em",
                 textTransform: "uppercase", color: "#E8C97A",
                 textShadow: "0 0 18px rgba(201,168,76,0.32)",
@@ -560,14 +560,14 @@ export default function Home() {
               <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
             </div>
             <h2 style={{
-              fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontSize: "clamp(2rem, 5vw, 3.1rem)",
               fontWeight: 700, color: "#FAF6EF",
               margin: 0, lineHeight: 1.18,
               textShadow: "0 4px 24px rgba(0,0,0,0.48), 0 0 34px rgba(201,168,76,0.14)",
             }}>অন্বেষণ করুন</h2>
             <p style={{
-              fontFamily: "'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               maxWidth: 650, color: "rgba(250,246,239,0.66)",
               lineHeight: 1.72, margin: "1rem auto 0",
               fontSize: "0.98rem",
@@ -787,7 +787,7 @@ export default function Home() {
           gap: 10px;
           margin: 0 0 1.25rem;
           color: rgba(232,201,122,0.92);
-          font-family: 'Noto Sans Bengali', sans-serif;
+          font-family: 'AdorshoLipi', sans-serif;
           font-size: 0.76rem;
           letter-spacing: 0.1em;
         }
@@ -902,7 +902,7 @@ export default function Home() {
           transform: scale(1.06);
         }
         .app-label {
-          font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
+          font-family: 'AdorshoLipi', sans-serif;
           font-size: clamp(0.86rem, 2.2vw, 1.02rem);
           font-weight: 700;
           line-height: 1.22;
@@ -914,7 +914,7 @@ export default function Home() {
           justify-content: center;
         }
         .app-subtitle {
-          font-family: 'Noto Sans Bengali', sans-serif;
+          font-family: 'AdorshoLipi', sans-serif;
           font-size: 0.66rem;
           line-height: 1.38;
           color: rgba(250,246,239,0.58);

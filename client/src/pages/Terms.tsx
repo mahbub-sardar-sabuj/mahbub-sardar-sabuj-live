@@ -18,7 +18,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 const pStyle: React.CSSProperties = {
-  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+  fontFamily: "'AdorshoLipi', sans-serif",
   color: "rgba(253,246,236,0.84)",
   fontSize: "1rem",
   lineHeight: 1.95,
@@ -38,10 +38,10 @@ export default function Terms() {
       <main style={{ paddingTop: "calc(var(--site-nav-offset, 98px) + 1.5rem)", paddingBottom: 72 }}>
         <section style={sectionStyle}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-            <p style={{ color: "#D4A843", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.84rem", fontFamily: "'Space Grotesk', sans-serif", marginBottom: 12 }}>
+            <p style={{ color: "#D4A843", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.84rem", fontFamily: "'AdorshoLipi', sans-serif", marginBottom: 12 }}>
               Website Terms
             </p>
-            <h1 style={{ fontFamily: "'AdorshoLipi', 'Tiro Bangla', serif", color: "#FDF6EC", fontSize: "clamp(2rem, 4vw, 3.2rem)", marginBottom: 12 }}>
+            <h1 style={{ fontFamily: "'AdorshoLipi', sans-serif", color: "#FDF6EC", fontSize: "clamp(2rem, 4vw, 3.2rem)", marginBottom: 12 }}>
               Terms and Conditions
             </h1>
             <p style={{ ...pStyle, margin: "0 auto", maxWidth: 740 }}>
@@ -50,7 +50,7 @@ export default function Terms() {
           </div>
 
           <article style={cardStyle}>
-            <h2 style={{ fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
+            <h2 style={{ fontFamily: "'AdorshoLipi', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
               কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬
             </h2>
 

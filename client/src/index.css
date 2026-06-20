@@ -60,10 +60,10 @@
   --color-cream: oklch(0.97 0.005 80);
   --color-cream-dark: oklch(0.93 0.008 80);
 
-  --font-bengali: 'AdorshoLipi', 'Tiro Bangla', 'AdorshoLipi', 'Noto Sans Bengali', serif;
-  --font-bengali-body: 'AdorshoLipi', 'Noto Sans Bengali', sans-serif;
-  --font-display: 'DM Serif Display', serif;
-  --font-body: 'Space Grotesk', sans-serif;
+  --font-bengali: 'AdorshoLipi', sans-serif;
+  --font-bengali-body: 'AdorshoLipi', sans-serif;
+  --font-display: 'AdorshoLipi', sans-serif;
+  --font-body: 'AdorshoLipi', sans-serif;
 }
 
 :root {
@@ -110,7 +110,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'AdorshoLipi', 'Noto Sans Bengali', 'Space Grotesk', sans-serif;
+    font-family: 'AdorshoLipi', sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -166,7 +166,7 @@
 
   /* Section heading style */
   .section-heading {
-    font-family: 'AdorshoLipi', 'Tiro Bangla', serif;
+    font-family: 'AdorshoLipi', sans-serif;
     position: relative;
     display: inline-block;
     padding-bottom: 12px;

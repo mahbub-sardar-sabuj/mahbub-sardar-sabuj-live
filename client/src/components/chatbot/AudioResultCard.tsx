@@ -144,7 +144,7 @@ export function AudioResultCard({
             borderRadius: 20,
             color: "rgba(212,168,67,0.95)",
             fontSize: "0.62rem",
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', sans-serif",
             fontWeight: 700,
             letterSpacing: "0.03em",
           }}>
@@ -162,7 +162,7 @@ export function AudioResultCard({
             borderRadius: 20,
             color: "rgba(165,180,252,0.8)",
             fontSize: "0.58rem",
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', sans-serif",
             fontWeight: 600,
           }}>
             📦 {outputSizeKB < 1024 ? `${outputSizeKB} KB` : `${(outputSizeKB / 1024).toFixed(1)} MB`}
@@ -182,7 +182,7 @@ export function AudioResultCard({
               borderRadius: 20,
               color: playbackSpeed !== 1.0 ? "rgba(212,168,67,0.9)" : "rgba(255,255,255,0.45)",
               fontSize: "0.58rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.2s",
@@ -216,7 +216,7 @@ export function AudioResultCard({
                     border: "none",
                     color: s === playbackSpeed ? "rgba(212,168,67,0.95)" : "rgba(255,255,255,0.65)",
                     fontSize: "0.65rem",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     fontWeight: s === playbackSpeed ? 700 : 400,
                     cursor: "pointer",
                     textAlign: "left",
@@ -244,7 +244,7 @@ export function AudioResultCard({
               background: beforeAfterMode === "before" ? "rgba(212,168,67,0.12)" : "rgba(255,255,255,0.04)",
               color: beforeAfterMode === "before" ? "rgba(212,168,67,0.95)" : "rgba(255,255,255,0.45)",
               fontSize: "0.65rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.2s",
@@ -262,7 +262,7 @@ export function AudioResultCard({
               background: beforeAfterMode === "after" ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.04)",
               color: beforeAfterMode === "after" ? "rgba(34,197,94,0.95)" : "rgba(255,255,255,0.45)",
               fontSize: "0.65rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontWeight: 700,
               cursor: "pointer",
               transition: "all 0.2s",
@@ -278,7 +278,7 @@ export function AudioResultCard({
         {/* Before player */}
         {originalAudioUrl && beforeAfterMode === "before" && (
           <div>
-            <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.35)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginBottom: 4 }}>
+            <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.35)", fontFamily: "'AdorshoLipi', sans-serif", marginBottom: 4 }}>
               📁 মূল ফাইল: {originalAudioName || "original.mp3"}
             </div>
             <audio
@@ -294,7 +294,7 @@ export function AudioResultCard({
         {beforeAfterMode === "after" && (
           <div>
             {originalAudioUrl && (
-              <div style={{ fontSize: "0.6rem", color: "rgba(34,197,94,0.7)", fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif", marginBottom: 4 }}>
+              <div style={{ fontSize: "0.6rem", color: "rgba(34,197,94,0.7)", fontFamily: "'AdorshoLipi', sans-serif", marginBottom: 4 }}>
                 ✅ এডিটেড ফাইল
               </div>
             )}
@@ -314,7 +314,7 @@ export function AudioResultCard({
         <div style={{
           fontSize: "0.72rem",
           color: "rgba(255,255,255,0.75)",
-          fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+          fontFamily: "'AdorshoLipi', sans-serif",
           lineHeight: 1.65,
           marginBottom: 10,
           padding: "8px 10px",
@@ -339,7 +339,7 @@ export function AudioResultCard({
               border: "none",
               color: "rgba(212,168,67,0.75)",
               fontSize: "0.62rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontWeight: 700,
               cursor: "pointer",
               padding: "4px 0",
@@ -384,7 +384,7 @@ export function AudioResultCard({
                   <span style={{
                     fontSize: "0.65rem",
                     color: "rgba(255,255,255,0.65)",
-                    fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                    fontFamily: "'AdorshoLipi', sans-serif",
                     lineHeight: 1.5,
                   }}>
                     {step}
@@ -402,7 +402,7 @@ export function AudioResultCard({
                   borderRadius: 8,
                   fontSize: "0.6rem",
                   color: "rgba(165,180,252,0.7)",
-                  fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+                  fontFamily: "'AdorshoLipi', sans-serif",
                   lineHeight: 1.5,
                 }}>
                   🔬 <strong>টেকনিক্যাল নোট:</strong> {audioTechnicalNote}
@@ -433,7 +433,7 @@ export function AudioResultCard({
             borderRadius: 10,
             color: isDownloading ? "rgba(212,168,67,0.4)" : "rgba(212,168,67,0.95)",
             fontSize: "0.7rem",
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', sans-serif",
             fontWeight: 700,
             cursor: isDownloading ? "not-allowed" : "pointer",
             transition: "all 0.2s",
@@ -475,7 +475,7 @@ export function AudioResultCard({
             borderRadius: 10,
             color: copySuccess ? "rgba(34,197,94,0.9)" : "rgba(255,255,255,0.45)",
             fontSize: "0.65rem",
-            fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+            fontFamily: "'AdorshoLipi', sans-serif",
             fontWeight: 600,
             cursor: "pointer",
             transition: "all 0.2s",
@@ -516,7 +516,7 @@ export function AudioResultCard({
               borderRadius: 10,
               color: "rgba(255,255,255,0.35)",
               fontSize: "0.6rem",
-              fontFamily: "'AdorshoLipi', 'Noto Sans Bengali', sans-serif",
+              fontFamily: "'AdorshoLipi', sans-serif",
               fontWeight: 600,
               cursor: "pointer",
               transition: "all 0.2s",
