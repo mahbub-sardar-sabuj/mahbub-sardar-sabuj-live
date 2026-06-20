@@ -257,33 +257,19 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
           {/* ── Article body ── */}
           <div style={{ padding: "clamp(20px, 5vw, 48px)" }}>
 
-            {/* Category badge */}
-            <div style={{ marginBottom: "1rem" }}>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: 5,
-                padding: "5px 16px", borderRadius: 999,
-                background: c.bg, color: c.accent, border: `1px solid ${c.border}`,
-                fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".72rem",
-                fontWeight: 700, letterSpacing: ".06em",
-              }}>
-                <span>{c.icon}</span> {writing.category}
-              </span>
-            </div>
-
-            {/* Title */}
+                        {/* Title */}
             <h1 style={{
               fontFamily: "'AdorshoLipi','Noto Sans Bengali',serif",
               fontSize: "clamp(1.55rem, 4.5vw, 2.4rem)",
               color: T.txt,
               lineHeight: 1.3,
-              margin: "0 0 1.4rem",
+              margin: "0 0 0.4rem",
               fontWeight: 700,
               letterSpacing: "-.01em",
             }}>
               {writing.title}
             </h1>
-
-            {/* Author + category — simple one-line */}
+            {/* Author — simple one-line, close to title */}
             <div style={{
               paddingBottom: "1.4rem",
               borderBottom: `1px solid ${T.bdr}`,
@@ -291,8 +277,6 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
             }}>
               <span style={{ fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".85rem", color: T.sub }}>
                 লেখক: <span style={{ color: T.txt, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
-                <span style={{ margin: "0 10px", opacity: 0.4 }}>‖</span>
-                {writing.category}
               </span>
             </div>
 
