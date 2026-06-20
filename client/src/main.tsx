@@ -68,16 +68,6 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-// Hide the app loading screen once React has mounted
-function hideAppLoader() {
-  const loader = document.getElementById('app-loading');
-  if (loader) {
-    loader.classList.add('hidden');
-    // Remove from DOM after transition completes
-    setTimeout(() => { loader.remove(); }, 500);
-  }
-}
-
 const root = createRoot(document.getElementById("root")!);
 root.render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -86,8 +76,3 @@ root.render(
     </QueryClientProvider>
   </trpc.Provider>
 );
-
-// Hide loader after first render (requestAnimationFrame ensures DOM is painted)
-requestAnimationFrame(() => {
-  requestAnimationFrame(hideAppLoader);
-});
