@@ -69,54 +69,166 @@
         pointer-events: none !important;
       }
 
-      /* ── App Loading Screen ───────────────────────────────────────────────────── */
+      /* ── App Loading Screen — Cinematic Intro ─────────────────────────────────── */
+      @keyframes introFadeIn    { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+      @keyframes introFadeInSlow{ from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+      @keyframes introPulse     { 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+      @keyframes introShimmer   { 0%{ background-position:-400px 0; } 100%{ background-position:400px 0; } }
+      @keyframes introBarFill   { 0%{ width:0%; } 100%{ width:100%; } }
+      @keyframes introImgReveal { from{ clip-path:inset(0 100% 0 0); opacity:0; } to{ clip-path:inset(0 0% 0 0); opacity:1; } }
+      @keyframes introGlow      { 0%,100%{ box-shadow:0 0 30px rgba(201,168,76,.18),0 0 60px rgba(201,168,76,.08); } 50%{ box-shadow:0 0 50px rgba(201,168,76,.32),0 0 100px rgba(201,168,76,.14); } }
+      @keyframes introParticle  { 0%{ transform:translateY(0) scale(1); opacity:.7; } 100%{ transform:translateY(-120px) scale(0); opacity:0; } }
+      @keyframes introLineGrow  { from{ width:0; } to{ width:100%; } }
+      @keyframes introRotate    { from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+
       #app-loading {
         position: fixed;
         inset: 0;
         z-index: 9999;
-        background: #060810;
+        background: #04060e;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 20px;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
+        overflow: hidden;
+        transition: opacity 0.7s cubic-bezier(.4,0,.2,1), visibility 0.7s ease;
       }
       #app-loading.hidden {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
       }
-      #app-loading .loader-logo {
-        font-size: 1.15rem;
-        color: #C9A84C;
-        letter-spacing: 0.08em;
-        font-family: 'AdorshoLipi', sans-serif;
-        opacity: 0.9;
+
+      /* Background layers */
+      #app-loading .il-bg-grad {
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201,168,76,.07) 0%, transparent 70%),
+                    radial-gradient(ellipse 60% 40% at 30% 20%, rgba(201,168,76,.04) 0%, transparent 60%),
+                    linear-gradient(180deg, #04060e 0%, #070b18 50%, #04060e 100%);
+        pointer-events: none;
       }
-      #app-loading .loader-sub {
-        font-size: 0.78rem;
-        color: rgba(242,237,228,0.4);
-        font-family: 'AdorshoLipi', sans-serif;
-        letter-spacing: 0.05em;
+      #app-loading .il-noise {
+        position: absolute; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        opacity: .4; pointer-events: none;
       }
-      #app-loading .loader-bar-wrap {
-        width: 120px;
-        height: 2px;
-        background: rgba(201,168,76,0.15);
-        border-radius: 999px;
-        overflow: hidden;
+
+      /* Floating particles */
+      #app-loading .il-particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+      #app-loading .il-p {
+        position:absolute; width:2px; height:2px; border-radius:50%;
+        background:rgba(201,168,76,.6);
+        animation: introParticle linear infinite;
       }
-      #app-loading .loader-bar {
-        height: 100%;
-        width: 40%;
-        background: linear-gradient(90deg, transparent, #C9A84C, transparent);
-        border-radius: 999px;
-        animation: loaderSlide 1.2s ease-in-out infinite;
+      #app-loading .il-p:nth-child(1){ left:15%; bottom:20%; animation-duration:3.2s; animation-delay:0s; }
+      #app-loading .il-p:nth-child(2){ left:28%; bottom:15%; animation-duration:4.1s; animation-delay:.6s; width:3px; height:3px; }
+      #app-loading .il-p:nth-child(3){ left:45%; bottom:10%; animation-duration:2.8s; animation-delay:1.2s; }
+      #app-loading .il-p:nth-child(4){ left:62%; bottom:18%; animation-duration:3.7s; animation-delay:.3s; }
+      #app-loading .il-p:nth-child(5){ left:78%; bottom:12%; animation-duration:4.5s; animation-delay:.9s; width:3px; height:3px; }
+      #app-loading .il-p:nth-child(6){ left:88%; bottom:25%; animation-duration:3.0s; animation-delay:1.5s; }
+
+      /* Decorative calligraphy watermark */
+      #app-loading .il-calli {
+        position:absolute; bottom:-40px; right:-20px;
+        font-family:'AdorshoLipi',sans-serif;
+        font-size:clamp(160px,35vw,280px);
+        color:rgba(201,168,76,.025);
+        font-weight:700; line-height:1;
+        pointer-events:none; user-select:none;
+        letter-spacing:-.05em;
       }
-      @keyframes loaderSlide {
-        0%   { transform: translateX(-100%); }
-        100% { transform: translateX(350%); }
+
+      /* Main content wrapper */
+      #app-loading .il-wrap {
+        position:relative; z-index:2;
+        display:flex; flex-direction:column; align-items:center;
+        gap:0; width:100%; max-width:420px; padding:0 24px;
+      }
+
+      /* Photo frame */
+      #app-loading .il-photo-wrap {
+        position:relative; margin-bottom:28px;
+        animation: introFadeIn .9s cubic-bezier(.22,1,.36,1) .1s both;
+      }
+      #app-loading .il-photo-ring {
+        position:absolute; inset:-6px; border-radius:50%;
+        border:1.5px solid rgba(201,168,76,.35);
+        animation: introGlow 2.5s ease-in-out infinite, introRotate 12s linear infinite;
+      }
+      #app-loading .il-photo-ring2 {
+        position:absolute; inset:-14px; border-radius:50%;
+        border:1px dashed rgba(201,168,76,.15);
+        animation: introRotate 20s linear infinite reverse;
+      }
+      #app-loading .il-photo {
+        width:96px; height:96px; border-radius:50%;
+        object-fit:cover; object-position:top center;
+        border:2.5px solid rgba(201,168,76,.5);
+        display:block;
+        filter:contrast(1.05) saturate(.92);
+        animation: introImgReveal .8s cubic-bezier(.22,1,.36,1) .2s both;
+      }
+      #app-loading .il-photo-dot {
+        position:absolute; bottom:4px; right:4px;
+        width:12px; height:12px; border-radius:50%;
+        background:#C9A84C;
+        border:2px solid #04060e;
+        animation: introPulse 1.8s ease-in-out infinite;
+      }
+
+      /* Name */
+      #app-loading .il-name {
+        font-family:'AdorshoLipi',sans-serif;
+        font-size:clamp(1.35rem,5vw,1.75rem);
+        font-weight:700; letter-spacing:.04em;
+        background: linear-gradient(135deg, #e8d5a0 0%, #C9A84C 35%, #f0e0a0 55%, #C9A84C 75%, #b8943c 100%);
+        background-size:300% auto;
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        background-clip:text;
+        animation: introFadeIn .8s cubic-bezier(.22,1,.36,1) .4s both, introShimmer 3s linear 1.2s infinite;
+        margin-bottom:8px; text-align:center;
+      }
+
+      /* Divider */
+      #app-loading .il-divider {
+        width:0; height:1px;
+        background:linear-gradient(90deg,transparent,rgba(201,168,76,.6),transparent);
+        margin-bottom:10px;
+        animation: introLineGrow .7s cubic-bezier(.22,1,.36,1) .9s both;
+      }
+
+      /* Subtitle */
+      #app-loading .il-sub {
+        font-family:'AdorshoLipi',sans-serif;
+        font-size:.82rem; letter-spacing:.14em;
+        color:rgba(242,237,228,.38);
+        text-transform:uppercase;
+        animation: introFadeInSlow .8s ease 1.1s both;
+        margin-bottom:36px; text-align:center;
+      }
+
+      /* Progress bar */
+      #app-loading .il-bar-wrap {
+        width:160px; height:1.5px;
+        background:rgba(201,168,76,.12);
+        border-radius:999px; overflow:hidden;
+        animation: introFadeInSlow .5s ease 1.3s both;
+      }
+      #app-loading .il-bar {
+        height:100%; width:0;
+        background:linear-gradient(90deg,rgba(201,168,76,.3),#C9A84C,rgba(201,168,76,.3));
+        border-radius:999px;
+        animation: introBarFill 1.8s cubic-bezier(.4,0,.2,1) 1.4s forwards;
+      }
+
+      /* Bottom tagline */
+      #app-loading .il-tagline {
+        position:absolute; bottom:32px; left:0; right:0;
+        text-align:center;
+        font-family:'AdorshoLipi',sans-serif;
+        font-size:.72rem; letter-spacing:.06em;
+        color:rgba(242,237,228,.18);
+        animation: introFadeInSlow 1s ease 1.8s both;
       }
 
       /* ── Font Faces ───────────────────────────────────────────────────────────── */
@@ -297,11 +409,47 @@
   </head>
 
   <body>
-    <!-- App loading screen — shown until React mounts and hides it -->
+    <!-- App loading screen — Cinematic Intro (shown until React mounts) -->
     <div id="app-loading" aria-hidden="true">
-      <div class="loader-logo">মাহবুব সরদার সবুজ</div>
-      <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
-      <div class="loader-sub">লেখক ও কবি</div>
+      <!-- Background -->
+      <div class="il-bg-grad"></div>
+      <div class="il-noise"></div>
+      <!-- Floating gold particles -->
+      <div class="il-particles">
+        <div class="il-p"></div>
+        <div class="il-p"></div>
+        <div class="il-p"></div>
+        <div class="il-p"></div>
+        <div class="il-p"></div>
+        <div class="il-p"></div>
+      </div>
+      <!-- Calligraphy watermark -->
+      <div class="il-calli" aria-hidden="true">আ</div>
+      <!-- Main content -->
+      <div class="il-wrap">
+        <!-- Photo -->
+        <div class="il-photo-wrap">
+          <div class="il-photo-ring2"></div>
+          <div class="il-photo-ring"></div>
+          <img
+            class="il-photo"
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
+            alt="মাহবুব সরদার সবুজ"
+            width="96" height="96"
+          />
+          <div class="il-photo-dot"></div>
+        </div>
+        <!-- Name -->
+        <div class="il-name">মাহবুব সরদার সবুজ</div>
+        <!-- Divider -->
+        <div class="il-divider"></div>
+        <!-- Subtitle -->
+        <div class="il-sub">লেখক ও কবি</div>
+        <!-- Progress bar -->
+        <div class="il-bar-wrap"><div class="il-bar"></div></div>
+      </div>
+      <!-- Bottom tagline -->
+      <div class="il-tagline">বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর</div>
     </div>
 
     <div id="root">
