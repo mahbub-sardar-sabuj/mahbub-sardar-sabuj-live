@@ -222,7 +222,10 @@ const CSS = `
     background: linear-gradient(135deg, var(--gold3) 0%, var(--gold) 40%, var(--gold2) 75%, var(--gold4) 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     filter: drop-shadow(0 0 32px rgba(201,168,76,.4));
-    display: block; margin-top: -.1em;
+    display: inline;
+  }
+  .lw-hero-h1 {
+    white-space: nowrap;
   }
   .lw-hero-sub {
     max-width: 540px; margin: 1.4rem 0 2.4rem;
@@ -1658,8 +1661,7 @@ function LiteraryHero({ totalWritings }: { totalWritings: number }) {
             initial={{ opacity:0, y:28 }} animate={isInView ? { opacity:1, y:0 } : {}}
             transition={{ delay:.18, duration:.6, ease:[.16,1,.3,1] }}
           >
-            লেখালেখি
-            <span className="lw-hero-h1-gold">ও বই</span>
+            লেখালেখি <span className="lw-hero-h1-gold">ও বই</span>
           </motion.h1>
 
           <motion.p
