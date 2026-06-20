@@ -1,813 +1,1064 @@
 /**
- * Design: Literary Avant-Garde — Ultra Premium Edition v3
- * Navbar: Center-logo layout, glassmorphism, animated gold accents
- * Desktop: Elegant grouped nav with rich mega-dropdown panels
- * Mobile: Full-screen immersive drawer
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  "Literary Ink" — Dual-Layer Cinematic Navbar               ║
+ * ║  World-class unique design for Mahbub Sardar Sabuj          ║
+ * ║  v4.0 — Ultra Premium Edition                               ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ *
+ * Features:
+ *  • Dual-layer: thin gold top-bar + center-logo main nav
+ *  • Cinematic full-width mega-dropdown with calligraphy motif
+ *  • Liquid gold underline animation on hover
+ *  • Magnetic cursor-tracking glow on nav items
+ *  • Top-bar slides away on scroll, nav compacts smoothly
+ *  • Mobile: immersive full-screen drawer with author card
  */
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import {
-  Menu, X, ChevronDown, ChevronRight,
+  Menu, X, ChevronDown,
   House, UserRound, Mic2, PenLine, Images,
   Newspaper, Mail, Palette, Feather,
   MailOpen, Phone, CreditCard, Sparkles, Music, Wrench,
+  ArrowRight, BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
 
-// ── Nav groups ─────────────────────────────────────────────────────────────────
-const navGroups = [
+// ─── Data ──────────────────────────────────────────────────────────────────────
+const LEFT_GROUPS = [
   {
+    id: 0,
     label: "প্রধান",
-    icon: House,
-    color: "#D4A843",
+    glyph: "প",
+    glyphColor: "#D4A843",
     items: [
-      { label: "হোম",              subtitle: "প্রথম পাতা ও প্রধান পরিচিতি",          href: "/",                        icon: House },
-      { label: "পরিচিতি",          subtitle: "লেখক পরিচয় ও সংক্ষিপ্ত জীবনপথ",       href: "/about",                   icon: UserRound },
-      { label: "গ্যালারি",          subtitle: "ছবি, মুহূর্ত ও ভিজ্যুয়াল সংগ্রহ",      href: "/gallery",                 icon: Images },
-      { label: "যোগাযোগ",          subtitle: "ইমেইল, লিংক ও যোগাযোগের উপায়",         href: "/contact",                 icon: Mail },
+      { label: "হোম",       subtitle: "প্রথম পাতা",                    href: "/",                      icon: House    },
+      { label: "পরিচিতি",   subtitle: "লেখকের জীবন ও পথচলা",           href: "/about",                 icon: UserRound },
+      { label: "গ্যালারি",   subtitle: "ছবি ও স্মৃতির অ্যালবাম",        href: "/gallery",               icon: Images   },
+      { label: "যোগাযোগ",   subtitle: "ইমেইল ও সংযোগ",                  href: "/contact",               icon: Mail     },
     ],
   },
   {
+    id: 1,
     label: "সাহিত্য",
-    icon: PenLine,
-    color: "#A87FD4",
+    glyph: "স",
+    glyphColor: "#B48FE8",
     items: [
-      { label: "লেখালেখি ও বই",    subtitle: "কবিতা, লেখা ও প্রকাশিত বই সংগ্রহ",    href: "/writings",                icon: PenLine },
-      { label: "আবৃত্তি",           subtitle: "ভিডিও ও আবৃত্তির নির্বাচিত উপস্থাপনা", href: "/facebook-recitations",    icon: Mic2 },
-      { label: "আমিও লিখবো",       subtitle: "সৃজনশীল লেখালেখির নতুন কমিউনিটি",     href: "/amio-likhbo-bastobota",   icon: Feather },
-      { label: "সরদার সংবাদ",      subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর",    href: "/news",                    icon: Newspaper },
+      { label: "লেখালেখি ও বই",  subtitle: "কবিতা, গদ্য ও প্রকাশিত বই",  href: "/writings",              icon: BookOpen  },
+      { label: "আবৃত্তি",         subtitle: "কণ্ঠে কবিতার উচ্চারণ",       href: "/facebook-recitations",  icon: Mic2      },
+      { label: "আমিও লিখবো",     subtitle: "সৃজনশীল লেখার কমিউনিটি",    href: "/amio-likhbo-bastobota", icon: PenLine   },
+      { label: "সরদার সংবাদ",    subtitle: "আপডেট ও সাম্প্রতিক খবর",    href: "/news",                  icon: Newspaper },
     ],
   },
+];
+
+const RIGHT_GROUPS = [
   {
+    id: 2,
     label: "ডিজাইন",
-    icon: Palette,
-    color: "#4AADCF",
+    glyph: "ড",
+    glyphColor: "#5BC8E8",
     items: [
-      { label: "ডিজাইন ফরম্যাট",   subtitle: "কার্ড ডিজাইন ও লেখা তৈরি করুন",       href: "/editor",                  icon: Palette },
-      { label: "ইমেজ আপস্কেলার",   subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান",      href: "/image-upscaler",          icon: Sparkles },
-      { label: "অডিও এডিটর",       subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স",           href: "/audio-editor",            icon: Music },
-      { label: "আবৃত্তি টুল",       subtitle: "AI কণ্ঠে আবৃত্তি ও ডাউনলোড",          href: "/text-to-speech",          icon: Mic2 },
+      { label: "ডিজাইন ফরম্যাট",  subtitle: "কার্ড ও লেখা ডিজাইন",       href: "/editor",          icon: Palette  },
+      { label: "ইমেজ আপস্কেলার",  subtitle: "AI দিয়ে ছবির মান বাড়ান",   href: "/image-upscaler",  icon: Sparkles },
+      { label: "অডিও এডিটর",      subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স", href: "/audio-editor",    icon: Music    },
+      { label: "আবৃত্তি টুল",      subtitle: "AI কণ্ঠে আবৃত্তি",           href: "/text-to-speech",  icon: Mic2     },
     ],
   },
   {
+    id: 3,
     label: "টুলস",
-    icon: Wrench,
-    color: "#4ACF8A",
+    glyph: "ট",
+    glyphColor: "#5BE8A0",
     items: [
-      { label: "টেম্প ইমেইল",       subtitle: "ডিসপোজেবল ইমেইল তৈরি করুন",           href: "/temp-email",              icon: MailOpen },
-      { label: "টেম্প নম্বর",        subtitle: "ডিসপোজেবল ফোন নম্বর",                 href: "/temp-number",             icon: Phone },
-      { label: "টেম্প কার্ড",        subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড",    href: "/temp-card",               icon: CreditCard },
+      { label: "টেম্প ইমেইল",  subtitle: "ডিসপোজেবল ইমেইল",          href: "/temp-email",   icon: MailOpen   },
+      { label: "টেম্প নম্বর",   subtitle: "ডিসপোজেবল ফোন নম্বর",      href: "/temp-number",  icon: Phone      },
+      { label: "টেম্প কার্ড",   subtitle: "ভার্চুয়াল টেস্ট কার্ড",    href: "/temp-card",    icon: CreditCard },
     ],
   },
 ];
 
-const navLinks = navGroups.flatMap((g) =>
-  g.items.map((item) => ({ ...item, type: "page", groupColor: g.color }))
-);
+const ALL_GROUPS = [...LEFT_GROUPS, ...RIGHT_GROUPS];
+const ALL_LINKS  = ALL_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, groupColor: g.glyphColor })));
 
-const infoTabs = [
-  { titleBn: "পরিচিতি পেজ",   description: "লেখক পরিচিতি ও সংক্ষিপ্ত প্রেক্ষিত",    href: "/about" },
-  { titleBn: "যোগাযোগ",       description: "ইমেইল, সামাজিক মাধ্যম ও ওয়েবসাইট",      href: "/contact" },
-  { titleBn: "প্রাইভেসি পলিসি", description: "তথ্য সংগ্রহ, cookies ও privacy ব্যাখ্যা", href: "/privacy-policy" },
-  { titleBn: "শর্তাবলি",       description: "ব্যবহারের নিয়ম, অধিকার ও সীমাবদ্ধতা",   href: "/terms" },
+const SOCIAL = [
+  { label: "Facebook", href: "https://facebook.com/mahbubsardarsabuj", icon: "f" },
+  { label: "YouTube",  href: "https://youtube.com/@mahbubsardarsabuj",  icon: "▶" },
 ];
 
-const isPrimaryNavActive = (href: string, location: string) => {
-  if (href === "/") return location === "/";
-  if (href === "/writings") return location === "/writings" || location === "/ebooks" || location.startsWith("/ebooks/");
-  return location === href;
+const isActive = (href: string, loc: string) => {
+  if (href === "/") return loc === "/";
+  if (href === "/writings") return loc === "/writings" || loc === "/ebooks" || loc.startsWith("/ebooks/");
+  return loc === href || loc.startsWith(href + "/");
 };
 
-const isGroupActive = (group: typeof navGroups[0], location: string) =>
-  group.items.some((item) => isPrimaryNavActive(item.href, location));
+const isGroupActive = (g: typeof ALL_GROUPS[0], loc: string) =>
+  g.items.some((i) => isActive(i.href, loc));
 
+// ─── Component ─────────────────────────────────────────────────────────────────
 export const openChatbot = () => window.dispatchEvent(new CustomEvent("open-chatbot"));
 
 export default function Navbar() {
-  const [scrolled, setScrolled]           = useState(false);
-  const [mobileOpen, setMobileOpen]       = useState(false);
-  const [isDesktop, setIsDesktop]         = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [location]                        = useLocation();
-  const dropdownTimer                     = useRef<number | null>(null);
+  const [location]                          = useLocation();
+  const [scrolled, setScrolled]             = useState(false);
+  const [mobileOpen, setMobileOpen]         = useState(false);
+  const [isDesktop, setIsDesktop]           = useState(false);
+  const [activeGroup, setActiveGroup]       = useState<number | null>(null);
+  const [hoverGroup, setHoverGroup]         = useState<number | null>(null);
+  const leaveTimer                          = useRef<number | null>(null);
+  const isEBookReader                       = location.startsWith("/ebooks/read/");
 
-  const isEBookReaderPage = location.startsWith("/ebooks/read/");
-  const isWritingsPage    = location === "/writings" || location === "/ebooks";
-  const isAmioLikhboPage  = location.startsWith("/amio-likhbo-bastobota");
-  const navElevated       = scrolled || isWritingsPage;
+  // Magnetic glow position
+  const glowX = useMotionValue(0);
+  const glowY = useMotionValue(0);
+  const springX = useSpring(glowX, { stiffness: 200, damping: 30 });
+  const springY = useSpring(glowY, { stiffness: 200, damping: 30 });
 
-  /* ── resize ── */
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    glowX.set(e.clientX - rect.left);
+    glowY.set(e.clientY - rect.top);
+  }, [glowX, glowY]);
+
+  /* resize */
   useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    const check = () => setIsDesktop(window.innerWidth >= 1100);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  /* ── scroll ── */
-  const scrollRef = useRef<number | null>(null);
+  /* scroll */
   useEffect(() => {
+    let raf: number | null = null;
     const onScroll = () => {
-      if (scrollRef.current !== null) return;
-      scrollRef.current = window.setTimeout(() => {
-        setScrolled(window.scrollY > 40);
-        scrollRef.current = null;
-      }, 80);
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 50);
+        raf = null;
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); if (scrollRef.current) clearTimeout(scrollRef.current); };
+    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
   }, []);
 
-  /* ── nav height ── */
-  const navHeight = scrolled ? (isDesktop ? 58 : 62) : (isDesktop ? 72 : 76);
+  /* nav height CSS var */
+  const topBarH  = scrolled ? 0 : (isDesktop ? 34 : 0);
+  const mainNavH = scrolled ? (isDesktop ? 60 : 62) : (isDesktop ? 72 : 68);
+  const totalH   = topBarH + mainNavH;
+
   useEffect(() => {
-    document.documentElement.style.setProperty("--site-nav-offset", `${navHeight}px`);
-    document.documentElement.style.setProperty("--site-nav-height", `${navHeight}px`);
-    document.documentElement.style.setProperty("--site-banner-height", "0px");
+    document.documentElement.style.setProperty("--site-nav-offset",  `${totalH}px`);
+    document.documentElement.style.setProperty("--site-nav-height",  `${totalH}px`);
+    document.documentElement.style.setProperty("--site-banner-height","0px");
     return () => {
       document.documentElement.style.removeProperty("--site-nav-offset");
       document.documentElement.style.removeProperty("--site-nav-height");
       document.documentElement.style.removeProperty("--site-banner-height");
     };
-  }, [navHeight]);
+  }, [totalH]);
 
-  /* ── body scroll lock ── */
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
+  /* body lock */
+  useEffect(() => { document.body.style.overflow = mobileOpen ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [mobileOpen]);
 
-  /* ── close on route change ── */
-  useEffect(() => { setMobileOpen(false); setActiveDropdown(null); }, [location]);
+  /* close on route */
+  useEffect(() => { setMobileOpen(false); setActiveGroup(null); setHoverGroup(null); }, [location]);
   useEffect(() => { if (isDesktop && mobileOpen) setMobileOpen(false); }, [isDesktop, mobileOpen]);
 
-  /* ── preload ── */
-  useEffect(() => {
-    if (!mobileOpen) return;
-    preloadRoutesWhenIdle([...navLinks.map((l) => l.href), ...infoTabs.map((t) => t.href)]);
-  }, [mobileOpen]);
+  /* preload */
+  useEffect(() => { if (!mobileOpen) return; preloadRoutesWhenIdle(ALL_LINKS.map((l) => l.href)); }, [mobileOpen]);
 
-  const warm = (href: string) => preloadRoute(href);
-
-  const onEnter = (idx: number) => {
-    if (dropdownTimer.current) clearTimeout(dropdownTimer.current);
-    setActiveDropdown(idx);
+  const onEnter = (id: number) => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    setActiveGroup(id);
+    setHoverGroup(id);
   };
   const onLeave = () => {
-    dropdownTimer.current = window.setTimeout(() => setActiveDropdown(null), 150);
+    leaveTimer.current = window.setTimeout(() => { setActiveGroup(null); setHoverGroup(null); }, 160);
   };
 
-  if (isEBookReaderPage) return null;
+  if (isEBookReader) return null;
+
+  const currentGroup = activeGroup !== null ? ALL_GROUPS.find((g) => g.id === activeGroup) : null;
+
+  // Bengali day/month
+  const now = new Date();
+  const bnDays   = ["রবিবার","সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার"];
+  const bnMonths = ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+  const bnDate   = `${bnDays[now.getDay()]}, ${now.getDate()} ${bnMonths[now.getMonth()]} ${now.getFullYear()}`;
 
   /* ─────────────────────────────────────────────────────────────────────────── */
   return (
     <>
-      {/* ── Global keyframes & utility classes ── */}
+      {/* ── Global CSS ── */}
       <style>{`
-        @keyframes navShimmer {
-          0%   { background-position: -200% center; }
-          100% { background-position:  200% center; }
+        /* Fonts & base */
+        @keyframes inkDrop {
+          0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+          60%  { transform: scale(1.08) rotate(3deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
-        @keyframes navGlow {
-          0%,100% { opacity:.6; }
-          50%      { opacity:1; }
+        @keyframes liquidLine {
+          from { transform: scaleX(0); transform-origin: left; }
+          to   { transform: scaleX(1); transform-origin: left; }
         }
-        @keyframes dropIn {
-          from { opacity:0; transform:translateY(-10px) scale(.97); }
-          to   { opacity:1; transform:translateY(0)    scale(1);    }
+        @keyframes goldShimmer {
+          0%   { background-position: -300% center; }
+          100% { background-position:  300% center; }
         }
-        @keyframes slideItem {
-          from { opacity:0; transform:translateX(-8px); }
-          to   { opacity:1; transform:translateX(0); }
+        @keyframes topBarSlide {
+          from { transform: translateY(-100%); opacity: 0; }
+          to   { transform: translateY(0);     opacity: 1; }
         }
-        @keyframes borderGlow {
-          0%,100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
-          50%      { box-shadow: 0 0 18px 2px rgba(212,168,67,.22); }
+        @keyframes megaIn {
+          from { opacity: 0; transform: translateY(-16px) scale(.975); filter: blur(4px); }
+          to   { opacity: 1; transform: translateY(0)     scale(1);    filter: blur(0);   }
+        }
+        @keyframes glyphFloat {
+          0%,100% { transform: translateY(0) rotate(-3deg); }
+          50%      { transform: translateY(-8px) rotate(3deg); }
+        }
+        @keyframes pulseRing {
+          0%   { box-shadow: 0 0 0 0 rgba(212,168,67,.45); }
+          70%  { box-shadow: 0 0 0 10px rgba(212,168,67,0); }
+          100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
+        }
+        @keyframes scanLine {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(400%); }
         }
 
-        /* ── Logo shimmer text ── */
+        /* ── TOP BAR ── */
+        .nb-topbar {
+          height: 34px;
+          background: linear-gradient(90deg,
+            rgba(4,10,20,1) 0%,
+            rgba(8,16,30,1) 40%,
+            rgba(10,20,36,1) 60%,
+            rgba(4,10,20,1) 100%);
+          border-bottom: 1px solid rgba(212,168,67,.12);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2.5rem;
+          overflow: hidden;
+          position: relative;
+          animation: topBarSlide .6s ease forwards;
+        }
+        .nb-topbar::after {
+          content: '';
+          position: absolute;
+          top: 0; bottom: 0;
+          width: 60px;
+          background: linear-gradient(90deg, transparent, rgba(212,168,67,.08), transparent);
+          animation: scanLine 4s ease-in-out infinite;
+        }
+        .nb-topbar-date {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .68rem;
+          color: rgba(212,168,67,.55);
+          letter-spacing: .08em;
+        }
+        .nb-topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .nb-topbar-social {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .nb-topbar-social a {
+          font-size: .65rem;
+          color: rgba(212,168,67,.45);
+          text-decoration: none;
+          letter-spacing: .06em;
+          font-family: 'AdorshoLipi', sans-serif;
+          transition: color .2s;
+          padding: 2px 8px;
+          border-radius: 4px;
+          border: 1px solid transparent;
+        }
+        .nb-topbar-social a:hover {
+          color: rgba(212,168,67,.9);
+          border-color: rgba(212,168,67,.2);
+          background: rgba(212,168,67,.06);
+        }
+        .nb-topbar-divider {
+          width: 1px; height: 12px;
+          background: rgba(212,168,67,.18);
+        }
+        .nb-topbar-tagline {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .63rem;
+          color: rgba(212,168,67,.3);
+          letter-spacing: .12em;
+          font-style: italic;
+        }
+
+        /* ── MAIN NAV WRAPPER ── */
+        .nb-main {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2.5rem;
+          transition: height .4s cubic-bezier(.4,0,.2,1);
+        }
+
+        /* ── LOGO ── */
+        .nb-logo-wrap {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          text-decoration: none;
+          flex-shrink: 0;
+          position: relative;
+        }
+        .nb-logo-icon {
+          position: relative;
+          width: 42px; height: 42px;
+          border-radius: 13px;
+          background: linear-gradient(135deg, rgba(212,168,67,.18) 0%, rgba(212,168,67,.06) 100%);
+          border: 1px solid rgba(212,168,67,.38);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          animation: pulseRing 3.5s ease-in-out infinite;
+          overflow: hidden;
+        }
+        .nb-logo-icon::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, transparent 60%);
+          border-radius: inherit;
+        }
+        .nb-logo-text-wrap {
+          display: flex;
+          flex-direction: column;
+        }
         .nb-logo-name {
           font-family: 'AdorshoLipi', sans-serif;
-          font-size: 1.08rem;
-          font-weight: 800;
-          background: linear-gradient(90deg,#C49030 0%,#E8C97A 30%,#FFF5D6 50%,#E8C97A 70%,#C49030 100%);
-          background-size: 200% auto;
+          font-size: 1.05rem;
+          font-weight: 900;
+          background: linear-gradient(90deg,
+            #A07020 0%, #C49030 15%, #E8C97A 30%,
+            #FFF5D6 45%, #FFEEA0 55%, #E8C97A 70%,
+            #C49030 85%, #A07020 100%);
+          background-size: 300% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          animation: navShimmer 5s linear infinite;
+          animation: goldShimmer 6s linear infinite;
           white-space: nowrap;
+          line-height: 1.2;
         }
         .nb-logo-sub {
           font-family: 'AdorshoLipi', sans-serif;
-          font-size: .62rem;
-          letter-spacing: .12em;
-          color: rgba(232,201,122,.65);
+          font-size: .6rem;
+          color: rgba(212,168,67,.45);
+          letter-spacing: .14em;
           margin-top: 2px;
           white-space: nowrap;
         }
 
-        /* ── Group button ── */
-        .nb-group {
+        /* ── NAV SIDES ── */
+        .nb-side {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+        }
+
+        /* ── GROUP BUTTON ── */
+        .nb-btn {
           position: relative;
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          padding: 7px 13px;
-          border-radius: 999px;
-          border: 1px solid transparent;
-          cursor: pointer;
+          padding: 8px 14px;
           background: transparent;
+          border: none;
+          cursor: pointer;
           font-family: 'AdorshoLipi', sans-serif;
-          font-size: .85rem;
-          font-weight: 500;
-          color: rgba(253,246,236,.82);
+          font-size: .84rem;
+          font-weight: 600;
+          color: rgba(253,246,236,.72);
           letter-spacing: .01em;
-          transition: color .22s, background .22s, border-color .22s, box-shadow .22s;
           white-space: nowrap;
           outline: none;
+          transition: color .22s;
+          border-radius: 8px;
         }
-        .nb-group:hover {
-          color: #FAF6EF;
-          background: rgba(212,168,67,.09);
-          border-color: rgba(212,168,67,.25);
-          box-shadow: 0 2px 14px rgba(212,168,67,.1);
-        }
-        .nb-group.nb-active {
-          color: #E8C97A;
-          background: rgba(212,168,67,.13);
-          border-color: rgba(212,168,67,.35);
-          box-shadow: 0 2px 18px rgba(212,168,67,.18);
-        }
-        .nb-group.nb-open {
-          color: #FAF6EF;
-          background: rgba(212,168,67,.12);
-          border-color: rgba(212,168,67,.3);
-        }
-        .nb-chevron { transition: transform .22s ease; }
-        .nb-group.nb-open .nb-chevron { transform: rotate(180deg); }
-
-        /* ── Active dot under group label ── */
-        .nb-active-dot {
+        .nb-btn::after {
+          content: '';
           position: absolute;
           bottom: 4px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 4px; height: 4px;
-          border-radius: 50%;
-          background: #D4A843;
-          opacity: 0;
-          transition: opacity .2s;
-          box-shadow: 0 0 6px rgba(212,168,67,.7);
+          left: 14px;
+          right: 14px;
+          height: 1.5px;
+          background: linear-gradient(90deg, #C49030, #E8C97A, #C49030);
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform .3s cubic-bezier(.4,0,.2,1);
+          border-radius: 2px;
         }
-        .nb-group.nb-active .nb-active-dot { opacity: 1; }
+        .nb-btn:hover,
+        .nb-btn.nb-btn-open { color: #FAF6EF; }
+        .nb-btn:hover::after,
+        .nb-btn.nb-btn-open::after { transform: scaleX(1); animation: liquidLine .3s cubic-bezier(.4,0,.2,1) forwards; }
+        .nb-btn.nb-btn-active { color: #E8C97A; }
+        .nb-btn.nb-btn-active::after { transform: scaleX(1); }
+        .nb-btn-chevron { transition: transform .25s ease; opacity: .5; }
+        .nb-btn.nb-btn-open .nb-btn-chevron { transform: rotate(180deg); opacity: .8; }
 
-        /* ── Dropdown panel ── */
-        .nb-dropdown {
-          position: absolute;
-          top: calc(100% + 12px);
-          left: 50%;
-          transform: translateX(-50%);
-          min-width: 310px;
-          background: linear-gradient(160deg, rgba(8,16,32,.97) 0%, rgba(10,20,38,.99) 100%);
-          border: 1px solid rgba(212,168,67,.18);
-          border-radius: 20px;
-          padding: 8px;
+        /* ── MEGA DROPDOWN ── */
+        .nb-mega-overlay {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          z-index: 98;
+          pointer-events: none;
+        }
+        .nb-mega {
+          position: fixed;
+          left: 0; right: 0;
+          z-index: 99;
+          animation: megaIn .25s cubic-bezier(.16,1,.3,1) forwards;
+          pointer-events: all;
+        }
+        .nb-mega-inner {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 0 2.5rem;
+        }
+        .nb-mega-panel {
+          background: linear-gradient(160deg,
+            rgba(5,11,22,.97) 0%,
+            rgba(8,16,30,.98) 50%,
+            rgba(6,13,26,.97) 100%);
+          border: 1px solid rgba(212,168,67,.14);
+          border-top: none;
+          border-radius: 0 0 24px 24px;
+          overflow: hidden;
           box-shadow:
-            0 32px 80px rgba(0,0,0,.65),
-            0 0 0 1px rgba(255,255,255,.03) inset,
-            0 1px 0 rgba(212,168,67,.12) inset;
-          backdrop-filter: blur(32px) saturate(1.8);
-          -webkit-backdrop-filter: blur(32px) saturate(1.8);
-          animation: dropIn .2s cubic-bezier(.16,1,.3,1) forwards;
-          z-index: 200;
-        }
-        /* arrow */
-        .nb-dropdown::before {
-          content:'';
-          position:absolute;
-          top:-6px; left:50%;
-          width:12px; height:12px;
-          background: rgba(8,16,32,.97);
-          border-left:1px solid rgba(212,168,67,.18);
-          border-top:1px solid rgba(212,168,67,.18);
-          transform: translateX(-50%) rotate(45deg);
+            0 40px 100px rgba(0,0,0,.7),
+            0 0 0 1px rgba(255,255,255,.02) inset;
+          backdrop-filter: blur(40px) saturate(1.8);
+          -webkit-backdrop-filter: blur(40px) saturate(1.8);
+          display: grid;
+          grid-template-columns: 200px 1fr;
+          min-height: 220px;
         }
 
-        /* ── Dropdown header ── */
-        .nb-dd-header {
+        /* Left accent panel */
+        .nb-mega-accent {
+          position: relative;
+          background: linear-gradient(180deg,
+            rgba(212,168,67,.07) 0%,
+            rgba(212,168,67,.03) 100%);
+          border-right: 1px solid rgba(212,168,67,.1);
           display: flex;
-          align-items: center;
-          gap: 9px;
-          padding: 9px 12px 10px;
-          border-bottom: 1px solid rgba(212,168,67,.1);
-          margin-bottom: 6px;
-        }
-        .nb-dd-header-icon {
-          display: inline-flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 30px; height: 30px;
-          border-radius: 9px;
-          border: 1px solid rgba(212,168,67,.22);
+          padding: 32px 20px;
+          overflow: hidden;
         }
-        .nb-dd-header-label {
+        .nb-mega-glyph {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 7rem;
+          font-weight: 900;
+          line-height: 1;
+          opacity: .07;
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%,-50%);
+          pointer-events: none;
+          user-select: none;
+          animation: glyphFloat 6s ease-in-out infinite;
+        }
+        .nb-mega-accent-icon {
+          position: relative;
+          z-index: 1;
+          width: 52px; height: 52px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 14px;
+          border: 1px solid rgba(212,168,67,.25);
+          background: linear-gradient(135deg, rgba(212,168,67,.15) 0%, rgba(212,168,67,.05) 100%);
+          box-shadow: 0 8px 24px rgba(0,0,0,.3);
+        }
+        .nb-mega-accent-label {
+          position: relative;
+          z-index: 1;
           font-family: 'AdorshoLipi', sans-serif;
           font-size: .72rem;
           font-weight: 700;
-          letter-spacing: .1em;
-          color: rgba(212,168,67,.85);
+          letter-spacing: .16em;
+          color: rgba(212,168,67,.6);
+          text-align: center;
+        }
+        .nb-mega-accent-line {
+          position: relative;
+          z-index: 1;
+          width: 32px; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(212,168,67,.4), transparent);
+          margin: 10px auto 0;
         }
 
-        /* ── Dropdown item ── */
-        .nb-dd-item {
+        /* Right content */
+        .nb-mega-content {
+          padding: 24px 28px;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6px;
+          align-content: start;
+        }
+
+        /* Mega item */
+        .nb-mega-item {
           display: flex;
           align-items: center;
-          gap: 11px;
-          padding: 9px 11px;
-          border-radius: 13px;
+          gap: 12px;
+          padding: 11px 13px;
+          border-radius: 14px;
           border: 1px solid transparent;
-          cursor: pointer;
           text-decoration: none;
-          font-family: 'AdorshoLipi', sans-serif;
-          transition: background .18s, border-color .18s, box-shadow .18s;
-          animation: slideItem .18s ease forwards;
+          cursor: pointer;
+          transition: background .18s, border-color .18s, transform .18s;
+          position: relative;
+          overflow: hidden;
         }
-        .nb-dd-item:hover {
-          background: rgba(212,168,67,.07);
-          border-color: rgba(212,168,67,.16);
-          box-shadow: 0 2px 12px rgba(0,0,0,.2);
+        .nb-mega-item::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(212,168,67,.06) 0%, transparent 60%);
+          opacity: 0;
+          transition: opacity .18s;
+          border-radius: inherit;
         }
-        .nb-dd-item.nb-dd-active {
-          background: linear-gradient(135deg, rgba(212,168,67,.16) 0%, rgba(212,168,67,.07) 100%);
-          border-color: rgba(212,168,67,.28);
-          box-shadow: 0 2px 16px rgba(212,168,67,.12);
+        .nb-mega-item:hover {
+          background: rgba(212,168,67,.06);
+          border-color: rgba(212,168,67,.14);
+          transform: translateX(3px);
         }
-        .nb-dd-icon {
-          display: inline-flex;
+        .nb-mega-item:hover::before { opacity: 1; }
+        .nb-mega-item.nb-item-active {
+          background: linear-gradient(135deg, rgba(212,168,67,.14) 0%, rgba(212,168,67,.06) 100%);
+          border-color: rgba(212,168,67,.25);
+        }
+        .nb-mega-item.nb-item-active::before { opacity: 1; }
+        .nb-mega-icon {
+          width: 38px; height: 38px;
+          border-radius: 11px;
+          display: flex;
           align-items: center;
           justify-content: center;
-          width: 36px; height: 36px;
-          border-radius: 10px;
-          border: 1px solid rgba(212,168,67,.18);
-          background: linear-gradient(135deg,rgba(212,168,67,.12) 0%,rgba(212,168,67,.05) 100%);
           flex-shrink: 0;
-          transition: background .18s, border-color .18s, box-shadow .18s;
+          border: 1px solid rgba(212,168,67,.16);
+          background: linear-gradient(135deg, rgba(212,168,67,.1) 0%, rgba(212,168,67,.04) 100%);
+          transition: border-color .18s, box-shadow .18s, background .18s;
         }
-        .nb-dd-item:hover .nb-dd-icon,
-        .nb-dd-item.nb-dd-active .nb-dd-icon {
-          background: linear-gradient(135deg,rgba(212,168,67,.22) 0%,rgba(212,168,67,.1) 100%);
-          border-color: rgba(212,168,67,.38);
-          box-shadow: 0 2px 10px rgba(212,168,67,.18);
+        .nb-mega-item:hover .nb-mega-icon,
+        .nb-mega-item.nb-item-active .nb-mega-icon {
+          border-color: rgba(212,168,67,.35);
+          box-shadow: 0 4px 14px rgba(212,168,67,.18);
+          background: linear-gradient(135deg, rgba(212,168,67,.18) 0%, rgba(212,168,67,.08) 100%);
         }
-        .nb-dd-label {
-          font-size: .88rem;
+        .nb-mega-label {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .9rem;
           font-weight: 700;
-          color: rgba(253,246,236,.92);
+          color: rgba(253,246,236,.88);
           line-height: 1.3;
           transition: color .18s;
         }
-        .nb-dd-item:hover .nb-dd-label,
-        .nb-dd-item.nb-dd-active .nb-dd-label { color: #E8C97A; }
-        .nb-dd-sub {
-          font-size: .69rem;
-          color: rgba(253,246,236,.4);
-          line-height: 1.4;
+        .nb-mega-item:hover .nb-mega-label,
+        .nb-mega-item.nb-item-active .nb-mega-label { color: #E8C97A; }
+        .nb-mega-sub {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .68rem;
+          color: rgba(253,246,236,.38);
           margin-top: 2px;
+          line-height: 1.4;
           transition: color .18s;
         }
-        .nb-dd-item:hover .nb-dd-sub { color: rgba(253,246,236,.58); }
-
-        /* ── Active badge ── */
-        .nb-dd-badge {
+        .nb-mega-item:hover .nb-mega-sub { color: rgba(253,246,236,.55); }
+        .nb-mega-arrow {
           margin-left: auto;
-          width: 7px; height: 7px;
+          opacity: 0;
+          transform: translateX(-4px);
+          transition: opacity .18s, transform .18s;
+          flex-shrink: 0;
+        }
+        .nb-mega-item:hover .nb-mega-arrow { opacity: 1; transform: translateX(0); }
+        .nb-mega-active-dot {
+          width: 6px; height: 6px;
           border-radius: 50%;
           background: #D4A843;
+          margin-left: auto;
           flex-shrink: 0;
           box-shadow: 0 0 8px rgba(212,168,67,.7);
-          animation: navGlow 2s ease-in-out infinite;
         }
 
-        /* ── Gold separator ── */
-        .nb-sep {
-          width: 1px; height: 18px;
-          background: linear-gradient(180deg, transparent, rgba(212,168,67,.25), transparent);
-          flex-shrink: 0;
-          margin: 0 2px;
-        }
-
-        /* ── Home icon btn ── */
-        .nb-home {
-          display: inline-flex;
+        /* Bottom bar of mega */
+        .nb-mega-footer {
+          grid-column: 1 / -1;
+          border-top: 1px solid rgba(212,168,67,.08);
+          padding: 12px 28px;
+          display: flex;
           align-items: center;
-          justify-content: center;
-          width: 34px; height: 34px;
-          border-radius: 10px;
-          border: 1px solid transparent;
-          cursor: pointer;
-          color: rgba(253,246,236,.75);
-          text-decoration: none;
-          transition: color .2s, background .2s, border-color .2s;
+          justify-content: space-between;
+          margin-top: 4px;
         }
-        .nb-home:hover { color:#E8C97A; background:rgba(212,168,67,.1); border-color:rgba(212,168,67,.25); }
-        .nb-home.nb-home-active { color:#E8C97A; background:rgba(212,168,67,.14); border-color:rgba(212,168,67,.35); }
+        .nb-mega-footer-hint {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .65rem;
+          color: rgba(212,168,67,.3);
+          letter-spacing: .08em;
+        }
+        .nb-mega-footer-count {
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: .65rem;
+          color: rgba(212,168,67,.25);
+          letter-spacing: .06em;
+        }
 
-        /* ── Bottom gold line on scroll ── */
-        .nb-gold-line {
+        /* ── GOLD SEPARATOR ── */
+        .nb-vsep {
+          width: 1px; height: 20px;
+          background: linear-gradient(180deg, transparent, rgba(212,168,67,.22), transparent);
+          margin: 0 4px;
+          flex-shrink: 0;
+        }
+
+        /* ── BOTTOM GOLD LINE ── */
+        .nb-bottom-line {
           position: absolute;
           bottom: 0; left: 0; right: 0;
           height: 1px;
-          background: linear-gradient(90deg, transparent 0%, rgba(212,168,67,.35) 30%, rgba(232,201,122,.55) 50%, rgba(212,168,67,.35) 70%, transparent 100%);
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(212,168,67,.08) 10%,
+            rgba(212,168,67,.35) 30%,
+            rgba(232,201,122,.5) 50%,
+            rgba(212,168,67,.35) 70%,
+            rgba(212,168,67,.08) 90%,
+            transparent 100%);
           opacity: 0;
-          transition: opacity .4s;
+          transition: opacity .5s;
         }
-        .nb-gold-line.nb-line-show { opacity: 1; }
+        .nb-bottom-line.show { opacity: 1; }
+
+        /* ── MAGNETIC GLOW ── */
+        .nb-glow {
+          position: absolute;
+          width: 300px; height: 80px;
+          border-radius: 50%;
+          background: radial-gradient(ellipse, rgba(212,168,67,.06) 0%, transparent 70%);
+          pointer-events: none;
+          transform: translate(-50%, -50%);
+          transition: opacity .3s;
+        }
       `}</style>
 
-      <motion.nav
-        initial={{ y: -110 }}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* FIXED WRAPPER                                                          */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ y: -120 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: .65, ease: [.16,1,.3,1] }}
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0,
           zIndex: 100,
-          transition: "background .5s, box-shadow .5s, backdrop-filter .5s",
-          background: navElevated
-            ? "linear-gradient(180deg, rgba(5,12,24,.96) 0%, rgba(8,16,30,.94) 100%)"
+          background: scrolled
+            ? "linear-gradient(180deg, rgba(4,10,20,.97) 0%, rgba(6,14,26,.95) 100%)"
             : "transparent",
-          backdropFilter: navElevated ? "blur(28px) saturate(1.6)" : "none",
-          WebkitBackdropFilter: navElevated ? "blur(28px) saturate(1.6)" : "none",
-          boxShadow: navElevated
-            ? "0 8px 48px rgba(0,0,0,.55), 0 1px 0 rgba(212,168,67,.12)"
-            : "none",
+          backdropFilter: scrolled ? "blur(32px) saturate(1.8)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(32px) saturate(1.8)" : "none",
+          boxShadow: scrolled ? "0 8px 60px rgba(0,0,0,.6)" : "none",
+          transition: "background .5s, box-shadow .5s",
         }}
       >
-        {/* Gold bottom line */}
-        <div className={`nb-gold-line${navElevated ? " nb-line-show" : ""}`} />
+        {/* ── TOP BAR ── */}
+        <AnimatePresence>
+          {!scrolled && isDesktop && (
+            <motion.div
+              className="nb-topbar"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 34, opacity: 1 }}
+              exit   ={{ height: 0, opacity: 0 }}
+              transition={{ duration: .35, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <span className="nb-topbar-date">{bnDate}</span>
+              <div className="nb-topbar-right">
+                <span className="nb-topbar-tagline">বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর</span>
+                <span className="nb-topbar-divider" />
+                <div className="nb-topbar-social">
+                  {SOCIAL.map((s) => (
+                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: isDesktop ? "0 2.5rem" : "0 1rem", position: "relative" }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: isDesktop ? "space-between" : "space-between",
-            height: navHeight,
-            transition: "height .4s ease",
-            gap: 12,
-          }}>
+        {/* ── MAIN NAV ── */}
+        <div
+          className="nb-main"
+          style={{ height: mainNavH, transition: "height .4s cubic-bezier(.4,0,.2,1)" }}
+          onMouseMove={isDesktop ? handleMouseMove : undefined}
+        >
+          {/* Magnetic glow */}
+          {isDesktop && (
+            <motion.div
+              className="nb-glow"
+              style={{ left: springX, top: springY, opacity: activeGroup !== null ? 1 : 0 }}
+            />
+          )}
 
-            {/* ── LOGO ── */}
-            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-              {/* Feather icon with animated ring */}
-              <span style={{
-                position: "relative",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 40, height: 40,
-                borderRadius: 12,
-                background: "linear-gradient(135deg, rgba(212,168,67,.22) 0%, rgba(212,168,67,.08) 100%)",
-                border: "1px solid rgba(212,168,67,.4)",
-                boxShadow: "0 4px 18px rgba(212,168,67,.2), inset 0 1px 0 rgba(255,255,255,.06)",
-                flexShrink: 0,
-                animation: "borderGlow 3s ease-in-out infinite",
-              }}>
-                <Feather size={17} color="#E8C97A" />
-              </span>
-              <span style={{ display: "flex", flexDirection: "column" }}>
+          {/* Bottom line */}
+          <div className={`nb-bottom-line${scrolled ? " show" : ""}`} />
+
+          {/* ── LEFT GROUPS ── */}
+          {isDesktop && (
+            <div className="nb-side">
+              {LEFT_GROUPS.map((group) => {
+                const GIcon  = group.items[0].icon;
+                const active = isGroupActive(group, location);
+                const open   = activeGroup === group.id;
+                return (
+                  <div
+                    key={group.id}
+                    style={{ position: "relative" }}
+                    onMouseEnter={() => onEnter(group.id)}
+                    onMouseLeave={onLeave}
+                  >
+                    <button className={`nb-btn${active ? " nb-btn-active" : ""}${open ? " nb-btn-open" : ""}`}>
+                      <span>{group.label}</span>
+                      <ChevronDown size={11} className="nb-btn-chevron" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── CENTER LOGO ── */}
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <div className="nb-logo-wrap">
+              <div className="nb-logo-icon">
+                <Feather size={18} color="#E8C97A" />
+              </div>
+              <div className="nb-logo-text-wrap">
                 <span className="nb-logo-name">মাহবুব সরদার সবুজ</span>
                 <span className="nb-logo-sub">লেখক ও কবি</span>
-              </span>
-            </Link>
-
-            {/* ── DESKTOP NAV ── */}
-            {isDesktop && (
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-
-                {/* Home icon */}
-                <Link href="/">
-                  <span className={`nb-home${isPrimaryNavActive("/", location) ? " nb-home-active" : ""}`} title="হোম" onPointerDown={() => warm("/")}>
-                    <House size={16} />
-                  </span>
-                </Link>
-
-                <span className="nb-sep" />
-
-                {/* Groups */}
-                {navGroups.map((group, gIdx) => {
-                  const GIcon    = group.icon;
-                  const isOpen   = activeDropdown === gIdx;
-                  const isActive = isGroupActive(group, location);
-
-                  return (
-                    <div
-                      key={gIdx}
-                      style={{ position: "relative" }}
-                      onMouseEnter={() => onEnter(gIdx)}
-                      onMouseLeave={onLeave}
-                    >
-                      <button
-                        className={`nb-group${isActive ? " nb-active" : ""}${isOpen ? " nb-open" : ""}`}
-                        aria-haspopup="true"
-                        aria-expanded={isOpen}
-                      >
-                        <GIcon size={14} style={{ opacity: .85 }} />
-                        <span>{group.label}</span>
-                        <ChevronDown size={12} className="nb-chevron" style={{ opacity: .65 }} />
-                        <span className="nb-active-dot" />
-                      </button>
-
-                      <AnimatePresence>
-                        {isOpen && (
-                          <motion.div
-                            className="nb-dropdown"
-                            initial={{ opacity: 0, y: -10, scale: .97 }}
-                            animate={{ opacity: 1, y: 0,   scale: 1   }}
-                            exit   ={{ opacity: 0, y: -8,  scale: .97 }}
-                            transition={{ duration: .2, ease: [.16,1,.3,1] }}
-                            onMouseEnter={() => onEnter(gIdx)}
-                            onMouseLeave={onLeave}
-                          >
-                            {/* Header */}
-                            <div className="nb-dd-header">
-                              <span
-                                className="nb-dd-header-icon"
-                                style={{ background: `linear-gradient(135deg, ${group.color}22 0%, ${group.color}0a 100%)` }}
-                              >
-                                <GIcon size={14} color={group.color} />
-                              </span>
-                              <span className="nb-dd-header-label" style={{ color: group.color }}>{group.label}</span>
-                            </div>
-
-                            {/* Items */}
-                            {group.items.map((item, iIdx) => {
-                              const IIcon  = item.icon;
-                              const active = isPrimaryNavActive(item.href, location);
-                              return (
-                                <Link key={item.href} href={item.href}>
-                                  <span
-                                    className={`nb-dd-item${active ? " nb-dd-active" : ""}`}
-                                    style={{ animationDelay: `${iIdx * 0.04}s` }}
-                                    onPointerDown={() => warm(item.href)}
-                                  >
-                                    <span className="nb-dd-icon">
-                                      <IIcon size={15} color={active ? group.color : "#D4A843"} />
-                                    </span>
-                                    <span style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
-                                      <span className="nb-dd-label">{item.label}</span>
-                                      <span className="nb-dd-sub">{item.subtitle}</span>
-                                    </span>
-                                    {active && <span className="nb-dd-badge" style={{ background: group.color, boxShadow: `0 0 8px ${group.color}99` }} />}
-                                  </span>
-                                </Link>
-                              );
-                            })}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
               </div>
-            )}
+            </div>
+          </Link>
 
-            {/* ── HAMBURGER ── */}
-            {!isDesktop && (
-              <motion.button
-                whileTap={{ scale: .92 }}
-                onClick={() => setMobileOpen(!mobileOpen)}
-                style={{
-                  color: "rgba(253,246,236,.88)",
-                  background: mobileOpen ? "rgba(212,168,67,.14)" : "rgba(255,255,255,.05)",
-                  border: `1px solid ${mobileOpen ? "rgba(212,168,67,.35)" : "rgba(212,168,67,.18)"}`,
-                  borderRadius: 11,
-                  padding: "7px 9px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all .25s",
-                  flexShrink: 0,
-                }}
-              >
-                <AnimatePresence mode="wait">
-                  {mobileOpen
-                    ? <motion.span key="x"   initial={{rotate:-90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:90,opacity:0}} transition={{duration:.18}}><X    size={21}/></motion.span>
-                    : <motion.span key="men" initial={{rotate: 90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:-90,opacity:0}} transition={{duration:.18}}><Menu size={21}/></motion.span>
-                  }
-                </AnimatePresence>
-              </motion.button>
-            )}
-          </div>
-        </div>
+          {/* ── RIGHT GROUPS ── */}
+          {isDesktop && (
+            <div className="nb-side">
+              {RIGHT_GROUPS.map((group) => {
+                const active = isGroupActive(group, location);
+                const open   = activeGroup === group.id;
+                return (
+                  <div
+                    key={group.id}
+                    style={{ position: "relative" }}
+                    onMouseEnter={() => onEnter(group.id)}
+                    onMouseLeave={onLeave}
+                  >
+                    <button className={`nb-btn${active ? " nb-btn-active" : ""}${open ? " nb-btn-open" : ""}`}>
+                      <span>{group.label}</span>
+                      <ChevronDown size={11} className="nb-btn-chevron" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-        {/* ── MOBILE DRAWER ── */}
-        <AnimatePresence>
-          {mobileOpen && !isDesktop && (
-            <motion.div
-              initial={{ opacity: 0, y: -14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit  ={{ opacity: 0, y: -10 }}
-              transition={{ duration: .28, ease: "easeOut" }}
+          {/* ── HAMBURGER ── */}
+          {!isDesktop && (
+            <motion.button
+              whileTap={{ scale: .9 }}
+              onClick={() => setMobileOpen(!mobileOpen)}
               style={{
-                background: "linear-gradient(160deg, rgba(5,12,24,.98) 0%, rgba(8,18,34,.99) 100%)",
-                borderTop: "1px solid rgba(212,168,67,.15)",
-                position: "fixed",
-                top: navHeight, left: 0, right: 0, bottom: 0,
-                height: `calc(100dvh - ${navHeight}px)`,
-                overflowY: "auto",
-                WebkitOverflowScrolling: "touch",
-                overscrollBehavior: "contain",
-                zIndex: 300,
+                color: "rgba(253,246,236,.88)",
+                background: mobileOpen ? "rgba(212,168,67,.15)" : "rgba(255,255,255,.04)",
+                border: `1px solid ${mobileOpen ? "rgba(212,168,67,.4)" : "rgba(212,168,67,.16)"}`,
+                borderRadius: 12,
+                padding: "8px 10px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all .25s",
+                flexShrink: 0,
               }}
             >
-              <div style={{
-                minHeight: "100%",
-                padding: "1.2rem 1rem calc(2.5rem + env(safe-area-inset-bottom))",
-                display: "flex",
-                flexDirection: "column",
-                gap: 16,
-              }}>
-                {/* Author card */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  padding: "18px 16px",
-                  borderRadius: 20,
-                  background: "linear-gradient(135deg,rgba(212,168,67,.07) 0%,rgba(212,168,67,.02) 100%)",
-                  border: "1px solid rgba(212,168,67,.18)",
-                  position: "relative",
-                  overflow: "hidden",
-                }}>
-                  <div style={{
-                    position:"absolute", top:"50%", left:"50%",
-                    transform:"translate(-50%,-50%)",
-                    width:200, height:200, borderRadius:"50%",
-                    background:"radial-gradient(circle,rgba(212,168,67,.06) 0%,transparent 70%)",
-                    pointerEvents:"none",
-                  }}/>
-                  <div style={{
-                    width:80, height:90, borderRadius:12,
-                    overflow:"hidden", flexShrink:0,
-                    border:"1.5px solid rgba(212,168,67,.35)",
-                    boxShadow:"0 4px 16px rgba(0,0,0,.4)",
-                    position:"relative",
-                  }}>
-                    <img
-                      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
-                      alt="মাহবুব সরদার সবুজ"
-                      style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}
-                    />
-                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom,transparent 50%,rgba(6,14,26,.4) 100%)" }}/>
+              <AnimatePresence mode="wait">
+                {mobileOpen
+                  ? <motion.span key="x"   initial={{rotate:-90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:90,opacity:0}} transition={{duration:.18}}><X    size={22}/></motion.span>
+                  : <motion.span key="men" initial={{rotate: 90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:-90,opacity:0}} transition={{duration:.18}}><Menu size={22}/></motion.span>
+                }
+              </AnimatePresence>
+            </motion.button>
+          )}
+        </div>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* MEGA DROPDOWN (full-width, below nav)                                  */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {isDesktop && activeGroup !== null && currentGroup && (
+          <motion.div
+            className="nb-mega"
+            style={{ top: totalH }}
+            initial={{ opacity: 0, y: -16, scale: .975, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0,   scale: 1,    filter: "blur(0px)" }}
+            exit   ={{ opacity: 0, y: -12, scale: .975, filter: "blur(3px)" }}
+            transition={{ duration: .22, ease: [.16,1,.3,1] }}
+            onMouseEnter={() => onEnter(activeGroup)}
+            onMouseLeave={onLeave}
+          >
+            <div className="nb-mega-inner">
+              <div className="nb-mega-panel">
+                {/* Left accent */}
+                <div className="nb-mega-accent">
+                  <span className="nb-mega-glyph" style={{ color: currentGroup.glyphColor }}>
+                    {currentGroup.glyph}
+                  </span>
+                  <div
+                    className="nb-mega-accent-icon"
+                    style={{
+                      background: `linear-gradient(135deg, ${currentGroup.glyphColor}22 0%, ${currentGroup.glyphColor}0a 100%)`,
+                      borderColor: `${currentGroup.glyphColor}33`,
+                    }}
+                  >
+                    {(() => { const G = currentGroup.items[0].icon; return <G size={22} color={currentGroup.glyphColor} />; })()}
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column", flex:1, minWidth:0 }}>
-                    <div style={{
-                      fontFamily:"'AdorshoLipi',sans-serif",
-                      fontSize:"1.22rem", fontWeight:800, lineHeight:1.2,
-                      background:"linear-gradient(135deg,#E8C97A 0%,#D4A843 50%,#C49030 100%)",
-                      WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
-                      marginBottom:6, whiteSpace:"nowrap",
-                    }}>মাহবুব সরদার সবুজ</div>
-                    <div style={{ width:40, height:1.5, background:"linear-gradient(90deg,#D4A843,transparent)", marginBottom:6 }}/>
-                    <div style={{ fontFamily:"'AdorshoLipi',sans-serif", fontSize:".72rem", color:"rgba(212,168,67,.55)", letterSpacing:".06em" }}>লেখক ও কবি</div>
-                  </div>
+                  <span className="nb-mega-accent-label" style={{ color: `${currentGroup.glyphColor}99` }}>
+                    {currentGroup.label}
+                  </span>
+                  <div className="nb-mega-accent-line" />
                 </div>
 
-                {/* Nav links */}
+                {/* Right content */}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <div className="nb-mega-content">
+                    {currentGroup.items.map((item, idx) => {
+                      const IIcon      = item.icon;
+                      const itemActive = isActive(item.href, location);
+                      return (
+                        <Link key={item.href} href={item.href}>
+                          <div
+                            className={`nb-mega-item${itemActive ? " nb-item-active" : ""}`}
+                            style={{ animationDelay: `${idx * 0.04}s` }}
+                            onPointerDown={() => preloadRoute(item.href)}
+                          >
+                            <div
+                              className="nb-mega-icon"
+                              style={itemActive ? {
+                                borderColor: `${currentGroup.glyphColor}55`,
+                                background: `linear-gradient(135deg, ${currentGroup.glyphColor}22 0%, ${currentGroup.glyphColor}0a 100%)`,
+                              } : {}}
+                            >
+                              <IIcon size={16} color={itemActive ? currentGroup.glyphColor : "#D4A843"} />
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+                              <span className="nb-mega-label">{item.label}</span>
+                              <span className="nb-mega-sub">{item.subtitle}</span>
+                            </div>
+                            {itemActive
+                              ? <span className="nb-mega-active-dot" style={{ background: currentGroup.glyphColor, boxShadow: `0 0 8px ${currentGroup.glyphColor}99` }} />
+                              : <ArrowRight size={13} color="rgba(212,168,67,.4)" className="nb-mega-arrow" />
+                            }
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                  <div className="nb-mega-footer">
+                    <span className="nb-mega-footer-hint">↑ hover করুন বা ক্লিক করুন</span>
+                    <span className="nb-mega-footer-count">{currentGroup.items.length}টি পেজ</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* MOBILE DRAWER                                                          */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {mobileOpen && !isDesktop && (
+          <motion.div
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit  ={{ opacity: 0, x: "100%" }}
+            transition={{ duration: .32, ease: [.16,1,.3,1] }}
+            style={{
+              position: "fixed",
+              top: mainNavH, right: 0,
+              width: "min(360px, 100vw)",
+              height: `calc(100dvh - ${mainNavH}px)`,
+              background: "linear-gradient(160deg, rgba(4,10,20,.99) 0%, rgba(8,16,30,.99) 100%)",
+              borderLeft: "1px solid rgba(212,168,67,.12)",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+              zIndex: 300,
+              boxShadow: "-20px 0 60px rgba(0,0,0,.6)",
+            }}
+          >
+            <div style={{ padding: "1.2rem 1rem calc(3rem + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", gap: 18 }}>
+
+              {/* Author card */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 14,
+                padding: "16px",
+                borderRadius: 18,
+                background: "linear-gradient(135deg,rgba(212,168,67,.07) 0%,rgba(212,168,67,.02) 100%)",
+                border: "1px solid rgba(212,168,67,.16)",
+                position: "relative", overflow: "hidden",
+              }}>
+                <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at 30% 50%, rgba(212,168,67,.05) 0%, transparent 70%)", pointerEvents:"none" }} />
                 <div style={{
-                  borderRadius:22,
-                  background:"linear-gradient(180deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.015) 100%)",
-                  border:"1px solid rgba(212,168,67,.13)",
-                  padding:"10px",
-                  boxShadow:"0 16px 40px rgba(0,0,0,.25)",
+                  width: 68, height: 78, borderRadius: 12, overflow: "hidden", flexShrink: 0,
+                  border: "1.5px solid rgba(212,168,67,.3)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,.4)",
                 }}>
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg"
+                    alt="মাহবুব সরদার সবুজ"
+                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}
+                  />
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", flex:1, minWidth:0, position:"relative" }}>
+                  <span style={{
+                    fontFamily:"'AdorshoLipi',sans-serif", fontSize:"1.1rem", fontWeight:900, lineHeight:1.2,
+                    background:"linear-gradient(135deg,#E8C97A 0%,#D4A843 100%)",
+                    WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                    whiteSpace:"nowrap",
+                  }}>মাহবুব সরদার সবুজ</span>
+                  <span style={{ fontFamily:"'AdorshoLipi',sans-serif", fontSize:".65rem", color:"rgba(212,168,67,.45)", letterSpacing:".1em", marginTop:5 }}>লেখক ও কবি</span>
+                </div>
+              </div>
+
+              {/* Groups */}
+              {ALL_GROUPS.map((group, gIdx) => (
+                <div key={group.id}>
+                  <p style={{
+                    fontFamily:"'AdorshoLipi',sans-serif",
+                    fontSize:".65rem", color:`${group.glyphColor}66`,
+                    letterSpacing:".14em", margin:"0 4px 8px",
+                    display:"flex", alignItems:"center", gap:8,
+                  }}>
+                    <span style={{ width:20, height:1, background:`linear-gradient(90deg,${group.glyphColor}44,transparent)`, display:"inline-block" }} />
+                    {group.label}
+                    <span style={{ flex:1, height:1, background:`linear-gradient(90deg,transparent,${group.glyphColor}22)`, display:"inline-block" }} />
+                  </p>
                   <motion.div
                     initial="hidden"
                     animate="visible"
-                    variants={{ hidden:{}, visible:{ transition:{ staggerChildren:.05, delayChildren:.03 } } }}
-                    style={{ display:"flex", flexDirection:"column", gap:5 }}
+                    variants={{ hidden:{}, visible:{ transition:{ staggerChildren:.04, delayChildren: gIdx * 0.05 } } }}
+                    style={{ display:"flex", flexDirection:"column", gap:4 }}
                   >
-                    {navLinks.map((link) => {
-                      const active = isPrimaryNavActive(link.href, location);
-                      const Icon   = link.icon;
+                    {group.items.map((item) => {
+                      const IIcon      = item.icon;
+                      const itemActive = isActive(item.href, location);
                       return (
-                        <Link key={link.href} href={link.href}>
-                          <motion.span
-                            variants={{ hidden:{opacity:0,x:-14,scale:.97}, visible:{opacity:1,x:0,scale:1} }}
-                            transition={{ duration:.3, ease:[.22,1,.36,1] }}
-                            whileTap={{ scale:.983 }}
-                            onPointerDown={() => warm(link.href)}
+                        <Link key={item.href} href={item.href}>
+                          <motion.div
+                            variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0} }}
+                            transition={{ duration:.28, ease:[.22,1,.36,1] }}
+                            whileTap={{ scale:.982 }}
+                            onPointerDown={() => preloadRoute(item.href)}
                             onClick={() => setMobileOpen(false)}
                             style={{
                               fontFamily:"'AdorshoLipi',sans-serif",
-                              color: active ? "#0D1B2A" : "#FDF6EC",
-                              background: active ? "linear-gradient(135deg,#D4A843 0%,#E8C97A 100%)" : "transparent",
-                              border: active ? "1px solid rgba(212,168,67,.5)" : "1px solid transparent",
+                              display:"flex", alignItems:"center", gap:11,
                               padding:"10px 12px",
                               borderRadius:13,
                               cursor:"pointer",
-                              display:"flex",
-                              alignItems:"center",
-                              justifyContent:"space-between",
-                              gap:12,
-                              boxShadow: active ? "0 6px 22px rgba(212,168,67,.25)" : "none",
+                              background: itemActive
+                                ? `linear-gradient(135deg,${group.glyphColor}22 0%,${group.glyphColor}0a 100%)`
+                                : "transparent",
+                              border: itemActive ? `1px solid ${group.glyphColor}33` : "1px solid transparent",
                               transition:"all .2s",
                             }}
                           >
-                            <span style={{ display:"flex", alignItems:"center", gap:11, minWidth:0, flex:1 }}>
-                              <span style={{
-                                display:"inline-flex", alignItems:"center", justifyContent:"center",
-                                width:36, height:36, borderRadius:10, flexShrink:0,
-                                background: active ? "rgba(10,22,40,.15)" : `linear-gradient(135deg,${link.groupColor}20 0%,${link.groupColor}0a 100%)`,
-                                border: active ? "1px solid rgba(10,22,40,.15)" : `1px solid ${link.groupColor}33`,
-                                boxShadow: active ? "none" : "0 2px 8px rgba(0,0,0,.15)",
-                              }}>
-                                <Icon size={16} color={active ? "#0D1B2A" : link.groupColor} />
-                              </span>
-                              <span style={{ display:"flex", flexDirection:"column", gap:2, minWidth:0 }}>
-                                <span style={{ fontSize:".96rem", fontWeight:700, lineHeight:1.3 }}>{link.label}</span>
-                                <span style={{
-                                  fontSize:".71rem", lineHeight:1.4,
-                                  color: active ? "rgba(10,22,40,.72)" : "rgba(253,246,236,.45)",
-                                  overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-                                }}>{link.subtitle}</span>
-                              </span>
-                            </span>
                             <span style={{
                               display:"inline-flex", alignItems:"center", justifyContent:"center",
-                              width:28, height:28, borderRadius:999, flexShrink:0,
-                              background: active ? "rgba(10,22,40,.12)" : "rgba(212,168,67,.07)",
-                              border: active ? "1px solid rgba(10,22,40,.12)" : "1px solid rgba(212,168,67,.15)",
+                              width:36, height:36, borderRadius:10, flexShrink:0,
+                              background: `linear-gradient(135deg,${group.glyphColor}18 0%,${group.glyphColor}08 100%)`,
+                              border: `1px solid ${group.glyphColor}28`,
                             }}>
-                              <ChevronRight size={13} color={active ? "#0D1B2A" : "#D4A843"} />
+                              <IIcon size={16} color={itemActive ? group.glyphColor : `${group.glyphColor}cc`} />
                             </span>
-                          </motion.span>
+                            <span style={{ display:"flex", flexDirection:"column", flex:1, minWidth:0 }}>
+                              <span style={{
+                                fontSize:".9rem", fontWeight:700, lineHeight:1.3,
+                                color: itemActive ? group.glyphColor : "rgba(253,246,236,.88)",
+                              }}>{item.label}</span>
+                              <span style={{ fontSize:".68rem", color:"rgba(253,246,236,.38)", lineHeight:1.4 }}>{item.subtitle}</span>
+                            </span>
+                            {itemActive && (
+                              <span style={{
+                                width:6, height:6, borderRadius:"50%",
+                                background: group.glyphColor,
+                                flexShrink:0,
+                                boxShadow:`0 0 8px ${group.glyphColor}99`,
+                              }} />
+                            )}
+                          </motion.div>
                         </Link>
                       );
                     })}
                   </motion.div>
                 </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-                {/* Info tabs */}
-                {!isAmioLikhboPage && (
-                  <div style={{ margin:"0 2px" }}>
-                    <p style={{
-                      fontFamily:"'AdorshoLipi',sans-serif",
-                      color:"rgba(212,168,67,.65)",
-                      fontSize:".68rem",
-                      letterSpacing:".16em",
-                      textTransform:"uppercase",
-                      margin:"0 4px 10px",
-                    }}>তথ্য ও নীতিমালা</p>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                      {infoTabs.map((tab) => {
-                        const active = location === tab.href;
-                        return (
-                          <Link key={tab.href} href={tab.href}>
-                            <motion.span
-                              onPointerDown={() => warm(tab.href)}
-                              onClick={() => setMobileOpen(false)}
-                              whileTap={{ scale:.97 }}
-                              initial={{ opacity:0, y:10 }}
-                              animate={{ opacity:1, y:0 }}
-                              transition={{ duration:.28, ease:"easeOut" }}
-                              style={{
-                                fontFamily:"'AdorshoLipi',sans-serif",
-                                color: active ? "#0D1B2A" : "#FDF6EC",
-                                background: active
-                                  ? "linear-gradient(135deg,#D4A843 0%,#E8C97A 100%)"
-                                  : "linear-gradient(180deg,rgba(255,255,255,.04) 0%,rgba(212,168,67,.04) 100%)",
-                                border: active ? "1px solid rgba(212,168,67,.6)" : "1px solid rgba(212,168,67,.16)",
-                                padding:"13px 12px",
-                                borderRadius:15,
-                                cursor:"pointer",
-                                display:"flex",
-                                flexDirection:"column",
-                                gap:5,
-                                minHeight:78,
-                                justifyContent:"center",
-                                boxShadow: active ? "0 8px 24px rgba(212,168,67,.28)" : "0 4px 16px rgba(0,0,0,.15)",
-                                transition:"all .22s",
-                              }}
-                            >
-                              <span style={{ fontSize:".88rem", fontWeight:700, lineHeight:1.3 }}>{tab.titleBn}</span>
-                              <span style={{ fontSize:".68rem", lineHeight:1.45, color: active ? "rgba(10,22,40,.72)" : "rgba(253,246,236,.45)" }}>{tab.description}</span>
-                            </motion.span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {mobileOpen && !isDesktop && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit  ={{ opacity: 0 }}
+            transition={{ duration: .25 }}
+            onClick={() => setMobileOpen(false)}
+            style={{
+              position: "fixed", inset: 0,
+              background: "rgba(0,0,0,.55)",
+              zIndex: 299,
+              backdropFilter: "blur(2px)",
+            }}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
