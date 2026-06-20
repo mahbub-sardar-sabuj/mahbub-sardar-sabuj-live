@@ -1,8 +1,8 @@
 /**
  * Writings & E-Books — লেখালেখি ও বই
- * Design: LUMINARY DARK v12 — World-Class Literary Experience
+ * Design: LUMINARY ULTRA v13 — World-Class Literary Experience
  * Philosophy: Cinematic depth · Editorial clarity · Emotional resonance
- * Inspired by: Substack, Kindle, Apple Books, Notion, Linear, Vercel
+ * Inspired by: Apple Books, Substack, Kindle, Vercel, Linear, Notion
  * Palette: Void #060810 | Obsidian #0E1018 | Gold #C9A84C | Cream #F2EDE4
  */
 import Navbar from "@/components/Navbar";
@@ -11,7 +11,7 @@ import Seo, { SITE_URL } from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import { loadWritingsArchive } from "@/lib/loadWritingsArchive";
 import type { Writing } from "@/data/writingsArchive";
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useInView, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
 import { createPortal } from "react-dom";
 import { Link, useRoute, useLocation } from "wouter";
@@ -20,7 +20,7 @@ import {
   ChevronLeft, ChevronRight, Facebook, Check, AArrowUp, AArrowDown,
   ShoppingCart, Eye, Library, Grid3X3, List, ArrowRight, Crown,
   Moon, Sun, Scroll, ChevronDown, BookMarked, Sparkles, Heart,
-  Quote, Bookmark, TrendingUp, Filter,
+  Quote, Bookmark, TrendingUp, Filter, Pen, Flame, Wind,
 } from "lucide-react";
 
 // ── Slug Utility ──────────────────────────────────────────────────────────────
@@ -91,8 +91,17 @@ const ebooks = [
   { id:5, slug:"onoboddo-lekha",    title:"মাহবুব সরদার সবুজের অনবদ্য লেখা",       subtitle:"ই-বুক",              cover:"/images/ebooks/onoboddo-lekha-new.jpg",    description:"১০০টি জীবনমুখী ও অনুপ্রেরণামূলক লেখার সংকলন — ভালোবাসা, বিচ্ছেদ, জীবনদর্শন ও মানবিক অনুভূতির অপূর্ব মিশ্রণ।",                                                                           genre:"মিশ্র সাহিত্য", pages:"১০১",  year:"২০২৬", badge:"ই-বুক",        badgeColor:"#8B5CF6", buyLink:null,                                   isFeatured:true,  canRead:true, accentColor:"#8B5CF6", accentRgb:"139,92,246" },
 ];
 
+// Featured quotes for Quote Spotlight
+const FEATURED_QUOTES = [
+  { text: "দূরত্বে মানুষ হারিয়ে যায় না, হারিয়ে যায় শুধু তার গুরুত্ব।", cat: "বিচ্ছেদ", color: "#A78BFA" },
+  { text: "যে মানুষ আপনার জীবনে শান্তি নিয়ে আসে, তাকে কখনো অবহেলা করবেন না।", cat: "জীবনদর্শন", color: "#FBBF24" },
+  { text: "ভাঙা বিশ্বাসের যন্ত্রণা, অনেক সময় ভাঙা হৃদয়ের চেয়েও বেশি কষ্ট দেয়।", cat: "বিচ্ছেদ", color: "#A78BFA" },
+  { text: "নিজেকে ছোট ভাবার অভ্যাস মানুষকে ধীরে ধীরে নিজের স্বপ্ন থেকে দূরে সরিয়ে দেয়।", cat: "জীবনদর্শন", color: "#FBBF24" },
+  { text: "কিছু মানুষ জীবনে আসে, কিন্তু থেকে যাওয়ার জন্য আসে না।", cat: "বিচ্ছেদ", color: "#A78BFA" },
+];
+
 // ══════════════════════════════════════════════════════════════════════════════
-//  CSS — LUMINARY DARK v12
+//  CSS — LUMINARY ULTRA v13
 // ══════════════════════════════════════════════════════════════════════════════
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@300;400;500;600;700&display=swap');
@@ -139,306 +148,369 @@ const CSS = `
   .lw-wrap { max-width: 1300px; margin: 0 auto; padding: clamp(1.2rem,3vw,2.5rem) clamp(.9rem,3.5vw,2.5rem); position: relative; z-index: 1; }
 
   /* ══════════════════════════════════════════════════
-     HERO — CINEMATIC LITERARY STAGE
+     HERO v13 — FULL CINEMATIC STAGE
   ══════════════════════════════════════════════════ */
   .lw-hero {
     position: relative; overflow: hidden;
-    border-radius: clamp(22px,4vw,44px);
+    border-radius: clamp(24px,4vw,48px);
     margin-bottom: clamp(1.4rem,3vw,2.8rem);
-    padding: clamp(2rem,5vw,4rem) clamp(1.5rem,4vw,3.5rem);
+    padding: clamp(3rem,6vw,5.5rem) clamp(2rem,5vw,4.5rem);
     background:
-      radial-gradient(ellipse 90% 70% at 95% -10%, rgba(201,168,76,.22) 0%, transparent 48%),
-      radial-gradient(ellipse 60% 55% at 0% 110%,  rgba(96,165,250,.11) 0%, transparent 44%),
-      linear-gradient(160deg, rgba(255,255,255,.075) 0%, rgba(255,255,255,.018) 55%, transparent 100%),
-      #0C0F1C;
-    border: 1px solid rgba(255,255,255,.075);
+      radial-gradient(ellipse 100% 80% at 95% -15%, rgba(201,168,76,.28) 0%, transparent 50%),
+      radial-gradient(ellipse 65% 55% at 0% 115%,  rgba(96,165,250,.13) 0%, transparent 46%),
+      radial-gradient(ellipse 40% 35% at 50% 50%, rgba(167,139,250,.04) 0%, transparent 60%),
+      linear-gradient(160deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.018) 55%, transparent 100%),
+      #080C1A;
+    border: 1px solid rgba(255,255,255,.08);
     box-shadow:
-      0 0 0 1px rgba(201,168,76,.06) inset,
-      0 50px 140px rgba(0,0,0,.55),
-      0 1px 0 rgba(255,255,255,.1) inset;
+      0 0 0 1px rgba(201,168,76,.08) inset,
+      0 60px 160px rgba(0,0,0,.6),
+      0 1px 0 rgba(255,255,255,.12) inset;
   }
   /* Shimmer top line */
   .lw-hero::before {
     content: "";
-    position: absolute; top: 0; left: 5%; right: 5%; height: 1px; pointer-events: none;
-    background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,.7) 25%, rgba(255,255,255,.5) 50%, rgba(201,168,76,.7) 75%, transparent 100%);
+    position: absolute; top: 0; left: 0; right: 0; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg, transparent 0%, rgba(201,168,76,.8) 20%, rgba(255,255,255,.6) 50%, rgba(201,168,76,.8) 80%, transparent 100%);
   }
   /* Noise texture overlay */
   .lw-hero::after {
     content: "";
     position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-    background-size: 200px 200px; opacity: .4;
+    background-size: 200px 200px; opacity: .5;
   }
-  .lw-hero-grid {
+
+  /* Calligraphy watermark */
+  .lw-hero-calligraphy {
+    position: absolute; right: -2%; top: 50%; transform: translateY(-50%);
+    font-family: var(--f); font-size: clamp(14rem,22vw,26rem);
+    color: rgba(201,168,76,.04); font-weight: 700; line-height: 1;
+    pointer-events: none; user-select: none; z-index: 0;
+    letter-spacing: -.08em;
+  }
+
+  .lw-hero-inner {
     display: grid;
-    grid-template-columns: 1fr minmax(220px,.42fr);
-    gap: clamp(2rem,5vw,4.5rem);
+    grid-template-columns: 1fr minmax(260px,.48fr);
+    gap: clamp(2.5rem,6vw,5rem);
     align-items: center;
     position: relative; z-index: 1;
   }
+
   .lw-hero-eyebrow {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 5px 15px; border-radius: 999px; margin-bottom: 1.1rem;
-    background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.22);
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 18px; border-radius: 999px; margin-bottom: 1.4rem;
+    background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.28);
     color: var(--gold); font-family: var(--f);
-    font-size: .71rem; letter-spacing: .22em; text-transform: uppercase; font-weight: 600;
+    font-size: .72rem; letter-spacing: .24em; text-transform: uppercase; font-weight: 700;
+    box-shadow: 0 0 24px rgba(201,168,76,.12);
   }
+  .lw-hero-eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); box-shadow: 0 0 8px rgba(201,168,76,.8);
+    animation: lw-pulse 2s ease-in-out infinite;
+  }
+  @keyframes lw-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+
   .lw-hero-h1 {
-    margin: 0 0 1.1rem; font-family: var(--f);
-    font-size: clamp(2.4rem,6.5vw,5.5rem);
-    line-height: 1.04; font-weight: 700; letter-spacing: -.04em; color: var(--t0);
+    margin: 0 0 .5rem; font-family: var(--f);
+    font-size: clamp(2.8rem,7.5vw,6.5rem);
+    line-height: 1.02; font-weight: 700; letter-spacing: -.05em; color: var(--t0);
   }
   .lw-hero-h1-gold {
-    background: linear-gradient(135deg, var(--gold3) 0%, var(--gold) 45%, var(--gold2) 80%, var(--gold4) 100%);
+    background: linear-gradient(135deg, var(--gold3) 0%, var(--gold) 40%, var(--gold2) 75%, var(--gold4) 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    filter: drop-shadow(0 0 28px rgba(201,168,76,.35));
+    filter: drop-shadow(0 0 32px rgba(201,168,76,.4));
+    display: block; margin-top: -.1em;
   }
   .lw-hero-sub {
-    max-width: 560px; margin: 0 0 2rem;
+    max-width: 540px; margin: 1.4rem 0 2.4rem;
     color: var(--t2); font-family: var(--f);
-    font-size: clamp(.9rem,1.9vw,1.12rem); line-height: 2.05;
+    font-size: clamp(.95rem,2vw,1.15rem); line-height: 2.1;
+    border-left: 2px solid rgba(201,168,76,.3); padding-left: 1.2rem;
   }
   .lw-hero-stats {
-    display: flex; gap: .7rem; flex-wrap: wrap;
+    display: flex; gap: .8rem; flex-wrap: wrap;
   }
   .lw-hero-stat {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 16px; border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 14px 22px; border-radius: 18px;
     background: rgba(255,255,255,.05); border: 1px solid var(--bdr2);
-    font-family: var(--f); font-size: .74rem; color: var(--t2);
-    transition: all .22s var(--silk); cursor: default;
+    font-family: var(--f); cursor: default;
+    transition: all .28s var(--silk); min-width: 80px;
+    position: relative; overflow: hidden;
   }
-  .lw-hero-stat:hover { border-color: rgba(201,168,76,.3); background: rgba(201,168,76,.07); transform: translateY(-2px); }
-  .lw-hero-stat-n { color: var(--gold); font-weight: 700; font-size: .94rem; }
+  .lw-hero-stat::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,.08) 0%, transparent 60%);
+    opacity: 0; transition: opacity .28s;
+  }
+  .lw-hero-stat:hover { border-color: rgba(201,168,76,.35); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.3), 0 0 20px rgba(201,168,76,.1); }
+  .lw-hero-stat:hover::before { opacity: 1; }
+  .lw-hero-stat-n { color: var(--gold); font-weight: 800; font-size: 1.5rem; line-height: 1; letter-spacing: -.03em; }
+  .lw-hero-stat-l { color: var(--t3); font-size: .7rem; margin-top: 4px; letter-spacing: .06em; }
+
+  /* Quote ticker */
+  .lw-ticker {
+    margin-top: 2.8rem; padding-top: 1.8rem;
+    border-top: 1px solid rgba(255,255,255,.07);
+    overflow: hidden; position: relative;
+  }
+  .lw-ticker::before, .lw-ticker::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none;
+  }
+  .lw-ticker::before { left: 0; background: linear-gradient(90deg, #080C1A, transparent); }
+  .lw-ticker::after  { right: 0; background: linear-gradient(-90deg, #080C1A, transparent); }
+  .lw-ticker-track {
+    display: flex; gap: 3rem; align-items: center;
+    animation: lw-ticker 40s linear infinite;
+    width: max-content;
+  }
+  .lw-ticker-track:hover { animation-play-state: paused; }
+  @keyframes lw-ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .lw-ticker-item {
+    display: flex; align-items: center; gap: .8rem;
+    white-space: nowrap; font-family: var(--f); font-size: .82rem;
+    color: var(--t3); flex-shrink: 0;
+  }
+  .lw-ticker-item span { color: var(--gold); opacity: .6; font-size: .7rem; }
 
   /* Book showcase */
   .lw-hero-showcase {
-    position: relative; min-height: 380px;
-    border-radius: 30px; overflow: hidden;
+    position: relative; min-height: 420px;
+    border-radius: 32px; overflow: hidden;
     background:
-      radial-gradient(ellipse 85% 65% at 50% 0%, rgba(201,168,76,.24) 0%, transparent 55%),
-      linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.015) 100%);
-    border: 1px solid rgba(255,255,255,.09);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 30px 80px rgba(0,0,0,.32);
+      radial-gradient(ellipse 90% 70% at 50% 0%, rgba(201,168,76,.28) 0%, transparent 58%),
+      radial-gradient(ellipse 60% 50% at 20% 100%, rgba(96,165,250,.12) 0%, transparent 48%),
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.015) 100%);
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 40px 100px rgba(0,0,0,.4);
   }
   .lw-hero-showcase::after {
-    content: ""; position: absolute; left: 8%; right: 8%; bottom: 16px;
-    height: 24px; border-radius: 999px;
-    background: rgba(201,168,76,.3); filter: blur(24px); pointer-events: none;
+    content: ""; position: absolute; left: 10%; right: 10%; bottom: 20px;
+    height: 28px; border-radius: 999px;
+    background: rgba(201,168,76,.35); filter: blur(28px); pointer-events: none;
   }
   .lw-hero-stack {
-    position: absolute; inset: 38px 16px 38px;
+    position: absolute; inset: 40px 12px 50px;
     display: flex; align-items: flex-end; justify-content: center;
-    gap: 14px; perspective: 1200px;
+    gap: 16px; perspective: 1400px;
   }
   .lw-hero-book {
-    width: clamp(72px,8.8vw,112px); aspect-ratio: 3/4;
-    border-radius: 14px; object-fit: cover;
-    box-shadow: 0 32px 68px rgba(0,0,0,.6), -10px 0 22px rgba(0,0,0,.22), inset 0 0 0 1px rgba(255,255,255,.14);
+    width: clamp(80px,9.5vw,120px); aspect-ratio: 3/4;
+    border-radius: 16px; object-fit: cover;
+    box-shadow: 0 36px 72px rgba(0,0,0,.65), -12px 0 24px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.16);
     transform: rotate(var(--r,0deg)) translateY(var(--l,0px));
-    transition: transform .45s var(--silk), box-shadow .45s;
+    transition: transform .5s var(--silk), box-shadow .5s;
   }
   .lw-hero-showcase:hover .lw-hero-book {
-    transform: rotate(var(--r,0deg)) translateY(calc(var(--l,0px) - 12px));
-    box-shadow: 0 46px 90px rgba(0,0,0,.7), -10px 0 22px rgba(0,0,0,.22), inset 0 0 0 1px rgba(255,255,255,.2);
+    transform: rotate(var(--r,0deg)) translateY(calc(var(--l,0px) - 16px));
+    box-shadow: 0 52px 100px rgba(0,0,0,.75), -12px 0 24px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.22);
   }
-  .lw-hero-book:nth-child(1) { --r:-13deg; --l:20px; }
-  .lw-hero-book:nth-child(2) { --r:-2deg;  --l:-9px; width: clamp(86px,10.2vw,132px); }
-  .lw-hero-book:nth-child(3) { --r:10deg;  --l:24px; }
+  .lw-hero-book:nth-child(1) { --r:-14deg; --l:22px; }
+  .lw-hero-book:nth-child(2) { --r:-1deg;  --l:-12px; width: clamp(96px,11.5vw,144px); }
+  .lw-hero-book:nth-child(3) { --r:11deg;  --l:26px; }
+
+  /* Showcase label */
+  .lw-hero-showcase-label {
+    position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+    font-family: var(--f); font-size: .65rem; color: rgba(201,168,76,.6);
+    letter-spacing: .18em; text-transform: uppercase; white-space: nowrap;
+    z-index: 2;
+  }
 
   /* ══════════════════════════════════════════════════
      SECTION PANELS
   ══════════════════════════════════════════════════ */
   .lw-panel {
     position: relative; overflow: hidden;
-    border-radius: clamp(20px,3.5vw,40px);
+    border-radius: clamp(22px,3.8vw,42px);
     border: 1px solid var(--bdr1);
     background: linear-gradient(175deg, rgba(255,255,255,.058) 0%, rgba(255,255,255,.014) 100%), var(--surf1);
     box-shadow: 0 32px 100px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.065);
     backdrop-filter: blur(18px);
     margin-bottom: clamp(1.4rem,3.2vw,2.8rem);
-    padding: clamp(1.4rem,3vw,2.5rem);
+    padding: clamp(1.8rem,3.5vw,3rem);
   }
   .lw-panel-gold::before {
-    content: ""; position: absolute; top: 0; left: 7%; right: 7%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201,168,76,.55), rgba(255,255,255,.32), rgba(201,168,76,.55), transparent);
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(201,168,76,.65), rgba(255,255,255,.38), rgba(201,168,76,.65), transparent 95%);
     pointer-events: none;
   }
   .lw-panel-blue::before {
-    content: ""; position: absolute; top: 0; left: 7%; right: 7%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(96,165,250,.48), rgba(255,255,255,.28), rgba(96,165,250,.48), transparent);
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(96,165,250,.55), rgba(255,255,255,.32), rgba(96,165,250,.55), transparent 95%);
+    pointer-events: none;
+  }
+  .lw-panel-purple::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(167,139,250,.55), rgba(255,255,255,.28), rgba(167,139,250,.55), transparent 95%);
     pointer-events: none;
   }
   .lw-panel-head {
     display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 1.5rem; margin-bottom: clamp(1.2rem,2.5vw,2rem);
+    gap: 1.5rem; margin-bottom: clamp(1.5rem,3vw,2.4rem);
   }
   .lw-eyebrow {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 12px; border-radius: 999px; margin-bottom: .65rem;
-    background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.18);
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 14px; border-radius: 999px; margin-bottom: .75rem;
+    background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.2);
     color: var(--gold); font-family: var(--f);
-    font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600;
+    font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 700;
   }
   .lw-panel-head h2 {
     margin: 0; color: var(--t0); font-family: var(--f);
-    font-size: clamp(1.45rem,3.5vw,2.5rem);
-    line-height: 1.2; font-weight: 700; letter-spacing: -.03em;
+    font-size: clamp(1.55rem,3.8vw,2.6rem);
+    line-height: 1.18; font-weight: 700; letter-spacing: -.035em;
   }
   .lw-panel-head p {
-    max-width: 580px; margin: .5rem 0 0;
-    color: var(--t2); font-family: var(--f); line-height: 1.88; font-size: .88rem;
+    max-width: 580px; margin: .55rem 0 0;
+    color: var(--t2); font-family: var(--f); line-height: 1.9; font-size: .9rem;
   }
   .lw-see-all {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 18px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
-    border: 1px solid rgba(201,168,76,.24); background: rgba(201,168,76,.07);
-    color: var(--gold); font-family: var(--f); font-size: .78rem;
-    text-decoration: none; font-weight: 600;
-    transition: all .22s var(--silk);
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
+    border: 1px solid rgba(201,168,76,.26); background: rgba(201,168,76,.07);
+    color: var(--gold); font-family: var(--f); font-size: .8rem;
+    text-decoration: none; font-weight: 700;
+    transition: all .24s var(--silk);
   }
-  .lw-see-all:hover { background: rgba(201,168,76,.14); border-color: rgba(201,168,76,.42); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,.18); }
+  .lw-see-all:hover { background: rgba(201,168,76,.16); border-color: rgba(201,168,76,.48); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,.2); }
 
   /* ══════════════════════════════════════════════════
-     BOOKS — MAGAZINE EDITORIAL LAYOUT
+     FEATURED BOOK — MAGAZINE EDITORIAL SPREAD
   ══════════════════════════════════════════════════ */
-
-  /* ── Featured Book: Full-width cinematic card ── */
   .lw-featured {
     --ba: var(--gold);
     --ba-rgb: 201,168,76;
     position: relative; overflow: hidden;
-    border-radius: 28px; margin-bottom: 1.6rem; cursor: pointer;
-    border: 1px solid rgba(var(--ba-rgb), .28);
+    border-radius: 30px; margin-bottom: 2rem; cursor: pointer;
+    border: 1px solid rgba(var(--ba-rgb), .3);
     background:
-      radial-gradient(ellipse 70% 60% at 95% -5%,  rgba(var(--ba-rgb),.22) 0%, transparent 50%),
-      radial-gradient(ellipse 50% 45% at 5% 110%,  rgba(96,165,250,.09) 0%, transparent 45%),
-      linear-gradient(160deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.018) 100%),
-      #0C1022;
-    box-shadow: 0 36px 100px rgba(0,0,0,.5), 0 0 0 1px rgba(var(--ba-rgb),.12) inset;
-    transition: transform .35s var(--silk), box-shadow .35s;
+      radial-gradient(ellipse 75% 65% at 96% -8%,  rgba(var(--ba-rgb),.26) 0%, transparent 52%),
+      radial-gradient(ellipse 55% 48% at 4% 112%,  rgba(96,165,250,.1) 0%, transparent 46%),
+      linear-gradient(160deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.02) 100%),
+      #0A0E1E;
+    box-shadow: 0 40px 110px rgba(0,0,0,.52), 0 0 0 1px rgba(var(--ba-rgb),.14) inset;
+    transition: transform .38s var(--silk), box-shadow .38s;
   }
-  .lw-featured:hover { transform: translateY(-7px); box-shadow: 0 52px 130px rgba(0,0,0,.58), 0 0 60px rgba(var(--ba-rgb),.16), 0 0 0 1px rgba(var(--ba-rgb),.22) inset; }
-  /* Gradient border */
+  .lw-featured:hover { transform: translateY(-8px); box-shadow: 0 56px 140px rgba(0,0,0,.62), 0 0 70px rgba(var(--ba-rgb),.18), 0 0 0 1px rgba(var(--ba-rgb),.26) inset; }
   .lw-featured::before {
     content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
-    background: linear-gradient(145deg, rgba(var(--ba-rgb),.6) 0%, rgba(255,255,255,.12) 35%, transparent 60%);
+    background: linear-gradient(145deg, rgba(var(--ba-rgb),.65) 0%, rgba(255,255,255,.14) 35%, transparent 62%);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor; mask-composite: exclude;
-    pointer-events: none; opacity: .55; transition: opacity .35s;
+    pointer-events: none; opacity: .5; transition: opacity .38s;
   }
   .lw-featured:hover::before { opacity: 1; }
   .lw-featured-inner {
     display: grid; grid-template-columns: auto 1fr;
-    gap: clamp(1.5rem,3.5vw,3rem); align-items: center;
-    padding: clamp(1.6rem,3.5vw,2.8rem);
+    gap: clamp(2rem,4vw,3.5rem); align-items: center;
+    padding: clamp(2rem,4vw,3.2rem);
     position: relative; z-index: 1;
   }
   .lw-featured-cover-wrap { position: relative; flex-shrink: 0; }
   .lw-featured-cover {
-    width: clamp(130px,16vw,195px); aspect-ratio: 3/4; object-fit: cover;
-    border-radius: 18px; display: block;
-    box-shadow: 0 36px 80px rgba(0,0,0,.62), -14px 0 28px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.14);
-    transform: rotateY(-12deg) rotateZ(-1.8deg);
-    transition: transform .38s var(--silk), box-shadow .38s;
+    width: clamp(140px,17vw,210px); aspect-ratio: 3/4; object-fit: cover;
+    border-radius: 20px; display: block;
+    box-shadow: 0 40px 90px rgba(0,0,0,.65), -16px 0 32px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.16);
+    transform: rotateY(-14deg) rotateZ(-2deg);
+    transition: transform .42s var(--silk), box-shadow .42s;
   }
   .lw-featured:hover .lw-featured-cover {
-    transform: rotateY(-2deg) translateY(-9px) scale(1.028);
-    box-shadow: 0 50px 100px rgba(0,0,0,.7), -14px 0 28px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.18);
+    transform: rotateY(-2deg) translateY(-10px) scale(1.03);
+    box-shadow: 0 56px 110px rgba(0,0,0,.72), -16px 0 32px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.2);
   }
-  /* Book spine shadow */
   .lw-featured-cover-wrap::after {
-    content: ""; position: absolute; left: -8px; top: 5%; bottom: 5%; width: 8px;
-    background: linear-gradient(90deg, rgba(0,0,0,.5), transparent);
-    border-radius: 2px 0 0 2px; pointer-events: none;
+    content: ""; position: absolute; left: -10px; top: 5%; bottom: 5%; width: 10px;
+    background: linear-gradient(90deg, rgba(0,0,0,.55), transparent);
+    border-radius: 3px 0 0 3px; pointer-events: none;
   }
   .lw-featured-badge {
-    position: absolute; top: -12px; right: -12px;
+    position: absolute; top: -14px; right: -14px;
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 13px; border-radius: 999px;
-    background: rgba(8,10,18,.92); border: 1px solid rgba(var(--ba-rgb),.5);
-    color: var(--t0); font-family: var(--f); font-size: .64rem; font-weight: 700;
-    backdrop-filter: blur(14px); box-shadow: 0 6px 22px rgba(0,0,0,.45);
-    letter-spacing: .04em;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(6,8,16,.94); border: 1px solid rgba(var(--ba-rgb),.55);
+    color: var(--t0); font-family: var(--f); font-size: .65rem; font-weight: 800;
+    backdrop-filter: blur(16px); box-shadow: 0 8px 26px rgba(0,0,0,.5), 0 0 16px rgba(var(--ba-rgb),.2);
+    letter-spacing: .05em;
   }
   .lw-featured-content { min-width: 0; }
   .lw-featured-genre {
     color: rgba(var(--ba-rgb),1); font-family: var(--f);
-    font-size: .69rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; margin-bottom: .65rem;
+    font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 800; margin-bottom: .7rem;
   }
   .lw-featured-title {
-    font-family: var(--f); font-size: clamp(1.25rem,3.2vw,2rem);
-    color: var(--t0); line-height: 1.38; font-weight: 700; letter-spacing: -.022em; margin: 0 0 .8rem;
+    font-family: var(--f); font-size: clamp(1.3rem,3.5vw,2.2rem);
+    color: var(--t0); line-height: 1.36; font-weight: 700; letter-spacing: -.025em; margin: 0 0 .9rem;
   }
   .lw-featured-desc {
-    font-family: var(--f); font-size: .88rem; color: var(--t2); line-height: 2.0; margin: 0 0 1.3rem;
+    font-family: var(--f); font-size: .9rem; color: var(--t2); line-height: 2.05; margin: 0 0 1.5rem;
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
   .lw-featured-meta {
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 1.8rem;
   }
   .lw-featured-meta span {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 12px; border-radius: 999px;
+    padding: 5px 13px; border-radius: 999px;
     background: rgba(255,255,255,.055); border: 1px solid var(--bdr2);
-    font-family: var(--f); font-size: .71rem; color: var(--t3);
+    font-family: var(--f); font-size: .72rem; color: var(--t3);
   }
-  .lw-featured-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .lw-featured-actions { display: flex; gap: 12px; flex-wrap: wrap; }
   .lw-btn-primary {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 12px 24px; border-radius: 16px;
-    color: #060810; font-family: var(--f); font-size: .85rem;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 26px; border-radius: 18px;
+    color: #060810; font-family: var(--f); font-size: .87rem;
     text-decoration: none; font-weight: 800; border: none; cursor: pointer;
-    transition: all .28s var(--silk); letter-spacing: .01em;
-    background: linear-gradient(135deg, rgba(var(--ba-rgb),1), rgba(var(--ba-rgb),.8));
-    box-shadow: 0 8px 28px rgba(var(--ba-rgb),.38), 0 1px 0 rgba(255,255,255,.25) inset;
+    transition: all .3s var(--silk); letter-spacing: .01em;
+    background: linear-gradient(135deg, rgba(var(--ba-rgb),1), rgba(var(--ba-rgb),.82));
+    box-shadow: 0 10px 32px rgba(var(--ba-rgb),.42), 0 1px 0 rgba(255,255,255,.28) inset;
   }
-  .lw-btn-primary:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); box-shadow: 0 16px 40px rgba(var(--ba-rgb),.48); }
+  .lw-btn-primary:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.12); box-shadow: 0 18px 44px rgba(var(--ba-rgb),.52); }
   .lw-btn-secondary {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 11px 22px; border-radius: 16px;
-    background: rgba(255,255,255,.06); border: 1px solid var(--bdr2);
-    color: var(--t1); font-family: var(--f); font-size: .85rem;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: 18px;
+    background: rgba(255,255,255,.06); border: 1px solid var(--bdr3);
+    color: var(--t1); font-family: var(--f); font-size: .87rem;
     text-decoration: none; font-weight: 600; cursor: pointer;
-    transition: all .26s var(--silk);
+    transition: all .28s var(--silk);
   }
-  .lw-btn-secondary:hover { background: rgba(255,255,255,.12); border-color: var(--bdr3); transform: translateY(-2px); }
+  .lw-btn-secondary:hover { background: rgba(255,255,255,.12); border-color: var(--bdr4); transform: translateY(-2px); }
 
-  /* ── Books Grid ── */
-  .lw-books-grid {
+  /* ── Books Bookshelf ── */
+  .lw-bookshelf {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-    gap: clamp(1rem,2vw,1.5rem);
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: clamp(1rem,2vw,1.6rem);
   }
 
-  /* ── Book Card ── */
+  /* ── Book Card v13 ── */
   .lw-book-card {
     --ba: var(--gold);
     --ba-rgb: 201,168,76;
     position: relative; overflow: hidden;
-    border-radius: 24px; cursor: pointer;
-    border: 1px solid rgba(var(--ba-rgb),.2);
+    border-radius: 26px; cursor: pointer;
+    border: 1px solid rgba(var(--ba-rgb),.18);
     background:
-      linear-gradient(155deg, rgba(var(--ba-rgb),.1) 0%, transparent 40%),
+      linear-gradient(160deg, rgba(var(--ba-rgb),.1) 0%, transparent 45%),
       linear-gradient(180deg, rgba(255,255,255,.065) 0%, rgba(255,255,255,.015) 100%),
-      #0C1020;
-    transition: transform .32s var(--silk), box-shadow .32s, border-color .32s;
+      #0A0E1E;
+    transition: transform .35s var(--silk), box-shadow .35s, border-color .35s;
     display: flex; flex-direction: column;
   }
-  /* Gradient border on hover */
   .lw-book-card::before {
     content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
-    background: linear-gradient(155deg, rgba(var(--ba-rgb),.5) 0%, transparent 50%);
+    background: linear-gradient(160deg, rgba(var(--ba-rgb),.5) 0%, transparent 52%);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor; mask-composite: exclude;
-    pointer-events: none; opacity: .35; transition: opacity .32s;
+    pointer-events: none; opacity: .3; transition: opacity .35s;
   }
-  .lw-book-card:hover { transform: translateY(-12px) scale(1.018); border-color: rgba(var(--ba-rgb),.5); box-shadow: 0 44px 110px rgba(0,0,0,.55), 0 0 55px rgba(var(--ba-rgb),.2); }
-  .lw-book-card:hover::before { opacity: .9; }
-  /* Shine sweep */
+  .lw-book-card:hover { transform: translateY(-14px) scale(1.02); border-color: rgba(var(--ba-rgb),.52); box-shadow: 0 48px 120px rgba(0,0,0,.58), 0 0 60px rgba(var(--ba-rgb),.22); }
+  .lw-book-card:hover::before { opacity: .95; }
   .lw-book-card::after {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
@@ -454,219 +526,272 @@ const CSS = `
   .lw-book-cover-wrap {
     position: relative; z-index: 1;
     display: flex; justify-content: center;
-    padding: 1.4rem 1rem .9rem; min-height: 190px;
+    padding: 1.6rem 1.2rem 1rem; min-height: 200px;
   }
   .lw-book-glow {
-    position: absolute; inset: auto 10% 40% 10%; height: 70px;
-    background: rgba(var(--ba-rgb),.38); filter: blur(36px); opacity: .55;
-    pointer-events: none; z-index: 0; transition: opacity .32s;
+    position: absolute; inset: auto 10% 42% 10%; height: 72px;
+    background: rgba(var(--ba-rgb),.4); filter: blur(38px); opacity: .5;
+    pointer-events: none; z-index: 0; transition: opacity .35s;
   }
   .lw-book-card:hover .lw-book-glow { opacity: 1; }
   .lw-book-cover {
     position: relative; z-index: 1;
-    width: min(120px,50vw); aspect-ratio: 3/4; object-fit: cover;
-    border-radius: 14px;
-    box-shadow: 0 24px 55px rgba(0,0,0,.58), -8px 0 18px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.12);
-    transform: rotateY(-14deg) rotateZ(-1.4deg);
-    transition: transform .32s var(--silk), box-shadow .32s;
+    width: min(125px,52vw); aspect-ratio: 3/4; object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 28px 60px rgba(0,0,0,.6), -9px 0 20px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.14);
+    transform: rotateY(-15deg) rotateZ(-1.5deg);
+    transition: transform .35s var(--silk), box-shadow .35s;
   }
   .lw-book-card:hover .lw-book-cover {
-    transform: rotateY(-2deg) translateY(-6px) scale(1.045);
-    box-shadow: 0 36px 72px rgba(0,0,0,.64), -8px 0 18px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.16);
+    transform: rotateY(-2deg) translateY(-7px) scale(1.05);
+    box-shadow: 0 40px 80px rgba(0,0,0,.68), -9px 0 20px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.18);
   }
   .lw-book-badge {
     position: absolute; z-index: 2; top: 14px; left: 14px;
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 10px; border-radius: 999px;
-    color: var(--t0); background: rgba(5,7,14,.84);
-    border: 1px solid rgba(var(--ba-rgb),.4);
-    font-family: var(--f); font-size: .62rem; font-weight: 600;
-    backdrop-filter: blur(14px);
+    padding: 4px 11px; border-radius: 999px;
+    color: var(--t0); background: rgba(4,6,14,.86);
+    border: 1px solid rgba(var(--ba-rgb),.44);
+    font-family: var(--f); font-size: .63rem; font-weight: 700;
+    backdrop-filter: blur(16px);
   }
   .lw-book-body {
     position: relative; z-index: 1;
-    padding: .4rem 1.1rem 1.4rem;
+    padding: .5rem 1.2rem 1.6rem;
     display: flex; flex-direction: column; flex: 1;
   }
-  .lw-book-genre { color: rgba(var(--ba-rgb),1); font-family: var(--f); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
-  .lw-book-title { margin: .45rem 0 .6rem; color: var(--t0); font-family: var(--f); font-size: 1.04rem; line-height: 1.52; font-weight: 700; letter-spacing: -.014em; }
-  .lw-book-desc { margin: 0; color: var(--t2); font-family: var(--f); font-size: .8rem; line-height: 1.92; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .lw-book-meta { display: flex; align-items: center; gap: 5px; margin-top: .8rem; color: var(--t3); font-family: var(--f); font-size: .7rem; }
+  .lw-book-genre { color: rgba(var(--ba-rgb),1); font-family: var(--f); font-size: .69rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; }
+  .lw-book-title { margin: .5rem 0 .65rem; color: var(--t0); font-family: var(--f); font-size: 1.06rem; line-height: 1.54; font-weight: 700; letter-spacing: -.015em; }
+  .lw-book-desc { margin: 0; color: var(--t2); font-family: var(--f); font-size: .81rem; line-height: 1.94; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .lw-book-meta { display: flex; align-items: center; gap: 5px; margin-top: .85rem; color: var(--t3); font-family: var(--f); font-size: .71rem; }
   .lw-book-actions {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
-    margin-top: auto; padding-top: 1rem; position: relative; z-index: 2;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-top: auto; padding-top: 1.1rem; position: relative; z-index: 2;
   }
   .lw-book-btn {
-    min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-    border-radius: 12px; border: 1px solid var(--bdr2);
-    font-family: var(--f); font-size: .78rem; text-decoration: none; cursor: pointer;
-    transition: all .22s var(--silk); font-weight: 600; background: rgba(255,255,255,.04); color: var(--t2);
+    min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    border-radius: 13px; border: 1px solid var(--bdr2);
+    font-family: var(--f); font-size: .79rem; text-decoration: none; cursor: pointer;
+    transition: all .24s var(--silk); font-weight: 700; background: rgba(255,255,255,.04); color: var(--t2);
   }
   .lw-book-btn-accent {
     background: rgba(var(--ba-rgb),.18);
     color: var(--t0);
-    border-color: rgba(var(--ba-rgb),.4);
+    border-color: rgba(var(--ba-rgb),.42);
   }
-  .lw-book-btn:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+  .lw-book-btn:hover { transform: translateY(-2px); filter: brightness(1.15); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+
+  /* ══════════════════════════════════════════════════
+     QUOTE SPOTLIGHT — CINEMATIC ROTATING QUOTES
+  ══════════════════════════════════════════════════ */
+  .lw-quotes {
+    position: relative; overflow: hidden;
+    border-radius: clamp(22px,3.8vw,42px);
+    margin-bottom: clamp(1.4rem,3.2vw,2.8rem);
+    padding: clamp(2.5rem,5vw,4.5rem) clamp(2rem,4vw,3.5rem);
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 50%, rgba(167,139,250,.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 10% 0%, rgba(201,168,76,.06) 0%, transparent 50%),
+      linear-gradient(180deg, rgba(255,255,255,.055) 0%, rgba(255,255,255,.012) 100%),
+      var(--surf1);
+    border: 1px solid rgba(167,139,250,.14);
+    box-shadow: 0 32px 100px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
+    text-align: center;
+  }
+  .lw-quotes::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(167,139,250,.5), rgba(255,255,255,.28), rgba(167,139,250,.5), transparent 95%);
+  }
+  .lw-quotes-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(167,139,250,.1); border: 1px solid rgba(167,139,250,.22);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.8rem; color: #A78BFA;
+    box-shadow: 0 0 32px rgba(167,139,250,.2);
+  }
+  .lw-quotes-text {
+    font-family: var(--f); font-size: clamp(1.1rem,2.8vw,1.65rem);
+    color: var(--t0); line-height: 1.85; font-weight: 500;
+    max-width: 780px; margin: 0 auto 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .lw-quotes-cat {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 16px; border-radius: 999px;
+    font-family: var(--f); font-size: .7rem; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .lw-quotes-dots {
+    display: flex; gap: 8px; justify-content: center; margin-top: 2rem;
+  }
+  .lw-quotes-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,.15); cursor: pointer;
+    transition: all .28s var(--silk); border: none;
+  }
+  .lw-quotes-dot.active { background: #A78BFA; box-shadow: 0 0 12px rgba(167,139,250,.6); transform: scale(1.3); }
 
   /* ══════════════════════════════════════════════════
      WRITING TOOLS BAR — STICKY COMMAND CENTER
   ══════════════════════════════════════════════════ */
   .lw-tools {
     position: sticky; top: var(--site-nav-offset,98px); z-index: 15;
-    display: grid; grid-template-columns: minmax(170px,300px) 1fr auto;
+    display: grid; grid-template-columns: minmax(180px,320px) 1fr auto;
     gap: 10px; align-items: center;
-    margin: 1.2rem 0; padding: 10px 12px;
-    border-radius: 22px;
+    margin: 1.2rem 0; padding: 10px 14px;
+    border-radius: 24px;
     border: 1px solid rgba(255,255,255,.09);
-    background: rgba(8,10,18,.96);
-    backdrop-filter: blur(28px) saturate(170%);
-    box-shadow: 0 20px 55px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.07);
+    background: rgba(8,10,18,.97);
+    backdrop-filter: blur(32px) saturate(180%);
+    box-shadow: 0 20px 60px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.07);
   }
-  /* Search */
   .lw-search {
     display: flex; align-items: center; gap: 8px;
     background: rgba(255,255,255,.055); border: 1px solid var(--bdr2);
-    border-radius: 13px; padding: 0 12px; height: 40px;
+    border-radius: 14px; padding: 0 14px; height: 42px;
     transition: border-color .22s, background .22s, box-shadow .22s;
   }
   .lw-search:focus-within {
-    border-color: rgba(201,168,76,.42); background: rgba(201,168,76,.05);
-    box-shadow: 0 0 0 3px rgba(201,168,76,.12);
+    border-color: rgba(201,168,76,.45); background: rgba(201,168,76,.05);
+    box-shadow: 0 0 0 3px rgba(201,168,76,.14);
   }
   .lw-search input {
     background: none; border: none; outline: none;
-    color: var(--t1); font-family: var(--f); font-size: .84rem; width: 100%; min-height: 40px;
+    color: var(--t1); font-family: var(--f); font-size: .86rem; width: 100%; min-height: 42px;
   }
   .lw-search input::placeholder { color: var(--t4); }
-  /* Category pills */
-  .lw-cats { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .lw-cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
   .lw-cats::-webkit-scrollbar { display: none; }
   .lw-cat {
     display: flex; align-items: center; gap: 5px;
-    padding: 6px 14px; border-radius: 999px;
+    padding: 7px 16px; border-radius: 999px;
     border: 1px solid var(--bdr2); background: rgba(255,255,255,.04);
-    color: var(--t2); font-family: var(--f); font-size: .76rem;
-    cursor: pointer; transition: all .22s var(--silk); white-space: nowrap; font-weight: 500;
+    color: var(--t2); font-family: var(--f); font-size: .77rem;
+    cursor: pointer; transition: all .24s var(--silk); white-space: nowrap; font-weight: 600;
   }
   .lw-cat:hover { border-color: var(--bdr3); color: var(--t1); background: rgba(255,255,255,.07); transform: translateY(-1px); }
-  /* View toggle */
   .lw-view {
     display: flex; gap: 3px; background: rgba(255,255,255,.04);
-    border: 1px solid var(--bdr2); border-radius: 12px; padding: 3px;
+    border: 1px solid var(--bdr2); border-radius: 13px; padding: 3px;
   }
   .lw-vb {
-    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-    border-radius: 8px; border: none; background: transparent; color: var(--t3);
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 9px; border: none; background: transparent; color: var(--t3);
     cursor: pointer; transition: all .2s var(--silk);
   }
-  .lw-vb.on { background: rgba(255,255,255,.11); color: var(--t0); box-shadow: 0 2px 8px rgba(0,0,0,.22); }
+  .lw-vb.on { background: rgba(255,255,255,.12); color: var(--t0); box-shadow: 0 2px 8px rgba(0,0,0,.24); }
   .lw-vb:hover:not(.on) { color: var(--t2); background: rgba(255,255,255,.06); }
 
-  /* Results info */
   .lw-results {
     display: flex; align-items: center; justify-content: space-between;
     gap: .8rem; margin-bottom: clamp(1rem,2vw,1.6rem);
-    padding-bottom: .8rem; border-bottom: 1px solid var(--bdr1);
+    padding-bottom: .9rem; border-bottom: 1px solid var(--bdr1);
   }
-  .lw-results-t { font-family: var(--f); font-size: .78rem; color: var(--t3); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .lw-results-t { font-family: var(--f); font-size: .79rem; color: var(--t3); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .lw-clr {
     display: flex; align-items: center; gap: 5px;
-    padding: 5px 12px; border-radius: 999px;
+    padding: 5px 13px; border-radius: 999px;
     border: 1px solid var(--bdr2); background: rgba(255,255,255,.04);
-    color: var(--t3); font-family: var(--f); font-size: .73rem; cursor: pointer;
+    color: var(--t3); font-family: var(--f); font-size: .74rem; cursor: pointer;
     transition: all .2s var(--silk);
   }
   .lw-clr:hover { color: var(--t1); border-color: var(--bdr3); background: rgba(255,255,255,.07); }
 
   /* ══════════════════════════════════════════════════
-     WRITING CARDS — MOOD-BASED EDITORIAL
+     WRITING CARDS v13 — EDITORIAL MOOD CARDS
   ══════════════════════════════════════════════════ */
-  .lw-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(275px,1fr)); gap: clamp(10px,1.5vw,14px); }
-  .lw-grid-l { display: flex; flex-direction: column; gap: 7px; }
+  .lw-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: clamp(10px,1.6vw,16px); }
+  .lw-grid-l { display: flex; flex-direction: column; gap: 8px; }
 
   .lw-card {
     position: relative; overflow: hidden;
-    background: linear-gradient(175deg, rgba(255,255,255,.052) 0%, rgba(255,255,255,.014) 100%), var(--surf2);
-    border: 1px solid var(--bdr1); border-radius: 22px;
-    cursor: pointer; min-height: 235px;
-    transition: transform .28s var(--silk), box-shadow .28s, border-color .28s;
-    animation: lw-fadeup .38s var(--ease) both;
+    background: linear-gradient(175deg, rgba(255,255,255,.054) 0%, rgba(255,255,255,.014) 100%), var(--surf2);
+    border: 1px solid var(--bdr1); border-radius: 24px;
+    cursor: pointer; min-height: 240px;
+    transition: transform .3s var(--silk), box-shadow .3s, border-color .3s;
+    animation: lw-fadeup .4s var(--ease) both;
   }
   /* Mood accent left bar */
   .lw-card::before {
-    content: ""; position: absolute; left: 0; top: 12%; bottom: 12%;
-    width: 3px; border-radius: 0 3px 3px 0;
+    content: ""; position: absolute; left: 0; top: 10%; bottom: 10%;
+    width: 3px; border-radius: 0 4px 4px 0;
     background: var(--ca, var(--gold)); opacity: 0; transition: opacity .3s;
   }
   .lw-card:hover::before { opacity: 1; }
+  /* Top shimmer line */
+  .lw-card-shimmer {
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ca, var(--gold)), transparent);
+    opacity: 0; transition: opacity .3s;
+  }
+  .lw-card:hover .lw-card-shimmer { opacity: .5; }
   /* Ambient glow */
   .lw-card-glow {
     position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-    width: 140px; height: 100px; border-radius: 50%;
-    background: var(--cg, rgba(201,168,76,.14)); filter: blur(36px);
+    width: 150px; height: 110px; border-radius: 50%;
+    background: var(--cg, rgba(201,168,76,.14)); filter: blur(40px);
     opacity: 0; transition: opacity .4s; pointer-events: none;
   }
   .lw-card:hover .lw-card-glow { opacity: 1; }
   .lw-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(var(--ca-rgb, 201,168,76), .3);
-    box-shadow: 0 24px 60px rgba(0,0,0,.44), 0 0 32px rgba(var(--ca-rgb, 201,168,76), .12);
+    transform: translateY(-7px);
+    border-color: rgba(var(--ca-rgb, 201,168,76), .32);
+    box-shadow: 0 28px 70px rgba(0,0,0,.46), 0 0 36px rgba(var(--ca-rgb, 201,168,76), .14);
   }
-  .lw-card-body { height: 100%; display: flex; flex-direction: column; padding: clamp(1.1rem,2.2vw,1.5rem); }
-  .lw-card-tags { display: flex; align-items: center; gap: 6px; margin-bottom: .85rem; flex-wrap: wrap; }
+  .lw-card-body { height: 100%; display: flex; flex-direction: column; padding: clamp(1.2rem,2.4vw,1.6rem); }
+  .lw-card-tags { display: flex; align-items: center; gap: 7px; margin-bottom: .9rem; flex-wrap: wrap; }
   .lw-card-cat {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 11px; border-radius: 999px; font-family: var(--f); font-size: .7rem;
+    padding: 4px 12px; border-radius: 999px; font-family: var(--f); font-size: .71rem;
     background: var(--cbg, rgba(201,168,76,.08)); color: var(--ca, var(--gold));
     border: 1px solid var(--cbdr, rgba(201,168,76,.22));
-    transition: background .22s; font-weight: 700;
+    transition: background .22s; font-weight: 800;
   }
   .lw-card:hover .lw-card-cat { background: var(--cbadge, rgba(201,168,76,.15)); }
   .lw-card-star {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 8px; border-radius: 999px; font-family: var(--f); font-size: .63rem;
+    padding: 3px 9px; border-radius: 999px; font-family: var(--f); font-size: .64rem;
     background: rgba(251,191,36,.08); color: #FBBF24; border: 1px solid rgba(251,191,36,.22);
   }
   .lw-card-title {
-    font-family: var(--f); font-size: clamp(1rem,2.2vw,1.18rem);
-    color: var(--t0); line-height: 1.62; margin-bottom: .85rem;
-    font-weight: 700; letter-spacing: -.015em;
+    font-family: var(--f); font-size: clamp(1.02rem,2.3vw,1.2rem);
+    color: var(--t0); line-height: 1.64; margin-bottom: .9rem;
+    font-weight: 700; letter-spacing: -.016em;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .lw-card-preview {
-    font-family: var(--f); font-size: .86rem; color: var(--t2); line-height: 2.05;
+    font-family: var(--f); font-size: .87rem; color: var(--t2); line-height: 2.08;
     display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
-    margin-bottom: .9rem;
+    margin-bottom: .95rem;
   }
-  .lw-card-short .lw-card-preview { -webkit-line-clamp: 7; font-size: .88rem; }
-  .lw-card-short { min-height: 195px; }
+  .lw-card-short .lw-card-preview { -webkit-line-clamp: 7; font-size: .89rem; }
+  .lw-card-short { min-height: 200px; }
   .lw-card-foot {
     display: flex; align-items: center; justify-content: space-between;
-    gap: .6rem; margin-top: auto; padding-top: .9rem; border-top: 1px solid var(--bdr1);
+    gap: .6rem; margin-top: auto; padding-top: .95rem; border-top: 1px solid var(--bdr1);
   }
-  .lw-card-date { display: flex; align-items: center; gap: 4px; font-family: var(--f); font-size: .7rem; color: var(--t3); }
-  .lw-card-actions { display: flex; align-items: center; gap: 7px; }
+  .lw-card-date { display: flex; align-items: center; gap: 4px; font-family: var(--f); font-size: .71rem; color: var(--t3); }
+  .lw-card-actions { display: flex; align-items: center; gap: 8px; }
   .lw-card-like {
     background: none; border: none; cursor: pointer; padding: 2px 4px;
-    font-size: .84rem; transition: transform .15s, opacity .15s;
+    font-size: .86rem; transition: transform .15s, opacity .15s;
     opacity: .38;
   }
-  .lw-card-like.liked { opacity: 1; transform: scale(1.24); }
+  .lw-card-like.liked { opacity: 1; transform: scale(1.26); }
   .lw-card-share { background: none; border: none; cursor: pointer; padding: 2px 4px; opacity: .32; transition: opacity .15s; color: var(--t2); display: flex; }
   .lw-card-share:hover { opacity: .7; }
   .lw-card-read {
-    display: flex; align-items: center; gap: 4px;
-    color: var(--ca, var(--gold)); font-family: var(--f); font-size: .76rem; font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+    color: var(--ca, var(--gold)); font-family: var(--f); font-size: .77rem; font-weight: 800;
     background: none; border: none; cursor: pointer; padding: 0;
-    transition: gap .2s var(--silk);
+    transition: gap .22s var(--silk);
   }
-  .lw-card:hover .lw-card-read { gap: 8px; }
+  .lw-card:hover .lw-card-read { gap: 9px; }
 
   /* List mode */
-  .lw-card-l { min-height: 0; border-radius: 16px; }
-  .lw-card-l .lw-card-body { flex-direction: row; align-items: center; gap: 1rem; padding: .9rem 1.2rem; }
-  .lw-card-l .lw-card-title { font-size: .93rem; margin-bottom: .25rem; -webkit-line-clamp: 1; }
+  .lw-card-l { min-height: 0; border-radius: 18px; }
+  .lw-card-l .lw-card-body { flex-direction: row; align-items: center; gap: 1.1rem; padding: .95rem 1.3rem; }
+  .lw-card-l .lw-card-title { font-size: .95rem; margin-bottom: .28rem; -webkit-line-clamp: 1; }
   .lw-card-l .lw-card-preview { display: none; }
   .lw-card-l .lw-card-tags { margin-bottom: 0; }
   .lw-card-l .lw-card-foot { border: none; padding: 0; margin-left: auto; }
@@ -675,110 +800,149 @@ const CSS = `
   .lw-empty { text-align: center; padding: 5rem 2rem; color: var(--t3); font-family: var(--f); }
 
   /* Section divider */
-  .lw-divider { display: flex; align-items: center; gap: 10px; margin: .4rem 0 1.1rem; }
-  .lw-divider-label { font-family: var(--f); font-size: .69rem; letter-spacing: .13em; text-transform: uppercase; font-weight: 700; white-space: nowrap; }
+  .lw-divider { display: flex; align-items: center; gap: 10px; margin: .4rem 0 1.2rem; }
+  .lw-divider-label { font-family: var(--f); font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; white-space: nowrap; }
   .lw-divider-line { flex: 1; height: 1px; }
-  .lw-divider-count { font-family: var(--f); font-size: .65rem; color: var(--t4); white-space: nowrap; }
+  .lw-divider-count { font-family: var(--f); font-size: .66rem; color: var(--t4); white-space: nowrap; }
 
   /* Load more */
-  .lw-more { margin: clamp(1.4rem,2.5vw,2rem) auto 0; display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+  .lw-more { margin: clamp(1.5rem,2.8vw,2.2rem) auto 0; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
   .lw-more-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 13px 30px; border-radius: 999px;
-    border: 1px solid rgba(201,168,76,.28);
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 14px 32px; border-radius: 999px;
+    border: 1px solid rgba(201,168,76,.3);
     background: linear-gradient(135deg, rgba(201,168,76,.12), rgba(255,255,255,.04));
-    color: var(--gold); font-family: var(--f); font-size: .84rem;
-    cursor: pointer; transition: all .26s var(--silk); font-weight: 700;
+    color: var(--gold); font-family: var(--f); font-size: .86rem;
+    cursor: pointer; transition: all .28s var(--silk); font-weight: 800;
   }
   .lw-more-btn:hover {
     transform: translateY(-3px);
-    border-color: rgba(201,168,76,.52);
+    border-color: rgba(201,168,76,.55);
     background: linear-gradient(135deg, rgba(201,168,76,.22), rgba(255,255,255,.06));
-    box-shadow: 0 12px 36px rgba(201,168,76,.22);
+    box-shadow: 0 12px 36px rgba(201,168,76,.2);
   }
-  .lw-more-note { font-size: .71rem; color: var(--t3); font-family: var(--f); }
+  .lw-more-note { font-family: var(--f); font-size: .72rem; color: var(--t4); }
 
   /* ══════════════════════════════════════════════════
-     IMMERSIVE READER MODAL v12
+     CTA SECTION — READING INVITATION
+  ══════════════════════════════════════════════════ */
+  .lw-cta {
+    position: relative; overflow: hidden;
+    border-radius: clamp(22px,3.8vw,42px);
+    margin-bottom: clamp(1.4rem,3.2vw,2.8rem);
+    padding: clamp(2.5rem,5vw,4rem) clamp(2rem,4vw,3.5rem);
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 0%, rgba(201,168,76,.22) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 45% at 0% 100%, rgba(96,165,250,.1) 0%, transparent 48%),
+      linear-gradient(160deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.015) 100%),
+      #0A0E1E;
+    border: 1px solid rgba(201,168,76,.18);
+    box-shadow: 0 32px 100px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.08);
+    text-align: center;
+  }
+  .lw-cta::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(201,168,76,.7), rgba(255,255,255,.4), rgba(201,168,76,.7), transparent 95%);
+  }
+  .lw-cta-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.24);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.6rem; color: var(--gold);
+    box-shadow: 0 0 36px rgba(201,168,76,.2);
+  }
+  .lw-cta h2 {
+    font-family: var(--f); font-size: clamp(1.4rem,3.5vw,2.4rem);
+    color: var(--t0); font-weight: 700; letter-spacing: -.03em;
+    margin: 0 0 .9rem; line-height: 1.3;
+  }
+  .lw-cta p {
+    font-family: var(--f); font-size: clamp(.9rem,2vw,1.05rem);
+    color: var(--t2); line-height: 2.0; max-width: 560px; margin: 0 auto 2rem;
+  }
+  .lw-cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ══════════════════════════════════════════════════
+     IMMERSIVE READER MODAL v13
   ══════════════════════════════════════════════════ */
   .lw-rm {
     position: fixed; inset: 0; z-index: 9999;
-    background: rgba(2,3,9,.9); backdrop-filter: blur(22px) saturate(150%);
+    background: rgba(2,3,9,.92); backdrop-filter: blur(24px) saturate(160%);
     display: flex; align-items: flex-end; justify-content: center;
   }
   .lw-rm-box {
-    width: 100%; max-width: 840px; max-height: 95vh;
-    border-radius: 30px 30px 0 0; overflow: hidden;
+    width: 100%; max-width: 860px; max-height: 95vh;
+    border-radius: 32px 32px 0 0; overflow: hidden;
     display: flex; flex-direction: column;
-    box-shadow: 0 -48px 140px rgba(0,0,0,.85), 0 -1px 0 rgba(255,255,255,.09);
+    box-shadow: 0 -52px 150px rgba(0,0,0,.88), 0 -1px 0 rgba(255,255,255,.1);
   }
-  .lw-rm-handle { width: 42px; height: 4px; border-radius: 999px; margin: 12px auto 0; flex-shrink: 0; }
-  .lw-rm-prog { height: 2px; flex-shrink: 0; margin-top: 10px; background: rgba(255,255,255,.05); }
+  .lw-rm-handle { width: 44px; height: 4px; border-radius: 999px; margin: 13px auto 0; flex-shrink: 0; }
+  .lw-rm-prog { height: 2px; flex-shrink: 0; margin-top: 11px; background: rgba(255,255,255,.05); }
   .lw-rm-pf { height: 100%; border-radius: 999px; transition: width .1s linear; }
   .lw-rm-hd {
     display: flex; align-items: center; justify-content: space-between;
-    padding: .9rem 1.6rem; border-bottom: 1px solid; flex-shrink: 0; gap: 10px; flex-wrap: wrap;
+    padding: .95rem 1.7rem; border-bottom: 1px solid; flex-shrink: 0; gap: 10px; flex-wrap: wrap;
   }
   .lw-rm-hdl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .lw-rm-ctrl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .lw-rm-btn {
     display: flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: 10px; border: 1px solid;
+    width: 36px; height: 36px; border-radius: 11px; border: 1px solid;
     background: none; cursor: pointer; transition: all .2s var(--silk);
   }
   .lw-rm-btn:hover { opacity: .8; transform: scale(1.06); }
-  .lw-rm-fc { display: flex; border-radius: 10px; border: 1px solid; overflow: hidden; }
+  .lw-rm-fc { display: flex; border-radius: 11px; border: 1px solid; overflow: hidden; }
   .lw-rm-fb {
     display: flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; background: none; border: none; cursor: pointer; transition: background .15s;
+    width: 36px; height: 36px; background: none; border: none; cursor: pointer; transition: background .15s;
   }
   .lw-rm-fb:hover { background: rgba(255,255,255,.07); }
   .lw-rm-th {
-    display: flex; align-items: center; gap: 5px; padding: 0 12px; height: 34px;
-    border-radius: 10px; border: 1px solid; background: none; cursor: pointer;
-    font-family: var(--f); font-size: .69rem; transition: all .2s; font-weight: 600;
+    display: flex; align-items: center; gap: 5px; padding: 0 13px; height: 36px;
+    border-radius: 11px; border: 1px solid; background: none; cursor: pointer;
+    font-family: var(--f); font-size: .7rem; transition: all .2s; font-weight: 700;
   }
   .lw-rm-th:hover { opacity: .78; }
   .lw-rm-body {
     flex: 1; overflow-y: auto;
-    padding: clamp(1.8rem,5vw,3.8rem) clamp(1.5rem,6vw,5rem);
+    padding: clamp(2rem,5.5vw,4rem) clamp(1.6rem,6.5vw,5.5rem);
     scroll-behavior: smooth;
   }
   .lw-rm-body::-webkit-scrollbar { width: 4px; }
   .lw-rm-body::-webkit-scrollbar-track { background: transparent; }
   .lw-rm-body::-webkit-scrollbar-thumb { background: rgba(201,168,76,.28); border-radius: 999px; }
-  .lw-rm-ttl { font-family: var(--f); font-size: clamp(1.65rem,5vw,2.65rem); line-height: 1.44; margin-bottom: 2.1rem; font-weight: 700; letter-spacing: -.022em; }
-  .lw-rm-txt { font-family: var(--f); line-height: 2.38; white-space: pre-wrap; word-break: break-word; font-size: 1.08rem; letter-spacing: .01em; }
-  .lw-rm-txt p { margin-bottom: 2rem; line-height: inherit; font-size: inherit; }
-  .lw-rm-sig { margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid; font-family: var(--f); font-size: .88rem; opacity: .5; font-style: italic; letter-spacing: .02em; }
+  .lw-rm-ttl { font-family: var(--f); font-size: clamp(1.7rem,5.2vw,2.7rem); line-height: 1.44; margin-bottom: 2.2rem; font-weight: 700; letter-spacing: -.024em; }
+  .lw-rm-txt { font-family: var(--f); line-height: 2.42; white-space: pre-wrap; word-break: break-word; font-size: 1.1rem; letter-spacing: .01em; }
+  .lw-rm-txt p { margin-bottom: 2.1rem; line-height: inherit; font-size: inherit; }
+  .lw-rm-sig { margin-top: 3.8rem; padding-top: 2.2rem; border-top: 1px solid; font-family: var(--f); font-size: .9rem; opacity: .5; font-style: italic; letter-spacing: .02em; }
   .lw-rm-nav { display: flex; border-top: 1px solid; flex-shrink: 0; }
   .lw-rm-nb {
     flex: 1; display: flex; align-items: center; gap: 10px;
-    padding: 1.15rem 1.6rem; background: none; border: none; cursor: pointer; transition: background .2s;
+    padding: 1.2rem 1.7rem; background: none; border: none; cursor: pointer; transition: background .2s;
   }
   .lw-rm-nb:hover { background: rgba(255,255,255,.04); }
   .lw-rm-nb:disabled { opacity: .3; cursor: default; }
   .lw-rm-nb:disabled:hover { background: none; }
   .lw-rm-nb + .lw-rm-nb { border-left: 1px solid; }
-  .lw-rm-nl { display: block; font-family: var(--f); font-size: .63rem; margin-bottom: 3px; letter-spacing: .07em; text-transform: uppercase; }
-  .lw-rm-nt { display: block; font-family: var(--f); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 215px; font-weight: 700; }
-  .lw-rm-sdd { position: absolute; top: calc(100% + 8px); right: 0; background: #0A0E1E; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; overflow: hidden; min-width: 190px; box-shadow: 0 18px 55px rgba(0,0,0,.62); z-index: 10; }
-  .lw-rm-si { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; background: none; border: none; cursor: pointer; font-family: var(--f); font-size: .82rem; transition: background .15s; }
+  .lw-rm-nl { display: block; font-family: var(--f); font-size: .64rem; margin-bottom: 3px; letter-spacing: .08em; text-transform: uppercase; }
+  .lw-rm-nt { display: block; font-family: var(--f); font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; font-weight: 700; }
+  .lw-rm-sdd { position: absolute; top: calc(100% + 8px); right: 0; background: #0A0E1E; border: 1px solid rgba(255,255,255,.12); border-radius: 15px; overflow: hidden; min-width: 195px; box-shadow: 0 20px 60px rgba(0,0,0,.65); z-index: 10; }
+  .lw-rm-si { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 17px; background: none; border: none; cursor: pointer; font-family: var(--f); font-size: .83rem; transition: background .15s; }
   .lw-rm-si:hover { background: rgba(255,255,255,.07); }
 
   /* ── BOOK MODAL ── */
-  .lw-bm { position: fixed; inset: 0; z-index: 9999; background: rgba(1,2,7,.9); backdrop-filter: blur(22px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
-  .lw-bm-box { width: 100%; max-width: 740px; max-height: 92vh; border-radius: 30px; background: #0A0F20; border: 1px solid rgba(255,255,255,.12); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 55px 145px rgba(0,0,0,.82), inset 0 1px 0 rgba(255,255,255,.08); }
-  .lw-bm-hd { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,.07); flex-shrink: 0; }
-  .lw-bm-in { display: flex; gap: clamp(1.3rem,3vw,2.4rem); padding: clamp(1.4rem,3vw,2.4rem); overflow-y: auto; align-items: flex-start; }
+  .lw-bm { position: fixed; inset: 0; z-index: 9999; background: rgba(1,2,7,.92); backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .lw-bm-box { width: 100%; max-width: 760px; max-height: 92vh; border-radius: 32px; background: #0A0F20; border: 1px solid rgba(255,255,255,.12); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 60px 160px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.09); }
+  .lw-bm-hd { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.7rem; border-bottom: 1px solid rgba(255,255,255,.07); flex-shrink: 0; }
+  .lw-bm-in { display: flex; gap: clamp(1.4rem,3.2vw,2.6rem); padding: clamp(1.5rem,3.2vw,2.6rem); overflow-y: auto; align-items: flex-start; }
   .lw-bm-in::-webkit-scrollbar { width: 4px; }
   .lw-bm-in::-webkit-scrollbar-thumb { background: rgba(201,168,76,.22); border-radius: 999px; }
   .lw-bm-cw { flex-shrink: 0; }
-  .lw-bm-cv { width: clamp(125px,21vw,175px); height: auto; border-radius: 15px; box-shadow: 0 22px 65px rgba(0,0,0,.62), inset 0 0 0 1px rgba(255,255,255,.12); display: block; }
+  .lw-bm-cv { width: clamp(130px,22vw,180px); height: auto; border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.12); display: block; }
   .lw-bm-cnt { flex: 1; min-width: 0; }
 
   /* ── ANIMATIONS ── */
-  @keyframes lw-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes lw-fadeup { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
   @keyframes lw-shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
 
   /* ── SKELETON ── */
@@ -786,10 +950,10 @@ const CSS = `
     background: linear-gradient(90deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.09) 40%, rgba(255,255,255,.04) 80%);
     background-size: 600px 100%; animation: lw-shimmer 1.6s ease-in-out infinite; border-radius: 8px;
   }
-  .lw-sk-card { border-radius: 22px; border: 1px solid rgba(255,255,255,.05); background: rgba(9,12,24,.75); min-height: 235px; padding: 1.3rem; display: flex; flex-direction: column; gap: .9rem; }
-  .lw-sk-tag  { height: 21px; width: 78px; }
-  .lw-sk-ttl  { height: 19px; width: 74%; }
-  .lw-sk-ttl2 { height: 19px; width: 54%; margin-top: -5px; }
+  .lw-sk-card { border-radius: 24px; border: 1px solid rgba(255,255,255,.05); background: rgba(9,12,24,.75); min-height: 240px; padding: 1.4rem; display: flex; flex-direction: column; gap: .95rem; }
+  .lw-sk-tag  { height: 22px; width: 80px; }
+  .lw-sk-ttl  { height: 20px; width: 74%; }
+  .lw-sk-ttl2 { height: 20px; width: 54%; margin-top: -5px; }
   .lw-sk-line { height: 13px; }
   .lw-sk-l2   { height: 13px; width: 84%; }
   .lw-sk-l3   { height: 13px; width: 64%; }
@@ -797,11 +961,11 @@ const CSS = `
 
   /* ── SCROLLBAR & SELECTION ── */
   * { scrollbar-width: thin; scrollbar-color: rgba(201,168,76,.22) transparent; }
-  ::selection { background: rgba(201,168,76,.26); color: var(--t0); }
+  ::selection { background: rgba(201,168,76,.28); color: var(--t0); }
 
   /* ── ACCESSIBILITY ── */
   .lw-book-card, .lw-card, .lw-cat, .lw-vb, .lw-more-btn { outline: none; }
-  .lw-book-card:focus-visible, .lw-card:focus-visible, .lw-cat:focus-visible, .lw-more-btn:focus-visible { box-shadow: 0 0 0 3px rgba(201,168,76,.34), 0 0 0 1px rgba(242,237,228,.14) inset; }
+  .lw-book-card:focus-visible, .lw-card:focus-visible, .lw-cat:focus-visible, .lw-more-btn:focus-visible { box-shadow: 0 0 0 3px rgba(201,168,76,.36), 0 0 0 1px rgba(242,237,228,.14) inset; }
 
   /* ── TOUCH ── */
   @media (hover: none) {
@@ -819,9 +983,12 @@ const CSS = `
   /* ══════════════════════════════════════════════════
      RESPONSIVE
   ══════════════════════════════════════════════════ */
+  @media (max-width: 1024px) {
+    .lw-hero-inner { grid-template-columns: 1fr; }
+    .lw-hero-showcase { min-height: 320px; }
+    .lw-hero-calligraphy { font-size: 18rem; opacity: .03; }
+  }
   @media (max-width: 980px) {
-    .lw-hero-grid { grid-template-columns: 1fr; }
-    .lw-hero-showcase { min-height: 310px; }
     .lw-panel-head { flex-direction: column; }
     .lw-featured-inner { grid-template-columns: auto 1fr; }
   }
@@ -829,62 +996,67 @@ const CSS = `
     .lw-cats { display: flex; }
     .lw-grid { grid-template-columns: 1fr; }
     .lw-results { align-items: flex-start; flex-direction: column; }
-    .lw-hero, .lw-panel { border-radius: 22px; }
-    .lw-tools { border-radius: 18px; }
+    .lw-hero, .lw-panel, .lw-quotes, .lw-cta { border-radius: 24px; }
+    .lw-tools { border-radius: 20px; }
     .lw-bm-in { flex-direction: column; }
-    .lw-bm-cv { width: clamp(100px,36vw,145px); }
-    .lw-rm-nt { max-width: 135px; }
+    .lw-bm-cv { width: clamp(105px,38vw,150px); }
+    .lw-rm-nt { max-width: 140px; }
     .lw-featured-inner { grid-template-columns: 1fr; text-align: center; }
     .lw-featured-cover-wrap { display: flex; justify-content: center; }
     .lw-featured-actions { justify-content: center; }
-    .lw-books-grid { grid-template-columns: repeat(2, 1fr); }
+    .lw-bookshelf { grid-template-columns: repeat(2, 1fr); }
+    .lw-hero-calligraphy { display: none; }
   }
   @media (max-width: 480px) {
-    .lw-hero-h1 { font-size: clamp(1.7rem,10vw,2.5rem); line-height: 1.12; }
-    .lw-hero-sub { font-size: .88rem; line-height: 1.8; }
-    .lw-hero { padding: 1.2rem; margin-bottom: .9rem; }
-    .lw-hero-grid { gap: 1rem; }
-    .lw-hero-showcase { min-height: 260px; border-radius: 22px; }
-    .lw-hero-stack { inset: 22px 14px; gap: 8px; }
-    .lw-hero-book { width: 66px; border-radius: 11px; }
-    .lw-hero-book:nth-child(2) { width: 80px; }
-    .lw-panel { padding: .9rem; margin-bottom: 1.1rem; }
-    .lw-panel-head h2 { font-size: 1.3rem; }
-    .lw-panel-head p { font-size: .8rem; }
-    .lw-featured-inner { padding: 1rem; }
-    .lw-featured-cover { width: min(140px,50vw); }
+    .lw-hero-h1 { font-size: clamp(1.8rem,10.5vw,2.6rem); line-height: 1.1; }
+    .lw-hero-sub { font-size: .9rem; line-height: 1.82; }
+    .lw-hero { padding: 1.4rem; margin-bottom: 1rem; }
+    .lw-hero-inner { gap: 1.2rem; }
+    .lw-hero-showcase { min-height: 270px; border-radius: 24px; }
+    .lw-hero-stack { inset: 24px 14px; gap: 9px; }
+    .lw-hero-book { width: 68px; border-radius: 12px; }
+    .lw-hero-book:nth-child(2) { width: 84px; }
+    .lw-panel, .lw-quotes, .lw-cta { padding: 1.1rem; margin-bottom: 1.2rem; }
+    .lw-panel-head h2 { font-size: 1.35rem; }
+    .lw-panel-head p { font-size: .82rem; }
+    .lw-featured-inner { padding: 1.1rem; }
+    .lw-featured-cover { width: min(145px,52vw); }
     .lw-featured-actions { flex-direction: column; }
     .lw-featured-actions > * { width: 100%; justify-content: center; }
-    .lw-books-grid { grid-template-columns: repeat(2,1fr); gap: .75rem; }
-    .lw-book-cover { width: 100px; }
-    .lw-book-title { font-size: .95rem; }
-    .lw-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 9px; margin: .5rem 0 1.4rem; }
-    .lw-card { min-height: 188px; }
-    .lw-rm-box { border-radius: 22px 22px 0 0; }
-    .lw-rm-body { padding: 1.8rem 1.4rem; }
-    .lw-rm-ttl { font-size: 1.72rem; margin-bottom: 1.6rem; }
-    .lw-rm-txt { font-size: 1.04rem; line-height: 2.2; }
-    .lw-card-l .lw-card-body { flex-direction: column; align-items: flex-start; gap: .75rem; }
+    .lw-bookshelf { grid-template-columns: repeat(2,1fr); gap: .8rem; }
+    .lw-book-cover { width: 104px; }
+    .lw-book-title { font-size: .97rem; }
+    .lw-tools { grid-template-columns: 1fr; position: relative; top: auto; padding: 10px; margin: .6rem 0 1.5rem; }
+    .lw-card { min-height: 192px; }
+    .lw-rm-box { border-radius: 24px 24px 0 0; }
+    .lw-rm-body { padding: 1.9rem 1.5rem; }
+    .lw-rm-ttl { font-size: 1.76rem; margin-bottom: 1.7rem; }
+    .lw-rm-txt { font-size: 1.06rem; line-height: 2.25; }
+    .lw-card-l .lw-card-body { flex-direction: column; align-items: flex-start; gap: .8rem; }
     .lw-card-l .lw-card-foot { width: 100%; margin-left: 0; justify-content: space-between; }
     .lw-view { justify-self: end; }
-    .lw-hero-stats { gap: .5rem; }
-    .lw-hero-stat { padding: 6px 10px; font-size: .7rem; }
-    .lw-cat { padding: 8px 14px; font-size: .78rem; min-height: 38px; }
-    .lw-search { height: 44px; }
-    .lw-search input { font-size: .88rem; }
-    .lw-vb { width: 34px; height: 34px; }
-    .lw-more-btn { padding: 14px 30px; font-size: .88rem; min-height: 50px; }
-    .lw-card-foot { padding-top: .9rem; }
-    .lw-book-actions > * { min-height: 42px; font-size: .82rem; }
-    .lw-featured-actions > * { min-height: 48px; font-size: .86rem; }
+    .lw-hero-stats { gap: .55rem; }
+    .lw-hero-stat { padding: 10px 16px; }
+    .lw-hero-stat-n { font-size: 1.2rem; }
+    .lw-cat { padding: 8px 14px; font-size: .79rem; min-height: 40px; }
+    .lw-search { height: 46px; }
+    .lw-search input { font-size: .9rem; }
+    .lw-vb { width: 36px; height: 36px; }
+    .lw-more-btn { padding: 14px 32px; font-size: .9rem; min-height: 52px; }
+    .lw-card-foot { padding-top: .95rem; }
+    .lw-book-actions > * { min-height: 44px; font-size: .84rem; }
+    .lw-featured-actions > * { min-height: 50px; font-size: .88rem; }
+    .lw-quotes-text { font-size: 1rem; }
+    .lw-cta-actions { flex-direction: column; align-items: center; }
+    .lw-cta-actions > * { width: 100%; max-width: 280px; justify-content: center; }
   }
   @media (max-width: 360px) {
-    .lw-wrap { padding: .9rem .7rem; }
-    .lw-hero { padding: .95rem; }
-    .lw-panel { padding: .75rem; }
+    .lw-wrap { padding: .9rem .75rem; }
+    .lw-hero { padding: 1rem; }
+    .lw-panel, .lw-quotes, .lw-cta { padding: .85rem; }
     .lw-grid { grid-template-columns: 1fr; }
-    .lw-books-grid { grid-template-columns: 1fr; }
-    .lw-tools { padding: 7px; gap: 6px; }
+    .lw-bookshelf { grid-template-columns: 1fr; }
+    .lw-tools { padding: 8px; gap: 7px; }
   }
 `;
 
@@ -927,22 +1099,23 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
         "--ca-rgb": c.rgb,
         animationDelay: `${index * 0.04}s`,
       } as React.CSSProperties}
-      initial={{ opacity: 0, y: 22 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
-      transition={{ duration: .42, delay: index * 0.03, ease: [.25,.46,.45,.94] }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      transition={{ duration: .44, delay: index * 0.03, ease: [.25,.46,.45,.94] }}
       onClick={onClick}
       role="article" tabIndex={0}
       aria-label={`${writing.title} পড়ুন`}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
       whileTap={{ scale: .97 }}
     >
+      <div className="lw-card-shimmer"/>
       <div className="lw-card-glow"/>
       <div className="lw-card-body">
         {isL ? (
           <>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="lw-card-tags">
-                {!isShort && <span className="lw-card-cat"><span style={{ fontSize: ".74rem" }}>{c.icon}</span>{writing.category}</span>}
+                {!isShort && <span className="lw-card-cat"><span style={{ fontSize: ".76rem" }}>{c.icon}</span>{writing.category}</span>}
                 {writing.featured && <span className="lw-card-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
               </div>
               <div className="lw-card-title">{writing.title}</div>
@@ -961,11 +1134,11 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
         ) : (
           <>
             <div className="lw-card-tags">
-              {!isShort && <span className="lw-card-cat"><span style={{ fontSize: ".74rem" }}>{c.icon}</span>{writing.category}</span>}
+              {!isShort && <span className="lw-card-cat"><span style={{ fontSize: ".76rem" }}>{c.icon}</span>{writing.category}</span>}
               {writing.featured && <span className="lw-card-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
             </div>
-            {!isShort && <div className="lw-card-title">{writing.title}</div>}
-            <div className="lw-card-preview">{writing.content}</div>
+            <div className="lw-card-title">{writing.title}</div>
+            <p className="lw-card-preview">{makeExcerpt(writing.content, 200)}</p>
             <div className="lw-card-foot">
               <span className="lw-card-date"><Calendar size={10}/>{writing.date}</span>
               <div className="lw-card-actions">
@@ -983,14 +1156,168 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
   );
 }
 
-// ── Immersive Reader Modal ────────────────────────────────────────────────────
+// ── Animated Counter ──────────────────────────────────────────────────────────
+function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!isInView) return;
+    let start = 0;
+    const duration = 1800;
+    const step = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [isInView, target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
+// ── Quote Spotlight ───────────────────────────────────────────────────────────
+function QuoteSpotlight() {
+  const [active, setActive] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActive(a => (a + 1) % FEATURED_QUOTES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const q = FEATURED_QUOTES[active];
+
+  return (
+    <motion.div
+      ref={ref}
+      className="lw-quotes"
+      initial={{ opacity: 0, y: 28 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+      transition={{ duration: .55, ease: [.25,.46,.45,.94] }}
+    >
+      <div className="lw-quotes-icon">
+        <Quote size={22}/>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={active}
+          className="lw-quotes-text"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -14 }}
+          transition={{ duration: .4, ease: [.25,.46,.45,.94] }}
+        >
+          "{q.text}"
+        </motion.p>
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={active + "-cat"}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: .3 }}
+        >
+          <span
+            className="lw-quotes-cat"
+            style={{
+              background: `${q.color}14`,
+              border: `1px solid ${q.color}28`,
+              color: q.color,
+            }}
+          >
+            — মাহবুব সরদার সবুজ · {q.cat}
+          </span>
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="lw-quotes-dots">
+        {FEATURED_QUOTES.map((_, i) => (
+          <button
+            key={i}
+            className={`lw-quotes-dot${i === active ? " active" : ""}`}
+            onClick={() => setActive(i)}
+            aria-label={`Quote ${i + 1}`}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── CTA Section ───────────────────────────────────────────────────────────────
+function ReadingCTA() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
+
+  return (
+    <motion.div
+      ref={ref}
+      className="lw-cta"
+      initial={{ opacity: 0, y: 28 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+      transition={{ duration: .55, ease: [.25,.46,.45,.94] }}
+    >
+      <div className="lw-cta-icon">
+        <Feather size={26}/>
+      </div>
+      <h2>আরো পড়তে চান?</h2>
+      <p>
+        মাহবুব সরদার সবুজের আবৃত্তি শুনুন, নতুন লেখার আপডেট পান এবং সরদার সংবাদে যুক্ত থাকুন।
+      </p>
+      <div className="lw-cta-actions">
+        <Link
+          href="/facebook-recitations"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "13px 28px", borderRadius: 18,
+            background: "linear-gradient(135deg, #C9A84C, #A07830)",
+            color: "#060810", fontFamily: "var(--f)", fontSize: ".88rem",
+            textDecoration: "none", fontWeight: 800,
+            boxShadow: "0 10px 32px rgba(201,168,76,.38)",
+            transition: "all .28s cubic-bezier(.16,1,.3,1)",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 18px 44px rgba(201,168,76,.48)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ""; (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 10px 32px rgba(201,168,76,.38)"; }}
+        >
+          <Eye size={15}/> আবৃত্তি দেখুন
+        </Link>
+        <Link
+          href="/news"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "12px 26px", borderRadius: 18,
+            background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.16)",
+            color: "rgba(242,237,228,.88)", fontFamily: "var(--f)", fontSize: ".88rem",
+            textDecoration: "none", fontWeight: 600,
+            transition: "all .28s cubic-bezier(.16,1,.3,1)",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,.12)"; (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-2px)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,.06)"; (e.currentTarget as HTMLAnchorElement).style.transform = ""; }}
+        >
+          <TrendingUp size={15}/> সরদার সংবাদ
+        </Link>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Writing Modal ─────────────────────────────────────────────────────────────
 function WritingModal({ writing, allWritings, onClose, onNavigate }: {
-  writing: Writing; allWritings: Writing[];
-  onClose: () => void; onNavigate: (w: Writing) => void;
+  writing: Writing; allWritings: Writing[]; onClose: () => void; onNavigate: (w: Writing) => void;
 }) {
   const c = getCatStyle(writing.category);
   const isShort = writing.category === "ছোট লেখা";
-  const [fontSize, setFontSize] = useState(1.0);
+  const [fontSize, setFontSize] = useState(1.1);
   const [theme, setTheme] = useState<"dark"|"sepia"|"light">("dark");
   const [progress, setProgress] = useState(0);
   const [showShare, setShowShare] = useState(false);
@@ -1052,7 +1379,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         <div className="lw-rm-prog"><div className="lw-rm-pf" style={{ width: `${progress}%`, background: T.prog }}/></div>
         <div className="lw-rm-hd" style={{ borderColor: T.bdr }}>
           <div className="lw-rm-hdl">
-            <span style={{ fontFamily:"var(--f)", fontSize:".71rem", color:T.sub, fontWeight:500 }}>লেখালেখি ও বই</span>
+            <span style={{ fontFamily:"var(--f)", fontSize:".72rem", color:T.sub, fontWeight:500 }}>লেখালেখি ও বই</span>
           </div>
           <div className="lw-rm-ctrl">
             <div className="lw-rm-fc" style={{ borderColor: T.bdr }}>
@@ -1061,7 +1388,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             </div>
             <button className="lw-rm-th" style={{ color: T.sub, borderColor: T.bdr }} onClick={() => setTheme(t => t === "dark" ? "sepia" : t === "sepia" ? "light" : "dark")}>
               {theme === "dark" ? <Moon size={12}/> : theme === "sepia" ? <Scroll size={12}/> : <Sun size={12}/>}
-              <span style={{ fontSize:".68rem" }}>{theme === "dark" ? "ডার্ক" : theme === "sepia" ? "সেপিয়া" : "লাইট"}</span>
+              <span style={{ fontSize:".69rem" }}>{theme === "dark" ? "ডার্ক" : theme === "sepia" ? "সেপিয়া" : "লাইট"}</span>
             </button>
             <div style={{ position:"relative" }} ref={shareRef}>
               <button className="lw-rm-btn" style={{ color: T.sub, borderColor: T.bdr }} onClick={() => setShowShare(s => !s)}><Share2 size={13}/></button>
@@ -1078,11 +1405,10 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         </div>
 
         <div className="lw-rm-body" ref={bodyRef}>
-          {/* Header */}
-          <div style={{ marginBottom: "2.2rem", paddingBottom: "1.6rem", borderBottom: `1px solid ${T.bdr}` }}>
+          <div style={{ marginBottom: "2.4rem", paddingBottom: "1.8rem", borderBottom: `1px solid ${T.bdr}` }}>
             {!isShort && (
-              <div style={{ marginBottom: ".9rem" }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 14px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".69rem", fontWeight:700, letterSpacing:".06em", textTransform:"uppercase" }}>
+              <div style={{ marginBottom: "1rem" }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 14px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".7rem", fontWeight:800, letterSpacing:".07em", textTransform:"uppercase" }}>
                   <span>{c.icon}</span>{writing.category}
                 </span>
               </div>
@@ -1090,31 +1416,29 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             <h1 className="lw-rm-ttl" style={{ color: T.txt }}>
               {writing.title}
             </h1>
-            <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:"0.5rem 1.1rem" }}>
+            <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:"0.5rem 1.2rem" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <div style={{ width:30, height:30, borderRadius:"50%", background:`linear-gradient(135deg, ${c.accent}28, ${c.accent}10)`, border:`1.5px solid ${c.accent}38`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Feather size={12} color={c.accent}/>
+                <div style={{ width:32, height:32, borderRadius:"50%", background:`linear-gradient(135deg, ${c.accent}28, ${c.accent}10)`, border:`1.5px solid ${c.accent}38`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Feather size={13} color={c.accent}/>
                 </div>
                 <div>
-                  <div style={{ fontFamily:"var(--f)", fontSize:".8rem", color:T.txt, fontWeight:700, lineHeight:1.2 }}>মাহবুব সরদার সবুজ</div>
-                  <div style={{ fontFamily:"var(--f)", fontSize:".66rem", color:T.sub, lineHeight:1.2 }}>লেখক ও কবি</div>
+                  <div style={{ fontFamily:"var(--f)", fontSize:".82rem", color:T.txt, fontWeight:700, lineHeight:1.2 }}>মাহবুব সরদার সবুজ</div>
+                  <div style={{ fontFamily:"var(--f)", fontSize:".67rem", color:T.sub, lineHeight:1.2 }}>লেখক ও কবি</div>
                 </div>
               </div>
               <span style={{ color:T.bdr, fontSize:".8rem" }}>·</span>
-              <span style={{ fontFamily:"var(--f)", fontSize:".73rem", color:T.sub }}>{writing.date}</span>
+              <span style={{ fontFamily:"var(--f)", fontSize:".74rem", color:T.sub }}>{writing.date}</span>
               <span style={{ color:T.bdr, fontSize:".8rem" }}>·</span>
-              <span style={{ fontFamily:"var(--f)", fontSize:".73rem", color:T.sub, display:"flex", alignItems:"center", gap:4 }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
+              <span style={{ fontFamily:"var(--f)", fontSize:".74rem", color:T.sub, display:"flex", alignItems:"center", gap:4 }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
             </div>
           </div>
 
-          {/* Body text */}
           <div className="lw-rm-txt" style={{ color: T.txt, fontSize: `${fontSize}rem` }}>
             {writing.content.split(/\n\n+/).map((para, i) => (
               para.trim() ? <p key={i}>{para.trim()}</p> : null
             ))}
           </div>
 
-          {/* Signature */}
           <div className="lw-rm-sig" style={{ borderColor: T.bdr, color: T.txt }}>
             <span style={{ color:c.accent, marginRight:6 }}>{c.icon}</span>
             মাহবুব সরদার সবুজ
@@ -1124,14 +1448,13 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
             {writing.date}
           </div>
 
-          {/* Related writings */}
           {related.length > 0 && (
-            <div style={{ marginTop:"2.4rem", paddingTop:"1.8rem", borderTop:`1px solid ${T.bdr}` }}>
-              <p style={{ color:T.sub, fontSize:".7rem", fontFamily:"var(--f)", letterSpacing:".12em", textTransform:"uppercase", marginBottom:"1rem", fontWeight:700 }}>সম্পর্কিত লেখা</p>
-              <div style={{ display:"flex", flexDirection:"column", gap:".55rem" }}>
+            <div style={{ marginTop:"2.6rem", paddingTop:"2rem", borderTop:`1px solid ${T.bdr}` }}>
+              <p style={{ color:T.sub, fontSize:".71rem", fontFamily:"var(--f)", letterSpacing:".13em", textTransform:"uppercase", marginBottom:"1.1rem", fontWeight:800 }}>সম্পর্কিত লেখা</p>
+              <div style={{ display:"flex", flexDirection:"column", gap:".6rem" }}>
                 {related.map(rw => (
                   <button key={rw.id} onClick={() => onNavigate(rw)}
-                    style={{ textAlign:"left", padding:".75rem 1.1rem", borderRadius:12, background:T.card, border:`1px solid ${T.bdr}`, color:T.txt, cursor:"pointer", fontSize:".84rem", fontFamily:"var(--f)", lineHeight:1.48, transition:"background .15s, border-color .15s" }}
+                    style={{ textAlign:"left", padding:".8rem 1.2rem", borderRadius:14, background:T.card, border:`1px solid ${T.bdr}`, color:T.txt, cursor:"pointer", fontSize:".86rem", fontFamily:"var(--f)", lineHeight:1.5, transition:"background .15s, border-color .15s" }}
                     onMouseEnter={e => { (e.currentTarget.style.background="rgba(255,255,255,.08)"); }}
                     onMouseLeave={e => { (e.currentTarget.style.background=T.card); }}>
                     {rw.title}
@@ -1142,7 +1465,6 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
           )}
         </div>
 
-        {/* Navigation */}
         <div className="lw-rm-nav" style={{ borderColor: T.bdr }}>
           <button className="lw-rm-nb" style={{ borderColor:T.bdr }} onClick={() => prev && onNavigate(prev)} disabled={!prev}>
             <ChevronLeft size={16} style={{ color:prev?c.accent:T.sub, flexShrink:0 }}/>
@@ -1159,50 +1481,6 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
   );
 }
 
-// ── Hero Section ──────────────────────────────────────────────────────────────
-function LiteraryHero({ totalWritings }: { totalWritings: number }) {
-  const heroBooks = ebooks.filter(b => b.isFeatured).slice(0, 3);
-  const books = heroBooks.length >= 3 ? heroBooks : ebooks.slice(0, 3);
-
-  return (
-    <motion.section
-      className="lw-hero"
-      aria-labelledby="lw-hero-title"
-      initial={{ opacity: 0, y: 26 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: .56, ease: [.25,.46,.45,.94] }}
-    >
-      <div className="lw-hero-grid">
-        <div>
-          <motion.div className="lw-hero-eyebrow" initial={{ opacity:0, x:-16 }} animate={{ opacity:1, x:0 }} transition={{ delay:.12, duration:.45 }}>
-            <Feather size={12}/> সাহিত্য সংগ্রহ
-          </motion.div>
-          <motion.h1 id="lw-hero-title" className="lw-hero-h1" initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:.2, duration:.52 }}>
-            লেখালেখি ও{" "}
-            <span className="lw-hero-h1-gold">বই</span>
-          </motion.h1>
-          <motion.p className="lw-hero-sub" initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }} transition={{ delay:.28, duration:.48 }}>
-            মাহবুব সরদার সবুজের কবিতা, অনুভূতির লেখা এবং বইয়ের নির্বাচিত সংগ্রহ — পাঠকের জন্য সাজানো এক নান্দনিক সাহিত্যভুবন।
-          </motion.p>
-          <motion.div className="lw-hero-stats" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:.36, duration:.44 }}>
-            <div className="lw-hero-stat"><span className="lw-hero-stat-n">{totalWritings > 0 ? `${totalWritings}+` : "৩০০+"}</span><span>লেখা</span></div>
-            <div className="lw-hero-stat"><span className="lw-hero-stat-n">{ebooks.length}</span><span>বই ও ই-বুক</span></div>
-            <div className="lw-hero-stat"><span className="lw-hero-stat-n">৫</span><span>ক্যাটাগরি</span></div>
-          </motion.div>
-        </div>
-        <motion.div className="lw-hero-showcase" aria-label="নির্বাচিত বইয়ের প্রদর্শনী"
-          initial={{ opacity:0, scale:.93 }} animate={{ opacity:1, scale:1 }} transition={{ delay:.18, duration:.56 }}>
-          <div className="lw-hero-stack" aria-hidden="true">
-            {books.map(book => (
-              <img key={book.id} src={book.cover} alt={`${book.title} — মাহবুব সরদার সবুজ`} className="lw-hero-book" loading="eager" decoding="async"/>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    </motion.section>
-  );
-}
-
 // ── Book Card ─────────────────────────────────────────────────────────────────
 function BookCard({ book, index }: { book: typeof ebooks[0]; index: number }) {
   const [, setLocation] = useLocation();
@@ -1214,9 +1492,9 @@ function BookCard({ book, index }: { book: typeof ebooks[0]; index: number }) {
       ref={ref}
       className="lw-book-card"
       style={{ "--ba": book.accentColor, "--ba-rgb": book.accentRgb } as React.CSSProperties}
-      initial={{ opacity:0, y:30, rotateX:5 }}
-      animate={isInView ? { opacity:1, y:0, rotateX:0 } : { opacity:0, y:30, rotateX:5 }}
-      transition={{ delay:index*.07, duration:.46, ease:[.25,.46,.45,.94] }}
+      initial={{ opacity:0, y:32, rotateX:6 }}
+      animate={isInView ? { opacity:1, y:0, rotateX:0 } : { opacity:0, y:32, rotateX:6 }}
+      transition={{ delay:index*.08, duration:.48, ease:[.25,.46,.45,.94] }}
       onClick={() => setLocation(`/ebooks/read/${book.slug}`)}
       role="article" tabIndex={0}
       aria-label={`${book.title} দেখুন`}
@@ -1226,48 +1504,37 @@ function BookCard({ book, index }: { book: typeof ebooks[0]; index: number }) {
       <div className="lw-book-cover-wrap">
         <img
           src={book.cover}
-          alt={`${book.title} - ${book.genre} বাংলা ই-বুক - মাহবুব সরদার সবুজ`}
+          alt={`${book.title} — মাহবুব সরদার সবুজ`}
           className="lw-book-cover"
           loading="lazy" decoding="async"
-          onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='267' viewBox='0 0 200 267'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C9A84C' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}
         />
-        <span className="lw-book-badge">{book.isFeatured && <Crown size={10}/>} {book.badge}</span>
+        <span className="lw-book-badge">{book.badge}</span>
       </div>
       <div className="lw-book-body">
-        <span className="lw-book-genre">{book.genre}</span>
-        <h3 className="lw-book-title">{book.title}</h3>
+        <div className="lw-book-genre">{book.genre}</div>
+        <div className="lw-book-title">{book.title}</div>
         <p className="lw-book-desc">{book.description}</p>
-        <div className="lw-book-meta"><Calendar size={10}/>{book.year} · {book.pages} পৃষ্ঠা</div>
+        <div className="lw-book-meta">
+          <Calendar size={10}/>{book.year}
+          <span style={{ margin:"0 4px", opacity:.3 }}>·</span>
+          <BookMarked size={10}/>{book.pages} পৃষ্ঠা
+        </div>
         <div className="lw-book-actions">
-          <Link
+          <a
             href={`/ebooks/read/${book.slug}`}
-            onClick={(e) => e.stopPropagation()}
+            className="lw-book-btn lw-book-btn-accent"
+            onClick={e => e.stopPropagation()}
+            style={{ background:`rgba(${book.accentRgb},.18)`, borderColor:`rgba(${book.accentRgb},.42)` }}
+          >
+            <BookOpen size={12}/> পড়ুন
+          </a>
+          <a
+            href={`/ebooks/read/${book.slug}`}
             className="lw-book-btn"
-            style={{ display:"flex", alignItems:"center", gap:5, textDecoration:"none" }}
+            onClick={e => e.stopPropagation()}
           >
             <Eye size={12}/> দেখুন
-          </Link>
-          {book.canRead && (
-            <Link
-              href={`/ebooks/read/${book.slug}`}
-              onClick={(e) => e.stopPropagation()}
-              className="lw-book-btn lw-book-btn-accent"
-              style={{ display:"flex", alignItems:"center", gap:5, textDecoration:"none" }}
-            >
-              <BookOpen size={12}/> পড়ুন
-            </Link>
-          )}
-          {book.buyLink && (
-            <a
-              href={book.buyLink}
-              target="_blank" rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="lw-book-btn lw-book-btn-accent"
-              style={{ display:"flex", alignItems:"center", gap:5, textDecoration:"none" }}
-            >
-              <ShoppingCart size={12}/> কিনুন
-            </a>
-          )}
+          </a>
         </div>
       </div>
     </motion.article>
@@ -1282,22 +1549,15 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   }, [onClose]);
 
   return createPortal(
-    <motion.div className="lw-bm" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <motion.div className="lw-bm-box"
-        initial={{ opacity:0, scale:.9, y:28 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:.9, y:28 }}
-        transition={{ type:"spring", damping:32, stiffness:280 }}>
+    <motion.div className="lw-bm" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:.26 }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div className="lw-bm-box" initial={{ scale:.92, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:.92, opacity:0 }} transition={{ type:"spring", damping:32, stiffness:290 }}>
         <div className="lw-bm-hd">
-          <span style={{ fontFamily:"var(--f)", fontSize:".76rem", color:"rgba(242,237,228,.4)", display:"flex", alignItems:"center", gap:6 }}>
-            <BookOpen size={13} color={book.accentColor}/> {book.subtitle}
-          </span>
-          <button onClick={onClose} style={{ width:34, height:34, borderRadius:10, background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.09)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"rgba(242,237,228,.4)", transition:"all .2s" }}>
-            <X size={14}/>
-          </button>
+          <span style={{ fontFamily:"var(--f)", fontSize:".74rem", color:"rgba(237,232,222,.45)", fontWeight:500 }}>বইয়ের বিবরণ</span>
+          <button onClick={onClose} style={{ display:"flex", alignItems:"center", justifyContent:"center", width:34, height:34, borderRadius:10, border:"1px solid rgba(255,255,255,.1)", background:"none", cursor:"pointer", color:"rgba(237,232,222,.45)", transition:"all .2s" }}><X size={14}/></button>
         </div>
         <div className="lw-bm-in">
           <div className="lw-bm-cw">
-            <img src={book.cover} alt={`${book.title} - ${book.genre} ই-বুক কভার - মাহবুব সরদার সবুজ`} className="lw-bm-cv" loading="lazy" decoding="async"
-              onError={e => { (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='213' viewBox='0 0 160 213'%3E%3Crect fill='%230D1120'/%3E%3Ctext x='50%25' y='50%25' fill='%23C9A84C' font-size='14' text-anchor='middle' dominant-baseline='middle'%3E📖%3C/text%3E%3C/svg%3E"; }}/>
+            <img src={book.cover} alt={book.title} className="lw-bm-cv" loading="lazy"/>
           </div>
           <div className="lw-bm-cnt">
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"5px 13px", borderRadius:999, background:`${book.accentColor}14`, border:`1px solid ${book.accentColor}28`, marginBottom:"1rem" }}>
@@ -1332,86 +1592,199 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   );
 }
 
+// ── Hero Section ──────────────────────────────────────────────────────────────
+function LiteraryHero({ totalWritings }: { totalWritings: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true });
+
+  const tickerItems = [
+    "কবিতা", "ভালোবাসা", "বিচ্ছেদ", "জীবনদর্শন", "ছোট লেখা", "গল্প",
+    "কবিতা", "ভালোবাসা", "বিচ্ছেদ", "জীবনদর্শন", "ছোট লেখা", "গল্প",
+  ];
+
+  return (
+    <motion.div
+      ref={ref}
+      className="lw-hero"
+      initial={{ opacity: 0, y: 32 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
+      transition={{ duration: .65, ease: [.16,1,.3,1] }}
+    >
+      <div className="lw-hero-calligraphy" aria-hidden="true">আ</div>
+
+      <div className="lw-hero-inner">
+        {/* Left: Text */}
+        <div>
+          <motion.div
+            className="lw-hero-eyebrow"
+            initial={{ opacity:0, x:-20 }} animate={isInView ? { opacity:1, x:0 } : {}}
+            transition={{ delay:.1, duration:.5, ease:[.16,1,.3,1] }}
+          >
+            <div className="lw-hero-eyebrow-dot"/>
+            লেখক ও কবি
+          </motion.div>
+
+          <motion.h1
+            className="lw-hero-h1"
+            initial={{ opacity:0, y:28 }} animate={isInView ? { opacity:1, y:0 } : {}}
+            transition={{ delay:.18, duration:.6, ease:[.16,1,.3,1] }}
+          >
+            লেখালেখি
+            <span className="lw-hero-h1-gold">ও বই</span>
+          </motion.h1>
+
+          <motion.p
+            className="lw-hero-sub"
+            initial={{ opacity:0, y:20 }} animate={isInView ? { opacity:1, y:0 } : {}}
+            transition={{ delay:.26, duration:.55, ease:[.16,1,.3,1] }}
+          >
+            মাহবুব সরদার সবুজের কবিতা, গদ্য, ছোট লেখা ও প্রকাশিত বইয়ের সম্পূর্ণ সংগ্রহ।
+            বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর।
+          </motion.p>
+
+          <motion.div
+            className="lw-hero-stats"
+            initial={{ opacity:0, y:16 }} animate={isInView ? { opacity:1, y:0 } : {}}
+            transition={{ delay:.34, duration:.5, ease:[.16,1,.3,1] }}
+          >
+            {[
+              { n: totalWritings || 2343, s: "+", l: "লেখা" },
+              { n: 5, s: "", l: "বই ও ই-বুক" },
+              { n: 6, s: "টি", l: "ক্যাটাগরি" },
+              { n: 7, s: "+", l: "বছর" },
+            ].map((st, i) => (
+              <div key={i} className="lw-hero-stat">
+                <span className="lw-hero-stat-n">
+                  <AnimatedCounter target={st.n} suffix={st.s}/>
+                </span>
+                <span className="lw-hero-stat-l">{st.l}</span>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Ticker */}
+          <div className="lw-ticker">
+            <div className="lw-ticker-track">
+              {[...tickerItems, ...tickerItems].map((item, i) => (
+                <div key={i} className="lw-ticker-item">
+                  <span>✦</span> {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Book showcase */}
+        <motion.div
+          className="lw-hero-showcase"
+          initial={{ opacity:0, scale:.9, rotateY:8 }} animate={isInView ? { opacity:1, scale:1, rotateY:0 } : {}}
+          transition={{ delay:.22, duration:.7, ease:[.16,1,.3,1] }}
+        >
+          <div className="lw-hero-stack">
+            {ebooks.slice(0, 3).map((book, i) => (
+              <img
+                key={book.id}
+                src={book.cover}
+                alt={book.title}
+                className="lw-hero-book"
+                loading="eager"
+              />
+            ))}
+          </div>
+          <div className="lw-hero-showcase-label">প্রকাশনা সংগ্রহ</div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Books Tab ─────────────────────────────────────────────────────────────────
 function BooksTab() {
   const [, setLocation] = useLocation();
+  const [selBook, setSelBook] = useState<typeof ebooks[0]|null>(null);
   const featured = ebooks[0];
   const remaining = ebooks.slice(1);
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
   return (
-    <motion.section
-      ref={ref}
-      className="lw-panel lw-panel-gold"
-      aria-labelledby="lw-books-title"
-      initial={{ opacity:0, y:26 }}
-      animate={isInView ? { opacity:1, y:0 } : { opacity:0, y:26 }}
-      transition={{ duration:.5, ease:[.25,.46,.45,.94] }}
-    >
-      <div className="lw-panel-head">
-        <div>
-          <div className="lw-eyebrow"><Library size={12}/> বই ও ই-বুক</div>
-          <h2 id="lw-books-title">প্রকাশনা সংগ্রহ</h2>
-          <p>মাহবুব সরদার সবুজের প্রকাশিত বই ও ই-বুকের সম্পূর্ণ সংগ্রহ</p>
-        </div>
-        <Link href="/ebooks" className="lw-see-all">সব বই <ArrowRight size={13}/></Link>
-      </div>
-
-      {/* Featured Book */}
-      <motion.article
-        className="lw-featured"
-        style={{ "--ba": featured.accentColor, "--ba-rgb": featured.accentRgb } as React.CSSProperties}
-        initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }}
-        transition={{ duration:.46, ease:[.25,.46,.45,.94] }}
-        onClick={() => setLocation(`/ebooks/read/${featured.slug}`)}
-        role="article" tabIndex={0}
-        aria-label={`${featured.title} দেখুন`}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${featured.slug}`); } }}
+    <>
+      <motion.section
+        ref={ref}
+        className="lw-panel lw-panel-gold"
+        aria-labelledby="lw-books-title"
+        initial={{ opacity:0, y:26 }}
+        animate={isInView ? { opacity:1, y:0 } : { opacity:0, y:26 }}
+        transition={{ duration:.5, ease:[.25,.46,.45,.94] }}
       >
-        <div className="lw-featured-inner">
-          <div className="lw-featured-cover-wrap">
-            <img
-              src={featured.cover}
-              alt={`${featured.title} - ${featured.genre} বই - মাহবুব সরদার সবুজ`}
-              className="lw-featured-cover"
-              loading="eager" decoding="async"
-            />
-            <span className="lw-featured-badge"><Crown size={10}/> {featured.badge}</span>
+        <div className="lw-panel-head">
+          <div>
+            <div className="lw-eyebrow"><Library size={12}/> বই ও ই-বুক</div>
+            <h2 id="lw-books-title">প্রকাশনা সংগ্রহ</h2>
+            <p>মাহবুব সরদার সবুজের প্রকাশিত বই ও ই-বুকের সম্পূর্ণ সংগ্রহ</p>
           </div>
-          <div className="lw-featured-content">
-            <div className="lw-featured-genre">{featured.genre}</div>
-            <h3 className="lw-featured-title">{featured.title}</h3>
-            <p className="lw-featured-desc">{featured.description}</p>
-            <div className="lw-featured-meta">
-              <span><Calendar size={10}/>{featured.year}</span>
-              <span><BookMarked size={10}/>{featured.pages} পৃষ্ঠা</span>
-              <span><Star size={10}/> বিশেষ সংস্করণ</span>
-            </div>
-            <div className="lw-featured-actions">
-              {featured.buyLink && (
-                <a
-                  href={featured.buyLink} target="_blank" rel="noopener noreferrer"
-                  className="lw-btn-primary"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{ background:`linear-gradient(135deg,${featured.accentColor},${featured.accentColor}CC)`, boxShadow:`0 8px 28px rgba(${featured.accentRgb},.4)` }}
-                >
-                  <ShoppingCart size={14}/> এখনই কিনুন
-                </a>
-              )}
-              <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="lw-btn-secondary">
-                <BookOpen size={14}/> পড়ুন
-              </Link>
-            </div>
-          </div>
+          <Link href="/ebooks" className="lw-see-all">সব বই <ArrowRight size={13}/></Link>
         </div>
-      </motion.article>
 
-      {/* Remaining books */}
-      <div className="lw-books-grid">
-        {remaining.map((book, i) => <BookCard key={book.id} book={book} index={i+1}/>)}
-      </div>
-    </motion.section>
+        {/* Featured Book */}
+        <motion.article
+          className="lw-featured"
+          style={{ "--ba": featured.accentColor, "--ba-rgb": featured.accentRgb } as React.CSSProperties}
+          initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }}
+          transition={{ duration:.46, ease:[.25,.46,.45,.94] }}
+          onClick={() => setLocation(`/ebooks/read/${featured.slug}`)}
+          role="article" tabIndex={0}
+          aria-label={`${featured.title} দেখুন`}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${featured.slug}`); } }}
+        >
+          <div className="lw-featured-inner">
+            <div className="lw-featured-cover-wrap">
+              <img
+                src={featured.cover}
+                alt={`${featured.title} - ${featured.genre} বই - মাহবুব সরদার সবুজ`}
+                className="lw-featured-cover"
+                loading="eager" decoding="async"
+              />
+              <span className="lw-featured-badge"><Crown size={10}/> {featured.badge}</span>
+            </div>
+            <div className="lw-featured-content">
+              <div className="lw-featured-genre">{featured.genre}</div>
+              <h3 className="lw-featured-title">{featured.title}</h3>
+              <p className="lw-featured-desc">{featured.description}</p>
+              <div className="lw-featured-meta">
+                <span><Calendar size={10}/>{featured.year}</span>
+                <span><BookMarked size={10}/>{featured.pages} পৃষ্ঠা</span>
+                <span><Star size={10}/> বিশেষ সংস্করণ</span>
+              </div>
+              <div className="lw-featured-actions">
+                {featured.buyLink && (
+                  <a
+                    href={featured.buyLink} target="_blank" rel="noopener noreferrer"
+                    className="lw-btn-primary"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ background:`linear-gradient(135deg,${featured.accentColor},${featured.accentColor}CC)`, boxShadow:`0 8px 28px rgba(${featured.accentRgb},.4)` }}
+                  >
+                    <ShoppingCart size={14}/> এখনই কিনুন
+                  </a>
+                )}
+                <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="lw-btn-secondary">
+                  <BookOpen size={14}/> পড়ুন
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.article>
+
+        {/* Bookshelf Grid */}
+        <div className="lw-bookshelf">
+          {remaining.map((book, i) => <BookCard key={book.id} book={book} index={i+1}/>)}
+        </div>
+      </motion.section>
+
+      <AnimatePresence>
+        {selBook && <BookModal book={selBook} onClose={() => setSelBook(null)}/>}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -1514,6 +1887,9 @@ export default function Writings() {
 
           {/* ── Books ── */}
           <BooksTab/>
+
+          {/* ── Quote Spotlight ── */}
+          <QuoteSpotlight/>
 
           {/* ── Writings Archive ── */}
           <motion.section
@@ -1681,6 +2057,9 @@ export default function Writings() {
               </div>
             )}
           </motion.section>
+
+          {/* ── Reading CTA ── */}
+          <ReadingCTA/>
 
         </div>
       </div>
