@@ -124,7 +124,7 @@
       @font-face { font-family: 'ChandraSheelaPremium'; src: url('/fonts/ChandraSheelaPremium.ttf') format('truetype'); font-display: swap; }
       @font-face { font-family: 'MahbubSardarSabujFont'; src: url('/fonts/MahbubSardarSabujFont.ttf') format('truetype'); font-display: swap; }
       @font-face { font-family: 'MasudNandanik'; src: url('/fonts/MasudNandanik.ttf') format('truetype'); font-display: swap; }
-      @font-face { font-family: 'AdorshoLipi'; src: url('/fonts/AdorshoLipi.ttf') format('truetype'); font-display: swap; }
+      @font-face { font-family: 'AdorshoLipi'; src: url('/fonts/AdorshoLipi.woff2') format('woff2'), url('/fonts/AdorshoLipi.ttf') format('truetype'); font-weight: 400 900; font-display: swap; }
       @font-face { font-family: 'BHSabitAdorshoLightUnicode'; src: url('/fonts/BHSabitAdorshoLightUnicode.ttf') format('truetype'); font-display: swap; }
       @font-face { font-family: 'BLABNorhaGramUnicode'; src: url('/fonts/BLABNorhaGramUnicode.ttf') format('truetype'); font-display: swap; }
       @font-face { font-family: 'AkhandBengali'; src: url('/fonts/AkhandBengali.ttf') format('truetype'); font-display: swap; }
@@ -138,6 +138,8 @@
     <!-- Preload hero images for faster LCP -->
     <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp" fetchpriority="high" />
     <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg" fetchpriority="high" />
+    <!-- Preload primary font for faster rendering -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/AdorshoLipi.woff2" crossorigin />
     <!-- Google Fonts removed — AdorshoLipi local font is used exclusively -->
     <!-- JSON-LD Structured Data for Author -->
     <script type="application/ld+json">

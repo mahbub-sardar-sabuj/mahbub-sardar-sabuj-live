@@ -4,7 +4,8 @@
 
 @font-face {
   font-family: 'AdorshoLipi';
-  src: url('/fonts/AdorshoLipi.ttf') format('truetype');
+  src: url('/fonts/AdorshoLipi.woff2') format('woff2'),
+       url('/fonts/AdorshoLipi.ttf') format('truetype');
   font-weight: 400 900;
   font-style: normal;
   font-display: swap;
