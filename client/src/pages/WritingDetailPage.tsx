@@ -12,7 +12,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Feather, Share2, Copy, Check, Facebook, ChevronLeft,
-  ChevronRight, Clock, Calendar, ArrowLeft,
+  ChevronRight, ArrowLeft,
   AArrowUp, AArrowDown, Moon, Sun, Scroll,
 } from "lucide-react";
 
@@ -161,7 +161,6 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
   }
 
   const c = getCatStyle(writing.category);
-  const rtime = readingTime(writing.content);
   const paragraphs = writing.content.split(/\n\n+/).filter(Boolean);
 
   return (
@@ -284,42 +283,17 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               {writing.title}
             </h1>
 
-            {/* Author + meta row */}
+            {/* Author + category — simple one-line */}
             <div style={{
-              display: "flex", flexWrap: "wrap", alignItems: "center",
-              gap: "0.6rem 1.4rem",
-              paddingBottom: "1.6rem",
+              paddingBottom: "1.4rem",
               borderBottom: `1px solid ${T.bdr}`,
               marginBottom: "2rem",
             }}>
-              {/* Author block */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: "50%",
-                  background: `linear-gradient(135deg, ${c.accent}22, ${c.accent}08)`,
-                  border: `2px solid ${c.border}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                  <Feather size={16} color={c.accent} />
-                </div>
-                <div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".88rem", color: T.txt, fontWeight: 700, lineHeight: 1.2 }}>
-                    মাহবুব সরদার সবুজ
-                  </div>
-                  <div style={{ fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".72rem", color: T.sub, lineHeight: 1.2 }}>
-                    লেখক ও কবি
-                  </div>
-                </div>
-              </div>
-              {/* Date */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, color: T.sub, fontSize: ".78rem", fontFamily: "'Noto Sans Bengali',sans-serif" }}>
-                <Calendar size={13} /> {writing.year ?? "২০২৬"}
-              </div>
-              {/* Reading time */}
-              <div style={{ display: "flex", alignItems: "center", gap: 5, color: T.sub, fontSize: ".78rem", fontFamily: "'Noto Sans Bengali',sans-serif" }}>
-                <Clock size={13} /> {rtime} পড়তে লাগবে
-              </div>
+              <span style={{ fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".85rem", color: T.sub }}>
+                লেখক: <span style={{ color: T.txt, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
+                <span style={{ margin: "0 10px", opacity: 0.4 }}>‖</span>
+                {writing.category}
+              </span>
             </div>
 
             {/* ── Main content ── */}
