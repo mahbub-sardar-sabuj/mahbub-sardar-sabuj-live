@@ -1498,7 +1498,7 @@ MahbubSardarSabuj.com শুধু ব্যক্তিগত লেখার �
     tag: "কনটেন্ট ক্রিয়েটর",
     author: "নুসরাত অপর্ণা",
     location: "জামালপুর",
-    views: 0,
+    views: 1228,
   },
 ];
 
