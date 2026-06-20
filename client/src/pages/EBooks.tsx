@@ -96,7 +96,7 @@ const ebooks = [
     slug: "onoboddo-lekha",
     title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
     subtitle: "ই-বুক সংকলন",
-    cover: "/images/ebooks/onoboddo-lekha.jpg",
+    cover: "/images/ebooks/onoboddo-lekha-new.png",
     description:
       "মাহবুব সরদার সবুজের বিভিন্ন সময়ে লেখা অনবদ্য কবিতা ও গদ্যের একটি বিশেষ সংকলন। জীবনের নানা অনুভূতি, প্রেম, বিচ্ছেদ ও দর্শনের কথা এই বইয়ে অনন্যভাবে উঠে এসেছে।",
     genre: "কবিতা ও গদ্য সংকলন",
