@@ -24,7 +24,7 @@ const ebooks = [
     slug: "dukkhovilash",
     title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
     subtitle: "প্রথম ফিজিক্যাল বই",
-    cover: "/images/ebooks/dukkhovilash.png",
+    cover: "/images/ebooks/dukkhovilash.jpg",
     description:
       "'আমি বিচ্ছেদকে বলি দুঃখবিলাস' — লেখক মাহবুব সরদার সবুজের প্রথম প্রকাশিত ফিজিক্যাল বই। বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে। প্রতিটি পাতায় লুকিয়ে আছে এক অন্যরকম ভালোবাসার গল্প।",
     genre: "আবেগী সাহিত্য",
@@ -96,7 +96,7 @@ const ebooks = [
     slug: "onoboddo-lekha",
     title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
     subtitle: "ই-বুক সংকলন",
-    cover: "/images/ebooks/onoboddo-lekha-new.png",
+    cover: "/images/ebooks/onoboddo-lekha-new.jpg",
     description:
       "মাহবুব সরদার সবুজের বিভিন্ন সময়ে লেখা অনবদ্য কবিতা ও গদ্যের একটি বিশেষ সংকলন। জীবনের নানা অনুভূতি, প্রেম, বিচ্ছেদ ও দর্শনের কথা এই বইয়ে অনন্যভাবে উঠে এসেছে।",
     genre: "কবিতা ও গদ্য সংকলন",

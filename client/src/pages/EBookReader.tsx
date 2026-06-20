@@ -41,7 +41,7 @@ const ebookData: Record<string, {
   "dukkhovilash": {
     title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
     author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/dukkhovilash.png",
+    cover: "/images/ebooks/dukkhovilash.jpg",
     pdfUrl: "/ebooks/dukkhovilash.pdf",
     description: "বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে।",
     genre: "আবেগী সাহিত্য",
@@ -81,7 +81,7 @@ const ebookData: Record<string, {
   "onoboddo-lekha": {
     title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
     author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/onoboddo-lekha-new.png",
+    cover: "/images/ebooks/onoboddo-lekha-new.jpg",
     pdfUrl: "/ebooks/onoboddo-lekha.pdf",
     description: "১০০টি জীবনমুখী ও অনুপ্রেরণামূলক লেখার সংকলন। ভালোবাসা, বিচ্ছেদ, জীবনদর্শন ও মানবিক অনুভূতির মিশ্রণে রচিত এই সংকলন।",
     genre: "মিশ্র সাহিত্য",

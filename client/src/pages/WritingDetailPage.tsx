@@ -302,7 +302,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
                 <span>·</span>
                 <span>{writing.category}</span>
                 <span>·</span>
-                <span>{writing.year ?? "২০২৬"}</span>
+                <span>{writing.date ?? "২০২৬"}</span>
               </div>
               {/* Social share */}
               <div style={{ display: "flex", gap: 8 }}>
