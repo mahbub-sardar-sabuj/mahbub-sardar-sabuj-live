@@ -1199,11 +1199,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         </div>
         <div className="rm2-hd" style={{ borderColor: T.bdr }}>
           <div className="rm2-hdl">
-            {!hideShortWritingLabel && (
-              <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 13px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".71rem", fontWeight:600 }}>
-                <span style={{ fontSize:".75rem" }}>{c.icon}</span>{writing.category}
-              </span>
-            )}
+            <span style={{ fontFamily:"var(--f)", fontSize:".72rem", color:T.sub, fontWeight:500 }}>লেখালেখি ও বই</span>
           </div>
           <div className="rm2-ctrl">
             <div className="rm2-fc" style={{ borderColor: T.bdr }}>
@@ -1228,18 +1224,50 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
           </div>
         </div>
         <div className="rm2-body" ref={bodyRef}>
-          {!hideShortWritingLabel && <h1 className="rm2-ttl" style={{ color: T.txt }}>{writing.title}</h1>}
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:"1.3rem", opacity:.52 }}>
-            <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
-            {!hideShortWritingLabel && <span style={{ color:T.bdr }}>·</span>}
-            {!hideShortWritingLabel && <span style={{ color:T.txt, fontSize:".73rem", fontFamily:"var(--f)" }}>{writing.category}</span>}
+          {/* ── সরদার সংবাদ স্টাইল হেডার ── */}
+          <div style={{ marginBottom: "2rem", paddingBottom: "1.5rem", borderBottom: `1px solid ${T.bdr}` }}>
+            {/* বিভাগ ট্যাগ */}
+            {!hideShortWritingLabel && (
+              <div style={{ marginBottom: ".85rem" }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 14px", borderRadius:999, background:c.bg, color:c.accent, border:`1px solid ${c.border}`, fontFamily:"var(--f)", fontSize:".7rem", fontWeight:700, letterSpacing:".06em", textTransform:"uppercase" }}>
+                  <span>{c.icon}</span>{writing.category}
+                </span>
+              </div>
+            )}
+            {/* শিরোনাম — বড় করে */}
+            <h1 style={{ fontFamily:"var(--f)", fontSize:"clamp(1.45rem, 4vw, 2.1rem)", color:T.txt, lineHeight:1.35, margin:"0 0 1rem", fontWeight:700, letterSpacing:"-.01em" }}>
+              {writing.title}
+            </h1>
+            {/* লেখক ও মেটা তথ্য */}
+            <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:"0.6rem 1.2rem" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ width:30, height:30, borderRadius:"50%", background:`linear-gradient(135deg, ${c.accent}33, ${c.accent}11)`, border:`1.5px solid ${c.accent}44`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Feather size={13} color={c.accent}/>
+                </div>
+                <div>
+                  <div style={{ fontFamily:"var(--f)", fontSize:".82rem", color:T.txt, fontWeight:600, lineHeight:1.2 }}>মাহবুব সরদার সবুজ</div>
+                  <div style={{ fontFamily:"var(--f)", fontSize:".68rem", color:T.sub, lineHeight:1.2 }}>লেখক ও কবি</div>
+                </div>
+              </div>
+              <span style={{ color:T.bdr, fontSize:".8rem" }}>·</span>
+              <span style={{ fontFamily:"var(--f)", fontSize:".75rem", color:T.sub }}>{writing.date}</span>
+              <span style={{ color:T.bdr, fontSize:".8rem" }}>·</span>
+              <span style={{ fontFamily:"var(--f)", fontSize:".75rem", color:T.sub, display:"flex", alignItems:"center", gap:4 }}>⏱ {readTimeLabel} পড়তে লাগবে</span>
+            </div>
           </div>
           <div className="rm2-txt" style={{ color:T.txt, fontSize:`${fontSize}rem`, whiteSpace:'pre-line' }}>
             {writing.content.split(/\n\n+/).map((para, i) => (
               para.trim() ? <p key={i} style={{ marginBottom:'2rem', lineHeight:'2.4', fontSize:'inherit' }}>{para.trim()}</p> : null
             ))}
           </div>
-          <div className="rm2-sig" style={{ borderColor:T.bdr, color:T.txt }}>— মাহবুব সরদার সবুজ · {writing.date}</div>
+          <div className="rm2-sig" style={{ borderColor:T.bdr, color:T.txt }}>
+            <span style={{ color:c.accent, marginRight:6 }}>{c.icon}</span>
+            মাহবুব সরদার সবুজ
+            <span style={{ margin:"0 8px", opacity:.4 }}>·</span>
+            {writing.category}
+            <span style={{ margin:"0 8px", opacity:.4 }}>·</span>
+            {writing.date}
+          </div>
           {relatedWritings.length > 0 && (
             <div style={{ marginTop:"2.4rem", paddingTop:"1.7rem", borderTop:`1px solid ${T.bdr}` }}>
               <p style={{ color:T.sub, fontSize:".73rem", fontFamily:"var(--f)", letterSpacing:".1em", textTransform:"uppercase", marginBottom:".95rem", fontWeight:600 }}>সম্পর্কিত লেখা</p>
