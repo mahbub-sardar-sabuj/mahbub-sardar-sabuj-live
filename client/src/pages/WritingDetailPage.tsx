@@ -142,7 +142,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
         <Navbar />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 32 }}>
           <p style={{ color: "#F2EDE4", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", fontSize: "1.2rem" }}>লেখাটি পাওয়া যায়নি।</p>
-          <button onClick={() => setLocation("/writings")} style={{ background: "rgba(201,168,76,.15)", border: "1px solid rgba(201,168,76,.4)", color: "#C9A84C", padding: "10px 24px", borderRadius: 999, cursor: "pointer", fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".9rem" }}>
+          <button onClick={() => setLocation("/writings")} style={{ background: "rgba(201,168,76,.15)", border: "1px solid rgba(201,168,76,.4)", color: "#C9A84C", padding: "10px 24px", borderRadius: 999, cursor: "pointer", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", fontSize: ".9rem" }}>
             ← লেখালেখিতে ফিরুন
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               color: T.sub,
               padding: "7px 16px", borderRadius: 999,
               cursor: "pointer", fontSize: ".8rem",
-              fontFamily: "'Noto Sans Bengali',sans-serif",
+              fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif",
               transition: "all .2s",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.color = c.accent; }}
@@ -223,7 +223,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
             borderBottom: `1px solid ${T.bdr}`,
             background: T.bg,
           }}>
-            <span style={{ fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".72rem", color: T.sub }}>
+            <span style={{ fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", fontSize: ".72rem", color: T.sub }}>
               লেখালেখি ও বই
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -239,7 +239,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               {/* Theme toggle */}
               <button
                 onClick={() => setTheme(t => t === "dark" ? "sepia" : t === "sepia" ? "light" : "dark")}
-                style={{ background: "transparent", border: `1px solid ${T.bdr}`, color: T.sub, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: ".7rem", fontFamily: "'Noto Sans Bengali',sans-serif" }}
+                style={{ background: "transparent", border: `1px solid ${T.bdr}`, color: T.sub, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: ".7rem", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif" }}
               >
                 {theme === "dark" ? <Moon size={12} /> : theme === "sepia" ? <Scroll size={12} /> : <Sun size={12} />}
                 {theme === "dark" ? "ডার্ক" : theme === "sepia" ? "সেপিয়া" : "লাইট"}
@@ -247,7 +247,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               {/* Share */}
               <button
                 onClick={handleCopy}
-                style={{ background: copied ? "rgba(52,211,153,.12)" : "transparent", border: `1px solid ${copied ? "rgba(52,211,153,.4)" : T.bdr}`, color: copied ? "#34D399" : T.sub, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: ".7rem", fontFamily: "'Noto Sans Bengali',sans-serif", transition: "all .2s" }}
+                style={{ background: copied ? "rgba(52,211,153,.12)" : "transparent", border: `1px solid ${copied ? "rgba(52,211,153,.4)" : T.bdr}`, color: copied ? "#34D399" : T.sub, padding: "6px 12px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, fontSize: ".7rem", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", transition: "all .2s" }}
               >
                 {copied ? <><Check size={12} /> কপি হয়েছে!</> : <><Copy size={12} /> লিংক কপি</>}
               </button>
@@ -275,7 +275,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               borderBottom: `1px solid ${T.bdr}`,
               marginBottom: "2rem",
             }}>
-              <span style={{ fontFamily: "'Noto Sans Bengali',sans-serif", fontSize: ".85rem", color: T.sub }}>
+              <span style={{ fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", fontSize: ".85rem", color: T.sub }}>
                 লেখক: <span style={{ color: T.txt, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
               </span>
             </div>
@@ -296,7 +296,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               display: "flex", flexWrap: "wrap", alignItems: "center",
               justifyContent: "space-between", gap: 12,
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.sub, fontSize: ".78rem", fontFamily: "'Noto Sans Bengali',sans-serif" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.sub, fontSize: ".78rem", fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif" }}>
                 <Feather size={13} color={c.accent} />
                 <span style={{ color: c.accent, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
                 <span>·</span>
@@ -358,7 +358,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               >
                 <ChevronLeft size={18} color={c.accent} />
                 <div>
-                  <div style={{ fontSize: ".68rem", color: T.sub, fontFamily: "'Noto Sans Bengali',sans-serif", marginBottom: 2 }}>পূর্ববর্তী</div>
+                  <div style={{ fontSize: ".68rem", color: T.sub, fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", marginBottom: 2 }}>পূর্ববর্তী</div>
                   <div style={{ fontSize: ".85rem", fontFamily: "'AdorshoLipi','Noto Sans Bengali',serif", color: T.txt, lineHeight: 1.3, fontWeight: 600 }}>
                     {prevW.title.length > 40 ? prevW.title.slice(0, 40) + "…" : prevW.title}
                   </div>
@@ -380,7 +380,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
                 onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = T.bdr; }}
               >
                 <div>
-                  <div style={{ fontSize: ".68rem", color: T.sub, fontFamily: "'Noto Sans Bengali',sans-serif", marginBottom: 2 }}>পরবর্তী</div>
+                  <div style={{ fontSize: ".68rem", color: T.sub, fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", marginBottom: 2 }}>পরবর্তী</div>
                   <div style={{ fontSize: ".85rem", fontFamily: "'AdorshoLipi','Noto Sans Bengali',serif", color: T.txt, lineHeight: 1.3, fontWeight: 600 }}>
                     {nextW.title.length > 40 ? nextW.title.slice(0, 40) + "…" : nextW.title}
                   </div>
@@ -422,13 +422,13 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
                   onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.transform = "translateY(-2px)"; }}
                   onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = T.bdr; e.currentTarget.style.transform = "translateY(0)"; }}
                 >
-                  <div style={{ fontSize: ".72rem", color: c.accent, fontFamily: "'Noto Sans Bengali',sans-serif", marginBottom: 6, fontWeight: 600 }}>
+                  <div style={{ fontSize: ".72rem", color: c.accent, fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", marginBottom: 6, fontWeight: 600 }}>
                     {c.icon} {w.category}
                   </div>
                   <div style={{ fontSize: ".88rem", fontFamily: "'AdorshoLipi','Noto Sans Bengali',serif", color: T.txt, lineHeight: 1.4, fontWeight: 600 }}>
                     {w.title.length > 50 ? w.title.slice(0, 50) + "…" : w.title}
                   </div>
-                  <div style={{ fontSize: ".72rem", color: T.sub, fontFamily: "'Noto Sans Bengali',sans-serif", marginTop: 6 }}>
+                  <div style={{ fontSize: ".72rem", color: T.sub, fontFamily: "'AdorshoLipi','Noto Sans Bengali',sans-serif", marginTop: 6 }}>
                     {readingTime(w.content)} পড়তে লাগবে
                   </div>
                 </Link>
