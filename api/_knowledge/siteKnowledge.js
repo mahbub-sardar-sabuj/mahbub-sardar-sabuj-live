@@ -239,6 +239,7 @@ export const WRITING_CATEGORIES = [
   { name: "বিচ্ছেদ ও বিরহ", count: 255, path: "/writings", description: "বিচ্ছেদ, কষ্ট, হারানো ও অপেক্ষার গভীর লেখা", keywords: ["বিচ্ছেদ", "কষ্ট", "হারানো", "অপেক্ষা", "breakup", "বিরহ", "কষ্টের কবিতা"] },
   { name: "ভালোবাসা ও প্রেম", count: 198, path: "/writings", description: "প্রেম, ভালোবাসা ও রোমান্টিক অনুভূতির লেখা", keywords: ["ভালোবাসা", "প্রেম", "love", "রোমান্টিক"] },
   { name: "কবিতা ও কাব্য", count: 98, path: "/writings", description: "ছন্দময় ও আবেগঘন কবিতার সংগ্রহ", keywords: ["কবিতা", "poem", "poetry", "কাব্য"] },
+  { name: "গল্প", count: 2, path: "/writings", description: "মাহবুব সরদার সবুজের লেখা গল্পের সংগ্রহ", keywords: ["গল্প", "story", "golpo", "সাহিত্য", "গল্পসাহিত্য"] },
 ];
 
 export const RECITATIONS = [

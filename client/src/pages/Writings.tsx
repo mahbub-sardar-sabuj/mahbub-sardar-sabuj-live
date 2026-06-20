@@ -70,6 +70,7 @@ const CATS = [
   { id:"ভালোবাসা",  label:"ভালোবাসা",  icon:"♡", color:"#F472B6", glow:"rgba(244,114,182,.4)" },
   { id:"জীবনদর্শন", label:"জীবনদর্শন", icon:"◈", color:"#FBBF24", glow:"rgba(251,191,36,.4)"  },
   { id:"বিচ্ছেদ",   label:"বিচ্ছেদ",   icon:"◌", color:"#A78BFA", glow:"rgba(167,139,250,.4)" },
+  { id:"গল্প",       label:"গল্প",       icon:"✦", color:"#FB923C", glow:"rgba(251,146,60,.4)"  },
 ];
 function getCatStyle(cat: string) {
   const m: Record<string,{accent:string;glow:string;bg:string;badge:string;border:string;icon:string}> = {
@@ -78,6 +79,7 @@ function getCatStyle(cat: string) {
     "কবিতা":    { accent:"#60A5FA",glow:"rgba(96,165,250,.28)", bg:"rgba(96,165,250,.07)", badge:"rgba(96,165,250,.16)", border:"rgba(96,165,250,.32)", icon:"❧" },
     "ছোট লেখা": { accent:"#34D399",glow:"rgba(52,211,153,.28)", bg:"rgba(52,211,153,.07)", badge:"rgba(52,211,153,.16)", border:"rgba(52,211,153,.32)", icon:"✎" },
     "জীবনদর্শন":{ accent:"#FBBF24",glow:"rgba(251,191,36,.28)", bg:"rgba(251,191,36,.07)", badge:"rgba(251,191,36,.16)", border:"rgba(251,191,36,.32)", icon:"◈" },
+    "গল্প":      { accent:"#FB923C",glow:"rgba(251,146,60,.28)",  bg:"rgba(251,146,60,.07)",  badge:"rgba(251,146,60,.16)",  border:"rgba(251,146,60,.32)",  icon:"✦" },
   };
   return m[cat] ?? m["জীবনদর্শন"];
 }
