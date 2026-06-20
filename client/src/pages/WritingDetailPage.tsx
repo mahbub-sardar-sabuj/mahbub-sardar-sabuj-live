@@ -325,7 +325,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
             {/* ── Main content ── */}
             <div style={{ fontFamily: "'AdorshoLipi','Noto Sans Bengali',serif", fontSize: `${fontSize}rem`, color: T.txt, lineHeight: 1.95, letterSpacing: ".01em" }}>
               {paragraphs.map((para, i) => (
-                <p key={i} style={{ marginBottom: "1.4em", textAlign: "justify" }}>
+                <p key={i} style={{ marginBottom: "1.4em", textAlign: "left" }}>
                   {para}
                 </p>
               ))}
