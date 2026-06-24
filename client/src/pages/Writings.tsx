@@ -1150,7 +1150,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
                 {!isShort && <span className="lw-card-cat"><span style={{ fontSize: ".76rem" }}>{c.icon}</span>{writing.category}</span>}
                 {writing.featured && <span className="lw-card-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
               </div>
-              {!isShort && <div className="lw-card-title">{writing.title}</div>}
+              <div className="lw-card-title">{writing.title}</div>
             </div>
             <div className="lw-card-foot" style={{ border: "none", padding: 0 }}>
               <span className="lw-card-date"><Calendar size={10}/>{writing.date}</span>
@@ -1169,7 +1169,7 @@ function WritingCard({ writing, index, onClick, viewMode = "grid" }: {
               {!isShort && <span className="lw-card-cat"><span style={{ fontSize: ".76rem" }}>{c.icon}</span>{writing.category}</span>}
               {writing.featured && <span className="lw-card-star"><Star size={9} fill="currentColor"/> বিশেষ</span>}
             </div>
-            {!isShort && <div className="lw-card-title">{writing.title}</div>}
+            <div className="lw-card-title">{writing.title}</div>
             <p className="lw-card-preview">{makeExcerpt(writing.content, 200)}</p>
             <div className="lw-card-foot">
               <span className="lw-card-date"><Calendar size={10}/>{writing.date}</span>
@@ -1427,7 +1427,7 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
               {showShare && (
                 <div className="lw-rm-sdd">
                   <button className="lw-rm-si" style={{ color:"#F2EDE4" }} onClick={() => { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(writingUrl)}`,"_blank"); setShowShare(false); }}><Facebook size={14} color="#1877F2"/> Facebook</button>
-                  <button className="lw-rm-si" style={{ color:"#F2EDE4" }} onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent((isShort ? '' : writing.title+' — ')+writingUrl)}`,"_blank"); setShowShare(false); }}><span style={{ fontSize:14 }}>💬</span> WhatsApp</button>
+                  <button className="lw-rm-si" style={{ color:"#F2EDE4" }} onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(writing.title+' — '+writingUrl)}`,"_blank"); setShowShare(false); }}><span style={{ fontSize:14 }}>💬</span> WhatsApp</button>
                   <button className="lw-rm-si" style={{ color:"#F2EDE4" }} onClick={copyLink}>{copied ? <Check size={14} color="#34D399"/> : <Copy size={14}/>}{copied ? "কপি হয়েছে!" : "লিংক কপি"}</button>
                 </div>
               )}
@@ -1445,11 +1445,9 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
                 </span>
               </div>
             )}
-            {!isShort && (
-              <h1 className="lw-rm-ttl" style={{ color: T.txt }}>
-                {writing.title}
-              </h1>
-            )}
+            <h1 className="lw-rm-ttl" style={{ color: T.txt }}>
+              {writing.title}
+            </h1>
             <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:"0.5rem 1.2rem" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                 <div style={{ width:32, height:32, borderRadius:"50%", background:`linear-gradient(135deg, ${c.accent}28, ${c.accent}10)`, border:`1.5px solid ${c.accent}38`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -1502,10 +1500,10 @@ function WritingModal({ writing, allWritings, onClose, onNavigate }: {
         <div className="lw-rm-nav" style={{ borderColor: T.bdr }}>
           <button className="lw-rm-nb" style={{ borderColor:T.bdr }} onClick={() => prev && onNavigate(prev)} disabled={!prev}>
             <ChevronLeft size={16} style={{ color:prev?c.accent:T.sub, flexShrink:0 }}/>
-            <span><span className="lw-rm-nl" style={{ color:T.sub }}>পূর্ববর্তী</span><span className="lw-rm-nt" style={{ color:T.txt }}>{prev ? (prev.category === "ছোট লেখা" ? "…" : prev.title) : "—"}</span></span>
+            <span><span className="lw-rm-nl" style={{ color:T.sub }}>পূর্ববর্তী</span><span className="lw-rm-nt" style={{ color:T.txt }}>{prev?.title ?? "—"}</span></span>
           </button>
           <button className="lw-rm-nb" style={{ borderColor:T.bdr, justifyContent:"flex-end" }} onClick={() => next && onNavigate(next)} disabled={!next}>
-            <span style={{ textAlign:"right" }}><span className="lw-rm-nl" style={{ color:T.sub }}>পরবর্তী</span><span className="lw-rm-nt" style={{ color:T.txt }}>{next ? (next.category === "ছোট লেখা" ? "…" : next.title) : "—"}</span></span>
+            <span style={{ textAlign:"right" }}><span className="lw-rm-nl" style={{ color:T.sub }}>পরবর্তী</span><span className="lw-rm-nt" style={{ color:T.txt }}>{next?.title ?? "—"}</span></span>
             <ChevronRight size={16} style={{ color:next?c.accent:T.sub, flexShrink:0 }}/>
           </button>
         </div>

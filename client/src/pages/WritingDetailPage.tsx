@@ -161,7 +161,6 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
   }
 
   const c = getCatStyle(writing.category);
-  const isShort = writing.category === "ছোট লেখা";
   const paragraphs = writing.content.split(/\n\n+/).filter(Boolean);
 
   return (
@@ -259,31 +258,27 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
           <div style={{ padding: "clamp(20px, 5vw, 48px)" }}>
 
                         {/* Title */}
-            {!isShort && (
-              <h1 style={{
-                fontFamily: "'AdorshoLipi',sans-serif",
-                fontSize: "clamp(1.55rem, 4.5vw, 2.4rem)",
-                color: T.txt,
-                lineHeight: 1.3,
-                margin: "0 0 0.4rem",
-                fontWeight: 700,
-                letterSpacing: "-.01em",
-              }}>
-                {writing.title}
-              </h1>
-            )}
+            <h1 style={{
+              fontFamily: "'AdorshoLipi',sans-serif",
+              fontSize: "clamp(1.55rem, 4.5vw, 2.4rem)",
+              color: T.txt,
+              lineHeight: 1.3,
+              margin: "0 0 0.4rem",
+              fontWeight: 700,
+              letterSpacing: "-.01em",
+            }}>
+              {writing.title}
+            </h1>
             {/* Author — simple one-line, close to title */}
-            {!isShort && (
-              <div style={{
-                paddingBottom: "1.4rem",
-                borderBottom: `1px solid ${T.bdr}`,
-                marginBottom: "2rem",
-              }}>
-                <span style={{ fontFamily: "'AdorshoLipi',sans-serif", fontSize: ".85rem", color: T.sub }}>
-                  লেখক: <span style={{ color: T.txt, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
-                </span>
-              </div>
-            )}
+            <div style={{
+              paddingBottom: "1.4rem",
+              borderBottom: `1px solid ${T.bdr}`,
+              marginBottom: "2rem",
+            }}>
+              <span style={{ fontFamily: "'AdorshoLipi',sans-serif", fontSize: ".85rem", color: T.sub }}>
+                লেখক: <span style={{ color: T.txt, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
+              </span>
+            </div>
 
             {/* ── Main content ── */}
             <div style={{ fontFamily: "'AdorshoLipi',sans-serif", fontSize: `${fontSize}rem`, color: T.txt, lineHeight: 1.95, letterSpacing: ".01em" }}>
@@ -303,7 +298,8 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, color: T.sub, fontSize: ".78rem", fontFamily: "'AdorshoLipi',sans-serif" }}>
                 <Feather size={13} color={c.accent} />
-                {!isShort && <><span style={{ color: c.accent, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span><span>·</span></>}
+                <span style={{ color: c.accent, fontWeight: 600 }}>মাহবুব সরদার সবুজ</span>
+                <span>·</span>
                 <span>{writing.category}</span>
                 <span>·</span>
                 <span>{writing.date ?? "২০২৬"}</span>
@@ -319,7 +315,7 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
                   <Facebook size={15} />
                 </a>
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent((isShort ? "" : writing.title + " — ") + shareUrl)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(writing.title + " — " + shareUrl)}`}
                   target="_blank" rel="noopener noreferrer"
                   style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(37,211,102,.12)", border: "1px solid rgba(37,211,102,.3)", color: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", fontSize: 15 }}
                   title="হোয়াটসঅ্যাপে শেয়ার"
@@ -363,11 +359,9 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
                 <ChevronLeft size={18} color={c.accent} />
                 <div>
                   <div style={{ fontSize: ".68rem", color: T.sub, fontFamily: "'AdorshoLipi',sans-serif", marginBottom: 2 }}>পূর্ববর্তী</div>
-                  {prevW.category !== "ছোট লেখা" && (
-                    <div style={{ fontSize: ".85rem", fontFamily: "'AdorshoLipi',sans-serif", color: T.txt, lineHeight: 1.3, fontWeight: 600 }}>
-                      {prevW.title.length > 40 ? prevW.title.slice(0, 40) + "…" : prevW.title}
-                    </div>
-                  )}
+                  <div style={{ fontSize: ".85rem", fontFamily: "'AdorshoLipi',sans-serif", color: T.txt, lineHeight: 1.3, fontWeight: 600 }}>
+                    {prevW.title.length > 40 ? prevW.title.slice(0, 40) + "…" : prevW.title}
+                  </div>
                 </div>
               </Link>
             )}
@@ -387,11 +381,9 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               >
                 <div>
                   <div style={{ fontSize: ".68rem", color: T.sub, fontFamily: "'AdorshoLipi',sans-serif", marginBottom: 2 }}>পরবর্তী</div>
-                  {nextW.category !== "ছোট লেখা" && (
-                    <div style={{ fontSize: ".85rem", fontFamily: "'AdorshoLipi',sans-serif", color: T.txt, lineHeight: 1.3, fontWeight: 600 }}>
-                      {nextW.title.length > 40 ? nextW.title.slice(0, 40) + "…" : nextW.title}
-                    </div>
-                  )}
+                  <div style={{ fontSize: ".85rem", fontFamily: "'AdorshoLipi',sans-serif", color: T.txt, lineHeight: 1.3, fontWeight: 600 }}>
+                    {nextW.title.length > 40 ? nextW.title.slice(0, 40) + "…" : nextW.title}
+                  </div>
                 </div>
                 <ChevronRight size={18} color={c.accent} />
               </Link>
@@ -433,11 +425,9 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
                   <div style={{ fontSize: ".72rem", color: c.accent, fontFamily: "'AdorshoLipi',sans-serif", marginBottom: 6, fontWeight: 600 }}>
                     {c.icon} {w.category}
                   </div>
-                  {w.category !== "ছোট লেখা" && (
-                    <div style={{ fontSize: ".88rem", fontFamily: "'AdorshoLipi',sans-serif", color: T.txt, lineHeight: 1.4, fontWeight: 600 }}>
-                      {w.title.length > 50 ? w.title.slice(0, 50) + "…" : w.title}
-                    </div>
-                  )}
+                  <div style={{ fontSize: ".88rem", fontFamily: "'AdorshoLipi',sans-serif", color: T.txt, lineHeight: 1.4, fontWeight: 600 }}>
+                    {w.title.length > 50 ? w.title.slice(0, 50) + "…" : w.title}
+                  </div>
                   <div style={{ fontSize: ".72rem", color: T.sub, fontFamily: "'AdorshoLipi',sans-serif", marginTop: 6 }}>
                     {readingTime(w.content)} পড়তে লাগবে
                   </div>
