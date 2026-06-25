@@ -838,7 +838,7 @@ function buildNaturalConversationReply(rawText = '') {
     return 'আলহামদুলিল্লাহ, ভালোই আছি! আপনার সাথে কথা বলতে পারছি এটাই তো ভালো লাগার বিষয়। আপনি কেমন আছেন? আজকের দিনটা কেমন কাটছে?';
   }
 
-  if (/^(আমি ভালো আছি|ভালো আছি|আলহামদুলিল্লাহ|ভাল আছি|আমি ভাল আছি)$/i.test(compact)) {
+  if (/^(আমি ভালো আছি|ভালো আছি|আলহামদুলিল্লাহ|আলহামদুলিল্লাহ ভালো|আলহামদুলিল্লাহ ভাল|আলহামদুলিল্লাহ ভালোই|আলহামদুলিল্লাহ ভালোই আছি|আলহামদুলিল্লাহ আমি ভালো|আলহামদুলিল্লাহ আমি ভাল|আলহামদুলিল্লাহ আছি ভালো|ভাল আছি|আমি ভাল আছি|আমি ভালো|আমিও ভালো|আমিও ভাল)$/i.test(compact)) {
     return 'শুনে ভালো লাগল। আল্লাহ আপনাকে ভালো রাখুন। আজ আপনি কী নিয়ে কথা বলতে চান?';
   }
 
@@ -1069,7 +1069,9 @@ function buildSiteSpecificReply(messages = []) {
   const rawText = extractUserText(messages);
   const userText = normalizeForIntent(rawText);
   if (!userText) return null;
-
+  // Natural conversation — সাধারণ কথোপকথন হলে canonical reply দিয়ে সাড়া দাও, AI-তে পাঠানো নয়
+  const naturalReply = buildNaturalConversationReply(rawText);
+  if (naturalReply) return naturalReply;
   // Help menu — সাইট-নির্দিষ্ট
   const helpPattern = /(কি করতে পারো|কী করতে পারো|কি পারো|কী পারো|সাহায্য|হেল্প|help|commands|মেনু)/i;
   if (helpPattern.test(rawText)) return buildHelpMenuReply();
@@ -1550,6 +1552,21 @@ const allMessages = [{ role: "system", content: SYSTEM_PROMPT }, ...filteredMess
 
 // Streaming mode — SSE response
 if (isStream) {
+// Check canonical reply first (conversational, site-specific) before streaming
+const streamCanonicalReply = buildSiteSpecificReply(filteredMessages);
+if (streamCanonicalReply) {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  const sanitized = sanitizeReply(streamCanonicalReply);
+  res.write(`data: ${JSON.stringify({ delta: sanitized })}\n\n`);
+  res.write(`data: ${JSON.stringify({ done: true, fullReply: sanitized })}\n\n`);
+  res.end();
+  recordProviderAttempt("canonical", true);
+  recordChatbotMessage({ req, text: lastUserText, intent: detectAnalyticsIntent(lastUserText), provider: "canonical" });
+  return;
+}
 recordProviderAttempt("stream", true);
 recordChatbotMessage({ req, text: lastUserText, intent: detectAnalyticsIntent(lastUserText), provider: "stream" });
 return await handleStream(req, res, allMessages);
