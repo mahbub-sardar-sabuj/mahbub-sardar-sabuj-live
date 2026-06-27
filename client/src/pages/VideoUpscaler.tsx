@@ -127,9 +127,7 @@ function BeforeAfterSlider({
   }, [isDragging, updateSlider]);
 
   return (
-    <div className="space-y-3">
-      {/* Slider container */}
-      <div
+    <div
         ref={containerRef}
         className="relative w-full rounded-2xl overflow-hidden bg-black select-none cursor-col-resize"
         style={{ aspectRatio: "16/9" }}
@@ -194,26 +192,7 @@ function BeforeAfterSlider({
           </span>
         </div>
 
-        {/* Hint */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-          <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-xs text-gray-400 border border-white/10">
-            ← স্লাইডার টেনে তুলনা করুন →
-          </span>
-        </div>
       </div>
-
-      {/* Side-by-side label row */}
-      <div className="grid grid-cols-2 gap-3 text-center text-xs text-gray-500">
-        <div className="bg-white/5 rounded-xl py-2 px-3 ring-1 ring-white/8">
-          <span className="block text-gray-400 font-semibold mb-0.5">আগে (Original)</span>
-          <span className="text-gray-600">মূল ভিডিও</span>
-        </div>
-        <div className="bg-purple-500/8 rounded-xl py-2 px-3 ring-1 ring-purple-500/20">
-          <span className="block text-purple-300 font-semibold mb-0.5">পরে (Upscaled)</span>
-          <span className="text-purple-500/70">উন্নত মান</span>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -784,9 +763,7 @@ export default function VideoUpscaler() {
                           style={{ maxHeight: "200px" }}
                         />
                       </div>
-                      <div className="text-center text-xs text-gray-600 bg-white/5 rounded-lg py-1.5">
-                        মূল ভিডিও
-                      </div>
+
                     </div>
 
                     {/* After */}
@@ -804,34 +781,10 @@ export default function VideoUpscaler() {
                           style={{ maxHeight: "200px" }}
                         />
                       </div>
-                      <div className="text-center text-xs text-purple-500 bg-purple-500/8 rounded-lg py-1.5 ring-1 ring-purple-500/20">
-                        {scale}× আপস্কেলড
-                      </div>
+
                     </div>
                   </motion.div>
                 )}
-
-                {/* Stats comparison */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
-                    <p className="text-xs text-gray-600 mb-1">রেজোলিউশন</p>
-                    <p className="text-xs font-bold text-gray-400">{inputSize?.w}×{inputSize?.h}</p>
-                    <p className="text-xs text-purple-400 font-black mt-0.5">↑ {outputSize?.w}×{outputSize?.h}</p>
-                  </div>
-                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
-                    <p className="text-xs text-gray-600 mb-1">স্কেল</p>
-                    <p className="text-2xl font-black text-purple-400">{scale}×</p>
-                  </div>
-                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
-                    <p className="text-xs text-gray-600 mb-1">সময়</p>
-                    <p className="text-xs font-bold text-gray-400">
-                      {elapsedTime > 0 ? formatTime(elapsedTime) : "—"}
-                    </p>
-                    {outputFileSize && (
-                      <p className="text-xs text-green-400 font-semibold mt-0.5">{formatBytes(outputFileSize)}</p>
-                    )}
-                  </div>
-                </div>
 
                 {/* Action buttons */}
                 <div className="flex gap-3">
@@ -849,28 +802,13 @@ export default function VideoUpscaler() {
                   </button>
                 </div>
 
-                {/* iOS save instruction */}
-                {isIOS && (
-                  <div className="bg-blue-500/8 border border-blue-500/20 rounded-2xl px-4 py-3 text-xs text-blue-300 leading-relaxed">
-                    <p className="font-semibold mb-1">iPhone-এ গ্যালারিতে সেভ করতে:</p>
-                    <p>"শেয়ার / সেভ করুন" বাটনে চাপুন → শেয়ার মেনু খুলবে → <strong>"Save to Photos"</strong> বা <strong>"Photos"</strong> বেছে নিন।</p>
-                    <p className="mt-1 text-blue-400/70">যদি Photos অপশন না দেখেন: Files app খুলুন → ভিডিওটি খুঁজুন → দীর্ঘ চাপ দিন → "Save to Photos" বেছে নিন।</p>
-                  </div>
-                )}
+
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
 
-        {/* Bottom note */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-xs text-gray-700 mt-6"
-        >
-          আপনার ভিডিও শুধু আপনার ডিভাইসে প্রসেস হয় — কোথাও পাঠানো হয় না
-        </motion.p>
+
       </div>
     </div>
   );
