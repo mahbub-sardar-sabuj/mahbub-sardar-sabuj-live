@@ -12,6 +12,7 @@ import {
   Zap,
   X,
   SplitSquareHorizontal,
+  Video,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -82,9 +83,7 @@ function unsharpMask(img: ImageData, amount = 0.6, radius = 1): ImageData {
   const blurred = new Uint8ClampedArray(src.length);
   const out = new ImageData(new Uint8ClampedArray(src), w, h);
 
-  // Simple box blur for unsharp mask
   const r = Math.max(1, Math.round(radius));
-  const size = 2 * r + 1;
 
   // Horizontal pass
   const tmp = new Uint8ClampedArray(src.length);
@@ -123,7 +122,6 @@ function unsharpMask(img: ImageData, amount = 0.6, radius = 1): ImageData {
     }
   }
 
-  // Apply unsharp mask: out = src + amount * (src - blurred)
   const outD = out.data;
   for (let i = 0; i < src.length; i += 4) {
     outD[i] = Math.max(0, Math.min(255, src[i] + amount * (src[i] - blurred[i])));
@@ -150,7 +148,6 @@ async function upscaleImage(
       const outW = Math.min(origW * scale, maxOut);
       const outH = Math.min(origH * scale, maxOut);
 
-      // Draw original to canvas
       const srcCanvas = document.createElement("canvas");
       srcCanvas.width = origW;
       srcCanvas.height = origH;
@@ -158,13 +155,9 @@ async function upscaleImage(
       srcCtx.drawImage(img, 0, 0);
       const srcData = srcCtx.getImageData(0, 0, origW, origH);
 
-      // Bicubic upscale
       const upscaled = bicubicUpscale(srcData, outW, outH);
-
-      // Unsharp mask for sharpening
       const sharpened = unsharpMask(upscaled, 0.55, 1);
 
-      // Write to output canvas
       const dstCanvas = document.createElement("canvas");
       dstCanvas.width = outW;
       dstCanvas.height = outH;
@@ -184,9 +177,9 @@ async function upscaleImage(
   });
 }
 
-// ─── Before/After Slider ───────────────────────────────────────────────────
+// ─── Before/After Slider Component ────────────────────────────────────────────
 
-function CompareSlider({ before, after }: { before: string; after: string }) {
+function BeforeAfterSlider({ before, after }: { before: string; after: string }) {
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -199,46 +192,90 @@ function CompareSlider({ before, after }: { before: string; after: string }) {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative select-none overflow-hidden rounded-2xl cursor-col-resize"
-      style={{ touchAction: "none" }}
-      onPointerDown={(e) => {
-        isDragging.current = true;
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-        updateSlider(e.clientX);
-      }}
-      onPointerMove={(e) => { if (isDragging.current) updateSlider(e.clientX); }}
-      onPointerUp={() => { isDragging.current = false; }}
-    >
-      <img src={after} alt="উন্নত" className="block w-full max-h-[420px] object-contain" draggable={false} />
-      <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPos}%` }}>
+    <div className="space-y-3">
+      <div
+        ref={containerRef}
+        className="relative select-none overflow-hidden rounded-2xl cursor-col-resize bg-black/40"
+        style={{ touchAction: "none" }}
+        onPointerDown={(e) => {
+          isDragging.current = true;
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+          updateSlider(e.clientX);
+        }}
+        onPointerMove={(e) => { if (isDragging.current) updateSlider(e.clientX); }}
+        onPointerUp={() => { isDragging.current = false; }}
+      >
+        {/* After image — full width, bottom layer */}
         <img
-          src={before}
-          alt="আসল"
-          className="block max-h-[420px] object-contain"
-          style={{ width: `${(100 / sliderPos) * 100}%`, maxWidth: "none" }}
+          src={after}
+          alt="উন্নত"
+          className="block w-full max-h-[420px] object-contain"
           draggable={false}
         />
+
+        {/* Before image — clipped to left */}
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ width: `${sliderPos}%` }}
+        >
+          <img
+            src={before}
+            alt="আসল"
+            className="block max-h-[420px] object-contain"
+            style={{ width: `${(100 / sliderPos) * 100}%`, maxWidth: "none" }}
+            draggable={false}
+          />
+        </div>
+
+        {/* Divider line */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_12px_rgba(255,255,255,0.85)] pointer-events-none z-20"
+          style={{ left: `${sliderPos}%`, transform: "translateX(-50%)" }}
+        />
+
+        {/* Drag handle */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-30 pointer-events-none"
+          style={{ left: `${sliderPos}%` }}
+        >
+          <div className="w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center ring-2 ring-white/20">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M6 4L2 9L6 14" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 4L16 9L12 14" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* Labels */}
+        <div className="absolute top-3 left-3 z-10 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-xs font-bold text-gray-300 border border-white/10">
+            আগে
+          </span>
+        </div>
+        <div className="absolute top-3 right-3 z-10 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-lg bg-blue-600/80 backdrop-blur-sm text-xs font-bold text-white border border-blue-400/30">
+            পরে
+          </span>
+        </div>
+
+        {/* Hint */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+          <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-xs text-gray-400 border border-white/10">
+            ← স্লাইডার টেনে তুলনা করুন →
+          </span>
+        </div>
       </div>
-      {/* Divider */}
-      <div
-        className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)] pointer-events-none"
-        style={{ left: `${sliderPos}%` }}
-      />
-      {/* Handle */}
-      <div
-        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 bg-white rounded-full shadow-xl flex items-center justify-center pointer-events-none ring-2 ring-white/30"
-        style={{ left: `${sliderPos}%` }}
-      >
-        <SplitSquareHorizontal size={15} className="text-gray-700" />
-      </div>
-      {/* Labels */}
-      <div className="absolute top-3 left-3 bg-black/70 text-white text-xs font-bold px-2.5 py-1 rounded-full pointer-events-none backdrop-blur-sm">
-        আগে
-      </div>
-      <div className="absolute top-3 right-3 bg-blue-600/90 text-white text-xs font-bold px-2.5 py-1 rounded-full pointer-events-none backdrop-blur-sm">
-        পরে
+
+      {/* Label row */}
+      <div className="grid grid-cols-2 gap-3 text-center text-xs text-gray-500">
+        <div className="bg-white/5 rounded-xl py-2 px-3 ring-1 ring-white/8">
+          <span className="block text-gray-400 font-semibold mb-0.5">আগে (Original)</span>
+          <span className="text-gray-600">মূল ছবি</span>
+        </div>
+        <div className="bg-blue-500/8 rounded-xl py-2 px-3 ring-1 ring-blue-500/20">
+          <span className="block text-blue-300 font-semibold mb-0.5">পরে (Upscaled)</span>
+          <span className="text-blue-500/70">উন্নত মান</span>
+        </div>
       </div>
     </div>
   );
@@ -258,7 +295,7 @@ export default function ImageUpscaler() {
   const [dims, setDims] = useState<{ origW: number; origH: number; outW: number; outH: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDrag, setIsDrag] = useState(false);
-  const [showCompare, setShowCompare] = useState(false);
+  const [viewMode, setViewMode] = useState<"slider" | "side">("slider");
   const [elapsedTime, setElapsedTime] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -290,7 +327,7 @@ export default function ImageUpscaler() {
     setOutputUrl(null);
     setDims(null);
     setStage("idle");
-    setShowCompare(false);
+    setViewMode("slider");
     const url = URL.createObjectURL(f);
     setPreviewUrl(url);
   }, []);
@@ -304,7 +341,7 @@ export default function ImageUpscaler() {
     setStage("idle");
     setProgress(0);
     setError(null);
-    setShowCompare(false);
+    setViewMode("slider");
     setElapsedTime(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
@@ -314,10 +351,9 @@ export default function ImageUpscaler() {
     setError(null);
     setStage("processing");
     setProgress(10);
-    setShowCompare(false);
+    setViewMode("slider");
     startTimer();
 
-    // Fake progress animation while processing
     const progressInterval = setInterval(() => {
       setProgress((p) => (p < 85 ? p + Math.random() * 8 : p));
     }, 300);
@@ -330,7 +366,6 @@ export default function ImageUpscaler() {
       setOutputUrl(result.dataUrl);
       setDims({ origW: result.origW, origH: result.origH, outW: result.outW, outH: result.outH });
       setStage("done");
-      setShowCompare(true);
     } catch (err) {
       clearInterval(progressInterval);
       stopTimer();
@@ -344,28 +379,22 @@ export default function ImageUpscaler() {
     if (!outputUrl || !file) return;
     const fileName = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.png`;
 
-    // iOS Safari: use Web Share API to allow saving to Photos/Files
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     if (isIOS && navigator.canShare) {
       try {
-        // Convert data URL to blob for sharing
         const res = await fetch(outputUrl);
         const blob = await res.blob();
         const shareFile = new File([blob], fileName, { type: "image/png" });
         if (navigator.canShare({ files: [shareFile] })) {
-          await navigator.share({
-            files: [shareFile],
-            title: fileName,
-          });
+          await navigator.share({ files: [shareFile], title: fileName });
           return;
         }
       } catch (e) {
-        // User cancelled share or share failed — fall through to anchor download
+        // fall through
       }
     }
 
-    // Standard download for non-iOS browsers
     const a = document.createElement("a");
     a.href = outputUrl;
     a.download = fileName;
@@ -529,7 +558,7 @@ export default function ImageUpscaler() {
                 )}
               </div>
 
-              {/* Preview */}
+              {/* Preview (before processing) */}
               {previewUrl && stage !== "done" && (
                 <div className="relative rounded-2xl overflow-hidden bg-black/40 ring-1 ring-white/8">
                   <img
@@ -609,7 +638,7 @@ export default function ImageUpscaler() {
             )}
           </AnimatePresence>
 
-          {/* Done state */}
+          {/* ═══ SUCCESS OUTPUT — Before/After Comparison ═══ */}
           <AnimatePresence>
             {stage === "done" && outputUrl && previewUrl && (
               <motion.div
@@ -631,26 +660,116 @@ export default function ImageUpscaler() {
                   </div>
                 </div>
 
-                {/* Compare toggle */}
-                <button
-                  onClick={() => setShowCompare((v) => !v)}
-                  className="w-full py-2.5 bg-white/5 hover:bg-white/8 ring-1 ring-white/8 rounded-xl text-xs font-semibold text-gray-400 hover:text-gray-300 transition-all flex items-center justify-center gap-2"
-                >
-                  <SplitSquareHorizontal size={13} />
-                  {showCompare ? "শুধু উন্নত ছবি দেখুন" : "আগে/পরে তুলনা করুন"}
-                </button>
+                {/* View mode toggle */}
+                <div className="flex items-center gap-2 bg-white/5 rounded-2xl p-1 ring-1 ring-white/8">
+                  <button
+                    onClick={() => setViewMode("slider")}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      viewMode === "slider"
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    <SplitSquareHorizontal size={13} />
+                    স্লাইডার তুলনা
+                  </button>
+                  <button
+                    onClick={() => setViewMode("side")}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      viewMode === "side"
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    <Video size={13} />
+                    পাশাপাশি দেখুন
+                  </button>
+                </div>
 
-                {/* Image display */}
-                {showCompare ? (
-                  <div>
-                    <CompareSlider before={previewUrl} after={outputUrl} />
-                    <p className="text-center text-xs text-gray-600 mt-2">← স্লাইডার টেনে তুলনা করুন →</p>
-                  </div>
-                ) : (
-                  <div className="rounded-2xl overflow-hidden bg-black/40 ring-1 ring-white/8">
-                    <img src={outputUrl} alt="উন্নত ছবি" className="w-full max-h-[380px] object-contain" />
-                  </div>
+                {/* Slider view — shown by default */}
+                {viewMode === "slider" && (
+                  <motion.div
+                    key="slider"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <BeforeAfterSlider before={previewUrl} after={outputUrl} />
+                  </motion.div>
                 )}
+
+                {/* Side-by-side view */}
+                {viewMode === "side" && (
+                  <motion.div
+                    key="side"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-2 gap-3"
+                  >
+                    {/* Before */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-400">আগে</span>
+                        {dims && <span className="text-xs text-gray-600">{dims.origW}×{dims.origH}</span>}
+                      </div>
+                      <div className="rounded-xl overflow-hidden bg-black/40 ring-1 ring-white/8">
+                        <img
+                          src={previewUrl}
+                          alt="আসল ছবি"
+                          className="w-full object-contain"
+                          style={{ maxHeight: "200px" }}
+                        />
+                      </div>
+                      <div className="text-center text-xs text-gray-600 bg-white/5 rounded-lg py-1.5">
+                        মূল ছবি
+                      </div>
+                    </div>
+
+                    {/* After */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-400">পরে</span>
+                        {dims && <span className="text-xs text-blue-600">{dims.outW}×{dims.outH}</span>}
+                      </div>
+                      <div className="rounded-xl overflow-hidden bg-black/40 ring-1 ring-blue-500/20">
+                        <img
+                          src={outputUrl}
+                          alt="উন্নত ছবি"
+                          className="w-full object-contain"
+                          style={{ maxHeight: "200px" }}
+                        />
+                      </div>
+                      <div className="text-center text-xs text-blue-500 bg-blue-500/8 rounded-lg py-1.5 ring-1 ring-blue-500/20">
+                        {scale}× আপস্কেলড
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Stats comparison */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
+                    <p className="text-xs text-gray-600 mb-1">রেজোলিউশন</p>
+                    {dims && (
+                      <>
+                        <p className="text-xs font-bold text-gray-400">{dims.origW}×{dims.origH}</p>
+                        <p className="text-xs text-blue-400 font-black mt-0.5">↑ {dims.outW}×{dims.outH}</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
+                    <p className="text-xs text-gray-600 mb-1">স্কেল</p>
+                    <p className="text-2xl font-black text-blue-400">{scale}×</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
+                    <p className="text-xs text-gray-600 mb-1">সময়</p>
+                    <p className="text-xs font-bold text-gray-400">
+                      {elapsedTime > 0 ? `${elapsedTime}s` : "—"}
+                    </p>
+                    <p className="text-xs text-green-400 font-semibold mt-0.5">PNG</p>
+                  </div>
+                </div>
 
                 {/* Action buttons */}
                 <div className="flex gap-3">
