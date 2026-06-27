@@ -11,6 +11,7 @@ import {
   Shield,
   Zap,
   X,
+  SplitSquareHorizontal,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
@@ -41,6 +42,182 @@ function formatTime(seconds: number): string {
 let ffmpegInstance: FFmpeg | null = null;
 let ffmpegLoaded = false;
 
+// ─── Before/After Slider Component ───────────────────────────────────────────
+function BeforeAfterSlider({
+  beforeUrl,
+  afterUrl,
+}: {
+  beforeUrl: string;
+  afterUrl: string;
+}) {
+  const [sliderPos, setSliderPos] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const beforeVideoRef = useRef<HTMLVideoElement>(null);
+  const afterVideoRef = useRef<HTMLVideoElement>(null);
+  const syncingRef = useRef(false);
+
+  // Sync playback between both videos
+  const syncVideos = useCallback(
+    (source: "before" | "after", event: string) => {
+      if (syncingRef.current) return;
+      syncingRef.current = true;
+      const src = source === "before" ? beforeVideoRef.current : afterVideoRef.current;
+      const dst = source === "before" ? afterVideoRef.current : beforeVideoRef.current;
+      if (!src || !dst) { syncingRef.current = false; return; }
+
+      if (event === "play") dst.play().catch(() => {});
+      else if (event === "pause") dst.pause();
+      else if (event === "seeked") dst.currentTime = src.currentTime;
+      else if (event === "timeupdate") {
+        if (Math.abs(dst.currentTime - src.currentTime) > 0.3) {
+          dst.currentTime = src.currentTime;
+        }
+      }
+      setTimeout(() => { syncingRef.current = false; }, 50);
+    },
+    []
+  );
+
+  useEffect(() => {
+    const bv = beforeVideoRef.current;
+    const av = afterVideoRef.current;
+    if (!bv || !av) return;
+
+    const handlers: { el: HTMLVideoElement; event: string; fn: EventListener }[] = [
+      { el: bv, event: "play",       fn: () => syncVideos("before", "play") },
+      { el: bv, event: "pause",      fn: () => syncVideos("before", "pause") },
+      { el: bv, event: "seeked",     fn: () => syncVideos("before", "seeked") },
+      { el: bv, event: "timeupdate", fn: () => syncVideos("before", "timeupdate") },
+      { el: av, event: "play",       fn: () => syncVideos("after", "play") },
+      { el: av, event: "pause",      fn: () => syncVideos("after", "pause") },
+      { el: av, event: "seeked",     fn: () => syncVideos("after", "seeked") },
+    ];
+    handlers.forEach(({ el, event, fn }) => el.addEventListener(event, fn));
+    return () => handlers.forEach(({ el, event, fn }) => el.removeEventListener(event, fn));
+  }, [syncVideos]);
+
+  const updateSlider = useCallback((clientX: number) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const pct = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+    setSliderPos(pct);
+  }, []);
+
+  // Mouse events
+  const onMouseDown = (e: React.MouseEvent) => { e.preventDefault(); setIsDragging(true); updateSlider(e.clientX); };
+  useEffect(() => {
+    if (!isDragging) return;
+    const onMove = (e: MouseEvent) => updateSlider(e.clientX);
+    const onUp = () => setIsDragging(false);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+  }, [isDragging, updateSlider]);
+
+  // Touch events
+  const onTouchStart = (e: React.TouchEvent) => { updateSlider(e.touches[0].clientX); setIsDragging(true); };
+  useEffect(() => {
+    if (!isDragging) return;
+    const onMove = (e: TouchEvent) => { e.preventDefault(); updateSlider(e.touches[0].clientX); };
+    const onEnd = () => setIsDragging(false);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onEnd);
+    return () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
+  }, [isDragging, updateSlider]);
+
+  return (
+    <div className="space-y-3">
+      {/* Slider container */}
+      <div
+        ref={containerRef}
+        className="relative w-full rounded-2xl overflow-hidden bg-black select-none cursor-col-resize"
+        style={{ aspectRatio: "16/9" }}
+        onMouseDown={onMouseDown}
+        onTouchStart={onTouchStart}
+      >
+        {/* AFTER video (full width, bottom layer) */}
+        <video
+          ref={afterVideoRef}
+          src={afterUrl}
+          className="absolute inset-0 w-full h-full object-contain"
+          playsInline
+          loop
+          muted={false}
+        />
+
+        {/* BEFORE video (clipped to left side) */}
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ width: `${sliderPos}%` }}
+        >
+          <video
+            ref={beforeVideoRef}
+            src={beforeUrl}
+            className="absolute inset-0 h-full object-contain"
+            style={{ width: `${(100 / sliderPos) * 100}%`, maxWidth: "none" }}
+            playsInline
+            loop
+            controls
+            muted={false}
+          />
+        </div>
+
+        {/* Divider line */}
+        <div
+          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)] pointer-events-none z-20"
+          style={{ left: `${sliderPos}%`, transform: "translateX(-50%)" }}
+        />
+
+        {/* Drag handle */}
+        <div
+          className="absolute top-1/2 z-30 -translate-y-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none"
+          style={{ left: `${sliderPos}%` }}
+        >
+          <div className={`w-10 h-10 rounded-full bg-white shadow-xl flex items-center justify-center transition-transform duration-150 ${isDragging ? "scale-110" : "scale-100"}`}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M6 4L2 9L6 14" stroke="#6d28d9" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 4L16 9L12 14" stroke="#6d28d9" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* Labels */}
+        <div className="absolute top-3 left-3 z-10 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-xs font-bold text-gray-300 border border-white/10">
+            আগে
+          </span>
+        </div>
+        <div className="absolute top-3 right-3 z-10 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-lg bg-purple-600/80 backdrop-blur-sm text-xs font-bold text-white border border-purple-400/30">
+            পরে
+          </span>
+        </div>
+
+        {/* Hint */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+          <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-xs text-gray-400 border border-white/10">
+            ← স্লাইডার টেনে তুলনা করুন →
+          </span>
+        </div>
+      </div>
+
+      {/* Side-by-side label row */}
+      <div className="grid grid-cols-2 gap-3 text-center text-xs text-gray-500">
+        <div className="bg-white/5 rounded-xl py-2 px-3 ring-1 ring-white/8">
+          <span className="block text-gray-400 font-semibold mb-0.5">আগে (Original)</span>
+          <span className="text-gray-600">মূল ভিডিও</span>
+        </div>
+        <div className="bg-purple-500/8 rounded-xl py-2 px-3 ring-1 ring-purple-500/20">
+          <span className="block text-purple-300 font-semibold mb-0.5">পরে (Upscaled)</span>
+          <span className="text-purple-500/70">উন্নত মান</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function VideoUpscaler() {
   const [file, setFile] = useState<File | null>(null);
   const [scale, setScale] = useState<2 | 4>(2);
@@ -48,6 +225,7 @@ export default function VideoUpscaler() {
   const [progress, setProgress] = useState(0);
   const [statusMsg, setStatusMsg] = useState("");
   const [outputUrl, setOutputUrl] = useState<string | null>(null);
+  const [inputUrl, setInputUrl] = useState<string | null>(null);
   const [outputSize, setOutputSize] = useState<{ w: number; h: number } | null>(null);
   const [inputSize, setInputSize] = useState<{ w: number; h: number } | null>(null);
   const [isDrag, setIsDrag] = useState(false);
@@ -55,6 +233,7 @@ export default function VideoUpscaler() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [outputFileSize, setOutputFileSize] = useState<number | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
+  const [viewMode, setViewMode] = useState<"slider" | "side">("slider");
   const [isIOS] = useState(() =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
@@ -63,29 +242,12 @@ export default function VideoUpscaler() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
   const abortRef = useRef<boolean>(false);
-  const videoPreviewRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
-
-  // iOS Safari fix: set video src via ref after blob is ready
-  useEffect(() => {
-    const videoEl = videoPreviewRef.current;
-    if (!videoEl || !outputBlob) return;
-    // Revoke previous object URL if any
-    if (videoEl.src && videoEl.src.startsWith('blob:')) {
-      URL.revokeObjectURL(videoEl.src);
-    }
-    const newUrl = URL.createObjectURL(outputBlob);
-    videoEl.src = newUrl;
-    videoEl.load();
-    return () => {
-      URL.revokeObjectURL(newUrl);
-    };
-  }, [outputBlob]);
 
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now();
@@ -110,6 +272,7 @@ export default function VideoUpscaler() {
     setProgress(0);
     setStatusMsg("");
     setOutputUrl(null);
+    setInputUrl(null);
     setOutputSize(null);
     setInputSize(null);
     setError(null);
@@ -133,13 +296,14 @@ export default function VideoUpscaler() {
     setFile(f);
     setStage("idle");
     setOutputUrl(null);
+    setInputUrl(null);
     setOutputFileSize(null);
 
     const url = URL.createObjectURL(f);
+    setInputUrl(url);
     const v = document.createElement("video");
     v.onloadedmetadata = () => {
       setInputSize({ w: v.videoWidth, h: v.videoHeight });
-      URL.revokeObjectURL(url);
     };
     v.src = url;
   }, []);
@@ -240,11 +404,11 @@ export default function VideoUpscaler() {
       setStatusMsg("সম্পন্ন করা হচ্ছে...");
 
       const outputData = await ffmpeg.readFile(outputName);
-      const outputBlob = new Blob(
+      const blob = new Blob(
         [outputData instanceof Uint8Array ? (outputData as BlobPart) : new Uint8Array()],
         { type: "video/mp4" }
       );
-      const outputObjectUrl = URL.createObjectURL(outputBlob);
+      const outputObjectUrl = URL.createObjectURL(blob);
 
       await ffmpeg.deleteFile(inputName).catch(() => {});
       await ffmpeg.deleteFile(outputName).catch(() => {});
@@ -254,8 +418,8 @@ export default function VideoUpscaler() {
       setOutputUrl(outputObjectUrl);
       setOutputSize({ w: outputW, h: outputH });
       setInputSize({ w: inputW, h: inputH });
-      setOutputFileSize(outputBlob.size);
-      setOutputBlob(outputBlob);
+      setOutputFileSize(blob.size);
+      setOutputBlob(blob);
       setStage("done");
       setStatusMsg("সম্পন্ন!");
     } catch (err: unknown) {
@@ -272,30 +436,25 @@ export default function VideoUpscaler() {
     if (!outputUrl || !file || !outputBlob) return;
     const fileName = `upscaled_${scale}x_${file.name.replace(/\.[^.]+$/, "")}.mp4`;
 
-    // iOS Safari: use Web Share API to allow saving to Photos/Files
     if (isIOS && navigator.canShare) {
       try {
         const shareFile = new File([outputBlob], fileName, { type: "video/mp4" });
         if (navigator.canShare({ files: [shareFile] })) {
-          await navigator.share({
-            files: [shareFile],
-            title: fileName,
-          });
+          await navigator.share({ files: [shareFile], title: fileName });
           return;
         }
       } catch (e) {
-        // User cancelled share or share failed — fall through to anchor download
+        // fall through
       }
     }
 
-    // Standard download for non-iOS browsers
     const a = document.createElement("a");
     a.href = outputUrl;
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, [outputUrl, outputBlob, file, scale]);
+  }, [outputUrl, outputBlob, file, scale, isIOS]);
 
   const isProcessing = ["loading_ffmpeg", "reading", "processing"].includes(stage);
 
@@ -542,9 +701,9 @@ export default function VideoUpscaler() {
             )}
           </AnimatePresence>
 
-          {/* Success output */}
+          {/* ═══ SUCCESS OUTPUT — Before/After Comparison ═══ */}
           <AnimatePresence>
-            {stage === "done" && outputUrl && (
+            {stage === "done" && outputUrl && inputUrl && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -563,15 +722,115 @@ export default function VideoUpscaler() {
                   </div>
                 </div>
 
-                {/* Video preview */}
-                <div className="rounded-2xl overflow-hidden bg-black/60 ring-1 ring-white/8">
-                  <video
-                    ref={videoPreviewRef}
-                    className="w-full max-h-[340px] object-contain"
-                    controls
-                    playsInline
-                    autoPlay={false}
-                  />
+                {/* View mode toggle */}
+                <div className="flex items-center gap-2 bg-white/5 rounded-2xl p-1 ring-1 ring-white/8">
+                  <button
+                    onClick={() => setViewMode("slider")}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      viewMode === "slider"
+                        ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    <SplitSquareHorizontal size={13} />
+                    স্লাইডার তুলনা
+                  </button>
+                  <button
+                    onClick={() => setViewMode("side")}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      viewMode === "side"
+                        ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}
+                  >
+                    <Video size={13} />
+                    পাশাপাশি দেখুন
+                  </button>
+                </div>
+
+                {/* Slider view */}
+                {viewMode === "slider" && (
+                  <motion.div
+                    key="slider"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <BeforeAfterSlider beforeUrl={inputUrl} afterUrl={outputUrl} />
+                  </motion.div>
+                )}
+
+                {/* Side-by-side view */}
+                {viewMode === "side" && (
+                  <motion.div
+                    key="side"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-2 gap-3"
+                  >
+                    {/* Before */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-400">আগে</span>
+                        <span className="text-xs text-gray-600">{inputSize?.w}×{inputSize?.h}</span>
+                      </div>
+                      <div className="rounded-xl overflow-hidden bg-black/60 ring-1 ring-white/8">
+                        <video
+                          src={inputUrl}
+                          className="w-full object-contain"
+                          controls
+                          playsInline
+                          style={{ maxHeight: "200px" }}
+                        />
+                      </div>
+                      <div className="text-center text-xs text-gray-600 bg-white/5 rounded-lg py-1.5">
+                        মূল ভিডিও
+                      </div>
+                    </div>
+
+                    {/* After */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-purple-400">পরে</span>
+                        <span className="text-xs text-purple-600">{outputSize?.w}×{outputSize?.h}</span>
+                      </div>
+                      <div className="rounded-xl overflow-hidden bg-black/60 ring-1 ring-purple-500/20">
+                        <video
+                          src={outputUrl}
+                          className="w-full object-contain"
+                          controls
+                          playsInline
+                          style={{ maxHeight: "200px" }}
+                        />
+                      </div>
+                      <div className="text-center text-xs text-purple-500 bg-purple-500/8 rounded-lg py-1.5 ring-1 ring-purple-500/20">
+                        {scale}× আপস্কেলড
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Stats comparison */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
+                    <p className="text-xs text-gray-600 mb-1">রেজোলিউশন</p>
+                    <p className="text-xs font-bold text-gray-400">{inputSize?.w}×{inputSize?.h}</p>
+                    <p className="text-xs text-purple-400 font-black mt-0.5">↑ {outputSize?.w}×{outputSize?.h}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
+                    <p className="text-xs text-gray-600 mb-1">স্কেল</p>
+                    <p className="text-2xl font-black text-purple-400">{scale}×</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl py-3 px-2 ring-1 ring-white/8">
+                    <p className="text-xs text-gray-600 mb-1">সময়</p>
+                    <p className="text-xs font-bold text-gray-400">
+                      {elapsedTime > 0 ? formatTime(elapsedTime) : "—"}
+                    </p>
+                    {outputFileSize && (
+                      <p className="text-xs text-green-400 font-semibold mt-0.5">{formatBytes(outputFileSize)}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Action buttons */}
