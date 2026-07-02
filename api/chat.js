@@ -1547,6 +1547,13 @@ return res.status(400).json({ error: "বার্তাটি একটু ব�
 
 const filteredMessages = messages
 .filter((m) => m.role !== "system" && ["user", "assistant"].includes(m.role))
+.filter((m) => {
+  // FIX: skip audio user messages (🎵 ... নির্দেশ: ...) from conversation history
+  // to prevent audio-editing context from leaking into normal chat replies.
+  const c = typeof m.content === "string" ? m.content : "";
+  if (m.role === "user" && /^[🎵🎶🎷🎸🎹🎺🎻🎼🎾🎿]/.test(c)) return false;
+  return true;
+})
 .slice(-12);
 const allMessages = [{ role: "system", content: SYSTEM_PROMPT }, ...filteredMessages];
 

@@ -2840,6 +2840,9 @@ export default function AIChatbot() {
         // Skip UI-only special messages that would confuse the AI
         if (c.startsWith("[PHOTO]") || c === "[CONTACT]" || c.startsWith("[LIVE_CHAT]")) return false;
         if (m.audioUrl) return false; // skip audio result messages
+        // FIX: skip audio user messages (🎵 ... নির্দেশ: ...) — these contain audio-editing
+        // context that confuses the AI into entering audio-edit mode for normal replies.
+        if (m.userAudioName) return false;
         return true;
       })
       .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
