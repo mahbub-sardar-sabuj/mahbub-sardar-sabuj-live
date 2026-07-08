@@ -2211,10 +2211,10 @@ async function handleTTS(req, res) {
 
   // Try TTS models in order of preference (most human-like first)
   const ttsModels = [
-    "gemini-3.1-flash-tts-preview",
     "gemini-2.5-flash-preview-tts",
     "gemini-2.5-flash-tts",
     "gemini-2.5-pro-preview-tts",
+    "gemini-3.1-flash-tts-preview",
   ];
   let response = null;
   let lastError = null;

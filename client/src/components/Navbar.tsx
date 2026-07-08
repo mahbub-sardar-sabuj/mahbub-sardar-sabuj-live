@@ -84,8 +84,8 @@ const ALL_GROUPS = [...LEFT_GROUPS, ...RIGHT_GROUPS];
 const ALL_LINKS  = ALL_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, groupColor: g.glyphColor })));
 
 const SOCIAL = [
-  { label: "Facebook", href: "https://facebook.com/mahbubsardarsabuj", icon: "f" },
-  { label: "YouTube",  href: "https://youtube.com/@mahbubsardarsabuj",  icon: "▶" },
+  { label: "Facebook", href: "https://facebook.com/MahbubSardarSabuj", icon: "f" },
+  { label: "YouTube",  href: "https://youtube.com/@MahbubSardarSabuj",  icon: "▶" },
 ];
 
 const isActive = (href: string, loc: string) => {

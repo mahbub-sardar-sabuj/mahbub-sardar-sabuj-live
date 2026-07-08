@@ -65,6 +65,8 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/temp-number") return routeImporters.TempNumber;
   if (path === "/temp-card") return routeImporters.TempCard;
   if (path === "/image-upscaler") return routeImporters.ImageUpscaler;
+  if (path === "/video-upscaler") return routeImporters.VideoUpscaler;
+  if (path === "/audio-editor") return routeImporters.AudioEditor;
   if (path === "/text-to-speech") return routeImporters.TextToSpeech;
 
   if (

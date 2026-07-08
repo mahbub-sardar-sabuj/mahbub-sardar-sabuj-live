@@ -295,7 +295,7 @@ export default function Footer() {
             margin: 0,
             display: "flex", alignItems: "center", gap: 6,
           }}>
-            © ২০২৬ মাহবুব সরদার সবুজ। সর্বস্বত্ব সংরক্ষিত।
+            © {new Date().getFullYear()} মাহবুব সরদার সবুজ। সর্বস্বত্ব সংরক্ষিত।
           </p>
           <p style={{
             fontFamily: "'AdorshoLipi', sans-serif",

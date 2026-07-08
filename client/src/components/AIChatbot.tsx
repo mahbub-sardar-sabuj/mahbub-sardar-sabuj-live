@@ -301,15 +301,25 @@ const AUDIO_EDIT_KEYWORDS = [
   "mono to stereo", "মনো স্টেরিও",
 ];
 
-// Keywords that indicate the user is asking about poetry/recitation as CONTENT (not audio editing)
+// Keywords that indicate the user is asking about poetry/recitation/news as CONTENT (not audio editing)
 const POETRY_CONTENT_KEYWORDS = [
-  "কবিতা পড়তে", "কবিতা পড়ব", "কবিতা দেখতে", "কবিতা লিখে", "কবিতা লিখে দিন",
+  "কবিতা পড়তে", "কবিতা পড়ব", "কবিতা দেখতে", "কবিতা লিখে", "কবিতা লিখে দিন",
   "কবিতা শুনতে", "কবিতা শুনব", "কবিতা বলুন", "কবিতা বলো",
   "কবিতা আছে", "কবিতা কোথায়", "কবিতা দেখান",
   "আবৃত্তি দেখতে", "আবৃত্তি শুনতে", "আবৃত্তি শুনব", "আবৃত্তি ভিডিও",
   "আবৃত্তি সংগ্রহ", "আবৃত্তি কোথায়", "আবৃত্তি দেখান",
   "লেখকের কবিতা", "লেখকের আবৃত্তি", "ধর্মীয় কবিতা",
   "poem", "poetry", "recitation video", "recitation collection",
+  // গান শুনতে/দেখতে চাওয়া — audio editing নয়
+  "গান শুনতে", "গান শুনব", "গান দেখান", "গান কোথায়", "গান আছে",
+  "গান পড়তে", "গানের কথা", "গান বলুন",
+  // সংবাদ/নিউজ পড়তে চাওয়া — audio editing নয়
+  "সংবাদ পড়তে", "সংবাদ দেখতে", "সংবাদ কোথায়", "সংবাদ পাব",
+  "নিউজ পড়তে", "নিউজ দেখতে", "নিউজ কোথায়", "নিউজ পাব",
+  "সরদার সংবাদ",
+  // telegram/whatsapp যোগাযোগ — audio editing নয়
+  "telegram এ", "telegram-এ", "whatsapp এ", "whatsapp-এ",
+  "telegram যোগাযোগ", "whatsapp যোগাযোগ",
 ];
 
 // Keywords that indicate image/photo/video editing — NOT audio editing
@@ -2647,7 +2657,7 @@ export default function AIChatbot() {
       setAudioProcessing(false);
       setAudioProcessingStage(null);
     }
-  }, [audioFile, input, audioProcessing, messages, isAudioEditRequest]);
+  }, [audioFile, input, audioProcessing, messages]);  // isAudioEditRequest is a stable module-level function
 
   // ── Image select handler ──────────────────────────────────────────────
   const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2717,7 +2727,7 @@ export default function AIChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, messages, audioFile, handleAudioEdit, isAudioEditRequest]);
+  }, [isLoading, messages, audioFile, handleAudioEdit]);  // isAudioEditRequest is a stable module-level function
 
   const handleSend = useCallback(async () => {
     // Case 1: Audio file already selected + any text = run edit immediately
@@ -2952,7 +2962,7 @@ export default function AIChatbot() {
       setIsLoading(false);
     }
   // FIX: Removed isAudioMode from deps — it is not used inside handleSend body
-  }, [input, isLoading, messages, imagePreview, audioFile, handleAudioEdit, isAudioEditRequest]);
+  }, [input, isLoading, messages, imagePreview, audioFile, handleAudioEdit]);  // isAudioEditRequest is a stable module-level function
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.nativeEvent.isComposing) return;
