@@ -61,7 +61,16 @@ export default function News() {
   const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
-  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+  // Initialize selectedNews synchronously from URL to prevent layout shift on direct navigation
+  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(() => {
+    const match = location.match(/^\/news\/(\d+)$/);
+    if (match) {
+      const newsId = Number.parseInt(match[1], 10);
+      const sorted = [...allNewsData].sort((a, b) => parseBengaliDate(b.date) - parseBengaliDate(a.date));
+      return sorted.find(n => n.id === newsId) ?? null;
+    }
+    return null;
+  });
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Record<number, Comment[]>>(() => {
