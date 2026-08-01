@@ -244,9 +244,37 @@ export default function NewsDetail() {
                 lineHeight: 1.95,
               }}
             >
-              {news.content.split(/\n\n+/).map((paragraph, index) => (
-                paragraph.trim() ? <p key={index} style={{ margin: index === 0 ? "0 0 1.25rem" : "0 0 1.25rem" }}>{paragraph.trim()}</p> : null
-              ))}
+              {news.content.split(/\n\n+/).map((paragraph, index) => {
+                if (!paragraph.trim()) return null;
+                const parts = paragraph.trim().split(/\[([^\]]+)\]\(([^)]+)\)/);
+                return (
+                  <p key={index} style={{ margin: index === 0 ? "0 0 1.25rem" : "0 0 1.25rem", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                    {parts.map((part, i) => {
+                      if (i % 3 === 0) return part;
+                      if (i % 3 === 2) {
+                        const linkText = parts[i - 1];
+                        return (
+                          <a
+                            key={i}
+                            href={part}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: "#F5A623",
+                              textDecoration: "underline",
+                              wordBreak: "break-all",
+                              overflowWrap: "break-word",
+                            }}
+                          >
+                            {linkText}
+                          </a>
+                        );
+                      }
+                      return null;
+                    })}
+                  </p>
+                );
+              })}
             </div>
 
             <section

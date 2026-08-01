@@ -45,7 +45,7 @@ const newsData: NewsItem[] = [
 লেখক: মাহবুব সরদার সবুজ
 
 যোগাযোগ ও সর্বশেষ আপডেট:
-ফেসবুক (অফিসিয়াল): https://facebook.com/Lekhok.MahbubSardarSabuj`,
+ফেসবুক (অফিসিয়াল): [facebook.com/Lekhok.MahbubSardarSabuj](https://facebook.com/Lekhok.MahbubSardarSabuj)`,
     category: "সাহিত্য",
     categoryColor: "#8E44AD",
     date: "১ আগস্ট ২০২৬",
