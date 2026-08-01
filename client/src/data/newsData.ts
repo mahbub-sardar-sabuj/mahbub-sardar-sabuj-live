@@ -804,4 +804,4 @@ const newsData: NewsItem[] = [
   }
 ];
 
-export default newsData;
+export { newsData };
