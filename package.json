@@ -13,6 +13,7 @@
     "security:secrets": "node scripts/scan-secrets.cjs",
     "news:sync": "node scripts/sync-news-seo.cjs",
     "news:check": "node scripts/sync-news-seo.cjs --check",
+    "news:preview:check": "node scripts/verify-news-preview.mjs",
     "indexnow:submit": "node scripts/submit-indexnow.cjs",
     "format": "prettier --write .",
     "test": "vitest run",

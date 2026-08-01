@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import Seo from "../components/Seo";
+import Seo, { SITE_URL } from "../components/Seo";
 import { newsData as allNewsData } from "../data/newsData";
 import type { NewsItem } from "../data/newsData";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
@@ -61,16 +61,8 @@ export default function News() {
   const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব");
-  // Initialize selectedNews synchronously from URL to prevent layout shift on direct navigation
-  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(() => {
-    const match = location.match(/^\/news\/(\d+)$/);
-    if (match) {
-      const newsId = Number.parseInt(match[1], 10);
-      const sorted = [...allNewsData].sort((a, b) => parseBengaliDate(b.date) - parseBengaliDate(a.date));
-      return sorted.find(n => n.id === newsId) ?? null;
-    }
-    return null;
-  });
+  // Article details are rendered on their own route, so the news list stays stable while readers navigate.
+  const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<Record<number, Comment[]>>(() => {
@@ -111,24 +103,9 @@ export default function News() {
     setSelectedNews(null);
   }, [location, newsData]);
 
-  // Lock body scroll when news detail is open to prevent layout shift and background scrolling
-  useEffect(() => {
-    if (selectedNews) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [selectedNews]);
-
   const handleSelectNews = (news: NewsItem | null) => {
-    if (news) {
-      setLocation(`/news/${news.id}`);
-      setSelectedNews(news);
-    } else {
-      setLocation("/news");
-      setSelectedNews(null);
-    }
+    setLocation(news ? `/news/${news.id}` : "/news");
+    setSelectedNews(null);
   };
 
   const categories = ["সব", ...Array.from(new Set(newsData.map(item => item.category)))];
@@ -175,15 +152,11 @@ export default function News() {
     });
   };
 
-  const getShareUrl = (newsId: number) => {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/api/news-og?id=${newsId}`;
-  };
+  // Share the public article URL. Facebook's crawler is routed to the server-side
+  // metadata renderer for this canonical URL; the old /api/news-og endpoint does not exist.
+  const getShareUrl = (newsId: number) => getNewsPageUrl(newsId);
 
-  const getNewsPageUrl = (newsId: number) => {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/news/${newsId}`;
-  };
+  const getNewsPageUrl = (newsId: number) => `${SITE_URL}/news/${newsId}`;
 
   const shareTitle = selectedNews ? selectedNews.title : '';
 

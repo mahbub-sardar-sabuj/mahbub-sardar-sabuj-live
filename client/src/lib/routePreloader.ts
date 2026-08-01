@@ -15,6 +15,7 @@ const routeImporters = {
   EBookReader: () => import("../pages/EBookReader"),
   Editor: () => import("../pages/Editor"),
   News: () => import("../pages/News"),
+  NewsDetail: () => import("../pages/NewsDetail"),
   Gallery: () => import("../pages/Gallery"),
   AmiOLikhboBastobota: () => import("../pages/AmiOLikhboBastobota"),
   AdminLiveChat: () => import("../pages/AdminLiveChat"),
@@ -52,7 +53,8 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/about") return routeImporters.About;
   if (path === "/contact") return routeImporters.Contact;
   if (path === "/editor") return routeImporters.Editor;
-  if (path === "/news" || path.startsWith("/news/")) return routeImporters.News;
+  if (path === "/news") return routeImporters.News;
+  if (path.startsWith("/news/")) return routeImporters.NewsDetail;
   if (path === "/gallery") return routeImporters.Gallery;
   if (path === "/amio-likhbo-bastobota" || path.startsWith("/amio-likhbo-bastobota/")) return routeImporters.AmiOLikhboBastobota;
   if (path === "/amio-likhbo-login") return routeImporters.AmiOLikhboLogin;

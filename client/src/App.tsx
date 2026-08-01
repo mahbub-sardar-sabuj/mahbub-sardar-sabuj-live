@@ -24,6 +24,7 @@ const Contact = lazyRoute("Contact");
 const EBookReader = lazyRoute("EBookReader");
 const Editor = lazyRoute("Editor");
 const News = lazyRoute("News");
+const NewsDetail = lazy(() => import("./pages/NewsDetail"));
 const Gallery = lazyRoute("Gallery");
 const AmiOLikhboBastobota = lazyRoute("AmiOLikhboBastobota");
 const AIChatbot = lazy(() => import("./components/AIChatbot"));
@@ -135,7 +136,8 @@ function Router() {
         <Route path={"/ebooks"} component={EBooks} />
         <Route path={"/ebooks/read/:slug"} component={EBookReader} />
         <Route path={"/editor"} component={Editor} />
-        <Route path={"/news/:id?"} component={News} />
+        <Route path={"/news"} component={News} />
+        <Route path={"/news/:id"} component={NewsDetail} />
         <Route path={"/gallery"} component={Gallery} />
         <Route path={"/amio-likhbo-bastobota/:slug?"} component={AmiOLikhboBastobota} />
         <Route path={"/amio-likhbo-login"} component={AmiOLikhboLogin} />
