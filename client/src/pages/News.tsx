@@ -974,9 +974,33 @@ export default function News() {
                     fontFamily: "'AdorshoLipi', sans-serif",
                     marginBottom: 36,
                   }}>
-                    {selectedNews.content.split(/\n\n+/).map((para, i) => (
-                      para.trim() ? <p key={i} style={{ marginBottom: '1.2rem' }}>{para.trim()}</p> : null
-                    ))}
+                    {selectedNews.content.split(/\n\n+/).map((para, i) => {
+                      if (!para.trim()) return null;
+                      const parts = para.trim().split(/\[([^\]]+)\]\(([^)]+)\)/);
+
+                      return (
+                        <p key={i} style={{ marginBottom: "1.2rem", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                          {parts.map((part, partIndex) => {
+                            if (partIndex % 3 === 0) return part;
+                            if (partIndex % 3 === 2) {
+                              const linkText = parts[partIndex - 1];
+                              return (
+                                <a
+                                  key={partIndex}
+                                  href={part}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ color: "#F5A623", textDecoration: "underline", fontWeight: 700, wordBreak: "break-all", overflowWrap: "break-word" }}
+                                >
+                                  {linkText}
+                                </a>
+                              );
+                            }
+                            return null;
+                          })}
+                        </p>
+                      );
+                    })}
                   </div>
 
                   {/* Share section — improved */}
