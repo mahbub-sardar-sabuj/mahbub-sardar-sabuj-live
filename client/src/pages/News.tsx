@@ -214,6 +214,8 @@ export default function News() {
   return (
     <div style={{ background: "#060E1A", minHeight: "100vh", color: "#FAF6EF" }}>
       <style>{`
+        html { scrollbar-gutter: stable; }
+        body { scrollbar-gutter: stable; }
         @keyframes tickerSlide {
           0% { opacity: 0; transform: translateY(8px); }
           10% { opacity: 1; transform: translateY(0); }
@@ -804,6 +806,7 @@ export default function News() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             style={{
               position: "fixed",
               inset: 0,
@@ -814,6 +817,7 @@ export default function News() {
               alignItems: "center",
               justifyContent: "center",
               padding: "20px",
+              overflow: "hidden",
             }}
             onClick={() => handleSelectNews(null)}
           >
