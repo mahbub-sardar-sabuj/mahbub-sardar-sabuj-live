@@ -1,4 +1,4 @@
-// সরদার সংবাদ — News Data
+// সরদার সংবাদ — News Data (Updated)
 // Auto-generated from News.tsx
 
 export interface NewsItem {
