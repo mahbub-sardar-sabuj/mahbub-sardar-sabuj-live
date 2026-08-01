@@ -135,11 +135,9 @@ function Router() {
         <Route path={"/ebooks"} component={EBooks} />
         <Route path={"/ebooks/read/:slug"} component={EBookReader} />
         <Route path={"/editor"} component={Editor} />
-        <Route path={"/news"} component={News} />
-        <Route path={"/news/:id"}>{() => <News />}</Route>
+        <Route path={"/news/:id?"} component={News} />
         <Route path={"/gallery"} component={Gallery} />
-        <Route path={"/amio-likhbo-bastobota"} component={AmiOLikhboBastobota} />
-        <Route path={"/amio-likhbo-bastobota/:slug"} component={AmiOLikhboBastobota} />
+        <Route path={"/amio-likhbo-bastobota/:slug?"} component={AmiOLikhboBastobota} />
         <Route path={"/amio-likhbo-login"} component={AmiOLikhboLogin} />
         <Route path={"/profile"} component={Profile} />
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />

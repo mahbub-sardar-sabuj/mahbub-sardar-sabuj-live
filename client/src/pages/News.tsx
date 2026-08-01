@@ -102,6 +102,16 @@ export default function News() {
     setSelectedNews(null);
   }, [location, newsData]);
 
+  // Lock body scroll when news detail is open to prevent layout shift and background scrolling
+  useEffect(() => {
+    if (selectedNews) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [selectedNews]);
+
   const handleSelectNews = (news: NewsItem | null) => {
     if (news) {
       setLocation(`/news/${news.id}`);
@@ -808,10 +818,10 @@ export default function News() {
             onClick={() => handleSelectNews(null)}
           >
             <motion.div
-              initial={{ scale: 0.92, opacity: 0, y: 24 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 24 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               style={{
                 background: "linear-gradient(180deg, #0F1E52 0%, #060E1A 100%)",
                 width: "100%",
