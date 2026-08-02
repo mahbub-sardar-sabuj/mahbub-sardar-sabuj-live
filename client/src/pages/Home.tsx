@@ -364,43 +364,6 @@ export default function Home() {
                 </p>
               </motion.div>
 
-              {/* New Book Featured Link */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                style={{ marginTop: "1.5rem" }}
-              >
-                <Link href="/writings" style={{ textDecoration: "none" }}>
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "10px 16px",
-                    background: "rgba(201, 168, 76, 0.12)",
-                    border: "1px solid rgba(201, 168, 76, 0.35)",
-                    borderRadius: "16px",
-                    backdropFilter: "blur(8px)",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(201, 168, 76, 0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(201, 168, 76, 0.12)"; e.currentTarget.style.transform = "translateY(0)"; }}
-                  >
-                    <div style={{ width: 44, height: 44, borderRadius: "8px", overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.3)" }}>
-                      <img src="/images/ebooks/abhiman.jpg" alt="অভিমান" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.95rem", color: "#FAF6EF", fontWeight: 700 }}>নতুন বই: অভিমান</span>
-                        <span style={{ background: "#E11D48", color: "white", fontSize: "0.55rem", fontWeight: 800, padding: "2px 6px", borderRadius: "999px", fontFamily: "'AdorshoLipi', sans-serif" }}>প্রি-অর্ডার</span>
-                      </div>
-                      <div style={{ fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.72rem", color: "#C9A84C" }}>রকমারিতে প্রি-অর্ডার শুরু হয়েছে →</div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-
             </div>
 
             {/* Right column — author portrait */}
@@ -493,26 +456,24 @@ export default function Home() {
                     pointerEvents: "none",
                   }} />
                   {/* Name tag at bottom */}
-                <div style={{
-                  position: "absolute", bottom: 0, left: 0, right: 0,
-                  padding: "1.4rem 1.6rem",
-                  background: "linear-gradient(to top, rgba(4,10,20,0.9) 0%, transparent 100%)",
-                }}>
                   <div style={{
-                    fontFamily: "'AdorshoLipi', sans-serif",
-                    fontSize: "0.6rem", letterSpacing: "0.22em",
-                    textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
-                  }}>লেখক ও কবি</div>
-                  <div style={{
-                    fontFamily: "'AdorshoLipi', sans-serif",
-                    fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
-                    textShadow: "0 2px 12px rgba(0,0,0,0.5)",
-                  }}>মাহবুব সরদার সবুজ</div>
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    padding: "1.4rem 1.6rem",
+                    background: "linear-gradient(to top, rgba(4,10,20,0.9) 0%, transparent 100%)",
+                  }}>
+                    <div style={{
+                      fontFamily: "'AdorshoLipi', sans-serif",
+                      fontSize: "0.6rem", letterSpacing: "0.22em",
+                      textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
+                    }}>লেখক ও কবি</div>
+                    <div style={{
+                      fontFamily: "'AdorshoLipi', sans-serif",
+                      fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
+                      textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                    }}>মাহবুব সরদার সবুজ</div>
+                  </div>
                 </div>
-              </div>
-
-
-            </motion.div>
+              </motion.div>
             </motion.div>
           </div>
         </motion.div>

@@ -86,7 +86,6 @@ function getCatStyle(cat: string) {
 const WRITINGS_PAGE_SIZE = 24;
 
 const ebooks = [
-  { id:6, slug:"abhiman",           title:"অভিমান",                               subtitle:"নতুন বই (প্রি-অর্ডার)", cover:"/images/ebooks/abhiman.jpg",        description:"মাহবুব সরদার সবুজের নতুন অণু-গদ্যের বই 'অভিমান'। জীবনের সূক্ষ্ম অনুভূতি, না বলা কথা আর অভিমানের গল্পগুলো এই বইয়ে উঠে এসেছে।",                                                                              genre:"অণু-গদ্য",      pages:"৮০+", year:"২০২৬", badge:"প্রি-অর্ডার",     badgeColor:"#E11D48", buyLink:"https://rkmri.co/Te303mA3TEyA/", isFeatured:true,  canRead:false, accentColor:"#E11D48", accentRgb:"225,29,72" },
   { id:1, slug:"dukkhovilash",      title:"আমি বিচ্ছেদকে বলি দুঃখবিলাস",          subtitle:"প্রথম ফিজিক্যাল বই", cover:"/images/ebooks/dukkhovilash.jpg",      description:"বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে।",                                                                                                         genre:"আবেগী সাহিত্য", pages:"১৫০+", year:"২০২৬", badge:"ফিজিক্যাল বই", badgeColor:"#D4A843", buyLink:"https://rkmri.co/TTMEoA3l3pM0/", isFeatured:true,  canRead:true, accentColor:"#D4A843", accentRgb:"212,168,67" },
   { id:2, slug:"smritir-boshonte",  title:"স্মৃতির বসন্তে তুমি",                   subtitle:"ই-বুক",              cover:"/images/ebooks/smritir-boshonte.jpg",  description:"স্মৃতির গভীরে হারিয়ে যাওয়া প্রিয় মুহূর্তগুলো নিয়ে লেখা এই আবেগঘন কাব্যিক সংকলন।",                                                                                                            genre:"কবিতা ও গদ্য",  pages:"৮০+",  year:"২০২৪", badge:"ই-বুক",        badgeColor:"#4A90D9", buyLink:null,                                   isFeatured:false, canRead:true, accentColor:"#4A90D9", accentRgb:"74,144,217" },
   { id:3, slug:"chand-phool",       title:"চাঁদফুল",                                subtitle:"ই-বুক",              cover:"/images/ebooks/chand-phool.jpg",       description:"প্রকৃতির অপরূপ সৌন্দর্য আর মানবমনের কোমল অনুভূতির মেলবন্ধনে রচিত এই বিশেষ কাব্যগ্রন্থ।",                                                                                                           genre:"কবিতা",         pages:"৬০+",  year:"২০২৩", badge:"ই-বুক",        badgeColor:"#27AE60", buyLink:null,                                   isFeatured:false, canRead:true, accentColor:"#27AE60", accentRgb:"39,174,96"  },
@@ -1530,7 +1529,7 @@ function BookCard({ book, index }: { book: typeof ebooks[0]; index: number }) {
       initial={{ opacity:0, y:32, rotateX:6 }}
       animate={isInView ? { opacity:1, y:0, rotateX:0 } : { opacity:0, y:32, rotateX:6 }}
       transition={{ delay:index*.08, duration:.48, ease:[.25,.46,.45,.94] }}
-      onClick={() => book.canRead ? setLocation(`/ebooks/read/${book.slug}`) : setLocation(`/ebooks/read/${book.slug}`)} // Fallback to read page which will show modal or info
+      onClick={() => setLocation(`/ebooks/read/${book.slug}`)}
       role="article" tabIndex={0}
       aria-label={`${book.title} দেখুন`}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${book.slug}`); } }}
@@ -1555,27 +1554,14 @@ function BookCard({ book, index }: { book: typeof ebooks[0]; index: number }) {
           <BookMarked size={10}/>{book.pages} পৃষ্ঠা
         </div>
         <div className="lw-book-actions">
-          {book.canRead ? (
-            <a
-              href={`/ebooks/read/${book.slug}`}
-              className="lw-book-btn lw-book-btn-accent"
-              onClick={e => e.stopPropagation()}
-              style={{ background:`rgba(${book.accentRgb},.18)`, borderColor:`rgba(${book.accentRgb},.42)` }}
-            >
-              <BookOpen size={12}/> পড়ুন
-            </a>
-          ) : (
-            <a
-              href={book.buyLink || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lw-book-btn lw-book-btn-accent"
-              onClick={e => e.stopPropagation()}
-              style={{ background:`rgba(${book.accentRgb},.18)`, borderColor:`rgba(${book.accentRgb},.42)` }}
-            >
-              <ShoppingCart size={12}/> প্রি-অর্ডার
-            </a>
-          )}
+          <a
+            href={`/ebooks/read/${book.slug}`}
+            className="lw-book-btn lw-book-btn-accent"
+            onClick={e => e.stopPropagation()}
+            style={{ background:`rgba(${book.accentRgb},.18)`, borderColor:`rgba(${book.accentRgb},.42)` }}
+          >
+            <BookOpen size={12}/> পড়ুন
+          </a>
           <a
             href={`/ebooks/read/${book.slug}`}
             className="lw-book-btn"
@@ -1751,7 +1737,6 @@ function BooksTab() {
   const [selBook, setSelBook] = useState<typeof ebooks[0]|null>(null);
   const featured = ebooks[0];
   const remaining = ebooks.slice(1);
-  const isPreOrder = featured.badge === "প্রি-অর্ডার";
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
@@ -1780,7 +1765,7 @@ function BooksTab() {
           style={{ "--ba": featured.accentColor, "--ba-rgb": featured.accentRgb } as React.CSSProperties}
           initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:.46, ease:[.25,.46,.45,.94] }}
-          onClick={() => isPreOrder ? setSelBook(featured) : setLocation(`/ebooks/read/${featured.slug}`)}
+          onClick={() => setLocation(`/ebooks/read/${featured.slug}`)}
           role="article" tabIndex={0}
           aria-label={`${featured.title} দেখুন`}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${featured.slug}`); } }}
@@ -1812,18 +1797,12 @@ function BooksTab() {
                     onClick={(e) => e.stopPropagation()}
                     style={{ background:`linear-gradient(135deg,${featured.accentColor},${featured.accentColor}CC)`, boxShadow:`0 8px 28px rgba(${featured.accentRgb},.4)` }}
                   >
-                    <ShoppingCart size={14}/> {isPreOrder ? "প্রি-অর্ডার" : "এখনই কিনুন"}
+                    <ShoppingCart size={14}/> এখনই কিনুন
                   </a>
                 )}
-                {featured.canRead ? (
-                  <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="lw-btn-secondary">
-                    <BookOpen size={14}/> পড়ুন
-                  </Link>
-                ) : (
-                  <button onClick={(e) => { e.stopPropagation(); setSelBook(featured); }} className="lw-btn-secondary">
-                    <Eye size={14}/> বিস্তারিত
-                  </button>
-                )}
+                <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="lw-btn-secondary">
+                  <BookOpen size={14}/> পড়ুন
+                </Link>
               </div>
             </div>
           </div>

@@ -88,16 +88,6 @@ const ebookData: Record<string, {
     year: "২০২৬",
     totalPages: 101,
   },
-  "abhiman": {
-    title: "অভিমান",
-    author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/abhiman.jpg",
-    pdfUrl: "", // Pre-order book, no PDF yet
-    description: "মাহবুব সরদার সবুজের নতুন অণু-গদ্যের বই 'অভিমান'। জীবনের সূক্ষ্ম অনুভূতি, না বলা কথা আর অভিমানের গল্পগুলো এই বইয়ে উঠে এসেছে।",
-    genre: "অণু-গদ্য",
-    year: "২০২৬",
-    totalPages: 80,
-  },
 };
 
 // AdSense Auto ads — Google স্বয়ংক্রিয়ভাবে সঠিক জায়গায় বিজ্ঞাপন দেখাবে

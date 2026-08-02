@@ -20,24 +20,6 @@ import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 
 const ebooks = [
   {
-    id: 6,
-    slug: "abhiman",
-    title: "অভিমান",
-    subtitle: "নতুন বই (প্রি-অর্ডার)",
-    cover: "/images/ebooks/abhiman.jpg",
-    description:
-      "'অভিমান' — মাহবুব সরদার সবুজের নতুন অণু-গদ্যের বই। জীবনের সূক্ষ্ম অনুভূতি, না বলা কথা আর অভিমানের গল্পগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে। এটি লেখকের অন্যতম সেরা কাজ হতে যাচ্ছে।",
-    genre: "অণু-গদ্য",
-    pages: "৮০+",
-    year: "২০২৬",
-    badge: "প্রি-অর্ডার",
-    badgeColor: "#E11D48",
-    buyLink: "https://rkmri.co/Te303mA3TEyA/",
-    isFeatured: true,
-    canRead: false,
-    accentColor: "#E11D48",
-  },
-  {
     id: 1,
     slug: "dukkhovilash",
     title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
@@ -828,10 +810,10 @@ function BookCard({ book, index, onDetails }: { book: typeof ebooks[0]; index: n
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function EBooks() {
   const [selectedBook, setSelectedBook] = useState<typeof ebooks[0] | null>(null);
-    const featuredBook = ebooks[0];
+  const featuredBook = ebooks[0];
   const otherBooks = ebooks.slice(1);
+
   const heroBooks = ebooks.slice(0, 3);
-  const isPreOrder = featuredBook.badge === "প্রি-অর্ডার";
 
   const ebooksJsonLd = {
     "@context": "https://schema.org",
@@ -930,9 +912,9 @@ export default function EBooks() {
         >
           <div className="eb-panel-head">
             <div>
-              <div className="eb-section-eyebrow"><Star size={13} fill="currentColor" /> {isPreOrder ? "নতুন বই" : "প্রধান বই"}</div>
-              <h2 id="eb-featured-title">{isPreOrder ? "প্রি-অর্ডার চলছে" : "প্রথম ফিজিক্যাল প্রকাশনা"}</h2>
-              <p>{isPreOrder ? "মাহবুব সরদার সবুজের নতুন অণু-গদ্যের বই ‘অভিমান’ — রকমারিতে প্রি-অর্ডার করুন" : "মাহবুব সরদার সবুজের প্রথম প্রকাশিত ফিজিক্যাল বই — রকমারিতে পাওয়া যাচ্ছে"}</p>
+              <div className="eb-section-eyebrow"><Star size={13} fill="currentColor" /> প্রধান বই</div>
+              <h2 id="eb-featured-title">প্রথম ফিজিক্যাল প্রকাশনা</h2>
+              <p>মাহবুব সরদার সবুজের প্রথম প্রকাশিত ফিজিক্যাল বই — রকমারিতে পাওয়া যাচ্ছে</p>
             </div>
           </div>
 
@@ -968,21 +950,12 @@ export default function EBooks() {
                 </div>
                 <p>{featuredBook.description}</p>
                 <div className="eb-featured-actions" onClick={(e) => e.stopPropagation()}>
-                  {featuredBook.canRead ? (
-                    <Link
-                      href={`/ebooks/read/${featuredBook.slug}`}
-                      style={{ background: `linear-gradient(135deg,${featuredBook.accentColor}2C,${featuredBook.accentColor}18)`, borderColor: `${featuredBook.accentColor}48`, color: "#F2EDE4", textDecoration: "none" }}
-                    >
-                      <BookOpen size={14} /> পড়ুন
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => setSelectedBook(featuredBook)}
-                      style={{ background: `linear-gradient(135deg,${featuredBook.accentColor}2C,${featuredBook.accentColor}18)`, borderColor: `${featuredBook.accentColor}48`, color: "#F2EDE4", cursor: "pointer" }}
-                    >
-                      <Eye size={14} /> বিস্তারিত
-                    </button>
-                  )}
+                  <Link
+                    href={`/ebooks/read/${featuredBook.slug}`}
+                    style={{ background: `linear-gradient(135deg,${featuredBook.accentColor}2C,${featuredBook.accentColor}18)`, borderColor: `${featuredBook.accentColor}48`, color: "#F2EDE4", textDecoration: "none" }}
+                  >
+                    <BookOpen size={14} /> পড়ুন
+                  </Link>
                   {featuredBook.buyLink && (
                     <a
                       href={featuredBook.buyLink}
@@ -990,7 +963,7 @@ export default function EBooks() {
                       rel="noopener noreferrer"
                       style={{ background: `linear-gradient(135deg,${featuredBook.accentColor},${featuredBook.accentColor}CC)`, borderColor: "transparent", color: "#080A14", textDecoration: "none" }}
                     >
-                      <ShoppingCart size={14} /> {isPreOrder ? "প্রি-অর্ডার করুন" : "রকমারিতে কিনুন"}
+                      <ShoppingCart size={14} /> রকমারিতে কিনুন
                     </a>
                   )}
                 </div>
