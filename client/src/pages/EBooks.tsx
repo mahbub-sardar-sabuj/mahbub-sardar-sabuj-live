@@ -20,6 +20,24 @@ import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 
 const ebooks = [
   {
+    id: 6,
+    slug: "abhiman",
+    title: "অভিমান",
+    subtitle: "নতুন বই (প্রি-অর্ডার)",
+    cover: "/images/ebooks/abhiman.jpg",
+    description:
+      "'অভিমান' — মাহবুব সরদার সবুজের নতুন অণু-গদ্যের বই। জীবনের সূক্ষ্ম অনুভূতি, না বলা কথা আর অভিমানের গল্পগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে। এটি লেখকের অন্যতম সেরা কাজ হতে যাচ্ছে।",
+    genre: "অণু-গদ্য",
+    pages: "১২০+",
+    year: "২০২৬",
+    badge: "প্রি-অর্ডার",
+    badgeColor: "#E11D48",
+    buyLink: "https://rkmri.co/Te303mA3TEyA/",
+    isFeatured: true,
+    canRead: false,
+    accentColor: "#E11D48",
+  },
+  {
     id: 1,
     slug: "dukkhovilash",
     title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
