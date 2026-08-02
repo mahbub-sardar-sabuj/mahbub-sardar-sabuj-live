@@ -215,7 +215,7 @@ export default function NewsDetail() {
                   event.currentTarget.style.objectFit = "contain";
                   event.currentTarget.style.padding = "36px";
                 }}
-                style={{ display: "block", width: "100%", aspectRatio: "16 / 9", objectFit: "cover", background: "linear-gradient(135deg, #1B2A6B, #060E1A)" }}
+                style={{ display: "block", width: "100%", aspectRatio: news.category === "সাহিত্য" ? "auto" : "16 / 9", maxHeight: news.category === "সাহিত্য" ? "600px" : "auto", objectFit: "contain", background: "linear-gradient(135deg, #1B2A6B, #060E1A)" }}
               />
             </figure>
           ) : null}
