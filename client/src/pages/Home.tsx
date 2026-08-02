@@ -364,6 +364,43 @@ export default function Home() {
                 </p>
               </motion.div>
 
+              {/* New Book Featured Link */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                style={{ marginTop: "1.5rem" }}
+              >
+                <Link href="/writings" style={{ textDecoration: "none" }}>
+                  <div style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 16px",
+                    background: "rgba(201, 168, 76, 0.12)",
+                    border: "1px solid rgba(201, 168, 76, 0.35)",
+                    borderRadius: "16px",
+                    backdropFilter: "blur(8px)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(201, 168, 76, 0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(201, 168, 76, 0.12)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: "8px", overflow: "hidden", flexShrink: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.3)" }}>
+                      <img src="/images/ebooks/abhiman.jpg" alt="অভিমান" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.95rem", color: "#FAF6EF", fontWeight: 700 }}>নতুন বই: অভিমান</span>
+                        <span style={{ background: "#E11D48", color: "white", fontSize: "0.55rem", fontWeight: 800, padding: "2px 6px", borderRadius: "999px", fontFamily: "'AdorshoLipi', sans-serif" }}>প্রি-অর্ডার</span>
+                      </div>
+                      <div style={{ fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.72rem", color: "#C9A84C" }}>রকমারিতে প্রি-অর্ডার শুরু হয়েছে →</div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+
             </div>
 
             {/* Right column — author portrait */}
@@ -474,76 +511,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* New Book Floating Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, y: 40 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.2 }}
-                style={{
-                  position: "absolute",
-                  bottom: "10%",
-                  right: "2%",
-                  zIndex: 10,
-                  width: "min(150px, 40vw)",
-                }}
-              >
-                <Link href="/writings">
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    style={{
-                      background: "rgba(10, 20, 40, 0.85)",
-                      backdropFilter: "blur(12px)",
-                      border: "1.5px solid rgba(201, 168, 76, 0.4)",
-                      borderRadius: "18px",
-                      padding: "10px",
-                      boxShadow: "0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(201, 168, 76, 0.15)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div style={{ position: "relative", marginBottom: "8px" }}>
-                      <img
-                        src="/images/ebooks/abhiman.jpg"
-                        alt="অভিমান বই প্রচ্ছদ"
-                        style={{
-                          width: "100%",
-                          aspectRatio: "1/1",
-                          objectFit: "cover",
-                          borderRadius: "10px",
-                          boxShadow: "0 8px 16px rgba(0,0,0,0.3)",
-                        }}
-                      />
-                      <div style={{
-                        position: "absolute",
-                        top: "-8px",
-                        right: "-8px",
-                        background: "#E11D48",
-                        color: "white",
-                        fontSize: "0.6rem",
-                        fontWeight: 800,
-                        padding: "3px 8px",
-                        borderRadius: "999px",
-                        boxShadow: "0 4px 8px rgba(225, 29, 72, 0.3)",
-                        fontFamily: "'AdorshoLipi', sans-serif",
-                      }}>প্রি-অর্ডার</div>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{
-                        fontFamily: "'AdorshoLipi', sans-serif",
-                        fontSize: "0.85rem",
-                        color: "#FAF6EF",
-                        fontWeight: 700,
-                        marginBottom: "2px",
-                      }}>অভিমান</div>
-                      <div style={{
-                        fontFamily: "'AdorshoLipi', sans-serif",
-                        fontSize: "0.6rem",
-                        color: "#C9A84C",
-                        fontWeight: 500,
-                      }}>নতুন বই ২০২৬</div>
-                    </div>
-                  </motion.div>
-                </Link>
-              </motion.div>
+
             </motion.div>
             </motion.div>
           </div>
