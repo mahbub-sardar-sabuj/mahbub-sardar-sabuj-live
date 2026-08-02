@@ -476,15 +476,15 @@ export default function Home() {
 
               {/* New Book Floating Card */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, x: 30, y: 30 }}
-                animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 1.2 }}
                 style={{
                   position: "absolute",
-                  bottom: "-15px",
-                  right: "-25px",
+                  bottom: "10%",
+                  right: "2%",
                   zIndex: 10,
-                  width: "min(160px, 45vw)",
+                  width: "min(150px, 40vw)",
                 }}
               >
                 <Link href="/writings">
