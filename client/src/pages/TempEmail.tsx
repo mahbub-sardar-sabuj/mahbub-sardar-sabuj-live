@@ -493,22 +493,6 @@ export default function TempEmail() {
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
                 </p>
 
-                {/* Predictable sequential username */}
-                <div
-                  style={{
-                    margin: "0 auto 20px",
-                    maxWidth: 420,
-                    padding: "10px 14px",
-                    borderRadius: 12,
-                    background: "rgba(201,168,76,0.06)",
-                    border: `1px solid rgba(201,168,76,0.2)`,
-                    color: MUTED,
-                    fontSize: "0.82rem",
-                    fontFamily: "'AdorshoLipi', sans-serif",
-                  }}
-                >
-                  নাম স্বয়ংক্রিয়ভাবে হবে: <strong style={{ color: GOLD, fontFamily: "monospace" }}>{DEFAULT_USERNAME}</strong>, তারপর <strong style={{ color: GOLD, fontFamily: "monospace" }}>{DEFAULT_USERNAME}01</strong>, <strong style={{ color: GOLD, fontFamily: "monospace" }}>{DEFAULT_USERNAME}02</strong>…
-                </div>
 
                 <button
                   onClick={generateEmail}
