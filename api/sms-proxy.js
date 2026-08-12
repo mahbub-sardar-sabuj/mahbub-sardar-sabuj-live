@@ -173,7 +173,7 @@ function formatTimestamp(unix) {
 }
 
 
-const MAIL_TM_BASE = 'https://api.mail.tm';
+const MAIL_TM_BASE = 'https://api.mail.gw';
 const TEMP_EMAIL_TIMEOUT_MS = 12_000;
 
 function getTempEmailBody(req) {
@@ -201,7 +201,7 @@ function isTempEmailId(value) {
 }
 
 async function callTempEmailProvider(path, { method = 'GET', body, token } = {}) {
-  // mail.tm returns Hydra collection objects for this media type; the client uses that shape.
+  // The compatible provider returns Hydra collection objects for this media type; the client uses that shape.
   const headers = { Accept: 'application/ld+json' };
   if (body) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -236,7 +236,7 @@ function sendTempEmailProviderResponse(res, { status, payload }) {
 }
 
 /**
- * Same-origin proxy for the mail.tm API. Only known operations are exposed;
+ * Same-origin proxy for a disposable-email API. Only known operations are exposed;
  * callers cannot select a destination URL.
  */
 async function handleTempEmailProxy(req, res) {
