@@ -18,7 +18,37 @@ const CARD_BG = "rgba(255,255,255,0.03)";
 const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
-const API_BASE = "https://api.mail.tm";
+const TEMP_EMAIL_API = "/api/temp-email";
+
+interface ProxyError {
+  error?: string;
+  message?: string;
+  "hydra:description"?: string;
+}
+
+async function tempEmailRequest<T>(
+  action: string,
+  payload: Record<string, string> = {}
+): Promise<T> {
+  const response = await fetch(TEMP_EMAIL_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, ...payload }),
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => null)) as ProxyError | null;
+    const message =
+      data?.["hydra:description"] ||
+      data?.error ||
+      data?.message ||
+      "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।";
+    throw new Error(message);
+  }
+
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
 
 interface EmailAccount {
   id: string;
@@ -104,11 +134,9 @@ export default function TempEmail() {
 
   // Fetch available domains
   const getDomains = async (): Promise<string[]> => {
-    const res = await fetch(`${API_BASE}/domains?page=1`);
-    if (!res.ok) throw new Error("ডোমেইন লোড করতে সমস্যা হয়েছে");
-    const data = await res.json();
+    const data = await tempEmailRequest<{ "hydra:member"?: Array<{ isActive: boolean; domain: string }> }>("domains");
     const members = data["hydra:member"] || [];
-    return members.filter((d: { isActive: boolean }) => d.isActive).map((d: { domain: string }) => d.domain);
+    return members.filter((d) => d.isActive).map((d) => d.domain);
   };
 
   // Create new email account
@@ -133,32 +161,19 @@ export default function TempEmail() {
     let accountData: Record<string, string> | null = null;
 
     for (const addr of tryAddresses) {
-      const tryRes = await fetch(`${API_BASE}/accounts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: addr, password }),
-      });
-      if (tryRes.ok) {
-        accountData = await tryRes.json();
+      try {
+        accountData = await tempEmailRequest<Record<string, string>>("createAccount", { address: addr, password });
         address = addr;
         break;
-      }
-      // If last attempt, throw error
-      if (addr === tryAddresses[tryAddresses.length - 1]) {
-        const err = await tryRes.json().catch(() => ({}));
-        throw new Error((err as Record<string, string>)["hydra:description"] || "অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
+      } catch (error) {
+        if (addr === tryAddresses[tryAddresses.length - 1]) throw error;
       }
     }
     if (!accountData) throw new Error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
 
     // Get token
-    const tokenRes = await fetch(`${API_BASE}/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address, password }),
-    });
-    if (!tokenRes.ok) throw new Error("টোকেন পেতে সমস্যা হয়েছে");
-    const tokenData = await tokenRes.json();
+    const tokenData = await tempEmailRequest<{ token?: string }>("createToken", { address, password });
+    if (!tokenData.token) throw new Error("টোকেন পেতে সমস্যা হয়েছে");
 
     return {
       id: accountData.id,
@@ -172,11 +187,7 @@ export default function TempEmail() {
   // Fetch messages
   const fetchMessages = useCallback(async (acc: EmailAccount) => {
     try {
-      const res = await fetch(`${API_BASE}/messages?page=1`, {
-        headers: { Authorization: `Bearer ${acc.token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await tempEmailRequest<{ "hydra:member"?: Message[] }>("messages", { token: acc.token });
       setMessages(data["hydra:member"] || []);
     } catch {
       // Silent fail
@@ -187,11 +198,7 @@ export default function TempEmail() {
   const fetchMessageDetail = async (msgId: string, acc: EmailAccount) => {
     setViewingMessage(true);
     try {
-      const res = await fetch(`${API_BASE}/messages/${msgId}`, {
-        headers: { Authorization: `Bearer ${acc.token}` },
-      });
-      if (!res.ok) throw new Error("ইমেইল লোড করতে সমস্যা হয়েছে");
-      const data = await res.json();
+      const data = await tempEmailRequest<MessageDetail>("message", { id: msgId, token: acc.token });
       setSelectedMessage(data);
       // Mark as read
       setMessages((prev) =>
@@ -208,10 +215,7 @@ export default function TempEmail() {
   const deleteMessage = async (msgId: string) => {
     if (!account) return;
     try {
-      await fetch(`${API_BASE}/messages/${msgId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${account.token}` },
-      });
+      await tempEmailRequest<void>("deleteMessage", { id: msgId, token: account.token });
       setMessages((prev) => prev.filter((m) => m.id !== msgId));
       if (selectedMessage?.id === msgId) setSelectedMessage(null);
     } catch {
@@ -280,10 +284,7 @@ export default function TempEmail() {
     if (!account) return;
     setLoading(true);
     try {
-      await fetch(`${API_BASE}/accounts/${account.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${account.token}` },
-      });
+      await tempEmailRequest<void>("deleteAccount", { id: account.id, token: account.token });
     } catch {
       // Silent fail
     }
