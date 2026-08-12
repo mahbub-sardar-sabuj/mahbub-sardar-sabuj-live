@@ -19,6 +19,7 @@ const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
 const TEMP_EMAIL_API = "/api/sms-proxy?service=temp-email";
+const DEFAULT_USERNAME = "mahbubsardarsabuj";
 
 interface ProxyError {
   error?: string;
@@ -118,19 +119,9 @@ export default function TempEmail() {
   const [countdown, setCountdown] = useState(30);
   const [generating, setGenerating] = useState(false);
   const [viewingMessage, setViewingMessage] = useState(false);
-  const [customUsername, setCustomUsername] = useState("");
-  const [useCustom, setUseCustom] = useState(false);
-  const [availableDomain, setAvailableDomain] = useState<string>("...");
+  const sequenceRef = useRef<number | null>(null);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Load domain on mount
-  useEffect(() => {
-    getDomains().then((domains) => {
-      if (domains.length > 0) setAvailableDomain(domains[0]);
-    }).catch(() => setAvailableDomain("mail.tm"));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Fetch available domains
   const getDomains = async (): Promise<string[]> => {
@@ -139,34 +130,48 @@ export default function TempEmail() {
     return members.filter((d) => d.isActive).map((d) => d.domain);
   };
 
-  // Create new email account
-  const createAccount = async (preferredUsername?: string): Promise<EmailAccount> => {
+  // Create new email account with a predictable sequential username.
+  const createAccount = async (): Promise<EmailAccount> => {
     const domains = await getDomains();
     if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
     const domain = domains[0];
-    // Use custom username if provided, else random
-    const baseUsername = preferredUsername ? sanitizeUsername(preferredUsername) : "";
     const password = randomString(16);
 
-    // Try exact username first, then fallback with suffix if taken
-    const tryAddresses = baseUsername.length >= 3
-      ? [
-          `${baseUsername}@${domain}`,
-          `${baseUsername}${randomString(2)}@${domain}`,
-          `${baseUsername}${randomString(4)}@${domain}`,
-        ]
-      : [`${randomString(10)}@${domain}`];
+    // Remember the next number during this browser session and across reloads.
+    if (sequenceRef.current === null) {
+      try {
+        const stored = Number.parseInt(localStorage.getItem("temp-email-sequence") || "0", 10);
+        sequenceRef.current = Number.isFinite(stored) && stored >= 0 ? stored : 0;
+      } catch {
+        sequenceRef.current = 0;
+      }
+    }
+    const sequenceStart = sequenceRef.current;
+    const tryAddresses = Array.from({ length: 10 }, (_, offset) => {
+      const sequence = sequenceStart + offset;
+      const username = sequence === 0
+        ? DEFAULT_USERNAME
+        : `${DEFAULT_USERNAME}${String(sequence).padStart(2, "0")}`;
+      return `${username}@${domain}`;
+    });
 
     let address = tryAddresses[0];
     let accountData: Record<string, string> | null = null;
 
-    for (const addr of tryAddresses) {
+    for (let index = 0; index < tryAddresses.length; index += 1) {
+      const addr = tryAddresses[index];
       try {
         accountData = await tempEmailRequest<Record<string, string>>("createAccount", { address: addr, password });
         address = addr;
+        sequenceRef.current = sequenceStart + index + 1;
+        try {
+          localStorage.setItem("temp-email-sequence", String(sequenceRef.current));
+        } catch {
+          // Private browsing may block localStorage; the in-memory counter still works.
+        }
         break;
       } catch (error) {
-        if (addr === tryAddresses[tryAddresses.length - 1]) throw error;
+        if (index === tryAddresses.length - 1) throw error;
       }
     }
     if (!accountData) throw new Error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
@@ -249,8 +254,7 @@ export default function TempEmail() {
     setMessages([]);
     setSelectedMessage(null);
     try {
-      const preferred = useCustom && customUsername.trim().length >= 3 ? customUsername.trim() : undefined;
-      const acc = await createAccount(preferred);
+      const acc = await createAccount();
       setAccount(acc);
       await fetchMessages(acc);
       startAutoRefresh(acc);
@@ -489,86 +493,26 @@ export default function TempEmail() {
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
                 </p>
 
-                {/* Custom username toggle */}
-                <div style={{ marginBottom: 20, textAlign: "left", maxWidth: 420, margin: "0 auto 20px" }}>
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      cursor: "pointer",
-                      marginBottom: useCustom ? 12 : 0,
-                      userSelect: "none",
-                    }}
-                  >
-                    <div
-                      onClick={() => setUseCustom(!useCustom)}
-                      style={{
-                        width: 40,
-                        height: 22,
-                        borderRadius: 11,
-                        background: useCustom ? GOLD : "rgba(255,255,255,0.1)",
-                        border: `1px solid ${useCustom ? GOLD : "rgba(255,255,255,0.2)"}`,
-                        position: "relative",
-                        transition: "all 0.2s",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: "50%",
-                          background: "#fff",
-                          position: "absolute",
-                          top: 2,
-                          left: useCustom ? 20 : 2,
-                          transition: "left 0.2s",
-                        }}
-                      />
-                    </div>
-                    <span
-                      onClick={() => setUseCustom(!useCustom)}
-                      style={{ color: MUTED, fontSize: "0.85rem", fontFamily: "'AdorshoLipi', sans-serif" }}
-                    >
-                      কাস্টম নাম দিয়ে ইমেইল তৈরি করুন
-                    </span>
-                  </label>
-
-                  {useCustom && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 0, background: "rgba(201,168,76,0.06)", border: `1px solid rgba(201,168,76,0.3)`, borderRadius: 12, overflow: "hidden" }}>
-                      <input
-                        type="text"
-                        value={customUsername}
-                        onChange={(e) => setCustomUsername(e.target.value.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 30))}
-                        placeholder="MahbubSardarSabuj"
-                        maxLength={30}
-                        style={{
-                          flex: 1,
-                          background: "transparent",
-                          border: "none",
-                          outline: "none",
-                          color: TEXT,
-                          fontSize: "0.95rem",
-                          fontFamily: "monospace",
-                          padding: "10px 14px",
-                        }}
-                      />
-                      <span style={{ color: GOLD, fontSize: "0.8rem", fontFamily: "monospace", padding: "0 12px", whiteSpace: "nowrap", borderLeft: `1px solid rgba(201,168,76,0.2)` }}>
-                        @{availableDomain}
-                      </span>
-                    </div>
-                  )}
-                  {useCustom && customUsername.length > 0 && customUsername.length < 3 && (
-                    <p style={{ color: "#f59e0b", fontSize: "0.78rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "6px 0 0" }}>
-                      কমপক্ষে ৩টি অক্ষর দিন
-                    </p>
-                  )}
+                {/* Predictable sequential username */}
+                <div
+                  style={{
+                    margin: "0 auto 20px",
+                    maxWidth: 420,
+                    padding: "10px 14px",
+                    borderRadius: 12,
+                    background: "rgba(201,168,76,0.06)",
+                    border: `1px solid rgba(201,168,76,0.2)`,
+                    color: MUTED,
+                    fontSize: "0.82rem",
+                    fontFamily: "'AdorshoLipi', sans-serif",
+                  }}
+                >
+                  নাম স্বয়ংক্রিয়ভাবে হবে: <strong style={{ color: GOLD, fontFamily: "monospace" }}>{DEFAULT_USERNAME}</strong>, তারপর <strong style={{ color: GOLD, fontFamily: "monospace" }}>{DEFAULT_USERNAME}01</strong>, <strong style={{ color: GOLD, fontFamily: "monospace" }}>{DEFAULT_USERNAME}02</strong>…
                 </div>
 
                 <button
                   onClick={generateEmail}
-                  disabled={generating || (useCustom && customUsername.trim().length > 0 && customUsername.trim().length < 3)}
+                  disabled={generating}
                   style={{
                     background: generating
                       ? "rgba(201,168,76,0.3)"
