@@ -756,7 +756,7 @@ function BookModal({ book, onClose }: { book: Book; onClose: () => void }) {
           <div className="eb-modal-body">
             <img
               src={book.cover}
-              alt={`${book.title} - ${book.genre} ই-বুক কভার - মাহবুব সরদার সবুজ`}
+              alt={`${book.title} - ${book.genre} ${book.canRead ? "ই-বুক" : "মুদ্রিত বই"} কভার - মাহবুব সরদার সবুজ`}
               className="eb-modal-cover"
               loading="lazy"
               decoding="async"
@@ -775,7 +775,7 @@ function BookModal({ book, onClose }: { book: Book; onClose: () => void }) {
                 <blockquote style={{ whiteSpace: "pre-line", fontFamily: "var(--eb-f)", fontSize: ".83rem", color: book.accentColor, lineHeight: 2, margin: "0 0 1.15rem", padding: "0 0 0 1rem", borderLeft: `3px solid ${book.accentColor}`, fontStyle: "italic" }}>“{book.quote}”<footer style={{ marginTop: ".55rem", color: "rgba(237,232,222,.5)", fontStyle: "normal" }}>— মাহবুব সরদার সবুজ</footer></blockquote>
               )}
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: "1.45rem" }}>
-                {[book.genre, `${book.pages} পৃষ্ঠা`, book.year].map((t, i) => (
+                {[book.genre, book.pages && book.pages !== "—" ? `${book.pages} পৃষ্ঠা` : null, book.year].filter(Boolean).map((t, i) => (
                   <span key={i} style={{ padding: "5px 14px", borderRadius: 999, background: "rgba(255,255,255,.065)", border: "1px solid rgba(255,255,255,.11)", fontFamily: "var(--eb-f)", fontSize: ".72rem", color: "rgba(237,232,222,.48)" }}>{t}</span>
                 ))}
               </div>
@@ -828,7 +828,7 @@ function BookCard({ book, index, onDetails }: { book: Book; index: number; onDet
       <div className="eb-card-cover-wrap">
         <img
           src={book.cover}
-          alt={`${book.title} - ${book.genre} বাংলা ই-বুক - মাহবুব সরদার সবুজ`}
+          alt={`${book.title} - ${book.genre} ${book.canRead ? "বাংলা ই-বুক" : "মুদ্রিত বই"} - মাহবুব সরদার সবুজ`}
           className="eb-card-cover"
           loading="lazy"
           decoding="async"
@@ -842,7 +842,7 @@ function BookCard({ book, index, onDetails }: { book: Book; index: number; onDet
         <span className="eb-card-genre">{book.genre}</span>
         <h3>{book.title}</h3>
         <p>{book.description}</p>
-        <div className="eb-card-meta"><Calendar size={10} />{book.year} · {book.pages} পৃষ্ঠা</div>
+        <div className="eb-card-meta"><Calendar size={10} />{book.year}{book.pages && book.pages !== "—" ? ` · ${book.pages} পৃষ্ঠা` : ""}</div>
         <div className="eb-card-actions">
           <button className="eb-btn-preview" onClick={onDetails}><Eye size={12} /> বিস্তারিত</button>
           {book.buyLink && (
