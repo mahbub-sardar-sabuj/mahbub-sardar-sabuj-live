@@ -88,6 +88,7 @@ export default function TempCard() {
         description="অনলাইন ভেরিফিকেশন, ফ্রি ট্রায়াল এবং টেস্টিংয়ের জন্য ভ্যালিড ভার্চুয়াল ক্রেডিট কার্ড (Visa, Mastercard, Amex) জেনারেট করুন। সম্পূর্ণ বিনামূল্যে এবং তাৎক্ষণিক।"
         path="/temp-card"
         keywords="ভার্চুয়াল ভিসা কার্ড, ফ্রি ভার্চুয়াল কার্ড জেনারেটর, virtual visa card generator, free vcc generator, temporary credit card for testing, লজ অ্যালগরিদম কার্ড জেনারেটর, মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj"
+        robots="noindex, nofollow, noarchive"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebApplication",

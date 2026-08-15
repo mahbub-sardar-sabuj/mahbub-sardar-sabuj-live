@@ -4,7 +4,7 @@
  * Features: Newsletter UI, animated social icons, hover effects, glassmorphism
  */
 import { useState } from "react";
-import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart, MailOpen, Phone, CreditCard } from "lucide-react";
+import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { preloadRoute } from "@/lib/routePreloader";
@@ -24,9 +24,6 @@ const quickLinks = [
   { label: "আবৃত্তি", href: "/facebook-recitations", icon: Mic2 },
   { label: "গ্যালারি", href: "/gallery", icon: Images },
   { label: "সংবাদ", href: "/news", icon: Newspaper },
-  { label: "টেম্প ইমেইল", href: "/temp-email", icon: MailOpen },
-  { label: "টেম্প নম্বর", href: "/temp-number", icon: Phone },
-  { label: "টেম্প কার্ড", href: "/temp-card", icon: CreditCard },
 ];
 
 const legalLinks = [

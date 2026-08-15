@@ -260,6 +260,7 @@ export default function TempNumber() {
         title="টেম্পোরারি ফোন নম্বর — বিশ্বব্যাপী SMS ভেরিফিকেশন"
         description="ইউএসএ, ইউকে, জার্মানি ও নেদারল্যান্ডসের ফ্রি ভার্চুয়াল নম্বর ব্যবহার করে তাৎক্ষণিক SMS গ্রহণ করুন। কোনো রেজিস্ট্রেশন নেই।"
         path="/temp-number"
+        robots="noindex, nofollow, noarchive"
       />
       <Navbar />
 

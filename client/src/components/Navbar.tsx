@@ -20,7 +20,7 @@ import {
   Menu, X, ChevronDown,
   House, UserRound, Mic2, PenLine, Images,
   Newspaper, Mail, Palette, Feather,
-  MailOpen, Phone, CreditCard, Sparkles, Music, Wrench,
+  Sparkles, Music, Wrench,
   ArrowRight, BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -65,17 +65,6 @@ const RIGHT_GROUPS = [
       { label: "ইমেজ আপস্কেলার",  subtitle: "AI দিয়ে ছবির মান বাড়ান",   href: "/image-upscaler",  icon: Sparkles },
       { label: "অডিও এডিটর",      subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স", href: "/audio-editor",    icon: Music    },
       { label: "আবৃত্তি টুল",      subtitle: "AI কণ্ঠে আবৃত্তি",           href: "/text-to-speech",  icon: Mic2     },
-    ],
-  },
-  {
-    id: 3,
-    label: "টুলস",
-    glyph: "ট",
-    glyphColor: "#5BE8A0",
-    items: [
-      { label: "টেম্প ইমেইল",  subtitle: "ডিসপোজেবল ইমেইল",          href: "/temp-email",   icon: MailOpen   },
-      { label: "টেম্প নম্বর",   subtitle: "ডিসপোজেবল ফোন নম্বর",      href: "/temp-number",  icon: Phone      },
-      { label: "টেম্প কার্ড",   subtitle: "ভার্চুয়াল টেস্ট কার্ড",    href: "/temp-card",    icon: CreditCard },
     ],
   },
 ];

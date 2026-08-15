@@ -316,6 +316,7 @@ export default function TempEmail() {
         title="টেম্পোরারি ইমেইল | Temporary Email — মাহবুব সরদার সবুজ"
         description="বিনামূল্যে টেম্পোরারি ইমেইল তৈরি করুন। স্প্যাম থেকে আপনার আসল ইমেইল রক্ষা করুন। কোনো রেজিস্ট্রেশন দরকার নেই।"
         path="/temp-email"
+        robots="noindex, nofollow, noarchive"
       />
       <Navbar />
       <main

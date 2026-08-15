@@ -345,9 +345,6 @@ function buildBreadcrumbJsonLd(path, url) {
     "/facebook-recitations": "Facebook আবৃত্তি",
     "/amio-likhbo-bastobota": "আমিও লিখবো বাস্তবতা",
     "/editor": "ডিজাইন ফরম্যাট",
-    "/temp-email": "টেম্প ইমেইল",
-    "/temp-number": "টেম্প নম্বর",
-    "/temp-card": "টেম্প কার্ড",
     "/image-upscaler": "ইমেজ আপসেলার",
   };
   return {
@@ -410,7 +407,7 @@ function buildCollectionItems(path) {
 }
 
 function buildRouteJsonLd(path, url, title, description) {
-  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota", "/editor", "/temp-email", "/temp-number", "/temp-card", "/image-upscaler", ...Object.keys(seoKeywordPages)]);
+  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota", "/editor", "/image-upscaler", ...Object.keys(seoKeywordPages)]);
   const contactRoutes = new Set(["/contact"]);
   const pageType = contactRoutes.has(path) ? "ContactPage" : collectionRoutes.has(path) ? "CollectionPage" : "WebPage";
   const graph = [
@@ -3218,6 +3215,15 @@ export default async function handler(req) {
     </article>`;
   }
 
+  const noIndexUtilityPaths = new Set(["/temp-email", "/temp-number", "/temp-card"]);
+  const isNoIndexUtilityPath = noIndexUtilityPaths.has(path);
+  const robotsContent = isNoIndexUtilityPath
+    ? "noindex, nofollow, noarchive"
+    : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+  const adSenseScript = isNoIndexUtilityPath
+    ? ""
+    : '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3350204114310360" crossorigin="anonymous"></script>';
+
   jsonLd = normalizeJsonLd(jsonLd, path, url, title, description);
 
   const html = `
@@ -3230,8 +3236,8 @@ export default async function handler(req) {
       <meta name="description" content="${description}">
       <meta name="keywords" content="${keywords}">
       <meta name="author" content="Mahbub Sardar Sabuj">
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-      <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+      <meta name="robots" content="${robotsContent}">
+      <meta name="googlebot" content="${robotsContent}">
       <link rel="canonical" href="${url}">
       <link rel="alternate" hreflang="bn-BD" href="${url}">
       <link rel="alternate" hreflang="x-default" href="${url}">
@@ -3262,7 +3268,7 @@ export default async function handler(req) {
       <meta name="twitter:image" content="${image}">
 
       <!-- Google AdSense -->
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3350204114310360" crossorigin="anonymous"></script>
+      ${adSenseScript}
 
       <!-- Redirect human users to main site, keep bots here -->
       <script>if(!/bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|facebookexternalhit|facebot|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot|discordbot|pinterest|applebot|gptbot|chatgpt-user|oai-searchbot|claudebot|claude-searchbot|claude-user|anthropic-ai|perplexitybot|perplexity-user|youbot|ccbot|bytespider|meta-externalagent|meta-externalfetcher|amazonbot|diffbot|cohere-ai|mistralai-user|ai2bot|omgili|omgilibot/i.test(navigator.userAgent)){window.location.replace("${url}");}<\/script>

@@ -1,18 +1,45 @@
 // api/sms-proxy.js — সার্ভার-সাইড প্রক্সি (CORS সমস্যা সমাধান + JSON পার্সিং)
 // Node.js 18+ এ native fetch আছে, তাই আলাদা import দরকার নেই
+import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
+
+const COUNTRY_CODE_PATTERN = /^[a-z]{2}$/i;
+const PHONE_NUMBER_PATTERN = /^\d{3,20}$/;
 
 export default async function handler(req, res) {
+  if (limitJsonBodySize(req, res, 32 * 1024)) return;
+
   if (req.query?.service === 'temp-email') {
+    const rate = checkRateLimit(req, res, {
+      keyPrefix: "temp-email",
+      windowMs: 60_000,
+      max: 10,
+      message: "ইমেইল সেবায় অনেকবার চেষ্টা করা হয়েছে। অনুগ্রহ করে এক মিনিট পরে আবার চেষ্টা করুন।",
+    });
+    if (rate.limited) return;
     return handleTempEmailProxy(req, res);
   }
 
-  const { country, number } = req.query;
-
-  if (!country || !number) {
-    return res.status(400).json({ error: 'Country and number are required' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const targetUrl = `https://receive-smss.live/sms/${country}/${number}`;
+  const { country, number } = req.query;
+  const normalizedCountry = typeof country === "string" ? country.toLowerCase() : "";
+  const normalizedNumber = typeof number === "string" ? number : "";
+
+  if (!COUNTRY_CODE_PATTERN.test(normalizedCountry) || !PHONE_NUMBER_PATTERN.test(normalizedNumber)) {
+    return res.status(400).json({ error: "Valid country code and phone number are required" });
+  }
+
+  const rate = checkRateLimit(req, res, {
+    keyPrefix: "public-sms",
+    windowMs: 60_000,
+    max: 15,
+    message: "অনেকবার SMS পরীক্ষা করা হয়েছে। অনুগ্রহ করে এক মিনিট পরে আবার চেষ্টা করুন।",
+  });
+  if (rate.limited) return;
+
+  const targetUrl = `https://receive-smss.live/sms/${normalizedCountry}/${normalizedNumber}`;
 
   try {
     const response = await fetch(targetUrl, {

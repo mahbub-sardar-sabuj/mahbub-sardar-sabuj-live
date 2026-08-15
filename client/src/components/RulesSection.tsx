@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import {
   UserRound, Mic2, BookOpen, Feather, Palette, Images,
-  Newspaper, Mail, MailOpen, Phone, CreditCard, Sparkles,
+  Newspaper, Mail, Sparkles,
   Video, MessageCircle, Music, Info, CheckCircle2, ArrowUpRight,
   Download, Smartphone
 } from "lucide-react";
@@ -68,24 +68,6 @@ const tabs = [
     label: "যোগাযোগ",
     href: "/contact",
     desc: "আমার সঙ্গে সরাসরি যোগাযোগ করার প্রয়োজনীয় তথ্য ও পদ্ধতি পাবেন।",
-  },
-  {
-    icon: <MailOpen size={20} strokeWidth={1.8} />,
-    label: "টেম্পোরারি ইমেইল",
-    href: "/temp-email",
-    desc: "কোনো নিবন্ধন ছাড়াই অস্থায়ী ইমেইল ব্যবহার করতে পারবেন। বিভিন্ন ওয়েবসাইটে পরীক্ষামূলকভাবে অ্যাকাউন্ট খোলার কাজে এটি ব্যবহার করা যেতে পারে।",
-  },
-  {
-    icon: <Phone size={20} strokeWidth={1.8} />,
-    label: "টেম্প নাম্বার",
-    href: "/temp-number",
-    desc: "পাবলিক ভার্চুয়াল নাম্বারের মাধ্যমে পরীক্ষামূলক ভেরিফিকেশনের সুবিধা পাবেন। ব্যক্তিগত বা গুরুত্বপূর্ণ কাজে ব্যবহার না করাই ভালো।",
-  },
-  {
-    icon: <CreditCard size={20} strokeWidth={1.8} />,
-    label: "টেম্প কার্ড",
-    href: "/temp-card",
-    desc: "বিভিন্ন ওয়েবসাইটের ফ্রি ট্রায়াল সুবিধা নেওয়ার জন্য ভার্চুয়াল কার্ড সম্পর্কিত তথ্য ও সুবিধা পাবেন।",
   },
   {
     icon: <Sparkles size={20} strokeWidth={1.8} />,
