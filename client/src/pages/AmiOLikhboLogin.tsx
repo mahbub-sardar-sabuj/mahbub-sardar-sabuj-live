@@ -208,9 +208,13 @@ export default function AmiOLikhboLogin() {
       setError("আপনার নাম দিন।");
       return;
     }
+    if (mode === "register" && password.length < 8) {
+      setError("পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে।");
+      return;
+    }
     if (mode === "reset") {
-      if (!newPassword || newPassword.length < 6) {
-        setError("নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে।");
+      if (!newPassword || newPassword.length < 8) {
+        setError("নতুন পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে।");
         return;
       }
       if (newPassword !== confirmPassword) {
@@ -588,11 +592,11 @@ export default function AmiOLikhboLogin() {
               <div style={{ position: "relative" }}>
                 <input
                   type={showPass ? "text" : "password"}
-                  placeholder={mode === "register" ? "কমপক্ষে ৬ অক্ষর" : "আপনার পাসওয়ার্ড"}
+                  placeholder={mode === "register" ? "কমপক্ষে ৮ অক্ষর" : "আপনার পাসওয়ার্ড"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={mode === "register" ? 8 : 1}
                   style={{ ...inputStyle, paddingLeft: "2.6rem", paddingRight: "2.8rem" }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(212,168,67,0.6)"; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(232,201,122,0.22)"; }}
@@ -627,11 +631,11 @@ export default function AmiOLikhboLogin() {
                 <div style={{ position: "relative" }}>
                   <input
                     type={showNewPass ? "text" : "password"}
-                    placeholder="কমপক্ষে ৬ অক্ষর"
+                    placeholder="কমপক্ষে ৮ অক্ষর"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     autoFocus
                     style={{ ...inputStyle, paddingLeft: "2.6rem", paddingRight: "2.8rem" }}
                     onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(212,168,67,0.6)"; }}
@@ -665,7 +669,7 @@ export default function AmiOLikhboLogin() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   style={{ ...inputStyle, paddingLeft: "1rem" }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(212,168,67,0.6)"; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(232,201,122,0.22)"; }}

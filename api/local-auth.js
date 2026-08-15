@@ -7,6 +7,7 @@ import { SignJWT } from "jose";
 import { createPool } from "mysql2/promise";
 import { nanoid } from "nanoid";
 import * as crypto from "crypto";
+import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
 const COOKIE_NAME = "app_session_id";
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com";
@@ -18,9 +19,7 @@ if (!JWT_SECRET) {
   // In local dev, set COOKIE_SECRET or JWT_SECRET in .env
   throw new Error("[local-auth] COOKIE_SECRET or JWT_SECRET env var is required. Refusing to use an insecure hardcoded fallback.");
 }
-const OWNER_BOOTSTRAP_PASSWORD_SHA256 =
-  process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 ||
-  "7ed1bc948ce36459e8fbdf9243fe0ab1c5c420ec3cc71c96b476e57cb4901305";
+const OWNER_BOOTSTRAP_PASSWORD_SHA256 = process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256?.trim() || "";
 const OWNER_BOOTSTRAP_NAME = process.env.OWNER_BOOTSTRAP_NAME || "মাহবুব সরদার সবুজ";
 
 // ── DB helper ─────────────────────────────────────────────────────────────────
@@ -69,7 +68,11 @@ function safeEqualHex(a, b) {
 }
 
 function canUseOwnerBootstrap(normalEmail, password) {
-  return isOwnerEmail(normalEmail) && safeEqualHex(sha256Hex(password), OWNER_BOOTSTRAP_PASSWORD_SHA256);
+  return Boolean(
+    OWNER_BOOTSTRAP_PASSWORD_SHA256 &&
+    isOwnerEmail(normalEmail) &&
+    safeEqualHex(sha256Hex(password), OWNER_BOOTSTRAP_PASSWORD_SHA256)
+  );
 }
 
 // ── JWT helpers ───────────────────────────────────────────────────────────────
@@ -196,10 +199,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  if (limitJsonBodySize(req, res, 32 * 1024)) return;
+
   const { action, name, email, password } = req.body || {};
 
   if (!action) {
     return res.status(400).json({ error: "action required" });
+  }
+
+  if (action !== "logout") {
+    const rate = checkRateLimit(req, res, {
+      keyPrefix: "local-auth",
+      windowMs: 15 * 60 * 1000,
+      max: 8,
+      message: "নিরাপত্তার কারণে সাময়িকভাবে অনেকবার চেষ্টা করা যাবে না। ১৫ মিনিট পরে আবার চেষ্টা করুন।",
+    });
+    if (rate.limited) return;
   }
 
   if (!process.env.DATABASE_URL) {
@@ -214,8 +229,8 @@ export default async function handler(req, res) {
     if (!name?.trim() || !email?.trim() || !password?.trim()) {
       return res.status(400).json({ error: "নাম, ইমেইল ও পাসওয়ার্ড দিন" });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
+    if (password.length < 8) {
+      return res.status(400).json({ error: "পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে" });
     }
 
     const normalEmail = email.trim().toLowerCase();
@@ -376,8 +391,8 @@ export default async function handler(req, res) {
     if (!token?.trim()) {
       return res.status(400).json({ error: "রিসেট টোকেন প্রয়োজন" });
     }
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে" });
     }
 
     try {
@@ -444,13 +459,16 @@ export default async function handler(req, res) {
   // ── OWNER RESET PASSWORD ──────────────────────────────────────────────────
 
   if (action === "owner-reset") {
-    const resetToken = process.env.OWNER_RESET_TOKEN || "19432dd410eecae82084e0cff2d70ae92fe3d2d9bf87fd27";
+    const resetToken = process.env.OWNER_RESET_TOKEN?.trim() || "";
     const { token, newPassword, targetEmail } = req.body || {};
-    if (!resetToken || !token || token !== resetToken) {
+    if (!resetToken) {
+      return res.status(503).json({ error: "মালিকের পাসওয়ার্ড রিসেট কনফিগার করা নেই" });
+    }
+    if (!token || !safeEqualHex(sha256Hex(token), sha256Hex(resetToken))) {
       return res.status(403).json({ error: "অনুমতি নেই" });
     }
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" });
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: "নতুন পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে" });
     }
     const targetEmailNorm = (targetEmail || OWNER_EMAIL).toLowerCase().trim();
     try {

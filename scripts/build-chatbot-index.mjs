@@ -12,7 +12,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
-const writingsPath = path.join(root, "api/_knowledge/writingsArchive.json");
+const writingsPath = path.join(root, "client/public/data/writingsArchive.json");
 const outputPath = path.join(root, "api/_knowledge/chatbotIndex.json");
 
 function normalizeText(value = "") {

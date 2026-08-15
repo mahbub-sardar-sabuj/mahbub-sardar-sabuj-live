@@ -555,6 +555,23 @@ const categories = [
 return categories.find((item) => item.terms.some((term) => normalized.includes(term)))?.category || null;
 }
 
+const GENERIC_WRITING_BROWSE_TERMS = new Set([
+"লেখা", "লেখাগুলো", "লেখাগুলা", "লেখাটি", "লেখাটা", "দেখাও", "দেখান", "দাও", "দিন",
+"কিছু", "সেরা", "জনপ্রিয়", "জনপ্রিয়", "তালিকা", "সব", "সবগুলো", "সবগুলি", "পড়তে", "পড়তে",
+]);
+
+function isCategoryBrowseRequest(rawText = "", category = null) {
+if (!category) return false;
+const normalized = normalizeSearchText(rawText);
+const normalizedCategory = normalizeSearchText(category);
+if (!normalized || !normalizedCategory || !normalized.includes(normalizedCategory)) return false;
+const remainingTerms = normalized
+.replaceAll(normalizedCategory, " ")
+.split(/\s+/)
+.filter((term) => term && !GENERIC_WRITING_BROWSE_TERMS.has(term));
+return remainingTerms.length === 0;
+}
+
 function buildWritingDiscoveryReply(rawText) {
 const text = String(rawText || "").trim();
 const wantsDiscovery = /(সেরা|জনপ্রিয়|জনপ্রিয়|কিছু|কয়েকটা|কয়েকটা|তালিকা|দেখাও|দেখান|পড়তে|পড়তে|suggest|recommend|recommendation|সাজেস্ট|রেকমেন্ড)/i.test(text);
@@ -1093,6 +1110,14 @@ function buildSiteSpecificReply(messages = []) {
   // সাইট পেজ ন্যাভিগেশন — সাইট-নির্দিষ্ট
   const wantsAllPages = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(rawText) && /(পেজ|page|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(rawText);
   if (wantsAllPages) return buildSiteReply(rawText);
+
+  // বিভাগভিত্তিক লেখা দেখতে চাইলে সেটিকে ভুল করে নির্দিষ্ট শিরোনাম হিসেবে খোঁজা যাবে না।
+  const requestedCategory = inferWritingCategoryFromText(rawText);
+  if (isCategoryBrowseRequest(rawText, requestedCategory)) {
+    const discoveryReply = buildWritingDiscoveryReply(rawText);
+    if (discoveryReply) return discoveryReply;
+    return buildWritingReply(requestedCategory);
+  }
 
   // লেখা খোঁজা — সাইট-নির্দিষ্ট
   const { hasSearchPattern, isLikelyTitleSearch } = detectWritingSearchIntent(rawText);

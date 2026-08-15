@@ -17,7 +17,7 @@ import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 const OWNER_EMAIL = (process.env.OWNER_EMAIL || "mahbubsardarsabuj@gmail.com").toLowerCase().trim();
-const OWNER_BOOTSTRAP_PASSWORD_SHA256 = process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256 || "7ed1bc948ce36459e8fbdf9243fe0ab1c5c420ec3cc71c96b476e57cb4901305";
+const OWNER_BOOTSTRAP_PASSWORD_SHA256 = process.env.OWNER_BOOTSTRAP_PASSWORD_SHA256?.trim() || "";
 const OWNER_BOOTSTRAP_NAME = process.env.OWNER_BOOTSTRAP_NAME || "মাহবুব সরদার সবুজ";
 
 /** Hash a password using scrypt */
@@ -54,6 +54,7 @@ function safeEqualHex(a: string, b: string): boolean {
 }
 
 function canUseOwnerBootstrap(email: string, password: string): boolean {
+  if (!OWNER_BOOTSTRAP_PASSWORD_SHA256) return false;
   const passwordHash = createHash("sha256").update(password).digest("hex");
   return isOwnerEmail(email) && safeEqualHex(passwordHash, OWNER_BOOTSTRAP_PASSWORD_SHA256);
 }

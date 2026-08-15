@@ -8,6 +8,6 @@ const projectRoot = resolve(__dirname, "..");
 const outputPath = resolve(projectRoot, "client/public/data/writingsArchive.json");
 
 mkdirSync(dirname(outputPath), { recursive: true });
-writeFileSync(outputPath, `${JSON.stringify(writings)}\n`, "utf8");
+writeFileSync(outputPath, `${JSON.stringify(writings, null, 2)}\n`, "utf8");
 
 console.log(`Writings archive exported: ${writings.length} item(s) -> ${outputPath}`);
