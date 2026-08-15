@@ -660,8 +660,8 @@ function buildBookRecommendationReply(rawText = "") {
 const text = normalizeSearchText(rawText);
 const asksRecommendation = /(কোন|শুরু|প্রথম|recommend|suggest|সাজেস্ট|রেকমেন্ড|পড়ব|পড়ব|পড়া উচিত)/i.test(rawText);
 if (!asksRecommendation) return null;
-let book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "dukkhovilash");
-let reason = "আপনি যদি বিচ্ছেদ, অপেক্ষা ও গভীর আবেগের লেখা পছন্দ করেন, তাহলে এটি সবচেয়ে উপযুক্ত শুরু।";
+	let book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "abhiman") || WEBSITE_KNOWLEDGE.books.find((item) => item.key === "dukkhovilash");
+	let reason = "না-বলা অনুভূতি, ভালোবাসা, একাকীত্ব ও ঘুরে দাঁড়ানোর ভাবনা দিয়ে শুরু করতে চাইলে এটি উপযুক্ত।";
 if (/স্মৃতি|নস্টালজিয়া|nostalgia/.test(text)) {
 book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "smritir-boshonte") || book;
 reason = "স্মৃতি ও কোমল আবেগ দিয়ে শুরু করতে চাইলে এই ই-বুকটি ভালো পছন্দ।";
@@ -672,8 +672,11 @@ reason = "ভালোবাসা ও কোমল রোমান্টিক 
 book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "shomoyer-gohvore") || book;
 reason = "জীবন, সময় ও বাস্তবতার ভাবনা পড়তে চাইলে এটি বেশি মানানসই।";
 }
-const buyLine = book.buyUrl ? "\nঅর্ডার করতে: " + book.buyUrl : "";
-return "শুরু করার জন্য আমি “" + book.title + "” সাজেস্ট করব।\n\nকারণ: " + reason + "\nধরন: " + book.type + "\nপ্রকাশ/সময়: " + book.year + "\n\nপড়তে যান: [BUTTON:" + book.readPath + "]" + buyLine + "\nসব বই দেখতে: [BUTTON:/ebooks]";
+	const isOrderOnly = Boolean(book.buyUrl) && (!book.readPath || book.readPath === "/ebooks");
+	const actionLine = isOrderOnly
+		? "\n\nসরাসরি অর্ডার করুন: " + book.buyUrl
+		: "\n\nপড়তে যান: [BUTTON:" + book.readPath + "]";
+	return "শুরু করার জন্য আমি “" + book.title + "” সাজেস্ট করব।\n\nকারণ: " + reason + "\nধরন: " + book.type + "\nপ্রকাশ/সময়: " + book.year + actionLine + "\nসব বই দেখতে: [BUTTON:/ebooks]";
 }
 
 function detectWritingSearchIntent(rawText) {
@@ -1200,11 +1203,14 @@ if (/ধন্যবাদ|thanks|thank you|শুক্রিয়া|আপ�
 return "আপনাকেও ধন্যবাদ। আর কোনো প্রশ্ন থাকলে জানাবেন।";
 }
 
+if (/(অভিমান.*(বই|গ্রন্থ|অণু|কিন|অর্ডার|রকমারি|সরাসরি)|abhiman)/.test(userText)) {
+return "‘অভিমান’ — মাহবুব সরদার সবুজের অণুগদ্যগ্রন্থ। না-বলা দীর্ঘশ্বাস, ভালোবাসা, একাকীত্ব, আত্মমর্যাদা ও ঘুরে দাঁড়ানোর অনুভূতি নিয়ে লেখা এই বইটি সরাসরি অর্ডার করুন: https://rkmri.co/Te303mA3TEyA/\n\nবইয়ের বিস্তারিত: [BUTTON:/ebooks]";
+}
 if (/দুঃখবিলাস|বিচ্ছেদকে বলি/.test(userText)) {
-return "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" — মাহবুব সরদার সবুজের প্রথম ফিজিক্যাল বই (২০২৬)। রকমারি থেকে অর্ডার করুন: https://rkmri.co/TTMEoA3l3pM0/\n\nঅনলাইনে পড়তে: [BUTTON:/ebooks/read/dukkhovilash]";
+return "‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — মাহবুব সরদার সবুজের মুদ্রিত রোমান্টিক কবিতার বই। ভালোবাসা, বিচ্ছেদ ও বেদনাকে নতুন চোখে দেখার এই বইটি সরাসরি অর্ডার করুন: https://rkmri.co/IIAReAoMpRyp/\n\nবইয়ের বিস্তারিত: [BUTTON:/ebooks]";
 }
 if (/বই|ebook|ই-বুক|চাঁদফুল|স্মৃতির বসন্তে|সময়ের গহ্বরে|অনবদ্য|কিনব|পড়ব|পড়তে/.test(userText)) {
-return "মাহবুব সরদার সবুজের বই সংগ্রহ:\n\n ফিজিক্যাল বই: \"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" — রকমারি: https://rkmri.co/TTMEoA3l3pM0/\n\n বিনামূল্যে ই-বুক:\n• স্মৃতির বসন্তে তুমি: [BUTTON:/ebooks/read/smritir-boshonte]\n• চাঁদফুল: [BUTTON:/ebooks/read/chand-phool]\n• সময়ের গহ্বরে: [BUTTON:/ebooks/read/shomoyer-gohvore]\n• অনবদ্য লেখা: [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব বই দেখতে: [BUTTON:/ebooks]";
+return "মাহবুব সরদার সবুজের বই সংগ্রহ:\n\nসরাসরি অর্ডারযোগ্য মুদ্রিত বই:\n• ‘অভিমান’ — অণুগদ্যগ্রন্থ: https://rkmri.co/Te303mA3TEyA/\n• ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — রোমান্টিক কবিতা: https://rkmri.co/IIAReAoMpRyp/\n\nবিনামূল্যে ই-বুক:\n• স্মৃতির বসন্তে তুমি: [BUTTON:/ebooks/read/smritir-boshonte]\n• চাঁদফুল: [BUTTON:/ebooks/read/chand-phool]\n• সময়ের গহ্বরে: [BUTTON:/ebooks/read/shomoyer-gohvore]\n• অনবদ্য লেখা: [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব বই দেখতে: [BUTTON:/ebooks]";
 }
 if (/যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|youtube/.test(userText)) {
 return "লেখকের সাথে যোগাযোগ করুন:\n ইমেইল: lekhokmahbubsardarsabuj@gmail.com\n Facebook: https://facebook.com/MahbubSardarSabuj\n Instagram: https://instagram.com/mahbub_sardar_sabuj\n▶ YouTube: https://youtube.com/@MahbubSardarSabuj\n\nযোগাযোগ ফর্ম: [BUTTON:/contact]";
@@ -1234,7 +1240,7 @@ if (/আমিও লিখবো|লিখবো বাস্তবতা|amio|
 return "আমিও লিখবো বাস্তবতা — একটি সোশ্যাল ফিড যেখানে যে কেউ নিজের বাস্তব গল্প শেয়ার করতে পারেন: [BUTTON:/amio-likhbo-bastobota]";
 }
 if (/রকমারি|rokomari|কিনতে|order/.test(userText)) {
-return "\"আমি বিচ্ছেদকে বলি দুঃখবিলাস\" বইটি রকমারি থেকে কিনুন: https://rkmri.co/TTMEoA3l3pM0/";
+return "সরাসরি অর্ডারযোগ্য বই দুটি:\n• ‘অভিমান’ — অণুগদ্যগ্রন্থ: https://rkmri.co/Te303mA3TEyA/\n• ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — রোমান্টিক কবিতা: https://rkmri.co/IIAReAoMpRyp/\n\nবিস্তারিত: [BUTTON:/ebooks]";
 }
 
 // Default: helpful navigation response instead of a dead-end error message

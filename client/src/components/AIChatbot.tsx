@@ -159,7 +159,7 @@ const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/ebooks/read/chand-phool",      label: "চাঁদফুল পড়ুন",              keywords: ["chand-phool", "চাঁদফুল"] },
   { path: "/ebooks/read/shomoyer-gohvore", label: "সময়ের গহ্বরে পড়ুন",        keywords: ["shomoyer", "সময়ের গহ্বরে"] },
   { path: "/facebook-recitations",         label: "আবৃত্তি সংগ্রহ দেখুন",      keywords: ["recitation", "আবৃত্তি", "facebook"] },
-  { path: "/ebooks/read/dukkhovilash",    label: "দুঃখবিলাস বই পড়ুন",           keywords: ["dukkhovilash", "দুঃখবিলাস", "বিচ্ছেদ"] },
+  { path: "/ebooks",                       label: "দুঃখবিলাস অর্ডার করুন",         keywords: ["dukkhovilash", "দুঃখবিলাস", "বিচ্ছেদ", "অর্ডার"] },
   { path: "/gallery",                     label: "গ্যালারি দেখুন",               keywords: ["gallery", "গ্যালারি", "ছবি", "ফটো"] },
   { path: "/news",                        label: "সরদার সংবাদ দেখুন",            keywords: ["news", "সংবাদ", "নিউজ", "সরদার সংবাদ"] },
   { path: "/amio-likhbo-bastobota",       label: "আমিও লিখবো বাস্তবতা দেখুন",      keywords: ["আমিও লিখবো", "বাস্তবতা", "amio", "bastobota", "কমিউনিটি"] },

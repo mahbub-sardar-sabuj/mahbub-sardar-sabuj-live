@@ -86,7 +86,8 @@ function getCatStyle(cat: string) {
 const WRITINGS_PAGE_SIZE = 24;
 
 const ebooks = [
-  { id:1, slug:"dukkhovilash",      title:"আমি বিচ্ছেদকে বলি দুঃখবিলাস",          subtitle:"প্রথম ফিজিক্যাল বই", cover:"/images/ebooks/dukkhovilash.jpg",      description:"বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে।",                                                                                                         genre:"আবেগী সাহিত্য", pages:"১৫০+", year:"২০২৬", badge:"ফিজিক্যাল বই", badgeColor:"#D4A843", buyLink:"https://rkmri.co/TTMEoA3l3pM0/", isFeatured:true,  canRead:true, accentColor:"#D4A843", accentRgb:"212,168,67" },
+  { id:1, slug:"abhiman",           title:"অভিমান",                              subtitle:"অণুগদ্যগ্রন্থ",     cover:"/images/ebooks/abhiman-cover.jpg",       description:"না-বলা অনুভূতি, ভালোবাসা, একাকীত্ব, আত্মমর্যাদা ও ঘুরে দাঁড়ানোর ভাবনা নিয়ে লেখা অণুগদ্যগ্রন্থ।",                                                                                                        genre:"অণুগদ্য",      pages:"",     year:"নতুন প্রকাশনা", badge:"মুদ্রিত বই", badgeColor:"#E78AA2", buyLink:"https://rkmri.co/Te303mA3TEyA/", isFeatured:true,  canRead:false, accentColor:"#E78AA2", accentRgb:"231,138,162" },
+  { id:6, slug:"dukkhovilash",      title:"আমি বিচ্ছেদকে বলি দুঃখবিলাস",          subtitle:"রোমান্টিক কবিতা",   cover:"/images/ebooks/dukkhovilash.jpg",      description:"ভালোবাসা, বিচ্ছেদ ও বেদনাকে নতুন চোখে দেখার এক অনন্য প্রচেষ্টা; জীবনের নতুন আলো খোঁজার ভাষ্য রয়েছে এই বইয়ে।",                                                                                              genre:"রোমান্টিক কবিতা", pages:"",     year:"মুদ্রিত সংস্করণ", badge:"মুদ্রিত বই", badgeColor:"#D4A843", buyLink:"https://rkmri.co/IIAReAoMpRyp/", isFeatured:false, canRead:false, accentColor:"#D4A843", accentRgb:"212,168,67" },
   { id:2, slug:"smritir-boshonte",  title:"স্মৃতির বসন্তে তুমি",                   subtitle:"ই-বুক",              cover:"/images/ebooks/smritir-boshonte.jpg",  description:"স্মৃতির গভীরে হারিয়ে যাওয়া প্রিয় মুহূর্তগুলো নিয়ে লেখা এই আবেগঘন কাব্যিক সংকলন।",                                                                                                            genre:"কবিতা ও গদ্য",  pages:"৮০+",  year:"২০২৪", badge:"ই-বুক",        badgeColor:"#4A90D9", buyLink:null,                                   isFeatured:false, canRead:true, accentColor:"#4A90D9", accentRgb:"74,144,217" },
   { id:3, slug:"chand-phool",       title:"চাঁদফুল",                                subtitle:"ই-বুক",              cover:"/images/ebooks/chand-phool.jpg",       description:"প্রকৃতির অপরূপ সৌন্দর্য আর মানবমনের কোমল অনুভূতির মেলবন্ধনে রচিত এই বিশেষ কাব্যগ্রন্থ।",                                                                                                           genre:"কবিতা",         pages:"৬০+",  year:"২০২৩", badge:"ই-বুক",        badgeColor:"#27AE60", buyLink:null,                                   isFeatured:false, canRead:true, accentColor:"#27AE60", accentRgb:"39,174,96"  },
   { id:4, slug:"shomoyer-gohvore",  title:"সময়ের গহ্বরে",                           subtitle:"ই-বুক",              cover:"/images/ebooks/shomoyer-gohvore.jpg",  description:"সময়ের স্রোতে হারিয়ে যাওয়া শহর, মানুষ আর স্মৃতির কথা এই নস্টালজিক সাহিত্যকর্মে অনবদ্যভাবে উঠে এসেছে।",                                                                                    genre:"গদ্য ও কবিতা",  pages:"১০০+", year:"২০২৩", badge:"ই-বুক",        badgeColor:"#E67E22", buyLink:null,                                   isFeatured:false, canRead:true, accentColor:"#E67E22", accentRgb:"230,126,34" },
@@ -1765,10 +1766,10 @@ function BooksTab() {
           style={{ "--ba": featured.accentColor, "--ba-rgb": featured.accentRgb } as React.CSSProperties}
           initial={{ opacity:0, y:22 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:.46, ease:[.25,.46,.45,.94] }}
-          onClick={() => setLocation(`/ebooks/read/${featured.slug}`)}
+          onClick={() => setLocation(featured.canRead ? `/ebooks/read/${featured.slug}` : "/ebooks")}
           role="article" tabIndex={0}
-          aria-label={`${featured.title} দেখুন`}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(`/ebooks/read/${featured.slug}`); } }}
+          aria-label={featured.canRead ? `${featured.title} পড়ুন` : `${featured.title} অর্ডার করুন`}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLocation(featured.canRead ? `/ebooks/read/${featured.slug}` : "/ebooks"); } }}
         >
           <div className="lw-featured-inner">
             <div className="lw-featured-cover-wrap">
@@ -1786,7 +1787,7 @@ function BooksTab() {
               <p className="lw-featured-desc">{featured.description}</p>
               <div className="lw-featured-meta">
                 <span><Calendar size={10}/>{featured.year}</span>
-                <span><BookMarked size={10}/>{featured.pages} পৃষ্ঠা</span>
+                {featured.pages && <span><BookMarked size={10}/>{featured.pages} পৃষ্ঠা</span>}
                 <span><Star size={10}/> বিশেষ সংস্করণ</span>
               </div>
               <div className="lw-featured-actions">
@@ -1800,9 +1801,11 @@ function BooksTab() {
                     <ShoppingCart size={14}/> এখনই কিনুন
                   </a>
                 )}
-                <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="lw-btn-secondary">
-                  <BookOpen size={14}/> পড়ুন
-                </Link>
+                {featured.canRead && (
+                  <Link href={`/ebooks/read/${featured.slug}`} onClick={(e) => e.stopPropagation()} className="lw-btn-secondary">
+                    <BookOpen size={14}/> পড়ুন
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -1901,7 +1904,7 @@ export default function Writings() {
       { "@type":"Person", "@id":siteUrl("/about#author"), "name":"মাহবুব সরদার সবুজ", "alternateName":"Mahbub Sardar Sabuj", "url":siteUrl("/about"), "knowsLanguage":["bn-BD","en"] },
       { "@type":"BreadcrumbList", "itemListElement":[ { "@type":"ListItem","position":1,"name":"হোম","item":siteUrl("/") }, { "@type":"ListItem","position":2,"name":"লেখালেখি ও বই","item":siteUrl("/writings") }, ...(sel?[{ "@type":"ListItem","position":3,"name":sel.title,"item":siteUrl(seoPath) }]:[]) ] },
       { "@type":"ItemList", "@id":siteUrl("/writings#latest-writings"), "name":"নির্বাচিত অনুভূতির আর্কাইভ — মাহবুব সরদার সবুজের ২৩৪৩+ লেখা", "itemListElement":archive.slice(0,24).map((writing,index) => ({ "@type":"ListItem","position":index+1,"url":siteUrl(`/writings/${makeSlug(writing.title,writing.id)}`),"name":writing.title })) },
-      ...ebooks.map(book => ({ "@type":"Book","@id":siteUrl(`/ebooks/read/${book.slug}#book`),"name":book.title,"inLanguage":"bn-BD","author":{"@id":siteUrl("/about#author")},"url":siteUrl(`/ebooks/read/${book.slug}`),"image":siteUrl(book.cover),"description":book.description,"genre":book.genre,"bookFormat":book.badge.includes("ফিজিক্যাল")?"https://schema.org/Hardcover":"https://schema.org/EBook","isAccessibleForFree":!book.buyLink })),
+      ...ebooks.map(book => ({ "@type":"Book","@id":siteUrl(`${book.canRead ? `/ebooks/read/${book.slug}` : `/ebooks#book-${book.slug}`}`),"name":book.title,"inLanguage":"bn-BD","author":{"@id":siteUrl("/about#author")},"url":book.canRead ? siteUrl(`/ebooks/read/${book.slug}`) : (book.buyLink || siteUrl("/ebooks")),"image":siteUrl(book.cover),"description":book.description,"genre":book.genre,"bookFormat":book.canRead ? "https://schema.org/EBook" : "https://schema.org/Paperback","isAccessibleForFree":Boolean(book.canRead) })),
       ...(sel?[{ "@type":"CreativeWork","@id":siteUrl(`${seoPath}#writing`),"name":sel.title,"headline":sel.title,"url":siteUrl(seoPath),"inLanguage":"bn-BD","text":makeExcerpt(sel.content,500),"description":makeExcerpt(sel.content),"datePublished":sel.date,"genre":sel.category,"author":{"@id":siteUrl("/about#author")},"isAccessibleForFree":true }]:[]),
     ],
   }), [archive, sel, seoPath]);

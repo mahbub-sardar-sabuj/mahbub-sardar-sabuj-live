@@ -4,13 +4,14 @@ const cases = [
   { name: 'natural wellbeing chat', text: 'কেমন আছেন?', expect: ['আলহামদুলিল্লাহ', 'আপনি কেমন আছেন'] },
   { name: 'natural greeting chat', text: 'আসসালামু আলাইকুম', expect: ['ওয়ালাইকুম আসসালাম', 'কথা বলতে'] },
   { name: 'natural emotional support chat', text: 'আজ মনটা ভালো নেই', expect: ['খারাপ লাগল', 'বলতে পারেন'] },
-  { name: 'book route', text: 'দুঃখবিলাস বই কোথায় কিনব', expect: ['/ebooks/read/dukkhovilash', 'rkmri.co'] },
+  { name: 'dukkhovilash order route', text: 'দুঃখবিলাস বই কোথায় কিনব', expect: ['/ebooks', 'IIAReAoMpRyp'] },
+  { name: 'abhiman order route', text: 'অভিমান বইটি সরাসরি অর্ডার করতে চাই', expect: ['/ebooks', 'Te303mA3TEyA', 'অণুগদ্যগ্রন্থ'] },
   { name: 'author route', text: 'মাহবুব সরদার সবুজ কে', expect: ['/about', 'কুমিল্লা'] },
   { name: 'writing route', text: 'জীবনদর্শন লেখা দেখাও', expect: ['/writings', 'জীবনদর্শন'] },
   { name: 'writing discovery route', text: 'বিচ্ছেদের সেরা লেখাগুলো দেখাও', expect: ['/writings/', 'বিচ্ছেদ'] },
   { name: 'writing title search route', text: 'কিছু স্মৃতি কখনো ভোলা যায় না লেখাটি পড়তে চাই', expect: ['কিছু স্মৃতি কখনো ভোলা যায় না', '/writings/'] },
   { name: 'help menu route', text: 'তুমি কী কী করতে পারো help', expect: ['লেখক পরিচিতি', '/ebooks', '/contact'] },
-  { name: 'book recommendation route', text: 'আমি কোন বই দিয়ে শুরু করব', expect: ['সাজেস্ট', '/ebooks/read/dukkhovilash'] },
+  { name: 'book recommendation route', text: 'আমি কোন বই দিয়ে শুরু করব', expect: ['অভিমান', 'সরাসরি অর্ডার করুন', 'Te303mA3TEyA', '/ebooks'] },
   {
     name: 'numbered follow-up route',
     messages: [

@@ -134,6 +134,7 @@ function Router() {
         <Route path={"/about"} component={About} />
         <Route path={"/contact"} component={Contact} />
         <Route path={"/ebooks"} component={EBooks} />
+        <Route path={"/ebooks/read/dukkhovilash"}>{() => { window.location.replace("/ebooks"); return null; }}</Route>
         <Route path={"/ebooks/read/:slug"} component={EBookReader} />
         <Route path={"/editor"} component={Editor} />
         <Route path={"/news"} component={News} />

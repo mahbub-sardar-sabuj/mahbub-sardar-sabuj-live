@@ -18,27 +18,70 @@ import Seo from "@/components/Seo";
 import { Link } from "wouter";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 
-const ebooks = [
+interface Book {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle: string;
+  cover: string;
+  description: string;
+  flap?: string;
+  quote?: string;
+  genre: string;
+  pages: string;
+  year: string;
+  badge: string;
+  badgeColor: string;
+  buyLink: string | null;
+  isFeatured: boolean;
+  canRead: boolean;
+  accentColor: string;
+}
+
+const ebooks: Book[] = [
   {
     id: 1,
+    slug: "abhiman",
+    title: "অভিমান",
+    subtitle: "অণুগদ্যগ্রন্থ",
+    cover: "/images/ebooks/abhiman-cover.jpg",
+    description:
+      "‘অভিমান’ মাহবুব সরদার সবুজের অণুগদ্যগ্রন্থ। না-বলা দীর্ঘশ্বাস, প্রিয় মানুষের বদলে যাওয়া, শূন্যতার হাহাকার এবং আত্মমর্যাদার আলোয় ঘুরে দাঁড়ানোর অনুভূতিগুলোকে সহজ অথচ গভীর ভাষায় ধারণ করেছে এই বই।",
+    flap:
+      "কিছু শব্দ ঠোঁটে এসেও ফিরে যায়, কিছু হাহাকার বুকের বাঁ পাশে জমাট বেঁধে পাথর হয়ে থাকে। আমরা যাকে খুব সাধারণ এক টুকরো ‘অভিমান’ বলে এড়িয়ে যাই, তার আড়ালে লুকিয়ে থাকে এক জীবনের না-বলা দীর্ঘশ্বাস।\n\n‘অভিমান’ কেবল একটি শব্দ নয়; এটি একটি হৃদয়ের ব্যবচ্ছেদ, এক নীরব ময়নাতদন্ত। বইয়ের প্রতিটি পাতায় স্মৃতির সেই ক্ষতগুলো ফুটে উঠেছে, যা সময়ের সঙ্গে মুছে যায় না; বরং আরও গভীর হয়। প্রিয় মানুষের বদলে যাওয়া, মায়াহীন প্রস্থান আর শূন্যতার হাহাকার কীভাবে একজন মানুষকে জীবন্ত লাশে পরিণত করতে পারে, তারই এক নিপুণ আখ্যান এই গ্রন্থ।\n\nতবে এই বই কেবল বেদনার নয়; এটি ঘুরে দাঁড়ানোরও। অন্ধকারের দেয়াল চিরে আলোর পথে হাঁটা, আত্মসম্মান ও মনুষ্যত্বকে পুঁজি করে সাফল্যের দিকে এগিয়ে যাওয়ার দিকনির্দেশনাও ছড়িয়ে আছে এই পঙক্তিগুলোতে।",
+    quote:
+      "প্রতিটি মুহূর্তকে শেষ সময় মনে করে আমি তোমায় ভীষণ রকম ভালোবাসি। তবে তুমি কেন অভিমান করে দীর্ঘ সময় আড়ালে থাক?\n\nযদি একদিন অভিমানের সময় পেরিয়ে শুনতে পাও, তোমার অভিমান ফুরানোর আগেই আমার নিঃশ্বাস ফুরিয়ে গেছে, তখন কি পারবে অভিমান করে থাকতে?",
+    genre: "অণুগদ্য",
+    pages: "—",
+    year: "নতুন প্রকাশনা",
+    badge: "সরাসরি অর্ডার",
+    badgeColor: "#E78AA2",
+    buyLink: "https://rkmri.co/Te303mA3TEyA/",
+    isFeatured: true,
+    canRead: false,
+    accentColor: "#E78AA2",
+  },
+
+  {
+    id: 2,
     slug: "dukkhovilash",
     title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
-    subtitle: "প্রথম ফিজিক্যাল বই",
+    subtitle: "মুদ্রিত কবিতার বই",
     cover: "/images/ebooks/dukkhovilash.jpg",
     description:
-      "'আমি বিচ্ছেদকে বলি দুঃখবিলাস' — লেখক মাহবুব সরদার সবুজের প্রথম প্রকাশিত ফিজিক্যাল বই। বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে। প্রতিটি পাতায় লুকিয়ে আছে এক অন্যরকম ভালোবাসার গল্প।",
-    genre: "আবেগী সাহিত্য",
-    pages: "১৫০+",
-    year: "২০২৬",
-    badge: "ফিজিক্যাল বই",
+      "‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ ভালোবাসা, বিচ্ছেদ ও বেদনাকে নতুন চোখে দেখার এক অনন্য প্রচেষ্টা। ভালোবাসার টান, লোভ, আকুতি ও বোধহীনতার ভেতর থেকেও জীবনের নতুন আলো খোঁজার ভাষ্য রয়েছে এই বইয়ে।",
+    genre: "রোমান্টিক কবিতা",
+    pages: "—",
+    year: "মুদ্রিত সংস্করণ",
+    badge: "সরাসরি অর্ডার",
     badgeColor: "#D4A843",
-    buyLink: "https://rkmri.co/TTMEoA3l3pM0/",
-    isFeatured: true,
-    canRead: true,
+    buyLink: "https://rkmri.co/IIAReAoMpRyp/",
+    isFeatured: false,
+    canRead: false,
     accentColor: "#D4A843",
   },
   {
-    id: 2,
+    id: 3,
     slug: "smritir-boshonte",
     title: "স্মৃতির বসন্তে তুমি",
     subtitle: "ই-বুক",
@@ -56,7 +99,7 @@ const ebooks = [
     accentColor: "#4A90D9",
   },
   {
-    id: 3,
+    id: 4,
     slug: "chand-phool",
     title: "চাঁদফুল",
     subtitle: "ই-বুক",
@@ -74,7 +117,7 @@ const ebooks = [
     accentColor: "#27AE60",
   },
   {
-    id: 4,
+    id: 5,
     slug: "shomoyer-gohvore",
     title: "সময়ের গহ্বরে",
     subtitle: "ই-বুক",
@@ -92,7 +135,7 @@ const ebooks = [
     accentColor: "#E67E22",
   },
   {
-    id: 5,
+    id: 6,
     slug: "onoboddo-lekha",
     title: "মাহবুব সরদার সবুজের অনবদ্য লেখা",
     subtitle: "ই-বুক সংকলন",
@@ -654,9 +697,9 @@ const CSS = `
 `;
 
 // ── Book Modal ────────────────────────────────────────────────────────────────
-function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => void }) {
+function BookModal({ book, onClose }: { book: Book; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const bookUrl = `https://www.mahbubsardarsabuj.com/ebooks/read/${book.slug}`;
+  const bookUrl = book.buyLink ?? `https://www.mahbubsardarsabuj.com/ebooks/read/${book.slug}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(bookUrl).catch(() => {
@@ -672,7 +715,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
   };
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: book.title, text: `মাহবুব সরদার সবুজের '${book.title}' পড়ুন`, url: bookUrl });
+      navigator.share({ title: book.title, text: book.canRead ? `মাহবুব সরদার সবুজের '${book.title}' পড়ুন` : `মাহবুব সরদার সবুজের '${book.title}' বইটি সরাসরি অর্ডার করুন`, url: bookUrl });
     } else {
       handleCopy();
     }
@@ -724,7 +767,13 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
                 <span style={{ fontFamily: "var(--eb-f)", fontSize: ".65rem", color: book.accentColor, letterSpacing: ".1em", textTransform: "uppercase", fontWeight: 600 }}>{book.badge}</span>
               </div>
               <h2 style={{ fontFamily: "var(--eb-f)", fontSize: "1.32rem", color: "#EDE8DE", lineHeight: 1.52, marginBottom: ".78rem", fontWeight: 700, letterSpacing: "-.018em" }}>{book.title}</h2>
-              <p style={{ fontFamily: "var(--eb-f)", fontSize: ".88rem", color: "rgba(237,232,222,.62)", lineHeight: 2.05, marginBottom: "1.25rem" }}>{book.description}</p>
+              <p style={{ fontFamily: "var(--eb-f)", fontSize: ".88rem", color: "rgba(237,232,222,.62)", lineHeight: 2.05, marginBottom: book.flap ? ".85rem" : "1.25rem" }}>{book.description}</p>
+              {book.flap && (
+                <p style={{ whiteSpace: "pre-line", fontFamily: "var(--eb-f)", fontSize: ".84rem", color: "rgba(237,232,222,.56)", lineHeight: 2.03, margin: "0 0 1.15rem", padding: "1rem", borderRadius: 14, background: "rgba(255,255,255,.035)", border: "1px solid rgba(255,255,255,.07)" }}>{book.flap}</p>
+              )}
+              {book.quote && (
+                <blockquote style={{ whiteSpace: "pre-line", fontFamily: "var(--eb-f)", fontSize: ".83rem", color: book.accentColor, lineHeight: 2, margin: "0 0 1.15rem", padding: "0 0 0 1rem", borderLeft: `3px solid ${book.accentColor}`, fontStyle: "italic" }}>“{book.quote}”<footer style={{ marginTop: ".55rem", color: "rgba(237,232,222,.5)", fontStyle: "normal" }}>— মাহবুব সরদার সবুজ</footer></blockquote>
+              )}
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: "1.45rem" }}>
                 {[book.genre, `${book.pages} পৃষ্ঠা`, book.year].map((t, i) => (
                   <span key={i} style={{ padding: "5px 14px", borderRadius: 999, background: "rgba(255,255,255,.065)", border: "1px solid rgba(255,255,255,.11)", fontFamily: "var(--eb-f)", fontSize: ".72rem", color: "rgba(237,232,222,.48)" }}>{t}</span>
@@ -733,7 +782,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
               <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
                 {book.buyLink && (
                   <a href={book.buyLink} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 22px", borderRadius: 999, background: `linear-gradient(135deg,${book.accentColor},${book.accentColor}CC)`, color: "#080A14", fontFamily: "var(--eb-f)", fontSize: ".85rem", textDecoration: "none", transition: "all .28s", boxShadow: `0 9px 28px ${book.accentColor}32`, fontWeight: 700 }}>
-                    <ShoppingCart size={13} /> কিনুন
+                    <ShoppingCart size={13} /> সরাসরি অর্ডার দিন
                   </a>
                 )}
                 {book.canRead && (
@@ -758,7 +807,7 @@ function BookModal({ book, onClose }: { book: typeof ebooks[0]; onClose: () => v
 }
 
 // ── Book Card ─────────────────────────────────────────────────────────────────
-function BookCard({ book, index, onDetails }: { book: typeof ebooks[0]; index: number; onDetails: () => void }) {
+function BookCard({ book, index, onDetails }: { book: Book; index: number; onDetails: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-30px" });
 
@@ -796,6 +845,11 @@ function BookCard({ book, index, onDetails }: { book: typeof ebooks[0]; index: n
         <div className="eb-card-meta"><Calendar size={10} />{book.year} · {book.pages} পৃষ্ঠা</div>
         <div className="eb-card-actions">
           <button className="eb-btn-preview" onClick={onDetails}><Eye size={12} /> বিস্তারিত</button>
+          {book.buyLink && (
+            <a href={book.buyLink} target="_blank" rel="noopener noreferrer" className="eb-btn-read" onClick={(event) => event.stopPropagation()} style={{ textDecoration: "none" }}>
+              <ShoppingCart size={12} /> সরাসরি অর্ডার
+            </a>
+          )}
           {book.canRead && (
             <Link href={`/ebooks/read/${book.slug}`} className="eb-btn-read" style={{ textDecoration: "none" }}>
               <BookOpen size={12} /> পড়ুন
@@ -809,7 +863,7 @@ function BookCard({ book, index, onDetails }: { book: typeof ebooks[0]; index: n
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function EBooks() {
-  const [selectedBook, setSelectedBook] = useState<typeof ebooks[0] | null>(null);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const featuredBook = ebooks[0];
   const otherBooks = ebooks.slice(1);
 
@@ -836,10 +890,10 @@ export default function EBooks() {
           "alternateName": "Mahbub Sardar Sabuj",
           "url": "https://www.mahbubsardarsabuj.com/about",
         },
-        "url": `https://www.mahbubsardarsabuj.com/ebooks/read/${book.slug}`,
+        "url": book.buyLink ?? `https://www.mahbubsardarsabuj.com/ebooks/read/${book.slug}`,
         "description": book.description,
         "genre": "Bengali Literature",
-        "bookFormat": "EBook",
+        "bookFormat": book.buyLink ? "Paperback" : "EBook",
         "isAccessibleForFree": !book.buyLink ? "True" : "False",
       })),
     ],
@@ -849,10 +903,10 @@ export default function EBooks() {
     <div className="eb-page">
       <style>{CSS}</style>
       <Seo
-        title="বাংলা ই-বুক | দুঃখবিলাস, চাঁদফুল | মাহবুব সরদার সবুজ"
-        description="মাহবুব সরদার সবুজের বাংলা ই-বুক সংগ্রহ বিনামূল্যে পড়ুন। দুঃখবিলাস, স্মৃতির বসন্তে তুমি, চাঁদফুল ও সময়ের গহ্বরে — ভালোবাসা ও জীবনদর্শনের অনুপ্রেরণামূলক বাংলা বই।"
+        title="অভিমান ও বাংলা বই | মাহবুব সরদার সবুজ"
+        description="মাহবুব সরদার সবুজের ‘অভিমান’ অণুগদ্যগ্রন্থ সরাসরি অর্ডার করুন। দুঃখবিলাসসহ প্রকাশিত বই ও বিনামূল্যে পড়ার বাংলা ই-বুক সংগ্রহ দেখুন।"
         path="/ebooks"
-        keywords="বাংলা ই-বুক, বাংলা বই ডাউনলোড, দুঃখবিলাস বই, চাঁদফুল বই, স্মৃতির বসন্তে তুমি, সময়ের গহ্বরে, মাহবুব সরদার সবুজ বই, Mahbub Sardar Sabuj ebook, বাংলা সাহিত্য বই, বিনামূল্যে বাংলা ই-বুক"
+        keywords="অভিমান বই, অভিমান মাহবুব সরদার সবুজ, অণুগদ্য, বাংলা বই অর্ডার, দুঃখবিলাস বই, চাঁদফুল বই, স্মৃতির বসন্তে তুমি, মাহবুব সরদার সবুজ বই, বাংলা সাহিত্য বই"
         jsonLd={ebooksJsonLd}
       />
       <div className="eb-aurora" aria-hidden="true" />
@@ -880,7 +934,7 @@ export default function EBooks() {
                 মাহবুব সরদার সবুজের প্রকাশিত সকল বই ও ই-বুকের সংগ্রহ। প্রতিটি বই একটি আলাদা অনুভূতির জগৎ — পাঠকের হৃদয় স্পর্শ করার জন্য রচিত।
               </motion.p>
               <motion.div className="eb-stats" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .38, duration: .48 }}>
-                <div className="eb-stat"><span className="eb-stat-num">১টি</span><span>ফিজিক্যাল বই</span></div>
+                <div className="eb-stat"><span className="eb-stat-num">২টি</span><span>মুদ্রিত বই</span></div>
                 <div className="eb-stat"><span className="eb-stat-num">৪টি</span><span>ই-বুক</span></div>
                 <div className="eb-stat"><span className="eb-stat-num">লক্ষাধিক</span><span>পাঠক</span></div>
               </motion.div>
@@ -913,8 +967,8 @@ export default function EBooks() {
           <div className="eb-panel-head">
             <div>
               <div className="eb-section-eyebrow"><Star size={13} fill="currentColor" /> প্রধান বই</div>
-              <h2 id="eb-featured-title">প্রথম ফিজিক্যাল প্রকাশনা</h2>
-              <p>মাহবুব সরদার সবুজের প্রথম প্রকাশিত ফিজিক্যাল বই — রকমারিতে পাওয়া যাচ্ছে</p>
+              <h2 id="eb-featured-title">বিশেষ প্রকাশনা</h2>
+              <p>মাহবুব সরদার সবুজের নতুন অণুগদ্যগ্রন্থ — এখন সরাসরি অর্ডার করা যাচ্ছে</p>
             </div>
           </div>
 
@@ -946,16 +1000,18 @@ export default function EBooks() {
                 </span>
                 <h3>{featuredBook.title}</h3>
                 <div className="eb-featured-meta">
-                  <Calendar size={11} />{featuredBook.year} · {featuredBook.pages} পৃষ্ঠা · {featuredBook.genre}
+                  <Calendar size={11} />{featuredBook.year} · {featuredBook.pages === "—" ? "পৃষ্ঠা সংখ্যা শিগগির" : `${featuredBook.pages} পৃষ্ঠা`} · {featuredBook.genre}
                 </div>
                 <p>{featuredBook.description}</p>
                 <div className="eb-featured-actions" onClick={(e) => e.stopPropagation()}>
-                  <Link
-                    href={`/ebooks/read/${featuredBook.slug}`}
-                    style={{ background: `linear-gradient(135deg,${featuredBook.accentColor}2C,${featuredBook.accentColor}18)`, borderColor: `${featuredBook.accentColor}48`, color: "#F2EDE4", textDecoration: "none" }}
-                  >
-                    <BookOpen size={14} /> পড়ুন
-                  </Link>
+                  {featuredBook.canRead && (
+                    <Link
+                      href={`/ebooks/read/${featuredBook.slug}`}
+                      style={{ background: `linear-gradient(135deg,${featuredBook.accentColor}2C,${featuredBook.accentColor}18)`, borderColor: `${featuredBook.accentColor}48`, color: "#F2EDE4", textDecoration: "none" }}
+                    >
+                      <BookOpen size={14} /> পড়ুন
+                    </Link>
+                  )}
                   {featuredBook.buyLink && (
                     <a
                       href={featuredBook.buyLink}
@@ -963,7 +1019,7 @@ export default function EBooks() {
                       rel="noopener noreferrer"
                       style={{ background: `linear-gradient(135deg,${featuredBook.accentColor},${featuredBook.accentColor}CC)`, borderColor: "transparent", color: "#080A14", textDecoration: "none" }}
                     >
-                      <ShoppingCart size={14} /> রকমারিতে কিনুন
+                      <ShoppingCart size={14} /> সরাসরি অর্ডার দিন
                     </a>
                   )}
                 </div>
@@ -983,9 +1039,9 @@ export default function EBooks() {
         >
           <div className="eb-panel-head">
             <div>
-              <div className="eb-section-eyebrow"><BookMarked size={13} /> ই-বুক সংগ্রহ</div>
-              <h2 id="eb-grid-title">সকল ই-বুক</h2>
-              <p>বিনামূল্যে পড়ুন — ভালোবাসা, বিচ্ছেদ, কবিতা ও জীবনদর্শনের অনন্য সংকলন</p>
+              <div className="eb-section-eyebrow"><BookMarked size={13} /> বই ও ই-বুক সংগ্রহ</div>
+              <h2 id="eb-grid-title">সকল বই ও ই-বুক</h2>
+              <p>সরাসরি অর্ডার করুন বা অনলাইনে পড়ুন — ভালোবাসা, বিচ্ছেদ, কবিতা ও জীবনদর্শনের অনন্য সংকলন</p>
             </div>
           </div>
 

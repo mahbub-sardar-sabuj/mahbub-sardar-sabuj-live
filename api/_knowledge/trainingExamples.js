@@ -52,11 +52,18 @@ assistant: `মাহবুব সরদার সবুজ বাংলা স�
 {
 user: "দুঃখবিলাস বইটা কীভাবে পাবো?",
 intent: "book",
-assistant: `'আমি বিচ্ছেদকে বলি দুঃখবিলাস' মাহবুব সরদার সবুজের প্রথম মুদ্রিত কাব্যগ্রন্থ (২০২৬)। বিচ্ছেদ, অপেক্ষা ও ভালোবাসার এক অনন্য সংকলন।
+assistant: `‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ মাহবুব সরদার সবুজের মুদ্রিত রোমান্টিক কবিতার বই। ভালোবাসা, বিচ্ছেদ ও বেদনাকে নতুন চোখে দেখার এই বইটি শুধু সরাসরি অর্ডার করা যায়।
 
-বইটি পেতে দুটি উপায়:
-- রকমারি ডটকম থেকে অর্ডার করুন: https://rkmri.co/TTMEoA3l3pM0/
-- অনলাইনে পড়ুন (বিনামূল্যে): [BUTTON:/ebooks/read/dukkhovilash]
+রকমারি থেকে সরাসরি অর্ডার করুন: https://rkmri.co/IIAReAoMpRyp/
+
+সকল বই ও ই-বুক দেখতে: [BUTTON:/ebooks]`,
+},
+{
+user: "অভিমান বইটা কীভাবে পাবো?",
+intent: "book",
+assistant: `‘অভিমান’ মাহবুব সরদার সবুজের অণুগদ্যগ্রন্থ। না-বলা অনুভূতি, ভালোবাসা, একাকীত্ব, আত্মমর্যাদা ও ঘুরে দাঁড়ানোর ভাবনা নিয়ে লেখা এই বইটি শুধু সরাসরি অর্ডার করা যায়।
+
+রকমারি থেকে সরাসরি অর্ডার করুন: https://rkmri.co/Te303mA3TEyA/
 
 সকল বই ও ই-বুক দেখতে: [BUTTON:/ebooks]`,
 },
@@ -381,9 +388,12 @@ assistant: `টেম্পোরারি ইমেইল তৈরি কর�
 ];
 
 export function buildKnowledgeContext(knowledge) {
-const bookLines = knowledge.books.map((book) =>
-`- ${book.title} (${book.type}, ${book.year}, ${book.pages} পৃষ্ঠা): ${book.summary}${book.buyUrl ? ` | কেনার লিংক: ${book.buyUrl}` : ""} | পড়ার পেজ: ${book.readPath}`
-).join("\n");
+const bookLines = knowledge.books.map((book) => {
+const details = [book.type, book.year, book.pages ? `${book.pages} পৃষ্ঠা` : null].filter(Boolean).join(", ");
+const buyLink = book.buyUrl ? ` | সরাসরি অর্ডার লিংক: ${book.buyUrl}` : "";
+const readLink = book.readPath ? ` | পড়ার পেজ: ${book.readPath}` : "";
+return `- ${book.title} (${details}): ${book.summary}${buyLink}${readLink}`;
+}).join("\n");
 
 const pageLines = knowledge.pages.map((page) =>
 `- ${page.label} (${page.path}): ${page.description}`

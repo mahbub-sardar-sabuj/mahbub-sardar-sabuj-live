@@ -38,16 +38,6 @@ const ebookData: Record<string, {
   year: string;
   totalPages: number;
 }> = {
-  "dukkhovilash": {
-    title: "আমি বিচ্ছেদকে বলি দুঃখবিলাস",
-    author: "মাহবুব সরদার সবুজ",
-    cover: "/images/ebooks/dukkhovilash.jpg",
-    pdfUrl: "/ebooks/dukkhovilash.pdf",
-    description: "বিচ্ছেদের ব্যথা, হারানোর কষ্ট আর জীবনের গভীর অনুভূতিগুলো এই বইয়ে অনন্যভাবে তুলে ধরা হয়েছে।",
-    genre: "আবেগী সাহিত্য",
-    year: "২০২৬",
-    totalPages: 0,
-  },
   "smritir-boshonte": {
     title: "স্মৃতির বসন্তে তুমি",
     author: "মাহবুব সরদার সবুজ",
