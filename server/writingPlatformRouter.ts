@@ -92,7 +92,9 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
     authorOpenIds.length > 0
       ? db.execute(
           sql.raw(
-            `SELECT openId, avatarUrl FROM local_users WHERE openId IN (${authorOpenIds
+            `SELECT openId,
+              CASE WHEN avatarUrl LIKE 'data:%' THEN NULL ELSE avatarUrl END AS avatarUrl
+              FROM local_users WHERE openId IN (${authorOpenIds
               .map((id) => `'${id.replace(/'/g, "''")}'`)
               .join(",")}) LIMIT ${authorOpenIds.length}`
           )
@@ -123,7 +125,8 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
     commentCountMap.set(comment.postId, (commentCountMap.get(comment.postId) || 0) + 1);
   }
 
-  // Avatar map: authorOpenId → avatarUrl
+  // Avatar map: authorOpenId → lightweight external avatar URL only.
+  // Inline base64 avatars are deliberately excluded from feed responses.
   const avatarMap = new Map<string, string>();
   if (avatarRows) {
     const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
