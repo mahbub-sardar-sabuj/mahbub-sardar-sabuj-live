@@ -395,7 +395,6 @@ function buildBreadcrumbJsonLd(path, url) {
     "/news": "সরদার সংবাদ",
     "/contact": "যোগাযোগ",
     "/gallery": "গ্যালারি",
-    "/facebook-recitations": "Facebook আবৃত্তি",
     "/amio-likhbo-bastobota": "আমিও লিখবো বাস্তবতা",
     "/editor": "ডিজাইন ফরম্যাট",
     "/image-upscaler": "ইমেজ আপসেলার",
@@ -460,7 +459,7 @@ function buildCollectionItems(path) {
 }
 
 function buildRouteJsonLd(path, url, title, description) {
-  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/facebook-recitations", "/amio-likhbo-bastobota", "/editor", "/image-upscaler", ...Object.keys(seoKeywordPages)]);
+  const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/amio-likhbo-bastobota", "/editor", "/image-upscaler", ...Object.keys(seoKeywordPages)]);
   const contactRoutes = new Set(["/contact"]);
   const pageType = contactRoutes.has(path) ? "ContactPage" : collectionRoutes.has(path) ? "CollectionPage" : "WebPage";
   const graph = [
@@ -928,12 +927,6 @@ export default async function handler(req) {
       <p>বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। এটি একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম যেখানে যে কেউ নিজের বাস্তব অভিজ্ঞতা লিখতে পারেন।</p>
       <p><a href="${SITE_URL}/amio-likhbo-bastobota">পোস্টগুলো দেখুন</a> | <a href="${SITE_URL}">মাহবুব সরদার সবুজ</a></p>
     `;
-  } else if (path === "/facebook-recitations") {
-    title = "Facebook আবৃত্তি | মাহবুব সরদার সবুজ";
-    description = "মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। কবিতার আবৃত্তির ভিডিওগুলো একসাথে দেখুন।";
-    bodyContent = `<h1>Facebook আবৃত্তি — মাহবুব সরদার সবুজ</h1>
-      <p>মাহবুব সরদার সবুজের Facebook আবৃত্তির নির্বাচিত সংগ্রহ। এই পেজে আবৃত্তির ভিডিওগুলো একসাথে দেখা ও খোলা যাবে।</p>
-      <p><a href="${SITE_URL}/writings">কবিতা পড়ুন</a> | <a href="${SITE_URL}">হোম পেজে ফিরুন</a></p>`;
   } else if (path === "/" || path === "") {
     title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
     keywords = "মাহবুব সরদার সবুজ, Mahbub Sardar Sabuj, বাংলা কবি, বাংলা লেখক, বাংলা কবিতা, ভালোবাসার কবিতা, বিচ্ছেদের কবিতা, বাংলা ই-বুক, দুঃখবিলাস, চাঁদফুল, স্মৃতির বসন্তে তুমি, বাংলা সাহিত্য, বাংলাদেশি লেখক, mahbub sardar sabuj kobita, bangla kobita, bangla sahitya, bangladeshi poet, bangla ebook free, সরদার সংবাদ";
@@ -987,7 +980,6 @@ export default async function handler(req) {
           <li><a href="${SITE_URL}/about">লেখক পরিচিতি</a></li>
           <li><a href="${SITE_URL}/contact">যোগাযোগ</a></li>
           <li><a href="${SITE_URL}/amio-likhbo-bastobota">আমিও লিখবো বাস্তবতা</a></li>
-          <li><a href="${SITE_URL}/facebook-recitations">Facebook আবৃত্তি</a></li>
         </ul>
       </nav>
     </article>`;
@@ -998,9 +990,8 @@ export default async function handler(req) {
   const robotsContent = isNoIndexUtilityPath
     ? "noindex, nofollow, noarchive"
     : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
-  const adSenseScript = isNoIndexUtilityPath
-    ? ""
-    : '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3350204114310360" crossorigin="anonymous"></script>';
+  // AdSense is not loaded until a live ad-unit slot is configured.
+  const adSenseScript = "";
 
   jsonLd = normalizeJsonLd(jsonLd, path, url, title, description);
 

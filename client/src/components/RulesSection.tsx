@@ -28,12 +28,6 @@ const tabs = [
     desc: "আমার ব্যক্তিগত পরিচিতি ও সংক্ষিপ্ত তথ্য পাবেন।",
   },
   {
-    icon: <Mic2 size={20} strokeWidth={1.8} />,
-    label: "আবৃত্তি",
-    href: "/facebook-recitations",
-    desc: "আমার লেখার আবৃত্তিগুলোর লিংক এখানে পাওয়া যাবে।",
-  },
-  {
     icon: <BookOpen size={20} strokeWidth={1.8} />,
     label: "লেখালেখি ও বই",
     href: "/writings",

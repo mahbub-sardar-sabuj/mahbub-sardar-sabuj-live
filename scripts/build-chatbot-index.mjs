@@ -6,7 +6,6 @@ import {
   SITE_PAGES,
   BOOKS,
   WRITING_CATEGORIES,
-  RECITATIONS,
   CHATBOT_TOOLS,
 } from "../api/_knowledge/siteKnowledge.js";
 
@@ -86,9 +85,6 @@ for (const category of WRITING_CATEGORIES) {
     priority: 90,
     count: category.count,
   }));
-}
-for (const recitation of RECITATIONS) {
-  items.push(item("recitation", recitation.title, recitation.title, recitation.path, recitation.theme, recitation.keywords || [], { priority: 80 }));
 }
 for (const tool of CHATBOT_TOOLS) {
   items.push(item("tool", tool.key, tool.label, tool.key === "live" ? "/contact" : "/", tool.description, tool.keywords || [], { priority: 75 }));

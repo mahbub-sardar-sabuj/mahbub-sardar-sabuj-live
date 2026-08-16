@@ -654,7 +654,7 @@ return "আপনি " + selection + " নম্বরটি বেছে নি
 }
 
 function buildHelpMenuReply() {
-return "আমি আপনাকে দ্রুত সাহায্য করতে পারি—\n\n১. লেখক পরিচিতি: [BUTTON:/about]\n২. বই ও ই-বুক: [BUTTON:/ebooks]\n৩. লেখা খোঁজা বা পড়া: [BUTTON:/writings]\n৪. আবৃত্তি দেখা: [BUTTON:/facebook-recitations]\n৫. ডিজাইন স্টুডিও: [BUTTON:/editor]\n৬. সরাসরি যোগাযোগ: [BUTTON:/contact]\n\nআপনি চাইলে লিখতে পারেন—“বিচ্ছেদের সেরা লেখা দেখাও”, “কোন বই দিয়ে শুরু করব”, অথবা “লেখকের পরিচয় দাও”।";
+return "আমি আপনাকে দ্রুত সাহায্য করতে পারি—\n\n১. লেখক পরিচিতি: [BUTTON:/about]\n২. বই ও ই-বুক: [BUTTON:/ebooks]\n৩. লেখা খোঁজা বা পড়া: [BUTTON:/writings]\n৪. ডিজাইন স্টুডিও: [BUTTON:/editor]\n৫. সরাসরি যোগাযোগ: [BUTTON:/contact]\n\nআপনি চাইলে লিখতে পারেন—“বিচ্ছেদের সেরা লেখা দেখাও”, “কোন বই দিয়ে শুরু করব”, অথবা “লেখকের পরিচয় দাও”।";
 }
 
 function buildBookRecommendationReply(rawText = "") {
@@ -755,14 +755,8 @@ const categories = WEBSITE_KNOWLEDGE.writingCategories.map((cat) => `${cat.name}
 return `ওয়েবসাইটে মাহবুব সরদার সবুজের মোট ২,৩৫৭টি লেখা রয়েছে। প্রধান বিভাগগুলো হলো: ${categories}।\n\nসব লেখা দেখতে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\n\nআপনি ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা, কবিতা, গল্প বা ইসলামিক লেখা—যে কোনো বিভাগ আলাদা করে চাইতে পারেন।`;
 }
 
-function buildRecitationReply(text) {
-const recitation = findBestByKeywords(text, WEBSITE_KNOWLEDGE.recitations);
-if (recitation) {
-return `${recitation.title} আবৃত্তিটি Facebook আবৃত্তি সংগ্রহে রয়েছে।\n\nশুনতে/দেখতে যান: [BUTTON:${recitation.path}]\n\nআরও আবৃত্তি চাইলে লিখুন—“সব আবৃত্তি দেখাও”।`;
-}
-
-const list = WEBSITE_KNOWLEDGE.recitations.map((item, index) => `${index + 1}. ${item.title}`).join("\n");
-return `মাহবুব সরদার সবুজের ৯টি জনপ্রিয় Facebook আবৃত্তি রয়েছে:\n\n${list}\n\nশুনতে/দেখতে যান: [BUTTON:/facebook-recitations]`;
+function buildRecitationReply() {
+return "পুরোনো আবৃত্তি-সংগ্রহটি এখন আর ওয়েবসাইটে নেই। লেখকের লেখা পড়তে [BUTTON:/writings] এবং বই ও ই-বুক দেখতে [BUTTON:/ebooks] ব্যবহার করুন।";
 }
 
 function buildAuthorReply() {
@@ -1255,7 +1249,7 @@ if (/পরিচয়|about|লেখক|কবি|জন্ম|কুমি�
 return "মাহবুব সরদার সবুজ একজন লেখক, কবি ও সাহিত্যিক। তাঁর জন্ম কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে এবং তিনি বর্তমানে সৌদি আরবে কর্মরত ও অবস্থানরত। তাঁর বিস্তারিত পরিচিতি দেখতে [BUTTON:/about] ব্যবহার করুন।";
 }
 if (/আবৃত্তি|recitation|জানেন বাবা|কাঁদলে মা|তবুও তাকে|বিবেকের আদালত/.test(userText)) {
-return "মাহবুব সরদার সবুজের ৯টি জনপ্রিয় আবৃত্তি:\n১. জানেন বাবা\n২. আমি কাঁদলে মা আর কাঁদে না\n৩. তবুও তাকে ভালো\n৪. আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে\n৫. মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি\n৬. নারীকে ভালোবাসার আগে\n৭. মানুষটা তোমার প্রতি অন্ধ\n৮. এমনভাবে সরে যাবো একদিন\n৯. বিবেকের আদালত\n\nশুনতে যান: [BUTTON:/facebook-recitations]";
+return buildRecitationReply();
 }
 if (/সংবাদ|news|খবর|সরদার সংবাদ/.test(userText)) {
 return "সর্বশেষ সংবাদ পড়তে সরদার সংবাদ পেজে যান: [BUTTON:/news]";

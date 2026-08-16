@@ -16,7 +16,6 @@ const Writings = lazyRoute("Writings");
 const WritingDetailPage = lazyRoute("WritingDetailPage");
 const EBooks = lazyRoute("EBooks");
 const NotFound = lazyRoute("NotFound");
-const FacebookRecitations = lazyRoute("FacebookRecitations");
 const PrivacyPolicy = lazyRoute("PrivacyPolicy");
 const Terms = lazyRoute("Terms");
 const About = lazyRoute("About");
@@ -94,7 +93,6 @@ function Router() {
     <Suspense fallback={<PageLoader />}>
       <Switch>
         <Route path={"/"} component={Home} />
-        <Route path={"/facebook-recitations"} component={FacebookRecitations} />
         <Route path={"/writings"} component={Writings} />
         <Route path={"/writings/:slug"} component={WritingDetailPage} />
         <Route path={"/bangla-kobita"} component={SeoKeywordLanding} />

@@ -21,7 +21,6 @@ const cases = [
     ],
     expect: ['কিছু স্মৃতি কখনো ভোলা যায় না', 'পুরো লেখা পড়তে: [BUTTON:/writings/'],
   },
-  { name: 'recitation route', text: 'জানেন বাবা আবৃত্তি শুনব', expect: ['/facebook-recitations', 'জানেন বাবা'] },
   { name: 'contact route', text: 'যোগাযোগ ইমেইল দাও', expect: ['/contact', 'lekhokmahbubsardarsabuj'] },
   { name: 'audio route (Pro Max in-chat)', text: 'অডিও নয়েজ কমাতে পারো?', expect: ['অডিও', 'আপলোড'] },
   { name: 'site route', text: 'ওয়েবসাইটের সব পেজ দেখাও', expect: ['/writings', '/contact'] },

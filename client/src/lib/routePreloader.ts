@@ -7,7 +7,6 @@ const routeImporters = {
   WritingDetailPage: () => import("../pages/WritingDetailPage"),
   EBooks: () => import("../pages/EBooks"),
   NotFound: () => import("../pages/NotFound"),
-  FacebookRecitations: () => import("../pages/FacebookRecitations"),
   PrivacyPolicy: () => import("../pages/PrivacyPolicy"),
   Terms: () => import("../pages/Terms"),
   About: () => import("../pages/About"),
@@ -47,7 +46,6 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path.startsWith("/writings/")) return routeImporters.WritingDetailPage;
   if (path === "/ebooks") return routeImporters.EBooks;
   if (path.startsWith("/ebooks/read/")) return routeImporters.EBookReader;
-  if (path === "/facebook-recitations") return routeImporters.FacebookRecitations;
   if (path === "/privacy-policy") return routeImporters.PrivacyPolicy;
   if (path === "/terms") return routeImporters.Terms;
   if (path === "/about") return routeImporters.About;

@@ -27,7 +27,6 @@ const cases = [
   ["ছবি আপস্কেল কীভাবে করব", /BUTTON:\/image-upscaler/, "image tool button"],
   ["নিজের লেখা প্রকাশ করব", /BUTTON:\/amio-likhbo-bastobota/, "community button"],
   ["যোগাযোগের তথ্য দাও", /BUTTON:\/contact/, "contact button"],
-  ["আবৃত্তি শুনতে চাই", /BUTTON:\/facebook-recitations/, "recitation button"],
 ];
 
 let failures = 0;

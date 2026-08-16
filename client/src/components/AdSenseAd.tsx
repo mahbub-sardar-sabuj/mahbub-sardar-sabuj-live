@@ -23,7 +23,6 @@ export const AD_SLOTS = {
   READER_INLINE: "",        // EBook reader — between chapters
   AMIO_INLINE: "",          // আমিও লিখবো বাস্তবতা — between posts
   TERMS_BOTTOM: "",         // Terms/Privacy pages
-  RECITATIONS_BOTTOM: "",   // Facebook recitations page
 } as const;
 
 interface AdSenseAdProps {
@@ -60,7 +59,7 @@ export default function AdSenseAd({
   }, [adSlot]);
 
   useEffect(() => {
-    if (pushed.current) return;
+    if (!adSlot || pushed.current) return;
     try {
       if (typeof window !== "undefined") {
         window.adsbygoogle = window.adsbygoogle || [];
@@ -72,6 +71,9 @@ export default function AdSenseAd({
       setAdError(true);
     }
   }, [adSlot]);
+
+  // Empty slot IDs are not rendered or initialized until an AdSense unit is configured.
+  if (!adSlot) return null;
 
   // If AdSense failed and showPlaceholder is requested, show subtle placeholder
   if (adError && showPlaceholder) {

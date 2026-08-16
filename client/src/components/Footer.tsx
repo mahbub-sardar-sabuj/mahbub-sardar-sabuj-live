@@ -3,7 +3,7 @@
  * Design: Literary Avant-Garde | Deep Navy + Rich Gold
  * Features: animated social icons, hover effects, glassmorphism
  */
-import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart } from "lucide-react";
+import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Newspaper, UserRound, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { preloadRoute } from "@/lib/routePreloader";
@@ -13,16 +13,6 @@ const socialLinks = [
   { icon: Instagram, href: "https://www.instagram.com/mahbub_sardar_sabuj", label: "Instagram", color: "#E1306C" },
   { icon: Youtube, href: "https://youtube.com/@MahbubSardarSabuj", label: "YouTube", color: "#FF0000" },
   { icon: Mail, href: "mailto:lekhokmahbubsardarsabuj@gmail.com", label: "Email", color: "#C9A84C" },
-];
-
-const quickLinks = [
-  { label: "পরিচিতি", href: "/about", icon: UserRound },
-  { label: "লেখালেখি ও বই", href: "/writings", icon: BookOpen },
-  { label: "আমিও লিখবো বাস্তবতা", href: "/amio-likhbo-bastobota", icon: PenLine },
-
-  { label: "আবৃত্তি", href: "/facebook-recitations", icon: Mic2 },
-  { label: "গ্যালারি", href: "/gallery", icon: Images },
-  { label: "সংবাদ", href: "/news", icon: Newspaper },
 ];
 
 const legalLinks = [

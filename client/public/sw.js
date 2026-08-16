@@ -1,11 +1,12 @@
-// মাহবুব সরদার সবুজ — Service Worker v4.0
-// v4: HTML and fresh content stay network-first; stable visual assets use cache-first delivery.
-const CACHE_NAME = 'mahbub-sardar-sabuj-v4';
-const OFFLINE_URL = '/';
+// মাহবুব সরদার সবুজ — Service Worker v5.0
+// v5: HTML and fresh content stay network-first; stable visual assets use cache-first delivery.
+const CACHE_NAME = 'mahbub-sardar-sabuj-v5';
+const OFFLINE_URL = '/offline.html';
 
 // Cache essential static assets on install (NOT HTML pages)
 const PRECACHE_ASSETS = [
   '/manifest.json',
+  '/offline.html',
   '/favicon.ico',
   '/icon-192x192.png',
   '/icon-512x512.png',

@@ -21,7 +21,7 @@ export const AUTHOR_PROFILE = {
     "ভালোবাসা, বিচ্ছেদ, অপেক্ষা, স্মৃতি ও জীবনদর্শনভিত্তিক লেখা",
     "পাঠকের আবেগ ও বাস্তবতার সঙ্গে সংযোগ তৈরি করা সাহিত্যধারা",
     "সহজলভ্য এবং বিনামূল্যে পড়ার যোগ্য ই-বুক সংকলন",
-    "ফেসবুকে আবৃত্তি এবং সামাজিক যোগাযোগ মাধ্যমে লেখালেখির ব্যাপক জনপ্রিয়তা",
+    "সামাজিক যোগাযোগ মাধ্যমে লেখালেখির ব্যাপক জনপ্রিয়তা",
     "বাংলা সাহিত্যে মানবিক অনুভূতির সরল ও গভীর প্রকাশ"
   ],
   stats: [
@@ -75,13 +75,6 @@ export const SITE_PAGES = [
     path: "/ebooks",
     description: "সকল ই-বুক ও মুদ্রিত বইয়ের সংগ্রহ। ‘অভিমান’ অণুগদ্যগ্রন্থ এবং ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ সরাসরি অর্ডার করা যায়; চারটি ই-বুক বিনামূল্যে অনলাইনে পড়া যায়।",
     keywords: ["বই", "ই-বুক", "ebook", "ebooks", "পড়তে", "বইগুলো", "অভিমান", "অণুগদ্য", "কাব্যগ্রন্থ", "চাঁদফুল", "সময়ের গহ্বরে", "স্মৃতির বসন্তে", "অনবদ্য লেখা", "দুঃখবিলাস", "অর্ডার"]
-  },
-  {
-    key: "recitations",
-    label: "Facebook আবৃত্তি",
-    path: "/facebook-recitations",
-    description: "লেখকের জনপ্রিয় ৯টি আবৃত্তি ভিডিও সংগ্রহ — Facebook রিলস ও ভিডিও। আবৃত্তিগুলো: জানেন বাবা, আমি কাঁদলে মা আর কাঁদে না, তবুও তাকে ভালো, আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে, মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি, নারীকে ভালোবাসার আগে, মানুষটা তোমার প্রতি অন্ধ, সরে যাবো একদিন, বিবেকের আদালত।",
-    keywords: ["আবৃত্তি", "recitation", "রিল", "reel", "facebook video", "ভিডিও", "আবৃত্তি সংগ্রহ", "কবিতা পাঠ"]
   },
   {
     key: "editor",
@@ -282,18 +275,6 @@ export const WRITING_CATEGORIES = [
   { name: "ইসলামিক লেখা", count: 15, path: "/writings", description: "ইসলামিক ভাবনা ও মূল্যবোধভিত্তিক লেখা", keywords: ["ইসলামিক", "ইসলাম", "ধর্মীয়", "দোয়া"] },
 ];
 
-export const RECITATIONS = [
-  { title: "জানেন বাবা", path: "/facebook-recitations", theme: "পারিবারিক ভালোবাসা, বাবার প্রতি শ্রদ্ধা", keywords: ["জানেন বাবা", "বাবা", "পিতা"] },
-  { title: "আমি কাঁদলে মা আর কাঁদে না", path: "/facebook-recitations", theme: "মায়ের ভালোবাসা, মাতৃস্নেহ", keywords: ["কাঁদলে মা", "মা", "মাতৃ"] },
-  { title: "তবুও তাকে ভালো", path: "/facebook-recitations", theme: "নিঃস্বার্থ ভালোবাসা", keywords: ["তবুও তাকে", "তাকে ভালো"] },
-  { title: "আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে", path: "/facebook-recitations", theme: "আশা, ইতিবাচকতা", keywords: ["সব ঠিক", "নিয়ম আছে"] },
-  { title: "মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি", path: "/facebook-recitations", theme: "বিচ্ছেদ, অনুভূতি", keywords: ["মাঝে মাঝে", "ডেকে বলি"] },
-  { title: "নারীকে ভালোবাসার আগে", path: "/facebook-recitations", theme: "সম্পর্ক, ভালোবাসার দর্শন", keywords: ["নারীকে", "ভালোবাসার আগে"] },
-  { title: "মানুষটা তোমার প্রতি অন্ধ", path: "/facebook-recitations", theme: "সম্পর্ক, উপলব্ধি", keywords: ["মানুষটা", "অন্ধ"] },
-  { title: "সরে যাবো একদিন", path: "/facebook-recitations", theme: "বিচ্ছেদ, দূরত্ব", keywords: ["সরে যাবো", "সরে যাব"] },
-  { title: "বিবেকের আদালত", path: "/facebook-recitations", theme: "নৈতিকতা, বিবেক", keywords: ["বিবেক", "আদালত"] },
-];
-
 export const CONTACT_CHANNELS = {
   email: "lekhokmahbubsardarsabuj@gmail.com",
   facebook: "https://facebook.com/MahbubSardarSabuj",
@@ -358,7 +339,6 @@ export const WEBSITE_KNOWLEDGE = {
   pages: SITE_PAGES,
   books: BOOKS,
   writingCategories: WRITING_CATEGORIES,
-  recitations: RECITATIONS,
   contact: CONTACT_CHANNELS,
   tools: CHATBOT_TOOLS,
   aiTools: AI_TOOLS,
@@ -377,7 +357,6 @@ export const WEBSITE_KNOWLEDGE = {
       "অডিও এডিটর",
       "সরদার ডিজাইন স্টুডিও",
       "পাঠক কমিউনিটি (আমিও লিখবো বাস্তবতা)",
-      "Facebook আবৃত্তি সংগ্রহ",
       "AI চ্যাটবট সহায়তা",
       "Live Chat সাপোর্ট",
       "টেম্পোরারি ইমেইল/নম্বর/কার্ড টুল"
