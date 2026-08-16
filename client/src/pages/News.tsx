@@ -8,7 +8,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check,
-  ThumbsUp, ExternalLink, ArrowRight, Radio, ChevronRight, Clock, Eye, Newspaper, Feather, BookOpen, ArrowUpRight, BadgeCheck, Sparkles
+  ThumbsUp, ExternalLink, ArrowRight, Radio, ChevronRight, Clock, Eye, Newspaper, Feather, BookOpen, ArrowUpRight, BadgeCheck, Sparkles, Quote, LibraryBig, CircleCheck
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -120,6 +120,8 @@ export default function News() {
 
   const heroNews = filtered[0];
   const gridNews = filtered.slice(1);
+  const editorialBook = PRINTED_BOOKS.find((book) => book.isFeatured) ?? PRINTED_BOOKS[0]!;
+  const editorialNews = newsData.find((item) => item.id === 49);
 
   const handleAddComment = (newsId: number) => {
     if (!commentName.trim() || !commentText.trim()) return;
@@ -246,6 +248,32 @@ export default function News() {
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: clamp(0.9rem, 2vw, 1.25rem);
         }
+        .issue-navigation {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.55rem;
+          overflow-x: auto;
+          scrollbar-width: none;
+          padding: 0.35rem;
+        }
+        .issue-navigation::-webkit-scrollbar { display: none; }
+        .editorial-spotlight-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.34fr) minmax(280px, 0.66fr);
+          gap: clamp(1rem, 2vw, 1.45rem);
+          align-items: stretch;
+        }
+        .editorial-trust-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.7rem;
+        }
+        .premium-editorial-link {
+          transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1), background 160ms cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .premium-editorial-link:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26); }
+        .premium-editorial-link:active { transform: scale(0.97); }
         .news-card-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -306,9 +334,12 @@ export default function News() {
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 4px; }
         @media (max-width: 767px) {
-          .book-breaking-grid {
+          .book-breaking-grid,
+          .editorial-spotlight-grid,
+          .editorial-trust-grid {
             grid-template-columns: 1fr;
           }
+          .issue-navigation { justify-content: flex-start; }
           .news-card-grid {
             grid-template-columns: 1fr;
             gap: 1.1rem;
@@ -334,6 +365,9 @@ export default function News() {
           .news-modal-hero {
             height: 210px;
           }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
         @media (max-width: 390px) {
           .news-thumb { min-height: 170px; }
@@ -539,6 +573,15 @@ export default function News() {
       </div>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 100px" }}>
+        <nav aria-label="সরদার সংবাদ issue navigation" className="issue-navigation" style={{ marginTop: "clamp(1rem, 2.8vw, 1.85rem)", marginBottom: "0.7rem", borderTop: "1px solid rgba(247,213,111,0.14)", borderBottom: "1px solid rgba(247,213,111,0.14)" }}>
+          <button aria-pressed={selectedCategory === "সব"} onClick={() => { setSearchTerm(""); setSelectedCategory("সব"); }} style={{ color: "#FFF8E9", background: "transparent", border: 0, padding: "0.6rem 0.7rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 800, fontSize: "0.84rem", whiteSpace: "nowrap" }}>আজকের সংখ্যা</button>
+          <span aria-hidden="true" style={{ width: 4, height: 4, borderRadius: "50%", background: "#F7D56F", opacity: 0.65, flexShrink: 0 }} />
+          <button aria-pressed={selectedCategory === "বই"} onClick={() => { setSearchTerm(""); setSelectedCategory("বই"); }} style={{ color: "#F7D56F", background: "transparent", border: 0, padding: "0.6rem 0.7rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 800, fontSize: "0.84rem", whiteSpace: "nowrap" }}>বই ডেস্ক</button>
+          <span aria-hidden="true" style={{ width: 4, height: 4, borderRadius: "50%", background: "#F7D56F", opacity: 0.65, flexShrink: 0 }} />
+          <button aria-pressed={selectedCategory === "সাহিত্য"} onClick={() => { setSearchTerm(""); setSelectedCategory("সাহিত্য"); }} style={{ color: "rgba(255,248,233,0.74)", background: "transparent", border: 0, padding: "0.6rem 0.7rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 800, fontSize: "0.84rem", whiteSpace: "nowrap" }}>সাহিত্য নির্বাচন</button>
+          <span aria-hidden="true" style={{ width: 4, height: 4, borderRadius: "50%", background: "#F7D56F", opacity: 0.65, flexShrink: 0 }} />
+          <a href="/ebooks" style={{ color: "rgba(255,248,233,0.74)", textDecoration: "none", padding: "0.6rem 0.7rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 800, fontSize: "0.84rem", whiteSpace: "nowrap" }}>মুক্ত পাঠাগার</a>
+        </nav>
         <section aria-label="বই ডেস্ক" style={{ marginTop: "clamp(1.25rem, 3vw, 2.2rem)", marginBottom: "clamp(2rem, 5vw, 4rem)", padding: "clamp(1rem, 3vw, 1.45rem)", borderRadius: 30, position: "relative", overflow: "hidden", background: "linear-gradient(135deg, rgba(247,213,111,0.13) 0%, rgba(19,45,94,0.68) 43%, rgba(6,14,26,0.95) 100%)", border: "1px solid rgba(247,213,111,0.26)", boxShadow: "0 24px 58px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
           <div aria-hidden="true" style={{ position: "absolute", width: 360, height: 360, borderRadius: "50%", top: -240, right: -120, background: "radial-gradient(circle, rgba(247,213,111,0.22), transparent 68%)", pointerEvents: "none" }} />
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem", position: "relative" }}>
@@ -565,6 +608,46 @@ export default function News() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section aria-label="সম্পাদকের নির্বাচন" className="editorial-spotlight-grid" style={{ marginBottom: "clamp(2.2rem, 5vw, 4.4rem)" }}>
+          <article style={{ position: "relative", overflow: "hidden", borderRadius: 28, padding: "clamp(1.15rem, 3.4vw, 1.75rem)", background: "linear-gradient(135deg, rgba(20,47,96,0.92), rgba(8,19,39,0.98))", border: "1px solid rgba(247,213,111,0.24)", boxShadow: "0 20px 50px rgba(0,0,0,0.22)" }}>
+            <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 92% 0%, rgba(247,213,111,0.18), transparent 28%), radial-gradient(circle at 10% 105%, rgba(109,151,235,0.18), transparent 31%)", pointerEvents: "none" }} />
+            <div style={{ position: "relative", display: "grid", gridTemplateColumns: "clamp(94px, 16vw, 150px) minmax(0, 1fr)", gap: "clamp(1rem, 3vw, 1.55rem)", alignItems: "center" }}>
+              <div style={{ aspectRatio: "2 / 3", borderRadius: 18, overflow: "hidden", boxShadow: "0 18px 34px rgba(0,0,0,0.38)", border: "1px solid rgba(255,255,255,0.18)", background: "#0B1830" }}>
+                <img src={editorialBook.cover} alt={`${editorialBook.title} বইয়ের প্রচ্ছদ`} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "0.35rem 0.62rem", borderRadius: 999, color: "#101B34", background: "#F7D56F", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.74rem" }}><Sparkles size={14} /> সম্পাদকের নির্বাচন</div>
+                <h2 style={{ color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "clamp(1.5rem, 3.2vw, 2.25rem)", lineHeight: 1.2, margin: "0.7rem 0 0.45rem" }}>‘{editorialBook.title}’: নীরবতার ভেতরেও আলোর দিকে হাঁটার পাঠ</h2>
+                <p style={{ color: "rgba(255,248,233,0.72)", fontFamily: "'AdorshoLipi', sans-serif", lineHeight: 1.72, margin: 0, maxWidth: 650 }}>{editorialBook.description}</p>
+                {editorialBook.quote && <blockquote style={{ color: "rgba(247,213,111,0.92)", borderLeft: "2px solid rgba(247,213,111,0.62)", paddingLeft: "0.75rem", margin: "0.85rem 0", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.88rem", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}><Quote size={15} style={{ display: "inline", verticalAlign: "-2px", marginRight: 5 }} />{editorialBook.quote}</blockquote>}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.62rem", marginTop: "1rem" }}>
+                  {editorialNews && <button className="premium-editorial-link" onClick={() => handleSelectNews(editorialNews)} style={{ color: "#071426", background: "#FFF8E9", border: 0, borderRadius: 999, padding: "0.63rem 0.86rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.86rem", display: "inline-flex", alignItems: "center", gap: 7 }}>বই পরিচিতি পড়ুন <ArrowRight size={15} /></button>}
+                  <a className="premium-editorial-link" href={bookActionHref(editorialBook)} target="_blank" rel="noreferrer" style={{ color: "#F7D56F", background: "rgba(247,213,111,0.10)", border: "1px solid rgba(247,213,111,0.45)", borderRadius: 999, padding: "0.63rem 0.86rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.86rem", display: "inline-flex", alignItems: "center", gap: 7, textDecoration: "none" }}>{bookActionLabel(editorialBook)} <ArrowUpRight size={15} /></a>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <aside style={{ padding: "clamp(1.05rem, 2.5vw, 1.35rem)", borderRadius: 28, background: "linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025))", border: "1px solid rgba(255,255,255,0.11)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)" }}>
+            <div style={{ color: "#F7D56F", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.78rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>পাঠকের আস্থা</div>
+            <h2 style={{ color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", margin: "0.32rem 0 1rem", fontSize: "clamp(1.3rem, 2.6vw, 1.7rem)" }}>কেন এই পাতাটি নির্ভরযোগ্য</h2>
+            <div className="editorial-trust-grid">
+              {[
+                { icon: BadgeCheck, title: "অফিসিয়াল ডেস্ক", text: "লেখক ও বইয়ের যাচাইকৃত তথ্য" },
+                { icon: CircleCheck, title: "স্বচ্ছ নির্দেশনা", text: "মুদ্রিত বইয়ের সরাসরি order পথ" },
+                { icon: LibraryBig, title: "মুক্ত পাঠ", text: `${FREE_EBOOKS.length}টি নির্বাচিত ই-বুক অনলাইনে` },
+              ].map((trust) => {
+                const TrustIcon = trust.icon;
+                return <div key={trust.title} style={{ padding: "0.78rem", borderRadius: 17, background: "rgba(6,14,26,0.48)", border: "1px solid rgba(247,213,111,0.14)" }}><TrustIcon size={18} color="#F7D56F" /><div style={{ color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.87rem", marginTop: "0.45rem" }}>{trust.title}</div><p style={{ color: "rgba(255,248,233,0.6)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.76rem", lineHeight: 1.45, margin: "0.18rem 0 0" }}>{trust.text}</p></div>;
+              })}
+            </div>
+            <div style={{ marginTop: "1rem", paddingTop: "0.9rem", borderTop: "1px solid rgba(247,213,111,0.15)", display: "flex", flexWrap: "wrap", gap: "0.55rem" }}>
+              <a className="premium-editorial-link" href="/ebooks" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.5rem 0.68rem", borderRadius: 999, color: "#071426", background: "#F7D56F", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.79rem", textDecoration: "none" }}>সব বই দেখুন <ArrowRight size={14} /></a>
+              <a className="premium-editorial-link" href="/ebooks" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.5rem 0.68rem", borderRadius: 999, color: "rgba(255,248,233,0.82)", border: "1px solid rgba(247,213,111,0.35)", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "0.79rem", textDecoration: "none" }}><LibraryBig size={14} /> মুক্ত ই-বুক পড়ুন</a>
+            </div>
+          </aside>
         </section>
 
         {/* ── CATEGORY FILTER ── */}
