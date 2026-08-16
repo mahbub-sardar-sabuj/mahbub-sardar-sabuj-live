@@ -5,6 +5,8 @@
 import { useState, useRef, useEffect, type CSSProperties } from "react";
 import {
   ArrowLeft,
+  Award,
+  Bookmark,
   Camera,
   CheckCircle2,
   Edit3,
@@ -131,6 +133,10 @@ export default function Profile() {
   const [avatarError, setAvatarError] = useState("");
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
+  const communityOverviewQuery = trpc.writingPlatform.getMyCommunityOverview.useQuery(undefined, {
+    enabled: Boolean(user?.openId), retry: false, staleTime: 60000,
+  });
+  const communityOverview = communityOverviewQuery.data;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -528,6 +534,20 @@ export default function Profile() {
                 ))}
               </div>
 
+              {communityOverview && (
+                <div style={{ marginBottom: "1.25rem", padding: "0.9rem 1rem", borderRadius: 16, background: "linear-gradient(135deg, rgba(247,213,111,0.11), rgba(81,139,255,0.08))", border: "1px solid rgba(232,201,122,0.18)", display: "grid", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <span style={{ color: "#F7D56F", display: "inline-flex", gap: 6, alignItems: "center", fontWeight: 900, fontSize: "0.86rem" }}><Award size={16} /> লেখক অগ্রগতি</span>
+                    <span style={{ color: "rgba(253,246,236,0.54)", fontSize: "0.76rem" }}><Bookmark size={13} style={{ verticalAlign: "-2px" }} /> {communityOverview.saved}টি লেখা সংরক্ষিত</span>
+                  </div>
+                  {communityOverview.badges.length > 0 ? (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {communityOverview.badges.map((badge: string) => <span key={badge} style={{ padding: "0.28rem 0.58rem", borderRadius: 999, border: "1px solid rgba(247,213,111,0.35)", background: "rgba(247,213,111,0.10)", color: "#F7D56F", fontWeight: 800, fontSize: "0.74rem" }}>{badge}</span>)}
+                    </div>
+                  ) : <span style={{ color: "rgba(253,246,236,0.56)", fontSize: "0.8rem" }}>প্রথম লেখা জমা দিলেই আপনার প্রথম badge যুক্ত হবে।</span>}
+                </div>
+              )}
+
               {/* Bio */}
               <div className="profile-bio" style={{ marginBottom: "1.25rem" }}>
                 <label style={{ color: "rgba(247,213,111,0.8)", fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 6 }}>
@@ -617,6 +637,8 @@ export default function Profile() {
 
             {/* ── My Posts ── */}
             <MyPostsList openId={user?.openId || ""} />
+            {communityOverview && communityOverview.saved > 0 && <SavedPostsList />}
+
           </div>
         ) : null}
       </div>
@@ -729,5 +751,46 @@ function MyPostsList({ openId }: { openId: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+
+// ── Saved Reading List ───────────────────────────────────────────────────────
+function SavedPostsList() {
+  const savedQuery = trpc.writingPlatform.myBookmarks.useQuery(undefined, { retry: false, staleTime: 60000 });
+  const posts = savedQuery.data ?? [];
+
+  if (savedQuery.isLoading) {
+    return (
+      <div className="profile-library" style={{ ...glassCard, padding: "1rem 1.2rem", color: "rgba(253,246,236,0.45)", display: "flex", alignItems: "center", gap: 8, fontFamily: adorshoFont }}>
+        <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> সংরক্ষিত লেখাগুলো লোড হচ্ছে...
+      </div>
+    );
+  }
+
+  if (posts.length === 0) return null;
+
+  return (
+    <section className="profile-library" style={{ ...glassCard, padding: "clamp(1.2rem, 4vw, 1.8rem)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: "1rem" }}>
+        <h3 style={{ margin: 0, color: "#F7D56F", fontFamily: adorshoFont, fontSize: "1.05rem", fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
+          <Bookmark size={18} /> আমার পড়ার তালিকা
+        </h3>
+        <span style={{ color: "rgba(253,246,236,0.46)", fontSize: "0.76rem", fontFamily: adorshoFont }}>{posts.length}টি সংরক্ষিত</span>
+      </div>
+      <div style={{ display: "grid", gap: "0.65rem" }}>
+        {(posts as any[]).slice(0, 6).map((post) => (
+          <a key={post.id} className="profile-library-item" href={`/amio-likhbo-bastobota/${post.slug}`} style={{ display: "block", padding: "0.8rem 0.95rem", borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(232,201,122,0.11)", textDecoration: "none" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ color: "#FDF6EC", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.9rem", lineHeight: 1.5 }}>{post.title}</div>
+                <div style={{ color: "rgba(253,246,236,0.48)", fontFamily: adorshoFont, fontSize: "0.76rem", marginTop: 2 }}>{post.authorName}</div>
+              </div>
+              <ExternalLink size={15} color="#F7D56F" style={{ flexShrink: 0, marginTop: 3 }} />
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
   );
 }

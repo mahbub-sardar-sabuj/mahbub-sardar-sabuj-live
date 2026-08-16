@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "node scripts/sync-news-seo.cjs && tsx scripts/export-writings-archive.ts && node scripts/build-chatbot-index.mjs && node scripts/verify-content-pipeline.mjs && esbuild scripts/trpc-bundled-entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/trpc-bundled.js && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "node scripts/run-community-migration.mjs && node scripts/sync-news-seo.cjs && tsx scripts/export-writings-archive.ts && node scripts/build-chatbot-index.mjs && node scripts/verify-content-pipeline.mjs && esbuild scripts/trpc-bundled-entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/trpc-bundled.js && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "chatbot:index": "node scripts/build-chatbot-index.mjs",
@@ -18,6 +18,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "community:migrate": "RUN_COMMUNITY_MIGRATIONS=1 node scripts/run-community-migration.mjs",
     "promax:sync": "node scripts/pro-max-auto-sync.mjs",
     "promax:sync:knowledge": "UPDATE_TYPE=knowledge_only node scripts/pro-max-auto-sync.mjs",
     "promax:sync:audio": "UPDATE_TYPE=audio_only node scripts/pro-max-auto-sync.mjs",

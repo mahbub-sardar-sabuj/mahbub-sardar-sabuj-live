@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
-import { writingComments, writingPosts, writingReactions } from "../drizzle/schema";
+import { writingBookmarks, writingChallenges, writingComments, writingEditorialPicks, writingFeedback, writingPosts, writingReactions, writingReports } from "../drizzle/schema";
 import {
   sendTelegramPostSubmitted,
   sendTelegramPostModerated,
@@ -15,6 +15,10 @@ const mediaTypeSchema = z.enum(["none", "image", "video"]);
 const postStatusSchema = z.enum(["pending", "approved", "rejected", "removed"]);
 const reactionTypeSchema = z.enum(["like", "love", "inspiring", "sad"]);
 const commentStatusSchema = z.enum(["pending", "approved", "rejected", "removed"]);
+const feedbackKindSchema = z.enum(["meaningful", "relatable", "helpful", "beautiful"]);
+const reportReasonSchema = z.enum(["harassment", "misinformation", "plagiarism", "other"]);
+const reportStatusSchema = z.enum(["pending", "reviewed", "actioned", "dismissed"]);
+const challengeStatusSchema = z.enum(["draft", "active", "archived"]);
 
 function normalizeAuthorName(name: string | null | undefined) {
   return name?.trim() || "নামহীন লেখক";
@@ -60,7 +64,10 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
     ...post,
     authorAvatarUrl: null as string | null,
     reactionCounts: { like: 0, love: 0, inspiring: 0, sad: 0 },
+    feedbackCounts: { meaningful: 0, relatable: 0, helpful: 0, beautiful: 0 },
     commentCount: 0,
+    bookmarked: false,
+    myFeedback: null as null | "meaningful" | "relatable" | "helpful" | "beautiful",
     myReaction: null as null | "like" | "love" | "inspiring" | "sad",
   });
 
@@ -69,8 +76,8 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
   const postIds = posts.map((p) => p.id);
   const authorOpenIds = [...new Set(posts.map((p) => p.authorOpenId))];
 
-  // ── 3 parallel batch queries ──
-  const [allReactions, allComments, avatarRows] = await Promise.all([
+  // ── Batch enrichment queries ──
+  const [allReactions, allComments, avatarRows, allFeedback, myBookmarks] = await Promise.all([
     // Batch query 1: reactions (only needed columns)
     db
       .select({ postId: writingReactions.postId, type: writingReactions.type, userOpenId: writingReactions.userOpenId })
@@ -100,6 +107,22 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
           )
         ).catch(() => null)
       : Promise.resolve(null),
+
+    // Batch query 4: reader feedback counts and current user's selection
+    db
+      .select({ postId: writingFeedback.postId, kind: writingFeedback.kind, userOpenId: writingFeedback.userOpenId })
+      .from(writingFeedback)
+      .where(inArray(writingFeedback.postId, postIds))
+      .catch(() => []),
+
+    // Batch query 5: current user's saved posts only
+    userOpenId
+      ? db
+        .select({ postId: writingBookmarks.postId })
+        .from(writingBookmarks)
+        .where(and(inArray(writingBookmarks.postId, postIds), eq(writingBookmarks.userOpenId, userOpenId)))
+        .catch(() => [])
+      : Promise.resolve([]),
   ]);
 
   // Build lookup maps from batch results
@@ -125,6 +148,21 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
     commentCountMap.set(comment.postId, (commentCountMap.get(comment.postId) || 0) + 1);
   }
 
+  // Feedback map: postId → summary and current user's selection
+  const feedbackMap = new Map<number, { counts: Record<string, number>; myFeedback: string | null }>();
+  for (const feedback of allFeedback) {
+    if (!feedbackMap.has(feedback.postId)) {
+      feedbackMap.set(feedback.postId, {
+        counts: { meaningful: 0, relatable: 0, helpful: 0, beautiful: 0 },
+        myFeedback: null,
+      });
+    }
+    const entry = feedbackMap.get(feedback.postId)!;
+    entry.counts[feedback.kind] = (entry.counts[feedback.kind] || 0) + 1;
+    if (userOpenId && feedback.userOpenId === userOpenId) entry.myFeedback = feedback.kind;
+  }
+  const bookmarkIds = new Set(myBookmarks.map((bookmark) => bookmark.postId));
+
   // Avatar map: authorOpenId → lightweight external avatar URL only.
   // Inline base64 avatars are deliberately excluded from feed responses.
   const avatarMap = new Map<string, string>();
@@ -148,7 +186,12 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
       reactionCounts: (reactionData?.counts ?? { like: 0, love: 0, inspiring: 0, sad: 0 }) as {
         like: number; love: number; inspiring: number; sad: number;
       },
+      feedbackCounts: (feedbackMap.get(post.id)?.counts ?? { meaningful: 0, relatable: 0, helpful: 0, beautiful: 0 }) as {
+        meaningful: number; relatable: number; helpful: number; beautiful: number;
+      },
       commentCount: commentCountMap.get(post.id) ?? 0,
+      bookmarked: bookmarkIds.has(post.id),
+      myFeedback: (feedbackMap.get(post.id)?.myFeedback ?? null) as null | "meaningful" | "relatable" | "helpful" | "beautiful",
       myReaction: (reactionData?.myReaction ?? null) as null | "like" | "love" | "inspiring" | "sad",
     };
   });
@@ -397,6 +440,7 @@ export const writingPlatformRouter = router({
     .input(z.object({
       title: z.string().min(1).max(220).optional(),
       category: postCategorySchema.optional(),
+      challengeId: z.number().int().positive().optional(),
       content: z.string().max(600000).optional().default(""),
       mediaUrl: z.string().optional().or(z.literal("")),
       mediaType: mediaTypeSchema.default("none"),
@@ -412,7 +456,18 @@ export const writingPlatformRouter = router({
       if (!contentText && !mediaUrl) throw new Error("ক্যাপশন বা ছবি যোগ করুন");
       // Use provided title or auto-generate from first line of content
       const autoTitle = input.title?.trim() || contentText.split("\n")[0].slice(0, 80) || "বাস্তবতার গল্প";
-      const category = input.category ?? "thought";
+      let category = input.category ?? "thought";
+      let challengeId: number | null = null;
+      if (input.challengeId) {
+        const challenges = await db
+          .select()
+          .from(writingChallenges)
+          .where(and(eq(writingChallenges.id, input.challengeId), eq(writingChallenges.status, "active")))
+          .limit(1);
+        if (challenges.length === 0) throw new Error("এই লেখার চ্যালেঞ্জটি এখন সক্রিয় নেই");
+        challengeId = challenges[0].id;
+        category = challenges[0].category;
+      }
 
       const insertResult = await db.insert(writingPosts).values({
         slug: createSlug(autoTitle),
@@ -420,6 +475,7 @@ export const writingPlatformRouter = router({
         authorName: normalizeAuthorName(ctx.user.name),
         title: autoTitle,
         category,
+        challengeId,
         content: contentText,
         mediaUrl,
         mediaType,
@@ -571,6 +627,196 @@ export const writingPlatformRouter = router({
         }).catch(err => console.error("[Telegram comment submit notify error]", err));
       }
 
+      return { success: true };
+    }),
+
+  // ── Reader library: bookmarks and meaningful feedback ─────────────────────
+  toggleBookmark: protectedProcedure
+    .input(z.object({ postId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const post = await db.select({ id: writingPosts.id }).from(writingPosts)
+        .where(and(eq(writingPosts.id, input.postId), eq(writingPosts.status, "approved"))).limit(1);
+      if (post.length === 0) throw new Error("Post not found");
+      const existing = await db.select({ id: writingBookmarks.id }).from(writingBookmarks)
+        .where(and(eq(writingBookmarks.postId, input.postId), eq(writingBookmarks.userOpenId, ctx.user.openId))).limit(1);
+      if (existing.length > 0) {
+        await db.delete(writingBookmarks).where(eq(writingBookmarks.id, existing[0].id));
+        return { success: true, saved: false };
+      }
+      await db.insert(writingBookmarks).values({ postId: input.postId, userOpenId: ctx.user.openId });
+      return { success: true, saved: true };
+    }),
+
+  myBookmarks: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("myBookmarks", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const rows = await db.select({ post: writingPosts }).from(writingBookmarks)
+        .innerJoin(writingPosts, eq(writingBookmarks.postId, writingPosts.id))
+        .where(and(eq(writingBookmarks.userOpenId, ctx.user.openId), eq(writingPosts.status, "approved")))
+        .orderBy(desc(writingBookmarks.createdAt)).limit(50);
+      return enrichPostsBatch(rows.map((row) => row.post), ctx.user.openId, db);
+    });
+  }),
+
+  setFeedback: protectedProcedure
+    .input(z.object({ postId: z.number().int().positive(), kind: feedbackKindSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const post = await db.select({ id: writingPosts.id }).from(writingPosts)
+        .where(and(eq(writingPosts.id, input.postId), eq(writingPosts.status, "approved"))).limit(1);
+      if (post.length === 0) throw new Error("Post not found");
+      const existing = await db.select().from(writingFeedback)
+        .where(and(eq(writingFeedback.postId, input.postId), eq(writingFeedback.userOpenId, ctx.user.openId))).limit(1);
+      if (existing.length > 0 && existing[0].kind === input.kind) {
+        await db.delete(writingFeedback).where(eq(writingFeedback.id, existing[0].id));
+        return { success: true, kind: null };
+      }
+      if (existing.length > 0) await db.update(writingFeedback).set({ kind: input.kind }).where(eq(writingFeedback.id, existing[0].id));
+      else await db.insert(writingFeedback).values({ postId: input.postId, userOpenId: ctx.user.openId, kind: input.kind });
+      return { success: true, kind: input.kind };
+    }),
+
+  // ── Writing challenges and editorial selections ─────────────────────────────
+  listActiveChallenges: publicProcedure.query(async () => {
+    return safeWritingRead("listActiveChallenges", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingChallenges).where(eq(writingChallenges.status, "active"))
+        .orderBy(desc(writingChallenges.createdAt)).limit(3);
+    });
+  }),
+
+  listEditorialPicks: publicProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("listEditorialPicks", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const rows = await db.select({ pick: writingEditorialPicks, post: writingPosts })
+        .from(writingEditorialPicks).innerJoin(writingPosts, eq(writingEditorialPicks.postId, writingPosts.id))
+        .where(and(eq(writingEditorialPicks.active, true), eq(writingPosts.status, "approved")))
+        .orderBy(writingEditorialPicks.position, desc(writingEditorialPicks.createdAt)).limit(3);
+      if (rows.length === 0) {
+        const featuredPosts = await db.select().from(writingPosts)
+          .where(and(eq(writingPosts.status, "approved"), eq(writingPosts.featured, true)))
+          .orderBy(desc(writingPosts.createdAt)).limit(3);
+        const posts = await enrichPostsBatch(featuredPosts, ctx.user?.openId, db);
+        return posts.map((post, index) => ({ id: `featured-${post.id}`, postId: post.id, headline: index === 0 ? "আজকের নির্বাচিত লেখা" : "বিশেষভাবে নির্বাচিত", editorNote: "সম্প্রদায়ের জন্য বাছাই করা একটি লেখা।", position: index, active: true, post }));
+      }
+      const posts = await enrichPostsBatch(rows.map((row) => row.post), ctx.user?.openId, db);
+      return rows.map((row, index) => ({ ...row.pick, post: posts[index] }));
+    });
+  }),
+
+  getMyCommunityOverview: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("getMyCommunityOverview", { submitted: 0, approved: 0, saved: 0, badges: [] as string[] }, async () => {
+      const db = await getWritingDb();
+      if (!db) return { submitted: 0, approved: 0, saved: 0, badges: [] as string[] };
+      const [submittedRows, approvedRows, savedRows] = await Promise.all([
+        db.select({ count: sql<number>`COUNT(*)` }).from(writingPosts).where(eq(writingPosts.authorOpenId, ctx.user.openId)),
+        db.select({ count: sql<number>`COUNT(*)` }).from(writingPosts).where(and(eq(writingPosts.authorOpenId, ctx.user.openId), eq(writingPosts.status, "approved"))),
+        db.select({ count: sql<number>`COUNT(*)` }).from(writingBookmarks).where(eq(writingBookmarks.userOpenId, ctx.user.openId)),
+      ]);
+      const submitted = Number(submittedRows[0]?.count ?? 0);
+      const approved = Number(approvedRows[0]?.count ?? 0);
+      const saved = Number(savedRows[0]?.count ?? 0);
+      const badges = [
+        ...(submitted >= 1 ? ["প্রথম কলম"] : []),
+        ...(approved >= 1 ? ["প্রকাশিত লেখক"] : []),
+        ...(approved >= 5 ? ["নিয়মিত লেখক"] : []),
+        ...(saved >= 3 ? ["মনোযোগী পাঠক"] : []),
+      ];
+      return { submitted, approved, saved, badges };
+    });
+  }),
+
+  // ── Safety reports ─────────────────────────────────────────────────────────
+  submitReport: protectedProcedure
+    .input(z.object({ postId: z.number().int().positive(), reason: reportReasonSchema, details: z.string().trim().max(600).optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db.select({ id: writingPosts.id, authorOpenId: writingPosts.authorOpenId }).from(writingPosts).where(eq(writingPosts.id, input.postId)).limit(1);
+      if (posts.length === 0) throw new Error("Post not found");
+      if (posts[0].authorOpenId === ctx.user.openId) throw new Error("নিজের লেখা রিপোর্ট করা যায় না");
+      const existing = await db.select({ id: writingReports.id }).from(writingReports)
+        .where(and(eq(writingReports.postId, input.postId), eq(writingReports.reporterOpenId, ctx.user.openId))).limit(1);
+      if (existing.length > 0) {
+        await db.update(writingReports).set({ reason: input.reason, details: input.details || null, status: "pending", adminNote: null }).where(eq(writingReports.id, existing[0].id));
+      } else {
+        await db.insert(writingReports).values({ postId: input.postId, reporterOpenId: ctx.user.openId, reason: input.reason, details: input.details || null });
+      }
+      return { success: true };
+    }),
+
+  adminListReports: adminProcedure
+    .input(z.object({ status: reportStatusSchema.or(z.literal("all")).default("pending") }).optional())
+    .query(async ({ input }) => {
+      return safeWritingRead("adminListReports", [], async () => {
+        const db = await getWritingDb();
+        if (!db) return [];
+        const status = input?.status ?? "pending";
+        const query = db.select({ report: writingReports, post: writingPosts }).from(writingReports)
+          .innerJoin(writingPosts, eq(writingReports.postId, writingPosts.id));
+        const rows = status === "all" ? await query.orderBy(desc(writingReports.createdAt)).limit(100) : await query.where(eq(writingReports.status, status)).orderBy(desc(writingReports.createdAt)).limit(100);
+        return rows.map((row) => ({ ...row.report, postTitle: row.post.title, postSlug: row.post.slug, postAuthorName: row.post.authorName }));
+      });
+    }),
+
+  adminUpdateReport: adminProcedure
+    .input(z.object({ reportId: z.number().int().positive(), status: reportStatusSchema, adminNote: z.string().trim().max(600).optional() }))
+    .mutation(async ({ input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      await db.update(writingReports).set({ status: input.status, adminNote: input.adminNote || null }).where(eq(writingReports.id, input.reportId));
+      return { success: true };
+    }),
+
+  adminListChallenges: adminProcedure.query(async () => {
+    return safeWritingRead("adminListChallenges", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingChallenges).orderBy(desc(writingChallenges.createdAt)).limit(50);
+    });
+  }),
+
+  adminCreateChallenge: adminProcedure
+    .input(z.object({ title: z.string().trim().min(3).max(180), prompt: z.string().trim().min(10).max(4000), category: postCategorySchema, status: challengeStatusSchema.default("draft"), endsAt: z.string().datetime().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      await db.insert(writingChallenges).values({ title: input.title, prompt: input.prompt, category: input.category, status: input.status, endsAt: input.endsAt ? new Date(input.endsAt) : null, createdByOpenId: ctx.user.openId });
+      return { success: true };
+    }),
+
+  adminUpdateChallenge: adminProcedure
+    .input(z.object({ challengeId: z.number().int().positive(), title: z.string().trim().min(3).max(180).optional(), prompt: z.string().trim().min(10).max(4000).optional(), category: postCategorySchema.optional(), status: challengeStatusSchema.optional(), endsAt: z.string().datetime().nullable().optional() }))
+    .mutation(async ({ input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const updateSet: Record<string, unknown> = {};
+      if (input.title !== undefined) updateSet.title = input.title;
+      if (input.prompt !== undefined) updateSet.prompt = input.prompt;
+      if (input.category !== undefined) updateSet.category = input.category;
+      if (input.status !== undefined) updateSet.status = input.status;
+      if (input.endsAt !== undefined) updateSet.endsAt = input.endsAt ? new Date(input.endsAt) : null;
+      await db.update(writingChallenges).set(updateSet).where(eq(writingChallenges.id, input.challengeId));
+      return { success: true };
+    }),
+
+  adminSetEditorialPick: adminProcedure
+    .input(z.object({ postId: z.number().int().positive(), active: z.boolean().default(true), position: z.number().int().min(0).max(99).default(0), headline: z.string().trim().max(180).optional(), editorNote: z.string().trim().max(600).optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getWritingDb();
+      if (!db) throw new Error("Database unavailable");
+      const posts = await db.select({ id: writingPosts.id }).from(writingPosts).where(and(eq(writingPosts.id, input.postId), eq(writingPosts.status, "approved"))).limit(1);
+      if (posts.length === 0) throw new Error("শুধু অনুমোদিত লেখা সম্পাদকীয় নির্বাচনে রাখা যায়");
+      const existing = await db.select({ id: writingEditorialPicks.id }).from(writingEditorialPicks).where(eq(writingEditorialPicks.postId, input.postId)).limit(1);
+      const values = { active: input.active, position: input.position, headline: input.headline || null, editorNote: input.editorNote || null, createdByOpenId: ctx.user.openId };
+      if (existing.length > 0) await db.update(writingEditorialPicks).set(values).where(eq(writingEditorialPicks.id, existing[0].id));
+      else await db.insert(writingEditorialPicks).values({ postId: input.postId, ...values });
       return { success: true };
     }),
 

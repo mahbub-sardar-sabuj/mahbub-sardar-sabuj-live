@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, longtext } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar, boolean, longtext } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -70,6 +70,7 @@ export const writingPosts = mysqlTable("writing_posts", {
   status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   featured: boolean("featured").default(false).notNull(),
   boostedScore: int("boostedScore").default(0).notNull(),
+  challengeId: int("challengeId"),
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -104,6 +105,79 @@ export const writingReactions = mysqlTable("writing_reactions", {
 export type WritingReaction = typeof writingReactions.$inferSelect;
 export type InsertWritingReaction = typeof writingReactions.$inferInsert;
 
+// ── Literary Community Extensions ─────────────────────────────────────────────
+export const writingBookmarks = mysqlTable("writing_bookmarks", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  userOpenId: varchar("userOpenId", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userPostUnique: uniqueIndex("writing_bookmarks_user_post_unique").on(table.userOpenId, table.postId),
+  postIdx: index("writing_bookmarks_post_idx").on(table.postId),
+}));
+export type WritingBookmark = typeof writingBookmarks.$inferSelect;
+
+export const writingFeedback = mysqlTable("writing_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  userOpenId: varchar("userOpenId", { length: 64 }).notNull(),
+  kind: mysqlEnum("kind", ["meaningful", "relatable", "helpful", "beautiful"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userPostUnique: uniqueIndex("writing_feedback_user_post_unique").on(table.userOpenId, table.postId),
+  postIdx: index("writing_feedback_post_idx").on(table.postId),
+}));
+export type WritingFeedback = typeof writingFeedback.$inferSelect;
+
+export const writingReports = mysqlTable("writing_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  reporterOpenId: varchar("reporterOpenId", { length: 64 }).notNull(),
+  reason: mysqlEnum("reason", ["harassment", "misinformation", "plagiarism", "other"]).notNull(),
+  details: varchar("details", { length: 600 }),
+  status: mysqlEnum("status", ["pending", "reviewed", "actioned", "dismissed"]).default("pending").notNull(),
+  adminNote: varchar("adminNote", { length: 600 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  reporterPostUnique: uniqueIndex("writing_reports_reporter_post_unique").on(table.reporterOpenId, table.postId),
+  statusIdx: index("writing_reports_status_idx").on(table.status),
+}));
+export type WritingReport = typeof writingReports.$inferSelect;
+
+export const writingChallenges = mysqlTable("writing_challenges", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 180 }).notNull(),
+  prompt: text("prompt").notNull(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  status: mysqlEnum("status", ["draft", "active", "archived"]).default("draft").notNull(),
+  startsAt: timestamp("startsAt").defaultNow().notNull(),
+  endsAt: timestamp("endsAt"),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  statusIdx: index("writing_challenges_status_idx").on(table.status),
+}));
+export type WritingChallenge = typeof writingChallenges.$inferSelect;
+
+export const writingEditorialPicks = mysqlTable("writing_editorial_picks", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  headline: varchar("headline", { length: 180 }),
+  editorNote: varchar("editorNote", { length: 600 }),
+  position: int("position").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  postUnique: uniqueIndex("writing_editorial_picks_post_unique").on(table.postId),
+  activePositionIdx: index("writing_editorial_picks_active_position_idx").on(table.active, table.position),
+}));
+export type WritingEditorialPick = typeof writingEditorialPicks.$inferSelect;
+
 // ── Local Auth Users (email+password login without OAuth) ─────────────────────
 export const localUsers = mysqlTable("local_users", {
   id: int("id").autoincrement().primaryKey(),
@@ -113,6 +187,7 @@ export const localUsers = mysqlTable("local_users", {
   passwordHash: text("passwordHash").notNull(),
   bio: text("bio"),
   avatarUrl: longtext("avatarUrl"),
+  coverUrl: longtext("coverUrl"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

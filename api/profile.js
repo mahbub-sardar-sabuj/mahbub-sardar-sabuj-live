@@ -44,27 +44,6 @@ async function getDb() {
   return conn;
 }
 
-async function ensureProfileColumns(db) {
-  // bio, avatarUrl এবং coverUrl কলাম যোগ করা (যদি না থাকে)
-  await db.execute(
-    "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text"
-  ).catch(() => {});
-  await db.execute(
-    "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext"
-  ).catch(() => {});
-  // Upgrade avatarUrl to longtext if it was previously created as text/mediumtext
-  await db.execute(
-    "ALTER TABLE local_users MODIFY COLUMN avatarUrl longtext"
-  ).catch(() => {});
-  await db.execute(
-    "ALTER TABLE local_users ADD COLUMN IF NOT EXISTS coverUrl longtext"
-  ).catch(() => {});
-  // Upgrade coverUrl to longtext if it was previously created as text/mediumtext
-  await db.execute(
-    "ALTER TABLE local_users MODIFY COLUMN coverUrl longtext"
-  ).catch(() => {});
-}
-
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -90,7 +69,6 @@ export default async function handler(req, res) {
       }
 
       db = await getDb();
-      await ensureProfileColumns(db);
 
       if (openId) {
         // অন্যের পাবলিক প্রোফাইল
@@ -143,7 +121,6 @@ export default async function handler(req, res) {
       const { name, bio, avatarUrl, coverUrl } = req.body || {};
 
       db = await getDb();
-      await ensureProfileColumns(db);
 
       if (!name?.trim()) return res.status(400).json({ error: "নাম দিন" });
       if (name.trim().length > 160) return res.status(400).json({ error: "নাম সর্বোচ্চ ১৬০ অক্ষর" });

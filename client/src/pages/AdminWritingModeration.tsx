@@ -17,6 +17,9 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  Flag,
+  PenLine,
+  Trophy,
 } from "lucide-react";
 
 const GOLD = "#D4A843";
@@ -51,13 +54,17 @@ function formatDate(date: Date | string) {
 
 type PostStatus = "pending" | "approved" | "rejected" | "removed" | "all";
 type CommentStatus = "pending" | "approved" | "rejected" | "removed" | "all";
+type ChallengeCategory = "experience" | "story" | "poem" | "thought" | "photo" | "video";
 
 export default function AdminWritingModeration() {
-  const [activeTab, setActiveTab] = useState<"posts" | "comments">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "comments" | "reports" | "challenges">("posts");
   const [postStatus, setPostStatus] = useState<PostStatus>("pending");
   const [commentStatus, setCommentStatus] = useState<CommentStatus>("pending");
   const [expandedPost, setExpandedPost] = useState<number | null>(null);
   const [expandedComment, setExpandedComment] = useState<number | null>(null);
+  const [challengeTitle, setChallengeTitle] = useState("");
+  const [challengePrompt, setChallengePrompt] = useState("");
+  const [challengeCategory, setChallengeCategory] = useState<ChallengeCategory>("thought");
 
   // ── Posts ─────────────────────────────────────────────────────────────────
   const {
@@ -86,6 +93,16 @@ export default function AdminWritingModeration() {
   const updateComment = trpc.writingPlatform.adminUpdateComment.useMutation({
     onSuccess: () => refetchComments(),
   });
+
+  // ── Reports, challenges and editorial selections ───────────────────────────
+  const { data: reports, refetch: refetchReports, isLoading: reportsLoading } = trpc.writingPlatform.adminListReports.useQuery({ status: "pending" }, { refetchInterval: 30000 });
+  const { data: challenges, refetch: refetchChallenges } = trpc.writingPlatform.adminListChallenges.useQuery(undefined, { refetchInterval: 30000 });
+  const updateReport = trpc.writingPlatform.adminUpdateReport.useMutation({ onSuccess: () => refetchReports() });
+  const createChallenge = trpc.writingPlatform.adminCreateChallenge.useMutation({
+    onSuccess: () => { setChallengeTitle(""); setChallengePrompt(""); refetchChallenges(); },
+  });
+  const updateChallenge = trpc.writingPlatform.adminUpdateChallenge.useMutation({ onSuccess: () => refetchChallenges() });
+  const setEditorialPick = trpc.writingPlatform.adminSetEditorialPick.useMutation({ onSuccess: () => refetchPosts() });
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   function handlePostAction(
@@ -187,6 +204,14 @@ export default function AdminWritingModeration() {
           <button style={tabBtn(activeTab === "comments")} onClick={() => setActiveTab("comments")}>
             <MessageSquare size={16} style={{ display: "inline", marginRight: 6 }} />
             মন্তব্যসমূহ {comments ? `(${comments.length})` : ""}
+          </button>
+          <button style={tabBtn(activeTab === "reports")} onClick={() => setActiveTab("reports")}>
+            <Flag size={16} style={{ display: "inline", marginRight: 6 }} />
+            রিপোর্ট {reports ? `(${reports.length})` : ""}
+          </button>
+          <button style={tabBtn(activeTab === "challenges")} onClick={() => setActiveTab("challenges")}>
+            <Trophy size={16} style={{ display: "inline", marginRight: 6 }} />
+            চ্যালেঞ্জ
           </button>
         </div>
 
@@ -333,6 +358,11 @@ export default function AdminWritingModeration() {
                           disabled={updatePost.isPending}
                         >
                           <Trash2 size={13} /> সরিয়ে দিন
+                        </button>
+                      )}
+                      {post.status === "approved" && (
+                        <button style={actionBtn("#c4b5fd")} onClick={() => setEditorialPick.mutate({ postId: post.id, active: true, position: 0 })} disabled={setEditorialPick.isPending}>
+                          <Trophy size={13} /> সম্পাদকীয় নির্বাচন
                         </button>
                       )}
                       {post.status === "approved" && !post.featured && (
@@ -483,6 +513,57 @@ export default function AdminWritingModeration() {
                 );
               })
             )}
+          </div>
+        )}
+
+        {/* ── REPORTS TAB ── */}
+        {activeTab === "reports" && (
+          <div>
+            <div style={{ ...card, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div><div style={{ color: GOLD, fontWeight: 700 }}>নিরাপত্তা রিপোর্ট</div><div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>প্রতিটি রিপোর্ট পর্যালোচনা করে সিদ্ধান্ত দিন।</div></div>
+              <button style={filterBtn(false)} onClick={() => refetchReports()}><RefreshCw size={13} style={{ display: "inline", marginRight: 4 }} /> রিফ্রেশ</button>
+            </div>
+            {reportsLoading ? <div style={{ textAlign: "center", color: "#94a3b8", padding: 40 }}>লোড হচ্ছে...</div> : !reports || reports.length === 0 ? (
+              <div style={{ ...card, textAlign: "center", color: "#94a3b8", padding: 40 }}>এখন কোনো pending রিপোর্ট নেই।</div>
+            ) : reports.map((report) => (
+              <div key={report.id} style={card}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <div><div style={{ color: "#FCA5A5", fontWeight: 700, marginBottom: 4 }}>কারণ: {report.reason}</div><div style={{ color: "#FDF6EC", fontSize: 15 }}>{report.postTitle}</div><div style={{ color: "#94a3b8", fontSize: 12, marginTop: 5 }}>লেখক: {report.postAuthorName} · রিপোর্ট: {formatDate(report.createdAt)}</div>{report.details && <div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 8 }}>{report.details}</div>}</div>
+                  <a href={`/amio-likhbo-bastobota/${report.postSlug}`} target="_blank" rel="noopener noreferrer" style={{ ...actionBtn("#60a5fa"), textDecoration: "none" }}><Eye size={13} /> লেখা</a>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+                  <button style={actionBtn("#fbbf24")} onClick={() => updateReport.mutate({ reportId: report.id, status: "reviewed" })}>পর্যালোচিত</button>
+                  <button style={actionBtn("#4ade80")} onClick={() => updateReport.mutate({ reportId: report.id, status: "actioned" })}>পদক্ষেপ নেওয়া হয়েছে</button>
+                  <button style={actionBtn("#94a3b8")} onClick={() => updateReport.mutate({ reportId: report.id, status: "dismissed" })}>বাতিল</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── CHALLENGES TAB ── */}
+        {activeTab === "challenges" && (
+          <div>
+            <div style={card}>
+              <div style={{ color: GOLD, fontWeight: 700, fontSize: 17, marginBottom: 12, display: "flex", alignItems: "center", gap: 7 }}><PenLine size={17} /> নতুন লেখার চ্যালেঞ্জ</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                <input value={challengeTitle} onChange={(event) => setChallengeTitle(event.target.value)} placeholder="চ্যালেঞ্জের শিরোনাম" style={{ padding: "10px 12px", borderRadius: 9, border: "1px solid rgba(212,168,67,0.3)", background: "rgba(255,255,255,0.05)", color: "#FDF6EC", fontFamily: FONT }} />
+                <textarea value={challengePrompt} onChange={(event) => setChallengePrompt(event.target.value)} placeholder="লেখকদের জন্য prompt / নির্দেশনা" rows={3} style={{ padding: "10px 12px", borderRadius: 9, border: "1px solid rgba(212,168,67,0.3)", background: "rgba(255,255,255,0.05)", color: "#FDF6EC", fontFamily: FONT, resize: "vertical" }} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <select value={challengeCategory} onChange={(event) => setChallengeCategory(event.target.value as ChallengeCategory)} style={{ padding: "9px 11px", borderRadius: 8, border: "1px solid rgba(212,168,67,0.3)", background: NAVY, color: "#FDF6EC", fontFamily: FONT }}>{Object.entries(CATEGORY_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
+                  <button style={actionBtn("#4ade80")} disabled={!challengeTitle.trim() || challengePrompt.trim().length < 10 || createChallenge.isPending} onClick={() => createChallenge.mutate({ title: challengeTitle.trim(), prompt: challengePrompt.trim(), category: challengeCategory, status: "active" })}><CheckCircle size={13} /> প্রকাশ করুন</button>
+                </div>
+              </div>
+            </div>
+            {!challenges || challenges.length === 0 ? <div style={{ ...card, textAlign: "center", color: "#94a3b8", padding: 30 }}>এখনো কোনো চ্যালেঞ্জ তৈরি হয়নি।</div> : challenges.map((challenge) => (
+              <div key={challenge.id} style={{ ...card, display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+                <div><div style={{ color: challenge.status === "active" ? "#86EFAC" : "#94a3b8", fontSize: 12, marginBottom: 4 }}>{challenge.status === "active" ? "সক্রিয়" : challenge.status === "draft" ? "খসড়া" : "আর্কাইভ"}</div><div style={{ color: "#FDF6EC", fontWeight: 700 }}>{challenge.title}</div><div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 5, lineHeight: 1.6 }}>{challenge.prompt}</div></div>
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                  {challenge.status !== "active" && <button style={actionBtn("#4ade80")} onClick={() => updateChallenge.mutate({ challengeId: challenge.id, status: "active" })}>সক্রিয়</button>}
+                  {challenge.status !== "archived" && <button style={actionBtn("#94a3b8")} onClick={() => updateChallenge.mutate({ challengeId: challenge.id, status: "archived" })}>আর্কাইভ</button>}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

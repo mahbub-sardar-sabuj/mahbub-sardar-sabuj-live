@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from "react";
 import {
   ArrowLeft,
+  Bookmark,
   BookOpen,
   Camera,
   CheckCircle2,
@@ -11,6 +12,7 @@ import {
   Edit3,
   Eye,
   Film,
+  Flag,
   Heart,
   KeyRound,
   Lightbulb,
@@ -547,6 +549,67 @@ function ReactionBar({
   );
 }
 
+// ── Reader tools: save, meaningful feedback and safety reports ───────────────
+const FEEDBACK_OPTIONS = [
+  { key: "meaningful", label: "অর্থবহ" },
+  { key: "relatable", label: "নিজের মতো" },
+  { key: "helpful", label: "সহায়ক" },
+  { key: "beautiful", label: "সুন্দর লেখা" },
+] as const;
+
+function ReaderTools({ post, isAuthenticated, isOwner, onLoginRequired }: { post: EnrichedPost; isAuthenticated: boolean; isOwner: boolean; onLoginRequired: () => void }) {
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const utils = trpc.useUtils();
+  const invalidateFeed = () => {
+    utils.writingPlatform.listPosts.invalidate();
+    utils.writingPlatform.listPostsPaginated.invalidate();
+    utils.writingPlatform.myBookmarks.invalidate();
+    utils.writingPlatform.getMyCommunityOverview.invalidate();
+  };
+  const bookmark = trpc.writingPlatform.toggleBookmark.useMutation({ onSuccess: invalidateFeed });
+  const feedback = trpc.writingPlatform.setFeedback.useMutation({ onSuccess: invalidateFeed });
+  const report = trpc.writingPlatform.submitReport.useMutation({
+    onSuccess: () => { setReportSubmitted(true); setShowReport(false); },
+  });
+  const feedbackTotal = Object.values(post.feedbackCounts).reduce((sum, value) => sum + value, 0);
+  const actionStyle: CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "0.42rem 0.78rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.2)", background: "rgba(255,255,255,0.05)", color: "rgba(253,246,236,0.7)", fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" };
+  const requireLogin = (callback: () => void) => { if (!isAuthenticated) { onLoginRequired(); return; } callback(); };
+
+  return (
+    <div style={{ position: "relative", display: "inline-flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+      <button type="button" className="amio-action-btn" onClick={() => requireLogin(() => bookmark.mutate({ postId: post.id }))} aria-pressed={post.bookmarked} style={{ ...actionStyle, color: post.bookmarked ? "#F7D56F" : actionStyle.color, borderColor: post.bookmarked ? "rgba(247,213,111,0.55)" : "rgba(232,201,122,0.2)" }}>
+        <Bookmark size={14} fill={post.bookmarked ? "currentColor" : "none"} /> {post.bookmarked ? "সংরক্ষিত" : "সংরক্ষণ"}
+      </button>
+      <button type="button" className="amio-action-btn" onClick={() => requireLogin(() => setShowFeedback((open) => !open))} aria-expanded={showFeedback} style={{ ...actionStyle, color: post.myFeedback ? "#86EFAC" : actionStyle.color }}>
+        <Sparkles size={14} /> {post.myFeedback ? "ভালো লেগেছে" : "কেমন লাগল?"}{feedbackTotal > 0 ? ` ${feedbackTotal}` : ""}
+      </button>
+      {!isOwner && (
+        <button type="button" className="amio-action-btn" onClick={() => requireLogin(() => setShowReport((open) => !open))} aria-expanded={showReport} title="সমস্যাজনক লেখা রিপোর্ট করুন" style={{ ...actionStyle, padding: "0.42rem 0.58rem", color: "rgba(253,246,236,0.46)" }}>
+          <Flag size={14} />
+        </button>
+      )}
+      {showFeedback && (
+        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 15, minWidth: 238, padding: "0.7rem", borderRadius: 16, background: "rgba(7,20,38,0.98)", border: "1px solid rgba(232,201,122,0.28)", boxShadow: "0 14px 38px rgba(0,0,0,0.45)", display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 6 }}>
+          {FEEDBACK_OPTIONS.map((option) => (
+            <button key={option.key} type="button" onClick={() => feedback.mutate({ postId: post.id, kind: option.key })} style={{ padding: "0.48rem 0.55rem", borderRadius: 10, border: post.myFeedback === option.key ? "1px solid rgba(134,239,172,0.56)" : "1px solid rgba(255,255,255,0.1)", background: post.myFeedback === option.key ? "rgba(134,239,172,0.14)" : "rgba(255,255,255,0.04)", color: post.myFeedback === option.key ? "#86EFAC" : "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontSize: "0.76rem", cursor: "pointer" }}>{option.label}</button>
+          ))}
+        </div>
+      )}
+      {showReport && (
+        <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 15, width: 232, padding: "0.75rem", borderRadius: 16, background: "rgba(24,8,13,0.98)", border: "1px solid rgba(252,165,165,0.35)", boxShadow: "0 14px 38px rgba(0,0,0,0.45)", display: "grid", gap: 7 }}>
+          <span style={{ color: "#FCA5A5", fontWeight: 900, fontSize: "0.8rem" }}>কোন সমস্যা দেখেছেন?</span>
+          {[{ key: "harassment", label: "হয়রানি বা অপমান" }, { key: "misinformation", label: "ভুল বা বিভ্রান্তিকর" }, { key: "plagiarism", label: "কপি করা লেখা" }, { key: "other", label: "অন্যান্য" }].map((option) => (
+            <button key={option.key} type="button" onClick={() => report.mutate({ postId: post.id, reason: option.key as "harassment" | "misinformation" | "plagiarism" | "other" })} style={{ textAlign: "left", padding: "0.42rem 0.5rem", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(253,246,236,0.75)", fontFamily: adorshoFont, fontSize: "0.76rem", cursor: "pointer" }}>{option.label}</button>
+          ))}
+        </div>
+      )}
+      {reportSubmitted && <span style={{ color: "#86EFAC", fontSize: "0.75rem", fontFamily: adorshoFont }}>রিপোর্ট গ্রহণ করা হয়েছে</span>}
+    </div>
+  );
+}
+
 // ── Comment Section ───────────────────────────────────────────────────────────
 
 function CommentSection({
@@ -698,7 +761,10 @@ type EnrichedPost = {
   createdAt: Date | string;
   updatedAt: Date | string;
   reactionCounts: Record<ReactionType, number>;
+  feedbackCounts: Record<"meaningful" | "relatable" | "helpful" | "beautiful", number>;
   commentCount: number;
+  bookmarked: boolean;
+  myFeedback: "meaningful" | "relatable" | "helpful" | "beautiful" | null;
   myReaction: ReactionType | null;
 };
 
@@ -957,6 +1023,12 @@ const PostCard = memo(function PostCard({
           isAuthenticated={isAuthenticated}
           onLoginRequired={onLoginRequired}
         />
+        <ReaderTools
+          post={post}
+          isAuthenticated={isAuthenticated}
+          isOwner={isOwner}
+          onLoginRequired={onLoginRequired}
+        />
         <button
           type="button"
           className="amio-action-btn"
@@ -1065,9 +1137,9 @@ const PostCard = memo(function PostCard({
 });
 // ── Create Post Modal ──────────────────────────────────────────────────────────
 
-function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => void; authorName: string; avatarUrl?: string }) {
+function CreatePostModal({ onClose, authorName, avatarUrl, challenge }: { onClose: () => void; authorName: string; avatarUrl?: string; challenge?: { id: number; title: string; prompt: string; category: CategoryKey } | null }) {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<CategoryKey>("thought");
+  const [category, setCategory] = useState<CategoryKey>(challenge?.category ?? "thought");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -1122,6 +1194,7 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
     createPost.mutate({
       title: title.trim() || undefined,
       category: category !== "all" ? category : undefined,
+      challengeId: challenge?.id,
       content: finalContent,
       mediaUrl: imageUrl || undefined,
       mediaType: imageUrl ? "image" : "none",
@@ -1231,6 +1304,12 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
+            {challenge && (
+              <div style={{ padding: "0.75rem 0.9rem", borderRadius: 14, border: "1px solid rgba(134,239,172,0.35)", background: "rgba(134,239,172,0.10)", display: "grid", gap: 3 }}>
+                <span style={{ color: "#86EFAC", fontWeight: 900, fontSize: "0.82rem" }}>চ্যালেঞ্জ: {challenge.title}</span>
+                <span style={{ color: "rgba(253,246,236,0.68)", fontSize: "0.8rem", lineHeight: 1.55 }}>{challenge.prompt}</span>
+              </div>
+            )}
             {/* Image preview */}
             {imageUrl && (
               <div style={{ position: "relative", borderRadius: 16, overflow: "hidden" }}>
@@ -1802,6 +1881,7 @@ export default function AmiOLikhboBastobota() {
   }, [isAuthenticated]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<{ id: number; title: string; prompt: string; category: CategoryKey } | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showMyPosts, setShowMyPosts] = useState(false);
   // Check for password reset token in URL
@@ -1833,6 +1913,10 @@ export default function AmiOLikhboBastobota() {
       gcTime: 600000,
     }
   );
+  const activeChallengesQuery = trpc.writingPlatform.listActiveChallenges.useQuery(undefined, { staleTime: 300000, retry: false });
+  const editorialPicksQuery = trpc.writingPlatform.listEditorialPicks.useQuery(undefined, { staleTime: 300000, retry: false });
+  const activeChallenges = activeChallengesQuery.data ?? [];
+  const editorialPicks = editorialPicksQuery.data ?? [];
   const searchQuery_ = searchQuery.trim();
   const debouncedSearch_ = debouncedSearch.trim();
   const searchResultsQuery = trpc.writingPlatform.searchPosts.useQuery(
@@ -2265,6 +2349,36 @@ export default function AmiOLikhboBastobota() {
             </div>
           )}
 
+          {!slugFromUrl && (activeChallenges.length > 0 || editorialPicks.length > 0) && (
+            <section style={{ display: "grid", gap: "0.75rem" }} aria-label="Community highlights">
+              {activeChallenges.slice(0, 1).map((challenge) => (
+                <div key={challenge.id} style={{ ...cardStyle, padding: "1rem", borderColor: "rgba(134,239,172,0.28)", background: "linear-gradient(135deg, rgba(134,239,172,0.11), rgba(81,139,255,0.08))", display: "grid", gap: "0.65rem" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                    <div><div style={{ color: "#86EFAC", fontWeight: 900, fontSize: "0.8rem" }}>এই সপ্তাহের লেখার চ্যালেঞ্জ</div><h2 style={{ margin: "0.2rem 0", color: "#FDF6EC", fontSize: "1.08rem" }}>{challenge.title}</h2><p style={{ margin: 0, color: "rgba(253,246,236,0.68)", fontSize: "0.84rem", lineHeight: 1.65 }}>{challenge.prompt}</p></div>
+                    <ActionButton small onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setSelectedChallenge({ id: challenge.id, title: challenge.title, prompt: challenge.prompt, category: challenge.category as CategoryKey }); setShowCreateModal(true); }}><PenLine size={14} /> লিখুন</ActionButton>
+                  </div>
+                </div>
+              ))}
+              {editorialPicks.slice(0, 1).map((pick) => (
+                <button key={pick.id} type="button" onClick={() => handleOpenDetail(pick.post.slug)} style={{ ...cardStyle, textAlign: "left", padding: "0.9rem 1rem", cursor: "pointer", borderColor: "rgba(247,213,111,0.26)", background: "linear-gradient(135deg, rgba(247,213,111,0.12), rgba(255,255,255,0.035))" }}>
+                  <div style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.78rem", marginBottom: 3 }}><Crown size={13} style={{ verticalAlign: "-2px" }} /> সম্পাদকের নির্বাচন</div>
+                  <div style={{ color: "#FDF6EC", fontWeight: 900, fontSize: "1rem" }}>{pick.headline || pick.post.title}</div>
+                  {pick.editorNote && <div style={{ color: "rgba(253,246,236,0.62)", fontSize: "0.8rem", marginTop: 4, lineHeight: 1.55 }}>{pick.editorNote}</div>}
+                </button>
+              ))}
+            </section>
+          )}
+
+          {!slugFromUrl && (
+            <details style={{ ...cardStyle, padding: "0.8rem 1rem", borderRadius: 16, color: "rgba(253,246,236,0.68)" }}>
+              <summary style={{ cursor: "pointer", color: "#F7D56F", fontWeight: 900, fontSize: "0.84rem", fontFamily: adorshoFont }}>কমিউনিটি নীতিমালা ও নিরাপত্তা</summary>
+              <div style={{ display: "grid", gap: 7, marginTop: 10, fontSize: "0.8rem", lineHeight: 1.65 }}>
+                {COMMUNITY_GUIDELINES.map((guideline) => <div key={guideline} style={{ display: "flex", gap: 7 }}><CheckCircle2 size={14} color="#86EFAC" style={{ flexShrink: 0, marginTop: 3 }} /> {guideline}</div>)}
+                <div style={{ color: "rgba(253,246,236,0.5)", marginTop: 2 }}>সমস্যাজনক লেখা দেখলে post-এর পতাকা চিহ্নে চাপ দিয়ে নিরাপদে রিপোর্ট করুন।</div>
+              </div>
+            </details>
+          )}
+
           {/* ── Local Auth Modal ── */}
           {showLocalAuth && (
             <LocalAuthModal
@@ -2482,9 +2596,10 @@ export default function AmiOLikhboBastobota() {
       {/* ── Create post modal ── */}
       {showCreateModal && (
         <CreatePostModal
-          onClose={() => setShowCreateModal(false)}
-          authorName={user?.name ?? "আপনি"}
+          onClose={() => { setShowCreateModal(false); setSelectedChallenge(null); }}
+          authorName={user?.name || "আপনি"}
           avatarUrl={profileAvatarUrl}
+          challenge={selectedChallenge}
         />
       )}
       {editingPost && (

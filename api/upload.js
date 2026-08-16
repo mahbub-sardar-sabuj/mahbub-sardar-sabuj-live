@@ -164,9 +164,6 @@ async function handleAvatarUpload(req, res, session) {
     }
     const db = await getDb();
     try {
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS avatarUrl longtext").catch(() => {});
-      await db.execute("ALTER TABLE local_users MODIFY COLUMN avatarUrl longtext").catch(() => {});
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS bio text").catch(() => {});
       await db.execute("UPDATE local_users SET avatarUrl = ?, updatedAt = NOW() WHERE openId = ?", [avatarUrl, session.openId]);
     } finally {
       await db.end().catch(() => {});
@@ -202,8 +199,6 @@ async function handleCoverUpload(req, res, session) {
     try { fs.unlinkSync(file.filepath); } catch {}
     const db = await getDb();
     try {
-      await db.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS coverUrl longtext").catch(() => {});
-      await db.execute("ALTER TABLE local_users MODIFY COLUMN coverUrl longtext").catch(() => {});
       await db.execute("UPDATE local_users SET coverUrl = ?, updatedAt = NOW() WHERE openId = ?", [url, session.openId]);
     } finally {
       await db.end().catch(() => {});
