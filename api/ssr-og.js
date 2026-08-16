@@ -1,9 +1,34 @@
 export const config = { runtime: "edge" };
+import writingsArchive from "./_knowledge/writingsArchive.json" with { type: "json" };
+
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
 const SITE_NAME = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
 const NEWS_PUBLISHER_NAME = "সরদার সংবাদ | Sardar Sangbad";
 const NEWS_PUBLISHER_LOGO = `${SITE_URL}/images/sardar-sangbad-logo-final.png`;
+
+// Keep SSR URLs identical to the sitemap and client WritingDetailPage.
+const WRITING_SLUG_TRANS = {
+  'অ':'o','আ':'a','ই':'i','ঈ':'i','উ':'u','ঊ':'u','এ':'e','ঐ':'oi','ও':'o','ঔ':'ou',
+  'ক':'k','খ':'kh','গ':'g','ঘ':'gh','ঙ':'ng','চ':'ch','ছ':'chh','জ':'j','ঝ':'jh','ঞ':'n',
+  'ট':'t','ঠ':'th','ড':'d','ঢ':'dh','ণ':'n','ত':'t','থ':'th','দ':'d','ধ':'dh','ন':'n',
+  'প':'p','ফ':'ph','ব':'b','ভ':'bh','ম':'m','য':'j','র':'r','ল':'l','শ':'sh','ষ':'sh','স':'s','হ':'h',
+  'ড়':'r','ঢ়':'rh','য়':'y','ৎ':'t','া':'a','ি':'i','ী':'i','ু':'u','ূ':'u','ে':'e','ৈ':'oi','ো':'o','ৌ':'ou',
+  'ং':'ng','ঃ':'h','ঁ':'n','্':'',' ':'-','?':'','!':'',',':'','.':'','"':'',"'":'','—':'-','–':'-'
+};
+function makeWritingSlug(title, id) {
+  let slug = '';
+  for (const character of String(title || '')) slug += WRITING_SLUG_TRANS[character] ?? '';
+  slug = slug.replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+  return `${slug.length >= 3 ? slug : `writing-${id}`}-${id}`;
+}
+
+const writingsData = (Array.isArray(writingsArchive) ? writingsArchive : []).map((item) => {
+  const slug = item.slug || makeWritingSlug(item.title, item.id);
+  const preview = item.preview || String(item.content || '').replace(/\s+/g, ' ').slice(0, 280);
+  const legacySlug = item.legacySlug || slug.replace(new RegExp(`-${item.id}$`), '');
+  return { ...item, slug, legacySlug, preview };
+});
 
 // Only free, online-readable titles belong in the SSR e-book reader catalogue.
 const ebookData = [

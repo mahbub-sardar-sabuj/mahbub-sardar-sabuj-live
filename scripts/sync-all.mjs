@@ -9,7 +9,8 @@
  *   2. writings-sitemap-*.xml আপডেট (সব নতুন লেখা যোগ হবে)
  *   3. chatbotIndex.json আপডেট (AI চ্যাটবট নতুন লেখা পাবে)
  *   4. api/_knowledge/writingsArchive.json আপডেট
- *   5. Git status দেখাবে
+ *   5. SSR archive coverage যাচাই
+ *   6. Git status দেখাবে
  */
 
 import { execSync, spawnSync } from "child_process";
@@ -165,10 +166,30 @@ function step4_syncApiKnowledge() {
   }
 }
 
-// ── Step 5: Git status ────────────────────────────────────────────────────
-function step5_gitStatus() {
+// ── Step 5: Validate the SSR archive source ───────────────────────────────
+function step5_validateSsrArchive(expectedArchive) {
   sep();
-  info(c.bold("ধাপ ৫: পরিবর্তিত ফাইলসমূহ..."));
+  info(c.bold("ধাপ ৫: SSR archive coverage যাচাই করা হচ্ছে..."));
+  try {
+    const ssrArchivePath = join(API_KNOWLEDGE, "writingsArchive.json");
+    const ssrArchive = JSON.parse(readFileSync(ssrArchivePath, "utf-8"));
+    const expectedIds = new Set(expectedArchive.map((item) => String(item.id)));
+    const ssrIds = new Set(ssrArchive.map((item) => String(item.id)));
+    const missing = expectedArchive.filter((item) => !ssrIds.has(String(item.id)));
+    if (ssrArchive.length !== expectedArchive.length || missing.length || expectedIds.size !== ssrIds.size) {
+      throw new Error(`SSR archive mismatch: expected ${expectedArchive.length}, found ${ssrArchive.length}, missing ${missing.length}`);
+    }
+    ok(`SSR source → ${c.bold(ssrArchive.length)} টি লেখা; কোনো record missing নেই`);
+  } catch (e) {
+    err(`SSR archive validation ব্যর্থ: ${e.message}`);
+    process.exit(1);
+  }
+}
+
+// ── Step 6: Git status ────────────────────────────────────────────────────
+function step6_gitStatus() {
+  sep();
+  info(c.bold("ধাপ ৬: পরিবর্তিত ফাইলসমূহ..."));
   try {
     const status = execSync("git status --short", { cwd: ROOT, encoding: "utf-8" });
     if (status.trim()) {
@@ -194,11 +215,12 @@ if (archive.length > 0) {
   step2_generateSitemap(archive);
   step3_updateChatbot();
   step4_syncApiKnowledge();
+  step5_validateSsrArchive(archive);
 } else {
   err("archive খালি — sync বাতিল");
   process.exit(1);
 }
-step5_gitStatus();
+step6_gitStatus();
 
 sep();
 console.log(c.green(c.bold("✅  সব sync সম্পন্ন!")));
