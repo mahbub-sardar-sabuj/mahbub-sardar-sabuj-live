@@ -37,6 +37,7 @@ interface Message {
 interface ActionButton {
   label: string;
   path: string;
+  externalUrl?: string;
 }
 
 // ── AI call with retry + timeout ────────────────────────────────────────────
@@ -154,6 +155,17 @@ const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/writings", label: "লেখালেখি পেজ দেখুন",   keywords: ["writings", "writing", "লেখালেখি", "লেখা", "কবিতা"] },
   { path: "/contact",  label: "যোগাযোগ পেজ দেখুন",    keywords: ["contact", "যোগাযোগ", "ইমেইল"] },
   { path: "/editor",   label: "ডিজাইন স্টুডিও খুলুন", keywords: ["editor", "ডিজাইন", "স্টুডিও", "ফরম্যাট"] },
+  { path: "/text-to-speech", label: "AI আবৃত্তি তৈরি করুন", keywords: ["tts", "text to speech", "আবৃত্তি তৈরি"] },
+  { path: "/image-upscaler", label: "ছবি আপস্কেলার খুলুন", keywords: ["image upscaler", "ছবি আপস্কেল"] },
+  { path: "/video-upscaler", label: "ভিডিও আপস্কেলার খুলুন", keywords: ["video upscaler", "ভিডিও আপস্কেল"] },
+  { path: "/audio-editor", label: "অডিও এডিটর খুলুন", keywords: ["audio editor", "অডিও এডিটর"] },
+  { path: "/temp-email", label: "টেম্পোরারি ইমেইল খুলুন", keywords: ["temp email", "টেম্পোরারি ইমেইল"] },
+  { path: "/temp-number", label: "টেম্পোরারি নম্বর খুলুন", keywords: ["temp number", "টেম্পোরারি নম্বর"] },
+  { path: "/temp-card", label: "টেম্পোরারি কার্ড খুলুন", keywords: ["temp card", "টেম্পোরারি কার্ড"] },
+  { path: "/amio-likhbo-login", label: "কমিউনিটি লগইন খুলুন", keywords: ["login", "সাইন ইন", "কমিউনিটি লগইন"] },
+  { path: "/profile", label: "প্রোফাইল খুলুন", keywords: ["profile", "প্রোফাইল", "আমার account"] },
+  { path: "/privacy-policy", label: "Privacy Policy দেখুন", keywords: ["privacy", "প্রাইভেসি", "গোপনীয়তা"] },
+  { path: "/terms", label: "ব্যবহারের শর্ত দেখুন", keywords: ["terms", "শর্ত", "ব্যবহারের নিয়ম"] },
   { path: "/",         label: "হোম পেজ দেখুন",        keywords: ["home", "হোম"] },
   { path: "/ebooks/read/smritir-boshonte", label: "স্মৃতির বসন্তে তুমি পড়ুন",  keywords: ["smritir", "স্মৃতির বসন্তে"] },
   { path: "/ebooks/read/chand-phool",      label: "চাঁদফুল পড়ুন",              keywords: ["chand-phool", "চাঁদফুল"] },
@@ -704,6 +716,14 @@ function parseContent(raw: string): { text: string; buttons: ActionButton[]; sho
   let text = raw.replace(/\[LIVE_CHAT\]/gi, () => { showLiveChat = true; return ""; });
   text = text.replace(/\[CONTACT\]/gi, () => { showContact = true; return ""; });
   text = text.replace(/\[PHOTO\]/gi, () => { showPhoto = true; return ""; });
+
+  text = text.replace(/\[ORDER:([^|\]]+)\|([^\]]+)\]/g, (_, label, url) => {
+    if (/^https:\/\//i.test(url) && !seen.has(url)) {
+      seen.add(url);
+      buttons.push({ path: url, externalUrl: url, label: label || "অর্ডার করুন" });
+    }
+    return "";
+  });
 
   text = text.replace(/\[BUTTON:(\/[^\]]*)\]/g, (_, path) => {
     if (!seen.has(path)) {
@@ -1748,7 +1768,10 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
             {buttons.map(btn => (
               <button
                 key={btn.path}
-                onClick={() => onNavigate(btn.path)}
+                onClick={() => {
+                  if (btn.externalUrl) window.open(btn.externalUrl, "_blank", "noopener,noreferrer");
+                  else onNavigate(btn.path);
+                }}
                 className="chatbot-nav-btn"
                 style={{
                   background: "rgba(212,168,67,0.06)",

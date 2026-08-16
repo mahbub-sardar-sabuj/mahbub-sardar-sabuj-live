@@ -1,13 +1,13 @@
 {
   "version": "2026.06-chatbot-index-v1",
-  "generatedAt": "2026-08-16T02:48:07.264Z",
+  "generatedAt": "2026-08-16T05:33:06.797Z",
   "totals": {
-    "items": 2397,
+    "items": 2402,
     "writings": 2357,
     "byType": {
-      "page": 17,
+      "page": 21,
       "book": 6,
-      "writing_category": 6,
+      "writing_category": 7,
       "recitation": 9,
       "tool": 2,
       "writing": 2357
@@ -41,9 +41,9 @@
     ],
     "stats": [
       "৫০ হাজারেরও বেশি পাঠক তাঁর ই-বুক পড়েছেন",
-      "২,৩৪৩টিরও বেশি লেখার বিশাল সংগ্রহ ওয়েবসাইটে",
+      "২,৩৫৭টি লেখা বর্তমানে ওয়েবসাইটের archive-এ রয়েছে",
       "Facebook, Instagram, YouTube ও Pinterest-এ সক্রিয় সোশ্যাল মিডিয়া উপস্থিতি",
-      "৬টি বইয়ের ওয়েব-সংগ্রহ — ২টি মুদ্রিত বই সরাসরি অর্ডারযোগ্য ও ৪টি বিনামূল্যে ই-বুক"
+      "৬টি বইয়ের web collection — ২টি মুদ্রিত বই সরাসরি অর্ডারযোগ্য এবং ৪টি অনলাইন e-book"
     ],
     "socialMedia": {
       "facebookProfile": "https://facebook.com/Lekhok.MahbubSardarSabuj",
@@ -107,7 +107,7 @@
       "id": "writings",
       "title": "লেখালেখি",
       "path": "/writings",
-      "description": "সকল লেখার আর্কাইভ — ২,৩৪৩টিরও বেশি লেখা। বিভাগ: ছোট লেখা (১,১২২টি), জীবনদর্শন (৬৬২টি), বিচ্ছেদ (২৬০টি), ভালোবাসা (১৯৮টি), কবিতা (৯৮টি)। ফিল্টার, সার্চ ও শেয়ার সুবিধা আছে।",
+      "description": "সকল লেখার archive — ২,৩৫৭টি লেখা। বিভাগ: ছোট লেখা, জীবনদর্শন, বিচ্ছেদ, ভালোবাসা, কবিতা, গল্প ও ইসলামিক লেখা। Search, category filter এবং share সুবিধা আছে।",
       "keywords": [
         "লেখা",
         "লেখালেখি",
@@ -124,7 +124,7 @@
         "জীবনদর্শন",
         "উক্তি"
       ],
-      "searchText": "page লেখালেখি সকল লেখার আর্কাইভ — ২,৩৪৩টিরও বেশি লেখা। বিভাগ: ছোট লেখা (১,১২২টি), জীবনদর্শন (৬৬২টি), বিচ্ছেদ (২৬০টি), ভালোবাসা (১৯৮টি), কবিতা (৯৮টি)। ফিল্টার, সার্চ ও শেয়ার সুবিধা আছে। /writings লেখা লেখালেখি writings archive আর্কাইভ কবিতা গল্প স্ট্যাটাস কষ্টের কবিতা ভালোবাসার কবিতা বিচ্ছেদের কবিতা রোমান্টিক কবিতা জীবনদর্শন উক্তি",
+      "searchText": "page লেখালেখি সকল লেখার archive — ২,৩৫৭টি লেখা। বিভাগ: ছোট লেখা, জীবনদর্শন, বিচ্ছেদ, ভালোবাসা, কবিতা, গল্প ও ইসলামিক লেখা। search, category filter এবং share সুবিধা আছে। /writings লেখা লেখালেখি writings archive আর্কাইভ কবিতা গল্প স্ট্যাটাস কষ্টের কবিতা ভালোবাসার কবিতা বিচ্ছেদের কবিতা রোমান্টিক কবিতা জীবনদর্শন উক্তি",
       "priority": 70
     },
     {
@@ -252,7 +252,7 @@
       "id": "community",
       "title": "আমিও লিখবো বাস্তবতা",
       "path": "/amio-likhbo-bastobota",
-      "description": "পাঠকদের নিজের লেখা শেয়ার করার কমিউনিটি প্ল্যাটফর্ম। যেকেউ নিজের লেখা পোস্ট করতে পারেন। লেখকের অনুপ্রেরণায় তৈরি এই কমিউনিটিতে পাঠকরা নিজেদের অনুভূতি প্রকাশ করতে পারেন।",
+      "description": "পাঠকদের নিজের লেখা জমা দেওয়ার community platform। লেখা আগে moderation review-তে থাকে এবং অনুমোদনের পর public feed-এ প্রকাশিত হয়।",
       "keywords": [
         "আমিও লিখবো",
         "বাস্তবতা",
@@ -264,7 +264,67 @@
         "পাঠক লেখা",
         "শেয়ার"
       ],
-      "searchText": "page আমিও লিখবো বাস্তবতা পাঠকদের নিজের লেখা শেয়ার করার কমিউনিটি প্ল্যাটফর্ম। যেকেউ নিজের লেখা পোস্ট করতে পারেন। লেখকের অনুপ্রেরণায় তৈরি এই কমিউনিটিতে পাঠকরা নিজেদের অনুভূতি প্রকাশ করতে পারেন। /amio-likhbo-bastobota আমিও লিখবো বাস্তবতা amio bastobota নিজের লেখা কমিউনিটি ফিড পাঠক লেখা শেয়ার",
+      "searchText": "page আমিও লিখবো বাস্তবতা পাঠকদের নিজের লেখা জমা দেওয়ার community platform। লেখা আগে moderation review-তে থাকে এবং অনুমোদনের পর public feed-এ প্রকাশিত হয়। /amio-likhbo-bastobota আমিও লিখবো বাস্তবতা amio bastobota নিজের লেখা কমিউনিটি ফিড পাঠক লেখা শেয়ার",
+      "priority": 70
+    },
+    {
+      "type": "page",
+      "id": "community-login",
+      "title": "কমিউনিটি লগইন",
+      "path": "/amio-likhbo-login",
+      "description": "আমিও লিখবো বাস্তবতা community-তে লেখা জমা দেওয়ার জন্য নিরাপদ login পেজ।",
+      "keywords": [
+        "কমিউনিটি লগইন",
+        "login",
+        "সাইন ইন",
+        "আমিও লিখবো"
+      ],
+      "searchText": "page কমিউনিটি লগইন আমিও লিখবো বাস্তবতা community-তে লেখা জমা দেওয়ার জন্য নিরাপদ login পেজ। /amio-likhbo-login কমিউনিটি লগইন login সাইন ইন আমিও লিখবো",
+      "priority": 70
+    },
+    {
+      "type": "page",
+      "id": "profile",
+      "title": "প্রোফাইল",
+      "path": "/profile",
+      "description": "লগইন করা ব্যবহারকারীর profile, নিজের লেখা ও account-related options দেখার পেজ।",
+      "keywords": [
+        "প্রোফাইল",
+        "profile",
+        "আমার account",
+        "আমার লেখা"
+      ],
+      "searchText": "page প্রোফাইল লগইন করা ব্যবহারকারীর profile, নিজের লেখা ও account-related options দেখার পেজ। /profile প্রোফাইল profile আমার account আমার লেখা",
+      "priority": 70
+    },
+    {
+      "type": "page",
+      "id": "privacy",
+      "title": "Privacy Policy",
+      "path": "/privacy-policy",
+      "description": "ব্যক্তিগত তথ্য, community content, moderation, uploads, cookies ও deletion request সম্পর্কে নীতিমালা।",
+      "keywords": [
+        "privacy",
+        "privacy policy",
+        "প্রাইভেসি",
+        "গোপনীয়তা"
+      ],
+      "searchText": "page privacy policy ব্যক্তিগত তথ্য, community content, moderation, uploads, cookies ও deletion request সম্পর্কে নীতিমালা। /privacy-policy privacy privacy policy প্রাইভেসি গোপনীয়তা",
+      "priority": 70
+    },
+    {
+      "type": "page",
+      "id": "terms",
+      "title": "Terms of Use",
+      "path": "/terms",
+      "description": "ওয়েবসাইট, tools, community content ও ব্যবহারকারীর দায়িত্ব সম্পর্কিত Terms of Use।",
+      "keywords": [
+        "terms",
+        "শর্ত",
+        "ব্যবহারের নিয়ম",
+        "নীতিমালা"
+      ],
+      "searchText": "page terms of use ওয়েবসাইট, tools, community content ও ব্যবহারকারীর দায়িত্ব সম্পর্কিত terms of use। /terms terms শর্ত ব্যবহারের নিয়ম নীতিমালা",
       "priority": 70
     },
     {
@@ -627,11 +687,28 @@
         "golpo",
         "সাহিত্য",
         "গল্পসাহিত্য",
-        "3 লেখা"
+        "2 লেখা"
       ],
-      "searchText": "writing_category গল্প মাহবুব সরদার সবুজের লেখা গল্পের সংগ্রহ /writings গল্প story golpo সাহিত্য গল্পসাহিত্য 3 লেখা",
+      "searchText": "writing_category গল্প মাহবুব সরদার সবুজের লেখা গল্পের সংগ্রহ /writings গল্প story golpo সাহিত্য গল্পসাহিত্য 2 লেখা",
       "priority": 90,
-      "count": 3
+      "count": 2
+    },
+    {
+      "type": "writing_category",
+      "id": "ইসলামিক লেখা",
+      "title": "ইসলামিক লেখা",
+      "path": "/writings",
+      "description": "ইসলামিক ভাবনা ও মূল্যবোধভিত্তিক লেখা",
+      "keywords": [
+        "ইসলামিক",
+        "ইসলাম",
+        "ধর্মীয়",
+        "দোয়া",
+        "15 লেখা"
+      ],
+      "searchText": "writing_category ইসলামিক লেখা ইসলামিক ভাবনা ও মূল্যবোধভিত্তিক লেখা /writings ইসলামিক ইসলাম ধর্মীয় দোয়া 15 লেখা",
+      "priority": 90,
+      "count": 15
     },
     {
       "type": "recitation",

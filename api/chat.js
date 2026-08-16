@@ -405,8 +405,9 @@ recitation: "আবৃত্তি",
 tool: "চ্যাটবট টুল",
 }[best.type] || "তথ্য";
 const lines = matches.map(({ item }, index) => {
-const extra = item.type === "book" && item.buyUrl ? `\n   অর্ডার: ${item.buyUrl}` : "";
-return `${index + 1}. ${item.title} — ${item.description || typeLabel}\n   যেতে: [BUTTON:${item.path}]${extra}`;
+const safePath = typeof item.path === "string" && item.path.startsWith("/") ? item.path : item.type === "book" ? "/ebooks" : "/";
+const extra = item.type === "book" && item.buyUrl ? `\n   [ORDER:${item.orderLabel || `${item.title} অর্ডার করুন`}|${item.buyUrl}]` : "";
+return `${index + 1}. ${item.title} — ${item.description || typeLabel}\n   যেতে: [BUTTON:${safePath}]${extra}`;
 }).join("\n");
 return `আপনার প্রশ্নের জন্য সবচেয়ে প্রাসঙ্গিক ${typeLabel} খুঁজে পেলাম:\n\n${lines}\n\nআরও নির্দিষ্ট ফল চাইলে বই/লেখা/বিষয়ের নাম লিখুন।`;
 }
@@ -673,9 +674,11 @@ book = WEBSITE_KNOWLEDGE.books.find((item) => item.key === "shomoyer-gohvore") |
 reason = "জীবন, সময় ও বাস্তবতার ভাবনা পড়তে চাইলে এটি বেশি মানানসই।";
 }
 	const isOrderOnly = Boolean(book.buyUrl) && (!book.readPath || book.readPath === "/ebooks");
-	const actionLine = isOrderOnly
-		? "\n\nসরাসরি অর্ডার করুন: " + book.buyUrl
-		: "\n\nপড়তে যান: [BUTTON:" + book.readPath + "]";
+		const actionLine = isOrderOnly && book.buyUrl
+			? `\n\n[ORDER:${book.orderLabel || `${book.title} অর্ডার করুন`}|${book.buyUrl}]`
+			: book.readPath
+			? `\n\nপড়তে যান: [BUTTON:${book.readPath}]`
+			: "\n\nএই বইটির অনলাইন reader নেই। সকল বই দেখতে [BUTTON:/ebooks] ব্যবহার করুন।";
 	return "শুরু করার জন্য আমি “" + book.title + "” সাজেস্ট করব।\n\nকারণ: " + reason + "\nধরন: " + book.type + "\nপ্রকাশ/সময়: " + book.year + actionLine + "\nসব বই দেখতে: [BUTTON:/ebooks]";
 }
 
@@ -727,13 +730,17 @@ return `${writing.title}\n— মাহবুব সরদার সবুজ\n\
 function buildBookReply(text) {
 const book = findBestByKeywords(text, WEBSITE_KNOWLEDGE.books);
 if (book) {
-const buyLine = book.buyUrl ? `\nঅর্ডার করতে: ${book.buyUrl}` : "";
-return `${book.title}\n\nধরন: ${book.type}\nপ্রকাশ/সময়: ${book.year}\nপৃষ্ঠা/পরিমাণ: ${book.pages}\n\n${book.summary}${buyLine}\n\nপড়তে যান: [BUTTON:${book.readPath}]\nসব বই দেখতে: [BUTTON:/ebooks]\n\nআরও চাইলে লিখুন—“এই বইটির সারাংশ দাও” বা “আরও বই দেখাও”।`;
+const buyLine = book.buyUrl ? `\n[ORDER:${book.orderLabel || `${book.title} অর্ডার করুন`}|${book.buyUrl}]` : "";
+const readLine = book.readPath ? `\nপড়তে যান: [BUTTON:${book.readPath}]` : "\nএই বইটির অনলাইন reader নেই।";
+const pagesLine = book.pages ? `\nপৃষ্ঠা/পরিমাণ: ${book.pages}` : "";
+return `${book.title}\n\nধরন: ${book.type}\nপ্রকাশ/সময়: ${book.year}${pagesLine}\n\n${book.summary}${buyLine}${readLine}\nসব বই দেখতে: [BUTTON:/ebooks]\n\nআরও চাইলে লিখুন—“এই বইটির সারাংশ দাও” বা “আরও বই দেখাও”।`;
 }
 
 const rows = WEBSITE_KNOWLEDGE.books.map((item, index) => {
-const buy = item.buyUrl ? ` | অর্ডার: ${item.buyUrl}` : "";
-return `${index + 1}. ${item.title} — ${item.type}, ${item.year}, ${item.pages}. পড়তে: [BUTTON:${item.readPath}]${buy}`;
+const buy = item.buyUrl ? `\n   [ORDER:${item.orderLabel || `${item.title} অর্ডার করুন`}|${item.buyUrl}]` : "";
+const read = item.readPath ? `\n   পড়তে: [BUTTON:${item.readPath}]` : "\n   এই বইটির অনলাইন reader নেই।";
+const pages = item.pages ? `, ${item.pages}` : "";
+return `${index + 1}. ${item.title} — ${item.type}, ${item.year}${pages}.${read}${buy}`;
 }).join("\n");
 return `মাহবুব সরদার সবুজের যাচাইকৃত বই ও ই-বুক তালিকা:\n\n${rows}\n\nসব বইয়ের পেজ: [BUTTON:/ebooks]\nআপনি চাইলে নির্দিষ্ট বইয়ের নাম লিখলে আমি সরাসরি সেই বইয়ের লিংক ও তথ্য দেব।`;
 }
@@ -745,17 +752,17 @@ return `${category.name} বিভাগে মাহবুব সরদার �
 }
 
 const categories = WEBSITE_KNOWLEDGE.writingCategories.map((cat) => `${cat.name} ${cat.count}টি`).join(", ");
-return `ওয়েবসাইটে মাহবুব সরদার সবুজের মোট ২,৩৩৩টি লেখা রয়েছে। প্রধান বিভাগগুলো হলো: ${categories}।\n\nসব লেখা দেখতে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\n\nআপনি ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা বা কবিতা—যে কোনো বিভাগ আলাদা করে চাইতে পারেন।`;
+return `ওয়েবসাইটে মাহবুব সরদার সবুজের মোট ২,৩৫৭টি লেখা রয়েছে। প্রধান বিভাগগুলো হলো: ${categories}।\n\nসব লেখা দেখতে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\n\nআপনি ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা, কবিতা, গল্প বা ইসলামিক লেখা—যে কোনো বিভাগ আলাদা করে চাইতে পারেন।`;
 }
 
 function buildRecitationReply(text) {
 const recitation = findBestByKeywords(text, WEBSITE_KNOWLEDGE.recitations);
 if (recitation) {
-return `${recitation.title} আবৃত্তিটি Facebook আবৃত্তি সংগ্রহে রয়েছে।\n\nশুনতে/দেখতে যান: [BUTTON:${recitation.path}]\nঅফিসিয়াল Facebook পেজ: ${WEBSITE_KNOWLEDGE.contact.facebook}\n\nআরও আবৃত্তি চাইলে লিখুন—“সব আবৃত্তি দেখাও”।`;
+return `${recitation.title} আবৃত্তিটি Facebook আবৃত্তি সংগ্রহে রয়েছে।\n\nশুনতে/দেখতে যান: [BUTTON:${recitation.path}]\n\nআরও আবৃত্তি চাইলে লিখুন—“সব আবৃত্তি দেখাও”।`;
 }
 
 const list = WEBSITE_KNOWLEDGE.recitations.map((item, index) => `${index + 1}. ${item.title}`).join("\n");
-return `মাহবুব সরদার সবুজের ৯টি জনপ্রিয় Facebook আবৃত্তি রয়েছে:\n\n${list}\n\nশুনতে/দেখতে যান: [BUTTON:/facebook-recitations]\nঅফিসিয়াল Facebook পেজ: ${WEBSITE_KNOWLEDGE.contact.facebook}`;
+return `মাহবুব সরদার সবুজের ৯টি জনপ্রিয় Facebook আবৃত্তি রয়েছে:\n\n${list}\n\nশুনতে/দেখতে যান: [BUTTON:/facebook-recitations]`;
 }
 
 function buildAuthorReply() {
@@ -771,12 +778,12 @@ return `${intro}\n\nযাচাইকৃত পরিচিতি:\n- জন্
 function buildSocialReply() {
 const { author } = WEBSITE_KNOWLEDGE;
 const sm = author.socialMedia;
-return `মাহবুব সরদার সবুজের সোশ্যাল মিডিয়া লিংকসমূহ:\n\n Facebook প্রোফাইল: ${sm.facebookProfile}\n Facebook পেজ: ${sm.facebookPage}\n Instagram: ${sm.instagram}\n▶ YouTube: ${sm.youtube}\n Pinterest: ${sm.pinterest}\n\nফলোয়ার সংখ্যা প্রকাশ করা হয় না। সরাসরি যোগাযোগ করতে: [BUTTON:/contact]`;
+return `মাহবুব সরদার সবুজের সোশ্যাল মিডিয়া ও যোগাযোগের action পেতে [BUTTON:/contact] পেজে যান। সেখানে Facebook, Instagram, YouTube, Messenger এবং email-এর verified options দেওয়া আছে।\n\nফলোয়ার সংখ্যা প্রকাশ করা হয় না।`;
 }
 
 function buildContactReply() {
 const { contact } = WEBSITE_KNOWLEDGE;
-return `লেখকের অফিসিয়াল যোগাযোগ তথ্য:\n\nইমেইল: ${contact.email}\nFacebook: ${contact.facebook}\nInstagram: ${contact.instagram}\nYouTube: ${contact.youtube}\n\nযোগাযোগ ফর্ম: [BUTTON:/contact]\nসরাসরি কথা বলতে চাইলে চ্যাটবটের সরাসরি চ্যাট ট্যাব ব্যবহার করুন।`;
+return `লেখকের অফিসিয়াল যোগাযোগের জন্য [BUTTON:/contact] পেজে যান। সেখানে যোগাযোগের form এবং verified social actions পাওয়া যাবে।\n\nইমেইল: ${contact.email}\nসরাসরি কথা বলতে চাইলে চ্যাটবটের Live Chat tab ব্যবহার করুন।`;
 }
 
 function buildSiteReply(text) {
@@ -1000,6 +1007,19 @@ if (greetingPattern.test(userText.trim())) {
 const wantsAllPagesEarly = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(rawText) && /(পেজ|page|ওয়েবসাইট|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(rawText);
 if (wantsAllPagesEarly) return buildSiteReply(rawText);
 
+if (/(নিজের লেখা|লেখা জমা|লেখা প্রকাশ|কমিউনিটি|আমিও লিখবো|বাস্তবতা)/i.test(rawText)) {
+  return "নিজের লেখা জমা দিতে [BUTTON:/amio-likhbo-bastobota] পেজে যান। নতুন লেখা আগে moderation review-তে থাকে এবং অনুমোদনের পর public feed-এ প্রকাশিত হয়।";
+}
+if (/(সব লেখা|লেখার archive|লেখালেখি|writings)/i.test(rawText) && !/(বিচ্ছেদ|ভালোবাসা|কবিতা|জীবনদর্শন|গল্প|ইসলামিক)/i.test(rawText)) {
+  return buildWritingReply(rawText);
+}
+if (/(আবৃত্তি.*(শুন|দেখ|সংগ্রহ)|আবৃত্তিগুলো|recitation)/i.test(rawText)) {
+  return buildRecitationReply(rawText);
+}
+if (/(বই.*(তালিকা|সংগ্রহ)|অভিমান|দুঃখবিলাস|বিচ্ছেদকে বলি)/i.test(rawText) && !/(কোন বই|কোনটা|শুরু|সাজেস্ট|recommend|suggest)/i.test(rawText)) {
+  return buildBookReply(userText);
+}
+
 const earlyBookRecommendation = buildBookRecommendationReply(rawText);
 if (earlyBookRecommendation && /(বই|ই-বুক|ebook|book|পড়ব|পড়ব|শুরু|সাজেস্ট|রেকমেন্ড|recommend|suggest)/i.test(rawText)) return earlyBookRecommendation;
 
@@ -1114,6 +1134,19 @@ function buildSiteSpecificReply(messages = []) {
   const wantsAllPages = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(rawText) && /(পেজ|page|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(rawText);
   if (wantsAllPages) return buildSiteReply(rawText);
 
+  if (/(নিজের লেখা|লেখা জমা|লেখা প্রকাশ|কমিউনিটি|আমিও লিখবো|বাস্তবতা)/i.test(rawText)) {
+    return "নিজের লেখা জমা দিতে [BUTTON:/amio-likhbo-bastobota] পেজে যান। নতুন লেখা আগে moderation review-তে থাকে এবং অনুমোদনের পর public feed-এ প্রকাশিত হয়।";
+  }
+  if (/(সব লেখা|লেখার archive|লেখালেখি|writings)/i.test(rawText) && !/(বিচ্ছেদ|ভালোবাসা|কবিতা|জীবনদর্শন|গল্প|ইসলামিক)/i.test(rawText)) {
+    return buildWritingReply(rawText);
+  }
+  if (/(আবৃত্তি.*(শুন|দেখ|সংগ্রহ)|আবৃত্তিগুলো|recitation)/i.test(rawText)) {
+    return buildRecitationReply(rawText);
+  }
+  if (/(বই.*(তালিকা|সংগ্রহ)|অভিমান|দুঃখবিলাস|বিচ্ছেদকে বলি)/i.test(rawText) && !/(কোন বই|কোনটা|শুরু|সাজেস্ট|recommend|suggest)/i.test(rawText)) {
+    return buildBookReply(userText);
+  }
+
   // বিভাগভিত্তিক লেখা দেখতে চাইলে সেটিকে ভুল করে নির্দিষ্ট শিরোনাম হিসেবে খোঁজা যাবে না।
   const requestedCategory = inferWritingCategoryFromText(rawText);
   if (isCategoryBrowseRequest(rawText, requestedCategory)) {
@@ -1204,22 +1237,22 @@ return "আপনাকেও ধন্যবাদ। আর কোনো প�
 }
 
 if (/(অভিমান.*(বই|গ্রন্থ|অণু|কিন|অর্ডার|রকমারি|সরাসরি)|abhiman)/.test(userText)) {
-return "‘অভিমান’ — মাহবুব সরদার সবুজের অণুগদ্যগ্রন্থ। না-বলা দীর্ঘশ্বাস, ভালোবাসা, একাকীত্ব, আত্মমর্যাদা ও ঘুরে দাঁড়ানোর অনুভূতি নিয়ে লেখা এই বইটি সরাসরি অর্ডার করুন: https://rkmri.co/Te303mA3TEyA/\n\nবইয়ের বিস্তারিত: [BUTTON:/ebooks]";
+return "‘অভিমান’ — মাহবুব সরদার সবুজের অণুগদ্যগ্রন্থ। না-বলা দীর্ঘশ্বাস, ভালোবাসা, একাকীত্ব, আত্মমর্যাদা ও ঘুরে দাঁড়ানোর অনুভূতি নিয়ে লেখা।\n\n[ORDER:অভিমান অর্ডার করুন|https://rkmri.co/Te303mA3TEyA/]\nবইয়ের বিস্তারিত: [BUTTON:/ebooks]";
 }
 if (/দুঃখবিলাস|বিচ্ছেদকে বলি/.test(userText)) {
-return "‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — মাহবুব সরদার সবুজের মুদ্রিত রোমান্টিক কবিতার বই। ভালোবাসা, বিচ্ছেদ ও বেদনাকে নতুন চোখে দেখার এই বইটি সরাসরি অর্ডার করুন: https://rkmri.co/IIAReAoMpRyp/\n\nবইয়ের বিস্তারিত: [BUTTON:/ebooks]";
+return "‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — মাহবুব সরদার সবুজের মুদ্রিত রোমান্টিক কবিতার বই। ভালোবাসা, বিচ্ছেদ ও বেদনাকে নতুন চোখে দেখার বই।\n\n[ORDER:দুঃখবিলাস অর্ডার করুন|https://rkmri.co/IIAReAoMpRyp/]\nবইয়ের বিস্তারিত: [BUTTON:/ebooks]";
 }
 if (/বই|ebook|ই-বুক|চাঁদফুল|স্মৃতির বসন্তে|সময়ের গহ্বরে|অনবদ্য|কিনব|পড়ব|পড়তে/.test(userText)) {
-return "মাহবুব সরদার সবুজের বই সংগ্রহ:\n\nসরাসরি অর্ডারযোগ্য মুদ্রিত বই:\n• ‘অভিমান’ — অণুগদ্যগ্রন্থ: https://rkmri.co/Te303mA3TEyA/\n• ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — রোমান্টিক কবিতা: https://rkmri.co/IIAReAoMpRyp/\n\nবিনামূল্যে ই-বুক:\n• স্মৃতির বসন্তে তুমি: [BUTTON:/ebooks/read/smritir-boshonte]\n• চাঁদফুল: [BUTTON:/ebooks/read/chand-phool]\n• সময়ের গহ্বরে: [BUTTON:/ebooks/read/shomoyer-gohvore]\n• অনবদ্য লেখা: [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব বই দেখতে: [BUTTON:/ebooks]";
+return "মাহবুব সরদার সবুজের বই সংগ্রহ:\n\nসরাসরি অর্ডারযোগ্য মুদ্রিত বই:\n• ‘অভিমান’ — অণুগদ্যগ্রন্থ\n• ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — রোমান্টিক কবিতা\n\nবিনামূল্যে ই-বুক:\n• স্মৃতির বসন্তে তুমি: [BUTTON:/ebooks/read/smritir-boshonte]\n• চাঁদফুল: [BUTTON:/ebooks/read/chand-phool]\n• সময়ের গহ্বরে: [BUTTON:/ebooks/read/shomoyer-gohvore]\n• অনবদ্য লেখা: [BUTTON:/ebooks/read/onoboddo-lekha]\n\nসব বই দেখতে: [BUTTON:/ebooks]";
 }
 if (/যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|youtube/.test(userText)) {
-return "লেখকের সাথে যোগাযোগ করুন:\n ইমেইল: lekhokmahbubsardarsabuj@gmail.com\n Facebook: https://facebook.com/MahbubSardarSabuj\n Instagram: https://instagram.com/mahbub_sardar_sabuj\n▶ YouTube: https://youtube.com/@MahbubSardarSabuj\n\nযোগাযোগ ফর্ম: [BUTTON:/contact]";
+return "লেখকের সাথে যোগাযোগ করতে [BUTTON:/contact] ব্যবহার করুন। সেখানে যোগাযোগের form এবং প্রয়োজনীয় সামাজিক মাধ্যমের action পাওয়া যাবে।\n\nইমেইল: lekhokmahbubsardarsabuj@gmail.com";
 }
 if (/অডিও.*এডিট|অডিও.*প্রসেস|অডিও.*করো|audio.*edit|audio.*process|voice.*edit|voice.*enhance|noise.*remov|নয়েজ.*কমা|ভয়েস.*পরিষ্কার|ভয়েস.*এনহান্স/.test(userText)) {
 	return " অডিও এডিটিং সুবিধা\n\nএই চ্যাটবটটি একটি শক্তিশালী AI অডিও এডিটর! আপনি যা করতে পারবেন:\n\n ভয়েস ক্লিনিং — নয়েজ কমানো, ভয়েস পরিষ্কার করা\n স্মার্ট মিক্স — ব্যাকগ্রাউন্ড মিউজিক যোগ করা\n পডকাস্ট মোড — রেডিও/পডকাস্ট কোয়ালিটি\n ইকো/রিভার্ব — কবিতা বা গজলের জন্য\n ভলিউম বুস্ট — সাউন্ড বাড়ানো/কমানো\n\n কীভাবে ব্যবহার করবেন:\n১. নিচের বাটনে ক্লিক করে অডিও ফাইল আপলোড করুন\n২. বলুন কী করতে চান (যেমন: \'নয়েজ কমাও\', \'মিউজিক যোগ করো\')\n৩. AI প্রসেস করে এডিটেড অডিও দিয়ে দেবে!";
 }
 if (/পরিচয়|about|লেখক|কবি|জন্ম|কুমিল্লা|সৌদি|মাহবুব/.test(userText)) {
-return "মাহবুব সরদার সবুজ বাংলা ভাষার একজন লেখক ও কবি। কুমিল্লার বরুড়া উপজেলার আরিফপুর গ্রামে জন্মগ্রহণ করেন। বর্তমানে সৌদি আরবে কর্মরত। ফেসবুকে ১ লক্ষ ১০ হাজারেরও বেশি ফলোয়ার।\n\nবিস্তারিত: [BUTTON:/about]";
+return "মাহবুব সরদার সবুজ একজন লেখক, কবি ও সাহিত্যিক। তাঁর জন্ম কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে এবং তিনি বর্তমানে সৌদি আরবে কর্মরত ও অবস্থানরত। তাঁর বিস্তারিত পরিচিতি দেখতে [BUTTON:/about] ব্যবহার করুন।";
 }
 if (/আবৃত্তি|recitation|জানেন বাবা|কাঁদলে মা|তবুও তাকে|বিবেকের আদালত/.test(userText)) {
 return "মাহবুব সরদার সবুজের ৯টি জনপ্রিয় আবৃত্তি:\n১. জানেন বাবা\n২. আমি কাঁদলে মা আর কাঁদে না\n৩. তবুও তাকে ভালো\n৪. আমি জানি সব ঠিক হয়ে যাওয়ার একটা নিয়ম আছে\n৫. মাঝে মাঝে ইচ্ছে হয় তোমাকে ডেকে বলি\n৬. নারীকে ভালোবাসার আগে\n৭. মানুষটা তোমার প্রতি অন্ধ\n৮. এমনভাবে সরে যাবো একদিন\n৯. বিবেকের আদালত\n\nশুনতে যান: [BUTTON:/facebook-recitations]";
@@ -1234,13 +1267,13 @@ if (/গ্যালারি|gallery|ছবি|ফটো/.test(userText)) {
 return "লেখকের গ্যালারি দেখতে যান: [BUTTON:/gallery]";
 }
 if (/লেখালেখি|writings|কবিতা|poem|ভালোবাসা|বিচ্ছেদ|জীবনদর্শন/.test(userText)) {
-return "মাহবুব সরদার সবুজের ২,৩৩৩টি লেখা পড়তে যান: [BUTTON:/writings]\n\nবিষয়ভিত্তিক: ছোট লেখা ও উক্তি (১,১১৭), জীবনদর্শন (৬৬২), বিচ্ছেদ (২৫৫), ভালোবাসা (১৯৮), কবিতা (৯৮)";
+return "মাহবুব সরদার সবুজের ২,৩৫৭টি লেখা পড়তে [BUTTON:/writings] ব্যবহার করুন। Archive-এ ছোট লেখা, জীবনদর্শন, বিচ্ছেদ, ভালোবাসা, কবিতা, গল্প ও ইসলামিক লেখা রয়েছে।";
 }
 if (/আমিও লিখবো|লিখবো বাস্তবতা|amio|bastobota/.test(userText)) {
 return "আমিও লিখবো বাস্তবতা — একটি সোশ্যাল ফিড যেখানে যে কেউ নিজের বাস্তব গল্প শেয়ার করতে পারেন: [BUTTON:/amio-likhbo-bastobota]";
 }
 if (/রকমারি|rokomari|কিনতে|order/.test(userText)) {
-return "সরাসরি অর্ডারযোগ্য বই দুটি:\n• ‘অভিমান’ — অণুগদ্যগ্রন্থ: https://rkmri.co/Te303mA3TEyA/\n• ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — রোমান্টিক কবিতা: https://rkmri.co/IIAReAoMpRyp/\n\nবিস্তারিত: [BUTTON:/ebooks]";
+return "সরাসরি অর্ডারযোগ্য বই দুটি:\n• ‘অভিমান’ — অণুগদ্যগ্রন্থ\n• ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ — রোমান্টিক কবিতা\n\n[ORDER:অভিমান অর্ডার করুন|https://rkmri.co/Te303mA3TEyA/]\n[ORDER:দুঃখবিলাস অর্ডার করুন|https://rkmri.co/IIAReAoMpRyp/]\nবিস্তারিত: [BUTTON:/ebooks]";
 }
 
 // Default: helpful navigation response instead of a dead-end error message
@@ -1249,6 +1282,12 @@ return "আপনার প্রশ্নটি পুরোপুরি বু
 
 function sanitizeReply(reply) {
 if (!reply || typeof reply !== "string") return reply;
+// Never expose malformed placeholders or raw order links to the visitor.
+reply = reply.replace(/\[BUTTON:(?:undefined|null|)\]/gi, "");
+reply = reply.replace(/\[ORDER:([^|\]]+)\|(undefined|null)\]/gi, "");
+reply = reply.replace(/(^|[\s:])https:\/\/rkmri\.co\/Te303mA3TEyA\/?/gi, "$1[ORDER:অভিমান অর্ডার করুন|https://rkmri.co/Te303mA3TEyA/]");
+reply = reply.replace(/(^|[\s:])https:\/\/rkmri\.co\/IIAReAoMpRyp\/?/gi, "$1[ORDER:দুঃখবিলাস অর্ডার করুন|https://rkmri.co/IIAReAoMpRyp/]");
+reply = reply.replace(/\bundefined\b/gi, "");
 // Convert internal site links to BUTTON format
 reply = reply.replace(/\[([^\]]+)\]\(https?:\/\/(?:www\.)?mahbubsardarsabuj\.com(\/[^\)]*)?\)/g, (_, _t, path) => path ? `[BUTTON:${path}]` : `[BUTTON:/]`);
 reply = reply.replace(/https?:\/\/(?:www\.)?mahbubsardarsabuj\.com(\/[^\s\)\"\']+)?/g, (_, path) => path ? `[BUTTON:${path}]` : `[BUTTON:/]`);
