@@ -1,5 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowUpRight,
+  Check,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Quote,
+  Send,
+  Sparkles,
+  Youtube,
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
@@ -9,50 +22,44 @@ const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C97A";
 const BG = "#060E1A";
 const TEXT = "#FAF6EF";
-const MUTED = "rgba(250,246,239,0.55)";
+const MUTED = "rgba(250,246,239,0.62)";
 
 const socialLinks = [
   {
     name: "Facebook",
     handle: "MahbubSardarSabuj",
     url: "https://facebook.com/MahbubSardarSabuj",
-    icon: "f",
-    color: "#1877F2",
-    bg: "rgba(24,119,242,0.08)",
-    border: "rgba(24,119,242,0.2)",
+    icon: Facebook,
+    color: "#5B9CFF",
   },
   {
     name: "Instagram",
     handle: "mahbub_sardar_sabuj",
     url: "https://www.instagram.com/mahbub_sardar_sabuj",
-    icon: "📸",
-    color: "#E1306C",
-    bg: "rgba(225,48,108,0.08)",
-    border: "rgba(225,48,108,0.2)",
+    icon: Instagram,
+    color: "#F06A9B",
   },
   {
     name: "YouTube",
     handle: "@MahbubSardarSabuj",
     url: "https://youtube.com/@MahbubSardarSabuj",
-    icon: "▶",
-    color: "#FF4444",
-    bg: "rgba(255,68,68,0.08)",
-    border: "rgba(255,68,68,0.2)",
+    icon: Youtube,
+    color: "#FF7777",
   },
 ];
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(201,168,76,0.2)",
-  borderRadius: 14,
-  padding: "14px 18px",
+  background: "rgba(3,10,19,0.50)",
+  border: "1px solid rgba(250,246,239,0.10)",
+  borderRadius: 16,
+  padding: "15px 17px",
   color: TEXT,
   fontFamily: "'AdorshoLipi', sans-serif",
-  fontSize: "0.95rem",
+  fontSize: "0.96rem",
   outline: "none",
   boxSizing: "border-box",
-  transition: "border-color 0.2s, box-shadow 0.2s",
+  transition: "border-color 0.24s ease, box-shadow 0.24s ease, background 0.24s ease",
   WebkitAppearance: "none",
 };
 
@@ -60,14 +67,14 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [focused, setFocused] = useState<string | null>(null);
-
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     const name = form.name.trim();
     const email = form.email.trim();
     const message = form.message.trim();
+
     if (!name || !email || !message) {
       setErrorMsg("নাম, ইমেইল ও বার্তা পূরণ করুন।");
       return;
@@ -76,20 +83,21 @@ export default function Contact() {
       setErrorMsg("সঠিক ইমেইল ঠিকানা লিখুন।");
       return;
     }
+
     setStatus("sending");
     setErrorMsg(null);
     try {
-      const res = await fetch("/api/contact", {
+      const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, name, email, message }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await response.json();
+      if (response.ok && data.success) {
         setStatus("sent");
         setTimeout(() => {
           setStatus("idle");
-              setForm({ name: "", email: "", subject: "", message: "", website: "" });
+          setForm({ name: "", email: "", subject: "", message: "", website: "" });
         }, 5000);
       } else {
         setErrorMsg(data.error || "বার্তা পাঠাতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
@@ -103,38 +111,551 @@ export default function Contact() {
 
   const getFocusStyle = (field: string): React.CSSProperties =>
     focused === field
-      ? { ...inputStyle, borderColor: GOLD, boxShadow: `0 0 0 3px rgba(201,168,76,0.12)` }
+      ? {
+          ...inputStyle,
+          background: "rgba(13,29,48,0.78)",
+          borderColor: "rgba(232,201,122,0.82)",
+          boxShadow: "0 0 0 4px rgba(201,168,76,0.12), 0 12px 30px rgba(0,0,0,0.16)",
+        }
       : inputStyle;
 
   return (
     <>
       <style>{`
-        @media (max-width: 768px) {
-          .contact-grid { grid-template-columns: 1fr !important; }
-          .name-email-row { grid-template-columns: 1fr !important; }
-          .contact-hero h1 { font-size: 2.2rem !important; }
+        .contact-page {
+          min-height: 100vh;
+          overflow: hidden;
+          background:
+            radial-gradient(circle at 86% 8%, rgba(201,168,76,0.12), transparent 23%),
+            radial-gradient(circle at 8% 44%, rgba(37,92,142,0.16), transparent 24%),
+            ${BG};
         }
-        @media (max-width: 360px) {
-          .contact-hero h1 { font-size: 1.8rem !important; }
-          .contact-email-card {
-            padding: 1rem !important;
-            gap: 0.6rem !important;
-          }
-          .contact-email-card .email-arrow { display: none !important; }
-          .contact-email-text {
-            font-size: 0.68rem !important;
-            word-break: break-all !important;
-            overflow-wrap: anywhere !important;
-          }
+        .contact-hero {
+          position: relative;
+          padding: calc(var(--site-nav-offset, 98px) + 52px) 1.5rem 3.75rem;
+          overflow: hidden;
         }
-        input::placeholder, textarea::placeholder { color: rgba(250,246,239,0.3); }
+        .contact-hero::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(rgba(232,201,122,0.12) 0.75px, transparent 0.75px);
+          background-size: 25px 25px;
+          mask-image: linear-gradient(to bottom, black, transparent 86%);
+          opacity: 0.5;
+          pointer-events: none;
+        }
+        .contact-hero-orbit {
+          position: absolute;
+          width: min(76vw, 760px);
+          aspect-ratio: 1;
+          left: 50%;
+          top: -54%;
+          transform: translateX(-50%);
+          border: 1px solid rgba(232,201,122,0.16);
+          border-radius: 50%;
+          box-shadow: 0 0 0 54px rgba(201,168,76,0.025), 0 0 100px rgba(201,168,76,0.08);
+          pointer-events: none;
+        }
+        .contact-hero-inner {
+          position: relative;
+          z-index: 1;
+          max-width: 900px;
+          margin: 0 auto;
+          text-align: center;
+        }
+        .contact-kicker {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(232,201,122,0.28);
+          background: rgba(201,168,76,0.08);
+          border-radius: 999px;
+          padding: 7px 15px 7px 11px;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 34px rgba(0,0,0,0.16);
+        }
+        .contact-kicker-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: ${GOLD_LIGHT};
+          box-shadow: 0 0 0 5px rgba(232,201,122,0.1), 0 0 12px ${GOLD};
+        }
+        .contact-kicker span {
+          color: ${GOLD_LIGHT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.72rem;
+          letter-spacing: 0.22em;
+        }
+        .contact-hero-title {
+          max-width: 780px;
+          margin: 1.35rem auto 0;
+          color: ${TEXT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(2.45rem, 6.5vw, 5rem);
+          font-weight: 700;
+          letter-spacing: -0.035em;
+          line-height: 1.12;
+          text-shadow: 0 12px 42px rgba(0,0,0,0.48);
+        }
+        .contact-hero-title em {
+          color: transparent;
+          font-style: normal;
+          background: linear-gradient(112deg, #AE7B21, #F5E5AB 44%, #C9A84C 72%, #8D6114);
+          background-clip: text;
+          -webkit-background-clip: text;
+          text-shadow: none;
+        }
+        .contact-hero-copy {
+          max-width: 595px;
+          margin: 1.25rem auto 0;
+          color: ${MUTED};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(0.98rem, 2vw, 1.08rem);
+          line-height: 1.95;
+        }
+        .contact-hero-actions {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 0.8rem;
+          margin-top: 1.8rem;
+        }
+        .contact-hero-action {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 44px;
+          padding: 0 17px;
+          border: 1px solid rgba(201,168,76,0.30);
+          border-radius: 999px;
+          color: ${TEXT};
+          background: rgba(7,18,31,0.55);
+          text-decoration: none;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.86rem;
+          transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        }
+        .contact-hero-action:hover {
+          transform: translateY(-2px);
+          border-color: rgba(232,201,122,0.72);
+          background: rgba(201,168,76,0.10);
+        }
+        .contact-main {
+          position: relative;
+          z-index: 1;
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 0 1.5rem 6.5rem;
+        }
+        .contact-layout {
+          display: grid;
+          grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.32fr);
+          gap: clamp(1.25rem, 4vw, 3.75rem);
+          align-items: stretch;
+        }
+        .contact-left {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        .contact-section-label {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: ${GOLD_LIGHT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.73rem;
+          letter-spacing: 0.18em;
+          margin-bottom: 0.85rem;
+        }
+        .contact-section-label::before {
+          content: "";
+          width: 30px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, ${GOLD});
+        }
+        .contact-left-title {
+          margin: 0;
+          color: ${TEXT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(1.9rem, 3.5vw, 2.7rem);
+          font-weight: 700;
+          line-height: 1.28;
+        }
+        .contact-left-copy {
+          max-width: 440px;
+          margin: 0.8rem 0 1.65rem;
+          color: ${MUTED};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.96rem;
+          line-height: 1.85;
+        }
+        .contact-channel-list {
+          display: grid;
+          gap: 0.8rem;
+        }
+        .contact-channel, .contact-location {
+          display: flex;
+          align-items: center;
+          gap: 0.95rem;
+          min-width: 0;
+          border: 1px solid rgba(250,246,239,0.08);
+          border-radius: 19px;
+          padding: 1rem;
+          background: linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.018));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 15px 32px rgba(0,0,0,0.14);
+          transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+        }
+        .contact-channel {
+          text-decoration: none;
+          cursor: pointer;
+        }
+        .contact-channel:hover {
+          transform: translateX(4px);
+          border-color: rgba(232,201,122,0.42);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 38px rgba(0,0,0,0.24);
+        }
+        .contact-channel-icon {
+          display: grid;
+          place-items: center;
+          width: 45px;
+          height: 45px;
+          flex: 0 0 45px;
+          border: 1px solid rgba(232,201,122,0.24);
+          border-radius: 14px;
+          color: ${GOLD_LIGHT};
+          background: linear-gradient(145deg, rgba(201,168,76,0.19), rgba(201,168,76,0.05));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.16);
+        }
+        .contact-channel-eyebrow {
+          margin-bottom: 3px;
+          color: rgba(250,246,239,0.48);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.68rem;
+          letter-spacing: 0.14em;
+        }
+        .contact-channel-value {
+          overflow-wrap: anywhere;
+          color: ${TEXT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(0.78rem, 1.6vw, 0.94rem);
+          font-weight: 600;
+        }
+        .contact-channel-arrow {
+          margin-left: auto;
+          color: ${GOLD};
+          opacity: 0.75;
+          flex: 0 0 auto;
+        }
+        .contact-location {
+          margin-top: 0.8rem;
+        }
+        .contact-social-title {
+          margin: 1.65rem 0 0.8rem;
+          color: rgba(250,246,239,0.54);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.72rem;
+          letter-spacing: 0.17em;
+        }
+        .contact-social-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0.7rem;
+        }
+        .contact-social-link {
+          min-width: 0;
+          padding: 0.9rem 0.65rem;
+          border: 1px solid rgba(250,246,239,0.08);
+          border-radius: 17px;
+          background: rgba(255,255,255,0.025);
+          color: ${TEXT};
+          text-align: center;
+          text-decoration: none;
+          transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        }
+        .contact-social-link:hover {
+          transform: translateY(-4px);
+          border-color: var(--social-color);
+          background: color-mix(in srgb, var(--social-color) 10%, transparent);
+        }
+        .contact-social-icon {
+          display: grid;
+          place-items: center;
+          width: 34px;
+          height: 34px;
+          margin: 0 auto 0.45rem;
+          border-radius: 11px;
+          color: var(--social-color);
+          background: color-mix(in srgb, var(--social-color) 11%, transparent);
+        }
+        .contact-social-name {
+          display: block;
+          overflow: hidden;
+          color: ${TEXT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.77rem;
+          font-weight: 600;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .contact-social-handle {
+          display: block;
+          overflow: hidden;
+          margin-top: 2px;
+          color: rgba(250,246,239,0.45);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.60rem;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .contact-quote {
+          position: relative;
+          margin-top: auto;
+          padding: 1.35rem 1.35rem 1.3rem;
+          border: 1px solid rgba(201,168,76,0.20);
+          border-radius: 20px;
+          background: linear-gradient(145deg, rgba(201,168,76,0.115), rgba(201,168,76,0.025));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 22px 50px rgba(0,0,0,0.16);
+          overflow: hidden;
+        }
+        .contact-quote::after {
+          content: "";
+          position: absolute;
+          right: -40px;
+          bottom: -70px;
+          width: 150px;
+          height: 150px;
+          border: 1px solid rgba(232,201,122,0.14);
+          border-radius: 50%;
+        }
+        .contact-quote p {
+          position: relative;
+          z-index: 1;
+          margin: 0.7rem 0 0;
+          color: ${GOLD_LIGHT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.98rem;
+          font-style: italic;
+          line-height: 1.85;
+        }
+        .contact-quote cite {
+          position: relative;
+          z-index: 1;
+          display: block;
+          margin-top: 0.55rem;
+          color: rgba(250,246,239,0.52);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.76rem;
+          font-style: normal;
+        }
+        .contact-form-card {
+          position: relative;
+          padding: clamp(1.3rem, 4vw, 2.8rem);
+          border: 1px solid rgba(232,201,122,0.24);
+          border-radius: clamp(24px, 4vw, 34px);
+          background:
+            linear-gradient(145deg, rgba(22,42,64,0.88) 0%, rgba(8,19,33,0.92) 56%, rgba(5,13,24,0.96) 100%);
+          box-shadow: 0 38px 100px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.11);
+          overflow: hidden;
+          backdrop-filter: blur(18px) saturate(125%);
+        }
+        .contact-form-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(circle at 100% 0%, rgba(232,201,122,0.18), transparent 28%),
+            linear-gradient(115deg, rgba(255,255,255,0.035), transparent 35%);
+          pointer-events: none;
+        }
+        .contact-form-card::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 8%;
+          right: 8%;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, ${GOLD}, ${GOLD_LIGHT}, transparent);
+          box-shadow: 0 0 20px rgba(201,168,76,0.55);
+          pointer-events: none;
+        }
+        .contact-form-content {
+          position: relative;
+          z-index: 1;
+        }
+        .contact-form-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 1rem;
+          margin-bottom: 1.75rem;
+        }
+        .contact-form-title {
+          margin: 0;
+          color: ${TEXT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(1.65rem, 3vw, 2.25rem);
+          line-height: 1.25;
+        }
+        .contact-form-copy {
+          max-width: 450px;
+          margin: 0.45rem 0 0;
+          color: ${MUTED};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.91rem;
+          line-height: 1.8;
+        }
+        .contact-form-mark {
+          display: grid;
+          place-items: center;
+          width: 44px;
+          height: 44px;
+          flex: 0 0 44px;
+          border: 1px solid rgba(232,201,122,0.30);
+          border-radius: 15px;
+          color: ${GOLD_LIGHT};
+          background: rgba(201,168,76,0.10);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+        }
+        .contact-form-fields {
+          display: flex;
+          flex-direction: column;
+          gap: 1.05rem;
+        }
+        .contact-name-email-row {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 1rem;
+        }
+        .contact-field label {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          margin: 0 0 0.45rem;
+          color: rgba(250,246,239,0.67);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.79rem;
+        }
+        .contact-field label span {
+          color: rgba(250,246,239,0.35);
+          font-size: 0.72rem;
+        }
+        .contact-submit {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          width: 100%;
+          min-height: 54px;
+          margin-top: 0.35rem;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 16px;
+          color: #07111f;
+          background: linear-gradient(115deg, #B8892D, #F2D982 48%, #C59C45);
+          box-shadow: 0 14px 31px rgba(201,168,76,0.20), inset 0 1px 0 rgba(255,255,255,0.45);
+          cursor: pointer;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 1rem;
+          font-weight: 700;
+          transition: filter 0.25s ease, box-shadow 0.25s ease;
+        }
+        .contact-submit:disabled {
+          cursor: not-allowed;
+          filter: saturate(0.35) brightness(0.85);
+        }
+        .contact-form-note {
+          display: flex;
+          justify-content: center;
+          gap: 6px;
+          margin: 0;
+          color: rgba(250,246,239,0.43);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.73rem;
+          text-align: center;
+        }
+        .contact-error {
+          border: 1px solid rgba(255,118,118,0.32);
+          border-radius: 13px;
+          padding: 0.8rem 0.9rem;
+          color: #FF9696;
+          background: rgba(212,76,76,0.10);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.86rem;
+          text-align: center;
+        }
+        .contact-success {
+          min-height: 390px;
+          display: grid;
+          align-content: center;
+          justify-items: center;
+          text-align: center;
+          padding: 1.5rem;
+        }
+        .contact-success-icon {
+          display: grid;
+          place-items: center;
+          width: 76px;
+          height: 76px;
+          border: 1px solid rgba(232,201,122,0.42);
+          border-radius: 24px;
+          color: ${GOLD_LIGHT};
+          background: rgba(201,168,76,0.12);
+          box-shadow: 0 0 0 8px rgba(201,168,76,0.055), 0 20px 40px rgba(0,0,0,0.18);
+        }
+        .contact-success h3 {
+          margin: 1.55rem 0 0.65rem;
+          color: ${GOLD_LIGHT};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 1.65rem;
+        }
+        .contact-success p {
+          max-width: 390px;
+          margin: 0;
+          color: ${MUTED};
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.92rem;
+          line-height: 1.85;
+        }
+        input::placeholder, textarea::placeholder { color: rgba(250,246,239,0.30); }
         input:-webkit-autofill, textarea:-webkit-autofill {
-          -webkit-box-shadow: 0 0 0 1000px rgba(13,27,42,0.95) inset !important;
-          -webkit-text-fill-color: #FAF6EF !important;
+          -webkit-box-shadow: 0 0 0 1000px #0c1b2d inset !important;
+          -webkit-text-fill-color: ${TEXT} !important;
+        }
+        @media (max-width: 900px) {
+          .contact-layout { grid-template-columns: 1fr; }
+          .contact-left { max-width: 720px; width: 100%; margin: 0 auto; }
+          .contact-quote { margin-top: 1.35rem; }
+        }
+        @media (max-width: 600px) {
+          .contact-hero { padding: calc(var(--site-nav-offset, 84px) + 35px) 1rem 2.9rem; }
+          .contact-main { padding: 0 1rem 4.5rem; }
+          .contact-hero-title { font-size: clamp(2.25rem, 11.5vw, 3rem); }
+          .contact-hero-actions { gap: 0.6rem; }
+          .contact-hero-action { min-height: 41px; padding: 0 14px; font-size: 0.79rem; }
+          .contact-name-email-row { grid-template-columns: 1fr; gap: 0.95rem; }
+          .contact-social-grid { gap: 0.55rem; }
+          .contact-social-link { padding: 0.8rem 0.35rem; border-radius: 14px; }
+          .contact-social-name { font-size: 0.69rem; }
+          .contact-social-handle { font-size: 0.55rem; }
+          .contact-channel, .contact-location { padding: 0.85rem; border-radius: 16px; }
+          .contact-channel-icon { width: 41px; height: 41px; flex-basis: 41px; border-radius: 13px; }
+          .contact-form-card { border-radius: 24px; padding: 1.2rem; }
+          .contact-form-header { margin-bottom: 1.35rem; }
+        }
+        @media (max-width: 370px) {
+          .contact-social-grid { grid-template-columns: 1fr; }
+          .contact-social-link { display: flex; align-items: center; gap: 0.6rem; text-align: left; padding: 0.68rem 0.8rem; }
+          .contact-social-icon { width: 30px; height: 30px; margin: 0; }
+          .contact-channel-value { font-size: 0.72rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .contact-page *, .contact-page *::before, .contact-page *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
         }
       `}</style>
 
-      <div style={{ background: BG, minHeight: "100vh" }}>
+      <div className="contact-page">
         <Seo
           title="যোগাযোগ | মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj Contact"
           description="বাংলাদেশের জনপ্রিয় কবি ও লেখক মাহবুব সরদার সবুজ-এর সঙ্গে যোগাযোগ করুন। ইমেইল, সামাজিক মাধ্যম এবং বার্তা পাঠানোর ফর্ম।"
@@ -145,294 +666,167 @@ export default function Contact() {
           jsonLd={{
             "@context": "https://schema.org",
             "@type": "ContactPage",
-            "name": "মাহবুব সরদার সবুজ — যোগাযোগ",
-            "url": "https://www.mahbubsardarsabuj.com/contact",
-            "description": "মাহবুব সরদার সবুজের সঙ্গে যোগাযোগ করুন।",
-            "author": {
+            name: "মাহবুব সরদার সবুজ — যোগাযোগ",
+            url: "https://www.mahbubsardarsabuj.com/contact",
+            description: "মাহবুব সরদার সবুজের সঙ্গে যোগাযোগ করুন।",
+            author: {
               "@type": "Person",
-              "name": "Mahbub Sardar Sabuj",
-              "url": "https://www.mahbubsardarsabuj.com/",
-              "sameAs": [
+              name: "Mahbub Sardar Sabuj",
+              url: "https://www.mahbubsardarsabuj.com/",
+              sameAs: [
                 "https://facebook.com/MahbubSardarSabuj",
                 "https://www.instagram.com/mahbub_sardar_sabuj",
-                "https://youtube.com/@MahbubSardarSabuj"
-              ]
-            }
+                "https://youtube.com/@MahbubSardarSabuj",
+              ],
+            },
           }}
         />
         <Navbar />
 
-        {/* ── HERO ── */}
-        <section
-          className="contact-hero"
-          style={{
-            paddingTop: "calc(var(--site-nav-offset, 98px) + 42px)",
-            paddingBottom: 60,
-            position: "relative",
-            overflow: "hidden",
-            textAlign: "center",
-          }}
-        >
-          {/* Dot pattern */}
-          <div style={{
-            position: "absolute", inset: 0,
-            backgroundImage: "radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-            pointerEvents: "none",
-          }} />
-          {/* Glow */}
-          <div style={{
-            position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
-            width: 600, height: 300,
-            background: "radial-gradient(ellipse, rgba(201,168,76,0.12) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }} />
-
-          <div style={{ position: "relative", zIndex: 1, maxWidth: 700, margin: "0 auto", padding: "0 1.5rem" }}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)",
-                borderRadius: 50, padding: "6px 20px", marginBottom: "1.5rem",
-              }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: GOLD, display: "inline-block", boxShadow: `0 0 8px ${GOLD}` }} />
-                <span style={{ fontFamily: "'AdorshoLipi', sans-serif", color: GOLD, fontSize: "0.75rem", letterSpacing: "0.18em" }}>যোগাযোগ</span>
+        <section className="contact-hero">
+          <div className="contact-hero-orbit" />
+          <div className="contact-hero-inner">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.58 }}>
+              <div className="contact-kicker">
+                <span className="contact-kicker-dot" />
+                <span>DIRECT CONNECTION</span>
               </div>
-
-              <h1 style={{
-                fontFamily: "'AdorshoLipi', sans-serif",
-                color: TEXT,
-                fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
-                fontWeight: 400,
-                lineHeight: 1.35,
-                marginBottom: "1.2rem",
-              }}>
-                কথা বলুন{" "}
-                <span style={{ color: GOLD, textShadow: `0 0 40px rgba(201,168,76,0.35)` }}>আমার সাথে</span>
-              </h1>
-
-              <p style={{
-                fontFamily: "'AdorshoLipi', sans-serif",
-                color: MUTED,
-                fontSize: "1rem",
-                lineHeight: 2,
-                maxWidth: 520,
-                margin: "0 auto",
-              }}>
-                পাঠকদের সাথে কথা বলতে আমি সবসময় আগ্রহী। ইমেইল করুন, সামাজিক মাধ্যমে মেসেজ পাঠান, অথবা নিচের ফর্ম ব্যবহার করুন।
+              <h1 className="contact-hero-title">কথা হোক <em>সরাসরি</em></h1>
+              <p className="contact-hero-copy">
+                লেখা, পাঠকের অনুভব কিংবা যেকোনো প্রাসঙ্গিক বিষয়ে যোগাযোগ করুন। আপনার বার্তার জন্য একটি শান্ত, সহজ ও ব্যক্তিগত জায়গা রাখলাম।
               </p>
+              <div className="contact-hero-actions">
+                <a className="contact-hero-action" href="mailto:lekhokmahbubsardarsabuj@gmail.com"><Mail size={16} /> ইমেইল করুন</a>
+                <a className="contact-hero-action" href="#contact-form"><Send size={15} /> বার্তা পাঠান</a>
+              </div>
             </motion.div>
           </div>
         </section>
 
-        {/* ── MAIN CONTENT ── */}
-        <section style={{ padding: "0 0 100px" }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1.5rem" }}>
+        <main className="contact-main">
+          <div className="contact-layout">
+            <aside className="contact-left">
+              <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, delay: 0.08 }}>
+                <div className="contact-section-label">যোগাযোগের ঠিকানা</div>
+                <h2 className="contact-left-title">আপনার বার্তা<br />আমার কাছে গুরুত্বপূর্ণ</h2>
+                <p className="contact-left-copy">
+                  ইমেইল, সামাজিক মাধ্যম অথবা বার্তা পাঠানোর ফর্ম—আপনার সুবিধামতো মাধ্যম বেছে নিন।
+                </p>
+              </motion.div>
 
-            {/* Grid: left info + right form */}
-            <div
-              className="contact-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1.45fr",
-                gap: "2.5rem",
-                alignItems: "start",
-              }}
-            >
-
-              {/* ── LEFT COLUMN ── */}
-              <div>
-                {/* Email */}
+              <div className="contact-channel-list">
                 <motion.a
                   href="mailto:lekhokmahbubsardarsabuj@gmail.com"
-                  initial={{ opacity: 0, x: -20 }}
+                  className="contact-channel"
+                  initial={{ opacity: 0, x: -22 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  whileHover={{ y: -3, boxShadow: "0 20px 50px rgba(0,0,0,0.4)" }}
-                  className="contact-email-card"
-                  style={{
-                    display: "flex", alignItems: "center", gap: "1rem",
-                    background: "rgba(201,168,76,0.06)",
-                    border: "1px solid rgba(201,168,76,0.18)",
-                    borderRadius: 18, padding: "1.3rem 1.5rem",
-                    marginBottom: "1rem", textDecoration: "none",
-                    cursor: "pointer", transition: "all 0.3s",
-                  }}
+                  transition={{ duration: 0.48, delay: 0.15 }}
                 >
-                  <div style={{
-                    width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-                    background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.25)",
-                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem",
-                  }}>✉️</div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>ইমেইল</div>
-                    <div className="contact-email-text" style={{ fontFamily: "'AdorshoLipi', sans-serif", color: TEXT, fontSize: "0.82rem", fontWeight: 500, wordBreak: "break-all" }}>lekhokmahbubsardarsabuj@gmail.com</div>
-                  </div>
-                  <div className="email-arrow" style={{ marginLeft: "auto", color: GOLD, fontSize: "1.1rem", flexShrink: 0 }}>→</div>
+                  <span className="contact-channel-icon"><Mail size={20} /></span>
+                  <span style={{ minWidth: 0 }}>
+                    <span className="contact-channel-eyebrow">ইমেইল</span>
+                    <span className="contact-channel-value">lekhokmahbubsardarsabuj@gmail.com</span>
+                  </span>
+                  <ArrowUpRight className="contact-channel-arrow" size={18} />
                 </motion.a>
 
-                {/* Location */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
+                  className="contact-location"
+                  initial={{ opacity: 0, x: -22 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.15 }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "1rem",
-                    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
-                    borderRadius: 18, padding: "1.3rem 1.5rem", marginBottom: "2rem",
-                  }}
+                  transition={{ duration: 0.48, delay: 0.21 }}
                 >
-                  <div style={{
-                    width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem",
-                  }}>📍</div>
-                  <div>
-                    <div style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.72rem", marginBottom: 4, letterSpacing: "0.1em", textTransform: "uppercase" }}>অবস্থান</div>
-                    <div style={{ fontFamily: "'AdorshoLipi', sans-serif", color: TEXT, fontSize: "0.95rem" }}>সৌদি আরব</div>
-                  </div>
-                </motion.div>
-
-                {/* Social */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <div style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.72rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1rem" }}>সামাজিক মাধ্যম</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    {socialLinks.map((s, i) => (
-                      <motion.a
-                        key={i}
-                        href={s.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        initial={{ opacity: 0, x: -15 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: 0.25 + i * 0.07 }}
-                        whileHover={{ x: 5, boxShadow: `0 8px 25px rgba(0,0,0,0.3)` }}
-                        style={{
-                          display: "flex", alignItems: "center", gap: "1rem",
-                          background: s.bg, border: `1px solid ${s.border}`,
-                          borderRadius: 16, padding: "1rem 1.2rem",
-                          textDecoration: "none", cursor: "pointer",
-                          transition: "all 0.3s",
-                        }}
-                      >
-                        <div style={{
-                          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                          background: `${s.color}18`, border: `1px solid ${s.border}`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: s.name === "Facebook" ? "1rem" : "0.9rem",
-                          fontWeight: 700, color: s.color,
-                        }}>{s.icon}</div>
-                        <div>
-                          <div style={{ fontFamily: "'AdorshoLipi', sans-serif", color: s.color, fontSize: "0.82rem", fontWeight: 600, marginBottom: 2 }}>{s.name}</div>
-                          <div style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.78rem" }}>{s.handle}</div>
-                        </div>
-                        <div style={{ marginLeft: "auto", color: s.color, opacity: 0.7 }}>→</div>
-                      </motion.a>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Quote */}
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  style={{
-                    marginTop: "2rem",
-                    padding: "1.4rem 1.8rem",
-                    background: "rgba(201,168,76,0.05)",
-                    border: "1px solid rgba(201,168,76,0.15)",
-                    borderLeft: `3px solid ${GOLD}`,
-                    borderRadius: 16,
-                  }}
-                >
-                  <p style={{ fontFamily: "'AdorshoLipi', sans-serif", color: GOLD, fontSize: "0.98rem", lineHeight: 1.9, margin: 0, fontStyle: "italic" }}>
-                    "পাঠকের ভালোবাসাই আমার লেখার শক্তি।"
-                  </p>
-                  <p style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.78rem", marginTop: 8, marginBottom: 0 }}>— মাহবুব সরদার সবুজ</p>
+                  <span className="contact-channel-icon"><MapPin size={20} /></span>
+                  <span>
+                    <span className="contact-channel-eyebrow">অবস্থান</span>
+                    <span className="contact-channel-value">সৌদি আরব</span>
+                  </span>
                 </motion.div>
               </div>
 
-              {/* ── RIGHT COLUMN: FORM ── */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.25 }}
-                style={{
-                  background: "linear-gradient(145deg, rgba(13,27,42,0.95) 0%, rgba(20,34,54,0.95) 100%)",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 28,
-                  padding: "clamp(1.5rem, 4vw, 2.5rem)",
-                  boxShadow: "0 40px 100px rgba(0,0,0,0.5)",
-                  position: "relative",
-                  overflow: "hidden",
-                  backdropFilter: "blur(10px)",
-                }}
-              >
-                {/* Top gold line */}
-                <div style={{
-                  position: "absolute", top: 0, left: 0, right: 0, height: 3,
-                  background: `linear-gradient(90deg, transparent, ${GOLD}, ${GOLD_LIGHT}, transparent)`,
-                }} />
+              <motion.div initial={{ opacity: 0, x: -22 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.28 }}>
+                <div className="contact-social-title">সামাজিক মাধ্যমে সংযুক্ত থাকুন</div>
+                <div className="contact-social-grid">
+                  {socialLinks.map((social) => {
+                    const SocialIcon = social.icon;
+                    return (
+                      <a
+                        key={social.name}
+                        className="contact-social-link"
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ "--social-color": social.color } as React.CSSProperties}
+                        aria-label={`${social.name} খুলুন`}
+                      >
+                        <span className="contact-social-icon"><SocialIcon size={18} /></span>
+                        <span className="contact-social-name">{social.name}</span>
+                        <span className="contact-social-handle">{social.handle}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </motion.div>
 
+              <motion.blockquote
+                className="contact-quote"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.52, delay: 0.38 }}
+              >
+                <Quote size={18} color={GOLD_LIGHT} />
+                <p>“পাঠকের ভালোবাসাই আমার লেখার শক্তি।”</p>
+                <cite>— মাহবুব সরদার সবুজ</cite>
+              </motion.blockquote>
+            </aside>
+
+            <motion.section
+              id="contact-form"
+              className="contact-form-card"
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.62, delay: 0.16 }}
+            >
+              <div className="contact-form-content">
                 <AnimatePresence mode="wait">
                   {status === "sent" ? (
-                    <motion.div
-                      key="success"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      style={{ textAlign: "center", padding: "3rem 1rem" }}
-                    >
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-                        style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}
-                      >✅</motion.div>
-                      <h3 style={{ fontFamily: "'AdorshoLipi', sans-serif", color: GOLD, fontSize: "1.5rem", marginBottom: "0.8rem" }}>বার্তা পাঠানো হয়েছে!</h3>
-                      <p style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.9rem", lineHeight: 1.9 }}>
-                        আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ আপনার বার্তার জন্য — আমি শীঘ্রই উত্তর দেব।
-                      </p>
+                    <motion.div key="success" className="contact-success" initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+                      <motion.div className="contact-success-icon" initial={{ scale: 0.6, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 280, delay: 0.08 }}>
+                        <Check size={35} />
+                      </motion.div>
+                      <h3>বার্তা পাঠানো হয়েছে</h3>
+                      <p>আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ আপনার সময় ও কথার জন্য—আমি শীঘ্রই উত্তর দেব।</p>
                     </motion.div>
                   ) : (
                     <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <h2 style={{ fontFamily: "'AdorshoLipi', sans-serif", color: TEXT, fontSize: "1.7rem", marginBottom: "0.4rem" }}>বার্তা পাঠান</h2>
-                      <p style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.88rem", lineHeight: 1.8, marginBottom: "1.8rem" }}>
-                        আপনার বার্তা পাঠান — আমি যত দ্রুত সম্ভব উত্তর দেব।
-                      </p>
+                      <div className="contact-form-header">
+                        <div>
+                          <h2 className="contact-form-title">একটি বার্তা লিখুন</h2>
+                          <p className="contact-form-copy">আপনার কথা সরাসরি পৌঁছে দিন। প্রয়োজনীয় ঘরগুলো পূরণ করে পাঠিয়ে দিন।</p>
+                        </div>
+                        <span className="contact-form-mark"><Sparkles size={20} /></span>
+                      </div>
 
-                      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+                      <form onSubmit={handleSubmit} className="contact-form-fields">
                         <input
                           type="text"
                           name="website"
                           value={form.website}
-                          onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+                          onChange={(event) => setForm((current) => ({ ...current, website: event.target.value }))}
                           tabIndex={-1}
                           autoComplete="off"
                           aria-hidden="true"
                           style={{ position: "absolute", left: "-9999px", opacity: 0, pointerEvents: "none" }}
                         />
 
-                        {/* Name + Email */}
-                        <div
-                          className="name-email-row"
-                          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
-                        >
-                          <div>
-                            <label style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>আপনার নাম *</label>
+                        <div className="contact-name-email-row">
+                          <div className="contact-field">
+                            <label htmlFor="contact-name">আপনার নাম *</label>
                             <input
+                              id="contact-name"
                               type="text"
                               value={form.name}
-                              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                               placeholder="পুরো নাম"
                               required
                               style={getFocusStyle("name")}
@@ -440,12 +834,13 @@ export default function Contact() {
                               onBlur={() => setFocused(null)}
                             />
                           </div>
-                          <div>
-                            <label style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>ইমেইল *</label>
+                          <div className="contact-field">
+                            <label htmlFor="contact-email">ইমেইল *</label>
                             <input
+                              id="contact-email"
                               type="email"
                               value={form.email}
-                              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                               placeholder="your@email.com"
                               required
                               style={getFocusStyle("email")}
@@ -455,13 +850,13 @@ export default function Contact() {
                           </div>
                         </div>
 
-                        {/* Subject */}
-                        <div>
-                          <label style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>বিষয় <span style={{ opacity: 0.5 }}>(ঐচ্ছিক)</span></label>
+                        <div className="contact-field">
+                          <label htmlFor="contact-subject">বিষয় <span>ঐচ্ছিক</span></label>
                           <input
+                            id="contact-subject"
                             type="text"
                             value={form.subject}
-                            onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+                            onChange={(event) => setForm((current) => ({ ...current, subject: event.target.value }))}
                             placeholder="বার্তার বিষয়"
                             style={getFocusStyle("subject")}
                             onFocus={() => setFocused("subject")}
@@ -469,94 +864,42 @@ export default function Contact() {
                           />
                         </div>
 
-                        {/* Message */}
-                        <div>
-                          <label style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.78rem", display: "block", marginBottom: 6 }}>বার্তা *</label>
+                        <div className="contact-field">
+                          <label htmlFor="contact-message">বার্তা *</label>
                           <textarea
+                            id="contact-message"
                             value={form.message}
-                            onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                            onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
                             placeholder="আপনার বার্তা লিখুন..."
                             required
                             rows={6}
-                            style={{
-                              ...getFocusStyle("message"),
-                              resize: "vertical",
-                              lineHeight: 1.9,
-                              minHeight: 130,
-                            }}
+                            style={{ ...getFocusStyle("message"), resize: "vertical", lineHeight: 1.9, minHeight: 148 }}
                             onFocus={() => setFocused("message")}
                             onBlur={() => setFocused(null)}
                           />
                         </div>
 
-                        {/* Submit button */}
                         <motion.button
                           type="submit"
+                          className="contact-submit"
                           disabled={status === "sending"}
-                          whileHover={status !== "sending" ? { scale: 1.02, boxShadow: `0 20px 50px rgba(201,168,76,0.35)` } : {}}
-                          whileTap={status !== "sending" ? { scale: 0.98 } : {}}
-                          style={{
-                            background: status === "sending"
-                              ? "rgba(201,168,76,0.35)"
-                              : `linear-gradient(135deg, ${GOLD} 0%, ${GOLD_LIGHT} 100%)`,
-                            color: "#060E1A",
-                            border: "none",
-                            borderRadius: 50,
-                            padding: "16px 40px",
-                            fontFamily: "'AdorshoLipi', sans-serif",
-                            fontWeight: 700,
-                            fontSize: "1rem",
-                            cursor: status === "sending" ? "not-allowed" : "pointer",
-                            boxShadow: "0 10px 30px rgba(201,168,76,0.2)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 10,
-                            marginTop: "0.3rem",
-                            transition: "background 0.3s",
-                          }}
+                          whileHover={status !== "sending" ? { y: -2, boxShadow: "0 20px 42px rgba(201,168,76,0.34)" } : {}}
+                          whileTap={status !== "sending" ? { scale: 0.985 } : {}}
                         >
-                          {status === "sending" ? (
-                            <>
-                              <motion.span
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                style={{ display: "inline-block", fontSize: "1.1rem" }}
-                              >⟳</motion.span>
-                              পাঠানো হচ্ছে...
-                            </>
-                          ) : (
-                            <>✉️ বার্তা পাঠান</>
-                          )}
+                          {status === "sending" ? <><motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>◌</motion.span> পাঠানো হচ্ছে...</> : <><Send size={18} /> বার্তা পাঠান</>}
                         </motion.button>
 
-                        {errorMsg && (
-                          <div style={{
-                            background: "rgba(255,80,80,0.08)",
-                            border: "1px solid rgba(255,80,80,0.25)",
-                            borderRadius: 10,
-                            padding: "10px 14px",
-                            color: "#ff6b6b",
-                            fontFamily: "'AdorshoLipi', sans-serif",
-                            fontSize: "0.85rem",
-                            textAlign: "center",
-                          }}>
-                            ⚠️ {errorMsg}
-                          </div>
-                        )}
-                        <p style={{ fontFamily: "'AdorshoLipi', sans-serif", color: MUTED, fontSize: "0.73rem", textAlign: "center", margin: 0 }}>
-                          * চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক
-                        </p>
+                        {errorMsg && <div className="contact-error" role="alert">{errorMsg}</div>}
+                        <p className="contact-form-note"><MessageCircle size={13} /> * চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক</p>
                       </form>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
-            </div>
+              </div>
+            </motion.section>
           </div>
-        </section>
+        </main>
 
-        {/* AdSense Ad */}
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "1.5rem 1rem" }}>
           <AdSenseAd adSlot={AD_SLOTS.CONTACT_BOTTOM} adFormat="auto" fullWidthResponsive={true} />
         </div>
