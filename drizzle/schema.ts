@@ -74,7 +74,10 @@ export const writingPosts = mysqlTable("writing_posts", {
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  feedIdx: index("writing_posts_status_feed_idx").on(table.status, table.featured, table.boostedScore, table.createdAt),
+  categoryFeedIdx: index("writing_posts_status_category_feed_idx").on(table.status, table.category, table.featured, table.boostedScore, table.createdAt),
+}));
 
 export type WritingPost = typeof writingPosts.$inferSelect;
 export type InsertWritingPost = typeof writingPosts.$inferInsert;
@@ -88,7 +91,9 @@ export const writingComments = mysqlTable("writing_comments", {
   status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  postStatusIdx: index("writing_comments_post_status_idx").on(table.postId, table.status),
+}));
 
 export type WritingComment = typeof writingComments.$inferSelect;
 export type InsertWritingComment = typeof writingComments.$inferInsert;
@@ -100,7 +105,10 @@ export const writingReactions = mysqlTable("writing_reactions", {
   type: mysqlEnum("type", ["like", "love", "inspiring", "sad"]).default("like").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  postIdx: index("writing_reactions_post_idx").on(table.postId),
+  userPostIdx: index("writing_reactions_user_post_idx").on(table.userOpenId, table.postId),
+}));
 
 export type WritingReaction = typeof writingReactions.$inferSelect;
 export type InsertWritingReaction = typeof writingReactions.$inferInsert;

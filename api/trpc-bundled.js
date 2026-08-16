@@ -258,7 +258,10 @@ var writingPosts = mysqlTable("writing_posts", {
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
+}, (table) => ({
+  feedIdx: index("writing_posts_status_feed_idx").on(table.status, table.featured, table.boostedScore, table.createdAt),
+  categoryFeedIdx: index("writing_posts_status_category_feed_idx").on(table.status, table.category, table.featured, table.boostedScore, table.createdAt)
+}));
 var writingComments = mysqlTable("writing_comments", {
   id: int("id").autoincrement().primaryKey(),
   postId: int("postId").notNull(),
@@ -268,7 +271,9 @@ var writingComments = mysqlTable("writing_comments", {
   status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
+}, (table) => ({
+  postStatusIdx: index("writing_comments_post_status_idx").on(table.postId, table.status)
+}));
 var writingReactions = mysqlTable("writing_reactions", {
   id: int("id").autoincrement().primaryKey(),
   postId: int("postId").notNull(),
@@ -276,7 +281,10 @@ var writingReactions = mysqlTable("writing_reactions", {
   type: mysqlEnum("type", ["like", "love", "inspiring", "sad"]).default("like").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
-});
+}, (table) => ({
+  postIdx: index("writing_reactions_post_idx").on(table.postId),
+  userPostIdx: index("writing_reactions_user_post_idx").on(table.userOpenId, table.postId)
+}));
 var writingBookmarks = mysqlTable("writing_bookmarks", {
   id: int("id").autoincrement().primaryKey(),
   postId: int("postId").notNull(),
@@ -1964,6 +1972,10 @@ function addExpressCompatibility(req, res) {
   });
   return { compatibleReq, compatibleRes };
 }
+function createPublicVercelContext({ req, res }) {
+  const { compatibleReq, compatibleRes } = addExpressCompatibility(req, res);
+  return { req: compatibleReq, res: compatibleRes, user: null };
+}
 async function createVercelContext({ req, res }) {
   const { compatibleReq, compatibleRes } = addExpressCompatibility(req, res);
   let user = null;
@@ -1989,6 +2001,23 @@ function getTrpcPath(req) {
   const routePrefix = "/api/trpc/";
   if (pathname.startsWith(routePrefix)) return decodeURIComponent(pathname.slice(routePrefix.length));
   return "";
+}
+var ANONYMOUS_CACHEABLE_TRPC_PROCEDURES = /* @__PURE__ */ new Set([
+  "writingPlatform.listPosts",
+  "writingPlatform.listPostsPaginated",
+  "writingPlatform.searchPosts",
+  "writingPlatform.getPostMedia",
+  "writingPlatform.listRecentComments",
+  "writingPlatform.listActiveChallenges",
+  "writingPlatform.listEditorialPicks"
+]);
+function hasAppSession(req) {
+  return /(?:^|;\\s*)app_session_id=/.test(req.headers.cookie || "");
+}
+function isAnonymousCacheableRead(path, req) {
+  if (req.method !== "GET" || hasAppSession(req)) return false;
+  const procedures = path.split(",").filter(Boolean);
+  return procedures.length > 0 && procedures.every((procedure) => ANONYMOUS_CACHEABLE_TRPC_PROCEDURES.has(procedure));
 }
 function sendFunctionError(res, error) {
   const message = error instanceof Error ? error.message : String(error);
@@ -2286,12 +2315,18 @@ async function handler(req, res) {
     return;
   }
   try {
+    const trpcPath = getTrpcPath(req);
+    const canUseAnonymousFeedCache = isAnonymousCacheableRead(trpcPath, req);
+    if (canUseAnonymousFeedCache) {
+      res.setHeader("Cache-Control", "public, s-maxage=30, stale-while-revalidate=120");
+      res.setHeader("Vary", "Cookie");
+    }
     await nodeHTTPRequestHandler({
       router: appRouter,
-      path: getTrpcPath(req),
+      path: trpcPath,
       req,
       res,
-      createContext: createVercelContext
+      createContext: canUseAnonymousFeedCache ? createPublicVercelContext : createVercelContext
     });
   } catch (error) {
     sendFunctionError(res, error);

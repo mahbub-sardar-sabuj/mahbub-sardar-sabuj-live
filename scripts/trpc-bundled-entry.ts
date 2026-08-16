@@ -83,6 +83,11 @@ function addExpressCompatibility(req: IncomingMessage, res: ServerResponse) {
   return { compatibleReq, compatibleRes };
 }
 
+function createPublicVercelContext({ req, res }: { req: IncomingMessage; res: ServerResponse }) {
+  const { compatibleReq, compatibleRes } = addExpressCompatibility(req, res);
+  return { req: compatibleReq, res: compatibleRes, user: null };
+}
+
 async function createVercelContext({ req, res }: { req: IncomingMessage; res: ServerResponse }) {
   const { compatibleReq, compatibleRes } = addExpressCompatibility(req, res);
   let user = null;
@@ -111,6 +116,29 @@ function getTrpcPath(req: CompatibleRequest): string {
   const routePrefix = "/api/trpc/";
   if (pathname.startsWith(routePrefix)) return decodeURIComponent(pathname.slice(routePrefix.length));
   return "";
+}
+
+// These reads are safe to serve without identity resolution only for visitors who have no
+// application session. Signed-in readers still receive personalised bookmarks, reactions,
+// feedback and ownership controls through the normal authenticated context.
+const ANONYMOUS_CACHEABLE_TRPC_PROCEDURES = new Set([
+  "writingPlatform.listPosts",
+  "writingPlatform.listPostsPaginated",
+  "writingPlatform.searchPosts",
+  "writingPlatform.getPostMedia",
+  "writingPlatform.listRecentComments",
+  "writingPlatform.listActiveChallenges",
+  "writingPlatform.listEditorialPicks",
+]);
+
+function hasAppSession(req: IncomingMessage) {
+  return /(?:^|;\\s*)app_session_id=/.test(req.headers.cookie || "");
+}
+
+function isAnonymousCacheableRead(path: string, req: IncomingMessage) {
+  if (req.method !== "GET" || hasAppSession(req)) return false;
+  const procedures = path.split(",").filter(Boolean);
+  return procedures.length > 0 && procedures.every((procedure) => ANONYMOUS_CACHEABLE_TRPC_PROCEDURES.has(procedure));
 }
 
 function sendFunctionError(res: ServerResponse, error: unknown) {
@@ -447,12 +475,20 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
   // Default: tRPC handler
   try {
+    const trpcPath = getTrpcPath(req as CompatibleRequest);
+    const canUseAnonymousFeedCache = isAnonymousCacheableRead(trpcPath, req);
+    if (canUseAnonymousFeedCache) {
+      // Feed data changes through moderated writes, not on every read. A short CDN TTL gives
+      // anonymous visitors a fast first paint while preserving timely updates.
+      res.setHeader("Cache-Control", "public, s-maxage=30, stale-while-revalidate=120");
+      res.setHeader("Vary", "Cookie");
+    }
     await nodeHTTPRequestHandler({
       router: appRouter,
-      path: getTrpcPath(req as CompatibleRequest),
+      path: trpcPath,
       req,
       res,
-      createContext: createVercelContext,
+      createContext: canUseAnonymousFeedCache ? createPublicVercelContext : createVercelContext,
     });
   } catch (error) {
     sendFunctionError(res, error);
