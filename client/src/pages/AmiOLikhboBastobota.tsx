@@ -439,7 +439,10 @@ function ReactionBar({
   const reactMutation = trpc.writingPlatform.reactToPost.useMutation({
     onSuccess: () => {
       if (postSlug) utils.writingPlatform.getPostBySlug.invalidate({ slug: postSlug });
-      else utils.writingPlatform.listPosts.invalidate();
+      else {
+        utils.writingPlatform.listPosts.invalidate();
+        utils.writingPlatform.listPostsPaginated.invalidate();
+      }
     },
   });
 
@@ -567,6 +570,7 @@ function CommentSection({
       setText("");
       setSubmitted(true);
       utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.listPostsPaginated.invalidate();
       setTimeout(() => setSubmitted(false), 3000);
     },
   });
@@ -720,9 +724,28 @@ const PostCard = memo(function PostCard({
   // Lazy load image: only fetch mediaUrl when post has image (base64 is truncated in feed)
   const hasImage = post.mediaType === "image" && post.mediaUrl;
   const isBase64InFeed = hasImage && post.mediaUrl!.startsWith("data:");
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const [mediaVisible, setMediaVisible] = useState(false);
+
+  useEffect(() => {
+    if (!isBase64InFeed) return;
+    if (!mediaRef.current || typeof IntersectionObserver === "undefined") {
+      setMediaVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setMediaVisible(true);
+      observer.disconnect();
+    }, { rootMargin: "320px 0px" });
+    observer.observe(mediaRef.current);
+    return () => observer.disconnect();
+  }, [isBase64InFeed]);
+
   const mediaQuery = trpc.writingPlatform.getPostMedia.useQuery(
     { postId: post.id },
-    { enabled: !!isBase64InFeed, staleTime: 10 * 60 * 1000 }
+    { enabled: Boolean(isBase64InFeed && mediaVisible), staleTime: 10 * 60 * 1000 }
   );
   const resolvedMediaUrl = isBase64InFeed
     ? (mediaQuery.data?.mediaUrl ?? null)
@@ -735,7 +758,7 @@ const PostCard = memo(function PostCard({
   const showTitle = post.title && post.title.trim() !== contentFirstLine.trim() && post.title !== "বাস্তবতার গল্প";
 
   return (
-    <article className="amio-post-card" style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "1rem" }}>
+    <article className="amio-post-card" style={{ ...cardStyle, padding: "clamp(1rem, 3vw, 1.5rem)", display: "grid", gap: "1rem", contentVisibility: "auto", containIntrinsicSize: "500px" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {post.authorAvatarUrl ? (
@@ -856,7 +879,7 @@ const PostCard = memo(function PostCard({
 
       {/* Media: normal URL shown directly; base64 lazy-loaded via getPostMedia */}
       {post.mediaType === "image" && hasImage && (
-        <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
+        <div ref={isBase64InFeed ? mediaRef : undefined} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
           {resolvedMediaUrl ? (
             <img
               src={resolvedMediaUrl}
@@ -1059,6 +1082,7 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
       setSubmitted(true);
       setPostError("");
       utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.listPostsPaginated.invalidate();
       utils.writingPlatform.myPosts.invalidate();
       setTimeout(() => onClose(), 2200);
     },
@@ -1332,6 +1356,7 @@ function EditPostModal({ post, onClose, authorName, avatarUrl }: { post: Enriche
     onSuccess: () => {
       setSubmitted(true);
       utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.listPostsPaginated.invalidate();
       utils.writingPlatform.myPosts.invalidate();
       setTimeout(() => onClose(), 2200);
     },
@@ -1512,6 +1537,7 @@ function PostDetail({
       setCommentSubmitted(true);
       utils.writingPlatform.getPostBySlug.invalidate({ slug });
       utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.listPostsPaginated.invalidate();
       setTimeout(() => setCommentSubmitted(false), 3000);
     },
   });
@@ -1790,13 +1816,18 @@ export default function AmiOLikhboBastobota() {
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [editingPost, setEditingPost] = useState<EnrichedPost | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("all");
+  const [feedLimit, setFeedLimit] = useState(6);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const postsQuery = trpc.writingPlatform.listPosts.useQuery(
-    undefined,
+  const postsQuery = trpc.writingPlatform.listPostsPaginated.useQuery(
+    {
+      limit: feedLimit,
+      offset: 0,
+      category: selectedCategory === "all" ? undefined : selectedCategory,
+    },
     {
       refetchInterval: false,
       refetchIntervalInBackground: false,
-      enabled: !searchActive,
+      enabled: !searchActive && !showMyPosts,
       retry: false,
       staleTime: 300000,
       gcTime: 600000,
@@ -1812,6 +1843,7 @@ export default function AmiOLikhboBastobota() {
   const deletePostMutation = trpc.writingPlatform.deletePost.useMutation({
     onSuccess: () => {
       utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.listPostsPaginated.invalidate();
       utils.writingPlatform.myPosts.invalidate();
     },
   });
@@ -1822,10 +1854,20 @@ export default function AmiOLikhboBastobota() {
   const activeFeedQuery = searchActive && debouncedSearch_.length >= 2 ? searchResultsQuery : postsQuery;
   const feedHasError = Boolean(activeFeedQuery.isError);
   const feedIsLoading = Boolean(activeFeedQuery.isLoading);
+  const [feedLoadingDelayed, setFeedLoadingDelayed] = useState(false);
+  useEffect(() => {
+    if (!feedIsLoading) {
+      setFeedLoadingDelayed(false);
+      return;
+    }
+    const timeout = window.setTimeout(() => setFeedLoadingDelayed(true), 8000);
+    return () => window.clearTimeout(timeout);
+  }, [feedIsLoading]);
+  const showFeedRecovery = !showMyPosts && feedIsLoading && feedLoadingDelayed;
   const posts = useMemo(() => (
     (searchActive && debouncedSearch_.length >= 2
       ? (searchResultsQuery.data ?? [])
-      : (postsQuery.data ?? [])) as EnrichedPost[]
+      : (postsQuery.data?.posts ?? [])) as EnrichedPost[]
   ), [searchActive, debouncedSearch_, searchResultsQuery.data, postsQuery.data]);
   const filteredPosts = useMemo(() => (
     selectedCategory === "all" ? posts : posts.filter((p) => p.category === selectedCategory)
@@ -1839,6 +1881,10 @@ export default function AmiOLikhboBastobota() {
       setShowMyPosts(false);
     }
   }, [isAuthenticated, showMyPosts]);
+
+  useEffect(() => {
+    setFeedLimit(6);
+  }, [selectedCategory]);
 
     const handleLoginRequired = useCallback(() => {
     setShowLoginPrompt(true);
@@ -2259,6 +2305,19 @@ export default function AmiOLikhboBastobota() {
                 <div style={{ textAlign: "center", padding: "2rem", color: "rgba(253,246,236,0.45)", fontSize: "0.9rem" }}>
                   অনুসন্ধানের জন্য কমপক্ষে ২টি অক্ষর লিখুন।
                 </div>
+              ) : showFeedRecovery ? (
+                <div style={{ ...cardStyle, padding: "clamp(1.5rem, 6vw, 2rem)", textAlign: "center", display: "grid", gap: "0.75rem" }}>
+                  <RefreshCw size={40} color="rgba(247,213,111,0.55)" style={{ margin: "0 auto" }} />
+                  <div style={{ color: "#F7D56F", fontWeight: 900 }}>
+                    পোস্ট লোড হতে স্বাভাবিকের চেয়ে বেশি সময় লাগছে।
+                  </div>
+                  <p style={{ margin: 0, color: "rgba(253,246,236,0.58)", fontSize: "0.9rem", lineHeight: 1.7 }}>
+                    সংযোগ সাময়িকভাবে ব্যস্ত হতে পারে। আপনি আবার চেষ্টা করতে পারেন—পেজটি আটকে থাকবে না।
+                  </p>
+                  <ActionButton onClick={() => { setFeedLoadingDelayed(false); postsQuery.refetch(); }} variant="ghost" small>
+                    <RefreshCw size={14} /> আবার চেষ্টা করুন
+                  </ActionButton>
+                </div>
               ) : (showMyPosts ? myPostsQuery.isLoading : feedIsLoading) ? (
                 <div style={{ display: "grid", gap: "1rem" }}>
                   {[1,2,3].map(i => (
@@ -2327,6 +2386,19 @@ export default function AmiOLikhboBastobota() {
                       />
                     </div>
                   ))}
+                  {!searchActive && !showMyPosts && Boolean(postsQuery.data?.hasMore) && feedLimit < 50 && (
+                    <div style={{ textAlign: "center", paddingTop: "0.35rem" }}>
+                      <ActionButton
+                        onClick={() => setFeedLimit((current) => Math.min(current + 6, 50))}
+                        variant="ghost"
+                        small
+                        disabled={postsQuery.isFetching}
+                      >
+                        {postsQuery.isFetching ? <RefreshCw size={14} style={{ animation: "spin 0.8s linear infinite" }} /> : <ChevronDown size={14} />}
+                        {postsQuery.isFetching ? "পোস্ট লোড হচ্ছে..." : "আরও পোস্ট দেখুন"}
+                      </ActionButton>
+                    </div>
+                  )}
                 </div>
               )}
               </>
