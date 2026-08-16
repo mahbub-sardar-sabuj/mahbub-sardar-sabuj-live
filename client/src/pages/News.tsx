@@ -8,13 +8,14 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, X, Share2, Facebook, Twitter, MessageCircle, Link2, Check,
-  ThumbsUp, ExternalLink, ArrowRight, Radio, ChevronRight, Clock, Eye
+  ThumbsUp, ExternalLink, ArrowRight, Radio, ChevronRight, Clock, Eye, Newspaper, Feather, BookOpen, ArrowUpRight, BadgeCheck, Sparkles
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Seo, { SITE_URL } from "../components/Seo";
 import { newsData as allNewsData } from "../data/newsData";
 import type { NewsItem } from "../data/newsData";
+import { PRINTED_BOOKS, FREE_EBOOKS, bookActionHref, bookActionLabel } from "../data/bookCatalog";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 interface Comment {
   id: number;
@@ -32,10 +33,10 @@ interface Comment {
 
 // Breaking news ticker items
 const breakingNews = [
-  "১১০ হাজার ফলোয়ার পূর্ণ: কৃতজ্ঞতা জানালেন লেখক মাহবুব সরদার সবুজ",
-  "\"ডিসেম্বরের শহরে\" পাঠকমহলে ব্যাপক সাড়া ফেলেছে",
-  "ঢাকা বাতিঘরে তরুণ আবৃত্তিকারদের বই-পরিচিতি অনুষ্ঠিত",
-  "সরদার সংবাদ প্র্যাটফর্মে এখন সংবাদ ও পরিচিতি প্রকাশের সুযোগ",
+  "বই ডেস্ক: মাহবুব সরদার সবুজের ‘অভিমান’ এখন সরাসরি অর্ডার করা যাচ্ছে",
+  "বই ডেস্ক: ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ এখন সরাসরি অর্ডার করা যাচ্ছে",
+  "প্রকাশিত বইয়ের খবর, পাঠের পথ ও সাহিত্যিক আপডেট—এক ঠিকানায় সরদার সংবাদ",
+  "লেখকের নির্বাচিত ই-বুক সংগ্রহ এখন অনলাইনে বিনামূল্যে পড়ুন",
 ];
 
 export default function News() {
@@ -240,6 +241,11 @@ export default function News() {
         }
         .news-card:hover .card-img { transform: scale(1.06); }
         .news-card:hover .read-btn { gap: 10px; }
+        .book-breaking-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: clamp(0.9rem, 2vw, 1.25rem);
+        }
         .news-card-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -300,6 +306,9 @@ export default function News() {
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 4px; }
         @media (max-width: 767px) {
+          .book-breaking-grid {
+            grid-template-columns: 1fr;
+          }
           .news-card-grid {
             grid-template-columns: 1fr;
             gap: 1.1rem;
@@ -328,6 +337,8 @@ export default function News() {
         }
         @media (max-width: 390px) {
           .news-thumb { min-height: 170px; }
+          .sardar-news-brand-caption { display: none !important; }
+          .book-order-cta { transform: translateX(-36px); }
         }
       `}</style>
 
@@ -389,34 +400,25 @@ export default function News() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: 14 }}
+            style={{ display: "grid", justifyItems: "center", width: "100%", marginBottom: 18, position: "relative", zIndex: 1 }}
           >
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <img
-                src="/images/sardar-sangbad-logo-final.png"
-                alt="সরদার সংবাদ - মাহবুব সরদার সবুজের সাহিত্য ও সংবাদ পোর্টাল"
-                loading="eager"
-                decoding="async"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                style={{
-                  height: "auto",
-                  maxWidth: "min(88vw, 580px)",
-                  width: "min(88vw, 580px)",
-                  display: "block",
-                  objectFit: "contain",
-                  filter: "drop-shadow(0 4px 24px rgba(245,166,35,0.2))",
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              />
-              {/* Shimmer overlay */}
-              <div className="logo-shimmer-overlay" />
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "clamp(0.75rem, 3vw, 1.15rem)", padding: "0.55rem 0.8rem 0.55rem 0.6rem", borderRadius: 24, background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025))", border: "1px solid rgba(247,213,111,0.24)", boxShadow: "0 18px 44px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.1)", maxWidth: "calc(100vw - 2rem)" }}>
+              <div aria-hidden="true" style={{ width: "clamp(52px, 10vw, 68px)", height: "clamp(52px, 10vw, 68px)", borderRadius: 20, flexShrink: 0, display: "grid", placeItems: "center", background: "linear-gradient(145deg, #FFE9A7 0%, #E6AE38 52%, #9A6018 100%)", boxShadow: "0 9px 22px rgba(230,174,56,0.25), inset 0 1px 0 rgba(255,255,255,0.8)", color: "#0A1733", position: "relative", overflow: "hidden" }}>
+                <Newspaper size={29} strokeWidth={1.8} />
+                <Feather size={14} strokeWidth={2} style={{ position: "absolute", right: 7, bottom: 7, color: "#7B4614" }} />
+              </div>
+              <div style={{ textAlign: "left", minWidth: 0, paddingRight: "0.35rem" }}>
+                <div style={{ color: "#F7D56F", fontSize: "0.66rem", fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", fontFamily: "'AdorshoLipi', sans-serif", marginBottom: 2 }}>MAHBUB SARDAR SABUJ PRESENTS</div>
+                <h1 style={{ margin: 0, color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 7vw, 4.2rem)", letterSpacing: "-0.045em", lineHeight: 0.95, textWrap: "balance" }}>সরদার সংবাদ</h1>
+                <div style={{ color: "rgba(255,248,233,0.68)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "clamp(0.74rem, 2.25vw, 0.95rem)", marginTop: 6 }}>বই, সাহিত্য ও মানুষের অনুভূতির নির্ভরযোগ্য পাতা</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 8, color: "rgba(255,248,233,0.62)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.75rem", letterSpacing: "0.06em" }}>
+              <span style={{ width: 22, height: 1, background: "rgba(247,213,111,0.48)" }} />
+              সাহিত্য ডেস্ক · বই ডেস্ক · পাঠের সংবাদ
+              <span style={{ width: 22, height: 1, background: "rgba(247,213,111,0.48)" }} />
             </div>
           </motion.div>
-          {/* Visually hidden H1 for SEO — logo image is the visual title */}
-          <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>
-            সরদার সংবাদ | বাংলা সাহিত্য আপডেট | মাহবুব সরদার সবুজ
-          </h1>
 
           {/* Breaking ticker bar — premium redesign */}
           <motion.div
@@ -537,6 +539,33 @@ export default function News() {
       </div>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 100px" }}>
+        <section aria-label="বই ডেস্ক" style={{ marginTop: "clamp(1.25rem, 3vw, 2.2rem)", marginBottom: "clamp(2rem, 5vw, 4rem)", padding: "clamp(1rem, 3vw, 1.45rem)", borderRadius: 30, position: "relative", overflow: "hidden", background: "linear-gradient(135deg, rgba(247,213,111,0.13) 0%, rgba(19,45,94,0.68) 43%, rgba(6,14,26,0.95) 100%)", border: "1px solid rgba(247,213,111,0.26)", boxShadow: "0 24px 58px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
+          <div aria-hidden="true" style={{ position: "absolute", width: 360, height: 360, borderRadius: "50%", top: -240, right: -120, background: "radial-gradient(circle, rgba(247,213,111,0.22), transparent 68%)", pointerEvents: "none" }} />
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem", position: "relative" }}>
+            <div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "#F7D56F", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.76rem", fontWeight: 900, letterSpacing: "0.12em", textTransform: "uppercase" }}><BookOpen size={14} /> ব্রেকিং বুক ডেস্ক</div>
+              <h2 style={{ color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "clamp(1.65rem, 4vw, 2.55rem)", margin: "0.28rem 0 0", lineHeight: 1.2 }}>মাহবুব সরদার সবুজের বই এখন পাঠকের কাছে</h2>
+              <p style={{ color: "rgba(255,248,233,0.7)", fontFamily: "'AdorshoLipi', sans-serif", margin: "0.45rem 0 0", lineHeight: 1.65, maxWidth: 660 }}>দুটি মুদ্রিত বই সরাসরি অর্ডার করা যাচ্ছে। <Sparkles size={14} style={{ display: "inline", verticalAlign: "-2px", margin: "0 3px" }} /> পাশাপাশি নির্বাচিত {FREE_EBOOKS.length}টি ই-বুক অনলাইনে বিনামূল্যে পড়ার সুযোগ রয়েছে।</p>
+            </div>
+            <a href="/ebooks" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "#F7D56F", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 900, textDecoration: "none", borderBottom: "1px solid rgba(247,213,111,0.48)", paddingBottom: 3 }}>সব বই দেখুন <ArrowRight size={15} /></a>
+          </div>
+
+          <div className="book-breaking-grid" style={{ position: "relative" }}>
+            {PRINTED_BOOKS.map((book, index) => (
+              <article key={book.id} style={{ display: "grid", gridTemplateColumns: "clamp(86px, 18vw, 118px) minmax(0, 1fr)", gap: "clamp(0.8rem, 2vw, 1.15rem)", alignItems: "center", minWidth: 0, padding: "clamp(0.75rem, 2.4vw, 1rem)", borderRadius: 22, background: "linear-gradient(135deg, rgba(255,255,255,0.105), rgba(255,255,255,0.035))", border: `1px solid ${book.accentColor}66`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)" }}>
+                <div style={{ aspectRatio: "2 / 3", borderRadius: 14, overflow: "hidden", background: "rgba(6,14,26,0.62)", boxShadow: "0 13px 26px rgba(0,0,0,0.34)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                  <img src={book.cover} alt={`${book.title} বইয়ের প্রচ্ছদ`} loading={index === 0 ? "eager" : "lazy"} decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: book.accentColor, fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.73rem", fontWeight: 900 }}><BadgeCheck size={14} /> যাচাইকৃত বই সংবাদ</div>
+                  <h3 style={{ color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "clamp(1.1rem, 2.2vw, 1.4rem)", lineHeight: 1.25, margin: "0.28rem 0" }}>{book.title}</h3>
+                  <p style={{ color: "rgba(255,248,233,0.66)", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.84rem", lineHeight: 1.55, margin: "0 0 0.7rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{book.description}</p>
+                  <a className="book-order-cta" href={bookActionHref(book)} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#101B34", background: book.accentColor, textDecoration: "none", padding: "0.48rem 0.72rem", borderRadius: 999, fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.8rem", fontWeight: 900, boxShadow: `0 8px 20px ${book.accentColor}44` }}>{bookActionLabel(book)} <ArrowUpRight size={14} /></a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
 
         {/* ── CATEGORY FILTER ── */}
         <div style={{
