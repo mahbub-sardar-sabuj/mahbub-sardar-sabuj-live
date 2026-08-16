@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Facebook, ExternalLink, Mic, Play, Copy, Check } from "lucide-react";
+import { Facebook, ExternalLink, Mic, Play, Copy, Check, ArrowRight, BadgeCheck, Headphones, Sparkles, Volume2 } from "lucide-react";
 import { useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,6 +13,8 @@ import { facebookPageUrl, facebookRecitations } from "@/data/facebookRecitations
 export default function FacebookRecitations() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const featuredRecitation = facebookRecitations[0]!;
+  const archiveRecitations = facebookRecitations.slice(1);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
@@ -173,8 +175,19 @@ export default function FacebookRecitations() {
               margin: "0 0 2rem",
             }}
           >
-            মাহবুব সরদার সবুজের নির্বাচিত আবৃত্তির সংকলন — অনুভূতির কণ্ঠস্বর
+            মাহবুব সরদার সবুজের নির্বাচিত আবৃত্তির সংকলন — লেখা থেকে কণ্ঠে, অনুভূতির আরও কাছে।
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.4 }}
+            className="recitation-hero-facts"
+          >
+            <span><Volume2 size={14} /> {facebookRecitations.length}টি নির্বাচিত আবৃত্তি</span>
+            <span><Headphones size={14} /> কবিতা ও অনুভূতির কণ্ঠ</span>
+            <span><BadgeCheck size={14} /> অফিশিয়াল Facebook archive</span>
+          </motion.div>
 
           {/* Facebook Page Button */}
           <motion.a
@@ -183,7 +196,7 @@ export default function FacebookRecitations() {
             rel="noopener noreferrer"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
             whileHover={{ y: -3, boxShadow: "0 20px 40px rgba(201,168,76,0.3)" }}
             style={{
               display: "inline-flex",
@@ -201,7 +214,7 @@ export default function FacebookRecitations() {
               transition: "box-shadow 0.3s",
             }}
           >
-            <Facebook size={17} /> Facebook পেইজ <ExternalLink size={14} />
+            <Facebook size={17} /> সব আবৃত্তির update দেখুন <ExternalLink size={14} />
           </motion.a>
         </div>
 
@@ -213,6 +226,47 @@ export default function FacebookRecitations() {
           background: "linear-gradient(to bottom, transparent, #060E1A)",
           pointerEvents: "none",
         }} />
+      </section>
+
+      <section aria-label="নির্বাচিত আবৃত্তি" className="recitation-spotlight-section">
+        <div className="recitation-spotlight-grid">
+          <motion.a
+            href={featuredRecitation.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            whileHover={{ y: -5 }}
+            className="recitation-spotlight-cover"
+          >
+            <img src={featuredRecitation.thumbnail} alt={`${featuredRecitation.title} আবৃত্তির প্রচ্ছদ`} />
+            <div className="recitation-spotlight-shade" />
+            <span className="recitation-spotlight-badge"><Sparkles size={14} /> নির্বাচিত শ্রবণ</span>
+            <span className="recitation-spotlight-play"><Play size={22} fill="currentColor" /></span>
+            <span className="recitation-spotlight-meta">REEL 01 <ArrowRight size={14} /></span>
+          </motion.a>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ delay: 0.08 }}
+            className="recitation-spotlight-copy"
+          >
+            <div className="recitation-kicker"><Headphones size={15} /> আজকের শুনুন</div>
+            <h2>{featuredRecitation.title}</h2>
+            <p>{featuredRecitation.description}</p>
+            <div className="recitation-spotlight-details">
+              <span><Mic size={14} /> মাহবুব সরদার সবুজের কণ্ঠ</span>
+              <span><Facebook size={14} /> Facebook Reel</span>
+            </div>
+            <a href={featuredRecitation.url} target="_blank" rel="noopener noreferrer" className="recitation-primary-action">
+              <Play size={16} fill="currentColor" /> এখন আবৃত্তি শুনুন <ExternalLink size={14} />
+            </a>
+            <div className="recitation-source-note"><BadgeCheck size={14} /> Play করতে Facebook Reel-এ খুলবে</div>
+          </motion.div>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -241,25 +295,14 @@ export default function FacebookRecitations() {
 
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem", position: "relative", zIndex: 1 }}>
 
-          {/* Section count */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: "2.5rem",
-          }}>
-            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(201,168,76,0.3), transparent)" }} />
-            <span style={{
-              fontFamily: "'AdorshoLipi', sans-serif",
-              color: "rgba(201,168,76,0.6)",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-            }}>
-              {facebookRecitations.length}টি আবৃত্তি
-            </span>
-            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.3))" }} />
+          {/* Listening archive heading */}
+          <div className="recitation-archive-heading">
+            <div>
+              <div className="recitation-kicker"><Mic size={14} /> আবৃত্তির সংগ্রহ</div>
+              <h2>আরও শুনুন, আরও অনুভব করুন</h2>
+              <p>নির্বাচিত কবিতা ও অনুভূতির বাকি {archiveRecitations.length}টি কণ্ঠস্বর এখানে একসঙ্গে আছে।</p>
+            </div>
+            <div className="recitation-archive-count"><Volume2 size={16} /> {facebookRecitations.length}টি আবৃত্তি</div>
           </div>
 
           {/* Grid */}
@@ -268,7 +311,7 @@ export default function FacebookRecitations() {
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             gap: "1.5rem",
           }}>
-            {facebookRecitations.map((video, index) => (
+            {archiveRecitations.map((video, index) => (
               <motion.a
                 key={video.id}
                 href={video.url}
@@ -363,7 +406,7 @@ export default function FacebookRecitations() {
                     fontWeight: 800,
                     boxShadow: "0 8px 20px rgba(201,168,76,0.35)",
                   }}>
-                    {index + 1}
+                    {index + 2}
                   </div>
 
                   {/* Play button overlay (center) */}
@@ -397,17 +440,19 @@ export default function FacebookRecitations() {
                     position: "absolute",
                     left: 16, right: 16, bottom: 16,
                   }}>
-                    <h2 style={{
-                      fontFamily: "'AdorshoLipi', sans-serif",
-                      color: "#FAF6EF",
-                      fontSize: "1.1rem",
-                      fontWeight: 400,
-                      lineHeight: 1.55,
-                      textShadow: "0 4px 16px rgba(0,0,0,0.5)",
-                      margin: 0,
-                    }}>
-                      {video.title}
-                    </h2>
+                                          <h2 style={{
+                        fontFamily: "'AdorshoLipi', sans-serif",
+                        color: "#FAF6EF",
+                        fontSize: "1.1rem",
+                        fontWeight: 700,
+                        lineHeight: 1.42,
+                        textShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                        margin: 0,
+                      }}>
+                        {video.title}
+                      </h2>
+                      <p className="recitation-card-excerpt">{video.description}</p>
+
                   </div>
                 </div>
 
@@ -435,7 +480,8 @@ export default function FacebookRecitations() {
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); const url = video.url; navigator.clipboard.writeText(url).catch(() => { const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }); setCopiedId(video.id); setTimeout(() => setCopiedId(null), 2000); }}
-                      title="লিংক কপি করুন"
+                      title={copiedId === video.id ? "লিংক কপি হয়েছে" : "লিংক কপি করুন"}
+                      aria-label={copiedId === video.id ? `${video.title} আবৃত্তির লিংক কপি হয়েছে` : `${video.title} আবৃত্তির Facebook লিংক কপি করুন`}
                       style={{
                         width: 32, height: 32, borderRadius: "50%",
                         display: "flex", alignItems: "center", justifyContent: "center",
@@ -461,11 +507,203 @@ export default function FacebookRecitations() {
               </motion.a>
             ))}
           </div>
+          <div className="recitation-copy-status" aria-live="polite">{copiedId ? "আবৃত্তির Facebook লিংক কপি করা হয়েছে" : ""}</div>
         </div>
       </section>
 
       {/* Gold shimmer keyframe */}
       <style>{`
+        .recitation-hero-facts {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin: -0.6rem auto 1.75rem;
+        }
+        .recitation-hero-facts span,
+        .recitation-archive-count,
+        .recitation-spotlight-details span {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.42rem 0.64rem;
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 999px;
+          color: rgba(250,246,239,0.74);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.76rem;
+          line-height: 1;
+        }
+        .recitation-hero-facts svg,
+        .recitation-archive-count svg,
+        .recitation-spotlight-details svg { color: #E8C97A; }
+        .recitation-spotlight-section {
+          position: relative;
+          padding: clamp(3.5rem, 7vw, 6rem) 1.5rem;
+          background: linear-gradient(135deg, #0A1628 0%, #071426 54%, #0D1E35 100%);
+          overflow: hidden;
+        }
+        .recitation-spotlight-section::before {
+          content: '';
+          position: absolute;
+          width: min(62vw, 780px);
+          aspect-ratio: 1;
+          border-radius: 50%;
+          top: -58%;
+          right: -18%;
+          background: radial-gradient(circle, rgba(201,168,76,0.17), transparent 66%);
+          pointer-events: none;
+        }
+        .recitation-spotlight-grid {
+          width: 100%;
+          max-width: 1100px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: minmax(0, 0.9fr) minmax(300px, 1.1fr);
+          gap: clamp(1.4rem, 5vw, 4rem);
+          align-items: center;
+          position: relative;
+          z-index: 1;
+        }
+        .recitation-spotlight-cover {
+          min-height: 420px;
+          display: block;
+          position: relative;
+          overflow: hidden;
+          border-radius: 26px;
+          background: #060E1A;
+          border: 1px solid rgba(201,168,76,0.35);
+          box-shadow: 0 26px 60px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.09);
+          text-decoration: none;
+          isolation: isolate;
+          transition: transform 180ms cubic-bezier(0.23,1,0.32,1), box-shadow 180ms cubic-bezier(0.23,1,0.32,1);
+        }
+        .recitation-spotlight-cover img {
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          inset: 0;
+          object-fit: cover;
+          transition: transform 500ms cubic-bezier(0.23,1,0.32,1);
+        }
+        .recitation-spotlight-cover:hover img { transform: scale(1.055); }
+        .recitation-spotlight-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,14,26,0.12), rgba(6,14,26,0.22) 44%, rgba(6,14,26,0.95)); }
+        .recitation-spotlight-badge,
+        .recitation-spotlight-meta {
+          position: absolute;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          color: #F4D477;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.76rem;
+          font-weight: 900;
+          letter-spacing: 0.04em;
+        }
+        .recitation-spotlight-badge { top: 1rem; left: 1rem; padding: 0.45rem 0.65rem; border-radius: 999px; background: rgba(6,14,26,0.68); backdrop-filter: blur(12px); border: 1px solid rgba(244,212,119,0.3); }
+        .recitation-spotlight-meta { bottom: 1rem; left: 1rem; }
+        .recitation-spotlight-play {
+          position: absolute;
+          width: 68px;
+          height: 68px;
+          border-radius: 50%;
+          display: grid;
+          place-items: center;
+          color: #071426;
+          background: linear-gradient(135deg, #F0D98A, #C9A84C);
+          box-shadow: 0 14px 34px rgba(201,168,76,0.38);
+          inset: 50% auto auto 50%;
+          transform: translate(-50%, -50%);
+          transition: transform 180ms cubic-bezier(0.23,1,0.32,1);
+        }
+        .recitation-spotlight-cover:hover .recitation-spotlight-play { transform: translate(-50%, -50%) scale(1.08); }
+        .recitation-spotlight-copy { padding: 0.35rem 0; }
+        .recitation-kicker {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          color: #E8C97A;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.78rem;
+          font-weight: 900;
+          letter-spacing: 0.13em;
+          text-transform: uppercase;
+        }
+        .recitation-spotlight-copy h2,
+        .recitation-archive-heading h2 {
+          margin: 0.45rem 0 0.8rem;
+          color: #FAF6EF;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(2rem, 4.2vw, 3.25rem);
+          font-weight: 700;
+          line-height: 1.16;
+        }
+        .recitation-spotlight-copy > p,
+        .recitation-archive-heading p {
+          margin: 0;
+          color: rgba(250,246,239,0.67);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 1.02rem;
+          line-height: 1.9;
+        }
+        .recitation-spotlight-details { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.25rem 0; }
+        .recitation-primary-action {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.8rem 1rem;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #C9A84C, #E8C97A);
+          color: #071426;
+          text-decoration: none;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.92rem;
+          font-weight: 900;
+          box-shadow: 0 12px 26px rgba(201,168,76,0.22);
+          transition: transform 160ms cubic-bezier(0.23,1,0.32,1), box-shadow 160ms cubic-bezier(0.23,1,0.32,1);
+        }
+        .recitation-primary-action:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(201,168,76,0.32); }
+        .recitation-primary-action:active { transform: scale(0.97); }
+        .recitation-source-note { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem; color: rgba(250,246,239,0.48); font-family: 'AdorshoLipi', sans-serif; font-size: 0.78rem; }
+        .recitation-source-note svg { color: #C9A84C; }
+        .recitation-card-excerpt {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          margin: 0.34rem 0 0;
+          color: rgba(250,246,239,0.63);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.78rem;
+          line-height: 1.48;
+          text-shadow: 0 3px 12px rgba(0,0,0,0.55);
+        }
+        .recitation-copy-status {
+          min-height: 1.4rem;
+          margin-top: 1.1rem;
+          text-align: center;
+          color: #7EE0B5;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.84rem;
+        }
+        .recitation-archive-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 2.2rem; }
+        .recitation-archive-heading h2 { font-size: clamp(1.7rem, 3.3vw, 2.5rem); margin-bottom: 0.45rem; }
+        .recitation-archive-heading p { font-size: 0.95rem; }
+        .recitation-archive-count { flex-shrink: 0; color: #F4D477; border-color: rgba(201,168,76,0.25); background: rgba(201,168,76,0.08); font-weight: 800; }
+        @media (max-width: 760px) {
+          .recitation-spotlight-section { padding-left: 1rem; padding-right: 1rem; }
+          .recitation-spotlight-grid { grid-template-columns: 1fr; gap: 1.3rem; }
+          .recitation-spotlight-cover { min-height: min(112vw, 430px); }
+          .recitation-archive-heading { align-items: flex-start; flex-direction: column; margin-bottom: 1.5rem; }
+          .recitation-archive-count { align-self: flex-start; }
+          .recitation-hero-facts { margin-bottom: 1.4rem; }
+          .recitation-hero-facts span { font-size: 0.71rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
         @keyframes goldShimmer {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
