@@ -110,7 +110,7 @@ export default function Home() {
   };
 
   return (
-    <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
+    <div className="home-page-premium" style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
       <Seo
         title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি"
         description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। লেখকের পরিচিতি, বাংলা কবিতা, লেখালেখি, বই, ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।"
@@ -953,6 +953,132 @@ export default function Home() {
           .app-label { font-size: 0.82rem; min-height: 2.5em; }
           .hero-portrait { height: 240px; }
         }
+        /* Current layout premium polish — content, routes and interactions remain unchanged. */
+        .home-page-premium {
+          text-rendering: optimizeLegibility;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        .home-page-premium .hero-container {
+          padding-top: calc(var(--site-nav-offset, 98px) + 34px);
+          padding-bottom: 76px;
+        }
+        .home-page-premium .hero-inner {
+          gap: clamp(3.5rem, 7vw, 7.5rem);
+        }
+        .home-page-premium .hero-left > div:first-child {
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.07);
+        }
+        .home-page-premium .hero-title {
+          text-wrap: balance;
+        }
+        .home-page-premium .hero-right {
+          max-width: 430px;
+          justify-self: end;
+          isolation: isolate;
+        }
+        .home-page-premium .hero-frame-wrap::after {
+          content: "";
+          position: absolute;
+          inset: 8px;
+          z-index: 2;
+          border: 1px solid rgba(250,246,239,0.10);
+          border-radius: 14px;
+          pointer-events: none;
+          box-shadow: inset 0 0 0 1px rgba(201,168,76,0.08);
+        }
+        .home-page-premium .hero-portrait {
+          filter: contrast(1.06) saturate(0.94) brightness(1.02) !important;
+        }
+        .home-page-premium .explore-app-section {
+          padding-top: clamp(4rem, 7.5vw, 6rem) !important;
+          padding-bottom: clamp(4.2rem, 8vw, 6.3rem) !important;
+        }
+        .home-page-premium .explore-app-heading {
+          margin-bottom: 2.65rem;
+        }
+        .home-page-premium .app-launcher-shell {
+          max-width: 890px;
+          padding: clamp(1.35rem, 3vw, 2.18rem);
+          border-color: rgba(232,201,122,0.40);
+          box-shadow:
+            0 62px 154px rgba(0,0,0,0.56),
+            0 0 58px rgba(201,168,76,0.11),
+            0 0 0 1px rgba(255,255,255,0.065) inset,
+            inset 0 1px 0 rgba(255,255,255,0.14);
+        }
+        .home-page-premium .app-launcher-shell::before {
+          background:
+            radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 47%),
+            linear-gradient(120deg, rgba(255,255,255,0.025), transparent 42%);
+        }
+        .home-page-premium .app-launcher-topbar {
+          margin-bottom: 1.45rem;
+          letter-spacing: 0.15em;
+        }
+        .home-page-premium .app-launcher-grid {
+          gap: clamp(0.95rem, 2.5vw, 1.42rem);
+        }
+        .home-page-premium .app-launcher-card {
+          min-height: 166px;
+          border-color: rgba(232,201,122,0.27);
+          background:
+            radial-gradient(circle at 50% -14%, rgba(232,201,122,0.18), transparent 47%),
+            linear-gradient(160deg, rgba(23,42,67,0.98) 0%, rgba(7,16,29,0.94) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.12),
+            inset 0 -1px 0 rgba(0,0,0,0.24),
+            0 21px 48px rgba(0,0,0,0.37),
+            0 0 0 1px rgba(201,168,76,0.05);
+        }
+        .home-page-premium .app-launcher-card::after {
+          border-color: rgba(255,255,255,0.052);
+        }
+        .home-page-premium .app-launcher-card:hover {
+          border-color: rgba(245,228,160,0.72);
+          background:
+            radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 50%),
+            linear-gradient(160deg, rgba(34,55,81,0.99) 0%, rgba(9,21,37,0.97) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.14),
+            0 30px 68px rgba(0,0,0,0.48),
+            0 0 38px rgba(201,168,76,0.18),
+            0 0 0 1px rgba(201,168,76,0.16) inset;
+        }
+        .home-page-premium .app-icon-wrap {
+          border-color: rgba(232,201,122,0.44);
+          background: linear-gradient(145deg, rgba(201,168,76,0.29), rgba(250,246,239,0.08));
+          box-shadow:
+            0 14px 30px rgba(0,0,0,0.30),
+            inset 0 1px 0 rgba(255,255,255,0.14),
+            0 0 28px rgba(201,168,76,0.16);
+        }
+        .home-page-premium .app-label {
+          letter-spacing: 0.005em;
+        }
+        .home-page-premium .app-subtitle {
+          color: rgba(250,246,239,0.64);
+        }
+        .home-page-premium .app-launcher-link:focus-visible .app-launcher-card,
+        .home-page-premium .pwa-install-card:focus-visible {
+          outline: 3px solid rgba(245,228,160,0.30);
+          outline-offset: 3px;
+        }
+        @media (max-width: 1024px) {
+          .home-page-premium .hero-right { justify-self: center; }
+        }
+        @media (max-width: 768px) {
+          .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 16px); padding-bottom: 44px; }
+          .home-page-premium .app-launcher-shell { padding: 1.08rem; }
+          .home-page-premium .app-launcher-topbar { margin-bottom: 1.1rem; }
+          .home-page-premium .app-launcher-card { min-height: 128px; }
+        }
+        @media (max-width: 480px) {
+          .home-page-premium .explore-app-section { padding-top: 3.4rem !important; padding-bottom: 3.7rem !important; }
+          .home-page-premium .app-launcher-shell { padding: 0.98rem; }
+          .home-page-premium .app-launcher-card { min-height: 132px; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .app-launcher-card,
           .app-icon-wrap {
