@@ -628,6 +628,10 @@ function CommentSection({
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const utils = trpc.useUtils();
+  const recentComments = trpc.writingPlatform.listRecentComments.useQuery(
+    { postId, limit: 3 },
+    { enabled: open && commentCount > 0, staleTime: 60_000, retry: false }
+  );
 
   const addComment = trpc.writingPlatform.addComment.useMutation({
     onSuccess: () => {
@@ -635,6 +639,7 @@ function CommentSection({
       setSubmitted(true);
       utils.writingPlatform.listPosts.invalidate();
       utils.writingPlatform.listPostsPaginated.invalidate();
+      utils.writingPlatform.listRecentComments.invalidate({ postId });
       setTimeout(() => setSubmitted(false), 3000);
     },
   });
@@ -718,6 +723,22 @@ function CommentSection({
               <Send size={16} />
             </button>
           </div>
+
+          {commentCount > 0 && (
+            <div aria-live="polite" style={{ display: "grid", gap: 8, padding: "0.2rem 0.15rem 0" }}>
+              {recentComments.isLoading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(253,246,236,0.48)", fontSize: "0.8rem" }}><RefreshCw size={14} style={{ animation: "spin 0.8s linear infinite" }} /> সাম্প্রতিক মন্তব্য লোড হচ্ছে...</div>
+              ) : (recentComments.data ?? []).map((comment) => (
+                <div key={comment.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "0.58rem 0.68rem", borderRadius: 14, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(232,201,122,0.09)" }}>
+                  <Avatar name={comment.authorName} size={28} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><span style={{ color: "#F7D56F", fontSize: "0.78rem", fontWeight: 900 }}>{comment.authorName}</span><TimeAgo date={comment.createdAt} /></div>
+                    <div style={{ color: "rgba(253,246,236,0.78)", fontSize: "0.84rem", lineHeight: 1.55, marginTop: 2, whiteSpace: "pre-wrap" }}>{comment.content}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {submitted && (
             <div
@@ -897,30 +918,31 @@ const PostCard = memo(function PostCard({
               </span>
             )}
           </div>
-          {isOwner && onEdit && onDelete && (
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <button
-                type="button"
-                aria-label="আপনার পোস্টের অপশন"
-                aria-expanded={ownerMenuOpen}
-                onClick={() => { setOwnerMenuOpen((open) => !open); setConfirmDelete(false); }}
-                style={{ width: 36, height: 36, display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid rgba(232,201,122,0.20)", background: ownerMenuOpen ? "rgba(247,213,111,0.14)" : "rgba(255,255,255,0.045)", color: ownerMenuOpen ? "#F7D56F" : "rgba(253,246,236,0.62)", cursor: "pointer" }}
-              >
-                <MoreHorizontal size={19} />
-              </button>
-              {ownerMenuOpen && (
-                <div role="menu" style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 25, minWidth: 184, padding: 6, display: "grid", gap: 4, borderRadius: 15, border: "1px solid rgba(232,201,122,0.28)", background: "rgba(7,20,38,0.98)", boxShadow: "0 16px 42px rgba(0,0,0,0.48)", backdropFilter: "blur(20px)" }}>
-                  <button type="button" role="menuitem" onClick={() => { setOwnerMenuOpen(false); onEdit(post); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", border: "none", borderRadius: 10, padding: "0.6rem 0.7rem", background: "transparent", color: "rgba(253,246,236,0.82)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.84rem", textAlign: "left", cursor: "pointer" }}><Edit3 size={15} color="#F7D56F" /> পোস্ট সম্পাদনা</button>
-                  {!confirmDelete ? (
-                    <button type="button" role="menuitem" onClick={() => setConfirmDelete(true)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", border: "none", borderRadius: 10, padding: "0.6rem 0.7rem", background: "rgba(239,68,68,0.08)", color: "#FCA5A5", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.84rem", textAlign: "left", cursor: "pointer" }}><Trash2 size={15} /> পোস্ট মুছুন</button>
-                  ) : (
-                    <div style={{ padding: "0.45rem 0.4rem", display: "grid", gap: 7 }}><span style={{ color: "rgba(253,246,236,0.72)", fontSize: "0.76rem", lineHeight: 1.45 }}>পোস্টটি স্থায়ীভাবে মুছবেন?</span><div style={{ display: "flex", gap: 6 }}><button type="button" onClick={() => { onDelete(post.id); setOwnerMenuOpen(false); setConfirmDelete(false); }} style={{ flex: 1, border: "1px solid rgba(239,68,68,0.5)", borderRadius: 9, padding: "0.38rem", background: "rgba(239,68,68,0.2)", color: "#FECACA", fontFamily: adorshoFont, fontWeight: 900, cursor: "pointer" }}>মুছুন</button><button type="button" onClick={() => setConfirmDelete(false)} style={{ flex: 1, border: "1px solid rgba(232,201,122,0.20)", borderRadius: 9, padding: "0.38rem", background: "transparent", color: "rgba(253,246,236,0.64)", fontFamily: adorshoFont, fontWeight: 800, cursor: "pointer" }}>না</button></div></div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
+        {isOwner && onEdit && onDelete && (
+          <div style={{ position: "relative", flexShrink: 0, alignSelf: "flex-start" }}>
+            <button
+              type="button"
+              aria-label="আপনার পোস্টের অপশন"
+              aria-haspopup="menu"
+              aria-expanded={ownerMenuOpen}
+              onClick={() => { setOwnerMenuOpen((open) => !open); setConfirmDelete(false); }}
+              style={{ width: 36, height: 36, display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid rgba(232,201,122,0.20)", background: ownerMenuOpen ? "rgba(247,213,111,0.14)" : "rgba(255,255,255,0.045)", color: ownerMenuOpen ? "#F7D56F" : "rgba(253,246,236,0.62)", cursor: "pointer" }}
+            >
+              <MoreHorizontal size={19} />
+            </button>
+            {ownerMenuOpen && (
+              <div role="menu" aria-label="আপনার পোস্টের অপশন" style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 25, minWidth: 184, padding: 6, display: "grid", gap: 4, borderRadius: 15, border: "1px solid rgba(232,201,122,0.28)", background: "rgba(7,20,38,0.98)", boxShadow: "0 16px 42px rgba(0,0,0,0.48)", backdropFilter: "blur(20px)" }}>
+                <button type="button" role="menuitem" onClick={() => { setOwnerMenuOpen(false); onEdit(post); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", border: "none", borderRadius: 10, padding: "0.6rem 0.7rem", background: "transparent", color: "rgba(253,246,236,0.82)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.84rem", textAlign: "left", cursor: "pointer" }}><Edit3 size={15} color="#F7D56F" /> পোস্ট সম্পাদনা</button>
+                {!confirmDelete ? (
+                  <button type="button" role="menuitem" onClick={() => setConfirmDelete(true)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", border: "none", borderRadius: 10, padding: "0.6rem 0.7rem", background: "rgba(239,68,68,0.08)", color: "#FCA5A5", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.84rem", textAlign: "left", cursor: "pointer" }}><Trash2 size={15} /> পোস্ট মুছুন</button>
+                ) : (
+                  <div style={{ padding: "0.45rem 0.4rem", display: "grid", gap: 7 }}><span style={{ color: "rgba(253,246,236,0.72)", fontSize: "0.76rem", lineHeight: 1.45 }}>পোস্টটি স্থায়ীভাবে মুছবেন?</span><div style={{ display: "flex", gap: 6 }}><button type="button" onClick={() => { onDelete(post.id); setOwnerMenuOpen(false); setConfirmDelete(false); }} style={{ flex: 1, border: "1px solid rgba(239,68,68,0.5)", borderRadius: 9, padding: "0.38rem", background: "rgba(239,68,68,0.2)", color: "#FECACA", fontFamily: adorshoFont, fontWeight: 900, cursor: "pointer" }}>মুছুন</button><button type="button" onClick={() => setConfirmDelete(false)} style={{ flex: 1, border: "1px solid rgba(232,201,122,0.20)", borderRadius: 9, padding: "0.38rem", background: "transparent", color: "rgba(253,246,236,0.64)", fontFamily: adorshoFont, fontWeight: 800, cursor: "pointer" }}>না</button></div></div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Title - only show if different from content first line */}
@@ -2249,7 +2271,7 @@ export default function AmiOLikhboBastobota() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, marginTop: 10, paddingTop: 9, borderTop: "1px solid rgba(232,201,122,0.12)" }}>
                 <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Edit3 size={15} color="#F7D56F" /> লিখুন</button>
-                <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Camera size={15} color="#86EFAC" /> ছবি/ভিডিও</button>
+                <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Camera size={15} color="#86EFAC" /> ছবি যোগ করুন</button>
                 <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setSelectedChallenge(null); setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Sparkles size={15} color="#A5B4FC" /> ভাবনা লিখুন</button>
               </div>
             </section>

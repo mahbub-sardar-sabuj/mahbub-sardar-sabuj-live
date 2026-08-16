@@ -387,6 +387,27 @@ export const writingPlatformRouter = router({
       });
     }),
 
+  // Lightweight recent-comment endpoint for feed cards. It only runs after a reader expands comments.
+  listRecentComments: publicProcedure
+    .input(z.object({ postId: z.number().int().positive(), limit: z.number().min(1).max(8).default(3) }))
+    .query(async ({ input }) => {
+      return safeWritingRead("listRecentComments", [], async () => {
+        const db = await getWritingDb();
+        if (!db) return [];
+        return db
+          .select({
+            id: writingComments.id,
+            authorName: writingComments.authorName,
+            content: writingComments.content,
+            createdAt: writingComments.createdAt,
+          })
+          .from(writingComments)
+          .where(and(eq(writingComments.postId, input.postId), eq(writingComments.status, "approved")))
+          .orderBy(desc(writingComments.createdAt))
+          .limit(input.limit);
+      });
+    }),
+
   // Lightweight endpoint to fetch only the mediaUrl of a post (for lazy loading images in feed)
   getPostMedia: publicProcedure
     .input(z.object({ postId: z.number().int().positive() }))
