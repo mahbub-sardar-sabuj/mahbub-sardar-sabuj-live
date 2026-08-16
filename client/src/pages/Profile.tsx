@@ -224,9 +224,9 @@ export default function Profile() {
   // Not logged in
   if (!authLoading && !user) {
     return (
-      <div style={shellStyle}>
+      <div className="profile-shell" style={shellStyle}>
         <Navbar />
-        <div style={{ maxWidth: 480, margin: "0 auto", padding: "140px 20px", textAlign: "center" }}>
+        <div className="profile-gate" style={{ maxWidth: 520, margin: "0 auto", padding: "calc(var(--site-nav-offset, 98px) + 3rem) 1rem 5rem", textAlign: "center" }}>
           <div
             style={{
               width: 80, height: 80, borderRadius: "50%",
@@ -237,12 +237,14 @@ export default function Profile() {
           >
             <Feather size={32} color="#D4A843" />
           </div>
-          <h2 style={{ color: "#F7D56F", fontFamily: adorshoFont, marginBottom: 10, fontSize: "1.4rem" }}>
-            লগইন করুন
+          <span className="profile-eyebrow">আমিও লিখবো বাস্তবতা</span>
+          <h2 style={{ color: "#F7D56F", fontFamily: adorshoFont, margin: "0.7rem 0 0.55rem", fontSize: "clamp(1.45rem, 6vw, 2rem)", lineHeight: 1.25 }}>
+            নিজের কথার জন্য একটি সুন্দর জায়গা
           </h2>
-          <p style={{ color: "rgba(253,246,236,0.6)", marginBottom: 28, lineHeight: 1.7 }}>
-            প্রোফাইল দেখতে ও পোস্ট করতে লগইন করতে হবে।
+          <p style={{ color: "rgba(253,246,236,0.66)", margin: "0 auto 1.25rem", lineHeight: 1.8, maxWidth: 380 }}>
+            প্রোফাইল সাজান, লেখা জমা দিন এবং প্রকাশিত অনুভূতিগুলো এক জায়গা থেকে গুছিয়ে রাখুন।
           </p>
+          <div className="profile-gate-points"><span>✦ নিজের পরিচিতি</span><span>✦ লেখার খাতা</span><span>✦ নিরাপদ পর্যালোচনা</span></div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <a
               href="/amio-likhbo-login"
@@ -260,7 +262,7 @@ export default function Profile() {
   }
 
   return (
-    <div style={shellStyle}>
+    <div className="profile-shell" style={shellStyle}>
       <Seo
         title="আমার প্রোফাইল — আমিও লিখবো বাস্তবতা"
         description="আমিও লিখবো বাস্তবতা প্ল্যাটফর্মে নিজের প্রোফাইল, পরিচিতি এবং প্রকাশিত লেখাগুলো দেখুন ও সম্পাদনা করুন।"
@@ -272,14 +274,43 @@ export default function Profile() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        .profile-card { animation: fadeInUp 0.4s ease forwards; }
-        input:focus, textarea:focus { border-color: rgba(212,168,67,0.6) !important; }
+        .profile-shell { --profile-gold: #f7d56f; --profile-blue: #78a7ff; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; background-image: radial-gradient(circle at 10% 8%, rgba(247,213,111,0.18), transparent 25%), radial-gradient(circle at 88% 20%, rgba(81,139,255,0.14), transparent 27%), linear-gradient(180deg, #060b14 0%, #0b1726 52%, #07111f 100%) !important; }
+        .profile-card { animation: fadeInUp 0.42s cubic-bezier(.23,1,.32,1) forwards; }
+        .profile-frame { position: relative; isolation: isolate; }
+        .profile-back { transition: color 160ms ease, transform 160ms ease; }
+        .profile-back:hover { color: #f7d56f !important; transform: translateX(-2px); }
+        .profile-hero { overflow: hidden; position: relative; border-color: rgba(232,201,122,0.24) !important; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.025)) !important; box-shadow: 0 24px 70px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.09) !important; }
+        .profile-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(145deg, rgba(247,213,111,0.05), transparent 34%, rgba(81,139,255,0.06)); }
+        .profile-hero > * { position: relative; z-index: 1; }
+        .profile-cover { box-shadow: inset 0 -42px 55px rgba(6,11,20,0.38); }
+        .profile-identity-row { align-items: flex-end; }
+        .profile-actions { border-radius: 16px; padding: 0.35rem; background: rgba(3,10,19,0.25); border: 1px solid rgba(232,201,122,0.12); }
+        .profile-eyebrow { display: inline-flex; align-items: center; gap: 0.35rem; color: #f7d56f; font-family: 'AdorshoLipi', sans-serif; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .profile-stat-grid { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem !important; }
+        .profile-stat { position: relative; overflow: hidden; min-height: 82px; display: grid; align-content: center; gap: 0.28rem; background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)) !important; border-color: rgba(232,201,122,0.14) !important; transition: transform 160ms cubic-bezier(.23,1,.32,1), border-color 160ms ease; }
+        .profile-stat::after { content: ""; position: absolute; width: 44px; height: 44px; right: -16px; top: -18px; border-radius: 50%; background: currentColor; opacity: 0.1; }
+        .profile-stat:hover { transform: translateY(-2px); border-color: rgba(247,213,111,0.34) !important; }
+        .profile-bio { padding: 1rem; border-radius: 16px; border: 1px solid rgba(232,201,122,0.12); background: rgba(3,10,19,0.22); }
+        .profile-command-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .profile-command { min-height: 58px; border-radius: 16px !important; transition: transform 160ms cubic-bezier(.23,1,.32,1), background 160ms ease, border-color 160ms ease !important; }
+        .profile-command:hover { transform: translateY(-2px); background: rgba(247,213,111,0.10) !important; border-color: rgba(247,213,111,0.32) !important; }
+        .profile-library { border-color: rgba(232,201,122,0.2) !important; box-shadow: 0 16px 44px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06); }
+        .profile-library-item { position: relative; overflow: hidden; }
+        .profile-library-item::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 999px; background: linear-gradient(#f7d56f, rgba(81,139,255,0.65)); opacity: 0.75; }
+        .profile-gate { min-height: calc(100vh - var(--site-nav-offset, 98px)); display: grid; align-content: center; justify-items: center; }
+        .profile-gate > div:first-child { box-shadow: 0 0 0 10px rgba(247,213,111,0.04), 0 14px 40px rgba(0,0,0,0.22); }
+        .profile-gate-points { display: flex; justify-content: center; gap: 0.45rem; flex-wrap: wrap; color: rgba(253,246,236,0.52); font-size: 0.76rem; margin: 0 0 1.55rem; }
+        .profile-gate-points span { padding: 0.35rem 0.6rem; border-radius: 999px; background: rgba(255,255,255,0.045); border: 1px solid rgba(232,201,122,0.13); }
+        input:focus, textarea:focus { border-color: rgba(212,168,67,0.6) !important; box-shadow: 0 0 0 3px rgba(212,168,67,0.1); }
+        button:active { transform: scale(0.97); }
+        @media (max-width: 520px) { .profile-frame { padding-left: 0.85rem !important; padding-right: 0.85rem !important; } .profile-hero { border-radius: 20px !important; } .profile-identity-row { gap: 0.85rem !important; } .profile-actions { width: 100%; justify-content: space-between; padding-top: 0.35rem !important; } .profile-actions button { flex: 1; justify-content: center; } .profile-stat-grid { gap: 0.5rem !important; } .profile-stat { padding: 0.7rem 0.4rem !important; min-height: 70px; } .profile-stat > div:first-child { font-size: 1.08rem !important; } .profile-command-grid { gap: 0.55rem !important; } .profile-library-item > div:first-child { flex-direction: column; gap: 0.45rem !important; } }
       `}</style>
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "calc(var(--site-nav-offset, 98px) + 1.5rem) 1rem 4rem" }}>
+      <div className="profile-frame" style={{ maxWidth: 720, margin: "0 auto", padding: "calc(var(--site-nav-offset, 98px) + 1.5rem) 1rem 4rem" }}>
         {/* Back button */}
         <button
           onClick={() => setLocation("/amio-likhbo-bastobota")}
+          className="profile-back"
           style={{
             background: "none", border: "none", color: "rgba(253,246,236,0.55)",
             cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
@@ -315,10 +346,10 @@ export default function Profile() {
             )}
 
             {/* ── Profile Hero Card ── */}
-            <div style={{ ...glassCard, padding: "clamp(1.5rem, 5vw, 2.2rem)" }}>
+            <div className="profile-hero" style={{ ...glassCard, padding: "clamp(1.5rem, 5vw, 2.2rem)" }}>
               {/* Cover Photo */}
-              <div style={{
-                height: 140,
+              <div className="profile-cover" style={{
+                height: 156,
                 borderRadius: "16px 16px 0 0",
                 margin: "-clamp(1.5rem, 5vw, 2.2rem) -clamp(1.5rem, 5vw, 2.2rem) 0",
                 background: profile?.coverUrl
@@ -368,7 +399,7 @@ export default function Profile() {
               </div>
 
               {/* Avatar row */}
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginTop: "-40px", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+              <div className="profile-identity-row" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginTop: "-44px", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 <div style={{ position: "relative", flexShrink: 0 }}>
                   <div style={{
                     width: 88, height: 88, borderRadius: "50%",
@@ -416,7 +447,7 @@ export default function Profile() {
 
                 {/* Action buttons top-right */}
                 {!editing && (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", paddingTop: "2.5rem" }}>
+                  <div className="profile-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap", paddingTop: "0.35rem" }}>
                     <button style={goldBtn} onClick={() => setEditing(true)}>
                       <Settings size={14} /> সম্পাদনা
                     </button>
@@ -462,7 +493,8 @@ export default function Profile() {
                 </div>
               ) : (
                 <div style={{ marginBottom: "1rem" }}>
-                  <h2 style={{ margin: "0 0 4px", color: "#F7D56F", fontSize: "clamp(1.2rem, 4vw, 1.5rem)", fontFamily: adorshoFont, lineHeight: 1.2 }}>
+                  <span className="profile-eyebrow">লেখক প্রোফাইল</span>
+                  <h2 style={{ margin: "0.32rem 0 4px", color: "#F7D56F", fontSize: "clamp(1.35rem, 4.5vw, 1.75rem)", fontFamily: adorshoFont, lineHeight: 1.2 }}>
                     {profile.name}
                   </h2>
                   <p style={{ margin: 0, color: "rgba(253,246,236,0.45)", fontSize: "0.85rem" }}>
@@ -472,13 +504,15 @@ export default function Profile() {
               )}
 
               {/* Stats row */}
-              <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+              <div className="profile-stat-grid" style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
                 {[
-                  { value: profile.postCount, label: "প্রকাশিত লেখা", color: "#86efac" },
-                  { value: new Date(profile.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "short" }), label: "যোগদান", color: "#F7D56F" },
+                  { value: profile.approvedPostCount, label: "প্রকাশিত", color: "#86efac" },
+                  { value: Math.max(0, profile.postCount - profile.approvedPostCount), label: "পর্যালোচনায়", color: "#f7d56f" },
+                  { value: new Date(profile.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "short" }), label: "যোগদান", color: "#93c5fd" },
                 ].map((s) => (
                   <div
                     key={s.label}
+                    className="profile-stat"
                     style={{
                       flex: "1 1 90px",
                       background: "rgba(255,255,255,0.04)",
@@ -495,7 +529,7 @@ export default function Profile() {
               </div>
 
               {/* Bio */}
-              <div style={{ marginBottom: "1.25rem" }}>
+              <div className="profile-bio" style={{ marginBottom: "1.25rem" }}>
                 <label style={{ color: "rgba(247,213,111,0.8)", fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: 6 }}>
                   পরিচিতি (বায়ো)
                 </label>
@@ -551,7 +585,7 @@ export default function Profile() {
             </div>
 
             {/* ── Quick Links ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+            <div className="profile-command-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
               {[
                 { icon: <PenLine size={16} />, label: "নতুন লেখা", href: "/amio-likhbo-bastobota", action: () => setLocation("/amio-likhbo-bastobota") },
                 { icon: <ExternalLink size={16} />, label: "ফিড দেখুন", href: "/amio-likhbo-bastobota", action: () => setLocation("/amio-likhbo-bastobota") },
@@ -559,6 +593,7 @@ export default function Profile() {
                 <button
                   key={link.label}
                   onClick={link.action}
+                  className="profile-command"
                   style={{
                     ...glassCard,
                     padding: "0.9rem 1rem",
@@ -606,7 +641,7 @@ function MyPostsList({ openId }: { openId: string }) {
   };
 
   return (
-    <div style={{
+    <div className="profile-library" style={{
       background: "linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.025))",
       border: "1px solid rgba(232,201,122,0.18)",
       borderRadius: 24,
@@ -649,6 +684,7 @@ function MyPostsList({ openId }: { openId: string }) {
               <a
                 key={post.id}
                 href={`/amio-likhbo-bastobota/${post.slug}`}
+                className="profile-library-item"
                 style={{
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(232,201,122,0.1)",

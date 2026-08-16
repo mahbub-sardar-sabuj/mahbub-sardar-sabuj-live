@@ -1944,6 +1944,32 @@ export default function AmiOLikhboBastobota() {
         .amio-feed { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
         .amio-sticky-bar, .amio-feed-toolbar, .amio-post-list, .post-card-enter, .amio-post-card { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
         .amio-post-list { grid-template-columns: minmax(0, 1fr); }
+        .amio-feed {
+          --amio-gold: #f7d56f;
+          --amio-ink: #071426;
+          --amio-glass: linear-gradient(145deg, rgba(255,255,255,0.095), rgba(255,255,255,0.025));
+          background-image: radial-gradient(circle at 12% 9%, rgba(247,213,111,0.16), transparent 28%), radial-gradient(circle at 92% 24%, rgba(81,139,255,0.12), transparent 25%), linear-gradient(180deg, #060b14 0%, #0a1525 52%, #07101d 100%) !important;
+        }
+        .amio-main-column { isolation: isolate; }
+        .amio-sticky-bar { filter: drop-shadow(0 14px 30px rgba(0,0,0,0.18)); }
+        .amio-sticky-bar > div { border-radius: 26px 26px 0 0 !important; background: linear-gradient(135deg, rgba(247,213,111,0.19), rgba(74,112,181,0.10) 58%, rgba(255,255,255,0.05)) !important; }
+        .amio-community-title { font-size: clamp(1.12rem, 4.2vw, 1.45rem) !important; letter-spacing: 0.035em !important; }
+        .amio-community-subtitle { color: rgba(253,246,236,0.62) !important; letter-spacing: 0.035em !important; }
+        .amio-feed-toolbar { background: linear-gradient(145deg, rgba(7,20,38,0.92), rgba(18,32,53,0.78)) !important; box-shadow: 0 18px 45px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.1) !important; }
+        .amio-category-rail { padding: 0.2rem 0 0.3rem !important; mask-image: linear-gradient(90deg, #000 94%, transparent); }
+        .amio-cat-btn { min-height: 38px; transition: transform 160ms cubic-bezier(.23,1,.32,1), border-color 160ms ease, background 160ms ease !important; }
+        .amio-cat-btn:active, .amio-post-btn:active, .amio-login-btn:active { transform: scale(0.97); }
+        .amio-community-status { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; padding: 0.72rem 0.88rem; border: 1px solid rgba(232,201,122,0.16); border-radius: 16px; background: linear-gradient(90deg, rgba(247,213,111,0.10), rgba(81,139,255,0.075)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.055); color: rgba(253,246,236,0.68); font-size: 0.79rem; line-height: 1.4; }
+        .amio-community-status strong { color: var(--amio-gold); font-weight: 900; }
+        .amio-community-status > span:first-child { display: inline-flex; align-items: center; gap: 0.36rem; color: #f7d56f; white-space: nowrap; font-weight: 900; }
+        .amio-post-card { position: relative; overflow: hidden; background: var(--amio-glass) !important; border-color: rgba(232,201,122,0.18) !important; box-shadow: 0 16px 44px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08) !important; transition: transform 180ms cubic-bezier(.23,1,.32,1), border-color 180ms ease, box-shadow 180ms ease; }
+        .amio-post-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg, #f7d56f, rgba(81,139,255,0.55), transparent 82%); opacity: 0.68; }
+        .amio-post-card:hover { transform: translateY(-2px); border-color: rgba(247,213,111,0.35) !important; box-shadow: 0 22px 56px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.1) !important; }
+        .amio-post-card > * { position: relative; z-index: 1; }
+        .amio-post-author { letter-spacing: 0.015em; }
+        .amio-post-content { color: rgba(253,246,236,0.92) !important; }
+        .amio-post-actions { padding-top: 0.75rem; border-top: 1px solid rgba(232,201,122,0.11); }
+        .amio-post-list { gap: 1.1rem !important; }
         @media (max-width: 480px) {
           .amio-feed-toolbar { gap: 0.45rem !important; padding: 0.6rem !important; }
           .amio-search-input { padding: 0.55rem 1.7rem 0.55rem 2.2rem !important; font-size: 0.84rem !important; }
@@ -1954,11 +1980,14 @@ export default function AmiOLikhboBastobota() {
           .amio-post-author { font-size: 0.96rem !important; }
           .amio-post-content { font-size: 0.96rem !important; line-height: 1.78 !important; }
           .amio-post-actions { gap: 0.45rem !important; }
+          .amio-community-status { align-items: flex-start; flex-direction: column; gap: 0.35rem; padding: 0.68rem 0.78rem; }
+          .amio-post-card { border-radius: 20px !important; }
+          .amio-post-card:hover { transform: none; }
         }
       `}</style>
 
       <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem", minHeight: "100vh" }}>
-        <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", minWidth: 0, gap: "1rem" }}>
+        <div className="amio-main-column" style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", minWidth: 0, gap: "1rem" }}>
 
           {/* ── Logo Header + Sticky Topbar ── */}
           {!slugFromUrl && (
@@ -1996,14 +2025,14 @@ export default function AmiOLikhboBastobota() {
                   letterSpacing: "0.025em",
                   lineHeight: 1.2,
                   textShadow: "0 0 20px rgba(212,168,67,0.35)",
-                }}>আমিও লিখবো বাস্তবতা</div>
+                }} className="amio-community-title">আমিও লিখবো বাস্তবতা</div>
                 <div style={{
                   color: "rgba(253,246,236,0.48)",
                   fontFamily: adorshoFont,
                   fontSize: "0.73rem",
                   marginTop: 2,
                   letterSpacing: "0.02em",
-                }}>বাস্তব গল্প • অভিজ্ঞতা • ভাবনা • কবিতা</div>
+                }} className="amio-community-subtitle">বাস্তব গল্প • অভিজ্ঞতা • ভাবনা • কবিতা</div>
               </div>
             </div>
             </div>
@@ -2164,7 +2193,7 @@ export default function AmiOLikhboBastobota() {
 
           {/* ── Category Filter + My Posts Toggle ── */}
           {!slugFromUrl && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", minWidth: 0, paddingBottom: 2, scrollbarWidth: "none" }}>
+            <div className="amio-category-rail" style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", minWidth: 0, paddingBottom: 2, scrollbarWidth: "none" }}>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.key}
@@ -2226,6 +2255,13 @@ export default function AmiOLikhboBastobota() {
                   <UserPlus size={13} /> আমার লেখা
                 </button>
               )}
+            </div>
+          )}
+
+          {!slugFromUrl && (
+            <div className="amio-community-status" aria-live="polite">
+              <span><Sparkles size={14} /> {showMyPosts ? "আমার লেখার খাতা" : selectedCategory === "all" ? "সবার অনুভূতির আড্ডা" : `${CATEGORIES.find((category) => category.key === selectedCategory)?.label || "নির্বাচিত"} বিভাগ`}</span>
+              <span>{showMyPosts ? `${displayPosts.length}টি লেখা এখানে দেখা যাচ্ছে` : isAuthenticated ? "নতুন লেখা আগে পর্যালোচনায় যায়, তারপর প্রকাশিত হয়।" : "নিজের অনুভূতি লিখতে লগইন করুন।"}</span>
             </div>
           )}
 
