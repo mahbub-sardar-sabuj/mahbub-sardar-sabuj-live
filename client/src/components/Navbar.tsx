@@ -47,7 +47,6 @@ const LEFT_GROUPS = [
     glyphColor: "#B48FE8",
     items: [
       { label: "লেখালেখি ও বই",  subtitle: "কবিতা, গদ্য ও প্রকাশিত বই",  href: "/writings",              icon: BookOpen  },
-      { label: "আবৃত্তি",         subtitle: "কণ্ঠে কবিতার উচ্চারণ",       href: "/facebook-recitations",  icon: Mic2      },
       { label: "আমিও লিখবো বাস্তবতা", subtitle: "সৃজনশীল লেখার কমিউনিটি",    href: "/amio-likhbo-bastobota", icon: PenLine   },
       { label: "সরদার সংবাদ",    subtitle: "আপডেট ও সাম্প্রতিক খবর",    href: "/news",                  icon: Newspaper },
     ],
