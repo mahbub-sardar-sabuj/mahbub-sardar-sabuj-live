@@ -59,10 +59,18 @@ const ebookData = [
 ];
 
 function toIsoDateTime(date) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    return `${date}T00:00:00+06:00`;
-  }
-  return date;
+  const normalized = String(date || "")
+    .replace(/[০-৯]/g, (digit) => String(digit.charCodeAt(0) - "০".charCodeAt(0)))
+    .trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return `${normalized}T00:00:00+06:00`;
+  const months = {
+    "জানুয়ারি": "01", "জানুয়ারি": "01", "ফেব্রুয়ারি": "02", "ফেব্রুয়ারি": "02", "মার্চ": "03",
+    "এপ্রিল": "04", "মে": "05", "জুন": "06", "জুলাই": "07", "আগস্ট": "08", "সেপ্টেম্বর": "09",
+    "অক্টোবর": "10", "নভেম্বর": "11", "ডিসেম্বর": "12",
+  };
+  const match = normalized.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
+  if (match && months[match[2]]) return `${match[3]}-${months[match[2]]}-${match[1].padStart(2, "0")}T00:00:00+06:00`;
+  return normalized;
 }
 
 function escapeHtml(value = "") {
