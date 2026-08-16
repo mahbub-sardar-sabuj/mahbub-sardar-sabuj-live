@@ -1,5 +1,5 @@
 export const config = { runtime: "edge" };
-import writingsArchive from "./_knowledge/writingsArchive.json" with { type: "json" };
+import writingsArchive from "./_knowledge/writingsArchive.js";
 
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;

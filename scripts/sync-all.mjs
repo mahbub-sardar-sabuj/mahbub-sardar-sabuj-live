@@ -158,8 +158,11 @@ function step4_syncApiKnowledge() {
     if (existsSync(src)) {
       const data = readFileSync(src, "utf-8");
       writeFileSync(dst, data, "utf-8");
+      // Vercel Edge cannot reliably load JSON modules at runtime; emit a bundled JS module for SSR.
+      const ssrModulePath = join(API_KNOWLEDGE, "writingsArchive.js");
+      writeFileSync(ssrModulePath, `const writingsArchive = ${data};\nexport default writingsArchive;\n`, "utf-8");
       const count = JSON.parse(data).length;
-      ok(`api/_knowledge/writingsArchive.json → ${c.bold(count)} টি লেখা`);
+      ok(`api/_knowledge/writingsArchive.json + writingsArchive.js → ${c.bold(count)} টি লেখা`);
     }
   } catch (e) {
     warn(`API knowledge sync ব্যর্থ: ${e.message}`);
@@ -171,8 +174,10 @@ function step5_validateSsrArchive(expectedArchive) {
   sep();
   info(c.bold("ধাপ ৫: SSR archive coverage যাচাই করা হচ্ছে..."));
   try {
-    const ssrArchivePath = join(API_KNOWLEDGE, "writingsArchive.json");
-    const ssrArchive = JSON.parse(readFileSync(ssrArchivePath, "utf-8"));
+    const ssrArchivePath = join(API_KNOWLEDGE, "writingsArchive.js");
+    const ssrSource = readFileSync(ssrArchivePath, "utf-8");
+    const ssrPayload = ssrSource.slice("const writingsArchive = ".length, ssrSource.lastIndexOf(";\nexport default"));
+    const ssrArchive = JSON.parse(ssrPayload || "[]");
     const expectedIds = new Set(expectedArchive.map((item) => String(item.id)));
     const ssrIds = new Set(ssrArchive.map((item) => String(item.id)));
     const missing = expectedArchive.filter((item) => !ssrIds.has(String(item.id)));
