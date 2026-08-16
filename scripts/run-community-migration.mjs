@@ -7,11 +7,13 @@ const migrations = [
   { id: "20260816_community_feed_performance_indexes", file: "0006_community_feed_performance_indexes.sql" },
   { id: "20260816_literary_social_platform", file: "0007_literary_social_platform.sql" },
 ];
-const isDeploymentBuild = process.env.VERCEL === "1" || process.env.RUN_COMMUNITY_MIGRATIONS === "1";
+// Database migrations are an explicit operation. A Vercel build must stay deterministic
+// and must not try to connect with a deployment-time placeholder DATABASE_URL.
+const shouldRunMigrations = process.env.RUN_COMMUNITY_MIGRATIONS === "1";
 const databaseUrl = process.env.DATABASE_URL;
 
-if (!isDeploymentBuild || !databaseUrl) {
-  console.log("[community-migration] skipped (no deployment database context)");
+if (!shouldRunMigrations || !databaseUrl) {
+  console.log("[community-migration] skipped (set RUN_COMMUNITY_MIGRATIONS=1 with a valid database URL to run)");
   process.exit(0);
 }
 
