@@ -1933,8 +1933,8 @@ function TypingIndicator({ stage }: { stage?: string | null }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function AIChatbot() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function AIChatbot({ initialOpen = false }: { initialOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(initialOpen);
   // Cycling: 'photo' for 3s, then 'chat' for 2s, repeat
   const [btnFace, setBtnFace] = useState<'photo' | 'chat'>('photo');
   const cycleRef = useRef<ReturnType<typeof setTimeout> | null>(null);

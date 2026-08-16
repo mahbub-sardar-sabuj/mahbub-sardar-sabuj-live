@@ -24,7 +24,7 @@ import {
   ArrowRight, BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { preloadRoute, preloadRoutesWhenIdle } from "@/lib/routePreloader";
+import { preloadRoute } from "@/lib/routePreloader";
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 const LEFT_GROUPS = [
@@ -156,9 +156,6 @@ export default function Navbar() {
   /* close on route */
   useEffect(() => { setMobileOpen(false); setActiveGroup(null); setHoverGroup(null); }, [location]);
   useEffect(() => { if (isDesktop && mobileOpen) setMobileOpen(false); }, [isDesktop, mobileOpen]);
-
-  /* preload */
-  useEffect(() => { if (!mobileOpen) return; preloadRoutesWhenIdle(ALL_LINKS.map((l) => l.href)); }, [mobileOpen]);
 
   const onEnter = (id: number) => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);

@@ -1,6 +1,6 @@
-// মাহবুব সরদার সবুজ — Service Worker v3.0
-// v3: cache version bumped to clear stale v1/v2 caches; HTML pages never cached
-const CACHE_NAME = 'mahbub-sardar-sabuj-v3';
+// মাহবুব সরদার সবুজ — Service Worker v4.0
+// v4: HTML and fresh content stay network-first; stable visual assets use cache-first delivery.
+const CACHE_NAME = 'mahbub-sardar-sabuj-v4';
 const OFFLINE_URL = '/';
 
 // Cache essential static assets on install (NOT HTML pages)
@@ -52,21 +52,37 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For static assets (JS, CSS, images, fonts) — network first, cache fallback
+  const url = new URL(event.request.url);
+  const isLargeOnDemandAsset = /\.(?:pdf|wasm)$/i.test(url.pathname) || url.pathname.startsWith('/ffmpeg/') || url.pathname.startsWith('/ffmpeg-st/');
+  const isVersionedOrVisualAsset = url.pathname.startsWith('/assets/') || /\.(?:css|js|mjs|woff2?|ttf|otf|eot|png|jpe?g|gif|svg|webp|ico)$/i.test(url.pathname);
+
+  // Large readers and media tools load only when the user asks for them. Avoid filling
+  // the Cache Storage with multi-megabyte PDF/WASM files during normal browsing.
+  if (isLargeOnDemandAsset) return;
+
+  // Hashed builds, fonts and visual assets are stable between deployments. Cache-first
+  // makes repeat visits and cross-page navigation substantially faster.
+  if (isVersionedOrVisualAsset) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response?.status === 200) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Small unversioned data remains network-first so published writing updates appear
+  // immediately, while still providing an offline fallback.
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Only cache successful responses for non-HTML assets
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
+        if (response?.status === 200) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
         return response;
       })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });

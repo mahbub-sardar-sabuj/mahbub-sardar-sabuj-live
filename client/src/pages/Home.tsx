@@ -4,7 +4,7 @@
  * Concept: Cinematic dark luxury author portfolio
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  */
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 
 // PWA install prompt type
 interface BeforeInstallPromptEvent extends Event {
@@ -47,7 +47,6 @@ const sections = [
 // ═════════════════════════════════════════════════════════════════════════════════
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [pwaInstalled, setPwaInstalled] = useState(false);
   const [pwaInstalling, setPwaInstalling] = useState(false);
@@ -89,26 +88,6 @@ export default function Home() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
-
-  // Throttled mousemove handler — fires at most once per 50ms to reduce re-renders
-  const mouseMoveThrottleRef = useRef<number | null>(null);
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (mouseMoveThrottleRef.current !== null) return;
-    mouseMoveThrottleRef.current = window.setTimeout(() => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
-      mouseMoveThrottleRef.current = null;
-    }, 50);
-  }, []);
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (mouseMoveThrottleRef.current !== null) clearTimeout(mouseMoveThrottleRef.current);
-    };
-  }, [handleMouseMove]);
 
   const homeJsonLd = {
     "@context": "https://schema.org",
@@ -372,15 +351,7 @@ export default function Home() {
               style={{ position: "relative" }}
             >
               {/* Portrait frame */}
-              <motion.div
-                animate={{
-                  x: mousePos.x * 0.3,
-                  y: mousePos.y * 0.3,
-                }}
-                transition={{ type: "spring", stiffness: 60, damping: 20 }}
-                className="hero-frame-wrap"
-                style={{ position: "relative" }}
-              >
+              <div className="hero-frame-wrap" style={{ position: "relative" }}>
                 {/* Decorative frame lines — more visible */}
                 <div style={{
                   position: "absolute",
@@ -470,7 +441,7 @@ export default function Home() {
                     }}>মাহবুব সরদার সবুজ</div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           </div>
         </motion.div>
@@ -694,8 +665,7 @@ export default function Home() {
 
       {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Noto+Sans+Bengali:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-        @import url('https://cdn.msar.me/fonts/adorsho-lipi/font.css');
+        /* Bengali typography is served locally through AdorshoLipi to avoid render-blocking third-party font requests. */
 
         * { box-sizing: border-box; }
 

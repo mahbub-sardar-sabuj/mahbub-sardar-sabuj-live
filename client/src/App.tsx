@@ -6,7 +6,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { lazyRoute, preloadRoute, preloadRoutesWhenIdle } from "./lib/routePreloader";
+import { lazyRoute, preloadRoute } from "./lib/routePreloader";
 
 // Keep only the landing page in the critical path. Content-heavy routes are lazy-loaded.
 import Home from "./pages/Home";
@@ -163,22 +163,12 @@ function Router() {
 
 function App() {
   const [loadAssistant, setLoadAssistant] = useState(false);
+  const [openAssistant, setOpenAssistant] = useState(false);
 
-  useEffect(() => {
-    const connection = (navigator as Navigator & {
-      connection?: { saveData?: boolean; effectiveType?: string };
-    }).connection;
-    const isSlowConnection = connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || "");
-    const delay = isSlowConnection ? 4000 : 1200;
-
-    const idleCallback = window.requestIdleCallback?.(() => setLoadAssistant(true), { timeout: delay });
-    const timeout = window.setTimeout(() => setLoadAssistant(true), delay);
-
-    return () => {
-      if (idleCallback !== undefined) window.cancelIdleCallback?.(idleCallback);
-      window.clearTimeout(timeout);
-    };
-  }, []);
+  const openAssistantOnDemand = () => {
+    setOpenAssistant(true);
+    setLoadAssistant(true);
+  };
 
   useEffect(() => {
     const warmInternalLink = (event: Event) => {
@@ -196,18 +186,6 @@ function App() {
     document.addEventListener("touchstart", warmInternalLink, { passive: true });
     document.addEventListener("focusin", warmInternalLink);
 
-    preloadRoutesWhenIdle([
-      "/about",
-      "/contact",
-      "/gallery",
-      "/facebook-recitations",
-      "/news",
-      "/editor",
-      "/amio-likhbo-bastobota",
-      "/ebooks",
-      "/privacy-policy",
-      "/terms",
-    ]);
 
     return () => {
       document.removeEventListener("pointerover", warmInternalLink);
@@ -227,9 +205,26 @@ function App() {
           </div>
           {loadAssistant ? (
             <Suspense fallback={null}>
-              <AIChatbot />
+              <AIChatbot initialOpen={openAssistant} />
             </Suspense>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              onClick={openAssistantOnDemand}
+              aria-label="AI সহকারী খুলুন"
+              style={{
+                position: "fixed", right: 18, bottom: 18, zIndex: 60,
+                display: "inline-flex", alignItems: "center", gap: 8,
+                minHeight: 46, padding: "0 15px", border: "1px solid rgba(255,255,255,.45)",
+                borderRadius: 999, background: "linear-gradient(135deg,#16345a,#274e80)",
+                color: "#fff", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.88rem", fontWeight: 700,
+                boxShadow: "0 12px 30px rgba(10,27,52,.28), inset 0 1px 0 rgba(255,255,255,.22)",
+              }}
+            >
+              <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: "50%", background: "#ffd36e", boxShadow: "0 0 12px rgba(255,211,110,.85)" }} />
+              সহায়তা
+            </button>
+          )}
           <SpeedInsights />
           <Analytics />
         </TooltipProvider>
