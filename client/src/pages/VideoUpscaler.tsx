@@ -131,6 +131,27 @@ function BeforeAfterSlider({
         ref={containerRef}
         className="relative w-full rounded-2xl overflow-hidden bg-black select-none cursor-col-resize"
         style={{ aspectRatio: "16/9" }}
+        role="slider"
+        tabIndex={0}
+        aria-label="আগে এবং পরে ভিডিওর তুলনা"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(sliderPos)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+            e.preventDefault();
+            setSliderPos((value) => Math.max(0, value - 5));
+          } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+            e.preventDefault();
+            setSliderPos((value) => Math.min(100, value + 5));
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            setSliderPos(0);
+          } else if (e.key === "End") {
+            e.preventDefault();
+            setSliderPos(100);
+          }
+        }}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
@@ -227,6 +248,13 @@ export default function VideoUpscaler() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (inputUrl) URL.revokeObjectURL(inputUrl);
+      if (outputUrl) URL.revokeObjectURL(outputUrl);
+    };
+  }, [inputUrl, outputUrl]);
 
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now();

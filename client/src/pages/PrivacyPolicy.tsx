@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
 
           <article style={cardStyle}>
             <h2 style={{ fontFamily: "'AdorshoLipi', sans-serif", color: "#FDF6EC", fontSize: "1.1rem", marginBottom: 20 }}>
-              কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬ | সর্বশেষ আপডেট: ১১ মে ২০২৬
+              কার্যকারিতা শুরুর তারিখ: ২৮ মার্চ ২০২৬ | সর্বশেষ আপডেট: ১৬ আগস্ট ২০২৬
             </h2>
 
             <p style={pStyle}>
@@ -77,7 +77,15 @@ export default function PrivacyPolicy() {
               আপনি যদি ইমেইল, যোগাযোগ ফর্ম, social platform, বা অন্য কোনো মাধ্যমে লেখকের সঙ্গে যোগাযোগ করেন, তাহলে আপনার প্রদত্ত নাম, ইমেইল ঠিকানা, এবং বার্তার বিষয়বস্তু সংরক্ষিত হতে পারে। এই তথ্য শুধুমাত্র যোগাযোগের জবাব দেওয়া, প্রয়োজনীয় উত্তর পাঠানো, অথবা সম্পর্কিত অনুরোধ মূল্যায়নের জন্য ব্যবহার করা হবে। আপনার তথ্য অনুমতি ছাড়া তৃতীয় পক্ষের কাছে বিক্রি বা হস্তান্তর করা হবে না।
             </p>
 
-            <h2 style={h2Style}>২. Google AdSense ও বিজ্ঞাপন নীতি</h2>
+            <h2 style={h2Style}>২. কমিউনিটি লেখা, লগইন ও আপলোড</h2>
+            <p style={pStyle}>
+              “আমিও লিখবো বাস্তবতা” বিভাগে লেখা, মন্তব্য, রিঅ্যাকশন এবং ছবি জমা দিতে ব্যবহারকারীর লগইন পরিচয়, প্রদর্শিত নাম, লেখার বিষয়বস্তু এবং ঐচ্ছিক মিডিয়া সংরক্ষণ করা হতে পারে। প্রকাশের আগে লেখা moderation-এর জন্য পর্যালোচনা করা হয়; অনুমোদিত পোস্ট ও মন্তব্য সর্বসাধারণ দেখতে পারে। ব্যক্তিগত, গোপন বা সংবেদনশীল তথ্য প্রকাশ না করে লেখা জমা দিন।
+            </p>
+            <p style={pStyle}>
+              ব্যবহারকারী নিজের পোস্ট মুছে ফেলতে পারেন। কোনো তথ্য, পোস্ট বা মিডিয়া অপসারণের অনুরোধের জন্য নিচের যোগাযোগ ঠিকানায় পোস্টের লিংক ও প্রয়োজনীয় পরিচয়-সংক্রান্ত তথ্য পাঠাতে হবে। নিরাপত্তা, অপব্যবহার প্রতিরোধ ও আইনি প্রয়োজনের জন্য সীমিত technical logs বা moderation records কিছু সময় সংরক্ষিত থাকতে পারে।
+            </p>
+
+            <h2 style={h2Style}>৩. Google AdSense ও বিজ্ঞাপন নীতি</h2>
             <p style={pStyle}>
               এই ওয়েবসাইটে <strong style={{ color: "#D4A843" }}>Google AdSense</strong> ব্যবহার করা হয়। Google AdSense হলো Google LLC-এর একটি বিজ্ঞাপন পরিষেবা যা ওয়েবসাইটে প্রাসঙ্গিক বিজ্ঞাপন প্রদর্শন করে। Publisher ID: <strong style={{ color: "#D4A843" }}>ca-pub-3350204114310360</strong>
             </p>
@@ -94,22 +102,22 @@ export default function PrivacyPolicy() {
               <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#D4A843" }}>policies.google.com/privacy</a>
             </p>
 
-            <h2 style={h2Style}>৩. Cookies নীতি</h2>
+            <h2 style={h2Style}>৪. Cookies নীতি</h2>
             <p style={pStyle}>
               Cookies হলো ছোট data files, যা আপনার browser-এ সংরক্ষিত হয়। এই ওয়েবসাইটে প্রয়োজনীয় Cookies (মূল কার্যকারিতার জন্য), Analytics Cookies (Vercel Analytics), এবং বিজ্ঞাপন Cookies (Google AdSense) ব্যবহার করা হতে পারে। আপনি চাইলে আপনার browser settings থেকে cookies disable, restrict, বা delete করতে পারেন।
             </p>
 
-            <h2 style={h2Style}>৪. তৃতীয় পক্ষের সেবা</h2>
+            <h2 style={h2Style}>৫. তৃতীয় পক্ষের সেবা</h2>
             <p style={pStyle}>
               এই ওয়েবসাইটে Google AdSense (বিজ্ঞাপন), Vercel Analytics (পারফরম্যান্স বিশ্লেষণ), Google Fonts (ফন্ট), এবং YouTube Embeds (ভিডিও কন্টেন্ট) ব্যবহার করা হয়। External links-এ প্রবেশ করলে সংশ্লিষ্ট সাইটের নিজস্ব privacy policy প্রযোজ্য হবে।
             </p>
 
-            <h2 style={h2Style}>৫. শিশুদের গোপনীয়তা</h2>
+            <h2 style={h2Style}>৬. শিশুদের গোপনীয়তা</h2>
             <p style={pStyle}>
               এই ওয়েবসাইট ১৩ বছরের কম বয়সী শিশুদের কাছ থেকে ইচ্ছাকৃতভাবে কোনো ব্যক্তিগত তথ্য সংগ্রহ করে না।
             </p>
 
-            <h2 style={h2Style}>৬. তথ্যের নিরাপত্তা ও নীতি পরিবর্তন</h2>
+            <h2 style={h2Style}>৭. তথ্যের নিরাপত্তা ও নীতি পরিবর্তন</h2>
             <p style={pStyle}>
               আমরা website security বজায় রাখতে যুক্তিসঙ্গত প্রযুক্তিগত ও প্রশাসনিক ব্যবস্থা অনুসরণ করার চেষ্টা করি। এই Privacy Policy সময় সময় পরিবর্তন করা হতে পারে। ভবিষ্যতে policy update হলে revised version এই পেজে প্রকাশ করা হবে।
             </p>

@@ -245,11 +245,16 @@ export default function TempNumber() {
     }, 100);
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!selectedNumber) return;
-    navigator.clipboard.writeText(selectedNumber.number);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    try {
+      await navigator.clipboard.writeText(selectedNumber.number);
+      setCopied(true);
+      setFetchError(false);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setFetchError(true);
+    }
   };
 
   const progressPercent = ((30 - countdown) / 30) * 100;

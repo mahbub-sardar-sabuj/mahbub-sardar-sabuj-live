@@ -40,7 +40,6 @@ async function collectUrls() {
   const defaultSources = [
     'client/public/sitemap.xml',
     'client/public/news-sitemap.xml',
-    `${BASE_URL}/api/amio-sitemap`,
   ];
   const urls = new Set([BASE_URL, `${BASE_URL}/news`, `${BASE_URL}/writings`]);
   for (const source of (sources.length ? sources : defaultSources)) {

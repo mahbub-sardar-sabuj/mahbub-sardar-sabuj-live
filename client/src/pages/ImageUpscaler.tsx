@@ -197,6 +197,27 @@ function BeforeAfterSlider({ before, after }: { before: string; after: string })
         ref={containerRef}
         className="relative select-none overflow-hidden rounded-2xl cursor-col-resize bg-black/40"
         style={{ touchAction: "none" }}
+        role="slider"
+        tabIndex={0}
+        aria-label="আগে এবং পরে ছবির তুলনা"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(sliderPos)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+            e.preventDefault();
+            setSliderPos((value) => Math.max(0, value - 5));
+          } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+            e.preventDefault();
+            setSliderPos((value) => Math.min(100, value + 5));
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            setSliderPos(0);
+          } else if (e.key === "End") {
+            e.preventDefault();
+            setSliderPos(100);
+          }
+        }}
         onPointerDown={(e) => {
           isDragging.current = true;
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -204,6 +225,7 @@ function BeforeAfterSlider({ before, after }: { before: string; after: string })
         }}
         onPointerMove={(e) => { if (isDragging.current) updateSlider(e.clientX); }}
         onPointerUp={() => { isDragging.current = false; }}
+        onPointerCancel={() => { isDragging.current = false; }}
       >
         {/* After image — full width, bottom layer */}
         <img
@@ -328,14 +350,19 @@ export default function ImageUpscaler() {
     setDims(null);
     setStage("idle");
     setViewMode("slider");
-    const url = URL.createObjectURL(f);
-    setPreviewUrl(url);
+    setPreviewUrl((previousUrl) => {
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      return URL.createObjectURL(f);
+    });
   }, []);
 
   const reset = useCallback(() => {
     stopTimer();
     setFile(null);
-    setPreviewUrl(null);
+    setPreviewUrl((previousUrl) => {
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      return null;
+    });
     setOutputUrl(null);
     setDims(null);
     setStage("idle");

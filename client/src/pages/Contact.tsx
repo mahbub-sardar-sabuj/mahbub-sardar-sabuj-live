@@ -65,14 +65,24 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.message) return;
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const message = form.message.trim();
+    if (!name || !email || !message) {
+      setErrorMsg("নাম, ইমেইল ও বার্তা পূরণ করুন।");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setErrorMsg("সঠিক ইমেইল ঠিকানা লিখুন।");
+      return;
+    }
     setStatus("sending");
     setErrorMsg(null);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, name, email, message }),
       });
       const data = await res.json();
       if (res.ok && data.success) {

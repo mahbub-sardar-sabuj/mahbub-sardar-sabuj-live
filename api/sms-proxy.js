@@ -6,6 +6,10 @@ const COUNTRY_CODE_PATTERN = /^[a-z]{2}$/i;
 const PHONE_NUMBER_PATTERN = /^\d{3,20}$/;
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (limitJsonBodySize(req, res, 32 * 1024)) return;
 
   if (req.query?.service === 'temp-email') {

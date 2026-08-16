@@ -297,7 +297,7 @@ function GuidancePanel({ isAuthenticated, onWrite, onLogin }: { isAuthenticated:
           <div style={{ color: "#F7D56F", fontSize: "0.82rem", fontWeight: 900, letterSpacing: "0.02em" }}>লেখা শুরু করার সহজ পথ</div>
           <h2 style={{ margin: "0.25rem 0 0", color: "#FDF6EC", fontSize: "clamp(1.1rem, 3vw, 1.35rem)", lineHeight: 1.35 }}>বাস্তবতা লিখুন স্পষ্টভাবে, মানবিকভাবে, কার্যকরভাবে</h2>
           <p style={{ margin: "0.45rem 0 0", color: "rgba(253,246,236,0.62)", fontSize: "0.9rem", lineHeight: 1.75 }}>
-            এই ট্যাবের লক্ষ্য হলো বাস্তব জীবনের অভিজ্ঞতা, সমাজের সত্য গল্প এবং মানুষের ভাবনাকে সুন্দরভাবে প্রকাশ করা। লেখা জমা দিলে তা সাথে সাথে প্রকাশিত হবে।
+            এই ট্যাবের লক্ষ্য হলো বাস্তব জীবনের অভিজ্ঞতা, সমাজের সত্য গল্প এবং মানুষের ভাবনাকে সুন্দরভাবে প্রকাশ করা। লেখা জমা দিলে তা পর্যালোচনার জন্য পাঠানো হবে; অনুমোদনের পর সবার সামনে প্রকাশিত হবে।
           </p>
         </div>
         <ActionButton onClick={isAuthenticated ? onWrite : onLogin} small>
@@ -937,11 +937,16 @@ const PostCard = memo(function PostCard({
         <button
           type="button"
           className="amio-action-btn"
-          onClick={() => {
-            if (navigator.share) {
-              navigator.share({ title: post.title, url: `${window.location.origin}/amio-likhbo-bastobota/${post.slug}` });
-            } else {
-              navigator.clipboard.writeText(`${window.location.origin}/amio-likhbo-bastobota/${post.slug}`);
+          onClick={async () => {
+            const url = `${window.location.origin}/amio-likhbo-bastobota/${post.slug}`;
+            try {
+              if (navigator.share) {
+                await navigator.share({ title: post.title, url });
+              } else {
+                await navigator.clipboard.writeText(url);
+              }
+            } catch {
+              // Share cancellation or clipboard permission failure should not break the post view.
             }
           }}
           style={{
@@ -1197,8 +1202,8 @@ function CreatePostModal({ onClose, authorName, avatarUrl }: { onClose: () => vo
         {submitted ? (
           <div style={{ padding: "2rem", borderRadius: 18, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", color: "#86EFAC", textAlign: "center", display: "grid", gap: 10 }}>
             <CheckCircle2 size={36} style={{ margin: "0 auto", color: "#22C55E" }} />
-            <div style={{ fontWeight: 900, fontSize: "1.1rem" }}>পোস্ট হয়ে গেছে!</div>
-            <div style={{ fontSize: "0.85rem", color: "rgba(134,239,172,0.8)" }}>নিউজ ফিডে দেখা যাচ্ছে।</div>
+            <div style={{ fontWeight: 900, fontSize: "1.1rem" }}>লেখা জমা হয়েছে</div>
+            <div style={{ fontSize: "0.85rem", color: "rgba(134,239,172,0.8)" }}>পর্যালোচনা ও অনুমোদনের পর এটি নিউজ ফিডে দেখা যাবে।</div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>

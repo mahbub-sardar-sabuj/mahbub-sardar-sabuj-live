@@ -195,7 +195,7 @@ export default function TempEmail() {
       const data = await tempEmailRequest<{ "hydra:member"?: Message[] }>("messages", { token: acc.token });
       setMessages(data["hydra:member"] || []);
     } catch {
-      // Silent fail
+      setError("ইনবক্স আপডেট করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
     }
   }, []);
 
@@ -224,7 +224,7 @@ export default function TempEmail() {
       setMessages((prev) => prev.filter((m) => m.id !== msgId));
       if (selectedMessage?.id === msgId) setSelectedMessage(null);
     } catch {
-      // Silent fail
+      setError("ইমেইল মুছতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     }
   };
 
@@ -279,7 +279,10 @@ export default function TempEmail() {
     if (!account) return;
     navigator.clipboard.writeText(account.address).then(() => {
       setCopied(true);
+      setError(null);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      setError("ইমেইল কপি করা যায়নি। ব্রাউজার clipboard অনুমতি পরীক্ষা করুন।");
     });
   };
 
@@ -290,7 +293,7 @@ export default function TempEmail() {
     try {
       await tempEmailRequest<void>("deleteAccount", { id: account.id, token: account.token });
     } catch {
-      // Silent fail
+      setError("অ্যাকাউন্ট সার্ভার থেকে মুছতে সমস্যা হয়েছে; স্থানীয় session সরানো হয়েছে।");
     }
     setAccount(null);
     setMessages([]);

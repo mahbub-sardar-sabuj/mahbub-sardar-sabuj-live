@@ -359,10 +359,11 @@ export default function EBookReader() {
           </div>
           <h2 style={{ color: "#F2EDE4", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: "1.4rem", marginBottom: ".75rem" }}>বইটি পাওয়া যায়নি</h2>
           <p style={{ color: "rgba(242,237,228,.5)", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".9rem", marginBottom: "1.5rem" }}>অনুগ্রহ করে ই-বুক সংগ্রহ থেকে বই বেছে নিন</p>
-          <Link href="/ebooks">
-            <button style={{ background: "linear-gradient(135deg,#D4A843,#f0c060)", color: "#0D1B2A", padding: "13px 28px", borderRadius: 999, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".9rem" }}>
-              ই-বুক সংগ্রহে ফিরুন
-            </button>
+          <Link
+            href="/ebooks"
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#D4A843,#f0c060)", color: "#0D1B2A", padding: "13px 28px", borderRadius: 999, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'AdorshoLipi', 'Noto Serif Bengali', serif", fontSize: ".9rem", textDecoration: "none" }}
+          >
+            ই-বুক সংগ্রহে ফিরুন
           </Link>
         </div>
       </div>
@@ -418,13 +419,13 @@ export default function EBookReader() {
           <div className="max-w-5xl mx-auto px-2 sm:px-3 py-2 flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2">
 
             {/* Back button — always visible */}
-            <Link href="/ebooks" className="flex-shrink-0">
-              <button
-                className={`p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
-                title="ই-বুক তালিকায় ফিরুন"
-              >
-                <ChevronLeft size={20} />
-              </button>
+            <Link
+              href="/ebooks"
+              className={`flex-shrink-0 p-2 rounded-lg ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"} transition-colors`}
+              title="ই-বুক তালিকায় ফিরুন"
+              aria-label="ই-বুক তালিকায় ফিরুন"
+            >
+              <ChevronLeft size={20} />
             </Link>
 
             {/* Book thumbnail + title — desktop only */}
@@ -503,14 +504,13 @@ export default function EBookReader() {
                 {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
               {/* লেখালেখি শর্টকাট বাটন */}
-              <Link href="/writings" className="flex-shrink-0">
-                <button
-                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg bg-[#D4A843] text-[#0D1B2A] hover:bg-[#c49535] transition-colors`}
-                  title="লেখালেখি পড়ুন"
-                >
-                  <PenLine size={15} />
-                  <span className="hidden md:inline text-xs font-bold">লেখালেখি</span>
-                </button>
+              <Link
+                href="/writings"
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg bg-[#D4A843] text-[#0D1B2A] hover:bg-[#c49535] transition-colors flex-shrink-0`}
+                title="লেখালেখি পড়ুন"
+              >
+                <PenLine size={15} />
+                <span className="hidden md:inline text-xs font-bold">লেখালেখি</span>
               </Link>
               {/* শেয়ার/কপি লিংক বাটন */}
               <button
@@ -587,10 +587,11 @@ export default function EBookReader() {
                     >
                       পুনরায় চেষ্টা করুন
                     </button>
-                    <Link href="/ebooks" className="w-full sm:w-auto">
-                      <button className={`w-full px-6 py-2.5 rounded-full font-bold border ${isDarkMode ? "border-gray-700 text-gray-200" : "border-[#D4A843]/50 text-[#0D1B2A]"}`}>
-                        ই-বুক তালিকায় ফিরুন
-                      </button>
+                    <Link
+                      href="/ebooks"
+                      className={`w-full sm:w-auto px-6 py-2.5 rounded-full font-bold border text-center ${isDarkMode ? "border-gray-700 text-gray-200" : "border-[#D4A843]/50 text-[#0D1B2A]"}`}
+                    >
+                      ই-বুক তালিকায় ফিরুন
                     </Link>
                   </div>
                 </div>

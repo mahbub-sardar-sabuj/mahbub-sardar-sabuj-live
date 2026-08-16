@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-  <!-- Public SEO sitemap: core pages, tools, topic pages, news and legal pages. Dynamic visitor posts are exposed at /api/amio-sitemap. -->
+  <!-- Public SEO sitemap: core pages, tools, topic pages, news and legal pages. Community posts are loaded dynamically inside the platform page. -->
   <url><loc>https://www.mahbubsardarsabuj.com/</loc><lastmod>2026-05-31</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://www.mahbubsardarsabuj.com/about</loc><lastmod>2026-05-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.mahbubsardarsabuj.com/contact</loc><lastmod>2026-05-31</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>

@@ -1,9 +1,8 @@
 /**
  * Footer — Premium Edition
  * Design: Literary Avant-Garde | Deep Navy + Rich Gold
- * Features: Newsletter UI, animated social icons, hover effects, glassmorphism
+ * Features: animated social icons, hover effects, glassmorphism
  */
-import { useState } from "react";
 import { Facebook, Instagram, Youtube, Mail, Feather, ArrowRight, BookOpen, PenLine, Images, Mic2, Newspaper, UserRound, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
@@ -44,39 +43,12 @@ const collectionLinks = [
 
 export default function Footer() {
   const [location] = useLocation();
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
   const isAmioLikhboPage = location.startsWith("/amio-likhbo-bastobota");
   const warmRoute = (href: string) => preloadRoute(href);
 
   if (isAmioLikhboPage) {
     return null;
   }
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || subscribing) return;
-    setSubscribing(true);
-    try {
-      await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Newsletter Subscriber",
-          email: email.trim(),
-          subject: "নিউজলেটার সাবস্ক্রিপশন",
-          message: "নতুন সাবস্ক্রাইবার: " + email.trim() + " — mahbubsardarsabuj.com ওয়েবসাইট থেকে নিউজলেটার সাবস্ক্রাইব করেছেন।",
-        }),
-      });
-    } catch {
-      // Silent fail — show success regardless
-    } finally {
-      setSubscribed(true);
-      setEmail("");
-      setSubscribing(false);
-    }
-  };
 
   return (
     <footer style={{

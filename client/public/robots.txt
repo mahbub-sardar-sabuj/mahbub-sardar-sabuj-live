@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
-Allow: /api/amio-post-seo
-Allow: /api/amio-sitemap
 Disallow: /api/
 Disallow: /.env
 Disallow: /admin/
@@ -92,5 +90,4 @@ Sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-1.xml
 Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-2.xml
 Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-3.xml
-Sitemap: https://www.mahbubsardarsabuj.com/api/amio-sitemap
 Host: https://www.mahbubsardarsabuj.com

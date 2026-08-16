@@ -278,11 +278,13 @@ export default function AudioEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const originalAudioRef = useRef<HTMLAudioElement>(null);
   const editedAudioRef = useRef<HTMLAudioElement>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const resultUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
-      if (audio?.url) URL.revokeObjectURL(audio.url);
-      if (result?.audioUrl) URL.revokeObjectURL(result.audioUrl);
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
     };
   }, []);
 
@@ -296,9 +298,11 @@ export default function AudioEditor() {
       setError("ফাইলের সর্বোচ্চ আকার ২০০ MB।");
       return;
     }
-    if (audio?.url) URL.revokeObjectURL(audio.url);
-    if (result?.audioUrl) URL.revokeObjectURL(result.audioUrl);
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
     const url = URL.createObjectURL(file);
+    audioUrlRef.current = url;
+    resultUrlRef.current = null;
     setAudio({ file, name: file.name, size: file.size, url });
     setResult(null);
     setError("");
@@ -345,6 +349,10 @@ export default function AudioEditor() {
     if (!audio || !prompt.trim()) return;
     setIsProcessing(true);
     setError("");
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current);
+      resultUrlRef.current = null;
+    }
     setResult(null);
 
     try {
@@ -387,6 +395,7 @@ export default function AudioEditor() {
       const bytes = Uint8Array.from(atob(clean), c => c.charCodeAt(0));
       const blob = new Blob([bytes], { type: mime });
       const audioUrl = URL.createObjectURL(blob);
+      resultUrlRef.current = audioUrl;
       const audioFilename = `edited_${Date.now()}.mp3`;
 
       setResult({
@@ -534,7 +543,15 @@ export default function AudioEditor() {
                     <p className="text-xs text-white/40">{formatBytes(audio.size)}</p>
                   </div>
                   <button
-                    onClick={() => { if (audio.url) URL.revokeObjectURL(audio.url); setAudio(null); setResult(null); setError(""); }}
+                    onClick={() => {
+                      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+                      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
+                      audioUrlRef.current = null;
+                      resultUrlRef.current = null;
+                      setAudio(null);
+                      setResult(null);
+                      setError("");
+                    }}
                     className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
                   >
                     <X className="w-4 h-4 text-white/50" />

@@ -17,6 +17,9 @@ if (!JWT_SECRET) {
   throw new Error("[upload] COOKIE_SECRET or JWT_SECRET env var is required. Refusing to use an insecure hardcoded fallback.");
 }
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+const MAX_POST_IMAGE_BYTES = 20 * 1024 * 1024;
+const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
+const MAX_COVER_BYTES = 15 * 1024 * 1024;
 
 export const config = { api: { bodyParser: false } };
 
@@ -103,7 +106,7 @@ async function uploadToStorage(fileBuffer, mimeType, key) {
 
 // Handle writing post image upload
 async function handleImageUpload(req, res, session) {
-  const form = formidable({ maxFileSize: Infinity, uploadDir: "/tmp", keepExtensions: true });
+  const form = formidable({ maxFileSize: MAX_POST_IMAGE_BYTES, uploadDir: "/tmp", keepExtensions: true });
   let files;
   try {
     [, files] = await form.parse(req);
@@ -135,7 +138,7 @@ async function handleImageUpload(req, res, session) {
 
 // Handle avatar upload
 async function handleAvatarUpload(req, res, session) {
-  const form = formidable({ maxFileSize: Infinity, uploadDir: "/tmp", keepExtensions: true });
+  const form = formidable({ maxFileSize: MAX_AVATAR_BYTES, uploadDir: "/tmp", keepExtensions: true });
   let files;
   try {
     [, files] = await form.parse(req);
@@ -176,7 +179,7 @@ async function handleAvatarUpload(req, res, session) {
 
 // Handle cover photo upload
 async function handleCoverUpload(req, res, session) {
-  const form = formidable({ maxFileSize: Infinity, uploadDir: "/tmp", keepExtensions: true });
+  const form = formidable({ maxFileSize: MAX_COVER_BYTES, uploadDir: "/tmp", keepExtensions: true });
   let files;
   try {
     [, files] = await form.parse(req);

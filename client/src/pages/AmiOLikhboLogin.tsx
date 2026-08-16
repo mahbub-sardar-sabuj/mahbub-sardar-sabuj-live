@@ -204,6 +204,15 @@ export default function AmiOLikhboLogin() {
     setError("");
     setSuccess("");
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (mode !== "reset" && !/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      setError("সঠিক ইমেইল ঠিকানা দিন।");
+      return;
+    }
+    if ((mode === "login" || mode === "register") && !password) {
+      setError("পাসওয়ার্ড দিন।");
+      return;
+    }
     if (mode === "register" && !name.trim()) {
       setError("আপনার নাম দিন।");
       return;
@@ -229,7 +238,7 @@ export default function AmiOLikhboLogin() {
         const res = await fetch("/api/local-auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "forgot-password", email }),
+          body: JSON.stringify({ action: "forgot-password", email: normalizedEmail }),
           credentials: "include",
         });
         const data = await res.json();
@@ -239,6 +248,10 @@ export default function AmiOLikhboLogin() {
       }
 
       if (mode === "reset") {
+        if (!resetToken.trim()) {
+          setError("রিসেট টোকেন পাওয়া যায়নি। নতুন রিসেট লিঙ্ক নিন।");
+          return;
+        }
         const res = await fetch("/api/local-auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -257,9 +270,9 @@ export default function AmiOLikhboLogin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: mode,
-          email,
+          email: normalizedEmail,
           password,
-          name: mode === "register" ? name : undefined,
+          name: mode === "register" ? name.trim() : undefined,
         }),
         credentials: "include",
       });

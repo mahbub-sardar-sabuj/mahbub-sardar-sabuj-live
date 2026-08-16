@@ -917,11 +917,9 @@ export default async function handler(req) {
     const postSlug = path.replace("/amio-likhbo-bastobota/", "").split("?")[0];
     title = "আমিও লিখবো বাস্তবতা | মাহবুব সরদার সবুজ";
     description = "বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। আমিও লিখবো বাস্তবতা — একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম।";
-    // For bots, redirect to the DB-powered SSR endpoint
-    return new Response("", {
-      status: 302,
-      headers: { "Location": `${SITE_URL}/api/amio-post-seo?slug=${postSlug}` },
-    });
+    // The community post database is client-loaded. Keep the public URL crawlable
+    // instead of redirecting bots to a non-existent API endpoint.
+    bodyContent = `<main><h1>আমিও লিখবো বাস্তবতা</h1><p>এই কমিউনিটি লেখার প্ল্যাটফর্মে পাঠকেরা নিজেদের বাস্তব অভিজ্ঞতা, কবিতা ও ভাবনা প্রকাশ করেন। নির্দিষ্ট পোস্টটি সম্পূর্ণ দেখতে JavaScript সক্ষম করুন।</p><p><a href="${SITE_URL}/amio-likhbo-bastobota">কমিউনিটি লেখার প্ল্যাটফর্মে যান</a></p></main>`;
   } else if (path === "/amio-likhbo-bastobota") {
     title = "আমিও লিখবো বাস্তবতা | মাহবুব সরদার সবুজ";
     description = "বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। আমিও লিখবো বাস্তবতা — একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম।";
@@ -1064,6 +1062,10 @@ export default async function handler(req) {
   `;
 
   return new Response(html, {
-    headers: { "content-type": "text/html;charset=UTF-8" },
+    headers: {
+      "content-type": "text/html;charset=UTF-8",
+      "cache-control": "public, s-maxage=300, stale-while-revalidate=86400",
+      "x-content-type-options": "nosniff",
+    },
   });
 }

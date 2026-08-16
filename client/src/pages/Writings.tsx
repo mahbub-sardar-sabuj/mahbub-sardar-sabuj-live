@@ -129,7 +129,11 @@ function WritingDialog({ writing, suggestions, onClose, onNavigate }: { writing:
   }, [onClose]);
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}${writingPath(writing)}`);
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${writingPath(writing)}`);
+    } catch {
+      // Clipboard permission may be unavailable; keep the reader open without an unhandled rejection.
+    }
   };
 
   return (

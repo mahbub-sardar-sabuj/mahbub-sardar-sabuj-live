@@ -30,6 +30,7 @@ export default function TempCard() {
   const [generatedCard, setGeneratedCard] = useState<CardDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState(false);
   const [selectedBin, setSelectedBin] = useState(BINS[0]);
 
   const generateLuhn = (prefix: string, length: number) => {
@@ -75,10 +76,17 @@ export default function TempCard() {
     }, 600);
   };
 
-  const copyToClipboard = (text: string, type: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(type);
-    setTimeout(() => setCopied(null), 2000);
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(type);
+      setCopyError(false);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      setCopied(null);
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 3000);
+    }
   };
 
   return (
@@ -242,6 +250,9 @@ export default function TempCard() {
                       CVV কপি
                     </button>
                   </div>
+                  {copyError && (
+                    <p role="status" className="mt-3 text-center text-xs text-amber-300">কপি করা যায়নি। ব্রাউজার clipboard অনুমতি পরীক্ষা করুন।</p>
+                  )}
                 </div>
               ) : (
                 <div className="bg-white/[0.02] border-2 border-dashed border-white/10 rounded-[2rem] aspect-[1.586/1] flex flex-col items-center justify-center text-center p-8">

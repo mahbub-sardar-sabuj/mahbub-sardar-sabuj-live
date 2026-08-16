@@ -303,7 +303,10 @@ export default function TextToSpeech() {
   const handleCopyText = useCallback(() => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
+      setError(null);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      setError("ক্লিপবোর্ডে কপি করা যায়নি। ব্রাউজার অনুমতি পরীক্ষা করুন।");
     });
   }, [text]);
 
@@ -545,7 +548,11 @@ export default function TextToSpeech() {
               {/* FIX: Added ref for outside click detection */}
               <div style={{ position: "relative" }} ref={voiceDropdownRef}>
                 <button
+                  type="button"
                   onClick={() => setShowVoiceDropdown(!showVoiceDropdown)}
+                  aria-haspopup="listbox"
+                  aria-expanded={showVoiceDropdown}
+                  aria-controls="tts-voice-options"
                   style={{
                     width: "100%",
                     background: "rgba(255,255,255,0.04)",
@@ -571,6 +578,9 @@ export default function TextToSpeech() {
                 <AnimatePresence>
                   {showVoiceDropdown && (
                     <motion.div
+                      id="tts-voice-options"
+                      role="listbox"
+                      aria-label="কণ্ঠ নির্বাচন"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
@@ -593,7 +603,10 @@ export default function TextToSpeech() {
                       </div>
                       {femaleVoices.map((voice) => (
                         <button
+                          type="button"
                           key={voice.id}
+                          role="option"
+                          aria-selected={selectedVoice.id === voice.id}
                           onClick={() => { setSelectedVoice(voice); setShowVoiceDropdown(false); }}
                           style={{
                             width: "100%", background: selectedVoice.id === voice.id ? "rgba(212,168,67,0.1)" : "transparent",
@@ -617,7 +630,10 @@ export default function TextToSpeech() {
                       </div>
                       {maleVoices.map((voice) => (
                         <button
+                          type="button"
                           key={voice.id}
+                          role="option"
+                          aria-selected={selectedVoice.id === voice.id}
                           onClick={() => { setSelectedVoice(voice); setShowVoiceDropdown(false); }}
                           style={{
                             width: "100%", background: selectedVoice.id === voice.id ? "rgba(212,168,67,0.1)" : "transparent",

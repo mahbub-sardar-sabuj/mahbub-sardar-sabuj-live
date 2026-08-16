@@ -54,9 +54,13 @@ function BookModal({ book, onClose }: { book: BookCatalogItem; onClose: () => vo
   }, [onClose]);
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(book.canRead ? `${window.location.origin}/ebooks/read/${book.slug}` : book.buyLink || `${window.location.origin}/ebooks`);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(book.canRead ? `${window.location.origin}/ebooks/read/${book.slug}` : book.buyLink || `${window.location.origin}/ebooks`);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (

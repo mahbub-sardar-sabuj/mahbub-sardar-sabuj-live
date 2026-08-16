@@ -1256,7 +1256,8 @@ var writingPlatformRouter = router({
       content: contentText,
       mediaUrl,
       mediaType,
-      status: "approved"
+      // New community submissions require moderation before appearing publicly.
+      status: "pending"
     });
     {
       const insertId = insertResult.insertId ?? insertResult[0]?.insertId ?? 0;

@@ -63,6 +63,7 @@ const RIGHT_GROUPS = [
     items: [
       { label: "ডিজাইন ফরম্যাট",  subtitle: "কার্ড ও লেখা ডিজাইন",       href: "/editor",          icon: Palette  },
       { label: "ইমেজ আপস্কেলার",  subtitle: "AI দিয়ে ছবির মান বাড়ান",   href: "/image-upscaler",  icon: Sparkles },
+      { label: "ভিডিও আপস্কেলার",  subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Sparkles },
       { label: "অডিও এডিটর",      subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স", href: "/audio-editor",    icon: Music    },
       { label: "আবৃত্তি টুল",      subtitle: "AI কণ্ঠে আবৃত্তি",           href: "/text-to-speech",  icon: Mic2     },
     ],
@@ -164,6 +165,24 @@ export default function Navbar() {
   };
   const onLeave = () => {
     leaveTimer.current = window.setTimeout(() => { setActiveGroup(null); setHoverGroup(null); }, 160);
+  };
+  const toggleGroup = (id: number) => {
+    if (activeGroup === id) {
+      setActiveGroup(null);
+      setHoverGroup(null);
+    } else {
+      onEnter(id);
+    }
+  };
+  const handleGroupKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, id: number) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleGroup(id);
+    } else if (event.key === "Escape") {
+      setActiveGroup(null);
+      setHoverGroup(null);
+      event.currentTarget.blur();
+    }
   };
 
   if (isEBookReader) return null;
@@ -732,9 +751,18 @@ export default function Navbar() {
                     onMouseEnter={() => onEnter(group.id)}
                     onMouseLeave={onLeave}
                   >
-                    <button className={`nb-btn${active ? " nb-btn-active" : ""}${open ? " nb-btn-open" : ""}`}>
+                    <button
+                      type="button"
+                      className={`nb-btn${active ? " nb-btn-active" : ""}${open ? " nb-btn-open" : ""}`}
+                      aria-haspopup="true"
+                      aria-expanded={open}
+                      aria-controls={`nb-mega-${group.id}`}
+                      onClick={() => toggleGroup(group.id)}
+                      onFocus={() => onEnter(group.id)}
+                      onKeyDown={(event) => handleGroupKeyDown(event, group.id)}
+                    >
                       <span>{group.label}</span>
-                      <ChevronDown size={11} className="nb-btn-chevron" />
+                      <ChevronDown size={11} className="nb-btn-chevron" aria-hidden="true" />
                     </button>
                   </div>
                 );
@@ -768,9 +796,18 @@ export default function Navbar() {
                     onMouseEnter={() => onEnter(group.id)}
                     onMouseLeave={onLeave}
                   >
-                    <button className={`nb-btn${active ? " nb-btn-active" : ""}${open ? " nb-btn-open" : ""}`}>
+                    <button
+                      type="button"
+                      className={`nb-btn${active ? " nb-btn-active" : ""}${open ? " nb-btn-open" : ""}`}
+                      aria-haspopup="true"
+                      aria-expanded={open}
+                      aria-controls={`nb-mega-${group.id}`}
+                      onClick={() => toggleGroup(group.id)}
+                      onFocus={() => onEnter(group.id)}
+                      onKeyDown={(event) => handleGroupKeyDown(event, group.id)}
+                    >
                       <span>{group.label}</span>
-                      <ChevronDown size={11} className="nb-btn-chevron" />
+                      <ChevronDown size={11} className="nb-btn-chevron" aria-hidden="true" />
                     </button>
                   </div>
                 );
@@ -814,6 +851,7 @@ export default function Navbar() {
       <AnimatePresence>
         {isDesktop && activeGroup !== null && currentGroup && (
           <motion.div
+            id={`nb-mega-${currentGroup.id}`}
             className="nb-mega"
             style={{ top: totalH }}
             initial={{ opacity: 0, y: -16, scale: .975, filter: "blur(4px)" }}
