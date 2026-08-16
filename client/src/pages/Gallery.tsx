@@ -108,14 +108,17 @@ function copyGalleryLink(photoIndex: number, onComplete: () => void) {
 export default function Gallery() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [galleryCopied, setGalleryCopied] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(24);
+  // Keep the first gallery paint light; visitors can reveal the archive progressively.
+  const [visibleCount, setVisibleCount] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches ? 8 : 12
+  );
   const [location] = useLocation();
   const visibleImages = galleryImages.slice(0, visibleCount);
   const hasMoreImages = visibleCount < galleryImages.length;
   const currentImg: GalleryImage | null = lightboxIdx !== null ? galleryImages[lightboxIdx] : null;
 
   useEffect(() => {
-    setVisibleCount(window.matchMedia("(max-width: 768px)").matches ? 14 : 24);
+    setVisibleCount(window.matchMedia("(max-width: 768px)").matches ? 8 : 12);
   }, []);
 
   useEffect(() => {
@@ -250,8 +253,8 @@ export default function Gallery() {
                 <img
                   src={image.src}
                   alt={`${image.caption || "মাহবুব সরদার সবুজ গ্যালারি ছবি"} - গ্যালারি`}
-                  loading={index < 6 ? "eager" : "lazy"}
-                  fetchPriority={index < 3 ? "high" : "auto"}
+                  loading={index < 2 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "auto"}
                   decoding="async"
                   onError={(event) => { (event.target as HTMLImageElement).parentElement!.style.display = "none"; }}
                 />
@@ -267,7 +270,10 @@ export default function Gallery() {
 
           {hasMoreImages && (
             <div className="gallery-load-more-wrap">
-              <button type="button" className="gallery-load-more" onClick={() => setVisibleCount((count) => Math.min(count + 12, galleryImages.length))}>
+              <button type="button" className="gallery-load-more" onClick={() => {
+                const step = window.matchMedia("(max-width: 768px)").matches ? 8 : 12;
+                setVisibleCount((count) => Math.min(count + step, galleryImages.length));
+              }}>
                 <span>আরও ছবি দেখুন</span>
                 <span className="gallery-load-more-count">{galleryImages.length - visibleCount}</span>
               </button>
@@ -453,7 +459,8 @@ export default function Gallery() {
         }
         @media (max-width: 600px) {
           .gallery-hero { height: 460px; min-height: 0; margin-top: var(--site-nav-offset, 98px); padding: 0 1rem; }
-          .gallery-hero-collage { inset: -30% -52%; gap: .75rem; opacity: .30; }
+          /* The decorative collage is skipped on phones so its five background images do not compete with content. */
+          .gallery-hero-collage { display: none; }
           .gallery-hero-kicker { font-size: .64rem; letter-spacing: .16em; }
           .gallery-hero-kicker span { width: 22px; }
           .gallery-hero h1 { font-size: clamp(3.25rem, 18vw, 5rem); }

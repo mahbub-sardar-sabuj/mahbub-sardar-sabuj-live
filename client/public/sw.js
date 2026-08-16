@@ -1,6 +1,6 @@
-// মাহবুব সরদার সবুজ — Service Worker v5.0
-// v5: HTML and fresh content stay network-first; stable visual assets use cache-first delivery.
-const CACHE_NAME = 'mahbub-sardar-sabuj-v5';
+// মাহবুব সরদার সবুজ — Service Worker v6.0
+// v6: HTML stays network-first; original-size gallery media is intentionally left to the HTTP cache.
+const CACHE_NAME = 'mahbub-sardar-sabuj-v6';
 const OFFLINE_URL = '/offline.html';
 
 // Cache essential static assets on install (NOT HTML pages)
@@ -54,7 +54,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url);
-  const isLargeOnDemandAsset = /\.(?:pdf|wasm)$/i.test(url.pathname) || url.pathname.startsWith('/ffmpeg/') || url.pathname.startsWith('/ffmpeg-st/');
+  const isLargeOnDemandAsset =
+    /\.(?:pdf|wasm)$/i.test(url.pathname) ||
+    url.pathname.startsWith('/ffmpeg/') ||
+    url.pathname.startsWith('/ffmpeg-st/') ||
+    url.pathname.startsWith('/photos/gallery-2026-08/');
   const isVersionedOrVisualAsset = url.pathname.startsWith('/assets/') || /\.(?:css|js|mjs|woff2?|ttf|otf|eot|png|jpe?g|gif|svg|webp|ico)$/i.test(url.pathname);
 
   // Large readers and media tools load only when the user asks for them. Avoid filling

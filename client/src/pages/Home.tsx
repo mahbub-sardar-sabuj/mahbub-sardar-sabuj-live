@@ -4,14 +4,13 @@
  * Concept: Cinematic dark luxury author portfolio
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  */
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 // PWA install prompt type
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
-import { motion, useScroll, useTransform } from "framer-motion";
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette,
@@ -24,8 +23,9 @@ import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import RulesSection from "@/components/RulesSection";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
-const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
+// Critical LCP assets are served locally so Vercel/CDN caching is controlled by this project.
+const PROFILE_1 = "/images/home/profile-home.jpeg";
+const HERO_BG = "/images/home/hero-bg.webp";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
 
 // ── Navigation sections ───────────────────────────────────────────────────────
@@ -48,7 +48,6 @@ const sections = [
 
 // ═════════════════════════════════════════════════════════════════════════════════
 export default function Home() {
-  const heroRef = useRef<HTMLDivElement>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [pwaInstalled, setPwaInstalled] = useState(false);
   const [pwaInstalling, setPwaInstalling] = useState(false);
@@ -86,10 +85,6 @@ export default function Home() {
     setDeferredPrompt(null);
     setPwaInstalling(false);
   };
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
 
   const homeJsonLd = {
     "@context": "https://schema.org",
@@ -124,7 +119,6 @@ export default function Home() {
           HERO — Cinematic Split Layout
       ══════════════════════════════════════════════════════════════════════ */}
       <section
-        ref={heroRef}
         style={{
           position: "relative",
           minHeight: "100vh",
@@ -135,14 +129,13 @@ export default function Home() {
         }}
       >
         {/* Full-bleed background image with parallax */}
-        <motion.div
+        <div
           style={{
             position: "absolute", inset: 0,
             backgroundImage: `url(${HERO_BG})`,
             backgroundSize: "cover",
             backgroundPosition: "center top",
-            y: heroY,
-            scale: heroScale,
+            transform: "scale(1.02)",
           }}
         />
 
@@ -171,9 +164,7 @@ export default function Home() {
         }} />
 
         {/* Gold radial glow — top right, more intense */}
-        <motion.div
-          animate={{ opacity: [0.35, 0.65, 0.35], scale: [1, 1.08, 1] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        <div
           style={{
             position: "absolute",
             top: "-15%", right: "-8%",
@@ -184,9 +175,7 @@ export default function Home() {
           }}
         />
         {/* Secondary blue-teal glow — bottom left */}
-        <motion.div
-          animate={{ opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+        <div
           style={{
             position: "absolute",
             bottom: "-10%", left: "-5%",
@@ -207,8 +196,8 @@ export default function Home() {
         }} />
 
         {/* Content */}
-        <motion.div
-          style={{ position: "relative", zIndex: 2, width: "100%", opacity: heroOpacity }}
+        <div
+          style={{ position: "relative", zIndex: 2, width: "100%", opacity: 1 }}
           className="hero-container"
         >
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem", minWidth: 0 }} className="hero-inner">
@@ -217,10 +206,7 @@ export default function Home() {
             <div className="hero-left">
 
               {/* Eyebrow badge */}
-              <motion.div
-                initial={{ opacity: 0, x: -40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.15, ease: [0.16,1,0.3,1] }}
+              <div
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -252,15 +238,12 @@ export default function Home() {
                   color: "#E8C97A",
                   fontWeight: 400,
                 }}>লেখক ও কবি</span>
-              </motion.div>
+              </div>
 
               {/* Main name — single H1 for SEO, split visually with spans */}
               <h1 className="hero-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
               <div style={{ position: "relative", marginBottom: "0.2rem" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                <span
                   style={{
                     fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
@@ -275,14 +258,11 @@ export default function Home() {
                   }}
                 >
                   মাহবুব
-                </motion.span>
+                </span>
               </div>
 
               <div style={{ position: "relative", marginBottom: "0.6rem" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                <span
                   style={{
                     fontFamily: "'AdorshoLipi', sans-serif",
                     fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
@@ -303,12 +283,9 @@ export default function Home() {
                   }}
                 >
                   সরদার সবুজ
-                </motion.span>
+                </span>
                 {/* Underline glow — wider & softer */}
-                <motion.div
-                  initial={{ scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: 1.4, delay: 0.85, ease: [0.16,1,0.3,1] }}
+                <div
                   style={{
                     position: "absolute", bottom: -8, left: 0,
                     height: 2,
@@ -322,10 +299,7 @@ export default function Home() {
                             </div>
               </h1>
               {/* Tagline */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.65 }}
+              <div
                 style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
               >
                 <p style={{
@@ -340,16 +314,13 @@ export default function Home() {
                 }}>
                   বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
                 </p>
-              </motion.div>
+              </div>
 
             </div>
 
             {/* Right column — author portrait */}
-            <motion.div
+            <div
               className="hero-right"
-              initial={{ opacity: 0, x: 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
               style={{ position: "relative" }}
             >
               {/* Portrait frame */}
@@ -444,20 +415,18 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Scroll indicator */}
-        <motion.div
+        <div
           className="scroll-indicator"
           style={{
             position: "absolute", bottom: 40, left: "50%",
             transform: "translateX(-50%)", zIndex: 3,
-            opacity: heroOpacity,
+            opacity: 1,
           }}
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
         >
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
             <span style={{
@@ -473,7 +442,7 @@ export default function Home() {
               boxShadow: "0 0 8px rgba(201,168,76,0.3)",
             }} />
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
@@ -512,12 +481,8 @@ export default function Home() {
         }} />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 1040, margin: "0 auto" }}>
-          <motion.div
+          <div
             className="explore-app-heading"
-            initial={{ opacity: 0, y: 26 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
           >
             <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "0.95rem" }}>
               <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
@@ -544,14 +509,10 @@ export default function Home() {
             }}>
               লেখক, লেখা, বই, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
+          <div
             className="app-launcher-shell"
-            initial={{ opacity: 0, y: 32, scale: 0.97 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.75, delay: 0.1 }}
           >
             <div className="app-launcher-topbar">
               <span />
@@ -562,36 +523,26 @@ export default function Home() {
               {sections.map((sec, i) => {
                 const Icon = sec.icon;
                 return (
-                  <motion.div
+                  <div
                     key={sec.href + sec.label}
-                    initial={{ opacity: 0, y: 18 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.04 }}
                   >
                     <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
-                      <motion.div
+                      <div
                         className="app-launcher-card"
-                        whileHover={{ y: -6, scale: 1.03 }}
-                        whileTap={{ scale: 0.95 }}
                       >
                         <div className="app-icon-wrap">
                           <Icon size={23} strokeWidth={1.8} />
                         </div>
                         <span className="app-label">{sec.label}</span>
                         <span className="app-subtitle">{sec.subtitle}</span>
-                      </motion.div>
+                      </div>
                     </Link>
-                  </motion.div>
+                  </div>
                 );
               })}
 
               {/* PWA Install Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: sections.length * 0.04 }}
+              <div
               >
                 <button
                   onClick={handleInstallPWA}
@@ -599,10 +550,8 @@ export default function Home() {
                   style={{ width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                   aria-label="অ্যাপ ইনস্টল করুন"
                 >
-                  <motion.div
+                  <div
                     className="app-launcher-card pwa-install-card"
-                    whileHover={{ y: -6, scale: 1.03 }}
-                    whileTap={{ scale: 0.95 }}
                     style={{
                       background: pwaInstalled
                         ? 'linear-gradient(135deg, rgba(74,222,128,0.15), rgba(74,222,128,0.05))'
@@ -647,11 +596,11 @@ export default function Home() {
                     <span className="app-subtitle">
                       {pwaInstalled ? 'হোম স্ক্রিনে আছে ✓' : 'ফোনে অ্যাপ হিসেবে রাখুন'}
                     </span>
-                  </motion.div>
+                  </div>
                 </button>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 

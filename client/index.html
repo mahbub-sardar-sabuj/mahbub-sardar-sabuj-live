@@ -80,10 +80,9 @@
       @font-face { font-family: 'BLABNorhaGramUnicode'; src: url('/fonts/BLABNorhaGramUnicode.ttf') format('truetype'); font-display: swap; }
       @font-face { font-family: 'AkhandBengali'; src: url('/fonts/AkhandBengali.ttf') format('truetype'); font-display: swap; }
     </style>
-    <link rel="preconnect" href="https://d2xsxph8kpxj0f.cloudfront.net" crossorigin />
-    <!-- Preload hero images for faster LCP -->
-    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp" fetchpriority="high" />
-    <link rel="preload" as="image" href="https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg" fetchpriority="high" />
+    <!-- Preload the locally served LCP images for a faster first render. -->
+    <link rel="preload" as="image" href="/images/home/hero-bg.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/home/profile-home.jpeg" fetchpriority="high" />
     <!-- Preload primary font for faster rendering -->
     <link rel="preload" as="font" type="font/woff2" href="/fonts/AdorshoLipi.woff2" crossorigin />
     <!-- Google Fonts removed — AdorshoLipi local font is used exclusively -->
@@ -274,16 +273,35 @@
       </main>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B91MQ7EXQM"></script>
+    <!-- Google Analytics 4 — loaded after the first render or a real user interaction. -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag("js", new Date());
-      gtag("config", "G-B91MQ7EXQM", {
-        page_path: window.location.pathname,
-        send_page_view: true
-      });
+      (function () {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', 'G-B91MQ7EXQM', {
+          page_path: window.location.pathname,
+          send_page_view: true
+        });
+
+        var loaded = false;
+        var loadAnalytics = function () {
+          if (loaded) return;
+          loaded = true;
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-B91MQ7EXQM';
+          document.head.appendChild(script);
+        };
+        var wakeAnalytics = function () { loadAnalytics(); };
+
+        window.addEventListener('pointerdown', wakeAnalytics, { once: true, passive: true });
+        window.addEventListener('keydown', wakeAnalytics, { once: true });
+        window.addEventListener('touchstart', wakeAnalytics, { once: true, passive: true });
+
+        // Preserve visit analytics without competing with the critical render path.
+        window.setTimeout(loadAnalytics, 12000);
+      })();
     </script>
   </body>
 
