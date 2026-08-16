@@ -767,7 +767,7 @@ const PostCard = memo(function PostCard({
           <Avatar name={post.authorName} size={48} />
         )}
           <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 900, fontSize: "1.02rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em", textShadow: "0 0 12px rgba(212,168,67,0.2)" }}>
+          <div className="amio-post-author" style={{ fontWeight: 900, fontSize: "1.02rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em", textShadow: "0 0 12px rgba(212,168,67,0.2)" }}>
             {post.authorName}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
@@ -852,7 +852,7 @@ const PostCard = memo(function PostCard({
       )}
 
       {/* Content */}
-      <div style={{ color: "rgba(253,246,236,0.88)", lineHeight: 1.95, fontSize: "1.02rem" }}>
+      <div className="amio-post-content" style={{ color: "rgba(253,246,236,0.88)", lineHeight: 1.82, fontSize: "clamp(0.96rem, 3.8vw, 1.02rem)" }}>
         <p style={{ margin: 0, whiteSpace: "pre-wrap", cursor: "pointer" }} onClick={() => onOpenDetail(post.slug)}>{displayContent}</p>
         {isLong && (
           <button
@@ -943,7 +943,7 @@ const PostCard = memo(function PostCard({
       </div>
 
       {/* Action bar */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="amio-post-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <ReactionBar
           postId={post.id}
           reactionCounts={post.reactionCounts}
@@ -1900,7 +1900,7 @@ export default function AmiOLikhboBastobota() {
   const handleDeletePost = useCallback((id: number) => deletePostMutation.mutate({ postId: id }), [deletePostMutation]);
 
   return (
-    <div style={shellStyle}>
+    <div className="amio-feed" style={shellStyle}>
       <Seo
         title="আমিও লিখবো বাস্তবতা | সোশ্যাল ফিড"
         description="বাস্তব জীবনের গল্প, অভিজ্ঞতা, কবিতা ও ভাবনা শেয়ার করুন। আমিও লিখবো বাস্তবতা — একটি বাংলা সোশ্যাল লেখার প্ল্যাটফর্ম।"
@@ -1941,6 +1941,18 @@ export default function AmiOLikhboBastobota() {
         .amio-gold-glow { box-shadow: 0 0 18px rgba(212,168,67,0.28), 0 4px 20px rgba(212,168,67,0.18); }
         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.28); border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.5); }
+        .amio-feed { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
+        @media (max-width: 480px) {
+          .amio-feed-toolbar { gap: 0.45rem !important; padding: 0.6rem !important; }
+          .amio-search-input { padding: 0.55rem 1.7rem 0.55rem 2.2rem !important; font-size: 0.84rem !important; }
+          .amio-post-btn, .amio-login-btn { width: 38px !important; height: 38px !important; min-width: 38px !important; padding: 0 !important; justify-content: center !important; gap: 0 !important; font-size: 0 !important; }
+          .amio-post-btn svg, .amio-login-btn svg { width: 17px; height: 17px; }
+          .amio-topbar-avatar { width: 34px !important; height: 34px !important; }
+          .amio-post-card { padding: 0.95rem !important; gap: 0.8rem !important; border-radius: 18px !important; }
+          .amio-post-author { font-size: 0.96rem !important; }
+          .amio-post-content { font-size: 0.96rem !important; line-height: 1.78 !important; }
+          .amio-post-actions { gap: 0.45rem !important; }
+        }
       `}</style>
 
       <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem", minHeight: "100vh" }}>
@@ -1997,7 +2009,7 @@ export default function AmiOLikhboBastobota() {
 
           {/* ── Top Bar: Search + Post Button + Profile ── */}
           {!slugFromUrl && (
-            <div style={{
+            <div className="amio-feed-toolbar" style={{
               display: "flex",
               alignItems: "center",
               gap: 10,
@@ -2009,6 +2021,7 @@ export default function AmiOLikhboBastobota() {
               backdropFilter: "blur(16px)",
               boxShadow: "0 8px 36px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.07)",
               marginTop: "-1rem",
+              minWidth: 0,
             }}>
               {/* Search bar */}
               <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
@@ -2065,6 +2078,7 @@ export default function AmiOLikhboBastobota() {
                   type="button"
                   onClick={() => setShowCreateModal(true)}
                   title="নতুন পোস্ট লিখুন"
+                  aria-label="নতুন পোস্ট লিখুন"
                   style={{
                     flexShrink: 0,
                     display: "inline-flex",
@@ -2089,6 +2103,8 @@ export default function AmiOLikhboBastobota() {
               ) : (
                 <a
                   href={isLoginConfigured ? loginHref : "/amio-likhbo-login"}
+                  className="amio-login-btn"
+                  aria-label="লগইন করুন"
                   style={{
                     flexShrink: 0,
                     display: "inline-flex",
