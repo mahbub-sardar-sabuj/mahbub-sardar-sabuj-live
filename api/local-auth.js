@@ -128,7 +128,10 @@ function hasPasswordResetDeliveryConfig() {
 }
 
 async function sendPasswordResetEmail(toEmail, userName, resetToken) {
-  const gmailFrom = process.env.CONTACT_EMAIL_FROM?.trim();
+  // SMTP authentication must use the exact Google account that generated the App Password.
+  // Keep this independent from contact-form recipient/sender settings so password recovery
+  // cannot silently break when those addresses change.
+  const gmailUser = process.env.GMAIL_USER?.trim();
   const gmailPassword = process.env.GMAIL_APP_PASSWORD?.trim();
   const resendKey = process.env.RESEND_API_KEY?.trim();
   const resendFrom = process.env.RESEND_FROM_EMAIL?.trim();
@@ -156,15 +159,15 @@ async function sendPasswordResetEmail(toEmail, userName, resetToken) {
     }
   }
 
-  if (!gmailFrom || !gmailPassword) {
+  if (!gmailUser || !gmailPassword) {
     console.error("[forgot-password] No password-reset mail provider is configured");
     return { ok: false, code: "UNCONFIGURED" };
   }
 
   try {
     const nodemailer = await import("nodemailer");
-    const transporter = nodemailer.default.createTransport({ service: "gmail", auth: { user: gmailFrom, pass: gmailPassword } });
-    const info = await transporter.sendMail({ from: `"বাস্তবতা লেখক" <${gmailFrom}>`, to: toEmail, subject, text, html });
+    const transporter = nodemailer.default.createTransport({ service: "gmail", auth: { user: gmailUser, pass: gmailPassword } });
+    const info = await transporter.sendMail({ from: `"বাস্তবতা লেখক" <${gmailUser}>`, to: toEmail, subject, text, html });
     return { ok: true, provider: "gmail", messageId: info.messageId };
   } catch (error) {
     console.error("[forgot-password] Gmail delivery failed:", error instanceof Error ? error.message : String(error));
