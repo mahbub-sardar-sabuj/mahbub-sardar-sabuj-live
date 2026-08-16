@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 const migrations = [
   { id: "20260816_literary_community_extensions", file: "0005_literary_community_extensions.sql" },
   { id: "20260816_community_feed_performance_indexes", file: "0006_community_feed_performance_indexes.sql" },
+  { id: "20260816_literary_social_platform", file: "0007_literary_social_platform.sql" },
 ];
 const isDeploymentBuild = process.env.VERCEL === "1" || process.env.RUN_COMMUNITY_MIGRATIONS === "1";
 const databaseUrl = process.env.DATABASE_URL;

@@ -251,10 +251,12 @@ var writingPosts = mysqlTable("writing_posts", {
   content: text("content").notNull(),
   mediaUrl: text("mediaUrl"),
   mediaType: mysqlEnum("mediaType", ["none", "image", "video"]).default("none").notNull(),
-  status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
+  status: mysqlEnum("status", ["draft", "scheduled", "pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   featured: boolean("featured").default(false).notNull(),
   boostedScore: int("boostedScore").default(0).notNull(),
   challengeId: int("challengeId"),
+  scheduledFor: timestamp("scheduledFor"),
+  publishedAt: timestamp("publishedAt"),
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
@@ -268,11 +270,14 @@ var writingComments = mysqlTable("writing_comments", {
   authorOpenId: varchar("authorOpenId", { length: 64 }).notNull(),
   authorName: varchar("authorName", { length: 160 }).notNull(),
   content: text("content").notNull(),
+  parentCommentId: int("parentCommentId"),
+  mentionedOpenId: varchar("mentionedOpenId", { length: 64 }),
   status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
 }, (table) => ({
-  postStatusIdx: index("writing_comments_post_status_idx").on(table.postId, table.status)
+  postStatusIdx: index("writing_comments_post_status_idx").on(table.postId, table.status),
+  parentIdx: index("writing_comments_parent_idx").on(table.parentCommentId)
 }));
 var writingReactions = mysqlTable("writing_reactions", {
   id: int("id").autoincrement().primaryKey(),
@@ -346,6 +351,129 @@ var writingEditorialPicks = mysqlTable("writing_editorial_picks", {
 }, (table) => ({
   postUnique: uniqueIndex("writing_editorial_picks_post_unique").on(table.postId),
   activePositionIdx: index("writing_editorial_picks_active_position_idx").on(table.active, table.position)
+}));
+var writingFollows = mysqlTable("writing_follows", {
+  id: int("id").autoincrement().primaryKey(),
+  followerOpenId: varchar("followerOpenId", { length: 64 }).notNull(),
+  followingOpenId: varchar("followingOpenId", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+}, (table) => ({
+  followerFollowingUnique: uniqueIndex("writing_follows_follower_following_unique").on(table.followerOpenId, table.followingOpenId),
+  followingIdx: index("writing_follows_following_idx").on(table.followingOpenId)
+}));
+var writingNotifications = mysqlTable("writing_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  recipientOpenId: varchar("recipientOpenId", { length: 64 }).notNull(),
+  actorOpenId: varchar("actorOpenId", { length: 64 }),
+  type: mysqlEnum("type", ["follow", "reaction", "comment", "reply", "mention", "editorial", "challenge", "collaboration", "scheduled"]).notNull(),
+  postId: int("postId"),
+  commentId: int("commentId"),
+  title: varchar("title", { length: 220 }).notNull(),
+  body: varchar("body", { length: 600 }),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+}, (table) => ({
+  recipientReadCreatedIdx: index("writing_notifications_recipient_read_created_idx").on(table.recipientOpenId, table.readAt, table.createdAt)
+}));
+var writingDrafts = mysqlTable("writing_drafts", {
+  id: int("id").autoincrement().primaryKey(),
+  authorOpenId: varchar("authorOpenId", { length: 64 }).notNull(),
+  title: varchar("title", { length: 220 }),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  content: text("content").notNull(),
+  mediaUrl: text("mediaUrl"),
+  mediaType: mysqlEnum("mediaType", ["none", "image", "video"]).default("none").notNull(),
+  challengeId: int("challengeId"),
+  scheduledFor: timestamp("scheduledFor"),
+  autosavedAt: timestamp("autosavedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  authorUpdatedIdx: index("writing_drafts_author_updated_idx").on(table.authorOpenId, table.updatedAt),
+  scheduledIdx: index("writing_drafts_scheduled_idx").on(table.scheduledFor)
+}));
+var writingReadingEvents = mysqlTable("writing_reading_events", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  readerOpenId: varchar("readerOpenId", { length: 64 }),
+  eventType: mysqlEnum("eventType", ["view", "complete", "share", "audio_play"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+}, (table) => ({
+  postCreatedIdx: index("writing_reading_events_post_created_idx").on(table.postId, table.createdAt),
+  readerCreatedIdx: index("writing_reading_events_reader_created_idx").on(table.readerOpenId, table.createdAt)
+}));
+var writingPrompts = mysqlTable("writing_prompts", {
+  id: int("id").autoincrement().primaryKey(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  prompt: varchar("prompt", { length: 900 }).notNull(),
+  active: boolean("active").default(true).notNull(),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+}, (table) => ({
+  activePositionIdx: index("writing_prompts_active_position_idx").on(table.active, table.position)
+}));
+var writingCollections = mysqlTable("writing_collections", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 180 }).notNull().unique(),
+  title: varchar("title", { length: 180 }).notNull(),
+  description: varchar("description", { length: 900 }),
+  coverUrl: text("coverUrl"),
+  active: boolean("active").default(true).notNull(),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  activeCreatedIdx: index("writing_collections_active_created_idx").on(table.active, table.createdAt)
+}));
+var writingCollectionItems = mysqlTable("writing_collection_items", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: int("collectionId").notNull(),
+  postId: int("postId").notNull(),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+}, (table) => ({
+  collectionPostUnique: uniqueIndex("writing_collection_items_collection_post_unique").on(table.collectionId, table.postId),
+  collectionPositionIdx: index("writing_collection_items_collection_position_idx").on(table.collectionId, table.position)
+}));
+var writingEvents = mysqlTable("writing_events", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 180 }).notNull(),
+  prompt: text("prompt").notNull(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  status: mysqlEnum("status", ["draft", "scheduled", "live", "ended", "archived"]).default("draft").notNull(),
+  startsAt: timestamp("startsAt").notNull(),
+  endsAt: timestamp("endsAt").notNull(),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  statusStartsIdx: index("writing_events_status_starts_idx").on(table.status, table.startsAt)
+}));
+var writingCollaborationInvites = mysqlTable("writing_collaboration_invites", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  inviterOpenId: varchar("inviterOpenId", { length: 64 }).notNull(),
+  inviteeOpenId: varchar("inviteeOpenId", { length: 64 }).notNull(),
+  status: mysqlEnum("status", ["pending", "accepted", "declined", "cancelled"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  postInviteeUnique: uniqueIndex("writing_collaboration_invites_post_invitee_unique").on(table.postId, table.inviteeOpenId),
+  inviteeStatusIdx: index("writing_collaboration_invites_invitee_status_idx").on(table.inviteeOpenId, table.status)
+}));
+var writingModerationSignals = mysqlTable("writing_moderation_signals", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  type: mysqlEnum("type", ["duplicate", "sensitive", "profanity", "community_report"]).notNull(),
+  score: int("score").default(0).notNull(),
+  details: varchar("details", { length: 900 }),
+  status: mysqlEnum("status", ["open", "reviewed", "dismissed"]).default("open").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  postTypeUnique: uniqueIndex("writing_moderation_signals_post_type_unique").on(table.postId, table.type),
+  statusCreatedIdx: index("writing_moderation_signals_status_created_idx").on(table.status, table.createdAt)
 }));
 var localUsers = mysqlTable("local_users", {
   id: int("id").autoincrement().primaryKey(),
@@ -1012,7 +1140,7 @@ var liveChatRouter = router({
 
 // server/writingPlatformRouter.ts
 import { z as z3 } from "zod";
-import { and as and3, desc as desc2, eq as eq4, inArray as inArray2, like, or, sql as sql3 } from "drizzle-orm";
+import { and as and3, asc, desc as desc2, eq as eq4, gte, inArray as inArray2, isNull, like, or, sql as sql3 } from "drizzle-orm";
 import { nanoid as nanoid2 } from "nanoid";
 var postCategorySchema = z3.enum(["experience", "story", "poem", "thought", "photo", "video"]);
 var mediaTypeSchema = z3.enum(["none", "image", "video"]);
@@ -1041,6 +1169,27 @@ async function safeWritingRead(label, fallback, operation) {
     return fallback;
   }
 }
+async function createCommunityNotification(db, notification) {
+  if (!notification.recipientOpenId || notification.recipientOpenId === notification.actorOpenId) return;
+  await db.insert(writingNotifications).values({
+    recipientOpenId: notification.recipientOpenId,
+    actorOpenId: notification.actorOpenId || null,
+    type: notification.type,
+    postId: notification.postId || null,
+    commentId: notification.commentId || null,
+    title: notification.title.slice(0, 220),
+    body: notification.body?.slice(0, 600) || null
+  }).catch((error) => console.error("[WritingPlatform] notification write failed:", error));
+}
+function detectModerationSignals(content) {
+  const normalized = content.toLowerCase();
+  const sensitiveTerms = ["\u0986\u09A4\u09CD\u09AE\u09B9\u09A4\u09CD\u09AF\u09BE", "\u09A8\u09BF\u099C\u09C7\u0995\u09C7 \u09B6\u09C7\u09B7", "\u09AE\u09B0\u09C7 \u09AF\u09C7\u09A4\u09C7", "suicide"];
+  const profanityTerms = ["\u09B9\u09BE\u09B0\u09BE\u09AE\u09BF", "\u09AC\u09C7\u09B6\u09CD\u09AF\u09BE", "\u099A\u09C1\u09A6", "fuck"];
+  return {
+    sensitive: sensitiveTerms.some((term) => normalized.includes(term)),
+    profanity: profanityTerms.some((term) => normalized.includes(term))
+  };
+}
 async function enrichPostsBatch(posts, userOpenId, _db2) {
   if (posts.length === 0) return [];
   const db = _db2 ?? await getWritingDb();
@@ -1053,12 +1202,13 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
     bookmarked: false,
     myFeedback: null,
     myReaction: null,
+    followingAuthor: false,
     isOwner: Boolean(userOpenId && post.authorOpenId === userOpenId)
   });
   if (!db) return posts.map(emptyEnrich);
   const postIds = posts.map((p) => p.id);
   const authorOpenIds = [...new Set(posts.map((p) => p.authorOpenId))];
-  const [allReactions, allComments, avatarRows, allFeedback, myBookmarks] = await Promise.all([
+  const [allReactions, allComments, avatarRows, allFeedback, myBookmarks, myFollows] = await Promise.all([
     // Batch query 1: reactions (only needed columns)
     db.select({ postId: writingReactions.postId, type: writingReactions.type, userOpenId: writingReactions.userOpenId }).from(writingReactions).where(inArray2(writingReactions.postId, postIds)),
     // Batch query 2: approved comment counts
@@ -1079,7 +1229,9 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
     // Batch query 4: reader feedback counts and current user's selection
     db.select({ postId: writingFeedback.postId, kind: writingFeedback.kind, userOpenId: writingFeedback.userOpenId }).from(writingFeedback).where(inArray2(writingFeedback.postId, postIds)).catch(() => []),
     // Batch query 5: current user's saved posts only
-    userOpenId ? db.select({ postId: writingBookmarks.postId }).from(writingBookmarks).where(and3(inArray2(writingBookmarks.postId, postIds), eq4(writingBookmarks.userOpenId, userOpenId))).catch(() => []) : Promise.resolve([])
+    userOpenId ? db.select({ postId: writingBookmarks.postId }).from(writingBookmarks).where(and3(inArray2(writingBookmarks.postId, postIds), eq4(writingBookmarks.userOpenId, userOpenId))).catch(() => []) : Promise.resolve([]),
+    // Batch query 6: whether the current reader follows each visible author.
+    userOpenId && authorOpenIds.length > 0 ? db.select({ followingOpenId: writingFollows.followingOpenId }).from(writingFollows).where(and3(eq4(writingFollows.followerOpenId, userOpenId), inArray2(writingFollows.followingOpenId, authorOpenIds))).catch(() => []) : Promise.resolve([])
   ]);
   const reactionsMap = /* @__PURE__ */ new Map();
   for (const reaction of allReactions) {
@@ -1112,6 +1264,7 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
     if (userOpenId && feedback.userOpenId === userOpenId) entry.myFeedback = feedback.kind;
   }
   const bookmarkIds = new Set(myBookmarks.map((bookmark) => bookmark.postId));
+  const followingAuthorIds = new Set(myFollows.map((follow) => follow.followingOpenId));
   const avatarMap = /* @__PURE__ */ new Map();
   if (avatarRows) {
     const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
@@ -1134,6 +1287,7 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
       bookmarked: bookmarkIds.has(post.id),
       myFeedback: feedbackMap.get(post.id)?.myFeedback ?? null,
       myReaction: reactionData?.myReaction ?? null,
+      followingAuthor: followingAuthorIds.has(post.authorOpenId),
       isOwner: Boolean(userOpenId && post.authorOpenId === userOpenId)
     };
   });
@@ -1208,6 +1362,149 @@ var writingPlatformRouter = router({
       return { posts: enriched, hasMore: posts.length === limit };
     });
   }),
+  listFollowingFeed: protectedProcedure.input(z3.object({
+    category: postCategorySchema.optional(),
+    limit: z3.number().min(1).max(30).default(10),
+    offset: z3.number().min(0).default(0)
+  }).optional()).query(async ({ ctx, input }) => {
+    return safeWritingRead("listFollowingFeed", { posts: [], hasMore: false }, async () => {
+      const db = await getWritingDb();
+      if (!db) return { posts: [], hasMore: false };
+      const limit = input?.limit ?? 10;
+      const conditions = [eq4(writingFollows.followerOpenId, ctx.user.openId), eq4(writingPosts.status, "approved")];
+      if (input?.category) conditions.push(eq4(writingPosts.category, input.category));
+      const posts = await db.select({
+        id: writingPosts.id,
+        slug: writingPosts.slug,
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        title: writingPosts.title,
+        category: writingPosts.category,
+        content: sql3`SUBSTRING(${writingPosts.content}, 1, 600)`,
+        mediaUrl: sql3`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
+        mediaType: writingPosts.mediaType,
+        status: writingPosts.status,
+        featured: writingPosts.featured,
+        boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount,
+        createdAt: writingPosts.createdAt,
+        updatedAt: writingPosts.updatedAt
+      }).from(writingPosts).innerJoin(writingFollows, eq4(writingPosts.authorOpenId, writingFollows.followingOpenId)).where(and3(...conditions)).orderBy(desc2(writingPosts.createdAt)).limit(limit).offset(input?.offset ?? 0);
+      return { posts: await enrichPostsBatch(posts, ctx.user.openId, db), hasMore: posts.length === limit };
+    });
+  }),
+  listTrendingPosts: publicProcedure.input(z3.object({ limit: z3.number().min(1).max(20).default(6) }).optional()).query(async ({ ctx, input }) => {
+    return safeWritingRead("listTrendingPosts", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const posts = await db.select({
+        id: writingPosts.id,
+        slug: writingPosts.slug,
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        title: writingPosts.title,
+        category: writingPosts.category,
+        content: sql3`SUBSTRING(${writingPosts.content}, 1, 600)`,
+        mediaUrl: sql3`SUBSTRING(${writingPosts.mediaUrl}, 1, 500)`,
+        mediaType: writingPosts.mediaType,
+        status: writingPosts.status,
+        featured: writingPosts.featured,
+        boostedScore: writingPosts.boostedScore,
+        viewCount: writingPosts.viewCount,
+        createdAt: writingPosts.createdAt,
+        updatedAt: writingPosts.updatedAt
+      }).from(writingPosts).where(eq4(writingPosts.status, "approved")).orderBy(desc2(writingPosts.boostedScore), desc2(writingPosts.viewCount), desc2(writingPosts.createdAt)).limit(input?.limit ?? 6);
+      return enrichPostsBatch(posts, ctx.user?.openId, db);
+    });
+  }),
+  toggleFollow: protectedProcedure.input(z3.object({ authorOpenId: z3.string().min(1).max(64) })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    if (input.authorOpenId === ctx.user.openId) throw new Error("\u09A8\u09BF\u099C\u09C7\u0995\u09C7 \u0985\u09A8\u09C1\u09B8\u09B0\u09A3 \u0995\u09B0\u09BE \u09AF\u09BE\u09DF \u09A8\u09BE");
+    const existing = await db.select({ id: writingFollows.id }).from(writingFollows).where(and3(eq4(writingFollows.followerOpenId, ctx.user.openId), eq4(writingFollows.followingOpenId, input.authorOpenId))).limit(1);
+    if (existing.length > 0) {
+      await db.delete(writingFollows).where(eq4(writingFollows.id, existing[0].id));
+      return { following: false };
+    }
+    await db.insert(writingFollows).values({ followerOpenId: ctx.user.openId, followingOpenId: input.authorOpenId });
+    await createCommunityNotification(db, {
+      recipientOpenId: input.authorOpenId,
+      actorOpenId: ctx.user.openId,
+      type: "follow",
+      title: `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u0985\u09A8\u09C1\u09B8\u09B0\u09A3 \u0995\u09B0\u09C7\u099B\u09C7\u09A8`,
+      body: "\u0986\u09AA\u09A8\u09BE\u09B0 \u09A8\u09A4\u09C1\u09A8 \u09B2\u09C7\u0996\u09BE \u098F\u0996\u09A8 \u09A4\u09BE\u0981\u09B0 \u0985\u09A8\u09C1\u09B8\u09B0\u09A3 \u0995\u09B0\u09BE \u09AB\u09BF\u09A1\u09C7 \u09A6\u09C7\u0996\u09BE \u09AF\u09BE\u09AC\u09C7\u0964"
+    });
+    return { following: true };
+  }),
+  myFollowing: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("myFollowing", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select({ authorOpenId: writingFollows.followingOpenId, createdAt: writingFollows.createdAt }).from(writingFollows).where(eq4(writingFollows.followerOpenId, ctx.user.openId)).orderBy(desc2(writingFollows.createdAt)).limit(200);
+    });
+  }),
+  listSuggestedAuthors: publicProcedure.input(z3.object({ limit: z3.number().min(1).max(8).default(4) }).optional()).query(async ({ ctx, input }) => {
+    return safeWritingRead("listSuggestedAuthors", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const limit = input?.limit ?? 4;
+      const candidates = await db.select({
+        authorOpenId: writingPosts.authorOpenId,
+        authorName: writingPosts.authorName,
+        postCount: sql3`COUNT(*)`,
+        totalViews: sql3`COALESCE(SUM(${writingPosts.viewCount}), 0)`,
+        lastPublishedAt: sql3`MAX(${writingPosts.createdAt})`
+      }).from(writingPosts).where(eq4(writingPosts.status, "approved")).groupBy(writingPosts.authorOpenId, writingPosts.authorName).orderBy(desc2(sql3`COUNT(*)`), desc2(sql3`MAX(${writingPosts.createdAt})`)).limit(Math.min(30, limit + 6));
+      const authors = candidates.filter((author) => author.authorOpenId !== ctx.user?.openId).slice(0, limit);
+      if (authors.length === 0) return [];
+      const authorOpenIds = authors.map((author) => author.authorOpenId);
+      const [avatarRows, followRows] = await Promise.all([
+        db.execute(
+          sql3.raw(
+            `SELECT openId, CASE WHEN avatarUrl LIKE 'data:%' THEN NULL ELSE avatarUrl END AS avatarUrl FROM local_users WHERE openId IN (${authorOpenIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(",")}) LIMIT ${authorOpenIds.length}`
+          )
+        ).catch(() => null),
+        ctx.user?.openId ? db.select({ followingOpenId: writingFollows.followingOpenId }).from(writingFollows).where(and3(eq4(writingFollows.followerOpenId, ctx.user.openId), inArray2(writingFollows.followingOpenId, authorOpenIds))).catch(() => []) : Promise.resolve([])
+      ]);
+      const avatarMap = /* @__PURE__ */ new Map();
+      if (avatarRows) {
+        const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
+        if (Array.isArray(rows)) {
+          for (const row of rows) {
+            if (row.openId && row.avatarUrl) avatarMap.set(String(row.openId), String(row.avatarUrl));
+          }
+        }
+      }
+      const followingIds = new Set(followRows.map((row) => row.followingOpenId));
+      return authors.map((author) => ({
+        authorOpenId: author.authorOpenId,
+        authorName: normalizeAuthorName(author.authorName),
+        authorAvatarUrl: avatarMap.get(author.authorOpenId) ?? null,
+        postCount: Number(author.postCount ?? 0),
+        totalViews: Number(author.totalViews ?? 0),
+        following: followingIds.has(author.authorOpenId)
+      }));
+    });
+  }),
+  listNotifications: protectedProcedure.input(z3.object({ limit: z3.number().min(1).max(50).default(20) }).optional()).query(async ({ ctx, input }) => {
+    return safeWritingRead("listNotifications", { items: [], unreadCount: 0 }, async () => {
+      const db = await getWritingDb();
+      if (!db) return { items: [], unreadCount: 0 };
+      const [items, unreadRows] = await Promise.all([
+        db.select().from(writingNotifications).where(eq4(writingNotifications.recipientOpenId, ctx.user.openId)).orderBy(desc2(writingNotifications.createdAt)).limit(input?.limit ?? 20),
+        db.select({ count: sql3`COUNT(*)` }).from(writingNotifications).where(and3(eq4(writingNotifications.recipientOpenId, ctx.user.openId), isNull(writingNotifications.readAt)))
+      ]);
+      return { items, unreadCount: Number(unreadRows[0]?.count ?? 0) };
+    });
+  }),
+  markNotificationsRead: protectedProcedure.input(z3.object({ notificationIds: z3.array(z3.number().int().positive()).max(50).optional() }).optional()).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const conditions = [eq4(writingNotifications.recipientOpenId, ctx.user.openId), isNull(writingNotifications.readAt)];
+    if (input?.notificationIds?.length) conditions.push(inArray2(writingNotifications.id, input.notificationIds));
+    await db.update(writingNotifications).set({ readAt: /* @__PURE__ */ new Date() }).where(and3(...conditions));
+    return { success: true };
+  }),
   searchPosts: publicProcedure.input(z3.object({
     query: z3.string().min(1).max(200),
     limit: z3.number().min(1).max(50).default(20)
@@ -1274,6 +1571,8 @@ var writingPlatformRouter = router({
         id: writingComments.id,
         authorName: writingComments.authorName,
         content: writingComments.content,
+        parentCommentId: writingComments.parentCommentId,
+        mentionedOpenId: writingComments.mentionedOpenId,
         createdAt: writingComments.createdAt
       }).from(writingComments).where(and3(eq4(writingComments.postId, input.postId), eq4(writingComments.status, "approved"))).orderBy(desc2(writingComments.createdAt)).limit(input.limit);
     });
@@ -1312,6 +1611,55 @@ var writingPlatformRouter = router({
       return enrichPostsBatch(posts, ctx.user.openId, db);
     });
   }),
+  listPrompts: publicProcedure.input(z3.object({ limit: z3.number().min(1).max(30).default(12) }).optional()).query(async ({ input }) => {
+    return safeWritingRead("listPrompts", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingPrompts).where(eq4(writingPrompts.active, true)).orderBy(asc(writingPrompts.position), desc2(writingPrompts.createdAt)).limit(input?.limit ?? 12);
+    });
+  }),
+  listDrafts: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("listDrafts", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingDrafts).where(eq4(writingDrafts.authorOpenId, ctx.user.openId)).orderBy(desc2(writingDrafts.updatedAt)).limit(30);
+    });
+  }),
+  saveDraft: protectedProcedure.input(z3.object({
+    draftId: z3.number().int().positive().optional(),
+    title: z3.string().max(220).optional(),
+    category: postCategorySchema.default("thought"),
+    content: z3.string().max(6e5).default(""),
+    mediaUrl: z3.string().optional().or(z3.literal("")),
+    mediaType: mediaTypeSchema.default("none"),
+    challengeId: z3.number().int().positive().optional()
+  })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const values = {
+      title: input.title?.trim() || null,
+      category: input.category,
+      content: input.content,
+      mediaUrl: input.mediaUrl?.trim() || null,
+      mediaType: input.mediaUrl?.trim() ? input.mediaType : "none",
+      challengeId: input.challengeId || null,
+      autosavedAt: /* @__PURE__ */ new Date()
+    };
+    if (input.draftId) {
+      const owned = await db.select({ id: writingDrafts.id }).from(writingDrafts).where(and3(eq4(writingDrafts.id, input.draftId), eq4(writingDrafts.authorOpenId, ctx.user.openId))).limit(1);
+      if (owned.length === 0) throw new Error("Draft \u09AA\u09BE\u0993\u09DF\u09BE \u09AF\u09BE\u09DF\u09A8\u09BF");
+      await db.update(writingDrafts).set(values).where(eq4(writingDrafts.id, input.draftId));
+      return { draftId: input.draftId, saved: true };
+    }
+    const result = await db.insert(writingDrafts).values({ authorOpenId: ctx.user.openId, ...values });
+    return { draftId: Number(result.insertId ?? result[0]?.insertId ?? 0), saved: true };
+  }),
+  deleteDraft: protectedProcedure.input(z3.object({ draftId: z3.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    await db.delete(writingDrafts).where(and3(eq4(writingDrafts.id, input.draftId), eq4(writingDrafts.authorOpenId, ctx.user.openId)));
+    return { success: true };
+  }),
   createPost: protectedProcedure.input(z3.object({
     title: z3.string().min(1).max(220).optional(),
     category: postCategorySchema.optional(),
@@ -1348,17 +1696,21 @@ var writingPlatformRouter = router({
       // New community submissions require moderation before appearing publicly.
       status: "pending"
     });
-    {
-      const insertId = insertResult.insertId ?? insertResult[0]?.insertId ?? 0;
-      sendTelegramPostSubmitted({
-        postId: insertId,
-        title: autoTitle,
-        authorName: normalizeAuthorName(ctx.user.name),
-        category,
-        slug: ""
-      }).catch((err) => console.error("[Telegram post submit notify error]", err));
-    }
-    return { success: true };
+    const insertId = Number(insertResult.insertId ?? insertResult[0]?.insertId ?? 0);
+    const moderation = detectModerationSignals(contentText);
+    const signalRows = [
+      ...moderation.sensitive ? [{ postId: insertId, type: "sensitive", score: 90, details: "Sensitive language review needed" }] : [],
+      ...moderation.profanity ? [{ postId: insertId, type: "profanity", score: 80, details: "Potentially offensive language review needed" }] : []
+    ];
+    if (signalRows.length) await db.insert(writingModerationSignals).values(signalRows).catch((error) => console.error("[WritingPlatform] moderation signal failed:", error));
+    sendTelegramPostSubmitted({
+      postId: insertId,
+      title: autoTitle,
+      authorName: normalizeAuthorName(ctx.user.name),
+      category,
+      slug: ""
+    }).catch((err) => console.error("[Telegram post submit notify error]", err));
+    return { success: true, postId: insertId };
   }),
   deletePost: protectedProcedure.input(z3.object({ postId: z3.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const db = await getWritingDb();
@@ -1409,6 +1761,7 @@ var writingPlatformRouter = router({
     if (!db) throw new Error("Database unavailable");
     const posts = await db.select().from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
     if (posts.length === 0) throw new Error("Post not found");
+    const post = posts[0];
     const existing = await db.select().from(writingReactions).where(and3(eq4(writingReactions.postId, input.postId), eq4(writingReactions.userOpenId, ctx.user.openId))).limit(1);
     if (existing.length > 0 && existing[0].type === input.type) {
       await db.delete(writingReactions).where(eq4(writingReactions.id, existing[0].id));
@@ -1416,6 +1769,7 @@ var writingPlatformRouter = router({
     }
     if (existing.length > 0) {
       await db.update(writingReactions).set({ type: input.type }).where(eq4(writingReactions.id, existing[0].id));
+      await createCommunityNotification(db, { recipientOpenId: post.authorOpenId, actorOpenId: ctx.user.openId, type: "reaction", postId: post.id, title: `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u09B0 \u09B2\u09C7\u0996\u09BE\u09DF \u09AA\u09CD\u09B0\u09A4\u09BF\u0995\u09CD\u09B0\u09BF\u09DF\u09BE \u099C\u09BE\u09A8\u09BF\u09DF\u09C7\u099B\u09C7\u09A8`, body: post.title });
       return { success: true, action: "updated" };
     }
     await db.insert(writingReactions).values({
@@ -1423,30 +1777,50 @@ var writingPlatformRouter = router({
       userOpenId: ctx.user.openId,
       type: input.type
     });
+    await createCommunityNotification(db, { recipientOpenId: post.authorOpenId, actorOpenId: ctx.user.openId, type: "reaction", postId: post.id, title: `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u09B0 \u09B2\u09C7\u0996\u09BE\u09DF \u09AA\u09CD\u09B0\u09A4\u09BF\u0995\u09CD\u09B0\u09BF\u09DF\u09BE \u099C\u09BE\u09A8\u09BF\u09DF\u09C7\u099B\u09C7\u09A8`, body: post.title });
     return { success: true, action: "created" };
   }),
-  addComment: protectedProcedure.input(z3.object({ postId: z3.number().int().positive(), content: z3.string().min(2).max(2e3) })).mutation(async ({ ctx, input }) => {
+  addComment: protectedProcedure.input(z3.object({ postId: z3.number().int().positive(), content: z3.string().min(2).max(2e3), parentCommentId: z3.number().int().positive().optional(), mentionedOpenId: z3.string().min(1).max(64).optional() })).mutation(async ({ ctx, input }) => {
     const db = await getWritingDb();
     if (!db) throw new Error("Database unavailable");
     const posts = await db.select().from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
     if (posts.length === 0) throw new Error("Post not found");
+    let replyTargetOpenId = null;
+    if (input.parentCommentId) {
+      const parent = await db.select({ id: writingComments.id, postId: writingComments.postId, authorOpenId: writingComments.authorOpenId }).from(writingComments).where(eq4(writingComments.id, input.parentCommentId)).limit(1);
+      if (parent.length === 0 || parent[0].postId !== input.postId) throw new Error("\u09AE\u09C2\u09B2 \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF\u099F\u09BF \u09AA\u09BE\u0993\u09DF\u09BE \u09AF\u09BE\u09DF\u09A8\u09BF");
+      replyTargetOpenId = parent[0].authorOpenId;
+    }
     const commentInsert = await db.insert(writingComments).values({
       postId: input.postId,
       authorOpenId: ctx.user.openId,
       authorName: normalizeAuthorName(ctx.user.name),
       content: input.content.trim(),
+      parentCommentId: input.parentCommentId || null,
+      mentionedOpenId: input.mentionedOpenId || null,
       status: "approved"
     });
-    {
-      const commentId = commentInsert.insertId ?? commentInsert[0]?.insertId ?? 0;
-      sendTelegramCommentSubmitted({
-        commentId,
-        postTitle: posts[0].title,
-        authorName: normalizeAuthorName(ctx.user.name),
-        contentPreview: input.content.trim()
-      }).catch((err) => console.error("[Telegram comment submit notify error]", err));
+    const commentId = Number(commentInsert.insertId ?? commentInsert[0]?.insertId ?? 0);
+    const recipientOpenId = replyTargetOpenId || posts[0].authorOpenId;
+    await createCommunityNotification(db, {
+      recipientOpenId,
+      actorOpenId: ctx.user.openId,
+      type: replyTargetOpenId ? "reply" : "comment",
+      postId: input.postId,
+      commentId,
+      title: replyTargetOpenId ? `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u09B0 \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF\u09C7\u09B0 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BF\u09DF\u09C7\u099B\u09C7\u09A8` : `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u09B0 \u09B2\u09C7\u0996\u09BE\u09DF \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF \u0995\u09B0\u09C7\u099B\u09C7\u09A8`,
+      body: input.content.trim()
+    });
+    if (input.mentionedOpenId && input.mentionedOpenId !== recipientOpenId) {
+      await createCommunityNotification(db, { recipientOpenId: input.mentionedOpenId, actorOpenId: ctx.user.openId, type: "mention", postId: input.postId, commentId, title: `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u098F\u0995\u099F\u09BF \u09AE\u09A8\u09CD\u09A4\u09AC\u09CD\u09AF\u09C7 \u0989\u09B2\u09CD\u09B2\u09C7\u0996 \u0995\u09B0\u09C7\u099B\u09C7\u09A8`, body: input.content.trim() });
     }
-    return { success: true };
+    sendTelegramCommentSubmitted({
+      commentId,
+      postTitle: posts[0].title,
+      authorName: normalizeAuthorName(ctx.user.name),
+      contentPreview: input.content.trim()
+    }).catch((err) => console.error("[Telegram comment submit notify error]", err));
+    return { success: true, commentId };
   }),
   // ── Reader library: bookmarks and meaningful feedback ─────────────────────
   toggleBookmark: protectedProcedure.input(z3.object({ postId: z3.number().int().positive() })).mutation(async ({ ctx, input }) => {
@@ -1507,25 +1881,171 @@ var writingPlatformRouter = router({
     });
   }),
   getMyCommunityOverview: protectedProcedure.query(async ({ ctx }) => {
-    return safeWritingRead("getMyCommunityOverview", { submitted: 0, approved: 0, saved: 0, badges: [] }, async () => {
+    return safeWritingRead("getMyCommunityOverview", { submitted: 0, approved: 0, saved: 0, following: 0, badges: [] }, async () => {
       const db = await getWritingDb();
-      if (!db) return { submitted: 0, approved: 0, saved: 0, badges: [] };
-      const [submittedRows, approvedRows, savedRows] = await Promise.all([
+      if (!db) return { submitted: 0, approved: 0, saved: 0, following: 0, badges: [] };
+      const [submittedRows, approvedRows, savedRows, followingRows] = await Promise.all([
         db.select({ count: sql3`COUNT(*)` }).from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)),
         db.select({ count: sql3`COUNT(*)` }).from(writingPosts).where(and3(eq4(writingPosts.authorOpenId, ctx.user.openId), eq4(writingPosts.status, "approved"))),
-        db.select({ count: sql3`COUNT(*)` }).from(writingBookmarks).where(eq4(writingBookmarks.userOpenId, ctx.user.openId))
+        db.select({ count: sql3`COUNT(*)` }).from(writingBookmarks).where(eq4(writingBookmarks.userOpenId, ctx.user.openId)),
+        db.select({ count: sql3`COUNT(*)` }).from(writingFollows).where(eq4(writingFollows.followerOpenId, ctx.user.openId))
       ]);
       const submitted = Number(submittedRows[0]?.count ?? 0);
       const approved = Number(approvedRows[0]?.count ?? 0);
       const saved = Number(savedRows[0]?.count ?? 0);
+      const following = Number(followingRows[0]?.count ?? 0);
       const badges = [
         ...submitted >= 1 ? ["\u09AA\u09CD\u09B0\u09A5\u09AE \u0995\u09B2\u09AE"] : [],
         ...approved >= 1 ? ["\u09AA\u09CD\u09B0\u0995\u09BE\u09B6\u09BF\u09A4 \u09B2\u09C7\u0996\u0995"] : [],
         ...approved >= 5 ? ["\u09A8\u09BF\u09DF\u09AE\u09BF\u09A4 \u09B2\u09C7\u0996\u0995"] : [],
-        ...saved >= 3 ? ["\u09AE\u09A8\u09CB\u09AF\u09CB\u0997\u09C0 \u09AA\u09BE\u09A0\u0995"] : []
+        ...saved >= 3 ? ["\u09AE\u09A8\u09CB\u09AF\u09CB\u0997\u09C0 \u09AA\u09BE\u09A0\u0995"] : [],
+        ...following >= 1 ? ["\u09AA\u09BE\u09A0\u0995-\u09AC\u09A8\u09CD\u09A7\u09C1"] : []
       ];
-      return { submitted, approved, saved, badges };
+      return { submitted, approved, saved, following, badges };
     });
+  }),
+  // ── Reading, analytics, editorial collections and live community events ───────
+  recordReadingEvent: publicProcedure.input(z3.object({ postId: z3.number().int().positive(), eventType: z3.enum(["view", "complete", "share", "audio_play"]) })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) return { success: false };
+    const post = await db.select({ id: writingPosts.id }).from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
+    if (post.length === 0) return { success: false };
+    await db.insert(writingReadingEvents).values({ postId: input.postId, readerOpenId: ctx.user?.openId || null, eventType: input.eventType }).catch(() => {
+    });
+    return { success: true };
+  }),
+  getMyAuthorAnalytics: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("getMyAuthorAnalytics", { posts: 0, views: 0, reactions: 0, comments: 0, saves: 0, completionEvents: 0 }, async () => {
+      const db = await getWritingDb();
+      if (!db) return { posts: 0, views: 0, reactions: 0, comments: 0, saves: 0, completionEvents: 0 };
+      const ownPosts = await db.select({ id: writingPosts.id, viewCount: writingPosts.viewCount }).from(writingPosts).where(and3(eq4(writingPosts.authorOpenId, ctx.user.openId), eq4(writingPosts.status, "approved"))).limit(500);
+      const postIds = ownPosts.map((post) => post.id);
+      if (postIds.length === 0) return { posts: 0, views: 0, reactions: 0, comments: 0, saves: 0, completionEvents: 0 };
+      const [reactionRows, commentRows, saveRows, completionRows] = await Promise.all([
+        db.select({ count: sql3`COUNT(*)` }).from(writingReactions).where(inArray2(writingReactions.postId, postIds)),
+        db.select({ count: sql3`COUNT(*)` }).from(writingComments).where(and3(inArray2(writingComments.postId, postIds), eq4(writingComments.status, "approved"))),
+        db.select({ count: sql3`COUNT(*)` }).from(writingBookmarks).where(inArray2(writingBookmarks.postId, postIds)),
+        db.select({ count: sql3`COUNT(*)` }).from(writingReadingEvents).where(and3(inArray2(writingReadingEvents.postId, postIds), eq4(writingReadingEvents.eventType, "complete")))
+      ]);
+      return {
+        posts: ownPosts.length,
+        views: ownPosts.reduce((sum, post) => sum + Number(post.viewCount || 0), 0),
+        reactions: Number(reactionRows[0]?.count ?? 0),
+        comments: Number(commentRows[0]?.count ?? 0),
+        saves: Number(saveRows[0]?.count ?? 0),
+        completionEvents: Number(completionRows[0]?.count ?? 0)
+      };
+    });
+  }),
+  listCollections: publicProcedure.query(async () => {
+    return safeWritingRead("listCollections", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingCollections).where(eq4(writingCollections.active, true)).orderBy(desc2(writingCollections.createdAt)).limit(20);
+    });
+  }),
+  getCollectionBySlug: publicProcedure.input(z3.object({ slug: z3.string().min(1).max(180) })).query(async ({ ctx, input }) => {
+    return safeWritingRead("getCollectionBySlug", null, async () => {
+      const db = await getWritingDb();
+      if (!db) return null;
+      const collections = await db.select().from(writingCollections).where(and3(eq4(writingCollections.slug, input.slug), eq4(writingCollections.active, true))).limit(1);
+      if (collections.length === 0) return null;
+      const items = await db.select({ post: writingPosts }).from(writingCollectionItems).innerJoin(writingPosts, eq4(writingCollectionItems.postId, writingPosts.id)).where(and3(eq4(writingCollectionItems.collectionId, collections[0].id), eq4(writingPosts.status, "approved"))).orderBy(asc(writingCollectionItems.position), desc2(writingCollectionItems.createdAt)).limit(50);
+      return { collection: collections[0], posts: await enrichPostsBatch(items.map((item) => item.post), ctx.user?.openId, db) };
+    });
+  }),
+  listLiveEvents: publicProcedure.query(async () => {
+    return safeWritingRead("listLiveEvents", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const now = /* @__PURE__ */ new Date();
+      return db.select().from(writingEvents).where(or(eq4(writingEvents.status, "live"), and3(eq4(writingEvents.status, "scheduled"), gte(writingEvents.endsAt, now)))).orderBy(asc(writingEvents.startsAt)).limit(10);
+    });
+  }),
+  createCollaborationInvite: protectedProcedure.input(z3.object({ postId: z3.number().int().positive(), inviteeOpenId: z3.string().min(1).max(64) })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    if (input.inviteeOpenId === ctx.user.openId) throw new Error("\u09A8\u09BF\u099C\u09C7\u0995\u09C7 \u09B8\u09B9\u09AF\u09CB\u0997\u09C0 \u09B9\u09BF\u09B8\u09C7\u09AC\u09C7 \u0986\u09AE\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3 \u09A6\u09C7\u0993\u09DF\u09BE \u09AF\u09BE\u09DF \u09A8\u09BE");
+    const post = await db.select({ id: writingPosts.id, authorOpenId: writingPosts.authorOpenId, title: writingPosts.title }).from(writingPosts).where(eq4(writingPosts.id, input.postId)).limit(1);
+    if (post.length === 0 || post[0].authorOpenId !== ctx.user.openId && ctx.user.role !== "admin") throw new Error("\u098F\u0987 \u09B2\u09C7\u0996\u09BE\u09DF \u0986\u09AE\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3 \u09A6\u09C7\u0993\u09DF\u09BE\u09B0 \u0985\u09A8\u09C1\u09AE\u09A4\u09BF \u09A8\u09C7\u0987");
+    const existing = await db.select({ id: writingCollaborationInvites.id }).from(writingCollaborationInvites).where(and3(eq4(writingCollaborationInvites.postId, input.postId), eq4(writingCollaborationInvites.inviteeOpenId, input.inviteeOpenId))).limit(1);
+    if (existing.length) await db.update(writingCollaborationInvites).set({ inviterOpenId: ctx.user.openId, status: "pending" }).where(eq4(writingCollaborationInvites.id, existing[0].id));
+    else await db.insert(writingCollaborationInvites).values({ postId: input.postId, inviterOpenId: ctx.user.openId, inviteeOpenId: input.inviteeOpenId });
+    await createCommunityNotification(db, { recipientOpenId: input.inviteeOpenId, actorOpenId: ctx.user.openId, type: "collaboration", postId: input.postId, title: `${normalizeAuthorName(ctx.user.name)} \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u09AF\u09CC\u09A5 \u09B2\u09C7\u0996\u09BE\u09B0 \u0986\u09AE\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3 \u099C\u09BE\u09A8\u09BF\u09DF\u09C7\u099B\u09C7\u09A8`, body: post[0].title });
+    return { success: true };
+  }),
+  myCollaborationInvites: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("myCollaborationInvites", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select({ invite: writingCollaborationInvites, post: writingPosts }).from(writingCollaborationInvites).innerJoin(writingPosts, eq4(writingCollaborationInvites.postId, writingPosts.id)).where(and3(eq4(writingCollaborationInvites.inviteeOpenId, ctx.user.openId), eq4(writingCollaborationInvites.status, "pending"))).orderBy(desc2(writingCollaborationInvites.createdAt)).limit(30);
+    });
+  }),
+  respondToCollaborationInvite: protectedProcedure.input(z3.object({ inviteId: z3.number().int().positive(), accept: z3.boolean() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const invites = await db.select().from(writingCollaborationInvites).where(and3(eq4(writingCollaborationInvites.id, input.inviteId), eq4(writingCollaborationInvites.inviteeOpenId, ctx.user.openId), eq4(writingCollaborationInvites.status, "pending"))).limit(1);
+    if (invites.length === 0) throw new Error("\u0986\u09AE\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3\u099F\u09BF \u0986\u09B0 \u09B8\u0995\u09CD\u09B0\u09BF\u09DF \u09A8\u09C7\u0987");
+    const invite = invites[0];
+    await db.update(writingCollaborationInvites).set({ status: input.accept ? "accepted" : "declined" }).where(eq4(writingCollaborationInvites.id, invite.id));
+    await createCommunityNotification(db, { recipientOpenId: invite.inviterOpenId, actorOpenId: ctx.user.openId, type: "collaboration", postId: invite.postId, title: `${normalizeAuthorName(ctx.user.name)} ${input.accept ? "\u09AF\u09CC\u09A5 \u09B2\u09C7\u0996\u09BE\u09B0 \u0986\u09AE\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3 \u0997\u09CD\u09B0\u09B9\u09A3 \u0995\u09B0\u09C7\u099B\u09C7\u09A8" : "\u09AF\u09CC\u09A5 \u09B2\u09C7\u0996\u09BE\u09B0 \u0986\u09AE\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3 \u09AA\u09CD\u09B0\u09A4\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE\u09A8 \u0995\u09B0\u09C7\u099B\u09C7\u09A8"}` });
+    return { success: true, status: input.accept ? "accepted" : "declined" };
+  }),
+  adminListModerationSignals: adminProcedure.query(async () => {
+    return safeWritingRead("adminListModerationSignals", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select({ signal: writingModerationSignals, post: writingPosts }).from(writingModerationSignals).innerJoin(writingPosts, eq4(writingModerationSignals.postId, writingPosts.id)).where(eq4(writingModerationSignals.status, "open")).orderBy(desc2(writingModerationSignals.createdAt)).limit(100);
+    });
+  }),
+  adminUpdateModerationSignal: adminProcedure.input(z3.object({ signalId: z3.number().int().positive(), status: z3.enum(["reviewed", "dismissed"]) })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    await db.update(writingModerationSignals).set({ status: input.status }).where(eq4(writingModerationSignals.id, input.signalId));
+    return { success: true };
+  }),
+  adminCreatePrompt: adminProcedure.input(z3.object({ category: postCategorySchema, title: z3.string().min(2).max(180), prompt: z3.string().min(5).max(900), position: z3.number().int().min(0).max(999).default(0) })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const result = await db.insert(writingPrompts).values({ category: input.category, title: input.title.trim(), prompt: input.prompt.trim(), position: input.position });
+    return { success: true, promptId: Number(result.insertId ?? result[0]?.insertId ?? 0) };
+  }),
+  adminUpdatePrompt: adminProcedure.input(z3.object({ promptId: z3.number().int().positive(), active: z3.boolean().optional(), title: z3.string().min(2).max(180).optional(), prompt: z3.string().min(5).max(900).optional(), category: postCategorySchema.optional(), position: z3.number().int().min(0).max(999).optional() })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const { promptId, ...changes } = input;
+    await db.update(writingPrompts).set(changes).where(eq4(writingPrompts.id, promptId));
+    return { success: true };
+  }),
+  adminCreateCollection: adminProcedure.input(z3.object({ slug: z3.string().min(2).max(180), title: z3.string().min(2).max(180), description: z3.string().max(900).optional(), coverUrl: z3.string().max(6e5).optional() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const slug = createSlug(input.slug).slice(0, 180);
+    const result = await db.insert(writingCollections).values({ slug, title: input.title.trim(), description: input.description?.trim() || null, coverUrl: input.coverUrl?.trim() || null, createdByOpenId: ctx.user.openId });
+    return { success: true, collectionId: Number(result.insertId ?? result[0]?.insertId ?? 0), slug };
+  }),
+  adminSetCollectionItems: adminProcedure.input(z3.object({ collectionId: z3.number().int().positive(), postIds: z3.array(z3.number().int().positive()).max(50) })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    await db.delete(writingCollectionItems).where(eq4(writingCollectionItems.collectionId, input.collectionId));
+    if (input.postIds.length) await db.insert(writingCollectionItems).values(input.postIds.map((postId, position) => ({ collectionId: input.collectionId, postId, position })));
+    return { success: true };
+  }),
+  adminCreateEvent: adminProcedure.input(z3.object({ title: z3.string().min(2).max(180), prompt: z3.string().min(5).max(6e3), category: postCategorySchema, startsAt: z3.string().datetime(), endsAt: z3.string().datetime(), status: z3.enum(["draft", "scheduled", "live"]).default("scheduled") })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const startsAt = new Date(input.startsAt);
+    const endsAt = new Date(input.endsAt);
+    if (endsAt <= startsAt) throw new Error("\u09B6\u09C7\u09B7 \u09B8\u09AE\u09DF \u09B6\u09C1\u09B0\u09C1\u09B0 \u09B8\u09AE\u09DF\u09C7\u09B0 \u09AA\u09B0\u09C7 \u09B9\u09A4\u09C7 \u09B9\u09AC\u09C7");
+    const result = await db.insert(writingEvents).values({ title: input.title.trim(), prompt: input.prompt.trim(), category: input.category, status: input.status, startsAt, endsAt, createdByOpenId: ctx.user.openId });
+    return { success: true, eventId: Number(result.insertId ?? result[0]?.insertId ?? 0) };
+  }),
+  adminUpdateEvent: adminProcedure.input(z3.object({ eventId: z3.number().int().positive(), status: z3.enum(["draft", "scheduled", "live", "ended", "archived"]).optional(), title: z3.string().min(2).max(180).optional(), prompt: z3.string().min(5).max(6e3).optional(), startsAt: z3.string().datetime().optional(), endsAt: z3.string().datetime().optional() })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const { eventId, startsAt, endsAt, ...rest } = input;
+    await db.update(writingEvents).set({ ...rest, ...startsAt ? { startsAt: new Date(startsAt) } : {}, ...endsAt ? { endsAt: new Date(endsAt) } : {} }).where(eq4(writingEvents.id, eventId));
+    return { success: true };
   }),
   // ── Safety reports ─────────────────────────────────────────────────────────
   submitReport: protectedProcedure.input(z3.object({ postId: z3.number().int().positive(), reason: reportReasonSchema, details: z3.string().trim().max(600).optional() })).mutation(async ({ ctx, input }) => {

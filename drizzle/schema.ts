@@ -67,10 +67,12 @@ export const writingPosts = mysqlTable("writing_posts", {
   content: text("content").notNull(),
   mediaUrl: text("mediaUrl"),
   mediaType: mysqlEnum("mediaType", ["none", "image", "video"]).default("none").notNull(),
-  status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
+  status: mysqlEnum("status", ["draft", "scheduled", "pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   featured: boolean("featured").default(false).notNull(),
   boostedScore: int("boostedScore").default(0).notNull(),
   challengeId: int("challengeId"),
+  scheduledFor: timestamp("scheduledFor"),
+  publishedAt: timestamp("publishedAt"),
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -88,11 +90,14 @@ export const writingComments = mysqlTable("writing_comments", {
   authorOpenId: varchar("authorOpenId", { length: 64 }).notNull(),
   authorName: varchar("authorName", { length: 160 }).notNull(),
   content: text("content").notNull(),
+  parentCommentId: int("parentCommentId"),
+  mentionedOpenId: varchar("mentionedOpenId", { length: 64 }),
   status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
   postStatusIdx: index("writing_comments_post_status_idx").on(table.postId, table.status),
+  parentIdx: index("writing_comments_parent_idx").on(table.parentCommentId),
 }));
 
 export type WritingComment = typeof writingComments.$inferSelect;
@@ -185,6 +190,150 @@ export const writingEditorialPicks = mysqlTable("writing_editorial_picks", {
   activePositionIdx: index("writing_editorial_picks_active_position_idx").on(table.active, table.position),
 }));
 export type WritingEditorialPick = typeof writingEditorialPicks.$inferSelect;
+
+// ── Literary community social graph and writing workflows ─────────────────────
+export const writingFollows = mysqlTable("writing_follows", {
+  id: int("id").autoincrement().primaryKey(),
+  followerOpenId: varchar("followerOpenId", { length: 64 }).notNull(),
+  followingOpenId: varchar("followingOpenId", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  followerFollowingUnique: uniqueIndex("writing_follows_follower_following_unique").on(table.followerOpenId, table.followingOpenId),
+  followingIdx: index("writing_follows_following_idx").on(table.followingOpenId),
+}));
+export type WritingFollow = typeof writingFollows.$inferSelect;
+
+export const writingNotifications = mysqlTable("writing_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  recipientOpenId: varchar("recipientOpenId", { length: 64 }).notNull(),
+  actorOpenId: varchar("actorOpenId", { length: 64 }),
+  type: mysqlEnum("type", ["follow", "reaction", "comment", "reply", "mention", "editorial", "challenge", "collaboration", "scheduled"]).notNull(),
+  postId: int("postId"),
+  commentId: int("commentId"),
+  title: varchar("title", { length: 220 }).notNull(),
+  body: varchar("body", { length: 600 }),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  recipientReadCreatedIdx: index("writing_notifications_recipient_read_created_idx").on(table.recipientOpenId, table.readAt, table.createdAt),
+}));
+export type WritingNotification = typeof writingNotifications.$inferSelect;
+
+export const writingDrafts = mysqlTable("writing_drafts", {
+  id: int("id").autoincrement().primaryKey(),
+  authorOpenId: varchar("authorOpenId", { length: 64 }).notNull(),
+  title: varchar("title", { length: 220 }),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  content: text("content").notNull(),
+  mediaUrl: text("mediaUrl"),
+  mediaType: mysqlEnum("mediaType", ["none", "image", "video"]).default("none").notNull(),
+  challengeId: int("challengeId"),
+  scheduledFor: timestamp("scheduledFor"),
+  autosavedAt: timestamp("autosavedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  authorUpdatedIdx: index("writing_drafts_author_updated_idx").on(table.authorOpenId, table.updatedAt),
+  scheduledIdx: index("writing_drafts_scheduled_idx").on(table.scheduledFor),
+}));
+export type WritingDraft = typeof writingDrafts.$inferSelect;
+
+export const writingReadingEvents = mysqlTable("writing_reading_events", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  readerOpenId: varchar("readerOpenId", { length: 64 }),
+  eventType: mysqlEnum("eventType", ["view", "complete", "share", "audio_play"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  postCreatedIdx: index("writing_reading_events_post_created_idx").on(table.postId, table.createdAt),
+  readerCreatedIdx: index("writing_reading_events_reader_created_idx").on(table.readerOpenId, table.createdAt),
+}));
+export type WritingReadingEvent = typeof writingReadingEvents.$inferSelect;
+
+export const writingPrompts = mysqlTable("writing_prompts", {
+  id: int("id").autoincrement().primaryKey(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  prompt: varchar("prompt", { length: 900 }).notNull(),
+  active: boolean("active").default(true).notNull(),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  activePositionIdx: index("writing_prompts_active_position_idx").on(table.active, table.position),
+}));
+export type WritingPrompt = typeof writingPrompts.$inferSelect;
+
+export const writingCollections = mysqlTable("writing_collections", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 180 }).notNull().unique(),
+  title: varchar("title", { length: 180 }).notNull(),
+  description: varchar("description", { length: 900 }),
+  coverUrl: text("coverUrl"),
+  active: boolean("active").default(true).notNull(),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  activeCreatedIdx: index("writing_collections_active_created_idx").on(table.active, table.createdAt),
+}));
+export type WritingCollection = typeof writingCollections.$inferSelect;
+
+export const writingCollectionItems = mysqlTable("writing_collection_items", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: int("collectionId").notNull(),
+  postId: int("postId").notNull(),
+  position: int("position").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  collectionPostUnique: uniqueIndex("writing_collection_items_collection_post_unique").on(table.collectionId, table.postId),
+  collectionPositionIdx: index("writing_collection_items_collection_position_idx").on(table.collectionId, table.position),
+}));
+export type WritingCollectionItem = typeof writingCollectionItems.$inferSelect;
+
+export const writingEvents = mysqlTable("writing_events", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 180 }).notNull(),
+  prompt: text("prompt").notNull(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  status: mysqlEnum("status", ["draft", "scheduled", "live", "ended", "archived"]).default("draft").notNull(),
+  startsAt: timestamp("startsAt").notNull(),
+  endsAt: timestamp("endsAt").notNull(),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  statusStartsIdx: index("writing_events_status_starts_idx").on(table.status, table.startsAt),
+}));
+export type WritingEvent = typeof writingEvents.$inferSelect;
+
+export const writingCollaborationInvites = mysqlTable("writing_collaboration_invites", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  inviterOpenId: varchar("inviterOpenId", { length: 64 }).notNull(),
+  inviteeOpenId: varchar("inviteeOpenId", { length: 64 }).notNull(),
+  status: mysqlEnum("status", ["pending", "accepted", "declined", "cancelled"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  postInviteeUnique: uniqueIndex("writing_collaboration_invites_post_invitee_unique").on(table.postId, table.inviteeOpenId),
+  inviteeStatusIdx: index("writing_collaboration_invites_invitee_status_idx").on(table.inviteeOpenId, table.status),
+}));
+export type WritingCollaborationInvite = typeof writingCollaborationInvites.$inferSelect;
+
+export const writingModerationSignals = mysqlTable("writing_moderation_signals", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  type: mysqlEnum("type", ["duplicate", "sensitive", "profanity", "community_report"]).notNull(),
+  score: int("score").default(0).notNull(),
+  details: varchar("details", { length: 900 }),
+  status: mysqlEnum("status", ["open", "reviewed", "dismissed"]).default("open").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  postTypeUnique: uniqueIndex("writing_moderation_signals_post_type_unique").on(table.postId, table.type),
+  statusCreatedIdx: index("writing_moderation_signals_status_created_idx").on(table.status, table.createdAt),
+}));
+export type WritingModerationSignal = typeof writingModerationSignals.$inferSelect;
 
 // ── Local Auth Users (email+password login without OAuth) ─────────────────────
 export const localUsers = mysqlTable("local_users", {

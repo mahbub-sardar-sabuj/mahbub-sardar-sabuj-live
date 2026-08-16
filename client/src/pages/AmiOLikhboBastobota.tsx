@@ -31,6 +31,14 @@ import {
   X,
   Frown,
   User,
+  Bell,
+  Check,
+  Users,
+  Radio,
+  Volume2,
+  BarChart3,
+  FileClock,
+  BookMarked,
 } from "lucide-react";
 import { useRoute, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -364,10 +372,12 @@ function WritingQualityBox() {
   );
 }
 
-function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthenticated, onWrite, onLogin }: { showMyPosts: boolean; searchActive: boolean; selectedCategory: CategoryKey; isAuthenticated: boolean; onWrite: () => void; onLogin: () => void }) {
+function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, feedMode, isAuthenticated, onWrite, onLogin, onDiscover }: { showMyPosts: boolean; searchActive: boolean; selectedCategory: CategoryKey; feedMode: "all" | "following" | "trending"; isAuthenticated: boolean; onWrite: () => void; onLogin: () => void; onDiscover: () => void }) {
   const categoryLabel = CATEGORIES.find(c => c.key === selectedCategory)?.label ?? selectedCategory;
   const title = showMyPosts
     ? "আপনার লেখার ঘর এখনো খালি"
+    : feedMode === "following"
+    ? "এখনো কোনো লেখককে অনুসরণ করছেন না"
     : searchActive
     ? "এই অনুসন্ধানে কোনো লেখা পাওয়া যায়নি"
     : selectedCategory !== "all"
@@ -375,6 +385,8 @@ function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthent
     : "বাস্তবতার প্রথম লেখা শুরু হোক আপনার হাতেই";
   const description = showMyPosts
     ? "নিজের অভিজ্ঞতা, গল্প বা ভাবনা লিখুন। পোস্ট করলে তা সাথে সাথে পাঠকদের সামনে দেখা যাবে।"
+    : feedMode === "following"
+    ? "কিছু লেখককে অনুসরণ করলেই তাঁদের নতুন লেখা আলাদা ফিডে দ্রুত দেখতে পাবেন।"
     : searchActive
     ? "অন্য শব্দ দিয়ে খুঁজে দেখুন, অথবা নতুন একটি বাস্তব অভিজ্ঞতা লিখে এই জায়গাটি সমৃদ্ধ করুন।"
     : "একটি সত্য ঘটনা, একটি মানবিক শিক্ষা, অথবা সমাজের কোনো বাস্তব সমস্যার কথা লিখুন। ভালো লেখা অন্য মানুষকে ভাবতে ও শিখতে সাহায্য করে।";
@@ -383,7 +395,7 @@ function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthent
     <div style={{ ...cardStyle, padding: "clamp(1.5rem, 6vw, 2.25rem)", textAlign: "left", display: "grid", gap: "1.1rem" }}>
       <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", flexWrap: "wrap" }}>
         <div style={{ width: 58, height: 58, borderRadius: 22, display: "grid", placeItems: "center", background: "rgba(212,168,67,0.14)", border: "1px solid rgba(232,201,122,0.28)", color: "#F7D56F" }}>
-          <PenLine size={28} />
+          {feedMode === "following" ? <Users size={28} /> : <PenLine size={28} />}
         </div>
         <div style={{ flex: 1, minWidth: 220 }}>
           <h3 style={{ margin: 0, color: "#FDF6EC", fontSize: "clamp(1.15rem, 4vw, 1.55rem)", lineHeight: 1.35, fontWeight: 900 }}>{title}</h3>
@@ -391,7 +403,7 @@ function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthent
         </div>
       </div>
 
-      {!searchActive && (
+      {!searchActive && feedMode !== "following" && (
         <div style={{ display: "grid", gap: "0.55rem" }}>
           {WRITING_PROMPTS.map((prompt) => (
             <div key={prompt.title} style={{ padding: "0.75rem 0.85rem", borderRadius: 16, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(232,201,122,0.12)", display: "grid", gap: 4 }}>
@@ -403,7 +415,11 @@ function EmptyFeedState({ showMyPosts, searchActive, selectedCategory, isAuthent
       )}
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        {isAuthenticated ? (
+        {feedMode === "following" ? (
+          <ActionButton onClick={onDiscover} small>
+            <Users size={15} /> লেখক খুঁজুন
+          </ActionButton>
+        ) : isAuthenticated ? (
           <ActionButton onClick={onWrite} small>
             <Plus size={15} /> প্রথম লেখা লিখুন
           </ActionButton>
@@ -627,6 +643,7 @@ function CommentSection({
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: number; authorName: string } | null>(null);
   const utils = trpc.useUtils();
   const recentComments = trpc.writingPlatform.listRecentComments.useQuery(
     { postId, limit: 3 },
@@ -636,6 +653,7 @@ function CommentSection({
   const addComment = trpc.writingPlatform.addComment.useMutation({
     onSuccess: () => {
       setText("");
+      setReplyTo(null);
       setSubmitted(true);
       utils.writingPlatform.listPosts.invalidate();
       utils.writingPlatform.listPostsPaginated.invalidate();
@@ -650,7 +668,7 @@ function CommentSection({
       return;
     }
     if (!text.trim()) return;
-    addComment.mutate({ postId, content: text.trim() });
+    addComment.mutate({ postId, content: text.trim(), ...(replyTo ? { parentCommentId: replyTo.id } : {}) });
   }
 
   return (
@@ -687,7 +705,7 @@ function CommentSection({
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={isAuthenticated ? "আপনার মন্তব্য লিখুন..." : "মন্তব্য করতে লগইন করুন"}
+              placeholder={isAuthenticated ? (replyTo ? `${replyTo.authorName}-কে উত্তর লিখুন...` : "আপনার মন্তব্য লিখুন...") : "মন্তব্য করতে লগইন করুন"}
               rows={2}
               style={{
                 flex: 1,
@@ -724,16 +742,21 @@ function CommentSection({
             </button>
           </div>
 
+          {replyTo && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "0.45rem 0.65rem", borderRadius: 10, background: "rgba(129,140,248,0.10)", border: "1px solid rgba(196,181,253,0.24)", color: "#C4B5FD", fontSize: "0.78rem" }}><span>{replyTo.authorName}-কে উত্তর দিচ্ছেন</span><button type="button" onClick={() => setReplyTo(null)} style={{ border: "none", background: "transparent", color: "#C4B5FD", cursor: "pointer" }}><X size={14} /></button></div>
+          )}
+
           {commentCount > 0 && (
             <div aria-live="polite" style={{ display: "grid", gap: 8, padding: "0.2rem 0.15rem 0" }}>
               {recentComments.isLoading ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(253,246,236,0.48)", fontSize: "0.8rem" }}><RefreshCw size={14} style={{ animation: "spin 0.8s linear infinite" }} /> সাম্প্রতিক মন্তব্য লোড হচ্ছে...</div>
               ) : (recentComments.data ?? []).map((comment) => (
-                <div key={comment.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "0.58rem 0.68rem", borderRadius: 14, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(232,201,122,0.09)" }}>
+                <div key={comment.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "0.58rem 0.68rem", marginLeft: comment.parentCommentId ? 22 : 0, borderRadius: 14, background: comment.parentCommentId ? "rgba(129,140,248,0.055)" : "rgba(255,255,255,0.035)", border: "1px solid rgba(232,201,122,0.09)" }}>
                   <Avatar name={comment.authorName} size={28} />
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><span style={{ color: "#F7D56F", fontSize: "0.78rem", fontWeight: 900 }}>{comment.authorName}</span><TimeAgo date={comment.createdAt} /></div>
                     <div style={{ color: "rgba(253,246,236,0.78)", fontSize: "0.84rem", lineHeight: 1.55, marginTop: 2, whiteSpace: "pre-wrap" }}>{comment.content}</div>
+                    <button type="button" onClick={() => { if (!isAuthenticated) { onLoginRequired(); return; } setReplyTo({ id: comment.id, authorName: comment.authorName }); }} style={{ marginTop: 4, padding: 0, border: "none", background: "transparent", color: "#C4B5FD", fontFamily: adorshoFont, fontSize: "0.72rem", fontWeight: 900, cursor: "pointer" }}>উত্তর দিন</button>
                   </div>
                 </div>
               ))}
@@ -788,6 +811,7 @@ type EnrichedPost = {
   bookmarked: boolean;
   myFeedback: "meaningful" | "relatable" | "helpful" | "beautiful" | null;
   myReaction: ReactionType | null;
+  followingAuthor?: boolean;
   isOwner?: boolean;
 };
 
@@ -811,6 +835,17 @@ const PostCard = memo(function PostCard({
   const [expanded, setExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const utils = trpc.useUtils();
+  const followMutation = trpc.writingPlatform.toggleFollow.useMutation({
+    onSuccess: () => {
+      utils.writingPlatform.listPosts.invalidate();
+      utils.writingPlatform.listPostsPaginated.invalidate();
+      utils.writingPlatform.listFollowingFeed.invalidate();
+      utils.writingPlatform.listTrendingPosts.invalidate();
+    },
+  });
+  const readingEvent = trpc.writingPlatform.recordReadingEvent.useMutation();
   // Lazy load image: only fetch mediaUrl when post has image (base64 is truncated in feed)
   const hasImage = post.mediaType === "image" && post.mediaUrl;
   const isBase64InFeed = hasImage && post.mediaUrl!.startsWith("data:");
@@ -841,6 +876,19 @@ const PostCard = memo(function PostCard({
     ? (mediaQuery.data?.mediaUrl ?? null)
     : post.mediaUrl;
   const isLong = post.content.length > 280;
+  const speakPost = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+    const utterance = new SpeechSynthesisUtterance(`${post.title}. ${post.content}`);
+    utterance.lang = "bn-BD";
+    utterance.rate = 0.9;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setSpeaking(true);
+    readingEvent.mutate({ postId: post.id, eventType: "audio_play" });
+  };
   const displayContent = isLong && !expanded ? post.content.slice(0, 280) + "..." : post.content;
   const isOwner = post.isOwner ?? Boolean(currentUserOpenId && post.authorOpenId === currentUserOpenId);
   // টাইটেল শুধু দেখাবে যদি কন্টেন্টের প্রথম লাইন থেকে আলাদা হয়
@@ -857,8 +905,24 @@ const PostCard = memo(function PostCard({
           <Avatar name={post.authorName} size={48} />
         )}
           <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="amio-post-author" style={{ fontWeight: 900, fontSize: "1.02rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em", textShadow: "0 0 12px rgba(212,168,67,0.2)" }}>
-            {post.authorName}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <div className="amio-post-author" style={{ fontWeight: 900, fontSize: "1.02rem", color: "#F7D56F", lineHeight: 1.2, letterSpacing: "0.01em", textShadow: "0 0 12px rgba(212,168,67,0.2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {post.authorName}
+            </div>
+            {!isOwner && (
+              <button
+                type="button"
+                className="amio-action-btn"
+                disabled={followMutation.isPending}
+                onClick={() => {
+                  if (!isAuthenticated) { onLoginRequired(); return; }
+                  followMutation.mutate({ authorOpenId: post.authorOpenId });
+                }}
+                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, padding: "0.25rem 0.55rem", borderRadius: 999, border: post.followingAuthor ? "1px solid rgba(134,239,172,0.42)" : "1px solid rgba(247,213,111,0.48)", background: post.followingAuthor ? "rgba(134,239,172,0.10)" : "rgba(247,213,111,0.10)", color: post.followingAuthor ? "#86EFAC" : "#F7D56F", fontFamily: adorshoFont, fontWeight: 900, fontSize: "0.7rem", cursor: "pointer" }}
+              >
+                {post.followingAuthor ? <><Check size={12} /> অনুসরণ করছেন</> : <><UserPlus size={12} /> অনুসরণ</>}
+              </button>
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
             <TimeAgo date={post.createdAt} />
@@ -1079,10 +1143,11 @@ const PostCard = memo(function PostCard({
             const url = `${window.location.origin}/amio-likhbo-bastobota/${post.slug}`;
             try {
               if (navigator.share) {
-                await navigator.share({ title: post.title, url });
+                await navigator.share({ title: post.title, text: post.content.slice(0, 140), url });
               } else {
                 await navigator.clipboard.writeText(url);
               }
+              readingEvent.mutate({ postId: post.id, eventType: "share" });
             } catch {
               // Share cancellation or clipboard permission failure should not break the post view.
             }
@@ -1105,7 +1170,8 @@ const PostCard = memo(function PostCard({
           <Share2 size={15} /> শেয়ার
         </button>
         </div>
-        <div className="amio-post-secondary-actions">
+        <div className="amio-post-secondary-actions" style={{ gap: 6, flexWrap: "wrap" }}>
+          <button type="button" className="amio-action-btn" onClick={speakPost} aria-pressed={speaking} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "0.42rem 0.78rem", borderRadius: 999, border: speaking ? "1px solid rgba(129,140,248,0.55)" : "1px solid rgba(232,201,122,0.20)", background: speaking ? "rgba(129,140,248,0.16)" : "rgba(255,255,255,0.05)", color: speaking ? "#C4B5FD" : "rgba(253,246,236,0.68)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Volume2 size={14} /> {speaking ? "থামান" : "শুনুন"}</button>
           <ReaderTools post={post} isAuthenticated={isAuthenticated} isOwner={isOwner} onLoginRequired={onLoginRequired} />
         </div>
       </div>
@@ -1122,14 +1188,26 @@ function CreatePostModal({ onClose, authorName, avatarUrl, challenge }: { onClos
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [draftId, setDraftId] = useState<number | undefined>();
+  const [draftStatus, setDraftStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [writingHint, setWritingHint] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
 
   const [postError, setPostError] = useState("");
+  const draftsQuery = trpc.writingPlatform.listDrafts.useQuery(undefined, { staleTime: 30000, retry: false });
+  const promptsQuery = trpc.writingPlatform.listPrompts.useQuery({ limit: 3 }, { staleTime: 300000, retry: false });
+  const promptSuggestions = promptsQuery.data ?? [];
+  const saveDraft = trpc.writingPlatform.saveDraft.useMutation({
+    onSuccess: (result) => { setDraftId(result.draftId); setDraftStatus("saved"); utils.writingPlatform.listDrafts.invalidate(); },
+    onError: () => setDraftStatus("idle"),
+  });
+  const deleteDraft = trpc.writingPlatform.deleteDraft.useMutation({ onSuccess: () => utils.writingPlatform.listDrafts.invalidate() });
   const createPost = trpc.writingPlatform.createPost.useMutation({
     onSuccess: () => {
       setSubmitted(true);
       setPostError("");
+      if (draftId) deleteDraft.mutate({ draftId });
       utils.writingPlatform.listPosts.invalidate();
       utils.writingPlatform.listPostsPaginated.invalidate();
       utils.writingPlatform.myPosts.invalidate();
@@ -1139,6 +1217,23 @@ function CreatePostModal({ onClose, authorName, avatarUrl, challenge }: { onClos
       setPostError(err.message || "পোস্ট প্রকাশ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     },
   });
+
+  const currentDraftInput = useCallback(() => ({
+    draftId,
+    title: title.trim() || undefined,
+    category: category === "all" ? "thought" as const : category,
+    content,
+    mediaUrl: imageUrl || undefined,
+    mediaType: imageUrl ? "image" as const : "none" as const,
+    challengeId: challenge?.id,
+  }), [draftId, title, category, content, imageUrl, challenge?.id]);
+
+  useEffect(() => {
+    if (!content.trim() && !imageUrl && !title.trim()) return;
+    setDraftStatus("saving");
+    const timer = window.setTimeout(() => saveDraft.mutate(currentDraftInput()), 1400);
+    return () => window.clearTimeout(timer);
+  }, [content, imageUrl, title, category, currentDraftInput]);
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1297,6 +1392,27 @@ function CreatePostModal({ onClose, authorName, avatarUrl, challenge }: { onClos
               </div>
             )}
 
+            {!content && promptSuggestions.length > 0 && (
+              <div style={{ display: "grid", gap: 7, padding: "0.72rem 0.8rem", borderRadius: 15, border: "1px solid rgba(247,213,111,0.18)", background: "rgba(247,213,111,0.055)" }}>
+                <div style={{ color: "#F7D56F", fontWeight: 900, fontSize: "0.78rem", display: "inline-flex", alignItems: "center", gap: 6 }}><Lightbulb size={14} /> লিখতে শুরু করার একটি ভাবনা বেছে নিন</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {promptSuggestions.map((prompt) => (
+                    <button key={prompt.id} type="button" onClick={() => { setCategory(prompt.category as CategoryKey); setWritingHint(prompt.prompt); }} style={{ border: "1px solid rgba(232,201,122,0.24)", background: writingHint === prompt.prompt ? "rgba(247,213,111,0.16)" : "rgba(255,255,255,0.035)", color: writingHint === prompt.prompt ? "#F7D56F" : "rgba(253,246,236,0.72)", borderRadius: 999, padding: "0.34rem 0.62rem", fontFamily: adorshoFont, fontSize: "0.73rem", fontWeight: 800, cursor: "pointer" }}>{prompt.title}</button>
+                  ))}
+                </div>
+                {writingHint && <p style={{ margin: 0, color: "rgba(253,246,236,0.6)", fontSize: "0.77rem", lineHeight: 1.55 }}>{writingHint}</p>}
+              </div>
+            )}
+
+            {(draftsQuery.data ?? []).filter((draft) => draft.id !== draftId).length > 0 && !content && !imageUrl && (
+              <div style={{ padding: "0.65rem 0.75rem", borderRadius: 14, border: "1px solid rgba(129,140,248,0.28)", background: "rgba(129,140,248,0.08)", display: "flex", alignItems: "center", gap: 8, overflowX: "auto" }}>
+                <FileClock size={15} color="#C4B5FD" /><span style={{ color: "#C4B5FD", fontSize: "0.78rem", fontWeight: 900, whiteSpace: "nowrap" }}>খসড়া খুলুন</span>
+                {(draftsQuery.data ?? []).slice(0, 3).map((draft) => <button key={draft.id} type="button" onClick={() => { setDraftId(draft.id); setTitle(draft.title || ""); setCategory(draft.category as CategoryKey); setContent(draft.content); setImageUrl(draft.mediaUrl || ""); setDraftStatus("saved"); }} style={{ border: "1px solid rgba(196,181,253,0.30)", background: "rgba(255,255,255,0.04)", color: "rgba(253,246,236,0.75)", borderRadius: 999, padding: "0.28rem 0.58rem", fontFamily: adorshoFont, fontSize: "0.72rem", cursor: "pointer", whiteSpace: "nowrap" }}>{draft.title || "নামহীন খসড়া"}</button>)}
+              </div>
+            )}
+
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="শিরোনাম দিন (ঐচ্ছিক)" maxLength={220} style={inputStyle} />
+
             {/* Category selector */}
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {CATEGORIES.filter(c => c.key !== "all").map((cat) => (
@@ -1330,6 +1446,11 @@ function CreatePostModal({ onClose, authorName, avatarUrl, challenge }: { onClos
               style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(232,201,122,0.22)", borderRadius: 16, padding: "0.9rem 1rem", color: "#FDF6EC", fontFamily: adorshoFont, fontSize: "1rem", outline: "none", boxSizing: "border-box", resize: "vertical", minHeight: 140, lineHeight: 1.85 }}
             />
 
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0.65rem 0.75rem", border: "1px solid rgba(129,140,248,0.24)", borderRadius: 14, background: "rgba(129,140,248,0.06)" }}>
+              <span style={{ color: "#C4B5FD", fontSize: "0.78rem", fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 6 }}><FileClock size={15} /> আপনার খসড়া নিরাপদে থাকছে</span>
+              <span style={{ color: "rgba(253,246,236,0.46)", fontSize: "0.72rem", textAlign: "right" }}>{draftStatus === "saving" ? "খসড়া সেভ হচ্ছে..." : draftStatus === "saved" ? "খসড়া সেভ হয়েছে" : "লিখতে থাকুন—খসড়া সেভ হবে"}</span>
+            </div>
+
             {uploadError && (
               <div style={{ padding: "0.5rem 0.9rem", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#FCA5A5", fontSize: "0.83rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                 <span>{uploadError}</span>
@@ -1344,6 +1465,7 @@ function CreatePostModal({ onClose, authorName, avatarUrl, challenge }: { onClos
                 {uploading ? <RefreshCw size={15} style={{ animation: "spin 0.8s linear infinite" }} /> : <Camera size={15} />}
                 {uploading ? "আপলোড..." : imageUrl ? "ছবি যোগ হয়েছে" : "ছবি যোগ করুন"}
               </button>
+              <button type="button" onClick={() => { setDraftStatus("saving"); saveDraft.mutate(currentDraftInput()); }} disabled={saveDraft.isPending || (!content.trim() && !imageUrl && !title.trim())} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "0.55rem 0.72rem", borderRadius: 999, border: "1px solid rgba(196,181,253,0.35)", background: "rgba(129,140,248,0.10)", color: "#C4B5FD", fontFamily: adorshoFont, fontWeight: 900, fontSize: "0.78rem", cursor: "pointer" }}><BookMarked size={14} /> খসড়া রাখুন</button>
               <div style={{ flex: 1 }} />
               <button
                 type="button"
@@ -1835,6 +1957,94 @@ function PostDetail({
   );
 }
 
+// ── Writer discovery ──────────────────────────────────────────────────────────
+
+type SuggestedAuthor = {
+  authorOpenId: string;
+  authorName: string;
+  authorAvatarUrl: string | null;
+  postCount: number;
+  totalViews: number;
+  following: boolean;
+};
+
+function SuggestedAuthorsPanel({
+  authors,
+  isAuthenticated,
+  onLoginRequired,
+}: {
+  authors: SuggestedAuthor[];
+  isAuthenticated: boolean;
+  onLoginRequired: () => void;
+}) {
+  const utils = trpc.useUtils();
+  const [pendingAuthorId, setPendingAuthorId] = useState<string | null>(null);
+  const toggleFollow = trpc.writingPlatform.toggleFollow.useMutation({
+    onSuccess: () => {
+      void utils.writingPlatform.listSuggestedAuthors.invalidate();
+      void utils.writingPlatform.listFollowingFeed.invalidate();
+      void utils.writingPlatform.listPosts.invalidate();
+      void utils.writingPlatform.listPostsPaginated.invalidate();
+      void utils.writingPlatform.listTrendingPosts.invalidate();
+    },
+    onSettled: () => setPendingAuthorId(null),
+  });
+
+  if (authors.length === 0) return null;
+
+  return (
+    <section
+      aria-label="আবিষ্কার করুন নতুন লেখক"
+      style={{
+        ...cardStyle,
+        padding: "1rem",
+        borderColor: "rgba(196,181,253,0.28)",
+        background: "linear-gradient(135deg, rgba(129,140,248,0.14), rgba(81,139,255,0.07) 56%, rgba(247,213,111,0.07))",
+        display: "grid",
+        gap: "0.8rem",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ color: "#C4B5FD", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: "0.8rem" }}><Users size={15} /> নতুন কণ্ঠ আবিষ্কার করুন</div>
+          <p style={{ margin: "0.2rem 0 0", color: "rgba(253,246,236,0.6)", fontSize: "0.78rem", lineHeight: 1.55 }}>পাঠকদের পছন্দের লেখকদের অনুসরণ করুন—তাঁদের নতুন লেখা আপনার ফিডে আগে দেখবেন।</p>
+        </div>
+        <span style={{ flexShrink: 0, color: "rgba(253,246,236,0.42)", fontSize: "0.72rem", paddingTop: 2 }}>লেখকবৃত্ত</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 8 }}>
+        {authors.map((author) => {
+          const waiting = pendingAuthorId === author.authorOpenId;
+          return (
+            <div key={author.authorOpenId} style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0, padding: "0.72rem", borderRadius: 15, background: "rgba(5,11,20,0.28)", border: "1px solid rgba(255,255,255,0.075)" }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", flexShrink: 0, overflow: "hidden", display: "grid", placeItems: "center", background: "linear-gradient(135deg, #D4A843, #7C8CFF)", border: "1px solid rgba(232,201,122,0.36)", color: "#071426", fontWeight: 900 }}>
+                {author.authorAvatarUrl ? <img src={author.authorAvatarUrl} alt={`${author.authorName} এর প্রোফাইল`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : author.authorName.slice(0, 1).toUpperCase()}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ color: "#FDF6EC", fontWeight: 900, fontSize: "0.84rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{author.authorName}</div>
+                <div style={{ color: "rgba(253,246,236,0.46)", fontSize: "0.7rem", marginTop: 2 }}>{author.postCount}টি প্রকাশিত লেখা · {author.totalViews} পাঠ</div>
+              </div>
+              <button
+                type="button"
+                aria-label={`${author.authorName}-কে ${author.following ? "অনুসরণ বন্ধ" : "অনুসরণ"} করুন`}
+                disabled={waiting}
+                onClick={() => {
+                  if (!isAuthenticated) { onLoginRequired(); return; }
+                  setPendingAuthorId(author.authorOpenId);
+                  toggleFollow.mutate({ authorOpenId: author.authorOpenId });
+                }}
+                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, padding: "0.38rem 0.55rem", borderRadius: 999, border: author.following ? "1px solid rgba(134,239,172,0.38)" : "1px solid rgba(247,213,111,0.42)", background: author.following ? "rgba(134,239,172,0.10)" : "rgba(247,213,111,0.10)", color: author.following ? "#86EFAC" : "#F7D56F", fontFamily: adorshoFont, fontWeight: 900, fontSize: "0.7rem", cursor: waiting ? "wait" : "pointer", opacity: waiting ? 0.65 : 1 }}
+              >
+                {waiting ? <RefreshCw size={12} style={{ animation: "spin 0.8s linear infinite" }} /> : author.following ? <Check size={12} /> : <UserPlus size={12} />}
+                {author.following ? "অনুসরণ" : "অনুসরণ"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AmiOLikhboBastobota() {
@@ -1861,6 +2071,9 @@ export default function AmiOLikhboBastobota() {
   const [selectedChallenge, setSelectedChallenge] = useState<{ id: number; title: string; prompt: string; category: CategoryKey } | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showMyPosts, setShowMyPosts] = useState(false);
+  const [feedMode, setFeedMode] = useState<"all" | "following" | "trending">("all");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedCollectionSlug, setSelectedCollectionSlug] = useState<string | null>(null);
   // Check for password reset token in URL
   const resetTokenFromUrl = typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("reset_token") || ""
@@ -1890,10 +2103,37 @@ export default function AmiOLikhboBastobota() {
       gcTime: 600000,
     }
   );
+  const followingFeedQuery = trpc.writingPlatform.listFollowingFeed.useQuery(
+    { limit: feedLimit, offset: 0, category: selectedCategory === "all" ? undefined : selectedCategory },
+    { enabled: isAuthenticated && !searchActive && !showMyPosts && feedMode === "following", retry: false, staleTime: 60000 }
+  );
+  const trendingFeedQuery = trpc.writingPlatform.listTrendingPosts.useQuery(
+    { limit: feedLimit },
+    { enabled: !searchActive && !showMyPosts && feedMode === "trending", retry: false, staleTime: 60000 }
+  );
+  const notificationsQuery = trpc.writingPlatform.listNotifications.useQuery(
+    { limit: 20 },
+    { enabled: isAuthenticated, retry: false, refetchInterval: 60000, staleTime: 30000 }
+  );
+  const markNotificationsRead = trpc.writingPlatform.markNotificationsRead.useMutation({
+    onSuccess: () => utils.writingPlatform.listNotifications.invalidate(),
+  });
   const activeChallengesQuery = trpc.writingPlatform.listActiveChallenges.useQuery(undefined, { staleTime: 300000, retry: false });
+  const suggestedAuthorsQuery = trpc.writingPlatform.listSuggestedAuthors.useQuery({ limit: 4 }, { staleTime: 300000, retry: false });
   const editorialPicksQuery = trpc.writingPlatform.listEditorialPicks.useQuery(undefined, { staleTime: 300000, retry: false });
+  const collectionsQuery = trpc.writingPlatform.listCollections.useQuery(undefined, { staleTime: 300000, retry: false });
+  const liveEventsQuery = trpc.writingPlatform.listLiveEvents.useQuery(undefined, { staleTime: 60000, retry: false });
+  const collaborationInvitesQuery = trpc.writingPlatform.myCollaborationInvites.useQuery(undefined, { enabled: isAuthenticated, staleTime: 30000, retry: false });
+  const respondToCollaboration = trpc.writingPlatform.respondToCollaborationInvite.useMutation({ onSuccess: () => { utils.writingPlatform.myCollaborationInvites.invalidate(); utils.writingPlatform.listNotifications.invalidate(); } });
   const activeChallenges = activeChallengesQuery.data ?? [];
+  const suggestedAuthors = (suggestedAuthorsQuery.data ?? []) as SuggestedAuthor[];
   const editorialPicks = editorialPicksQuery.data ?? [];
+  const collections = collectionsQuery.data ?? [];
+  const selectedCollectionQuery = trpc.writingPlatform.getCollectionBySlug.useQuery(
+    { slug: selectedCollectionSlug ?? "_" }, { enabled: Boolean(selectedCollectionSlug), retry: false, staleTime: 300000 }
+  );
+  const liveEvents = liveEventsQuery.data ?? [];
+  const collaborationInvites = collaborationInvitesQuery.data ?? [];
   const searchQuery_ = searchQuery.trim();
   const debouncedSearch_ = debouncedSearch.trim();
   const searchResultsQuery = trpc.writingPlatform.searchPosts.useQuery(
@@ -1912,7 +2152,15 @@ export default function AmiOLikhboBastobota() {
     enabled: isAuthenticated && showMyPosts,
     retry: false,
   });
-  const activeFeedQuery = searchActive && debouncedSearch_.length >= 2 ? searchResultsQuery : postsQuery;
+  const activeFeedQuery = searchActive && debouncedSearch_.length >= 2
+    ? searchResultsQuery
+    : showMyPosts
+      ? myPostsQuery
+      : feedMode === "following"
+        ? followingFeedQuery
+        : feedMode === "trending"
+          ? trendingFeedQuery
+          : postsQuery;
   const feedHasError = Boolean(activeFeedQuery.isError);
   const feedIsLoading = Boolean(activeFeedQuery.isLoading);
   const [feedLoadingDelayed, setFeedLoadingDelayed] = useState(false);
@@ -1928,8 +2176,12 @@ export default function AmiOLikhboBastobota() {
   const posts = useMemo(() => (
     (searchActive && debouncedSearch_.length >= 2
       ? (searchResultsQuery.data ?? [])
-      : (postsQuery.data?.posts ?? [])) as EnrichedPost[]
-  ), [searchActive, debouncedSearch_, searchResultsQuery.data, postsQuery.data]);
+      : feedMode === "following"
+        ? (followingFeedQuery.data?.posts ?? [])
+        : feedMode === "trending"
+          ? (trendingFeedQuery.data ?? [])
+          : (postsQuery.data?.posts ?? [])) as EnrichedPost[]
+  ), [searchActive, debouncedSearch_, feedMode, searchResultsQuery.data, postsQuery.data, followingFeedQuery.data, trendingFeedQuery.data]);
   const filteredPosts = useMemo(() => (
     selectedCategory === "all" ? posts : posts.filter((p) => p.category === selectedCategory)
   ), [posts, selectedCategory]);
@@ -1945,7 +2197,7 @@ export default function AmiOLikhboBastobota() {
 
   useEffect(() => {
     setFeedLimit(6);
-  }, [selectedCategory]);
+  }, [selectedCategory, feedMode]);
 
     const handleLoginRequired = useCallback(() => {
     setShowLoginPrompt(true);
@@ -2230,6 +2482,38 @@ export default function AmiOLikhboBastobota() {
                 </a>
               )}
 
+              {isAuthenticated && (
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    className="amio-topbar-avatar"
+                    aria-label="নোটিফিকেশন"
+                    aria-expanded={showNotifications}
+                    onClick={() => {
+                      const next = !showNotifications;
+                      setShowNotifications(next);
+                      if (next && notificationsQuery.data?.unreadCount) markNotificationsRead.mutate({});
+                    }}
+                    style={{ position: "relative", width: 36, height: 36, borderRadius: "50%", display: "grid", placeItems: "center", border: "2px solid rgba(232,201,122,0.35)", background: showNotifications ? "rgba(247,213,111,0.16)" : "rgba(255,255,255,0.055)", color: "#F7D56F", cursor: "pointer" }}
+                  >
+                    <Bell size={16} />
+                    {Boolean(notificationsQuery.data?.unreadCount) && <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 99, display: "grid", placeItems: "center", padding: "0 3px", background: "#EF4444", color: "#fff", fontSize: "0.62rem", fontWeight: 900, border: "2px solid #081220" }}>{Math.min(notificationsQuery.data?.unreadCount ?? 0, 9)}</span>}
+                  </button>
+                  {showNotifications && (
+                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 9px)", zIndex: 80, width: "min(340px, calc(100vw - 1.5rem))", maxHeight: 420, overflowY: "auto", padding: "0.6rem", borderRadius: 18, border: "1px solid rgba(232,201,122,0.28)", background: "rgba(7,20,38,0.98)", boxShadow: "0 18px 52px rgba(0,0,0,0.52)", backdropFilter: "blur(22px)" }}>
+                      <div style={{ padding: "0.35rem 0.45rem 0.6rem", color: "#F7D56F", fontWeight: 900, fontSize: "0.9rem" }}>আপডেট ও প্রতিক্রিয়া</div>
+                      {(notificationsQuery.data?.items ?? []).length === 0 ? <div style={{ padding: "1.2rem 0.6rem", color: "rgba(253,246,236,0.54)", textAlign: "center", fontSize: "0.85rem" }}>এখনো নতুন কোনো নোটিফিকেশন নেই।</div> : (notificationsQuery.data?.items ?? []).map((notification) => (
+                        <button key={notification.id} type="button" onClick={() => setShowNotifications(false)} style={{ width: "100%", textAlign: "left", display: "grid", gap: 3, padding: "0.65rem", border: "1px solid rgba(232,201,122,0.10)", borderRadius: 12, background: notification.readAt ? "rgba(255,255,255,0.025)" : "rgba(247,213,111,0.09)", color: "#FDF6EC", fontFamily: adorshoFont, cursor: "pointer", marginBottom: 5 }}>
+                          <span style={{ fontWeight: 900, fontSize: "0.82rem", color: notification.readAt ? "rgba(253,246,236,0.74)" : "#F7D56F" }}>{notification.title}</span>
+                          {notification.body && <span style={{ color: "rgba(253,246,236,0.52)", fontSize: "0.76rem", lineHeight: 1.45 }}>{notification.body}</span>}
+                          <TimeAgo date={notification.createdAt} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Profile avatar / icon */}
               <a
                 href="/profile"
@@ -2280,12 +2564,29 @@ export default function AmiOLikhboBastobota() {
           {/* ── Category Filter + My Posts Toggle ── */}
           {!slugFromUrl && (
             <div className="amio-category-rail" style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", minWidth: 0, paddingBottom: 2, scrollbarWidth: "none" }}>
+              {([
+                { key: "all", label: "সবার জন্য", icon: <Sparkles size={14} /> },
+                { key: "following", label: "অনুসরণ করছেন", icon: <Users size={14} /> },
+                { key: "trending", label: "জনপ্রিয়", icon: <Radio size={14} /> },
+              ] as const).map((mode) => (
+                <button
+                  key={mode.key}
+                  type="button"
+                  className="amio-cat-btn"
+                  onClick={() => {
+                    if (mode.key === "following" && !isAuthenticated) { handleLoginRequired(); return; }
+                    setFeedMode(mode.key);
+                    setShowMyPosts(false);
+                  }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "0.42rem 0.85rem", borderRadius: 999, border: feedMode === mode.key && !showMyPosts ? "1px solid rgba(129,140,248,0.70)" : "1px solid rgba(232,201,122,0.2)", background: feedMode === mode.key && !showMyPosts ? "linear-gradient(135deg, rgba(129,140,248,0.18), rgba(247,213,111,0.10))" : "rgba(255,255,255,0.04)", color: feedMode === mode.key && !showMyPosts ? "#C4B5FD" : "rgba(253,246,236,0.6)", fontFamily: adorshoFont, fontWeight: feedMode === mode.key && !showMyPosts ? 900 : 700, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                >{mode.icon} {mode.label}</button>
+              ))}
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.key}
                   type="button"
                   className="amio-cat-btn"
-                  onClick={() => { setSelectedCategory(cat.key); setShowMyPosts(false); }}
+                  onClick={() => { setSelectedCategory(cat.key); setFeedMode("all"); setShowMyPosts(false); }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -2315,7 +2616,7 @@ export default function AmiOLikhboBastobota() {
                 <button
                   type="button"
                   className="amio-cat-btn"
-                  onClick={() => setShowMyPosts((p) => !p)}
+                  onClick={() => { setShowMyPosts((p) => !p); setFeedMode("all"); }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -2351,6 +2652,14 @@ export default function AmiOLikhboBastobota() {
             </div>
           )}
 
+          {!slugFromUrl && suggestedAuthors.length > 0 && (
+            <SuggestedAuthorsPanel
+              authors={suggestedAuthors}
+              isAuthenticated={isAuthenticated}
+              onLoginRequired={handleLoginRequired}
+            />
+          )}
+
           {!slugFromUrl && (activeChallenges.length > 0 || editorialPicks.length > 0) && (
             <section style={{ display: "grid", gap: "0.75rem" }} aria-label="Community highlights">
               {activeChallenges.slice(0, 1).map((challenge) => (
@@ -2367,6 +2676,29 @@ export default function AmiOLikhboBastobota() {
                   <div style={{ color: "#FDF6EC", fontWeight: 900, fontSize: "1rem" }}>{pick.headline || pick.post.title}</div>
                   {pick.editorNote && <div style={{ color: "rgba(253,246,236,0.62)", fontSize: "0.8rem", marginTop: 4, lineHeight: 1.55 }}>{pick.editorNote}</div>}
                 </button>
+              ))}
+            </section>
+          )}
+
+          {!slugFromUrl && (liveEvents.length > 0 || collections.length > 0 || collaborationInvites.length > 0) && (
+            <section style={{ display: "grid", gap: "0.75rem" }} aria-label="Literary programming">
+              {liveEvents.slice(0, 1).map((event) => {
+                const isLive = event.status === "live";
+                return <div key={event.id} style={{ ...cardStyle, padding: "0.95rem 1rem", borderColor: isLive ? "rgba(248,113,113,0.38)" : "rgba(196,181,253,0.32)", background: isLive ? "linear-gradient(135deg, rgba(248,113,113,0.12), rgba(81,139,255,0.07))" : "linear-gradient(135deg, rgba(129,140,248,0.12), rgba(255,255,255,0.035))", display: "grid", gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}><span style={{ color: isLive ? "#FCA5A5" : "#C4B5FD", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: "0.8rem" }}><Radio size={14} /> {isLive ? "লাইভ রাইটিং আওয়ার" : "আসছে লাইভ রাইটিং আওয়ার"}</span><span style={{ color: "rgba(253,246,236,0.48)", fontSize: "0.72rem" }}>{new Date(event.startsAt).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short" })}</span></div>
+                  <div style={{ color: "#FDF6EC", fontWeight: 900 }}>{event.title}</div><div style={{ color: "rgba(253,246,236,0.62)", fontSize: "0.82rem", lineHeight: 1.55 }}>{event.prompt}</div>
+                  <ActionButton small onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setSelectedChallenge(null); setShowCreateModal(true); }}><PenLine size={14} /> এই বিষয়ে লিখুন</ActionButton>
+                </div>;
+              })}
+              {collections.slice(0, 2).map((collection) => (
+                <div key={collection.id} style={{ ...cardStyle, padding: "0.85rem 0.95rem", borderColor: "rgba(247,213,111,0.22)", background: "linear-gradient(135deg, rgba(247,213,111,0.10), rgba(255,255,255,0.025))", display: "grid", gap: 5 }}>
+                  <button type="button" onClick={() => setSelectedCollectionSlug(selectedCollectionSlug === collection.slug ? null : collection.slug)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, textAlign: "left", border: "none", background: "transparent", padding: 0, cursor: "pointer", fontFamily: adorshoFont }}><span style={{ color: "#F7D56F", display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 900, fontSize: "0.83rem" }}><BookMarked size={15} /> {collection.title}</span><ChevronDown size={15} color="#F7D56F" /></button>
+                  {collection.description && <span style={{ color: "rgba(253,246,236,0.58)", fontSize: "0.78rem", lineHeight: 1.5 }}>{collection.description}</span>}
+                  {selectedCollectionSlug === collection.slug && <div style={{ display: "grid", gap: 5, paddingTop: 5, borderTop: "1px solid rgba(232,201,122,0.12)" }}>{selectedCollectionQuery.isLoading ? <span style={{ color: "rgba(253,246,236,0.48)", fontSize: "0.78rem" }}>সংকলন লোড হচ্ছে...</span> : (selectedCollectionQuery.data?.posts ?? []).slice(0, 5).map((post) => <button key={post.id} type="button" onClick={() => handleOpenDetail(post.slug)} style={{ textAlign: "left", border: "none", background: "rgba(255,255,255,0.035)", borderRadius: 9, padding: "0.45rem 0.55rem", color: "rgba(253,246,236,0.82)", fontFamily: adorshoFont, fontSize: "0.78rem", cursor: "pointer" }}>{post.title}</button>)}</div>}
+                </div>
+              ))}
+              {collaborationInvites.slice(0, 2).map(({ invite, post }) => (
+                <div key={invite.id} style={{ ...cardStyle, padding: "0.85rem 0.95rem", borderColor: "rgba(196,181,253,0.32)", background: "rgba(129,140,248,0.08)", display: "grid", gap: 7 }}><span style={{ color: "#C4B5FD", fontWeight: 900, fontSize: "0.82rem" }}><Users size={14} style={{ verticalAlign: "-2px" }} /> যৌথ লেখার আমন্ত্রণ</span><span style={{ color: "rgba(253,246,236,0.68)", fontSize: "0.8rem" }}>“{post.title}” লেখায় আপনাকে সহযোগী হতে আমন্ত্রণ জানানো হয়েছে।</span><div style={{ display: "flex", gap: 7 }}><ActionButton small onClick={() => respondToCollaboration.mutate({ inviteId: invite.id, accept: true })}>গ্রহণ করুন</ActionButton><ActionButton small variant="ghost" onClick={() => respondToCollaboration.mutate({ inviteId: invite.id, accept: false })}>না, ধন্যবাদ</ActionButton></div></div>
               ))}
             </section>
           )}
@@ -2529,12 +2861,14 @@ export default function AmiOLikhboBastobota() {
                   showMyPosts={showMyPosts}
                   searchActive={searchActive}
                   selectedCategory={selectedCategory}
+                  feedMode={feedMode}
                   isAuthenticated={isAuthenticated}
                   onWrite={() => setShowCreateModal(true)}
                   onLogin={() => {
                     if (isLoginConfigured) { window.location.href = loginHref; }
                     else { setLocalAuthMode("login"); setShowLocalAuth(true); }
                   }}
+                  onDiscover={() => setFeedMode("all")}
                 />
               ) : (
                 <div className="amio-post-list" style={{ display: "grid", gap: "1rem", minWidth: 0 }}>

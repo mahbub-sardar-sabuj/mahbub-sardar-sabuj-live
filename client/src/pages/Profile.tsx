@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, type CSSProperties } from "react";
 import {
   ArrowLeft,
   Award,
+  BarChart3,
   Bookmark,
   Camera,
   CheckCircle2,
@@ -18,6 +19,7 @@ import {
   RefreshCw,
   Save,
   Settings,
+  Users,
   X,
 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -137,6 +139,10 @@ export default function Profile() {
     enabled: Boolean(user?.openId), retry: false, staleTime: 60000,
   });
   const communityOverview = communityOverviewQuery.data;
+  const authorAnalyticsQuery = trpc.writingPlatform.getMyAuthorAnalytics.useQuery(undefined, {
+    enabled: Boolean(user?.openId), retry: false, staleTime: 60000,
+  });
+  const authorAnalytics = authorAnalyticsQuery.data;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -215,6 +221,11 @@ export default function Profile() {
     } catch { setCoverError("কভার ছবি আপলোড করতে সমস্যা হয়েছে"); }
     finally { setCoverUploading(false); if (e.target) e.target.value = ""; }
   }
+
+  const profileReady = Boolean(profile?.avatarUrl || profile?.bio?.trim());
+  const firstWritingReady = (communityOverview?.submitted ?? 0) > 0;
+  const followingReady = (communityOverview?.following ?? 0) > 0;
+  const journeyCompleted = [profileReady, firstWritingReady, followingReady].filter(Boolean).length;
 
   async function handleLogout() {
     if (!window.confirm("আপনি কি সত্যিই লগআউট করতে চান?")) return;
@@ -297,6 +308,11 @@ export default function Profile() {
         .profile-stat::after { content: ""; position: absolute; width: 44px; height: 44px; right: -16px; top: -18px; border-radius: 50%; background: currentColor; opacity: 0.1; }
         .profile-stat:hover { transform: translateY(-2px); border-color: rgba(247,213,111,0.34) !important; }
         .profile-bio { padding: 1rem; border-radius: 16px; border: 1px solid rgba(232,201,122,0.12); background: rgba(3,10,19,0.22); }
+        .profile-journey { overflow: hidden; position: relative; padding: 1rem; border-radius: 18px; border: 1px solid rgba(196,181,253,0.25); background: linear-gradient(135deg, rgba(129,140,248,0.13), rgba(81,139,255,0.06) 58%, rgba(247,213,111,0.08)); }
+        .profile-journey::after { content: ""; position: absolute; width: 160px; height: 160px; right: -88px; top: -105px; border-radius: 50%; background: rgba(196,181,253,0.13); filter: blur(5px); pointer-events: none; }
+        .profile-journey > * { position: relative; z-index: 1; }
+        .profile-journey-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; margin-top: 0.8rem; }
+        .profile-journey-step { min-height: 106px; display: grid; align-content: start; gap: 0.36rem; padding: 0.72rem; border-radius: 14px; background: rgba(4,10,20,0.22); border: 1px solid rgba(255,255,255,0.075); }
         .profile-command-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         .profile-command { min-height: 58px; border-radius: 16px !important; transition: transform 160ms cubic-bezier(.23,1,.32,1), background 160ms ease, border-color 160ms ease !important; }
         .profile-command:hover { transform: translateY(-2px); background: rgba(247,213,111,0.10) !important; border-color: rgba(247,213,111,0.32) !important; }
@@ -309,7 +325,7 @@ export default function Profile() {
         .profile-gate-points span { padding: 0.35rem 0.6rem; border-radius: 999px; background: rgba(255,255,255,0.045); border: 1px solid rgba(232,201,122,0.13); }
         input:focus, textarea:focus { border-color: rgba(212,168,67,0.6) !important; box-shadow: 0 0 0 3px rgba(212,168,67,0.1); }
         button:active { transform: scale(0.97); }
-        @media (max-width: 520px) { .profile-frame { padding-left: 0.85rem !important; padding-right: 0.85rem !important; } .profile-hero { border-radius: 20px !important; } .profile-identity-row { gap: 0.85rem !important; } .profile-actions { width: 100%; justify-content: space-between; padding-top: 0.35rem !important; } .profile-actions button { flex: 1; justify-content: center; } .profile-stat-grid { gap: 0.5rem !important; } .profile-stat { padding: 0.7rem 0.4rem !important; min-height: 70px; } .profile-stat > div:first-child { font-size: 1.08rem !important; } .profile-command-grid { gap: 0.55rem !important; } .profile-library-item > div:first-child { flex-direction: column; gap: 0.45rem !important; } }
+        @media (max-width: 520px) { .profile-frame { padding-left: 0.85rem !important; padding-right: 0.85rem !important; } .profile-hero { border-radius: 20px !important; } .profile-identity-row { gap: 0.85rem !important; } .profile-actions { width: 100%; justify-content: space-between; padding-top: 0.35rem !important; } .profile-actions button { flex: 1; justify-content: center; } .profile-stat-grid { gap: 0.5rem !important; } .profile-stat { padding: 0.7rem 0.4rem !important; min-height: 70px; } .profile-stat > div:first-child { font-size: 1.08rem !important; } .profile-command-grid { gap: 0.55rem !important; } .profile-journey-grid { grid-template-columns: 1fr !important; } .profile-journey-step { min-height: auto; } .profile-library-item > div:first-child { flex-direction: column; gap: 0.45rem !important; } }
       `}</style>
 
       <div className="profile-frame" style={{ maxWidth: 720, margin: "0 auto", padding: "calc(var(--site-nav-offset, 98px) + 1.5rem) 1rem 4rem" }}>
@@ -533,6 +549,39 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
+
+              <section className="profile-journey" aria-label="লেখক যাত্রার অগ্রগতি">
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <span className="profile-eyebrow"><Award size={14} /> আপনার লেখক যাত্রা</span>
+                    <p style={{ margin: "0.26rem 0 0", color: "rgba(253,246,236,0.64)", fontSize: "0.82rem", lineHeight: 1.55 }}>ছোট তিনটি ধাপে নিজের পাঠক-পরিচয় গুছিয়ে নিন।</p>
+                  </div>
+                  <span style={{ flexShrink: 0, color: "#E9D5FF", fontWeight: 900, fontSize: "0.78rem", paddingTop: 2 }}>{journeyCompleted}/৩ ধাপ</span>
+                </div>
+                <div style={{ height: 5, marginTop: "0.7rem", overflow: "hidden", borderRadius: 999, background: "rgba(255,255,255,0.1)" }}><div style={{ width: `${(journeyCompleted / 3) * 100}%`, height: "100%", borderRadius: 999, background: "linear-gradient(90deg, #A5B4FC, #F7D56F)", transition: "width 220ms cubic-bezier(.23,1,.32,1)" }} /></div>
+                <div className="profile-journey-grid">
+                  {[
+                    { done: profileReady, icon: <Camera size={15} />, title: "পরিচিতি দিন", text: "ছবি বা সংক্ষিপ্ত বায়ো যোগ করুন।", action: "প্রোফাইল সাজান", onClick: () => setEditing(true) },
+                    { done: firstWritingReady, icon: <PenLine size={15} />, title: "প্রথম লেখা পাঠান", text: "ভাবনা জমা দিলে পর্যালোচনায় যাবে।", action: "লেখা শুরু করুন", onClick: () => setLocation("/amio-likhbo-bastobota") },
+                    { done: followingReady, icon: <Users size={15} />, title: "লেখক অনুসরণ করুন", text: "প্রিয় কণ্ঠগুলো নিজের ফিডে আনুন।", action: "লেখক দেখুন", onClick: () => setLocation("/amio-likhbo-bastobota") },
+                  ].map((step) => (
+                    <div key={step.title} className="profile-journey-step">
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, color: step.done ? "#86EFAC" : "#C4B5FD", fontWeight: 900, fontSize: "0.8rem" }}>{step.done ? <CheckCircle2 size={15} /> : step.icon} {step.title}</div>
+                      <p style={{ margin: 0, color: "rgba(253,246,236,0.52)", fontSize: "0.72rem", lineHeight: 1.5 }}>{step.done ? "সম্পন্ন হয়েছে—চমৎকার এগিয়ে যাচ্ছেন।" : step.text}</p>
+                      {!step.done && <button type="button" onClick={step.onClick} style={{ justifySelf: "start", marginTop: 2, border: "none", background: "transparent", color: "#F7D56F", fontFamily: adorshoFont, fontWeight: 900, fontSize: "0.73rem", padding: 0, cursor: "pointer" }}>{step.action} →</button>}
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {authorAnalytics && (
+                <div style={{ marginBottom: "1.25rem", padding: "0.9rem 1rem", borderRadius: 16, background: "linear-gradient(135deg, rgba(129,140,248,0.12), rgba(81,139,255,0.07))", border: "1px solid rgba(196,181,253,0.20)", display: "grid", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}><span style={{ color: "#C4B5FD", display: "inline-flex", gap: 6, alignItems: "center", fontWeight: 900, fontSize: "0.86rem" }}><BarChart3 size={16} /> পাঠক-প্রতিক্রিয়া</span><span style={{ color: "rgba(253,246,236,0.48)", fontSize: "0.74rem" }}>প্রকাশিত লেখাগুলোর সারাংশ</span></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 7 }}>
+                    {[{ value: authorAnalytics.views, label: "পাঠ" }, { value: authorAnalytics.reactions, label: "প্রতিক্রিয়া" }, { value: authorAnalytics.saves, label: "সংরক্ষণ" }].map((metric) => <div key={metric.label} style={{ padding: "0.55rem 0.35rem", textAlign: "center", borderRadius: 11, background: "rgba(255,255,255,0.04)" }}><div style={{ color: "#E9D5FF", fontWeight: 900 }}>{metric.value}</div><div style={{ color: "rgba(253,246,236,0.48)", fontSize: "0.7rem", marginTop: 2 }}>{metric.label}</div></div>)}
+                  </div>
+                </div>
+              )}
 
               {communityOverview && (
                 <div style={{ marginBottom: "1.25rem", padding: "0.9rem 1rem", borderRadius: 16, background: "linear-gradient(135deg, rgba(247,213,111,0.11), rgba(81,139,255,0.08))", border: "1px solid rgba(232,201,122,0.18)", display: "grid", gap: 8 }}>
