@@ -72,6 +72,20 @@ const galleryImages = [
   { src: WRITING_SHOWCASE, caption: "কবিতার নকশা — ১" },
   { src: WRITING2, caption: "কবিতার নকশা — ২" },
   { src: BOOK_PHOTO, caption: "দুঃখবিলাস — ভালোবাসার উপহার" },
+  // User-provided originals — served in their source size, aspect ratio and file format.
+  { src: "/photos/gallery-2026-08/IMG_0665.JPG", caption: "অভিমান — সাহিত্যিক পরিচিতি ও কবিতার পৃষ্ঠা" },
+  { src: "/photos/gallery-2026-08/IMG_0517.JPG", caption: "অভিমান — বইয়ের স্কয়ার মকআপ" },
+  { src: "/photos/gallery-2026-08/IMG_0518.JPG", caption: "অভিমান — বইয়ের প্রচ্ছদ" },
+  { src: "/photos/gallery-2026-08/IMG_9830.JPG", caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস — বইয়ের প্রচারচিত্র" },
+  { src: "/photos/gallery-2026-08/IMG_9830_01.JPG", caption: "দুঃখবিলাস — বইয়ের প্রচারচিত্রের কোলাজ" },
+  { src: "/photos/gallery-2026-08/IMG_9832.jpeg", caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস — বইয়ের মকআপ" },
+  { src: "/photos/gallery-2026-08/IMG_3932.PNG", caption: "ক্যামেরাসহ সৃজনের কর্মপরিসরে" },
+  { src: "/photos/gallery-2026-08/photo-output.png", caption: "অভিমান — পাঠের মুহূর্তে" },
+  { src: "/photos/gallery-2026-08/photo-output_01.png", caption: "নারীকে সম্মান দিতে শিখুন — সাহিত্যিক উদ্ধৃতিচিত্র" },
+  { src: "/photos/gallery-2026-08/book_cover_without_left_spine.png", caption: "অভিমান — মূল বইয়ের প্রচ্ছদ" },
+  { src: "/photos/gallery-2026-08/photo-output_02.png", caption: "জীবন একটি ভ্রমণের চাপা রূপকথা — উদ্ধৃতিচিত্র" },
+  { src: "/photos/gallery-2026-08/photo-output_03.png", caption: "বিষাক্ত সাপের চেয়েও ভয়ংকর — উদ্ধৃতিচিত্র" },
+  { src: "/photos/gallery-2026-08/photo-output_04.png", caption: "মানুষ কখনো নিঃস্ব নয় — উদ্ধৃতিচিত্র" },
 ];
 
 type GalleryImage = { src: string; caption: string };
