@@ -1942,7 +1942,7 @@ export default function AmiOLikhboBastobota() {
         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.28); border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.5); }
         .amio-feed { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
-        .amio-sticky-bar, .amio-feed-toolbar, .amio-post-list, .post-card-enter, .amio-post-card { min-width: 0; max-width: 100%; box-sizing: border-box; }
+        .amio-sticky-bar, .amio-feed-toolbar, .amio-post-list, .post-card-enter, .amio-post-card { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
         @media (max-width: 480px) {
           .amio-feed-toolbar { gap: 0.45rem !important; padding: 0.6rem !important; }
           .amio-search-input { padding: 0.55rem 1.7rem 0.55rem 2.2rem !important; font-size: 0.84rem !important; }
