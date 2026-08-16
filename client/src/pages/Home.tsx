@@ -568,17 +568,10 @@ export default function Home() {
                   >
                     <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
                       <motion.div
-                        className={`app-launcher-card${sec.href === "/gallery" ? " gallery-launcher-card" : ""}`}
+                        className="app-launcher-card"
                         whileHover={{ y: -6, scale: 1.03 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        {sec.href === "/gallery" && (
-                          <div className="gallery-card-mosaic" aria-hidden="true">
-                            <span className="gallery-mosaic-frame gallery-mosaic-frame-a" />
-                            <span className="gallery-mosaic-frame gallery-mosaic-frame-b" />
-                            <span className="gallery-mosaic-frame gallery-mosaic-frame-c" />
-                          </div>
-                        )}
                         <div className="app-icon-wrap">
                           <Icon size={23} strokeWidth={1.8} />
                         </div>
@@ -829,110 +822,6 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,0.035);
           pointer-events: none;
           z-index: -1;
-        }
-        /* Gallery is redesigned as a miniature curated-photo archive. */
-        .gallery-launcher-card {
-          border-color: rgba(241,225,171,0.68);
-          background:
-            linear-gradient(145deg, rgba(26,47,72,0.99) 0%, rgba(12,27,45,0.98) 50%, rgba(6,15,27,0.99) 100%);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.14),
-            inset 0 0 0 1px rgba(241,225,171,0.12),
-            0 22px 50px rgba(0,0,0,0.43),
-            0 0 32px rgba(201,168,76,0.14);
-        }
-        .gallery-launcher-card::before {
-          opacity: 1;
-          background:
-            linear-gradient(180deg, rgba(251,246,233,0.12), transparent 34%),
-            radial-gradient(circle at 18% 8%, rgba(201,168,76,0.23), transparent 46%);
-        }
-        .gallery-launcher-card::after {
-          border-color: rgba(255,249,226,0.18);
-        }
-        .gallery-card-mosaic {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          pointer-events: none;
-          opacity: 0.68;
-          transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .gallery-mosaic-frame {
-          position: absolute;
-          display: block;
-          border: 1px solid rgba(255,248,220,0.42);
-          border-radius: 6px;
-          box-shadow: 0 8px 20px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.22);
-          background-color: #1c3855;
-          overflow: hidden;
-        }
-        .gallery-mosaic-frame::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, transparent 44%, rgba(255,249,226,0.18) 45% 46%, transparent 47%);
-        }
-        .gallery-mosaic-frame-a {
-          width: 52%; height: 39%;
-          top: -9%; left: -16%;
-          transform: rotate(-12deg);
-          background: linear-gradient(145deg, #c8a86d 0%, #718fa4 42%, #172c45 100%);
-        }
-        .gallery-mosaic-frame-b {
-          width: 47%; height: 42%;
-          top: 8%; right: -17%;
-          transform: rotate(10deg);
-          background: linear-gradient(145deg, #d7c37b 0%, #53778d 45%, #132941 100%);
-        }
-        .gallery-mosaic-frame-c {
-          width: 48%; height: 34%;
-          bottom: -10%; left: 25%;
-          transform: rotate(-2deg);
-          background: linear-gradient(145deg, #7993a1 0%, #b79a5e 50%, #1a3149 100%);
-        }
-        .gallery-launcher-card > :not(.gallery-card-mosaic) {
-          position: relative;
-          z-index: 2;
-        }
-        .gallery-launcher-card .app-icon-wrap {
-          color: #FFF8D6;
-          background: linear-gradient(150deg, rgba(251,246,233,0.28), rgba(201,168,76,0.25));
-          border-color: rgba(255,248,220,0.62);
-          box-shadow:
-            0 12px 30px rgba(0,0,0,0.30),
-            inset 0 1px 0 rgba(255,255,255,0.38),
-            0 0 0 5px rgba(201,168,76,0.07),
-            0 0 26px rgba(232,201,122,0.22);
-        }
-        .gallery-launcher-card .app-label {
-          color: #FFF9E5;
-          letter-spacing: 0.02em;
-          text-shadow: 0 2px 18px rgba(0,0,0,0.52);
-        }
-        .gallery-launcher-card .app-subtitle {
-          color: rgba(255,249,229,0.78);
-        }
-        .app-launcher-card.gallery-launcher-card:hover {
-          border-color: #FFF4C8;
-          background: linear-gradient(145deg, rgba(42,71,104,1) 0%, rgba(16,36,60,0.99) 50%, rgba(7,18,32,1) 100%);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.22),
-            inset 0 0 0 1px rgba(255,244,200,0.24),
-            0 30px 68px rgba(0,0,0,0.48),
-            0 0 48px rgba(201,168,76,0.34);
-        }
-        .app-launcher-card.gallery-launcher-card:hover .gallery-card-mosaic {
-          opacity: 0.92;
-          transform: scale(1.06);
-        }
-        .app-launcher-card.gallery-launcher-card:hover .app-icon-wrap {
-          transform: scale(1.10) rotate(-5deg);
-          box-shadow:
-            0 15px 34px rgba(0,0,0,0.36),
-            inset 0 1px 0 rgba(255,255,255,0.44),
-            0 0 0 6px rgba(201,168,76,0.10),
-            0 0 34px rgba(232,201,122,0.34);
         }
         .app-launcher-card:hover {
           border-color: rgba(201,168,76,0.62);
