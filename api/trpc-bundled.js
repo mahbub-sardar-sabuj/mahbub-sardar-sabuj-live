@@ -2317,16 +2317,21 @@ async function handler(req, res) {
   try {
     const trpcPath = getTrpcPath(req);
     const canUseAnonymousFeedCache = isAnonymousCacheableRead(trpcPath, req);
-    if (canUseAnonymousFeedCache) {
-      res.setHeader("Cache-Control", "public, s-maxage=30, stale-while-revalidate=120");
-      res.setHeader("Vary", "Cookie");
-    }
     await nodeHTTPRequestHandler({
       router: appRouter,
       path: trpcPath,
       req,
       res,
-      createContext: canUseAnonymousFeedCache ? createPublicVercelContext : createVercelContext
+      createContext: canUseAnonymousFeedCache ? createPublicVercelContext : createVercelContext,
+      responseMeta: () => canUseAnonymousFeedCache ? {
+        // Feed data changes through moderated writes, not on every read. A short CDN TTL gives
+        // anonymous visitors a fast first paint while preserving timely updates.
+        headers: {
+          "cache-control": "public, max-age=0, s-maxage=30, stale-while-revalidate=120",
+          "cdn-cache-control": "max-age=30, stale-while-revalidate=120",
+          "vary": "Cookie, trpc-accept, accept"
+        }
+      } : {}
     });
   } catch (error) {
     sendFunctionError(res, error);
