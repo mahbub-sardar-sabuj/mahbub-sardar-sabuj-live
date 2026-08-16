@@ -1,21 +1,30 @@
 /*
- * Home Page — হোমপেজ
- * Design: "Ink & Gold" — World-Class Literary Premium v2
- * Concept: Cinematic dark luxury author portfolio
- * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
+ * Home Page — মাহবুব সরদার সবুজ
+ * Design system: Ink & Gold
+ * Purpose: a calm, editorial home that separates literary work from useful tools.
  */
-import { useRef, useState, useEffect } from "react";
-
-// PWA install prompt type
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
-  BookOpen, Mic2, Images, Newspaper, Mail,
-  UserRound, Palette,
-  Star, Feather, Sparkles, Video, Music, Download, Smartphone, MailOpen, Phone, CreditCard
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  Check,
+  CreditCard,
+  Download,
+  Feather,
+  Images,
+  Mail,
+  MailOpen,
+  Mic2,
+  Music,
+  Newspaper,
+  Palette,
+  Phone,
+  Smartphone,
+  Sparkles,
+  UserRound,
+  Video,
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -23,94 +32,135 @@ import Seo from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import RulesSection from "@/components/RulesSection";
 
-// ── Assets ────────────────────────────────────────────────────────────────────
-const PROFILE_1 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/profile_db5ff5d6.jpeg";
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/hero-bg-U7hjBDvWeoSXDDh3veCUTN.webp";
-const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
-// ── Navigation sections ───────────────────────────────────────────────────────
+const PROFILE_IMAGE = "/images/og-home-suit.jpg";
+const PROFILE_SCHEMA_IMAGE = "https://www.mahbubsardarsabuj.com/images/og-home-suit.jpg";
+
 const sections = [
-  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
-  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
-  { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
-  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
-  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
-  { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
-  { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
-  { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", icon: Phone },
-  { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", icon: CreditCard },
-  { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
-  { label: "ভিডিও আপস্কেলার", subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Video },
-  { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", icon: Music },
-  { label: "আবৃত্তি টুল", subtitle: "লেখা দিন, AI মানুষের কণ্ঠে আবৃত্তি করবে", href: "/text-to-speech", icon: Mic2 },
-];
+  { group: "literary", label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
+  { group: "literary", label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
+  { group: "literary", label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
+  { group: "literary", label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
+  { group: "literary", label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
+  { group: "literary", label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { group: "literary", label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
+  { group: "tools", label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
+  { group: "tools", label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", icon: Phone },
+  { group: "tools", label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", icon: CreditCard },
+  { group: "tools", label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
+  { group: "tools", label: "ভিডিও আপস্কেলার", subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Video },
+  { group: "tools", label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", icon: Music },
+  { group: "tools", label: "আবৃত্তি টুল", subtitle: "লেখা দিন, AI মানুষের কণ্ঠে আবৃত্তি করবে", href: "/text-to-speech", icon: Mic2 },
+] as const;
 
-// ═════════════════════════════════════════════════════════════════════════════════
+const literarySections = sections.filter((section) => section.group === "literary");
+const toolSections = sections.filter((section) => section.group === "tools");
+
+function DirectoryGrid({
+  items,
+  delayOffset = 0,
+}: {
+  items: readonly (typeof sections)[number][];
+  delayOffset?: number;
+}) {
+  return (
+    <div className="home-directory-grid">
+      {items.map((section, index) => {
+        const Icon = section.icon;
+        return (
+          <motion.div
+            key={section.href}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.18 }}
+            transition={{ duration: 0.42, delay: delayOffset + index * 0.045 }}
+          >
+            <Link href={section.href} className="home-directory-link" aria-label={`${section.label} খুলুন`}>
+              <motion.div className="home-directory-card" whileHover={{ y: -5 }} whileTap={{ scale: 0.985 }}>
+                <span className="home-directory-icon"><Icon size={22} strokeWidth={1.8} /></span>
+                <span className="home-directory-copy">
+                  <span className="home-directory-label">{section.label}</span>
+                  <span className="home-directory-subtitle">{section.subtitle}</span>
+                </span>
+                <ArrowUpRight className="home-directory-arrow" size={17} strokeWidth={1.8} />
+              </motion.div>
+            </Link>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Home() {
-  const heroRef = useRef<HTMLDivElement>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [pwaInstalled, setPwaInstalled] = useState(false);
   const [pwaInstalling, setPwaInstalling] = useState(false);
 
-  // PWA install prompt listener
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      setDeferredPrompt(event as BeforeInstallPromptEvent);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setPwaInstalled(true);
-    }
-    window.addEventListener('appinstalled', () => {
+    const handleInstalled = () => {
       setPwaInstalled(true);
       setDeferredPrompt(null);
-    });
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    window.addEventListener("appinstalled", handleInstalled);
+    if (window.matchMedia("(display-mode: standalone)").matches) setPwaInstalled(true);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("appinstalled", handleInstalled);
+    };
   }, []);
 
   const handleInstallPWA = async () => {
     if (!deferredPrompt) {
-      // Fallback: show instructions
       alert('অ্যাপ ইনস্টল করতে:\n\nAndroid: Chrome মেনু > "অ্যাপ ইনস্টল করুন"\niPhone: Safari Share > "Add to Home Screen"');
       return;
     }
+
     setPwaInstalling(true);
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setPwaInstalled(true);
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") setPwaInstalled(true);
+      setDeferredPrompt(null);
+    } finally {
+      setPwaInstalling(false);
     }
-    setDeferredPrompt(null);
-    setPwaInstalling(false);
   };
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
+
+  const installTitle = pwaInstalled ? "অ্যাপ ইনস্টল হয়েছে" : pwaInstalling ? "ইনস্টল হচ্ছে..." : "অ্যাপ হিসেবে রাখুন";
+  const installCopy = pwaInstalled ? "হোম স্ক্রিন থেকে সরাসরি খুলুন" : "ওয়েবসাইটটি ফোনে দ্রুত খুলুন";
 
   const homeJsonLd = {
     "@context": "https://schema.org",
     "@graph": [{
       "@type": "Person",
-      "name": "Mahbub Sardar Sabuj",
-      "alternateName": "মাহবুব সরদার সবুজ",
-      "url": "https://www.mahbubsardarsabuj.com/",
-      "image": PROFILE_1,
-      "jobTitle": "লেখক ও কবি",
-      "description": "বাংলা সাহিত্যের লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
-      "sameAs": [
+      name: "Mahbub Sardar Sabuj",
+      alternateName: "মাহবুব সরদার সবুজ",
+      url: "https://www.mahbubsardarsabuj.com/",
+      image: PROFILE_SCHEMA_IMAGE,
+      jobTitle: "লেখক ও কবি",
+      description: "বাংলা সাহিত্যের লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট।",
+      sameAs: [
         "https://facebook.com/MahbubSardarSabuj",
         "https://www.instagram.com/mahbub_sardar_sabuj",
-        "https://youtube.com/@MahbubSardarSabuj"
+        "https://youtube.com/@MahbubSardarSabuj",
       ],
-    }]
+    }],
   };
 
   return (
-    <div style={{ background: "#060E1A", minHeight: "100vh", overflowX: "hidden" }}>
+    <div className="home-page">
       <Seo
         title="মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি"
         description="মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। লেখকের পরিচিতি, বাংলা কবিতা, লেখালেখি, বই, ই-বুক, গ্যালারি ও সরদার সংবাদ একসাথে পড়ুন।"
@@ -120,856 +170,617 @@ export default function Home() {
       />
       <Navbar />
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          HERO — Cinematic Split Layout
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section
-        ref={heroRef}
-        style={{
-          position: "relative",
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          overflow: "hidden",
-          background: "#060E1A",
-        }}
-      >
-        {/* Full-bleed background image with parallax */}
-        <motion.div
-          style={{
-            position: "absolute", inset: 0,
-            backgroundImage: `url(${HERO_BG})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center top",
-            y: heroY,
-            scale: heroScale,
-          }}
-        />
+      <main>
+        <section className="home-hero" aria-labelledby="home-title">
+          <div className="home-hero-grid" />
+          <div className="home-hero-aura home-hero-aura-gold" />
+          <div className="home-hero-aura home-hero-aura-blue" />
+          <div className="home-hero-line" />
 
-        {/* Multi-layer gradient overlay — richer depth */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(105deg, rgba(4,10,20,0.96) 0%, rgba(6,14,26,0.88) 42%, rgba(6,14,26,0.35) 100%)",
-        }} />
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(4,10,20,1) 0%, rgba(6,14,26,0.6) 30%, transparent 60%)",
-        }} />
-        {/* Side vignette */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to right, rgba(4,10,20,0.55) 0%, transparent 40%, transparent 60%, rgba(4,10,20,0.35) 100%)",
-          pointerEvents: "none",
-        }} />
+          <div className="home-hero-inner">
+            <motion.div
+              className="home-hero-copy"
+              initial={{ opacity: 0, x: -26 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="home-eyebrow"><span /><span>শব্দ · স্মৃতি · সৃজন</span></div>
+              <h1 id="home-title" className="home-hero-title">
+                মাহবুব <em>সরদার সবুজ</em>
+              </h1>
+              <p className="home-hero-intro">
+                বাংলা ভাষার অনুভব, মানুষের গল্প এবং শব্দের গভীরতা নিয়ে এক নিবেদিত সাহিত্যযাত্রা।
+              </p>
 
-        {/* Animated grain texture */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E")`,
-          opacity: 0.4,
-          pointerEvents: "none",
-        }} />
-
-        {/* Gold radial glow — top right, more intense */}
-        <motion.div
-          animate={{ opacity: [0.35, 0.65, 0.35], scale: [1, 1.08, 1] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute",
-            top: "-15%", right: "-8%",
-            width: "55vw", height: "55vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(201,168,76,0.16) 0%, rgba(201,168,76,0.06) 40%, transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Secondary blue-teal glow — bottom left */}
-        <motion.div
-          animate={{ opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-          style={{
-            position: "absolute",
-            bottom: "-10%", left: "-5%",
-            width: "40vw", height: "40vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(60,120,200,0.1) 0%, transparent 65%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Horizontal light streak */}
-        <div style={{
-          position: "absolute",
-          top: "38%", left: 0, right: 0,
-          height: 1,
-          background: "linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.12) 30%, rgba(201,168,76,0.22) 50%, rgba(201,168,76,0.12) 70%, transparent 100%)",
-          pointerEvents: "none",
-        }} />
-
-        {/* Content */}
-        <motion.div
-          style={{ position: "relative", zIndex: 2, width: "100%", opacity: heroOpacity }}
-          className="hero-container"
-        >
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem", minWidth: 0 }} className="hero-inner">
-
-            {/* Left column — text */}
-            <div className="hero-left">
-
-              {/* Eyebrow badge */}
-              <motion.div
-                initial={{ opacity: 0, x: -40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.15, ease: [0.16,1,0.3,1] }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 10,
-                  marginBottom: "0.8rem",
-                  marginTop: "0.4rem",
-                  padding: "6px 16px 6px 12px",
-                  borderRadius: 40,
-                  border: "1px solid rgba(201,168,76,0.4)",
-                  background: "rgba(201,168,76,0.08)",
-                  backdropFilter: "blur(12px)",
-                  boxShadow: "0 0 28px rgba(201,168,76,0.12), inset 0 1px 0 rgba(201,168,76,0.2), 0 2px 8px rgba(0,0,0,0.3)",
-                }}
-              >
-                {/* Pulsing dot */}
-                <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <span style={{
-                    width: 7, height: 7, borderRadius: "50%",
-                    background: "#C9A84C",
-                    display: "block",
-                    boxShadow: "0 0 8px #C9A84C, 0 0 16px rgba(201,168,76,0.5)",
-                    animation: "pulseDot 2s ease-in-out infinite",
-                  }} />
-                </span>
-                <span style={{
-                  fontFamily: "'AdorshoLipi', sans-serif",
-                  fontSize: "0.84rem",
-                  letterSpacing: "0.22em",
-                  color: "#E8C97A",
-                  fontWeight: 400,
-                }}>লেখক ও কবি</span>
-              </motion.div>
-
-              {/* Main name — single H1 for SEO, split visually with spans */}
-              <h1 className="hero-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
-              <div style={{ position: "relative", marginBottom: "0.2rem" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  style={{
-                    fontFamily: "'AdorshoLipi', sans-serif",
-                    fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
-                    fontWeight: 700,
-                    lineHeight: 0.95,
-                    display: "block",
-                    maxWidth: "100%",
-                    overflowWrap: "anywhere",
-                    color: "#FAF6EF",
-                    letterSpacing: "-0.03em",
-                    textShadow: "0 2px 40px rgba(201,168,76,0.22), 0 0 100px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  মাহবুব
-                </motion.span>
+              <div className="home-hero-actions">
+                <Link href="/writings" className="home-action home-action-primary"><BookOpen size={18} /> লেখালেখি পড়ুন <ArrowRight size={17} /></Link>
+                <Link href="/about" className="home-action home-action-secondary"><UserRound size={17} /> পরিচিতি</Link>
               </div>
 
-              <div style={{ position: "relative", marginBottom: "0.6rem" }}>
-                <motion.span
-                  initial={{ opacity: 0, y: 60 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1.1, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  style={{
-                    fontFamily: "'AdorshoLipi', sans-serif",
-                    fontSize: "clamp(3rem, 8.2vw, 8.5rem)",
-                    fontWeight: 700,
-                    lineHeight: 1.1,
-                    display: "block",
-                    maxWidth: "100%",
-                    overflowWrap: "anywhere",
-                    background: "linear-gradient(110deg, #8A5E10 0%, #C9A84C 18%, #F5E4A0 42%, #EDD07A 58%, #C9A84C 78%, #8A5E10 100%)",
-                    backgroundSize: "280% 100%",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    letterSpacing: "-0.02em",
-                    filter: "drop-shadow(0 6px 28px rgba(201,168,76,0.45))",
-                    animation: "goldShimmer 6s ease-in-out infinite",
-                    paddingBottom: "12px",
-                  }}
-                >
-                  সরদার সবুজ
-                </motion.span>
-                {/* Underline glow — wider & softer */}
-                <motion.div
-                  initial={{ scaleX: 0, opacity: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ duration: 1.4, delay: 0.85, ease: [0.16,1,0.3,1] }}
-                  style={{
-                    position: "absolute", bottom: -8, left: 0,
-                    height: 2,
-                    width: "85%",
-                    background: "linear-gradient(90deg, #C9A84C 0%, rgba(201,168,76,0.5) 60%, transparent 100%)",
-                    transformOrigin: "left",
-                    borderRadius: 2,
-                    boxShadow: "0 0 20px rgba(201,168,76,0.7), 0 0 40px rgba(201,168,76,0.3)",
-                  }}
-                />
-                            </div>
-              </h1>
-              {/* Tagline */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.65 }}
-                style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
-              >
-                <p style={{
-                  fontFamily: "'AdorshoLipi', sans-serif",
-                  fontSize: "clamp(1rem, 1.9vw, 1.2rem)",
-                  color: "rgba(250,246,239,0.68)",
-                  lineHeight: 1.75,
-                  margin: 0,
-                  letterSpacing: "0.02em",
-                  borderLeft: "2px solid rgba(201,168,76,0.5)",
-                  paddingLeft: 18,
-                }}>
-                  বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর — কবিতা, গদ্য ও মানবিক অনুভূতির অনুসন্ধানী লেখক।
-                </p>
-              </motion.div>
+              <div className="home-hero-index" aria-label="ওয়েবসাইটের প্রধান বিষয়সমূহ">
+                <span><b>লেখা</b><small>কবিতা ও গদ্য</small></span>
+                <span><b>স্মৃতি</b><small>ছবি ও মুহূর্ত</small></span>
+                <span><b>সুবিধা</b><small>সৃজনশীল টুল</small></span>
+              </div>
+            </motion.div>
 
-            </div>
-
-            {/* Right column — author portrait */}
             <motion.div
-              className="hero-right"
-              initial={{ opacity: 0, x: 60 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              style={{ position: "relative" }}
+              className="home-portrait-stage"
+              initial={{ opacity: 0, x: 30, scale: 0.97 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.82, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
             >
-              {/* Portrait frame */}
-              <div className="hero-frame-wrap" style={{ position: "relative" }}>
-                {/* Decorative frame lines — more visible */}
-                <div style={{
-                  position: "absolute",
-                  top: "var(--hero-frame-offset, -22px)", right: "var(--hero-frame-offset, -22px)",
-                  width: "62%", height: "62%",
-                  border: "1px solid rgba(201,168,76,0.32)",
-                  borderRadius: 6,
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }} />
-                <div style={{
-                  position: "absolute",
-                  bottom: "var(--hero-frame-offset, -22px)", left: "var(--hero-frame-offset, -22px)",
-                  width: "62%", height: "62%",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  borderRadius: 6,
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }} />
-                {/* Corner accent dots */}
-                <div style={{
-                  position: "absolute", top: "var(--hero-frame-offset, -22px)", right: "var(--hero-frame-offset, -22px)",
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "rgba(201,168,76,0.7)",
-                  boxShadow: "0 0 10px rgba(201,168,76,0.5)",
-                  zIndex: 2, pointerEvents: "none",
-                }} />
-                <div style={{
-                  position: "absolute", bottom: "var(--hero-frame-offset, -22px)", left: "var(--hero-frame-offset, -22px)",
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "rgba(201,168,76,0.5)",
-                  boxShadow: "0 0 10px rgba(201,168,76,0.4)",
-                  zIndex: 2, pointerEvents: "none",
-                }} />
-
-                {/* Main portrait — suit photo */}
-                <div style={{
-                  position: "relative",
-                  borderRadius: 20,
-                  overflow: "hidden",
-                  boxShadow: "0 50px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.12)",
-                  zIndex: 1,
-                }}>
-                  <img
-                    src={PROFILE_1}
-                    alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - অফিসিয়াল প্রোফাইল ছবি"
-                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center top",
-                      display: "block",
-                      filter: "contrast(1.08) saturate(0.95) brightness(1.0)",
-                    }}
-                    className="hero-portrait"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                  />
-                  {/* Gradient overlay — richer */}
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to bottom, transparent 45%, rgba(4,10,20,0.85) 100%)",
-                  }} />
-                  {/* Side glow on portrait */}
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: "linear-gradient(to right, rgba(201,168,76,0.06) 0%, transparent 30%)",
-                    pointerEvents: "none",
-                  }} />
-                  {/* Name tag at bottom */}
-                  <div style={{
-                    position: "absolute", bottom: 0, left: 0, right: 0,
-                    padding: "1.4rem 1.6rem",
-                    background: "linear-gradient(to top, rgba(4,10,20,0.9) 0%, transparent 100%)",
-                  }}>
-                    <div style={{
-                      fontFamily: "'AdorshoLipi', sans-serif",
-                      fontSize: "0.6rem", letterSpacing: "0.22em",
-                      textTransform: "uppercase", color: "#C9A84C", marginBottom: 4,
-                    }}>লেখক ও কবি</div>
-                    <div style={{
-                      fontFamily: "'AdorshoLipi', sans-serif",
-                      fontSize: "1.05rem", color: "#FAF6EF", fontWeight: 700,
-                      textShadow: "0 2px 12px rgba(0,0,0,0.5)",
-                    }}>মাহবুব সরদার সবুজ</div>
-                  </div>
-                </div>
+              <div className="home-portrait-corner home-portrait-corner-top" />
+              <div className="home-portrait-corner home-portrait-corner-bottom" />
+              <div className="home-portrait-frame">
+                <img
+                  src={PROFILE_IMAGE}
+                  alt="কোট পরা মাহবুব সরদার সবুজের প্রতিকৃতি"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </div>
+              <div className="home-portrait-caption">
+                <span>লেখক ও কবি</span>
+                <strong>মাহবুব সরদার সবুজ</strong>
               </div>
             </motion.div>
           </div>
-        </motion.div>
+        </section>
 
-        {/* Scroll indicator */}
-        <motion.div
-          className="scroll-indicator"
-          style={{
-            position: "absolute", bottom: 40, left: "50%",
-            transform: "translateX(-50%)", zIndex: 3,
-            opacity: heroOpacity,
-          }}
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <span style={{
-              fontFamily: "'AdorshoLipi', sans-serif",
-              color: "rgba(250,246,239,0.3)",
-              fontSize: "0.62rem",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-            }}>Scroll</span>
-            <div style={{
-              width: 1, height: 44,
-              background: "linear-gradient(to bottom, rgba(201,168,76,0.7), transparent)",
-              boxShadow: "0 0 8px rgba(201,168,76,0.3)",
-            }} />
+        <section className="home-directory" id="explore" aria-labelledby="directory-title">
+          <div className="home-directory-pattern" />
+          <div className="home-directory-inner">
+            <motion.header
+              className="home-directory-header"
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="home-section-kicker"><span /> আপনার জন্য সাজানো <span /></div>
+              <h2 id="directory-title">যা খুঁজছেন, <em>এক জায়গায়</em></h2>
+              <p>সাহিত্য, স্মৃতি, খবর এবং প্রয়োজনীয় ডিজিটাল সুবিধা—পরিষ্কার বিভাগে সাজানো প্রতিটি ঠিকানা।</p>
+            </motion.header>
+
+            <section className="home-directory-group" aria-labelledby="literary-directory-title">
+              <div className="home-directory-group-head">
+                <div>
+                  <span className="home-directory-group-number">০১</span>
+                  <h3 id="literary-directory-title">সাহিত্য ও পরিচিতি</h3>
+                </div>
+                <p>লেখক, লেখা, পাঠ এবং স্মৃতির মূল পরিসর</p>
+              </div>
+              <DirectoryGrid items={literarySections} />
+            </section>
+
+            <section className="home-directory-group home-tools-group" aria-labelledby="tools-directory-title">
+              <div className="home-directory-group-head">
+                <div>
+                  <span className="home-directory-group-number">০২</span>
+                  <h3 id="tools-directory-title">ডিজিটাল কর্মশালা</h3>
+                </div>
+                <p>দৈনন্দিন কাজ ও সৃজনশীলতার ব্যবহারিক টুল</p>
+              </div>
+              <DirectoryGrid items={toolSections} delayOffset={0.06} />
+            </section>
+
+            <motion.button
+              type="button"
+              className={`home-install-card ${pwaInstalled ? "is-installed" : ""}`}
+              onClick={handleInstallPWA}
+              whileHover={{ y: -3 }}
+              whileTap={{ scale: 0.99 }}
+              aria-label="ওয়েবসাইটটি অ্যাপ হিসেবে ইনস্টল করুন"
+            >
+              <span className="home-install-icon">
+                {pwaInstalled ? <Check size={22} /> : pwaInstalling ? <Smartphone size={22} /> : <Download size={22} />}
+              </span>
+              <span className="home-install-copy"><strong>{installTitle}</strong><small>{installCopy}</small></span>
+              <span className="home-install-arrow"><ArrowRight size={20} /></span>
+            </motion.button>
           </div>
-        </motion.div>
-      </section>
+        </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          APP LAUNCHER — Compact explore tabs
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="explore-app-section" style={{
-        padding: "clamp(3.5rem, 7vw, 5.6rem) 1.25rem",
-        background: "linear-gradient(180deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,1) 16%, rgba(6,14,26,1) 100%), radial-gradient(circle at 78% 12%, rgba(201,168,76,0.15), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.08), transparent 30%), #060E1A",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Dot grid */}
-        <div style={{
-          position: "absolute", inset: 0,
-          backgroundImage: "radial-gradient(rgba(201,168,76,0.08) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          pointerEvents: "none", opacity: 0.5,
-        }} />
-        {/* Central glow */}
-        <div style={{
-          position: "absolute", inset: "8% auto auto 50%",
-          width: 480, height: 480,
-          transform: "translateX(-50%)",
-          borderRadius: "50%",
-          background: "rgba(201,168,76,0.065)",
-          filter: "blur(100px)",
-          pointerEvents: "none",
-        }} />
-        {/* Top separator line */}
-        <div style={{
-          position: "absolute", top: 0, left: "10%", right: "10%",
-          height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.42), rgba(250,246,239,0.22), rgba(201,168,76,0.42), transparent)",
-          boxShadow: "0 0 28px rgba(201,168,76,0.16)",
-          pointerEvents: "none",
-        }} />
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1040, margin: "0 auto" }}>
-          <motion.div
-            className="explore-app-heading"
-            initial={{ opacity: 0, y: 26 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: "0.95rem" }}>
-              <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, transparent, #C9A84C)" }} />
-              <span style={{
-                fontFamily: "'AdorshoLipi', sans-serif",
-                fontSize: "0.66rem", letterSpacing: "0.34em",
-                textTransform: "uppercase", color: "#E8C97A",
-                textShadow: "0 0 18px rgba(201,168,76,0.32)",
-              }}>Explore</span>
-              <div style={{ width: 48, height: 1, background: "linear-gradient(90deg, #C9A84C, transparent)" }} />
+        <section className="home-connection" aria-label="যোগাযোগের আমন্ত্রণ">
+          <div className="home-connection-inner">
+            <div className="home-connection-mark">“</div>
+            <div>
+              <p>পাঠকের অনুভবই লেখার সবচেয়ে মূল্যবান প্রাপ্তি।</p>
+              <span>আপনার কথা জানাতে পারেন সরাসরি</span>
             </div>
-            <h2 style={{
-              fontFamily: "'AdorshoLipi', sans-serif",
-              fontSize: "clamp(2rem, 5vw, 3.1rem)",
-              fontWeight: 700, color: "#FAF6EF",
-              margin: 0, lineHeight: 1.18,
-              textShadow: "0 4px 24px rgba(0,0,0,0.48), 0 0 34px rgba(201,168,76,0.14)",
-            }}>অন্বেষণ করুন</h2>
-            <p style={{
-              fontFamily: "'AdorshoLipi', sans-serif",
-              maxWidth: 650, color: "rgba(250,246,239,0.66)",
-              lineHeight: 1.72, margin: "1rem auto 0",
-              fontSize: "0.98rem",
-            }}>
-              লেখক, লেখা, বই, গ্যালারি ও সংবাদ—সব গুরুত্বপূর্ণ ঠিকানা এক জায়গায় সাজানো।
-            </p>
-          </motion.div>
+            <Link href="/contact" className="home-connection-link">যোগাযোগ করুন <ArrowUpRight size={17} /></Link>
+          </div>
+        </section>
 
-          <motion.div
-            className="app-launcher-shell"
-            initial={{ opacity: 0, y: 32, scale: 0.97 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.75, delay: 0.1 }}
-          >
-            <div className="app-launcher-topbar">
-              <span />
-              <strong>সব ট্যাব</strong>
-              <span />
-            </div>
-            <div className="app-launcher-grid">
-              {sections.map((sec, i) => {
-                const Icon = sec.icon;
-                return (
-                  <motion.div
-                    key={sec.href + sec.label}
-                    initial={{ opacity: 0, y: 18 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.04 }}
-                  >
-                    <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
-                      <motion.div
-                        className="app-launcher-card"
-                        whileHover={{ y: -6, scale: 1.03 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <div className="app-icon-wrap">
-                          <Icon size={23} strokeWidth={1.8} />
-                        </div>
-                        <span className="app-label">{sec.label}</span>
-                        <span className="app-subtitle">{sec.subtitle}</span>
-                      </motion.div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+        <RulesSection />
 
-              {/* PWA Install Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: sections.length * 0.04 }}
-              >
-                <button
-                  onClick={handleInstallPWA}
-                  className="app-launcher-link"
-                  style={{ width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                  aria-label="অ্যাপ ইনস্টল করুন"
-                >
-                  <motion.div
-                    className="app-launcher-card pwa-install-card"
-                    whileHover={{ y: -6, scale: 1.03 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{
-                      background: pwaInstalled
-                        ? 'linear-gradient(135deg, rgba(74,222,128,0.15), rgba(74,222,128,0.05))'
-                        : 'linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06))',
-                      border: pwaInstalled
-                        ? '1.5px solid rgba(74,222,128,0.35)'
-                        : '1.5px solid rgba(201,168,76,0.35)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {/* Glow effect */}
-                    <div style={{
-                      position: 'absolute', top: 0, left: 0, right: 0,
-                      height: '2px',
-                      background: pwaInstalled
-                        ? 'linear-gradient(90deg, transparent, rgba(74,222,128,0.8), transparent)'
-                        : 'linear-gradient(90deg, transparent, rgba(201,168,76,0.8), transparent)',
-                    }} />
-                    <div className="app-icon-wrap" style={{
-                      background: pwaInstalled
-                        ? 'rgba(74,222,128,0.15)'
-                        : 'rgba(201,168,76,0.15)',
-                      border: pwaInstalled
-                        ? '1px solid rgba(74,222,128,0.3)'
-                        : '1px solid rgba(201,168,76,0.3)',
-                    }}>
-                      {pwaInstalling ? (
-                        <Smartphone size={23} strokeWidth={1.8} style={{ color: '#c9a84c', animation: 'pulse 1s infinite' }} />
-                      ) : pwaInstalled ? (
-                        <Smartphone size={23} strokeWidth={1.8} style={{ color: '#4ade80' }} />
-                      ) : (
-                        <Download size={23} strokeWidth={1.8} style={{ color: '#c9a84c' }} />
-                      )}
-                    </div>
-                    <span className="app-label" style={{
-                      color: pwaInstalled ? '#4ade80' : '#c9a84c',
-                      fontWeight: 700,
-                    }}>
-                      {pwaInstalled ? 'ইনস্টল হয়েছে' : pwaInstalling ? 'ইনস্টল হচ্ছে...' : 'অ্যাপ ইনস্টল'}
-                    </span>
-                    <span className="app-subtitle">
-                      {pwaInstalled ? 'হোম স্ক্রিনে আছে ✓' : 'ফোনে অ্যাপ হিসেবে রাখুন'}
-                    </span>
-                  </motion.div>
-                </button>
-              </motion.div>
-            </div>
-          </motion.div>
+        <div className="home-ad-slot">
+          <AdSenseAd adSlot={AD_SLOTS.HOME_BANNER} adFormat="auto" fullWidthResponsive={true} />
         </div>
-      </section>
+      </main>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          RULES / WHY USE THIS WEBSITE SECTION
-      ══════════════════════════════════════════════════════════════════════ */}
-      <RulesSection />
-
-      {/* AdSense Ad — হোম পেজের নিচে */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
-        <AdSenseAd adSlot={AD_SLOTS.HOME_BANNER} adFormat="auto" fullWidthResponsive={true} />
-      </div>
-
-      {/* ── Responsive CSS ────────────────────────────────────────────────────── */}
       <style>{`
-        /* Bengali typography is served locally through AdorshoLipi to avoid render-blocking third-party font requests. */
-
-        * { box-sizing: border-box; }
-
-        @keyframes goldShimmer {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+        .home-page {
+          min-height: 100vh;
+          overflow-x: hidden;
+          color: #FAF6EF;
+          background:
+            radial-gradient(circle at 95% 6%, rgba(201,168,76,0.10), transparent 20%),
+            #060E1A;
         }
-        @keyframes pulseDot {
-          0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C, 0 0 16px rgba(201,168,76,0.5); }
-          50% { opacity: 0.65; transform: scale(1.6); box-shadow: 0 0 18px rgba(201,168,76,0.9), 0 0 32px rgba(201,168,76,0.4); }
-        }
-
-        /* Hero layout */
-        .hero-container {
-          padding-top: calc(var(--site-nav-offset, 98px) + 28px);
-          padding-bottom: 64px;
-        }
-        .hero-inner {
+        .home-hero {
+          position: relative;
+          min-height: min(800px, 100svh);
           display: grid;
-          grid-template-columns: 1.15fr 0.85fr;
-          gap: clamp(3rem, 6vw, 6rem);
           align-items: center;
-        }
-        .hero-portrait {
-          height: clamp(480px, 55vw, 680px);
-          width: 100%;
-          object-fit: cover;
-          object-position: center top;
-        }
-        .floating-card {
-          min-width: 180px;
-        }
-
-        /* App-style Explore launcher */
-        .explore-app-heading {
-          text-align: center;
-          margin-bottom: 2.35rem;
-          position: relative;
-        }
-        .explore-app-heading::after {
-          content: "";
-          display: block;
-          width: min(220px, 48vw);
-          height: 1px;
-          margin: 1.25rem auto 0;
-          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.55), transparent);
-          box-shadow: 0 0 22px rgba(201,168,76,0.18);
-        }
-          .app-launcher-shell {
-          border: 1px solid rgba(201,168,76,0.34);
-          border-radius: 42px;
-          padding: clamp(1.25rem, 3vw, 2rem);
-          background: linear-gradient(145deg, rgba(255,255,255,0.095) 0%, rgba(201,168,76,0.065) 58%, rgba(8,18,32,0.72) 100%);
-          box-shadow:
-            0 58px 150px rgba(0,0,0,0.52),
-            0 0 42px rgba(201,168,76,0.10),
-            0 0 0 1px rgba(255,255,255,0.055) inset,
-            inset 0 1px 0 rgba(255,255,255,0.12);
-          backdrop-filter: blur(22px) saturate(140%);
-          max-width: 840px;
-          margin: 0 auto;
-          position: relative;
           overflow: hidden;
+          isolation: isolate;
+          padding: calc(var(--site-nav-offset, 98px) + 42px) 1.5rem 74px;
+          background:
+            linear-gradient(120deg, #050D19 0%, #071527 55%, #08111F 100%);
         }
-        .app-launcher-shell::before {
+        .home-hero::before {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(232,201,122,0.20), transparent 45%);
-          pointer-events: none;
+          z-index: -2;
+          background:
+            radial-gradient(circle at 14% 37%, rgba(201,168,76,0.15), transparent 28%),
+            radial-gradient(circle at 84% 62%, rgba(39,94,147,0.21), transparent 31%),
+            linear-gradient(180deg, rgba(1,6,13,0.18), rgba(1,6,13,0.54));
         }
-        .app-launcher-shell::after {
-          content: "";
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
+        .home-hero-grid {
+          position: absolute !important;
+          z-index: -1 !important;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0.44;
+          background-image:
+            linear-gradient(rgba(232,201,122,0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(232,201,122,0.045) 1px, transparent 1px);
+          background-size: 64px 64px;
+          mask-image: linear-gradient(to bottom, black, transparent 92%);
+        }
+        .home-hero-aura {
+          position: absolute !important;
+          z-index: -1 !important;
+          border-radius: 50%;
+          pointer-events: none;
+          filter: blur(2px);
+        }
+        .home-hero-aura-gold {
+          width: min(55vw, 700px);
+          aspect-ratio: 1;
+          top: -30%;
+          right: -9%;
+          border: 1px solid rgba(232,201,122,0.18);
+          box-shadow: 0 0 0 66px rgba(201,168,76,0.025), 0 0 130px rgba(201,168,76,0.12);
+        }
+        .home-hero-aura-blue {
+          width: min(45vw, 520px);
+          aspect-ratio: 1;
+          bottom: -36%;
+          left: -12%;
+          border: 1px solid rgba(83,144,202,0.12);
+          box-shadow: 0 0 120px rgba(48,113,177,0.20);
+        }
+        .home-hero-line {
+          position: absolute !important;
+          z-index: -1 !important;
+          width: min(1160px, 84vw);
           height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.18), transparent);
+          left: 50%;
+          bottom: 50px;
+          transform: translateX(-50%);
+          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.42), transparent);
+          box-shadow: 0 0 22px rgba(201,168,76,0.12);
           pointer-events: none;
         }
-        .app-launcher-topbar {
+        .home-hero-inner {
           position: relative;
           z-index: 1;
-          display: flex;
+          width: min(1180px, 100%);
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: minmax(0, 1.08fr) minmax(310px, 0.72fr);
+          gap: clamp(2.7rem, 8vw, 8rem);
           align-items: center;
-          justify-content: center;
-          gap: 10px;
-          margin: 0 0 1.25rem;
-          color: rgba(232,201,122,0.92);
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: 0.76rem;
-          letter-spacing: 0.1em;
         }
-        .app-launcher-topbar span {
+        .home-hero-copy { min-width: 0; }
+        .home-eyebrow, .home-section-kicker {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          color: #E8C97A;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.71rem;
+          line-height: 1;
+          letter-spacing: 0.18em;
+        }
+        .home-eyebrow {
+          padding: 8px 13px 8px 10px;
+          border: 1px solid rgba(232,201,122,0.26);
+          border-radius: 999px;
+          background: rgba(201,168,76,0.075);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 30px rgba(0,0,0,0.14);
+        }
+        .home-eyebrow > span:first-child {
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: rgba(201,168,76,0.5);
-          box-shadow: 0 0 16px rgba(201,168,76,0.5);
+          background: #E8C97A;
+          box-shadow: 0 0 0 5px rgba(232,201,122,0.10), 0 0 14px rgba(232,201,122,0.7);
         }
-          .app-launcher-grid {
-          position: relative;
-          z-index: 1;
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: clamp(0.9rem, 2.5vw, 1.3rem);
+        .home-hero-title {
+          max-width: 720px;
+          margin: 1.35rem 0 0;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-weight: 700;
+          font-size: clamp(3.3rem, 7.1vw, 7.35rem);
+          line-height: 0.98;
+          letter-spacing: -0.048em;
+          color: #FAF6EF;
+          text-shadow: 0 12px 46px rgba(0,0,0,0.5);
         }
-        .app-launcher-link {
+        .home-hero-title em {
           display: block;
-          text-decoration: none;
-          height: 100%;
+          margin-top: 0.14em;
+          color: transparent;
+          font-style: normal;
+          background: linear-gradient(110deg, #9E6E1A 0%, #E8C97A 32%, #FFF0B9 50%, #C9A84C 71%, #946215 100%);
+          background-clip: text;
+          -webkit-background-clip: text;
+          filter: drop-shadow(0 9px 20px rgba(201,168,76,0.20));
         }
-          .app-launcher-card {
-          min-height: 158px;
-          height: 100%;
+        .home-hero-intro {
+          max-width: 520px;
+          margin: 1.5rem 0 0;
+          padding-left: 16px;
+          border-left: 2px solid rgba(201,168,76,0.58);
+          color: rgba(250,246,239,0.68);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(1rem, 1.9vw, 1.16rem);
+          line-height: 1.86;
+        }
+        .home-hero-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          margin-top: 1.75rem;
+        }
+        .home-action {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          min-height: 47px;
+          padding: 0 17px;
+          border-radius: 999px;
+          text-decoration: none;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.88rem;
+          transition: transform 180ms cubic-bezier(0.23,1,0.32,1), border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+        .home-action:hover { transform: translateY(-2px); }
+        .home-action:active { transform: scale(0.97); }
+        .home-action-primary {
+          color: #101521;
+          border: 1px solid #F2D789;
+          background: linear-gradient(120deg, #B98A33, #F0D78E 52%, #C69C46);
+          box-shadow: 0 14px 34px rgba(0,0,0,0.32), 0 0 25px rgba(201,168,76,0.17);
+        }
+        .home-action-primary:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.36), 0 0 35px rgba(201,168,76,0.28); }
+        .home-action-secondary {
+          color: #FAF6EF;
+          border: 1px solid rgba(232,201,122,0.32);
+          background: rgba(6,14,26,0.34);
+        }
+        .home-action-secondary:hover { border-color: rgba(232,201,122,0.72); background: rgba(201,168,76,0.10); }
+        .home-hero-index {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0;
+          margin-top: 2.3rem;
+        }
+        .home-hero-index > span {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: flex-start;
-          text-align: center;
-          gap: 0.56rem;
-          padding: 1.35rem 0.82rem 1.08rem;
-          border-radius: 28px;
-          border: 1px solid rgba(201,168,76,0.24);
-          background:
-            radial-gradient(circle at 50% -18%, rgba(232,201,122,0.16), transparent 48%),
-            linear-gradient(160deg, rgba(20,35,59,0.98) 0%, rgba(8,18,32,0.9) 100%);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.10),
-            inset 0 -1px 0 rgba(0,0,0,0.22),
-            0 18px 42px rgba(0,0,0,0.34),
-            0 2px 12px rgba(0,0,0,0.25),
-            0 0 0 1px rgba(201,168,76,0.035);
-          color: #FAF6EF;
-          cursor: pointer;
-          transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
-          position: relative;
-          overflow: hidden;
-          isolation: isolate;
-          transform: translateZ(0);
+          gap: 3px;
+          min-width: 118px;
+          padding: 0 19px;
+          border-left: 1px solid rgba(232,201,122,0.20);
         }
-        .app-launcher-card::before {
+        .home-hero-index > span:first-child { padding-left: 0; border-left: 0; }
+        .home-hero-index b { color: #F3DB94; font-family: 'AdorshoLipi', sans-serif; font-size: 0.93rem; }
+        .home-hero-index small { color: rgba(250,246,239,0.48); font-family: 'AdorshoLipi', sans-serif; font-size: 0.68rem; }
+        .home-portrait-stage {
+          position: relative;
+          width: min(100%, 388px);
+          justify-self: end;
+          padding: 12px;
+        }
+        .home-portrait-stage::before {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.12), transparent 55%);
-          opacity: 0;
-          transition: opacity 0.28s ease;
-          pointer-events: none;
+          border-radius: 28px;
+          border: 1px solid rgba(232,201,122,0.48);
+          background: linear-gradient(145deg, rgba(201,168,76,0.16), rgba(8,22,39,0.06));
+          box-shadow: 0 32px 85px rgba(0,0,0,0.54), 0 0 70px rgba(201,168,76,0.10), inset 0 1px 0 rgba(255,255,255,0.18);
         }
-        .app-launcher-card::after {
+        .home-portrait-corner {
+          position: absolute;
+          z-index: 2;
+          width: 47%;
+          height: 26%;
+          pointer-events: none;
+          border-color: rgba(232,201,122,0.28);
+        }
+        .home-portrait-corner-top { top: -12px; right: -12px; border-top: 1px solid; border-right: 1px solid; border-radius: 0 22px 0 0; }
+        .home-portrait-corner-bottom { bottom: -12px; left: -12px; border-bottom: 1px solid; border-left: 1px solid; border-radius: 0 0 0 22px; }
+        .home-portrait-frame {
+          position: relative;
+          z-index: 1;
+          aspect-ratio: 4 / 4.7;
+          overflow: hidden;
+          border: 1px solid rgba(250,246,239,0.12);
+          border-radius: 20px;
+          background: #0B1726;
+        }
+        .home-portrait-frame::after {
           content: "";
           position: absolute;
-          inset: 1px;
-          border-radius: calc(28px - 1px);
-          border: 1px solid rgba(255,255,255,0.035);
+          inset: 0;
           pointer-events: none;
-          z-index: -1;
+          background: linear-gradient(145deg, rgba(201,168,76,0.12), transparent 34%, rgba(3,9,16,0.18));
         }
-        .app-launcher-card:hover {
-          border-color: rgba(201,168,76,0.62);
-          background: linear-gradient(160deg, rgba(201,168,76,0.13) 0%, rgba(10,22,38,0.88) 100%);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.09),
-            0 28px 64px rgba(0,0,0,0.42),
-            0 0 34px rgba(201,168,76,0.16),
-            0 0 0 1px rgba(201,168,76,0.14) inset;
-        }
-        .app-launcher-card:hover::before {
-          opacity: 1;
-        }
-        .app-launcher-link:focus-visible {
-          outline: none;
-        }
-        .app-launcher-link:focus-visible .app-launcher-card {
-          border-color: rgba(245,228,160,0.82);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.1),
-            0 26px 62px rgba(0,0,0,0.42),
-            0 0 0 3px rgba(201,168,76,0.22),
-            0 0 34px rgba(201,168,76,0.18);
-        }
-        .app-launcher-card:active {
-          border-color: rgba(245,228,160,0.7);
-          background: linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(10,22,38,0.9) 100%);
-        }
-        .app-launcher-grid > div:nth-child(-n+4) .app-launcher-card {
-          border-color: rgba(201,168,76,0.32);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.09),
-            0 24px 58px rgba(0,0,0,0.40),
-            0 0 26px rgba(201,168,76,0.065);
-        }
-          .app-icon-wrap {
-          width: clamp(52px, 7vw, 64px);
-          height: clamp(52px, 7vw, 64px);
-          border-radius: 20px;
+        .home-portrait-frame img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; filter: contrast(1.05) saturate(0.93); }
+        .home-portrait-caption {
+          position: relative;
+          z-index: 3;
           display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #F2D789;
-          background: linear-gradient(145deg, rgba(201,168,76,0.25), rgba(250,246,239,0.07));
-          border: 1px solid rgba(201,168,76,0.36);
-          box-shadow:
-            0 12px 28px rgba(0,0,0,0.28),
-            inset 0 1px 0 rgba(255,255,255,0.1),
-            0 0 24px rgba(201,168,76,0.14);
-          margin-bottom: 0.2rem;
-          transition: box-shadow 0.28s ease, transform 0.28s ease;
+          flex-direction: column;
+          gap: 2px;
+          width: calc(100% - 32px);
+          margin: -3px auto 0;
+          padding: 13px 17px 14px;
+          border: 1px solid rgba(232,201,122,0.25);
+          border-radius: 0 0 16px 16px;
+          background: linear-gradient(150deg, rgba(7,18,31,0.96), rgba(12,29,48,0.95));
+          box-shadow: 0 16px 34px rgba(0,0,0,0.25);
         }
-        .app-launcher-card:hover .app-icon-wrap {
-          box-shadow:
-            0 14px 32px rgba(0,0,0,0.32),
-            inset 0 1px 0 rgba(255,255,255,0.12),
-            0 0 28px rgba(201,168,76,0.22);
-          transform: scale(1.06);
-        }
-        .app-label {
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: clamp(0.86rem, 2.2vw, 1.02rem);
-          font-weight: 700;
-          line-height: 1.22;
-          color: #FFF8EA;
-          min-height: 2.45em;
-          text-shadow: 0 2px 12px rgba(0,0,0,0.38);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .app-subtitle {
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: 0.66rem;
-          line-height: 1.38;
-          color: rgba(250,246,239,0.58);
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
+        .home-portrait-caption span { color: #DDBB68; font-family: 'AdorshoLipi', sans-serif; font-size: 0.61rem; letter-spacing: 0.14em; }
+        .home-portrait-caption strong { color: #FAF6EF; font-family: 'AdorshoLipi', sans-serif; font-size: 0.98rem; line-height: 1.2; }
+
+        .home-directory {
+          position: relative;
           overflow: hidden;
+          padding: clamp(4.5rem, 9vw, 7.2rem) 1.25rem clamp(4.2rem, 8vw, 6.6rem);
+          background:
+            radial-gradient(circle at 10% 9%, rgba(201,168,76,0.09), transparent 20%),
+            radial-gradient(circle at 93% 65%, rgba(38,92,143,0.12), transparent 26%),
+            linear-gradient(180deg, #050D19 0%, #071321 45%, #060E1A 100%);
         }
-
-        /* Tablet */
-        @media (max-width: 1024px) {
-          .hero-inner {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            text-align: center;
-          }
-          .hero-right {
-            display: flex;
-            justify-content: center;
-          }
-          .hero-portrait { height: 280px; }
-          .floating-card { display: none; }
+        .home-directory-pattern {
+          position: absolute !important;
+          z-index: 0 !important;
+          inset: 0;
+          opacity: 0.42;
+          pointer-events: none;
+          background-image: radial-gradient(rgba(232,201,122,0.11) 0.72px, transparent 0.72px);
+          background-size: 26px 26px;
+          mask-image: linear-gradient(to bottom, black, transparent 80%);
         }
-
-        /* Mobile */
-        @media (max-width: 768px) {
-          .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
-          .hero-frame-wrap { --hero-frame-offset: -10px; }
-          .scroll-indicator { display: none; }
-          .hero-inner { gap: 0.95rem; padding-left: 1rem !important; padding-right: 1rem !important; min-width: 0; }
-          .hero-left { min-width: 0; width: 100%; }
-          .hero-title { width: 100%; }
-          .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
-          .app-launcher-shell { border-radius: 30px; padding: 1rem; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
-          .app-launcher-card { min-height: 124px; border-radius: 22px; padding: 0.98rem 0.42rem 0.82rem; }
-          .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
-          .app-label { font-size: 0.82rem; line-height: 1.25; }
-          .app-subtitle { display: none; }
-          .hero-portrait { height: 260px; }
+        .home-directory-inner { position: relative; z-index: 1; width: min(1120px, 100%); margin: 0 auto; }
+        .home-directory-header { max-width: 710px; margin: 0 auto clamp(3.4rem, 6vw, 4.6rem); text-align: center; }
+        .home-section-kicker { gap: 12px; justify-content: center; }
+        .home-section-kicker span:not(:nth-child(2)) { width: 48px; height: 1px; background: linear-gradient(90deg, transparent, #C9A84C); }
+        .home-section-kicker span:last-child { background: linear-gradient(90deg, #C9A84C, transparent); }
+        .home-directory-header h2 {
+          margin: 1.1rem 0 0;
+          color: #FAF6EF;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(2.4rem, 5.8vw, 4.45rem);
+          font-weight: 700;
+          letter-spacing: -0.035em;
+          line-height: 1.12;
         }
+        .home-directory-header h2 em { color: #DDBB68; font-style: normal; }
+        .home-directory-header p { margin: 1rem auto 0; color: rgba(250,246,239,0.62); font-family: 'AdorshoLipi', sans-serif; font-size: 1rem; line-height: 1.8; }
+        .home-directory-group + .home-directory-group { margin-top: clamp(3.4rem, 7vw, 5.4rem); }
+        .home-directory-group-head {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 2rem;
+          margin-bottom: 1.35rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid rgba(232,201,122,0.16);
+        }
+        .home-directory-group-head > div { display: flex; align-items: center; gap: 12px; }
+        .home-directory-group-number { color: #E8C97A; font-family: 'AdorshoLipi', sans-serif; font-size: 0.7rem; letter-spacing: 0.16em; }
+        .home-directory-group-head h3 { margin: 0; color: #FAF6EF; font-family: 'AdorshoLipi', sans-serif; font-size: clamp(1.55rem, 3vw, 2.2rem); line-height: 1.15; }
+        .home-directory-group-head p { max-width: 330px; margin: 0; color: rgba(250,246,239,0.50); font-family: 'AdorshoLipi', sans-serif; font-size: 0.83rem; line-height: 1.55; text-align: right; }
+        .home-directory-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+        .home-directory-link { display: block; height: 100%; text-decoration: none; }
+        .home-directory-card {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          min-height: 174px;
+          height: 100%;
+          padding: 1.25rem;
+          overflow: hidden;
+          border: 1px solid rgba(232,201,122,0.16);
+          border-radius: 20px;
+          background: linear-gradient(145deg, rgba(19,37,59,0.78), rgba(7,18,31,0.88));
+          box-shadow: 0 18px 38px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06);
+          transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+        .home-directory-card::before {
+          content: "";
+          position: absolute;
+          top: -48px;
+          right: -40px;
+          width: 126px;
+          height: 126px;
+          border: 1px solid rgba(232,201,122,0.08);
+          border-radius: 50%;
+          box-shadow: 0 0 0 20px rgba(201,168,76,0.018);
+        }
+        .home-directory-card::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          height: 2px;
+          opacity: 0;
+          background: linear-gradient(90deg, transparent, #E8C97A, transparent);
+          transition: opacity 180ms ease;
+        }
+        .home-directory-card:hover {
+          border-color: rgba(232,201,122,0.55);
+          background: linear-gradient(145deg, rgba(201,168,76,0.13), rgba(9,24,40,0.94));
+          box-shadow: 0 25px 50px rgba(0,0,0,0.34), 0 0 25px rgba(201,168,76,0.09), inset 0 1px 0 rgba(255,255,255,0.09);
+        }
+        .home-directory-card:hover::after { opacity: 1; }
+        .home-directory-link:focus-visible { outline: none; }
+        .home-directory-link:focus-visible .home-directory-card { border-color: #F3DB94; box-shadow: 0 0 0 3px rgba(201,168,76,0.22); }
+        .home-directory-icon {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          width: 48px;
+          height: 48px;
+          place-items: center;
+          margin-bottom: auto;
+          color: #F1D486;
+          border: 1px solid rgba(232,201,122,0.32);
+          border-radius: 15px;
+          background: linear-gradient(145deg, rgba(201,168,76,0.23), rgba(250,246,239,0.05));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 9px 22px rgba(0,0,0,0.2);
+        }
+        .home-directory-copy { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 5px; margin-top: 1rem; padding-right: 14px; }
+        .home-directory-label { color: #FFF8EA; font-family: 'AdorshoLipi', sans-serif; font-size: 1rem; font-weight: 700; line-height: 1.25; }
+        .home-directory-subtitle { color: rgba(250,246,239,0.58); font-family: 'AdorshoLipi', sans-serif; font-size: 0.74rem; line-height: 1.42; }
+        .home-directory-arrow { position: absolute; z-index: 1; top: 1.25rem; right: 1.15rem; color: rgba(232,201,122,0.48); transition: color 180ms ease, transform 180ms ease; }
+        .home-directory-card:hover .home-directory-arrow { color: #F1D486; transform: translate(2px, -2px); }
+        .home-tools-group .home-directory-card { background: linear-gradient(145deg, rgba(11,28,47,0.82), rgba(6,15,27,0.92)); }
+        .home-tools-group .home-directory-icon { color: #9ED4F5; border-color: rgba(114,175,223,0.30); background: linear-gradient(145deg, rgba(62,126,176,0.24), rgba(250,246,239,0.04)); }
+        .home-tools-group .home-directory-card:hover { border-color: rgba(135,191,231,0.54); background: linear-gradient(145deg, rgba(48,112,164,0.20), rgba(7,21,37,0.96)); box-shadow: 0 25px 50px rgba(0,0,0,0.34), 0 0 25px rgba(65,140,196,0.09); }
+        .home-tools-group .home-directory-card::after { background: linear-gradient(90deg, transparent, #8BC5E7, transparent); }
+        .home-tools-group .home-directory-arrow { color: rgba(139,197,231,0.48); }
+        .home-tools-group .home-directory-card:hover .home-directory-arrow { color: #B5E5FF; }
+        .home-install-card {
+          width: 100%;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 1rem;
+          margin-top: clamp(3.4rem, 6vw, 5rem);
+          padding: 1rem 1.2rem;
+          color: #FAF6EF;
+          text-align: left;
+          cursor: pointer;
+          border: 1px solid rgba(232,201,122,0.30);
+          border-radius: 18px;
+          background: linear-gradient(105deg, rgba(201,168,76,0.14), rgba(12,29,48,0.88) 55%, rgba(201,168,76,0.08));
+          box-shadow: 0 22px 50px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.09);
+          transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+        .home-install-card:hover { border-color: rgba(232,201,122,0.68); box-shadow: 0 28px 56px rgba(0,0,0,0.30), 0 0 26px rgba(201,168,76,0.10); }
+        .home-install-card:focus-visible { outline: 3px solid rgba(201,168,76,0.28); outline-offset: 3px; }
+        .home-install-card.is-installed { border-color: rgba(96,211,151,0.45); background: linear-gradient(105deg, rgba(70,185,123,0.15), rgba(12,39,38,0.88) 55%, rgba(70,185,123,0.08)); }
+        .home-install-icon { display: grid; width: 44px; height: 44px; place-items: center; color: #141926; border-radius: 13px; background: linear-gradient(145deg, #F3DB94, #B8872C); }
+        .home-install-card.is-installed .home-install-icon { color: #062316; background: linear-gradient(145deg, #9BE5B7, #4ABD7F); }
+        .home-install-copy { display: flex; flex-direction: column; gap: 2px; }
+        .home-install-copy strong { font-family: 'AdorshoLipi', sans-serif; font-size: 1.02rem; }
+        .home-install-copy small { color: rgba(250,246,239,0.58); font-family: 'AdorshoLipi', sans-serif; font-size: 0.76rem; }
+        .home-install-arrow { color: #E8C97A; }
 
-        @media (max-width: 480px) {
-          .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
-          .hero-inner { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
-          .hero-title span { font-size: clamp(2.28rem, 14.2vw, 4.4rem) !important; }
-          .app-launcher-shell { padding: 0.92rem; border-radius: 28px; }
-          .app-launcher-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.68rem; }
-          .app-launcher-card { min-height: 130px; padding: 0.95rem 0.42rem 0.76rem; border-radius: 21px; }
-          .app-launcher-card::after { border-radius: calc(21px - 1px); }
-          .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
-          .app-icon-wrap svg { width: 21px; height: 21px; }
-          .app-label { font-size: 0.82rem; min-height: 2.5em; }
-          .hero-portrait { height: 240px; }
+        .home-connection {
+          position: relative;
+          padding: 0 1.25rem;
+          background: #060E1A;
+        }
+        .home-connection-inner {
+          position: relative;
+          z-index: 1;
+          width: min(1120px, 100%);
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: clamp(1rem, 3vw, 2rem);
+          padding: clamp(1.6rem, 4vw, 2.5rem);
+          transform: translateY(50%);
+          border: 1px solid rgba(232,201,122,0.24);
+          border-radius: 22px;
+          background: linear-gradient(125deg, rgba(21,40,63,0.98), rgba(7,17,30,0.98));
+          box-shadow: 0 28px 70px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .home-connection-mark { color: #DAB663; font-family: Georgia, serif; font-size: 4rem; line-height: 0.7; opacity: 0.7; }
+        .home-connection p { margin: 0; color: #FAF6EF; font-family: 'AdorshoLipi', sans-serif; font-size: clamp(1.15rem, 2.4vw, 1.65rem); font-weight: 700; line-height: 1.25; }
+        .home-connection span { display: block; margin-top: 0.35rem; color: rgba(250,246,239,0.56); font-family: 'AdorshoLipi', sans-serif; font-size: 0.83rem; }
+        .home-connection-link { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 15px; color: #F3DB94; font-family: 'AdorshoLipi', sans-serif; font-size: 0.86rem; text-decoration: none; border: 1px solid rgba(232,201,122,0.35); border-radius: 999px; transition: background 180ms ease, transform 180ms ease; }
+        .home-connection-link:hover { transform: translateY(-2px); background: rgba(201,168,76,0.10); }
+        .home-ad-slot { max-width: 900px; margin: 0 auto; padding: clamp(7rem, 12vw, 10rem) 1rem 1.5rem; }
+
+        @media (max-width: 940px) {
+          .home-hero { min-height: auto; padding-top: calc(var(--site-nav-offset, 88px) + 38px); }
+          .home-hero-inner { grid-template-columns: 1fr; gap: 2.2rem; max-width: 640px; text-align: center; }
+          .home-portrait-stage { order: -1; justify-self: center; width: min(78vw, 355px); }
+          .home-hero-title { margin-left: auto; margin-right: auto; }
+          .home-hero-intro { margin-left: auto; margin-right: auto; text-align: left; }
+          .home-hero-actions, .home-hero-index { justify-content: center; }
+          .home-hero-index > span:first-child { padding-left: 17px; border-left: 1px solid rgba(232,201,122,0.20); }
+          .home-directory-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (max-width: 680px) {
+          .home-hero { padding: calc(var(--site-nav-offset, 82px) + 28px) 1rem 54px; }
+          .home-portrait-stage { width: min(82vw, 330px); padding: 10px; }
+          .home-portrait-stage::before { border-radius: 24px; }
+          .home-portrait-frame { border-radius: 17px; }
+          .home-portrait-caption { width: calc(100% - 25px); padding: 11px 14px 12px; }
+          .home-hero-title { font-size: clamp(2.9rem, 14vw, 4.7rem); }
+          .home-hero-intro { margin-top: 1.2rem; font-size: 0.99rem; line-height: 1.78; }
+          .home-hero-actions { margin-top: 1.4rem; }
+          .home-action { min-height: 43px; padding: 0 14px; font-size: 0.81rem; }
+          .home-hero-index { margin-top: 1.7rem; }
+          .home-hero-index > span { min-width: auto; padding: 0 13px; }
+          .home-directory { padding-left: 1rem; padding-right: 1rem; }
+          .home-directory-header { margin-bottom: 2.8rem; }
+          .home-directory-group-head { display: block; margin-bottom: 1rem; }
+          .home-directory-group-head p { margin-top: 0.55rem; text-align: left; }
+          .home-directory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.72rem; }
+          .home-directory-card { min-height: 158px; padding: 1rem; border-radius: 17px; }
+          .home-directory-icon { width: 43px; height: 43px; border-radius: 13px; }
+          .home-directory-icon svg { width: 20px; height: 20px; }
+          .home-directory-label { font-size: 0.88rem; }
+          .home-directory-subtitle { font-size: 0.66rem; line-height: 1.35; }
+          .home-directory-arrow { top: 1rem; right: 0.92rem; width: 15px; }
+          .home-install-card { margin-top: 2.6rem; padding: 0.9rem; border-radius: 16px; }
+          .home-install-icon { width: 39px; height: 39px; border-radius: 11px; }
+          .home-connection { padding: 0 1rem; }
+          .home-connection-inner { grid-template-columns: auto 1fr; gap: 0.8rem 1rem; padding: 1.25rem; transform: translateY(35%); border-radius: 18px; }
+          .home-connection-mark { font-size: 3.2rem; }
+          .home-connection-link { grid-column: 2; justify-self: start; min-height: 37px; font-size: 0.76rem; }
+          .home-ad-slot { padding-top: 6rem; }
+        }
+        @media (max-width: 390px) {
+          .home-hero-index > span { padding: 0 9px; }
+          .home-hero-index b { font-size: 0.82rem; }
+          .home-hero-index small { font-size: 0.61rem; }
+          .home-directory-card { min-height: 150px; padding: 0.86rem; }
+          .home-directory-label { font-size: 0.8rem; }
+          .home-directory-subtitle { font-size: 0.62rem; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .app-launcher-card,
-          .app-icon-wrap {
-            transition: none !important;
-          }
-        }
-
-        /* Extra small mobile — 320px fix */
-        @media (max-width: 360px) {
-          .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
-          .hero-inner { gap: 0.75rem; padding-left: 0.55rem !important; padding-right: 0.55rem !important; }
-          .hero-title span { font-size: clamp(2rem, 13.5vw, 3.8rem) !important; }
-          .app-launcher-grid { gap: 0.44rem; }
-          .app-launcher-card { min-height: 108px; padding-left: 0.18rem; padding-right: 0.18rem; }
-          .app-icon-wrap { width: 42px; height: 42px; }
-          .app-label { font-size: 0.69rem; }
-          .hero-portrait { height: 220px; }
+          .home-page *, .home-page *::before, .home-page *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
         }
       `}</style>
     </div>
