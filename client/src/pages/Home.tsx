@@ -568,7 +568,7 @@ export default function Home() {
                   >
                     <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
                       <motion.div
-                        className="app-launcher-card"
+                        className={`app-launcher-card${sec.href === "/gallery" ? " gallery-launcher-card" : ""}`}
                         whileHover={{ y: -6, scale: 1.03 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -822,6 +822,59 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,0.035);
           pointer-events: none;
           z-index: -1;
+        }
+        /* Gallery receives a distinct editorial-photo treatment without changing its route or content. */
+        .gallery-launcher-card {
+          border-color: rgba(232,201,122,0.58);
+          background:
+            radial-gradient(circle at 16% 15%, rgba(250,246,239,0.20) 0 2%, transparent 2.6%),
+            radial-gradient(circle at 84% 78%, rgba(201,168,76,0.28), transparent 44%),
+            linear-gradient(145deg, rgba(51,65,88,0.98) 0%, rgba(13,27,46,0.95) 55%, rgba(8,18,32,0.94) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.16),
+            inset 0 0 0 1px rgba(232,201,122,0.09),
+            0 22px 52px rgba(0,0,0,0.42),
+            0 0 30px rgba(201,168,76,0.16);
+        }
+        .gallery-launcher-card::before {
+          opacity: 0.92;
+          background:
+            linear-gradient(135deg, transparent 0 42%, rgba(250,246,239,0.07) 42.5% 43%, transparent 43.5% 100%),
+            radial-gradient(circle at 50% -6%, rgba(250,246,239,0.20), transparent 56%);
+        }
+        .gallery-launcher-card::after {
+          border-color: rgba(250,246,239,0.12);
+        }
+        .gallery-launcher-card .app-icon-wrap {
+          color: #FFF4C9;
+          background: linear-gradient(145deg, rgba(250,246,239,0.18), rgba(201,168,76,0.28));
+          border-color: rgba(250,246,239,0.40);
+          box-shadow:
+            0 14px 30px rgba(0,0,0,0.30),
+            inset 0 1px 0 rgba(255,255,255,0.25),
+            0 0 28px rgba(232,201,122,0.24);
+        }
+        .gallery-launcher-card .app-label {
+          color: #FFF8DC;
+          text-shadow: 0 2px 18px rgba(201,168,76,0.26);
+        }
+        .gallery-launcher-card .app-subtitle {
+          color: rgba(255,248,220,0.72);
+        }
+        .app-launcher-card.gallery-launcher-card:hover {
+          border-color: rgba(250,246,239,0.78);
+          background:
+            radial-gradient(circle at 16% 15%, rgba(250,246,239,0.24) 0 2%, transparent 2.6%),
+            radial-gradient(circle at 84% 78%, rgba(201,168,76,0.38), transparent 44%),
+            linear-gradient(145deg, rgba(61,78,105,1) 0%, rgba(18,35,58,0.98) 55%, rgba(8,18,32,0.96) 100%);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.20),
+            inset 0 0 0 1px rgba(232,201,122,0.18),
+            0 28px 62px rgba(0,0,0,0.46),
+            0 0 42px rgba(201,168,76,0.30);
+        }
+        .app-launcher-card.gallery-launcher-card:hover .app-icon-wrap {
+          transform: scale(1.09) rotate(-3deg);
         }
         .app-launcher-card:hover {
           border-color: rgba(201,168,76,0.62);
