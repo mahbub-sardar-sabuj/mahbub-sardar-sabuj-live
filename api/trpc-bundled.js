@@ -203,7 +203,7 @@ import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 
 // drizzle/schema.ts
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, longtext } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar, boolean, longtext } from "drizzle-orm/mysql-core";
 var users = mysqlTable("users", {
   /**
    * Surrogate primary key. Auto-incremented numeric value managed by the database.
@@ -254,6 +254,7 @@ var writingPosts = mysqlTable("writing_posts", {
   status: mysqlEnum("status", ["pending", "approved", "rejected", "removed"]).default("pending").notNull(),
   featured: boolean("featured").default(false).notNull(),
   boostedScore: int("boostedScore").default(0).notNull(),
+  challengeId: int("challengeId"),
   viewCount: int("viewCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
@@ -276,6 +277,68 @@ var writingReactions = mysqlTable("writing_reactions", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
 });
+var writingBookmarks = mysqlTable("writing_bookmarks", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  userOpenId: varchar("userOpenId", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull()
+}, (table) => ({
+  userPostUnique: uniqueIndex("writing_bookmarks_user_post_unique").on(table.userOpenId, table.postId),
+  postIdx: index("writing_bookmarks_post_idx").on(table.postId)
+}));
+var writingFeedback = mysqlTable("writing_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  userOpenId: varchar("userOpenId", { length: 64 }).notNull(),
+  kind: mysqlEnum("kind", ["meaningful", "relatable", "helpful", "beautiful"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  userPostUnique: uniqueIndex("writing_feedback_user_post_unique").on(table.userOpenId, table.postId),
+  postIdx: index("writing_feedback_post_idx").on(table.postId)
+}));
+var writingReports = mysqlTable("writing_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  reporterOpenId: varchar("reporterOpenId", { length: 64 }).notNull(),
+  reason: mysqlEnum("reason", ["harassment", "misinformation", "plagiarism", "other"]).notNull(),
+  details: varchar("details", { length: 600 }),
+  status: mysqlEnum("status", ["pending", "reviewed", "actioned", "dismissed"]).default("pending").notNull(),
+  adminNote: varchar("adminNote", { length: 600 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  reporterPostUnique: uniqueIndex("writing_reports_reporter_post_unique").on(table.reporterOpenId, table.postId),
+  statusIdx: index("writing_reports_status_idx").on(table.status)
+}));
+var writingChallenges = mysqlTable("writing_challenges", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 180 }).notNull(),
+  prompt: text("prompt").notNull(),
+  category: mysqlEnum("category", ["experience", "story", "poem", "thought", "photo", "video"]).default("thought").notNull(),
+  status: mysqlEnum("status", ["draft", "active", "archived"]).default("draft").notNull(),
+  startsAt: timestamp("startsAt").defaultNow().notNull(),
+  endsAt: timestamp("endsAt"),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  statusIdx: index("writing_challenges_status_idx").on(table.status)
+}));
+var writingEditorialPicks = mysqlTable("writing_editorial_picks", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  headline: varchar("headline", { length: 180 }),
+  editorNote: varchar("editorNote", { length: 600 }),
+  position: int("position").default(0).notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdByOpenId: varchar("createdByOpenId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+}, (table) => ({
+  postUnique: uniqueIndex("writing_editorial_picks_post_unique").on(table.postId),
+  activePositionIdx: index("writing_editorial_picks_active_position_idx").on(table.active, table.position)
+}));
 var localUsers = mysqlTable("local_users", {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
@@ -284,6 +347,7 @@ var localUsers = mysqlTable("local_users", {
   passwordHash: text("passwordHash").notNull(),
   bio: text("bio"),
   avatarUrl: longtext("avatarUrl"),
+  coverUrl: longtext("coverUrl"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
 });
@@ -947,6 +1011,10 @@ var mediaTypeSchema = z3.enum(["none", "image", "video"]);
 var postStatusSchema = z3.enum(["pending", "approved", "rejected", "removed"]);
 var reactionTypeSchema = z3.enum(["like", "love", "inspiring", "sad"]);
 var commentStatusSchema = z3.enum(["pending", "approved", "rejected", "removed"]);
+var feedbackKindSchema = z3.enum(["meaningful", "relatable", "helpful", "beautiful"]);
+var reportReasonSchema = z3.enum(["harassment", "misinformation", "plagiarism", "other"]);
+var reportStatusSchema = z3.enum(["pending", "reviewed", "actioned", "dismissed"]);
+var challengeStatusSchema = z3.enum(["draft", "active", "archived"]);
 function normalizeAuthorName(name) {
   return name?.trim() || "\u09A8\u09BE\u09AE\u09B9\u09C0\u09A8 \u09B2\u09C7\u0996\u0995";
 }
@@ -954,44 +1022,8 @@ function createSlug(title) {
   const normalized = title.trim().toLowerCase().replace(/[\s_]+/g, "-").replace(/[^\p{L}\p{N}-]+/gu, "").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 90);
   return `${normalized || "post"}-${nanoid2(8)}`;
 }
-var writingTablesReady = false;
-var writingTablesReadyPromise = null;
-async function ensureWritingPlatformTables(db) {
-  if (writingTablesReady) return;
-  if (!writingTablesReadyPromise) {
-    writingTablesReadyPromise = (async () => {
-      await Promise.all([
-        db.execute(sql3.raw("CREATE TABLE IF NOT EXISTS `writing_posts` (`id` int AUTO_INCREMENT NOT NULL, `slug` varchar(180) NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `title` varchar(220) NOT NULL, `category` enum('experience','story','poem','thought','photo','video') NOT NULL DEFAULT 'thought', `content` longtext NOT NULL, `mediaUrl` longtext, `mediaType` enum('none','image','video') NOT NULL DEFAULT 'none', `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `featured` boolean NOT NULL DEFAULT false, `boostedScore` int NOT NULL DEFAULT 0, `viewCount` int NOT NULL DEFAULT 0, `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_posts_id` PRIMARY KEY(`id`), CONSTRAINT `writing_posts_slug_unique` UNIQUE(`slug`))")).catch(() => {
-        }),
-        db.execute(sql3.raw("CREATE TABLE IF NOT EXISTS `writing_comments` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `authorOpenId` varchar(64) NOT NULL, `authorName` varchar(160) NOT NULL, `content` text NOT NULL, `status` enum('pending','approved','rejected','removed') NOT NULL DEFAULT 'pending', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_comments_id` PRIMARY KEY(`id`))")).catch(() => {
-        }),
-        db.execute(sql3.raw("CREATE TABLE IF NOT EXISTS `writing_reactions` (`id` int AUTO_INCREMENT NOT NULL, `postId` int NOT NULL, `userOpenId` varchar(64) NOT NULL, `type` enum('like','love','inspiring','sad') NOT NULL DEFAULT 'like', `createdAt` timestamp NOT NULL DEFAULT (now()), `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT `writing_reactions_id` PRIMARY KEY(`id`))")).catch(() => {
-        })
-      ]);
-      writingTablesReady = true;
-    })().catch((error) => {
-      writingTablesReadyPromise = null;
-      console.error("[WritingPlatform] Failed to ensure tables:", error);
-    });
-  }
-  await writingTablesReadyPromise;
-}
-var _warmupDone = false;
-async function warmupWritingDb() {
-  if (_warmupDone) return;
-  _warmupDone = true;
-  try {
-    const db = await getDb();
-    if (db) await ensureWritingPlatformTables(db);
-  } catch {
-  }
-}
-warmupWritingDb();
 async function getWritingDb() {
-  const db = await getDb();
-  if (!db) return null;
-  if (!writingTablesReady) await ensureWritingPlatformTables(db);
-  return db;
+  return await getDb() ?? null;
 }
 async function safeWritingRead(label, fallback, operation) {
   try {
@@ -1008,13 +1040,17 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
     ...post,
     authorAvatarUrl: null,
     reactionCounts: { like: 0, love: 0, inspiring: 0, sad: 0 },
+    feedbackCounts: { meaningful: 0, relatable: 0, helpful: 0, beautiful: 0 },
     commentCount: 0,
-    myReaction: null
+    bookmarked: false,
+    myFeedback: null,
+    myReaction: null,
+    isOwner: Boolean(userOpenId && post.authorOpenId === userOpenId)
   });
   if (!db) return posts.map(emptyEnrich);
   const postIds = posts.map((p) => p.id);
   const authorOpenIds = [...new Set(posts.map((p) => p.authorOpenId))];
-  const [allReactions, allComments, avatarRows] = await Promise.all([
+  const [allReactions, allComments, avatarRows, allFeedback, myBookmarks] = await Promise.all([
     // Batch query 1: reactions (only needed columns)
     db.select({ postId: writingReactions.postId, type: writingReactions.type, userOpenId: writingReactions.userOpenId }).from(writingReactions).where(inArray2(writingReactions.postId, postIds)),
     // Batch query 2: approved comment counts
@@ -1027,9 +1063,15 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
     // Batch query 3: author avatars
     authorOpenIds.length > 0 ? db.execute(
       sql3.raw(
-        `SELECT openId, avatarUrl FROM local_users WHERE openId IN (${authorOpenIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(",")}) LIMIT ${authorOpenIds.length}`
+        `SELECT openId,
+              CASE WHEN avatarUrl LIKE 'data:%' THEN NULL ELSE avatarUrl END AS avatarUrl
+              FROM local_users WHERE openId IN (${authorOpenIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(",")}) LIMIT ${authorOpenIds.length}`
       )
-    ).catch(() => null) : Promise.resolve(null)
+    ).catch(() => null) : Promise.resolve(null),
+    // Batch query 4: reader feedback counts and current user's selection
+    db.select({ postId: writingFeedback.postId, kind: writingFeedback.kind, userOpenId: writingFeedback.userOpenId }).from(writingFeedback).where(inArray2(writingFeedback.postId, postIds)).catch(() => []),
+    // Batch query 5: current user's saved posts only
+    userOpenId ? db.select({ postId: writingBookmarks.postId }).from(writingBookmarks).where(and3(inArray2(writingBookmarks.postId, postIds), eq4(writingBookmarks.userOpenId, userOpenId))).catch(() => []) : Promise.resolve([])
   ]);
   const reactionsMap = /* @__PURE__ */ new Map();
   for (const reaction of allReactions) {
@@ -1049,6 +1091,19 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
   for (const comment of allComments) {
     commentCountMap.set(comment.postId, (commentCountMap.get(comment.postId) || 0) + 1);
   }
+  const feedbackMap = /* @__PURE__ */ new Map();
+  for (const feedback of allFeedback) {
+    if (!feedbackMap.has(feedback.postId)) {
+      feedbackMap.set(feedback.postId, {
+        counts: { meaningful: 0, relatable: 0, helpful: 0, beautiful: 0 },
+        myFeedback: null
+      });
+    }
+    const entry = feedbackMap.get(feedback.postId);
+    entry.counts[feedback.kind] = (entry.counts[feedback.kind] || 0) + 1;
+    if (userOpenId && feedback.userOpenId === userOpenId) entry.myFeedback = feedback.kind;
+  }
+  const bookmarkIds = new Set(myBookmarks.map((bookmark) => bookmark.postId));
   const avatarMap = /* @__PURE__ */ new Map();
   if (avatarRows) {
     const rows = Array.isArray(avatarRows) ? avatarRows[0] : avatarRows;
@@ -1066,8 +1121,12 @@ async function enrichPostsBatch(posts, userOpenId, _db2) {
       ...post,
       authorAvatarUrl: avatarMap.get(post.authorOpenId) ?? null,
       reactionCounts: reactionData?.counts ?? { like: 0, love: 0, inspiring: 0, sad: 0 },
+      feedbackCounts: feedbackMap.get(post.id)?.counts ?? { meaningful: 0, relatable: 0, helpful: 0, beautiful: 0 },
       commentCount: commentCountMap.get(post.id) ?? 0,
-      myReaction: reactionData?.myReaction ?? null
+      bookmarked: bookmarkIds.has(post.id),
+      myFeedback: feedbackMap.get(post.id)?.myFeedback ?? null,
+      myReaction: reactionData?.myReaction ?? null,
+      isOwner: Boolean(userOpenId && post.authorOpenId === userOpenId)
     };
   });
 }
@@ -1235,6 +1294,7 @@ var writingPlatformRouter = router({
   createPost: protectedProcedure.input(z3.object({
     title: z3.string().min(1).max(220).optional(),
     category: postCategorySchema.optional(),
+    challengeId: z3.number().int().positive().optional(),
     content: z3.string().max(6e5).optional().default(""),
     mediaUrl: z3.string().optional().or(z3.literal("")),
     mediaType: mediaTypeSchema.default("none")
@@ -1246,13 +1306,21 @@ var writingPlatformRouter = router({
     const contentText = input.content?.trim() || "";
     if (!contentText && !mediaUrl) throw new Error("\u0995\u09CD\u09AF\u09BE\u09AA\u09B6\u09A8 \u09AC\u09BE \u099B\u09AC\u09BF \u09AF\u09CB\u0997 \u0995\u09B0\u09C1\u09A8");
     const autoTitle = input.title?.trim() || contentText.split("\n")[0].slice(0, 80) || "\u09AC\u09BE\u09B8\u09CD\u09A4\u09AC\u09A4\u09BE\u09B0 \u0997\u09B2\u09CD\u09AA";
-    const category = input.category ?? "thought";
+    let category = input.category ?? "thought";
+    let challengeId = null;
+    if (input.challengeId) {
+      const challenges = await db.select().from(writingChallenges).where(and3(eq4(writingChallenges.id, input.challengeId), eq4(writingChallenges.status, "active"))).limit(1);
+      if (challenges.length === 0) throw new Error("\u098F\u0987 \u09B2\u09C7\u0996\u09BE\u09B0 \u099A\u09CD\u09AF\u09BE\u09B2\u09C7\u099E\u09CD\u099C\u099F\u09BF \u098F\u0996\u09A8 \u09B8\u0995\u09CD\u09B0\u09BF\u09DF \u09A8\u09C7\u0987");
+      challengeId = challenges[0].id;
+      category = challenges[0].category;
+    }
     const insertResult = await db.insert(writingPosts).values({
       slug: createSlug(autoTitle),
       authorOpenId: ctx.user.openId,
       authorName: normalizeAuthorName(ctx.user.name),
       title: autoTitle,
       category,
+      challengeId,
       content: contentText,
       mediaUrl,
       mediaType,
@@ -1357,6 +1425,152 @@ var writingPlatformRouter = router({
         contentPreview: input.content.trim()
       }).catch((err) => console.error("[Telegram comment submit notify error]", err));
     }
+    return { success: true };
+  }),
+  // ── Reader library: bookmarks and meaningful feedback ─────────────────────
+  toggleBookmark: protectedProcedure.input(z3.object({ postId: z3.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const post = await db.select({ id: writingPosts.id }).from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
+    if (post.length === 0) throw new Error("Post not found");
+    const existing = await db.select({ id: writingBookmarks.id }).from(writingBookmarks).where(and3(eq4(writingBookmarks.postId, input.postId), eq4(writingBookmarks.userOpenId, ctx.user.openId))).limit(1);
+    if (existing.length > 0) {
+      await db.delete(writingBookmarks).where(eq4(writingBookmarks.id, existing[0].id));
+      return { success: true, saved: false };
+    }
+    await db.insert(writingBookmarks).values({ postId: input.postId, userOpenId: ctx.user.openId });
+    return { success: true, saved: true };
+  }),
+  myBookmarks: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("myBookmarks", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const rows = await db.select({ post: writingPosts }).from(writingBookmarks).innerJoin(writingPosts, eq4(writingBookmarks.postId, writingPosts.id)).where(and3(eq4(writingBookmarks.userOpenId, ctx.user.openId), eq4(writingPosts.status, "approved"))).orderBy(desc2(writingBookmarks.createdAt)).limit(50);
+      return enrichPostsBatch(rows.map((row) => row.post), ctx.user.openId, db);
+    });
+  }),
+  setFeedback: protectedProcedure.input(z3.object({ postId: z3.number().int().positive(), kind: feedbackKindSchema })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const post = await db.select({ id: writingPosts.id }).from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
+    if (post.length === 0) throw new Error("Post not found");
+    const existing = await db.select().from(writingFeedback).where(and3(eq4(writingFeedback.postId, input.postId), eq4(writingFeedback.userOpenId, ctx.user.openId))).limit(1);
+    if (existing.length > 0 && existing[0].kind === input.kind) {
+      await db.delete(writingFeedback).where(eq4(writingFeedback.id, existing[0].id));
+      return { success: true, kind: null };
+    }
+    if (existing.length > 0) await db.update(writingFeedback).set({ kind: input.kind }).where(eq4(writingFeedback.id, existing[0].id));
+    else await db.insert(writingFeedback).values({ postId: input.postId, userOpenId: ctx.user.openId, kind: input.kind });
+    return { success: true, kind: input.kind };
+  }),
+  // ── Writing challenges and editorial selections ─────────────────────────────
+  listActiveChallenges: publicProcedure.query(async () => {
+    return safeWritingRead("listActiveChallenges", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingChallenges).where(eq4(writingChallenges.status, "active")).orderBy(desc2(writingChallenges.createdAt)).limit(3);
+    });
+  }),
+  listEditorialPicks: publicProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("listEditorialPicks", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const rows = await db.select({ pick: writingEditorialPicks, post: writingPosts }).from(writingEditorialPicks).innerJoin(writingPosts, eq4(writingEditorialPicks.postId, writingPosts.id)).where(and3(eq4(writingEditorialPicks.active, true), eq4(writingPosts.status, "approved"))).orderBy(writingEditorialPicks.position, desc2(writingEditorialPicks.createdAt)).limit(3);
+      if (rows.length === 0) {
+        const featuredPosts = await db.select().from(writingPosts).where(and3(eq4(writingPosts.status, "approved"), eq4(writingPosts.featured, true))).orderBy(desc2(writingPosts.createdAt)).limit(3);
+        const posts2 = await enrichPostsBatch(featuredPosts, ctx.user?.openId, db);
+        return posts2.map((post, index2) => ({ id: `featured-${post.id}`, postId: post.id, headline: index2 === 0 ? "\u0986\u099C\u0995\u09C7\u09B0 \u09A8\u09BF\u09B0\u09CD\u09AC\u09BE\u099A\u09BF\u09A4 \u09B2\u09C7\u0996\u09BE" : "\u09AC\u09BF\u09B6\u09C7\u09B7\u09AD\u09BE\u09AC\u09C7 \u09A8\u09BF\u09B0\u09CD\u09AC\u09BE\u099A\u09BF\u09A4", editorNote: "\u09B8\u09AE\u09CD\u09AA\u09CD\u09B0\u09A6\u09BE\u09DF\u09C7\u09B0 \u099C\u09A8\u09CD\u09AF \u09AC\u09BE\u099B\u09BE\u0987 \u0995\u09B0\u09BE \u098F\u0995\u099F\u09BF \u09B2\u09C7\u0996\u09BE\u0964", position: index2, active: true, post }));
+      }
+      const posts = await enrichPostsBatch(rows.map((row) => row.post), ctx.user?.openId, db);
+      return rows.map((row, index2) => ({ ...row.pick, post: posts[index2] }));
+    });
+  }),
+  getMyCommunityOverview: protectedProcedure.query(async ({ ctx }) => {
+    return safeWritingRead("getMyCommunityOverview", { submitted: 0, approved: 0, saved: 0, badges: [] }, async () => {
+      const db = await getWritingDb();
+      if (!db) return { submitted: 0, approved: 0, saved: 0, badges: [] };
+      const [submittedRows, approvedRows, savedRows] = await Promise.all([
+        db.select({ count: sql3`COUNT(*)` }).from(writingPosts).where(eq4(writingPosts.authorOpenId, ctx.user.openId)),
+        db.select({ count: sql3`COUNT(*)` }).from(writingPosts).where(and3(eq4(writingPosts.authorOpenId, ctx.user.openId), eq4(writingPosts.status, "approved"))),
+        db.select({ count: sql3`COUNT(*)` }).from(writingBookmarks).where(eq4(writingBookmarks.userOpenId, ctx.user.openId))
+      ]);
+      const submitted = Number(submittedRows[0]?.count ?? 0);
+      const approved = Number(approvedRows[0]?.count ?? 0);
+      const saved = Number(savedRows[0]?.count ?? 0);
+      const badges = [
+        ...submitted >= 1 ? ["\u09AA\u09CD\u09B0\u09A5\u09AE \u0995\u09B2\u09AE"] : [],
+        ...approved >= 1 ? ["\u09AA\u09CD\u09B0\u0995\u09BE\u09B6\u09BF\u09A4 \u09B2\u09C7\u0996\u0995"] : [],
+        ...approved >= 5 ? ["\u09A8\u09BF\u09DF\u09AE\u09BF\u09A4 \u09B2\u09C7\u0996\u0995"] : [],
+        ...saved >= 3 ? ["\u09AE\u09A8\u09CB\u09AF\u09CB\u0997\u09C0 \u09AA\u09BE\u09A0\u0995"] : []
+      ];
+      return { submitted, approved, saved, badges };
+    });
+  }),
+  // ── Safety reports ─────────────────────────────────────────────────────────
+  submitReport: protectedProcedure.input(z3.object({ postId: z3.number().int().positive(), reason: reportReasonSchema, details: z3.string().trim().max(600).optional() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const posts = await db.select({ id: writingPosts.id, authorOpenId: writingPosts.authorOpenId }).from(writingPosts).where(eq4(writingPosts.id, input.postId)).limit(1);
+    if (posts.length === 0) throw new Error("Post not found");
+    if (posts[0].authorOpenId === ctx.user.openId) throw new Error("\u09A8\u09BF\u099C\u09C7\u09B0 \u09B2\u09C7\u0996\u09BE \u09B0\u09BF\u09AA\u09CB\u09B0\u09CD\u099F \u0995\u09B0\u09BE \u09AF\u09BE\u09DF \u09A8\u09BE");
+    const existing = await db.select({ id: writingReports.id }).from(writingReports).where(and3(eq4(writingReports.postId, input.postId), eq4(writingReports.reporterOpenId, ctx.user.openId))).limit(1);
+    if (existing.length > 0) {
+      await db.update(writingReports).set({ reason: input.reason, details: input.details || null, status: "pending", adminNote: null }).where(eq4(writingReports.id, existing[0].id));
+    } else {
+      await db.insert(writingReports).values({ postId: input.postId, reporterOpenId: ctx.user.openId, reason: input.reason, details: input.details || null });
+    }
+    return { success: true };
+  }),
+  adminListReports: adminProcedure.input(z3.object({ status: reportStatusSchema.or(z3.literal("all")).default("pending") }).optional()).query(async ({ input }) => {
+    return safeWritingRead("adminListReports", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      const status = input?.status ?? "pending";
+      const query = db.select({ report: writingReports, post: writingPosts }).from(writingReports).innerJoin(writingPosts, eq4(writingReports.postId, writingPosts.id));
+      const rows = status === "all" ? await query.orderBy(desc2(writingReports.createdAt)).limit(100) : await query.where(eq4(writingReports.status, status)).orderBy(desc2(writingReports.createdAt)).limit(100);
+      return rows.map((row) => ({ ...row.report, postTitle: row.post.title, postSlug: row.post.slug, postAuthorName: row.post.authorName }));
+    });
+  }),
+  adminUpdateReport: adminProcedure.input(z3.object({ reportId: z3.number().int().positive(), status: reportStatusSchema, adminNote: z3.string().trim().max(600).optional() })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    await db.update(writingReports).set({ status: input.status, adminNote: input.adminNote || null }).where(eq4(writingReports.id, input.reportId));
+    return { success: true };
+  }),
+  adminListChallenges: adminProcedure.query(async () => {
+    return safeWritingRead("adminListChallenges", [], async () => {
+      const db = await getWritingDb();
+      if (!db) return [];
+      return db.select().from(writingChallenges).orderBy(desc2(writingChallenges.createdAt)).limit(50);
+    });
+  }),
+  adminCreateChallenge: adminProcedure.input(z3.object({ title: z3.string().trim().min(3).max(180), prompt: z3.string().trim().min(10).max(4e3), category: postCategorySchema, status: challengeStatusSchema.default("draft"), endsAt: z3.string().datetime().optional() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    await db.insert(writingChallenges).values({ title: input.title, prompt: input.prompt, category: input.category, status: input.status, endsAt: input.endsAt ? new Date(input.endsAt) : null, createdByOpenId: ctx.user.openId });
+    return { success: true };
+  }),
+  adminUpdateChallenge: adminProcedure.input(z3.object({ challengeId: z3.number().int().positive(), title: z3.string().trim().min(3).max(180).optional(), prompt: z3.string().trim().min(10).max(4e3).optional(), category: postCategorySchema.optional(), status: challengeStatusSchema.optional(), endsAt: z3.string().datetime().nullable().optional() })).mutation(async ({ input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const updateSet = {};
+    if (input.title !== void 0) updateSet.title = input.title;
+    if (input.prompt !== void 0) updateSet.prompt = input.prompt;
+    if (input.category !== void 0) updateSet.category = input.category;
+    if (input.status !== void 0) updateSet.status = input.status;
+    if (input.endsAt !== void 0) updateSet.endsAt = input.endsAt ? new Date(input.endsAt) : null;
+    await db.update(writingChallenges).set(updateSet).where(eq4(writingChallenges.id, input.challengeId));
+    return { success: true };
+  }),
+  adminSetEditorialPick: adminProcedure.input(z3.object({ postId: z3.number().int().positive(), active: z3.boolean().default(true), position: z3.number().int().min(0).max(99).default(0), headline: z3.string().trim().max(180).optional(), editorNote: z3.string().trim().max(600).optional() })).mutation(async ({ ctx, input }) => {
+    const db = await getWritingDb();
+    if (!db) throw new Error("Database unavailable");
+    const posts = await db.select({ id: writingPosts.id }).from(writingPosts).where(and3(eq4(writingPosts.id, input.postId), eq4(writingPosts.status, "approved"))).limit(1);
+    if (posts.length === 0) throw new Error("\u09B6\u09C1\u09A7\u09C1 \u0985\u09A8\u09C1\u09AE\u09CB\u09A6\u09BF\u09A4 \u09B2\u09C7\u0996\u09BE \u09B8\u09AE\u09CD\u09AA\u09BE\u09A6\u0995\u09C0\u09DF \u09A8\u09BF\u09B0\u09CD\u09AC\u09BE\u099A\u09A8\u09C7 \u09B0\u09BE\u0996\u09BE \u09AF\u09BE\u09DF");
+    const existing = await db.select({ id: writingEditorialPicks.id }).from(writingEditorialPicks).where(eq4(writingEditorialPicks.postId, input.postId)).limit(1);
+    const values = { active: input.active, position: input.position, headline: input.headline || null, editorNote: input.editorNote || null, createdByOpenId: ctx.user.openId };
+    if (existing.length > 0) await db.update(writingEditorialPicks).set(values).where(eq4(writingEditorialPicks.id, existing[0].id));
+    else await db.insert(writingEditorialPicks).values({ postId: input.postId, ...values });
     return { success: true };
   }),
   adminListPosts: adminProcedure.input(z3.object({ status: postStatusSchema.or(z3.literal("all")).default("pending") }).optional()).query(async ({ input }) => {
@@ -1639,6 +1853,19 @@ var SDKServer = class {
     const sessionUserId = session.openId;
     const signedInAt = /* @__PURE__ */ new Date();
     let user = await getUserByOpenId(sessionUserId);
+    if (!user && sessionUserId.startsWith("local_")) {
+      try {
+        await upsertUser({
+          openId: sessionUserId,
+          name: session.name || null,
+          loginMethod: "local",
+          lastSignedIn: signedInAt
+        });
+        user = await getUserByOpenId(sessionUserId);
+      } catch (error) {
+        console.error("[Auth] Failed to repair local user record:", error);
+      }
+    }
     if (!user) {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");

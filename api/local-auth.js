@@ -117,76 +117,58 @@ async function issueLoginResponse(res, db, user, email) {
   return res.status(200).json({ success: true, name: user.name, email });
 }
 
-// ── Email helper (Gmail SMTP via Nodemailer) ──────────────────────────────────
+// ── Password reset delivery ──────────────────────────────────────────────────
+// A reset request must never claim email delivery when no configured sender exists.
+// Resend is preferred when configured; Gmail SMTP is retained as a secure fallback.
+function hasPasswordResetDeliveryConfig() {
+  return Boolean(
+    (process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL)
+    || (process.env.CONTACT_EMAIL_FROM && process.env.GMAIL_APP_PASSWORD),
+  );
+}
 
 async function sendPasswordResetEmail(toEmail, userName, resetToken) {
-  const FROM = process.env.CONTACT_EMAIL_FROM || "mahbubsardarsabuj@gmail.com";
-  const PASS = process.env.GMAIL_APP_PASSWORD;
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  const TELEGRAM_ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
-
+  const gmailFrom = process.env.CONTACT_EMAIL_FROM?.trim();
+  const gmailPassword = process.env.GMAIL_APP_PASSWORD?.trim();
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  const resendFrom = process.env.RESEND_FROM_EMAIL?.trim();
   const resetLink = `https://www.mahbubsardarsabuj.com/amio-likhbo-bastobota?reset_token=${resetToken}`;
+  const subject = "পাসওয়ার্ড রিসেট — আমিও লিখবো বাস্তবতা";
+  const text = `প্রিয় ${userName},\n\nআপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন।\n\nনিচের লিঙ্কে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন:\n${resetLink}\n\nএই লিঙ্কটি ১৫ মিনিটের জন্য বৈধ।\n\nযদি আপনি এই অনুরোধ না করে থাকেন, তাহলে এই ইমেইলটি উপেক্ষা করুন।\n\n— বাস্তবতা টিম`;
+  const html = `
+    <div style="font-family: 'Noto Sans Bengali', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #071426; border-radius: 16px; overflow: hidden; border: 1px solid rgba(232,201,122,0.3);">
+      <div style="background: linear-gradient(135deg, #0d1f3c, #071426); padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid rgba(232,201,122,0.2);"><h1 style="color: #F7D56F; margin: 0; font-size: 22px; font-weight: 900;">আমিও লিখবো বাস্তবতা</h1><p style="color: rgba(253,246,236,0.6); margin: 8px 0 0; font-size: 14px;">mahbubsardarsabuj.com</p></div>
+      <div style="padding: 32px;"><p style="color: #FDF6EC; font-size: 16px; margin: 0 0 16px;">প্রিয় <strong style="color: #F7D56F;">${userName}</strong>,</p><p style="color: rgba(253,246,236,0.8); font-size: 15px; line-height: 1.7; margin: 0 0 24px;">আপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন। নিচের বাটনে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন।</p><div style="text-align: center; margin: 28px 0;"><a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%); color: #071426; text-decoration: none; padding: 14px 32px; border-radius: 999px; font-weight: 900; font-size: 16px;">পাসওয়ার্ড রিসেট করুন</a></div><p style="color: rgba(253,246,236,0.5); font-size: 13px; text-align: center; margin: 0 0 8px;">এই লিঙ্কটি <strong style="color: #F7D56F;">১৫ মিনিটের</strong> জন্য বৈধ।</p><p style="color: rgba(253,246,236,0.4); font-size: 12px; text-align: center; margin: 0;">যদি আপনি এই অনুরোধ না করে থাকেন, তাহলে এই ইমেইলটি উপেক্ষা করুন।</p></div>
+      <div style="padding: 16px 32px; border-top: 1px solid rgba(232,201,122,0.15); text-align: center;"><p style="color: rgba(253,246,236,0.3); font-size: 11px; margin: 0;">© 2026 মাহবুব সরদার সবুজ — mahbubsardarsabuj.com</p></div>
+    </div>`;
 
-  // Send reset link via Telegram to the user's chat (if bot token available)
-  if (TELEGRAM_BOT_TOKEN && TELEGRAM_ADMIN_CHAT_ID) {
+  if (resendKey && resendFrom) {
     try {
-      const telegramText = `🔐 <b>পাসওয়ার্ড রিসেট অনুরোধ</b>\n\n👤 <b>নাম:</b> ${userName}\n📧 <b>ইমেইল:</b> ${toEmail}\n\n🔗 <b>রিসেট লিঙ্ক:</b>\n${resetLink}\n\n⏰ এই লিঙ্কটি ১৫ মিনিটের জন্য বৈধ।`;
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_ADMIN_CHAT_ID,
-          text: telegramText,
-          parse_mode: "HTML",
-        }),
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: resendFrom, to: [toEmail], subject, text, html }),
       });
-    } catch (e) {
-      console.warn("[forgot-password] Telegram notify failed:", e.message);
+      if (response.ok) return { ok: true, provider: "resend" };
+      console.error("[forgot-password] Resend rejected email:", response.status, await response.text());
+    } catch (error) {
+      console.error("[forgot-password] Resend delivery failed:", error instanceof Error ? error.message : String(error));
     }
   }
 
-  if (!FROM || !PASS) {
-    console.warn("[forgot-password] CONTACT_EMAIL_FROM or GMAIL_APP_PASSWORD not set — email not sent");
-    return false;
+  if (!gmailFrom || !gmailPassword) {
+    console.error("[forgot-password] No password-reset mail provider is configured");
+    return { ok: false, code: "UNCONFIGURED" };
   }
 
   try {
     const nodemailer = await import("nodemailer");
-    const transporter = nodemailer.default.createTransport({
-      service: "gmail",
-      auth: { user: FROM, pass: PASS },
-    });
-
-    await transporter.sendMail({
-      from: `"বাস্তবতা লেখক" <${FROM}>`,
-      to: toEmail,
-      subject: "পাসওয়ার্ড রিসেট — আমিও লিখবো বাস্তবতা",
-      text: `প্রিয় ${userName},\n\nআপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন।\n\nনিচের লিঙ্কে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন:\n${resetLink}\n\nএই লিঙ্কটি ১৫ মিনিটের জন্য বৈধ।\n\nযদি আপনি এই অনুরোধ না করে থাকেন, তাহলে এই ইমেইলটি উপেক্ষা করুন।\n\n— বাস্তবতা টিম`,
-      html: `
-        <div style="font-family: 'Noto Sans Bengali', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #071426; border-radius: 16px; overflow: hidden; border: 1px solid rgba(232,201,122,0.3);">
-          <div style="background: linear-gradient(135deg, #0d1f3c, #071426); padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid rgba(232,201,122,0.2);">
-            <h1 style="color: #F7D56F; margin: 0; font-size: 22px; font-weight: 900;">আমিও লিখবো বাস্তবতা</h1>
-            <p style="color: rgba(253,246,236,0.6); margin: 8px 0 0; font-size: 14px;">mahbubsardarsabuj.com</p>
-          </div>
-          <div style="padding: 32px;">
-            <p style="color: #FDF6EC; font-size: 16px; margin: 0 0 16px;">প্রিয় <strong style="color: #F7D56F;">${userName}</strong>,</p>
-            <p style="color: rgba(253,246,236,0.8); font-size: 15px; line-height: 1.7; margin: 0 0 24px;">আপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন। নিচের বাটনে ক্লিক করে নতুন পাসওয়ার্ড সেট করুন।</p>
-            <div style="text-align: center; margin: 28px 0;">
-              <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #F7D56F 0%, #D4A843 58%, #B98A24 100%); color: #071426; text-decoration: none; padding: 14px 32px; border-radius: 999px; font-weight: 900; font-size: 16px;">পাসওয়ার্ড রিসেট করুন</a>
-            </div>
-            <p style="color: rgba(253,246,236,0.5); font-size: 13px; text-align: center; margin: 0 0 8px;">এই লিঙ্কটি <strong style="color: #F7D56F;">১৫ মিনিটের</strong> জন্য বৈধ।</p>
-            <p style="color: rgba(253,246,236,0.4); font-size: 12px; text-align: center; margin: 0;">যদি আপনি এই অনুরোধ না করে থাকেন, তাহলে এই ইমেইলটি উপেক্ষা করুন।</p>
-          </div>
-          <div style="padding: 16px 32px; border-top: 1px solid rgba(232,201,122,0.15); text-align: center;">
-            <p style="color: rgba(253,246,236,0.3); font-size: 11px; margin: 0;">© 2025 মাহবুব সরদার সবুজ — mahbubsardarsabuj.com</p>
-          </div>
-        </div>
-      `,
-    });
-    return true;
-  } catch (err) {
-    console.error("[forgot-password] Email send failed:", err.message);
-    return false;
+    const transporter = nodemailer.default.createTransport({ service: "gmail", auth: { user: gmailFrom, pass: gmailPassword } });
+    const info = await transporter.sendMail({ from: `"বাস্তবতা লেখক" <${gmailFrom}>`, to: toEmail, subject, text, html });
+    return { ok: true, provider: "gmail", messageId: info.messageId };
+  } catch (error) {
+    console.error("[forgot-password] Gmail delivery failed:", error instanceof Error ? error.message : String(error));
+    return { ok: false, code: "DELIVERY_FAILED" };
   }
 }
 
@@ -331,17 +313,10 @@ export default async function handler(req, res) {
     const normalEmail = email.trim().toLowerCase();
 
     try {
-      // Ensure table exists (auto-create if missing)
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS password_reset_tokens (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          email VARCHAR(320) NOT NULL,
-          token VARCHAR(64) NOT NULL UNIQUE,
-          expiresAt TIMESTAMP NOT NULL,
-          usedAt TIMESTAMP NULL,
-          createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      if (!hasPasswordResetDeliveryConfig()) {
+        console.error("[forgot-password] Password reset email is not configured");
+        return res.status(503).json({ error: "পাসওয়ার্ড রিকভারি ইমেইল সার্ভিস সাময়িকভাবে কনফিগার করা নেই। কিছুক্ষণ পরে চেষ্টা করুন।" });
+      }
 
       // Check user exists — always return same message to prevent email enumeration
       const [rows] = await db.execute(
@@ -374,8 +349,12 @@ export default async function handler(req, res) {
         [normalEmail, resetToken, expiresAt]
       );
 
-      // Send email
-      await sendPasswordResetEmail(normalEmail, userName, resetToken);
+      // Send email and never report a false success when the provider rejects it.
+      const delivery = await sendPasswordResetEmail(normalEmail, userName, resetToken);
+      if (!delivery.ok) {
+        await db.execute("UPDATE password_reset_tokens SET usedAt = NOW() WHERE token = ?", [resetToken]);
+        return res.status(503).json({ error: "পাসওয়ার্ড রিকভারি ইমেইল পাঠানো যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।" });
+      }
 
       return res.status(200).json({
         success: true,
@@ -400,18 +379,6 @@ export default async function handler(req, res) {
     }
 
     try {
-      // Ensure table exists
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS password_reset_tokens (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          email VARCHAR(320) NOT NULL,
-          token VARCHAR(64) NOT NULL UNIQUE,
-          expiresAt TIMESTAMP NOT NULL,
-          usedAt TIMESTAMP NULL,
-          createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
       const [tokenRows] = await db.execute(
         "SELECT email, expiresAt, usedAt FROM password_reset_tokens WHERE token = ? LIMIT 1",
         [token.trim()]

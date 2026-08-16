@@ -69,6 +69,7 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
     bookmarked: false,
     myFeedback: null as null | "meaningful" | "relatable" | "helpful" | "beautiful",
     myReaction: null as null | "like" | "love" | "inspiring" | "sad",
+    isOwner: Boolean(userOpenId && post.authorOpenId === userOpenId),
   });
 
   if (!db) return posts.map(emptyEnrich);
@@ -193,6 +194,7 @@ async function enrichPostsBatch(posts: WritingPost[], userOpenId?: string, _db?:
       bookmarked: bookmarkIds.has(post.id),
       myFeedback: (feedbackMap.get(post.id)?.myFeedback ?? null) as null | "meaningful" | "relatable" | "helpful" | "beautiful",
       myReaction: (reactionData?.myReaction ?? null) as null | "like" | "love" | "inspiring" | "sad",
+      isOwner: Boolean(userOpenId && post.authorOpenId === userOpenId),
     };
   });
 }

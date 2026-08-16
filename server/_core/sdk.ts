@@ -273,7 +273,24 @@ class SDKServer {
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
 
-    // If user not in DB, sync from OAuth server automatically
+    // Local email/password sessions carry a verified local openId and name in the
+    // signed cookie. Repair a missing shared user row before attempting OAuth;
+    // local accounts have no OAuth identity to sync and otherwise lose auth.me.
+    if (!user && sessionUserId.startsWith("local_")) {
+      try {
+        await db.upsertUser({
+          openId: sessionUserId,
+          name: session.name || null,
+          loginMethod: "local",
+          lastSignedIn: signedInAt,
+        });
+        user = await db.getUserByOpenId(sessionUserId);
+      } catch (error) {
+        console.error("[Auth] Failed to repair local user record:", error);
+      }
+    }
+
+    // OAuth sessions that are not yet persisted can be synchronized automatically.
     if (!user) {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");

@@ -261,6 +261,9 @@ export default function AmiOLikhboLogin() {
         const data = await res.json();
         if (data.error) { setError(data.error); return; }
         setSuccess("পাসওয়ার্ড পরিবর্তন হয়েছে! এখন লগইন করুন।");
+        const url = new URL(window.location.href);
+        url.searchParams.delete("reset_token");
+        window.history.replaceState({}, "", url.toString());
         setTimeout(() => { setMode("login"); clearForm(); }, 2000);
         return;
       }

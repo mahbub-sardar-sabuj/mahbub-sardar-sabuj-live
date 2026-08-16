@@ -221,8 +221,8 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
 
       // ── Reset Password ────────────────────────────────────────────────────
       if (mode === "reset") {
-        if (!newPassword || newPassword.length < 6) {
-          setError("নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে");
+        if (!newPassword || newPassword.length < 8) {
+          setError("নতুন পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে");
           return;
         }
         if (newPassword !== confirmPassword) {
@@ -428,11 +428,11 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
               <div style={{ position: "relative" }}>
                 <input
                   type={showPass ? "text" : "password"}
-                  placeholder={mode === "register" ? "কমপক্ষে ৬ অক্ষর" : "আপনার পাসওয়ার্ড"}
+                  placeholder={mode === "register" ? "কমপক্ষে ৮ অক্ষর" : "আপনার পাসওয়ার্ড"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={mode === "register" ? 8 : 1}
                   style={{ ...inputStyle, paddingRight: "2.8rem" }}
                 />
                 <button
@@ -460,11 +460,11 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                 <div style={{ position: "relative" }}>
                   <input
                     type={showNewPass ? "text" : "password"}
-                    placeholder="কমপক্ষে ৬ অক্ষর"
+                    placeholder="কমপক্ষে ৮ অক্ষর"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     style={{ ...inputStyle, paddingRight: "2.8rem" }}
                   />
                   <button
@@ -490,7 +490,7 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   style={inputStyle}
                 />
               </div>

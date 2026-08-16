@@ -17,6 +17,7 @@ import {
   KeyRound,
   Lightbulb,
   MessageCircle,
+  MoreHorizontal,
   PenLine,
   Plus,
   RefreshCw,
@@ -488,7 +489,7 @@ function ReactionBar({
           }}
         >
           {activeReaction ? activeReaction.icon : <ThumbsUp size={15} />}
-          {activeReaction ? activeReaction.label : "প্রতিক্রিয়া"}
+          {activeReaction ? activeReaction.label : "পছন্দ"}
         </button>
 
         {/* Reaction count summary */}
@@ -766,6 +767,7 @@ type EnrichedPost = {
   bookmarked: boolean;
   myFeedback: "meaningful" | "relatable" | "helpful" | "beautiful" | null;
   myReaction: ReactionType | null;
+  isOwner?: boolean;
 };
 
 const PostCard = memo(function PostCard({
@@ -787,6 +789,7 @@ const PostCard = memo(function PostCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
   // Lazy load image: only fetch mediaUrl when post has image (base64 is truncated in feed)
   const hasImage = post.mediaType === "image" && post.mediaUrl;
   const isBase64InFeed = hasImage && post.mediaUrl!.startsWith("data:");
@@ -818,7 +821,7 @@ const PostCard = memo(function PostCard({
     : post.mediaUrl;
   const isLong = post.content.length > 280;
   const displayContent = isLong && !expanded ? post.content.slice(0, 280) + "..." : post.content;
-  const isOwner = Boolean(currentUserOpenId && post.authorOpenId === currentUserOpenId);
+  const isOwner = post.isOwner ?? Boolean(currentUserOpenId && post.authorOpenId === currentUserOpenId);
   // টাইটেল শুধু দেখাবে যদি কন্টেন্টের প্রথম লাইন থেকে আলাদা হয়
   const contentFirstLine = post.content.split("\n")[0].slice(0, 80);
   const showTitle = post.title && post.title.trim() !== contentFirstLine.trim() && post.title !== "বাস্তবতার গল্প";
@@ -894,6 +897,29 @@ const PostCard = memo(function PostCard({
               </span>
             )}
           </div>
+          {isOwner && onEdit && onDelete && (
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <button
+                type="button"
+                aria-label="আপনার পোস্টের অপশন"
+                aria-expanded={ownerMenuOpen}
+                onClick={() => { setOwnerMenuOpen((open) => !open); setConfirmDelete(false); }}
+                style={{ width: 36, height: 36, display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid rgba(232,201,122,0.20)", background: ownerMenuOpen ? "rgba(247,213,111,0.14)" : "rgba(255,255,255,0.045)", color: ownerMenuOpen ? "#F7D56F" : "rgba(253,246,236,0.62)", cursor: "pointer" }}
+              >
+                <MoreHorizontal size={19} />
+              </button>
+              {ownerMenuOpen && (
+                <div role="menu" style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 25, minWidth: 184, padding: 6, display: "grid", gap: 4, borderRadius: 15, border: "1px solid rgba(232,201,122,0.28)", background: "rgba(7,20,38,0.98)", boxShadow: "0 16px 42px rgba(0,0,0,0.48)", backdropFilter: "blur(20px)" }}>
+                  <button type="button" role="menuitem" onClick={() => { setOwnerMenuOpen(false); onEdit(post); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", border: "none", borderRadius: 10, padding: "0.6rem 0.7rem", background: "transparent", color: "rgba(253,246,236,0.82)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.84rem", textAlign: "left", cursor: "pointer" }}><Edit3 size={15} color="#F7D56F" /> পোস্ট সম্পাদনা</button>
+                  {!confirmDelete ? (
+                    <button type="button" role="menuitem" onClick={() => setConfirmDelete(true)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", border: "none", borderRadius: 10, padding: "0.6rem 0.7rem", background: "rgba(239,68,68,0.08)", color: "#FCA5A5", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.84rem", textAlign: "left", cursor: "pointer" }}><Trash2 size={15} /> পোস্ট মুছুন</button>
+                  ) : (
+                    <div style={{ padding: "0.45rem 0.4rem", display: "grid", gap: 7 }}><span style={{ color: "rgba(253,246,236,0.72)", fontSize: "0.76rem", lineHeight: 1.45 }}>পোস্টটি স্থায়ীভাবে মুছবেন?</span><div style={{ display: "flex", gap: 6 }}><button type="button" onClick={() => { onDelete(post.id); setOwnerMenuOpen(false); setConfirmDelete(false); }} style={{ flex: 1, border: "1px solid rgba(239,68,68,0.5)", borderRadius: 9, padding: "0.38rem", background: "rgba(239,68,68,0.2)", color: "#FECACA", fontFamily: adorshoFont, fontWeight: 900, cursor: "pointer" }}>মুছুন</button><button type="button" onClick={() => setConfirmDelete(false)} style={{ flex: 1, border: "1px solid rgba(232,201,122,0.20)", borderRadius: 9, padding: "0.38rem", background: "transparent", color: "rgba(253,246,236,0.64)", fontFamily: adorshoFont, fontWeight: 800, cursor: "pointer" }}>না</button></div></div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1008,8 +1034,9 @@ const PostCard = memo(function PostCard({
         </button>
       </div>
 
-      {/* Action bar */}
-      <div className="amio-post-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+      {/* Familiar primary social actions, followed by optional reading tools. */}
+      <div className="amio-post-actions" style={{ display: "grid", gap: 8 }}>
+        <div className="amio-post-primary-actions">
         <ReactionBar
           postId={post.id}
           reactionCounts={post.reactionCounts}
@@ -1021,12 +1048,6 @@ const PostCard = memo(function PostCard({
           postId={post.id}
           commentCount={post.commentCount}
           isAuthenticated={isAuthenticated}
-          onLoginRequired={onLoginRequired}
-        />
-        <ReaderTools
-          post={post}
-          isAuthenticated={isAuthenticated}
-          isOwner={isOwner}
           onLoginRequired={onLoginRequired}
         />
         <button
@@ -1061,76 +1082,10 @@ const PostCard = memo(function PostCard({
         >
           <Share2 size={15} /> শেয়ার
         </button>
-
-        {/* Owner actions */}
-        {isOwner && onEdit && onDelete && (
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-            <button
-              type="button"
-              onClick={() => onEdit(post)}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 5,
-                padding: "0.4rem 0.75rem", borderRadius: 999,
-                border: "1px solid rgba(232,201,122,0.25)",
-                background: "rgba(255,255,255,0.05)",
-                color: "rgba(253,246,236,0.6)",
-                fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.8rem",
-                cursor: "pointer",
-              }}
-            >
-              <Edit3 size={13} /> সম্পাদনা
-            </button>
-            {!confirmDelete ? (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 5,
-                  padding: "0.4rem 0.75rem", borderRadius: 999,
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  background: "rgba(239,68,68,0.08)",
-                  color: "#FCA5A5",
-                  fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.8rem",
-                  cursor: "pointer",
-                }}
-              >
-                <Trash2 size={13} /> মুছুন
-              </button>
-            ) : (
-              <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", color: "rgba(253,246,236,0.55)", fontFamily: adorshoFont }}>নিশ্চিত?</span>
-                <button
-                  type="button"
-                  onClick={() => { onDelete(post.id); setConfirmDelete(false); }}
-                  style={{
-                    padding: "0.35rem 0.65rem", borderRadius: 999,
-                    border: "1px solid rgba(239,68,68,0.5)",
-                    background: "rgba(239,68,68,0.18)",
-                    color: "#FCA5A5",
-                    fontFamily: adorshoFont, fontWeight: 900, fontSize: "0.78rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  হ্যাঁ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  style={{
-                    padding: "0.35rem 0.65rem", borderRadius: 999,
-                    border: "1px solid rgba(232,201,122,0.2)",
-                    background: "transparent",
-                    color: "rgba(253,246,236,0.55)",
-                    fontFamily: adorshoFont, fontWeight: 700, fontSize: "0.78rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  না
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        </div>
+        <div className="amio-post-secondary-actions">
+          <ReaderTools post={post} isAuthenticated={isAuthenticated} isOwner={isOwner} onLoginRequired={onLoginRequired} />
+        </div>
       </div>
     </article>
   );
@@ -2053,7 +2008,17 @@ export default function AmiOLikhboBastobota() {
         .amio-post-author { letter-spacing: 0.015em; }
         .amio-post-content { color: rgba(253,246,236,0.92) !important; }
         .amio-post-actions { padding-top: 0.75rem; border-top: 1px solid rgba(232,201,122,0.11); }
+        .amio-post-primary-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.38rem; }
+        .amio-post-primary-actions > * { min-width: 0; }
+        .amio-post-primary-actions .amio-action-btn, .amio-post-primary-actions button { width: 100%; justify-content: center; border-radius: 12px !important; padding-inline: 0.32rem !important; }
+        .amio-post-secondary-actions { display: flex; align-items: center; padding-top: 0.15rem; }
         .amio-post-list { gap: 1.1rem !important; }
+        .amio-composer { position: relative; overflow: hidden; padding: 0.95rem; border: 1px solid rgba(232,201,122,0.22); border-radius: 22px; background: linear-gradient(145deg, rgba(21,37,61,0.88), rgba(7,20,38,0.78)); box-shadow: 0 18px 45px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08); backdrop-filter: blur(18px); }
+        .amio-composer::before { content: \"\"; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(180deg, #f7d56f, rgba(81,139,255,0.60), transparent 80%); }
+        .amio-composer-trigger { transition: background 160ms ease, border-color 160ms ease, transform 160ms ease; }
+        .amio-composer-trigger:hover { background: rgba(255,255,255,0.105) !important; border-color: rgba(247,213,111,0.42) !important; transform: translateY(-1px); }
+        .amio-composer-action { transition: background 160ms ease, color 160ms ease; }
+        .amio-composer-action:hover { background: rgba(247,213,111,0.12) !important; color: #f7d56f !important; }
         @media (max-width: 480px) {
           .amio-feed-toolbar { gap: 0.45rem !important; padding: 0.6rem !important; }
           .amio-search-input { padding: 0.55rem 1.7rem 0.55rem 2.2rem !important; font-size: 0.84rem !important; }
@@ -2273,6 +2238,21 @@ export default function AmiOLikhboBastobota() {
                 )}
               </a>
             </div>
+          )}
+
+          {/* ── Familiar social composer ── */}
+          {!slugFromUrl && (
+            <section className="amio-composer" aria-label="নতুন লেখা প্রকাশ করুন">
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 42, height: 42, flexShrink: 0, display: "grid", placeItems: "center", borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(232,201,122,0.38)", background: profileAvatarUrl ? `url(${profileAvatarUrl}) center/cover no-repeat` : "linear-gradient(135deg, rgba(247,213,111,0.3), rgba(81,139,255,0.2))", color: "#F7D56F", fontWeight: 900 }}>{!profileAvatarUrl && (isAuthenticated ? (user?.name?.[0] || "?").toUpperCase() : <PenLine size={18} />)}</div>
+                <button type="button" className="amio-composer-trigger" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setShowCreateModal(true); }} style={{ flex: 1, minWidth: 0, textAlign: "left", padding: "0.7rem 0.95rem", borderRadius: 999, border: "1px solid rgba(232,201,122,0.16)", background: "rgba(255,255,255,0.06)", color: "rgba(253,246,236,0.58)", fontFamily: adorshoFont, fontSize: "0.93rem", cursor: "pointer" }}>{isAuthenticated ? `${user?.name || "আপনি"}, আজ কী ভাবছেন?` : "নিজের অনুভূতি লিখতে লগইন করুন..."}</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, marginTop: 10, paddingTop: 9, borderTop: "1px solid rgba(232,201,122,0.12)" }}>
+                <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Edit3 size={15} color="#F7D56F" /> লিখুন</button>
+                <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Camera size={15} color="#86EFAC" /> ছবি/ভিডিও</button>
+                <button type="button" className="amio-composer-action" onClick={() => { if (!isAuthenticated) { handleLoginRequired(); return; } setSelectedChallenge(null); setShowCreateModal(true); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0.5rem 0.25rem", border: "none", borderRadius: 11, background: "transparent", color: "rgba(253,246,236,0.72)", fontFamily: adorshoFont, fontWeight: 800, fontSize: "0.78rem", cursor: "pointer" }}><Sparkles size={15} color="#A5B4FC" /> ভাবনা লিখুন</button>
+              </div>
+            </section>
           )}
 
           {/* ── Category Filter + My Posts Toggle ── */}
