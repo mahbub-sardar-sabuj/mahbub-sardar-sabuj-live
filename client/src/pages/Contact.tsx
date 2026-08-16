@@ -23,6 +23,7 @@ const GOLD_LIGHT = "#E8C97A";
 const BG = "#060E1A";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.62)";
+const CONTACT_PORTRAIT = "/images/og-home-suit.jpg";
 
 const socialLinks = [
   {
@@ -132,54 +133,71 @@ export default function Contact() {
         }
         .contact-hero {
           position: relative;
-          padding: calc(var(--site-nav-offset, 98px) + 52px) 1.5rem 3.75rem;
+          padding: calc(var(--site-nav-offset, 98px) + 36px) 1.5rem 4.4rem;
           overflow: hidden;
         }
         .contact-hero::before {
           content: "";
           position: absolute;
           inset: 0;
-          background-image: radial-gradient(rgba(232,201,122,0.12) 0.75px, transparent 0.75px);
-          background-size: 25px 25px;
-          mask-image: linear-gradient(to bottom, black, transparent 86%);
-          opacity: 0.5;
+          background:
+            radial-gradient(circle at 12% 30%, rgba(201,168,76,0.15), transparent 24%),
+            radial-gradient(circle at 88% 8%, rgba(55,104,154,0.16), transparent 28%),
+            linear-gradient(118deg, rgba(4,12,22,0.92), rgba(7,18,31,0.52) 52%, rgba(4,12,22,0.91));
+          pointer-events: none;
+        }
+        .contact-hero::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(rgba(232,201,122,0.11) 0.75px, transparent 0.75px);
+          background-size: 26px 26px;
+          mask-image: linear-gradient(to bottom, black, transparent 90%);
+          opacity: 0.38;
           pointer-events: none;
         }
         .contact-hero-orbit {
-          position: absolute;
-          width: min(76vw, 760px);
-          aspect-ratio: 1;
-          left: 50%;
-          top: -54%;
-          transform: translateX(-50%);
-          border: 1px solid rgba(232,201,122,0.16);
+          position: absolute !important;
+          z-index: 0 !important;
+          width: min(74vw, 820px);
+          height: min(74vw, 820px);
+          right: -13%;
+          top: -45%;
+          border: 1px solid rgba(232,201,122,0.12);
           border-radius: 50%;
-          box-shadow: 0 0 0 54px rgba(201,168,76,0.025), 0 0 100px rgba(201,168,76,0.08);
+          box-shadow: 0 0 0 60px rgba(201,168,76,0.022), 0 0 110px rgba(201,168,76,0.09);
           pointer-events: none;
         }
         .contact-hero-inner {
           position: relative;
-          z-index: 1;
-          max-width: 900px;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.78fr);
+          align-items: center;
+          gap: clamp(2rem, 7vw, 7rem);
+          max-width: 1180px;
           margin: 0 auto;
-          text-align: center;
+        }
+        .contact-hero-copy-column {
+          min-width: 0;
+          padding: 1.35rem 0;
         }
         .contact-kicker {
           display: inline-flex;
           align-items: center;
           gap: 10px;
-          border: 1px solid rgba(232,201,122,0.28);
+          border: 1px solid rgba(232,201,122,0.30);
           background: rgba(201,168,76,0.08);
           border-radius: 999px;
           padding: 7px 15px 7px 11px;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 34px rgba(0,0,0,0.16);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 12px 34px rgba(0,0,0,0.16);
         }
         .contact-kicker-dot {
           width: 7px;
           height: 7px;
           border-radius: 50%;
           background: ${GOLD_LIGHT};
-          box-shadow: 0 0 0 5px rgba(232,201,122,0.1), 0 0 12px ${GOLD};
+          box-shadow: 0 0 0 5px rgba(232,201,122,0.10), 0 0 12px ${GOLD};
         }
         .contact-kicker span {
           color: ${GOLD_LIGHT};
@@ -188,11 +206,11 @@ export default function Contact() {
           letter-spacing: 0.22em;
         }
         .contact-hero-title {
-          max-width: 780px;
-          margin: 1.35rem auto 0;
+          max-width: 680px;
+          margin: 1.35rem 0 0;
           color: ${TEXT};
           font-family: 'AdorshoLipi', sans-serif;
-          font-size: clamp(2.45rem, 6.5vw, 5rem);
+          font-size: clamp(2.55rem, 6vw, 5.1rem);
           font-weight: 700;
           letter-spacing: -0.035em;
           line-height: 1.12;
@@ -207,8 +225,8 @@ export default function Contact() {
           text-shadow: none;
         }
         .contact-hero-copy {
-          max-width: 595px;
-          margin: 1.25rem auto 0;
+          max-width: 560px;
+          margin: 1.2rem 0 0;
           color: ${MUTED};
           font-family: 'AdorshoLipi', sans-serif;
           font-size: clamp(0.98rem, 2vw, 1.08rem);
@@ -216,10 +234,9 @@ export default function Contact() {
         }
         .contact-hero-actions {
           display: flex;
-          justify-content: center;
           flex-wrap: wrap;
           gap: 0.8rem;
-          margin-top: 1.8rem;
+          margin-top: 1.7rem;
         }
         .contact-hero-action {
           display: inline-flex;
@@ -230,7 +247,7 @@ export default function Contact() {
           border: 1px solid rgba(201,168,76,0.30);
           border-radius: 999px;
           color: ${TEXT};
-          background: rgba(7,18,31,0.55);
+          background: rgba(7,18,31,0.58);
           text-decoration: none;
           font-family: 'AdorshoLipi', sans-serif;
           font-size: 0.86rem;
@@ -240,6 +257,88 @@ export default function Contact() {
           transform: translateY(-2px);
           border-color: rgba(232,201,122,0.72);
           background: rgba(201,168,76,0.10);
+        }
+        .contact-portrait-stage {
+          position: relative;
+          width: min(100%, 390px);
+          justify-self: end;
+          padding: 13px;
+        }
+        .contact-portrait-stage::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border: 1px solid rgba(232,201,122,0.48);
+          border-radius: 30px;
+          background: linear-gradient(145deg, rgba(201,168,76,0.16), rgba(10,25,43,0.08));
+          box-shadow: 0 30px 80px rgba(0,0,0,0.52), 0 0 65px rgba(201,168,76,0.13), inset 0 1px 0 rgba(255,255,255,0.18);
+        }
+        .contact-portrait-stage::after {
+          content: "";
+          position: absolute;
+          width: 58%;
+          height: 58%;
+          top: -15px;
+          right: -15px;
+          border: 1px solid rgba(232,201,122,0.26);
+          border-radius: 26px;
+          pointer-events: none;
+        }
+        .contact-portrait-frame {
+          position: relative;
+          z-index: 1;
+          aspect-ratio: 4 / 5;
+          overflow: hidden;
+          border: 1px solid rgba(250,246,239,0.10);
+          border-radius: 22px;
+          background: #0B1726;
+        }
+        .contact-portrait-frame img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center top;
+          filter: contrast(1.05) saturate(0.94) brightness(0.98);
+        }
+        .contact-portrait-frame::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(145deg, rgba(201,168,76,0.10), transparent 34%, rgba(4,12,22,0.20));
+          pointer-events: none;
+        }
+        .contact-portrait-ornament {
+          position: absolute;
+          z-index: 2;
+          left: -9px;
+          bottom: 34px;
+          display: grid;
+          place-items: center;
+          width: 31px;
+          height: 31px;
+          border: 1px solid rgba(232,201,122,0.56);
+          border-radius: 50%;
+          color: ${GOLD_LIGHT};
+          background: #0A1626;
+          box-shadow: 0 0 20px rgba(201,168,76,0.22);
+        }
+        @media (max-width: 820px) {
+          .contact-hero { padding: calc(var(--site-nav-offset, 84px) + 30px) 1rem 3.1rem; }
+          .contact-hero-inner { grid-template-columns: 1fr; gap: 1.5rem; max-width: 620px; text-align: center; }
+          .contact-hero-copy-column { order: 2; padding: 0; }
+          .contact-portrait-stage { order: 1; justify-self: center; width: min(78vw, 340px); padding: 10px; }
+          .contact-portrait-stage::after { top: -10px; right: -10px; }
+          .contact-hero-title, .contact-hero-copy { margin-left: auto; margin-right: auto; }
+          .contact-hero-actions { justify-content: center; }
+          .contact-hero-orbit { width: 130vw; height: 130vw; right: -56%; top: -25%; }
+        }
+        @media (max-width: 430px) {
+          .contact-portrait-stage { width: min(82vw, 315px); }
+          .contact-portrait-frame { border-radius: 18px; }
+          .contact-portrait-stage::before { border-radius: 25px; }
+          .contact-hero-title { font-size: clamp(2.25rem, 11vw, 2.85rem); }
+          .contact-hero-copy { line-height: 1.85; }
         }
         .contact-main {
           position: relative;
@@ -686,7 +785,12 @@ export default function Contact() {
         <section className="contact-hero">
           <div className="contact-hero-orbit" />
           <div className="contact-hero-inner">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.58 }}>
+            <motion.div
+              className="contact-hero-copy-column"
+              initial={{ opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.62 }}
+            >
               <div className="contact-kicker">
                 <span className="contact-kicker-dot" />
                 <span>DIRECT CONNECTION</span>
@@ -699,6 +803,24 @@ export default function Contact() {
                 <a className="contact-hero-action" href="mailto:lekhokmahbubsardarsabuj@gmail.com"><Mail size={16} /> ইমেইল করুন</a>
                 <a className="contact-hero-action" href="#contact-form"><Send size={15} /> বার্তা পাঠান</a>
               </div>
+            </motion.div>
+
+            <motion.div
+              className="contact-portrait-stage"
+              initial={{ opacity: 0, x: 28, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.75, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="contact-portrait-frame">
+                <img
+                  src={CONTACT_PORTRAIT}
+                  alt="মাহবুব সরদার সবুজ কোট পরা প্রতিকৃতি"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </div>
+              <span className="contact-portrait-ornament" aria-hidden="true"><Sparkles size={15} /></span>
             </motion.div>
           </div>
         </section>
