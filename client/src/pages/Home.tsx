@@ -788,10 +788,13 @@ export default function Home() {
           padding: 1.35rem 0.82rem 1.08rem;
           border-radius: 28px;
           border: 1px solid rgba(201,168,76,0.24);
-          background: linear-gradient(160deg, rgba(16,30,52,0.96) 0%, rgba(8,18,32,0.86) 100%);
+          background:
+            radial-gradient(circle at 50% -18%, rgba(232,201,122,0.16), transparent 48%),
+            linear-gradient(160deg, rgba(20,35,59,0.98) 0%, rgba(8,18,32,0.9) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.08),
-            0 22px 54px rgba(0,0,0,0.38),
+            inset 0 1px 0 rgba(255,255,255,0.10),
+            inset 0 -1px 0 rgba(0,0,0,0.22),
+            0 18px 42px rgba(0,0,0,0.34),
             0 2px 12px rgba(0,0,0,0.25),
             0 0 0 1px rgba(201,168,76,0.035);
           color: #FAF6EF;
@@ -799,6 +802,8 @@ export default function Home() {
           transition: border-color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
           position: relative;
           overflow: hidden;
+          isolation: isolate;
+          transform: translateZ(0);
         }
         .app-launcher-card::before {
           content: "";
@@ -808,6 +813,15 @@ export default function Home() {
           opacity: 0;
           transition: opacity 0.28s ease;
           pointer-events: none;
+        }
+        .app-launcher-card::after {
+          content: "";
+          position: absolute;
+          inset: 1px;
+          border-radius: calc(28px - 1px);
+          border: 1px solid rgba(255,255,255,0.035);
+          pointer-events: none;
+          z-index: -1;
         }
         .app-launcher-card:hover {
           border-color: rgba(201,168,76,0.62);
@@ -927,14 +941,22 @@ export default function Home() {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
           .hero-inner { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .hero-title span { font-size: clamp(2.28rem, 14.2vw, 4.4rem) !important; }
-          .app-launcher-shell { padding: 0.85rem; border-radius: 28px; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
-          .app-launcher-card { min-height: 112px; padding: 0.82rem 0.26rem 0.7rem; border-radius: 20px; }
+          .app-launcher-shell { padding: 0.92rem; border-radius: 28px; }
+          .app-launcher-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.68rem; }
+          .app-launcher-card { min-height: 130px; padding: 0.95rem 0.42rem 0.76rem; border-radius: 21px; }
+          .app-launcher-card::after { border-radius: calc(21px - 1px); }
           .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
           .app-icon-wrap svg { width: 21px; height: 21px; }
-          .app-label { font-size: 0.78rem; min-height: 2.6em; }
+          .app-label { font-size: 0.82rem; min-height: 2.5em; }
           .hero-portrait { height: 240px; }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .app-launcher-card,
+          .app-icon-wrap {
+            transition: none !important;
+          }
+        }
+
         /* Extra small mobile — 320px fix */
         @media (max-width: 360px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 4px); padding-bottom: 50px; }
