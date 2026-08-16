@@ -1942,6 +1942,7 @@ export default function AmiOLikhboBastobota() {
         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.28); border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.5); }
         .amio-feed { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
+        .amio-sticky-bar, .amio-feed-toolbar, .post-card-enter, .amio-post-card { min-width: 0; max-width: 100%; box-sizing: border-box; }
         @media (max-width: 480px) {
           .amio-feed-toolbar { gap: 0.45rem !important; padding: 0.6rem !important; }
           .amio-search-input { padding: 0.55rem 1.7rem 0.55rem 2.2rem !important; font-size: 0.84rem !important; }
@@ -1956,7 +1957,7 @@ export default function AmiOLikhboBastobota() {
       `}</style>
 
       <main style={{ padding: "calc(var(--site-nav-offset, 98px) + 1rem) 0 3rem", minHeight: "100vh" }}>
-        <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gap: "1rem" }}>
+        <div style={{ width: "min(720px, calc(100% - clamp(0.75rem, 4vw, 1.5rem)))", margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(0, 1fr)", minWidth: 0, gap: "1rem" }}>
 
           {/* ── Logo Header + Sticky Topbar ── */}
           {!slugFromUrl && (
@@ -2162,7 +2163,7 @@ export default function AmiOLikhboBastobota() {
 
           {/* ── Category Filter + My Posts Toggle ── */}
           {!slugFromUrl && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto", minWidth: 0, paddingBottom: 2, scrollbarWidth: "none" }}>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.key}
