@@ -11,7 +11,7 @@ const cases = [
   { name: 'writing discovery route', text: 'বিচ্ছেদের সেরা লেখাগুলো দেখাও', expect: ['/writings/', 'বিচ্ছেদ'] },
   { name: 'writing title search route', text: 'কিছু স্মৃতি কখনো ভোলা যায় না লেখাটি পড়তে চাই', expect: ['কিছু স্মৃতি কখনো ভোলা যায় না', '/writings/'] },
   { name: 'help menu route', text: 'তুমি কী কী করতে পারো help', expect: ['লেখক পরিচিতি', '/ebooks', '/contact'] },
-  { name: 'book recommendation route', text: 'আমি কোন বই দিয়ে শুরু করব', expect: ['অভিমান', 'সরাসরি অর্ডার করুন', 'Te303mA3TEyA', '/ebooks'] },
+  { name: 'book recommendation route', text: 'আমি কোন বই দিয়ে শুরু করব', expect: ['অভিমান', 'অভিমান অর্ডার করুন', 'Te303mA3TEyA', '/ebooks'] },
   {
     name: 'numbered follow-up route',
     messages: [

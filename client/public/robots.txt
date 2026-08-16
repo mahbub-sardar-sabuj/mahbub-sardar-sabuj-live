@@ -7,74 +7,9 @@ Disallow: /profile
 Disallow: /amio-likhbo-login
 Disallow: /404
 
-# Google AdSense crawlers — must be allowed for monetization
-User-agent: Mediapartners-Google
-Allow: /
-
-User-agent: AdsBot-Google
-Allow: /
-
-User-agent: AdsBot-Google-Mobile
-Allow: /
-
-User-agent: Googlebot
-Allow: /
-
-User-agent: Googlebot-News
-Allow: /
-
-User-agent: Googlebot-Image
-Allow: /
-
-# Bing
-User-agent: Bingbot
-Allow: /
-
-# AI/search answer engines — allow public crawling for factual site understanding
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: Claude-SearchBot
-Allow: /
-
-User-agent: Claude-User
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Perplexity-User
-Allow: /
-
-User-agent: YouBot
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: Bytespider
-Allow: /
-
-User-agent: Meta-ExternalAgent
-Allow: /
-
-User-agent: Meta-ExternalFetcher
-Allow: /
-
-User-agent: Amazonbot
-Allow: /
+# One global policy intentionally applies to Google, ad crawlers, social preview bots,
+# Bing and AI/search crawlers. This prevents a more-specific crawler group from
+# accidentally overriding the private-route Disallow rules above.
 
 # AI-readable site summary and ownership signal
 # https://www.mahbubsardarsabuj.com/llms.txt

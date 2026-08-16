@@ -79,6 +79,37 @@
   ],
   "routes": [
     {
+      "src": "/(.*)",
+      "headers": {
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+        "Content-Security-Policy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://cdn.msar.me; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.msar.me; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://ep1.adtrafficquality.google https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https: wss:; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://pagead2.googlesyndication.com; media-src 'self' blob:; worker-src 'self' blob:"
+      },
+      "continue": true
+    },
+    {
+      "src": "/bichhed-kobita/?",
+      "headers": { "Location": "/bichched-kobita" },
+      "status": 308
+    },
+    {
+      "src": "/api/(.*)",
+      "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" },
+      "continue": true
+    },
+    {
+      "src": "/admin/(.*)",
+      "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" },
+      "continue": true
+    },
+    {
+      "src": "/(profile|amio-likhbo-login)/?",
+      "headers": { "X-Robots-Tag": "noindex, nofollow, noarchive" },
+      "continue": true
+    },
+    {
       "src": "/api/trpc/(.*)",
       "dest": "/api/trpc-bundled?trpc=$1"
     },
@@ -233,12 +264,35 @@
       ]
     },
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",
-          "value": "index, follow"
-        },
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/(profile|amio-likhbo-login)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
         {
           "key": "X-Frame-Options",
           "value": "SAMEORIGIN"
