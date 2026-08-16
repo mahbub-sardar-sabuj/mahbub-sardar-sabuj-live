@@ -366,7 +366,6 @@ export default function About() {
                     })}
                   </div>
                 </div>
-                <div style={{ marginTop: "1rem", paddingTop: "0.9rem", borderTop: "1px solid rgba(201,168,76,0.16)", color: "rgba(250,246,239,0.62)", fontFamily: AL, fontSize: "0.84rem", lineHeight: 1.55 }}>এই পাতার বই ও পাঠের তথ্য লেখকের অফিসিয়াল catalogue থেকে নেওয়া হয়েছে।</div>
               </aside>
             </FadeUp>
           </div>
