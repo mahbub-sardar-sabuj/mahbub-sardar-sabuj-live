@@ -735,7 +735,7 @@ export default async function handler(req) {
       const canonicalWritingUrl = `${SITE_URL}/writings/${writing.slug}`;
       jsonLd = {
         "@context": "https://schema.org",
-        "@type": "CreativeWork",
+        "@type": "Article",
         "@id": canonicalWritingUrl + "#writing",
         "name": writing.title,
         "headline": writing.title,
@@ -744,7 +744,7 @@ export default async function handler(req) {
         "text": writing.content,
         "description": writing.preview,
         "genre": writing.category,
-        "datePublished": writing.date,
+        "articleSection": writing.category,
         "isAccessibleForFree": true,
         "author": {
           "@type": "Person",
@@ -753,7 +753,7 @@ export default async function handler(req) {
           "url": SITE_URL
         },
         "publisher": {
-          "@type": "Person",
+          "@type": "Organization",
           "name": "মাহবুব সরদার সবুজ",
           "url": SITE_URL
         },
@@ -773,7 +773,7 @@ export default async function handler(req) {
       };
       keywords = `${writing.title}, ${writing.category}, মাহবুব সরদার সবুজ, বাংলা কবিতা, bangla kobita, Mahbub Sardar Sabuj`;
       bodyContent = `
-        <article itemscope itemtype="https://schema.org/CreativeWork">
+        <article itemscope itemtype="https://schema.org/Article">
           <nav aria-label="breadcrumb">
             <ol>
               <li><a href="${SITE_URL}">হোম</a></li>

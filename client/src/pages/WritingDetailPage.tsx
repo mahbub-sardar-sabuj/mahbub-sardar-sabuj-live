@@ -4,7 +4,7 @@
  */
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Seo from "@/components/Seo";
+import Seo, { SITE_URL } from "@/components/Seo";
 import { loadWritingsArchive } from "@/lib/loadWritingsArchive";
 import type { Writing } from "@/data/writingsArchive";
 import { motion } from "framer-motion";
@@ -136,6 +136,23 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
 
   const shareUrl = writing ? `${window.location.origin}/writings/${makeSlug(writing.title, writing.id)}` : "";
 
+  const handleNativeShare = async () => {
+    if (!writing) return;
+    if (!navigator.share) {
+      handleCopy();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: `${writing.title} — মাহবুব সরদার সবুজ`,
+        text: `${writing.title} — মাহবুব সরদার সবুজের লেখা পড়ুন।`,
+        url: shareUrl,
+      });
+    } catch {
+      // User cancellation must not create an error state; they can still use copy or social actions.
+    }
+  };
+
   if (notFound) {
     return (
       <div style={{ background: "#020408", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -162,14 +179,52 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
 
   const c = getCatStyle(writing.category);
   const paragraphs = writing.content.split(/\n\n+/).filter(Boolean);
+  const writingPath = `/writings/${makeSlug(writing.title, writing.id)}`;
+  const writingUrl = `${SITE_URL}${writingPath}`;
+  const writingDescription = writing.content.slice(0, 160).trim();
+  const writingJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: writing.title,
+      description: writingDescription,
+      inLanguage: "bn-BD",
+      articleSection: writing.category,
+      author: {
+        "@type": "Person",
+        name: "মাহবুব সরদার সবুজ",
+        url: `${SITE_URL}/about`,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "মাহবুব সরদার সবুজ",
+        url: SITE_URL,
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": writingUrl,
+      },
+      isAccessibleForFree: true,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "হোম", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "লেখালেখি", item: `${SITE_URL}/writings` },
+        { "@type": "ListItem", position: 3, name: writing.title, item: writingUrl },
+      ],
+    },
+  ];
 
   return (
     <div style={{ background: T.page, minHeight: "100vh", display: "flex", flexDirection: "column", transition: "background .3s" }}>
       <Seo
         title={`${writing.title} — মাহবুব সরদার সবুজ`}
-        description={writing.content.slice(0, 160).trim()}
-        path={`/writings/${makeSlug(writing.title, writing.id)}`}
+        description={writingDescription}
+        path={writingPath}
         type="article"
+        jsonLd={writingJsonLd}
       />
       <Navbar />
 
@@ -306,6 +361,14 @@ export default function WritingDetailPage({ params }: { params?: { slug?: string
               </div>
               {/* Social share */}
               <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={handleNativeShare}
+                  style={{ width: 36, height: 36, borderRadius: "50%", background: `rgba(${c.accent.replace('#','').match(/.{2}/g)?.map(x=>parseInt(x,16)).join(',') ?? '201,168,76'},.12)`, border: `1px solid ${c.border}`, color: c.accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                  title="শেয়ার করুন"
+                  aria-label="শেয়ার করুন"
+                >
+                  <Share2 size={15} />
+                </button>
                 <a
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                   target="_blank" rel="noopener noreferrer"
