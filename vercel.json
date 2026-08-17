@@ -108,6 +108,13 @@
       "status": 308
     },
     {
+      "src": "/(facebook-recitations|temp-number|temp-card)/?",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
       "src": "/api/(.*)",
       "headers": {
         "X-Robots-Tag": "noindex, nofollow, noarchive"
