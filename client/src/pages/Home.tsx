@@ -882,12 +882,11 @@ export default function Home() {
         /* Mobile */
         @media (max-width: 768px) {
           .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
-          .hero-frame-wrap { --hero-frame-offset: -10px; }
+          .hero-frame-wrap { --hero-frame-offset: -10px; width: 100%; }
           .scroll-indicator { display: none; }
           .hero-inner { gap: 0.95rem; padding-left: 1rem !important; padding-right: 1rem !important; min-width: 0; }
           .hero-left { min-width: 0; width: 100%; }
-          .hero-right { display: flex; justify-content: center; width: 100%; padding-top: 0.55rem; }
-          .hero-frame-wrap { width: min(72vw, 278px); }
+          .hero-right { display: flex; justify-content: center; margin-top: -1.35rem; }
           .hero-title { width: 100%; }
           .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
           .app-launcher-shell { border-radius: 30px; padding: 1rem; }
@@ -896,7 +895,7 @@ export default function Home() {
           .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
           .app-label { font-size: 0.82rem; line-height: 1.25; }
           .app-subtitle { display: none; }
-          .hero-portrait { width: 100%; height: auto; aspect-ratio: 0.66; }
+          .hero-portrait { height: clamp(280px, 78vw, 420px); }
         }
 
         @media (max-width: 480px) {
@@ -910,8 +909,7 @@ export default function Home() {
           .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
           .app-icon-wrap svg { width: 21px; height: 21px; }
           .app-label { font-size: 0.82rem; min-height: 2.5em; }
-          .hero-frame-wrap { width: min(70vw, 258px); }
-          .hero-portrait { width: 100%; height: auto; aspect-ratio: 0.66; }
+          .hero-portrait { height: min(360px, calc(100vw - 24px)); }
         }
         /* Current layout premium polish — content, routes and interactions remain unchanged. */
         .home-page-premium {
@@ -1028,7 +1026,8 @@ export default function Home() {
           .home-page-premium .hero-right { justify-self: center; }
         }
         @media (max-width: 768px) {
-          .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 16px); padding-bottom: 44px; }
+          .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
+          .home-page-premium .hero-right { width: 100%; max-width: none; justify-self: stretch; }
           .home-page-premium .app-launcher-shell { padding: 1.08rem; }
           .home-page-premium .app-launcher-topbar { margin-bottom: 1.1rem; }
           .home-page-premium .app-launcher-card { min-height: 128px; }
