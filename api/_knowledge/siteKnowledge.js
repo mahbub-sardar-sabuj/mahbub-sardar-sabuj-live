@@ -174,20 +174,6 @@ export const SITE_PAGES = [
     description: "সাময়িক ব্যবহারের জন্য ডিসপোজেবল ইমেইল ঠিকানা তৈরির টুল। গোপনীয়তা রক্ষায় কাজে আসে।",
     keywords: ["টেম্পোরারি ইমেইল", "temp email", "disposable email", "ডিসপোজেবল", "সাময়িক ইমেইল"]
   },
-  {
-    key: "temp-number",
-    label: "টেম্পোরারি নম্বর",
-    path: "/temp-number",
-    description: "সাময়িক ব্যবহারের জন্য ভার্চুয়াল ফোন নম্বর তৈরির টুল।",
-    keywords: ["টেম্পোরারি নম্বর", "temp number", "virtual number", "ভার্চুয়াল নম্বর"]
-  },
-  {
-    key: "temp-card",
-    label: "টেম্পোরারি কার্ড",
-    path: "/temp-card",
-    description: "সাময়িক ব্যবহারের জন্য ভার্চুয়াল কার্ড তৈরির টুল।",
-    keywords: ["টেম্পোরারি কার্ড", "temp card", "virtual card", "ভার্চুয়াল কার্ড"]
-  },
 ];
 
 export const BOOKS = [

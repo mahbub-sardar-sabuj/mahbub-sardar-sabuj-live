@@ -34,8 +34,6 @@ const Profile = lazyRoute("Profile");
 const AmiOLikhboLogin = lazyRoute("AmiOLikhboLogin");
 const SeoKeywordLanding = lazyRoute("SeoKeywordLanding");
 const TempEmail = lazyRoute("TempEmail");
-const TempNumber = lazyRoute("TempNumber");
-const TempCard = lazyRoute("TempCard");
 const ImageUpscaler = lazyRoute("ImageUpscaler");
 const VideoUpscaler = lazyRoute("VideoUpscaler");
 const AudioEditor = lazyRoute("AudioEditor");
@@ -145,8 +143,6 @@ function Router() {
         <Route path={"/admin/writing"} component={AdminWritingModeration} />
         <Route path={"/admin/chatbot-analytics"} component={AdminChatbotAnalytics} />
         <Route path={"/temp-email"} component={TempEmail} />
-        <Route path={"/temp-number"} component={TempNumber} />
-        <Route path={"/temp-card"} component={TempCard} />
         <Route path={"/image-upscaler"} component={ImageUpscaler} />
         <Route path={"/video-upscaler"} component={VideoUpscaler} />
         <Route path={"/audio-editor"} component={AudioEditor} />

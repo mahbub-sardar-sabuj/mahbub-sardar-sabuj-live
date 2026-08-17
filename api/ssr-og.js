@@ -894,17 +894,7 @@ export default async function handler(req) {
     title = "টেম্প ইমেইল | ফ্রি অস্থায়ী ইমেইল | মাহবুব সরদার সবুজ";
     keywords = "টেম্প ইমেইল, temporary email, disposable email, ফ্রি ইমেইল, অস্থায়ী ইমেইল";
     description = "টেম্প ইমেইল পেজে দ্রুত disposable বা অস্থায়ী ইমেইল ব্যবহার করে অনলাইন signup, verification ও test কাজ সহজে করুন।";
-    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প ইমেইল — ফ্রি অস্থায়ী ইমেইল</h1><p>অনলাইন verification, signup test এবং privacy-friendly কাজের জন্য অস্থায়ী ইমেইল ব্যবহারের টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/temp-number">টেম্প নম্বর দেখুন</a> | <a href="https://www.mahbubsardarsabuj.com/temp-card">টেম্প কার্ড দেখুন</a></p></main>`;
-  } else if (path === "/temp-number") {
-    title = "টেম্প নম্বর | ফ্রি অস্থায়ী ফোন নম্বর | মাহবুব সরদার সবুজ";
-    keywords = "টেম্প নম্বর, temporary number, virtual phone number, অস্থায়ী ফোন নম্বর, verification number";
-    description = "টেম্প নম্বর পেজে verification ও test কাজের জন্য অস্থায়ী/ভার্চুয়াল ফোন নম্বর সম্পর্কিত সুবিধা ব্যবহার করুন।";
-    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প নম্বর — অস্থায়ী ফোন নম্বর</h1><p>অনলাইন test, verification এবং privacy-friendly ব্যবহারের জন্য টেম্প বা ভার্চুয়াল নম্বর সম্পর্কিত টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/temp-email">টেম্প ইমেইল দেখুন</a> | <a href="https://www.mahbubsardarsabuj.com/temp-card">টেম্প কার্ড দেখুন</a></p></main>`;
-  } else if (path === "/temp-card") {
-    title = "টেম্প কার্ড | টেস্ট ভার্চুয়াল কার্ড | মাহবুব সরদার সবুজ";
-    keywords = "টেম্প কার্ড, virtual card test, test card, temporary card, developer testing card";
-    description = "টেম্প কার্ড পেজে developer testing, UI preview ও demo কাজের জন্য virtual/test card সম্পর্কিত সুবিধা ব্যবহার করুন।";
-    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প কার্ড — টেস্ট ভার্চুয়াল কার্ড</h1><p>ডেমো, developer testing এবং UI preview কাজের জন্য টেম্প বা ভার্চুয়াল কার্ড সম্পর্কিত টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/temp-email">টেম্প ইমেইল</a> | <a href="https://www.mahbubsardarsabuj.com/temp-number">টেম্প নম্বর</a></p></main>`;
+    bodyContent = `<main itemscope itemtype="https://schema.org/WebApplication"><h1>টেম্প ইমেইল — ফ্রি অস্থায়ী ইমেইল</h1><p>অনলাইন signup test এবং privacy-friendly কাজের জন্য অস্থায়ী ইমেইল ব্যবহারের টুল।</p><p><a href="https://www.mahbubsardarsabuj.com/">হোম পেজে ফিরুন</a></p></main>`;
   } else if (path === "/image-upscaler") {
     title = "ইমেজ আপসেলার | AI Image Upscaler | মাহবুব সরদার সবুজ";
     keywords = "ইমেজ আপসেলার, image upscaler, AI image enhancer, photo quality improve, ছবি HD করা";
@@ -985,7 +975,7 @@ export default async function handler(req) {
     </article>`;
   }
 
-  const noIndexUtilityPaths = new Set(["/temp-email", "/temp-number", "/temp-card"]);
+  const noIndexUtilityPaths = new Set(["/temp-email"]);
   const isNoIndexUtilityPath = noIndexUtilityPaths.has(path);
   const robotsContent = isNoIndexUtilityPath
     ? "noindex, nofollow, noarchive"

@@ -18,7 +18,7 @@ const CARD_BG = "rgba(255,255,255,0.03)";
 const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
-const TEMP_EMAIL_API = "/api/sms-proxy?service=temp-email";
+const TEMP_EMAIL_API = "/api/temp-email-proxy";
 const DEFAULT_USERNAME = "mahbubsardarsabuj";
 
 interface ProxyError {

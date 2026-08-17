@@ -160,8 +160,6 @@ const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/video-upscaler", label: "ভিডিও আপস্কেলার খুলুন", keywords: ["video upscaler", "ভিডিও আপস্কেল"] },
   { path: "/audio-editor", label: "অডিও এডিটর খুলুন", keywords: ["audio editor", "অডিও এডিটর"] },
   { path: "/temp-email", label: "টেম্পোরারি ইমেইল খুলুন", keywords: ["temp email", "টেম্পোরারি ইমেইল"] },
-  { path: "/temp-number", label: "টেম্পোরারি নম্বর খুলুন", keywords: ["temp number", "টেম্পোরারি নম্বর"] },
-  { path: "/temp-card", label: "টেম্পোরারি কার্ড খুলুন", keywords: ["temp card", "টেম্পোরারি কার্ড"] },
   { path: "/amio-likhbo-login", label: "কমিউনিটি লগইন খুলুন", keywords: ["login", "সাইন ইন", "কমিউনিটি লগইন"] },
   { path: "/profile", label: "প্রোফাইল খুলুন", keywords: ["profile", "প্রোফাইল", "আমার account"] },
   { path: "/privacy-policy", label: "Privacy Policy দেখুন", keywords: ["privacy", "প্রাইভেসি", "গোপনীয়তা"] },

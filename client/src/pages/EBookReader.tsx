@@ -26,6 +26,10 @@ import Footer from "@/components/Footer";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import Seo from "@/components/Seo";
 import { Link } from "wouter";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.js?url";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 // ই-বুক ডেটা
 const ebookData: Record<string, {
@@ -118,53 +122,9 @@ export default function EBookReader() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [pageInput, setPageInput] = useState("1");
-  const [pdfJsLoaded, setPdfJsLoaded] = useState(false);
-
-  // PDF.js লোড করা — CDN ব্যর্থ হলে infinite loading না দেখিয়ে পাঠককে fallback দেখানো
-  useEffect(() => {
-    if ((window as any).pdfjsLib) {
-      setPdfJsLoaded(true);
-      return;
-    }
-
-    let cancelled = false;
-    const script = document.createElement("script");
-    const timeout = window.setTimeout(() => {
-      if (!cancelled && !(window as any).pdfjsLib) {
-        setIsLoading(false);
-        setError("রিডার চালু হতে বেশি সময় লাগছে। অনুগ্রহ করে পেজটি রিফ্রেশ করুন অথবা নিচের বইয়ের তথ্য থেকে আবার চেষ্টা করুন।");
-      }
-    }, 20000);
-
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-    script.async = true;
-    script.onload = () => {
-      window.clearTimeout(timeout);
-      if (cancelled) return;
-      (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      setPdfJsLoaded(true);
-    };
-    script.onerror = () => {
-      window.clearTimeout(timeout);
-      if (cancelled) return;
-      setIsLoading(false);
-      setError("PDF রিডার লোড করা যায়নি। ইন্টারনেট সংযোগ যাচাই করে পুনরায় চেষ্টা করুন।");
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-      script.onerror = null;
-      script.onload = null;
-    };
-  }, []);
-
   // PDF লোড করা
   useEffect(() => {
-    if (!pdfJsLoaded || !book) return;
-    const pdfjsLib = (window as any).pdfjsLib;
+    if (!book) return;
     setIsLoading(true);
     setError("");
     setPdfReady(false);
@@ -206,7 +166,7 @@ export default function EBookReader() {
       window.clearTimeout(timeout);
       try { loadingTask.destroy?.(); } catch (_) {}
     };
-  }, [pdfJsLoaded, slug, book]);
+  }, [slug, book]);
 
   // ── renderPage: zoom সঠিকভাবে কাজ করে, high-DPI (retina) সাপোর্ট ──────────
   const renderPage = useCallback(async (pageNum: number) => {

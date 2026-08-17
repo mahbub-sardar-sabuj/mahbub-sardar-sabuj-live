@@ -851,6 +851,7 @@ const PostCard = memo(function PostCard({
   const isBase64InFeed = hasImage && post.mediaUrl!.startsWith("data:");
   const mediaRef = useRef<HTMLDivElement>(null);
   const [mediaVisible, setMediaVisible] = useState(false);
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
 
   useEffect(() => {
     if (!isBase64InFeed) return;
@@ -875,6 +876,12 @@ const PostCard = memo(function PostCard({
   const resolvedMediaUrl = isBase64InFeed
     ? (mediaQuery.data?.mediaUrl ?? null)
     : post.mediaUrl;
+  const isMediaPending = isBase64InFeed && (!mediaVisible || mediaQuery.isPending || mediaQuery.isFetching);
+
+  useEffect(() => {
+    setImageLoadFailed(false);
+  }, [post.id, resolvedMediaUrl]);
+
   const isLong = post.content.length > 280;
   const speakPost = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -1058,7 +1065,7 @@ const PostCard = memo(function PostCard({
       {/* Media: normal URL shown directly; base64 lazy-loaded via getPostMedia */}
       {post.mediaType === "image" && hasImage && (
         <div ref={isBase64InFeed ? mediaRef : undefined} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(232,201,122,0.18)", boxShadow: "0 4px 24px rgba(0,0,0,0.28)" }}>
-          {resolvedMediaUrl ? (
+          {resolvedMediaUrl && !imageLoadFailed ? (
             <img
               src={resolvedMediaUrl}
               alt={post.title}
@@ -1066,10 +1073,15 @@ const PostCard = memo(function PostCard({
               style={{ width: "100%", maxHeight: 440, objectFit: "cover", display: "block" }}
               loading="lazy"
               onClick={() => onOpenDetail(post.slug)}
+              onError={() => setImageLoadFailed(true)}
             />
-          ) : (
-            <div style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(232,201,122,0.5)", fontSize: 13 }}>
+          ) : isMediaPending ? (
+            <div aria-live="polite" style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(232,201,122,0.5)", fontSize: 13 }}>
               <RefreshCw size={16} style={{ animation: "spin 0.8s linear infinite", marginRight: 8 }} /> ছবি লোড হচ্ছে...
+            </div>
+          ) : (
+            <div role="status" style={{ minHeight: 80, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", color: "rgba(253,246,236,0.58)", fontSize: 13, textAlign: "center", background: "rgba(255,255,255,0.025)" }}>
+              ছবিটি এই মুহূর্তে পাওয়া যাচ্ছে না
             </div>
           )}
         </div>

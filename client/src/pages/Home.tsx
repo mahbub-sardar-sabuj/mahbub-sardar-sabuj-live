@@ -14,7 +14,7 @@ interface BeforeInstallPromptEvent extends Event {
 import {
   BookOpen, Mic2, Images, Newspaper, Mail,
   UserRound, Palette,
-  Star, Feather, Sparkles, Video, Music, Download, Smartphone, MailOpen, Phone, CreditCard
+  Star, Feather, Sparkles, Video, Music, Download, Smartphone, MailOpen
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -25,6 +25,7 @@ import RulesSection from "@/components/RulesSection";
 // ── Assets ────────────────────────────────────────────────────────────────────
 // Critical LCP assets are served locally so Vercel/CDN caching is controlled by this project.
 const PROFILE_1 = "/images/home/profile-home.jpeg";
+const PROFILE_FALLBACK = "/images/author-photo.jpg";
 const HERO_BG = "/images/home/hero-bg.webp";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
 
@@ -38,8 +39,6 @@ const sections = [
   { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
   { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
   { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
-  { label: "টেম্প নম্বর", subtitle: "বিনামূল্যে ডিসপোজেবল ফোন নম্বর", href: "/temp-number", icon: Phone },
-  { label: "টেম্প কার্ড", subtitle: "টেস্টিংয়ের জন্য ভার্চুয়াল কার্ড", href: "/temp-card", icon: CreditCard },
   { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
   { label: "ভিডিও আপস্কেলার", subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Video },
   { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", icon: Music },
@@ -371,7 +370,13 @@ export default function Home() {
                   <img
                     src={PROFILE_1}
                     alt="মাহবুব সরদার সবুজ - বাংলা কবি ও লেখক - অফিসিয়াল প্রোফাইল ছবি"
-                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+                    onError={(e) => {
+                      const image = e.currentTarget;
+                      if (image.dataset.fallbackApplied !== "true") {
+                        image.dataset.fallbackApplied = "true";
+                        image.src = PROFILE_FALLBACK;
+                      }
+                    }}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -878,6 +883,7 @@ export default function Home() {
           .scroll-indicator { display: none; }
           .hero-inner { gap: 0.95rem; padding-left: 1rem !important; padding-right: 1rem !important; min-width: 0; }
           .hero-left { min-width: 0; width: 100%; }
+          .hero-right { display: none; }
           .hero-title { width: 100%; }
           .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
           .app-launcher-shell { border-radius: 30px; padding: 1rem; }

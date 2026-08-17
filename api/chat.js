@@ -1281,6 +1281,7 @@ reply = reply.replace(/\[BUTTON:(?:undefined|null|)\]/gi, "");
 reply = reply.replace(/\[ORDER:([^|\]]+)\|(undefined|null)\]/gi, "");
 reply = reply.replace(/(^|[\s:])https:\/\/rkmri\.co\/Te303mA3TEyA\/?/gi, "$1[ORDER:অভিমান অর্ডার করুন|https://rkmri.co/Te303mA3TEyA/]");
 reply = reply.replace(/(^|[\s:])https:\/\/rkmri\.co\/IIAReAoMpRyp\/?/gi, "$1[ORDER:দুঃখবিলাস অর্ডার করুন|https://rkmri.co/IIAReAoMpRyp/]");
+reply = reply.replace(/সব বই দেখতে\s*:\s*(?=(?:\r?\n|$))/g, "সব বই দেখতে [BUTTON:/ebooks]");
 reply = reply.replace(/\bundefined\b/gi, "");
 // Convert internal site links to BUTTON format
 reply = reply.replace(/\[([^\]]+)\]\(https?:\/\/(?:www\.)?mahbubsardarsabuj\.com(\/[^\)]*)?\)/g, (_, _t, path) => path ? `[BUTTON:${path}]` : `[BUTTON:/]`);

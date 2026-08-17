@@ -1,4 +1,4 @@
-import handler from "../api/sms-proxy.js";
+import handler from "../api/temp-email-proxy.js";
 
 function createResponse() {
   const result = { status: 200, headers: {}, body: undefined, ended: false };
@@ -25,7 +25,7 @@ function createResponse() {
 
 async function invoke(body) {
   const { res, result } = createResponse();
-  await handler({ method: "POST", query: { service: "temp-email" }, body }, res);
+  await handler({ method: "POST", query: {}, body }, res);
   if (!result.ended) throw new Error(`No response for ${body.action}`);
   return result;
 }
