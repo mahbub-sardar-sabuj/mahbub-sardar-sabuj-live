@@ -296,12 +296,14 @@ export default function TempEmail() {
   };
 
   // Fetch messages
-  const fetchMessages = useCallback(async (acc: EmailAccount) => {
+  const fetchMessages = useCallback(async (acc: EmailAccount, preserved: Message[] = []) => {
     try {
       const data = await tempEmailRequest<{ "hydra:member"?: Message[] }>("messages", { token: acc.token });
       const incoming = data["hydra:member"] || [];
       setMessages((previous) => {
-        const next = mergeMessages(previous, incoming);
+        // On hydration, React may batch the stored-state update with this fetch.
+        // Merge the explicit snapshot as well so an empty provider delta cannot erase history.
+        const next = mergeMessages(mergeMessages(previous, preserved), incoming);
         storeMessages(next);
         return next;
       });
@@ -368,9 +370,10 @@ export default function TempEmail() {
   useEffect(() => {
     const stored = readStoredAccount();
     if (!stored) return;
+    const cachedMessages = readStoredMessages();
     setAccount(stored);
-    setMessages(readStoredMessages());
-    void fetchMessages(stored);
+    setMessages(cachedMessages);
+    void fetchMessages(stored, cachedMessages);
     startAutoRefresh(stored);
   }, [fetchMessages, startAutoRefresh]);
 
