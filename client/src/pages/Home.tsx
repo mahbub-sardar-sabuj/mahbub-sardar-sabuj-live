@@ -365,6 +365,10 @@ export default function Home() {
                   borderRadius: 20,
                   overflow: "hidden",
                   boxShadow: "0 50px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.3), 0 0 80px rgba(201,168,76,0.12)",
+                  backgroundColor: "#0A1728",
+                  backgroundImage: `url(${PROFILE_1})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center top",
                   zIndex: 1,
                 }}>
                   <img
@@ -379,7 +383,6 @@ export default function Home() {
                     }}
                     style={{
                       width: "100%",
-                      height: "100%",
                       objectFit: "cover",
                       objectPosition: "center top",
                       display: "block",
@@ -883,7 +886,8 @@ export default function Home() {
           .scroll-indicator { display: none; }
           .hero-inner { gap: 0.95rem; padding-left: 1rem !important; padding-right: 1rem !important; min-width: 0; }
           .hero-left { min-width: 0; width: 100%; }
-          .hero-right { display: none; }
+          .hero-right { display: flex; justify-content: center; width: 100%; padding-top: 0.55rem; }
+          .hero-frame-wrap { width: min(72vw, 278px); }
           .hero-title { width: 100%; }
           .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
           .app-launcher-shell { border-radius: 30px; padding: 1rem; }
@@ -892,7 +896,7 @@ export default function Home() {
           .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
           .app-label { font-size: 0.82rem; line-height: 1.25; }
           .app-subtitle { display: none; }
-          .hero-portrait { height: 260px; }
+          .hero-portrait { width: 100%; height: auto; aspect-ratio: 0.66; }
         }
 
         @media (max-width: 480px) {
@@ -906,7 +910,8 @@ export default function Home() {
           .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
           .app-icon-wrap svg { width: 21px; height: 21px; }
           .app-label { font-size: 0.82rem; min-height: 2.5em; }
-          .hero-portrait { height: 240px; }
+          .hero-frame-wrap { width: min(70vw, 258px); }
+          .hero-portrait { width: 100%; height: auto; aspect-ratio: 0.66; }
         }
         /* Current layout premium polish — content, routes and interactions remain unchanged. */
         .home-page-premium {
