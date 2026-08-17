@@ -108,6 +108,45 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)} দিন আগে`;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildMessageDocument(message: MessageDetail): string {
+  const html = message.html.join("").trim();
+  const body = html || `<pre>${escapeHtml(message.text || "(ইমেইলে কোনো টেক্সট নেই)")}</pre>`;
+
+  return `<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      html, body { max-width: 100%; margin: 0; background: #ffffff; color: #172033; }
+      body { padding: 18px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; word-break: break-word; }
+      img, video, svg, table, blockquote, pre { max-width: 100% !important; }
+      img, video { height: auto !important; }
+      table { width: auto !important; border-collapse: collapse; }
+      td, th { max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+      pre { white-space: pre-wrap; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      a { color: #075bc9; overflow-wrap: anywhere; }
+      @media (max-width: 520px) {
+        body { padding: 14px; font-size: 15px; }
+        table { width: 100% !important; }
+      }
+    </style>
+  </head>
+  <body>${body}</body>
+</html>`;
+}
+
 export default function TempEmail() {
   const [account, setAccount] = useState<EmailAccount | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -917,33 +956,40 @@ export default function TempEmail() {
                   initial={{ scale: 0.95, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.95, y: 20 }}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="temp-email-message-title"
                   style={{
                     background: "#0d1929",
                     border: `1px solid rgba(201,168,76,0.25)`,
                     borderRadius: 20,
-                    padding: "28px 24px",
                     maxWidth: 680,
                     width: "100%",
-                    maxHeight: "80vh",
-                    overflowY: "auto",
+                    maxHeight: "min(92dvh, 780px)",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    boxShadow: "0 24px 80px rgba(0,0,0,0.46)",
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Modal Header */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 20 }}>
-                    <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "20px 20px 16px", borderBottom: `1px solid ${BORDER}`, flexShrink: 0 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <h3
+                        id="temp-email-message-title"
                         style={{
                           color: TEXT,
                           fontSize: "1.1rem",
                           fontWeight: 700,
                           margin: "0 0 8px",
+                          overflowWrap: "anywhere",
                         }}
                       >
                         {selectedMessage.subject || "(কোনো বিষয় নেই)"}
                       </h3>
-                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                        <span style={{ color: MUTED, fontSize: "0.82rem" }}>
+                      <div style={{ display: "flex", gap: 8, flexDirection: "column" }}>
+                        <span style={{ color: MUTED, fontSize: "0.82rem", overflowWrap: "anywhere" }}>
                           <strong style={{ color: GOLD_LIGHT }}>প্রেরক:</strong>{" "}
                           {selectedMessage.from.name
                             ? `${selectedMessage.from.name} <${selectedMessage.from.address}>`
@@ -957,11 +1003,12 @@ export default function TempEmail() {
                     </div>
                     <button
                       onClick={() => setSelectedMessage(null)}
+                      aria-label="ইমেইল বন্ধ করুন"
                       style={{
                         background: "rgba(255,255,255,0.06)",
                         border: `1px solid ${BORDER}`,
                         borderRadius: 10,
-                        padding: "8px 14px",
+                        padding: "8px 12px",
                         color: TEXT,
                         cursor: "pointer",
                         fontSize: "0.85rem",
@@ -972,47 +1019,26 @@ export default function TempEmail() {
                     </button>
                   </div>
 
-                  {/* Divider */}
-                  <div style={{ height: 1, background: BORDER, marginBottom: 20 }} />
-
-                  {/* Message Body */}
-                  <div
-                    style={{
-                      color: TEXT,
-                      fontSize: "0.92rem",
-                      lineHeight: 1.8,
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {selectedMessage.html && selectedMessage.html.length > 0 ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: selectedMessage.html.join(""),
-                        }}
-                        style={{
-                          background: "rgba(255,255,255,0.02)",
-                          borderRadius: 10,
-                          padding: 16,
-                          color: TEXT,
-                        }}
-                      />
-                    ) : (
-                      <pre
-                        style={{
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          background: "rgba(255,255,255,0.02)",
-                          borderRadius: 10,
-                          padding: 16,
-                          margin: 0,
-                          color: TEXT,
-                          fontFamily: "monospace",
-                          fontSize: "0.88rem",
-                        }}
-                      >
-                        {selectedMessage.text || "(ইমেইলে কোনো টেক্সট নেই)"}
-                      </pre>
-                    )}
+                  {/* Sandboxed message body: scrolls inside its own light, readable document. */}
+                  <div style={{ padding: "16px", background: "rgba(255,255,255,0.02)", minHeight: 0 }}>
+                    <iframe
+                      title={`${selectedMessage.subject || "ইমেইল"} — পূর্ণ বার্তা`}
+                      srcDoc={buildMessageDocument(selectedMessage)}
+                      sandbox=""
+                      referrerPolicy="no-referrer"
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        height: "min(56dvh, 560px)",
+                        minHeight: 320,
+                        border: "1px solid rgba(15, 25, 41, 0.18)",
+                        borderRadius: 12,
+                        background: "#ffffff",
+                      }}
+                    />
+                    <p style={{ color: MUTED, fontSize: "0.76rem", lineHeight: 1.5, margin: "10px 2px 0", fontFamily: "'AdorshoLipi', sans-serif" }}>
+                      সম্পূর্ণ বার্তা দেখতে ভেতরের অংশে স্ক্রল করুন। প্রয়োজনীয় সাধারণ লেখা নির্বাচন করে কপি করা যাবে।
+                    </p>
                   </div>
                 </motion.div>
               </motion.div>
