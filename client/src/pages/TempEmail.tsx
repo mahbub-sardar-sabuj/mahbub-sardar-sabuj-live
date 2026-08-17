@@ -209,6 +209,14 @@ function randomString(length: number): string {
   return result;
 }
 
+function randomDigits(length: number): string {
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += Math.floor(Math.random() * 10).toString();
+  }
+  return result;
+}
+
 // Sanitize custom username: lowercase, alphanumeric + dot/underscore/hyphen only
 function sanitizeUsername(input: string): string {
   return input
@@ -293,7 +301,7 @@ export default function TempEmail() {
     const domains = await getDomains();
     if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
 
-    const requestedAddress = `mahbubsardarsabuj${Date.now()}${Math.floor(100 + Math.random() * 900)}@${domains[0]}`;
+    const requestedAddress = `mahbubsardarsabuj01${randomDigits(6)}@${domains[0]}`;
     const accountData = await tempEmailRequest<Record<string, string>>("createAccount", {
       address: requestedAddress,
       password: randomString(16),
@@ -648,13 +656,9 @@ export default function TempEmail() {
                 >
                   নতুন টেম্পোরারি ইমেইল তৈরি করুন
                 </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 10px" }}>
+                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 22px" }}>
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ব্যক্তিগত ডিসপোজেবল ইনবক্স
                 </p>
-                <p style={{ color: "rgba(232,201,122,0.76)", fontSize: "0.78rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 22px" }}>
-                  ইউনিক ঠিকানা · ৩০ সেকেন্ডে স্বয়ংক্রিয় inbox refresh
-                </p>
-
                 <button
                   onClick={generateEmail}
                   disabled={generating}
