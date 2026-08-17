@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "node scripts/run-community-migration.mjs && node scripts/sync-news-seo.cjs && tsx scripts/export-writings-archive.ts && node scripts/build-chatbot-index.mjs && node scripts/verify-content-pipeline.mjs && esbuild scripts/trpc-bundled-entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/trpc-bundled.js && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "node scripts/run-community-migration.mjs && node scripts/sync-news-seo.cjs && tsx scripts/export-writings-archive.ts && node scripts/generate-gallery-image-seo.mjs && node scripts/build-chatbot-index.mjs && node scripts/verify-content-pipeline.mjs && esbuild scripts/trpc-bundled-entry.ts --platform=node --packages=external --bundle --format=esm --outfile=api/trpc-bundled.js && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "chatbot:index": "node scripts/build-chatbot-index.mjs",
@@ -25,6 +25,7 @@
     "sync:all": "node scripts/sync-all.mjs",
     "sync:archive": "tsx scripts/export-writings-archive.ts",
     "sync:sitemap": "node scripts/generate-writings-sitemap.mjs",
+    "seo:gallery": "node scripts/generate-gallery-image-seo.mjs",
     "content:verify": "node scripts/verify-content-pipeline.mjs"
   },
   "dependencies": {

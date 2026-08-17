@@ -21,6 +21,7 @@ Crawl-delay: 1
 # Canonical discovery endpoints for Google Search Console and other crawlers
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap-index.xml
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
+Sitemap: https://www.mahbubsardarsabuj.com/gallery-image-sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml
 Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-1.xml
 Sitemap: https://www.mahbubsardarsabuj.com/writings-sitemap-2.xml

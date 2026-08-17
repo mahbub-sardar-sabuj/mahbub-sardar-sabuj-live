@@ -76,7 +76,7 @@
       "permanent": true
     },
     {
-      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|sitemap-index.xml|news-sitemap.xml|writings-sitemap-1.xml|writings-sitemap-2.xml|writings-sitemap-3.xml|manifest.json|llms.txt|humans.txt).*)",
+      "source": "/:path((?!ads.txt|robots.txt|sitemap.xml|sitemap-index.xml|gallery-image-sitemap.xml|news-sitemap.xml|writings-sitemap-1.xml|writings-sitemap-2.xml|writings-sitemap-3.xml|manifest.json|llms.txt|humans.txt).*)",
       "has": [
         {
           "type": "host",
@@ -250,6 +250,10 @@
     {
       "src": "/sitemap-index.xml",
       "dest": "/sitemap-index.xml"
+    },
+    {
+      "src": "/gallery-image-sitemap.xml",
+      "dest": "/gallery-image-sitemap.xml"
     },
     {
       "src": "/news-sitemap.xml",

@@ -1,5 +1,6 @@
 export const config = { runtime: "edge" };
 import writingsArchive from "./_knowledge/writingsArchive.js";
+import { galleryImages, galleryPrimaryImage } from "./_knowledge/galleryImages.js";
 
 const SITE_URL = "https://www.mahbubsardarsabuj.com";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-home-suit.jpg`;
@@ -460,6 +461,7 @@ function buildCollectionItems(path) {
 
 function buildRouteJsonLd(path, url, title, description) {
   const collectionRoutes = new Set(["/writings", "/ebooks", "/news", "/gallery", "/amio-likhbo-bastobota", "/editor", "/image-upscaler", ...Object.keys(seoKeywordPages)]);
+  const primaryImage = path === "/gallery" && galleryPrimaryImage ? galleryPrimaryImage : DEFAULT_IMAGE;
   const contactRoutes = new Set(["/contact"]);
   const pageType = contactRoutes.has(path) ? "ContactPage" : collectionRoutes.has(path) ? "CollectionPage" : "WebPage";
   const graph = [
@@ -476,7 +478,7 @@ function buildRouteJsonLd(path, url, title, description) {
       inLanguage: "bn-BD",
       isPartOf: { "@id": `${SITE_URL}/#website` },
       about: { "@id": `${SITE_URL}/#person` },
-      primaryImageOfPage: { "@type": "ImageObject", url: DEFAULT_IMAGE },
+      primaryImageOfPage: { "@type": "ImageObject", url: primaryImage },
     },
   ];
   if (path !== "/" && path !== "") graph.push(buildBreadcrumbJsonLd(path, url));
@@ -488,6 +490,26 @@ function buildRouteJsonLd(path, url, title, description) {
       "@id": `${url}#itemlist`,
       name: title,
       itemListElement: items,
+    });
+  }
+  if (path === "/gallery") {
+    graph.push({
+      "@context": "https://schema.org",
+      "@type": "ImageGallery",
+      "@id": `${url}#gallery`,
+      name: "মাহবুব সরদার সবুজের ফটো গ্যালারি",
+      url,
+      about: { "@id": `${SITE_URL}/#person` },
+      image: galleryImages.map((item, index) => ({
+        "@type": "ImageObject",
+        "@id": `${item.src}#image`,
+        contentUrl: item.src,
+        url: item.src,
+        name: `${item.caption} — মাহবুব সরদার সবুজ`,
+        caption: item.caption,
+        representativeOfPage: index === 0,
+        creator: { "@id": `${SITE_URL}/#person` },
+      })),
     });
   }
   return graph;
@@ -712,11 +734,18 @@ export default async function handler(req) {
       <ul>${ebookData.map(e => `<li><a href="${SITE_URL}/ebooks/read/${e.slug}">${e.title}</a> — ${e.description}</li>`).join("")}</ul>
     </article>`;
   } else if (path === "/gallery") {
-    title = "গ্যালারি | মাহবুব সরদার সবুজ";
-    description = "লেখকের বিভিন্ন অনুষ্ঠান, সাহিত্য আড্ডা এবং ব্যক্তিগত মুহূর্তের আলোকচিত্র।";
+    title = "গ্যালারি | মাহবুব সরদার সবুজের ছবি সংগ্রহ | Mahbub Sardar Sabuj Gallery";
+    description = "মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো গ্যালারি। বাংলাদেশের জনপ্রিয় কবি ও লেখকের ছবি সংগ্রহ।";
+    keywords = "মাহবুব সরদার সবুজ গ্যালারি, Mahbub Sardar Sabuj photos, বাংলা লেখক ছবি, বাংলাদেশি কবির ছবি, Mahbub Sardar Sabuj gallery, বাংলা সাহিত্যিক ছবি";
+    image = galleryPrimaryImage || DEFAULT_IMAGE;
+    imageType = /\\.webp(?:$|[?#])/i.test(image) ? "image/webp" : "image/jpeg";
     bodyContent = `<article itemscope itemtype="https://schema.org/ImageGallery">
-      <h1>গ্যালারি — মাহবুব সরদার সবুজ</h1>
-      <p>মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম ও স্মৃতির ফটো গ্যালারি। এই গ্যালারিতে লেখকের সাহিত্য অনুষ্ঠান, বই মেলা, সাংস্কৃতিক ইভেন্ট এবং ব্যক্তিগত মুহূর্তের ছবি রয়েছে।</p>
+      <h1>গ্যালারি — মাহবুব সরদার সবুজের ছবি সংগ্রহ</h1>
+      <p>মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো গ্যালারি। প্রতিটি ছবির সঙ্গে তার প্রাসঙ্গিক বর্ণনা দেওয়া আছে।</p>
+      <section aria-label="মাহবুব সরদার সবুজের গ্যালারি ছবি">
+        <h2>মাহবুব সরদার সবুজের নির্বাচিত ছবি</h2>
+        ${galleryImages.map((item) => `<figure itemscope itemtype="https://schema.org/ImageObject"><img src="${escapeHtml(item.src)}" alt="${escapeHtml(`${item.caption} — মাহবুব সরদার সবুজ`)}" itemprop="contentUrl" /><figcaption itemprop="caption">${escapeHtml(item.caption)} — মাহবুব সরদার সবুজ</figcaption></figure>`).join("")}
+      </section>
       <p><a href="${SITE_URL}/writings">কবিতা পড়ুন</a> | <a href="${SITE_URL}/about">লেখক পরিচিতি</a> | <a href="${SITE_URL}">হোম পেজ</a></p>
     </article>`;
   } else if (path.startsWith("/writings/") && path.length > "/writings/".length) {

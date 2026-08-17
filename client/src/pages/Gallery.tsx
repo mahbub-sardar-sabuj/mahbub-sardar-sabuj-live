@@ -176,16 +176,40 @@ export default function Gallery() {
         title="গ্যালারি | মাহবুব সরদার সবুজের ছবি সংগ্রহ | Mahbub Sardar Sabuj Gallery"
         description="মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, শিল্পকর্ম, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো গ্যালারি। বাংলাদেশের জনপ্রিয় কবি ও লেখকের ছবি সংগ্রহ।"
         path="/gallery"
-        image={PROFILE_1}
-        imageAlt="মাহবুব সরদার সবুজ — বাংলাদেশি কবি ও লেখক"
+        image={galleryImages[0].src}
+        imageAlt="লেখকের প্রতিকৃতি — মাহবুব সরদার সবুজ, বাংলাদেশি কবি ও লেখক"
         keywords="মাহবুব সরদার সবুজ গ্যালারি, Mahbub Sardar Sabuj photos, বাংলা লেখক ছবি, বাংলাদেশি কবির ছবি, Mahbub Sardar Sabuj gallery, বাংলা সাহিত্যিক ছবি"
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "ImageGallery",
-          name: "মাহবুব সরদার সবুজের ফটো গ্যালারি",
-          description: "মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো সংগ্রহ",
-          url: "https://www.mahbubsardarsabuj.com/gallery",
-          author: { "@type": "Person", name: "Mahbub Sardar Sabuj", url: "https://www.mahbubsardarsabuj.com/" },
+          "@graph": [
+            {
+              "@type": "WebPage",
+              "@id": "https://www.mahbubsardarsabuj.com/gallery#webpage",
+              url: "https://www.mahbubsardarsabuj.com/gallery",
+              name: "গ্যালারি | মাহবুব সরদার সবুজের ছবি সংগ্রহ",
+              description: "মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো সংগ্রহ",
+              primaryImageOfPage: {
+                "@type": "ImageObject",
+                contentUrl: `https://www.mahbubsardarsabuj.com${galleryImages[0].src}`,
+                caption: "লেখকের প্রতিকৃতি — মাহবুব সরদার সবুজ",
+              },
+            },
+            {
+              "@type": "ImageGallery",
+              "@id": "https://www.mahbubsardarsabuj.com/gallery#gallery",
+              name: "মাহবুব সরদার সবুজের ফটো গ্যালারি",
+              description: "মাহবুব সরদার সবুজের জীবনের বিশেষ মুহূর্ত, বই প্রকাশনা ও সাহিত্য অনুষ্ঠানের ফটো সংগ্রহ",
+              url: "https://www.mahbubsardarsabuj.com/gallery",
+              author: { "@type": "Person", name: "Mahbub Sardar Sabuj", url: "https://www.mahbubsardarsabuj.com/" },
+              image: galleryImages.map((galleryImage, index) => ({
+                "@type": "ImageObject",
+                contentUrl: galleryImage.src.startsWith("http") ? galleryImage.src : `https://www.mahbubsardarsabuj.com${galleryImage.src}`,
+                name: `${galleryImage.caption} — মাহবুব সরদার সবুজ`,
+                caption: galleryImage.caption,
+                representativeOfPage: index === 0,
+              })),
+            },
+          ],
         }}
       />
       <Navbar />
