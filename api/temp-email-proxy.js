@@ -20,8 +20,10 @@ export default async function handler(req, res) {
   return handleTempEmailProxy(req, res);
 }
 
-const MAIL_TM_BASE = 'https://api.mail.gw';
-const TEMP_EMAIL_TIMEOUT_MS = 12_000;
+// api.mail.gw Cloudflare-এর 502 failure দিচ্ছিল; mail.tm একই documented
+// Hydra API contract দেয় এবং production audit-এ active domain list দিয়েছে.
+const MAIL_TM_BASE = 'https://api.mail.tm';
+const TEMP_EMAIL_TIMEOUT_MS = 10_000;
 
 function getTempEmailBody(req) {
   if (!req.body) return {};
