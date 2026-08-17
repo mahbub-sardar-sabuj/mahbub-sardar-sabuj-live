@@ -20,6 +20,7 @@ const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
 const TEMP_EMAIL_API = "/api/temp-email-proxy";
 const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v1";
+const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v1";
 const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
 const TEMP_EMAIL_MAX_ATTEMPTS = 2;
 
@@ -116,6 +117,7 @@ function storeAccount(account: EmailAccount) {
 function clearStoredAccount() {
   try {
     window.sessionStorage.removeItem(TEMP_EMAIL_SESSION_KEY);
+    window.sessionStorage.removeItem(TEMP_EMAIL_MESSAGES_KEY);
   } catch {
     // Nothing else is required when browser storage is unavailable.
   }
@@ -139,6 +141,48 @@ interface MessageDetail {
   html: string[];
   createdAt: string;
   hasAttachments: boolean;
+}
+
+function isStoredMessage(value: unknown): value is Message {
+  if (!value || typeof value !== "object") return false;
+  const message = value as Partial<Message>;
+  return Boolean(
+    typeof message.id === "string" &&
+    typeof message.subject === "string" &&
+    typeof message.intro === "string" &&
+    typeof message.seen === "boolean" &&
+    typeof message.createdAt === "string" &&
+    typeof message.hasAttachments === "boolean" &&
+    message.from &&
+    typeof message.from.name === "string" &&
+    typeof message.from.address === "string"
+  );
+}
+
+function readStoredMessages(): Message[] {
+  try {
+    const value = JSON.parse(window.sessionStorage.getItem(TEMP_EMAIL_MESSAGES_KEY) || "[]");
+    return Array.isArray(value) ? value.filter(isStoredMessage).slice(0, 50) : [];
+  } catch {
+    return [];
+  }
+}
+
+function storeMessages(messages: Message[]) {
+  try {
+    window.sessionStorage.setItem(TEMP_EMAIL_MESSAGES_KEY, JSON.stringify(messages.slice(0, 50)));
+  } catch {
+    // The visible in-memory inbox remains available when browser storage is unavailable.
+  }
+}
+
+function mergeMessages(previous: Message[], incoming: Message[]): Message[] {
+  const byId = new Map(previous.map((message) => [message.id, message]));
+  for (const message of incoming) {
+    const existing = byId.get(message.id);
+    byId.set(message.id, existing ? { ...existing, ...message, seen: existing.seen || message.seen } : message);
+  }
+  return [...byId.values()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 // Generate random string
@@ -255,7 +299,12 @@ export default function TempEmail() {
   const fetchMessages = useCallback(async (acc: EmailAccount) => {
     try {
       const data = await tempEmailRequest<{ "hydra:member"?: Message[] }>("messages", { token: acc.token });
-      setMessages(data["hydra:member"] || []);
+      const incoming = data["hydra:member"] || [];
+      setMessages((previous) => {
+        const next = mergeMessages(previous, incoming);
+        storeMessages(next);
+        return next;
+      });
     } catch {
       setError("ইনবক্স আপডেট করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
     }
@@ -268,9 +317,11 @@ export default function TempEmail() {
       const data = await tempEmailRequest<MessageDetail>("message", { id: msgId, token: acc.token });
       setSelectedMessage(data);
       // Mark as read
-      setMessages((prev) =>
-        prev.map((m) => (m.id === msgId ? { ...m, seen: true } : m))
-      );
+      setMessages((previous) => {
+        const next = previous.map((message) => (message.id === msgId ? { ...message, seen: true } : message));
+        storeMessages(next);
+        return next;
+      });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "ইমেইল লোড করতে সমস্যা হয়েছে");
     } finally {
@@ -283,7 +334,11 @@ export default function TempEmail() {
     if (!account) return;
     try {
       await tempEmailRequest<void>("deleteMessage", { id: msgId, token: account.token });
-      setMessages((prev) => prev.filter((m) => m.id !== msgId));
+      setMessages((previous) => {
+        const next = previous.filter((message) => message.id !== msgId);
+        storeMessages(next);
+        return next;
+      });
       if (selectedMessage?.id === msgId) setSelectedMessage(null);
     } catch {
       setError("ইমেইল মুছতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
@@ -314,6 +369,7 @@ export default function TempEmail() {
     const stored = readStoredAccount();
     if (!stored) return;
     setAccount(stored);
+    setMessages(readStoredMessages());
     void fetchMessages(stored);
     startAutoRefresh(stored);
   }, [fetchMessages, startAutoRefresh]);
@@ -325,6 +381,7 @@ export default function TempEmail() {
     setSelectedMessage(null);
     try {
       const acc = await createAccount();
+      clearStoredAccount();
       storeAccount(acc);
       setAccount(acc);
       setMessages([]);
