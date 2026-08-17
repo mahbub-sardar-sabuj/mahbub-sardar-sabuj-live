@@ -722,6 +722,14 @@ export default function Home() {
           from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.982); filter: blur(3px); }
           to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
+        @keyframes premiumGlassSheen {
+          0%, 100% { transform: translate3d(-30%, -22%, 0) rotate(-14deg); opacity: 0.34; }
+          50% { transform: translate3d(25%, 10%, 0) rotate(-14deg); opacity: 0.68; }
+        }
+        @keyframes premiumAuraPulse {
+          0%, 100% { opacity: 0.52; transform: scale(0.96); }
+          50% { opacity: 0.9; transform: scale(1.08); }
+        }
 
         /* Hero layout */
         .hero-container {
@@ -1026,6 +1034,20 @@ export default function Home() {
           transition: transform .16s linear;
           will-change: transform;
         }
+        .home-page-premium .home-premium-hero::before {
+          content: "";
+          position: absolute;
+          z-index: 1;
+          width: min(56vw, 760px);
+          height: min(56vw, 760px);
+          right: -18vw;
+          bottom: -34vw;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(79,139,224,0.20) 0%, rgba(39,84,149,0.08) 42%, transparent 72%);
+          filter: blur(4px);
+          pointer-events: none;
+          animation: premiumAuraPulse 7s ease-in-out infinite;
+        }
         .home-page-premium .home-premium-hero::after {
           content: "";
           position: absolute;
@@ -1046,6 +1068,33 @@ export default function Home() {
         .home-page-premium .hero-inner {
           gap: clamp(3.5rem, 7vw, 7.5rem);
         }
+        .home-page-premium .hero-left {
+          position: relative;
+          z-index: 2;
+          padding: clamp(1.45rem, 2.8vw, 2.45rem);
+          border: 1px solid rgba(245,228,160,0.34);
+          border-radius: clamp(26px, 3vw, 38px);
+          background:
+            linear-gradient(128deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.055) 28%, rgba(12,27,48,0.54) 68%, rgba(5,14,27,0.72) 100%);
+          box-shadow:
+            0 36px 96px rgba(0,0,0,0.36),
+            0 0 64px rgba(201,168,76,0.14),
+            inset 0 1px 0 rgba(255,255,255,0.23),
+            inset 0 0 0 1px rgba(255,255,255,0.035);
+          backdrop-filter: blur(22px) saturate(145%);
+          -webkit-backdrop-filter: blur(22px) saturate(145%);
+          overflow: hidden;
+          isolation: isolate;
+        }
+        .home-page-premium .hero-left::before {
+          content: "";
+          position: absolute;
+          inset: -46% -34%;
+          z-index: -1;
+          background: linear-gradient(112deg, transparent 29%, rgba(255,255,255,0.28) 47%, rgba(232,201,122,0.18) 53%, transparent 70%);
+          animation: premiumGlassSheen 9s ease-in-out infinite;
+          pointer-events: none;
+        }
         .home-page-premium .hero-left > div:first-child {
           box-shadow: 0 12px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.07);
         }
@@ -1053,9 +1102,16 @@ export default function Home() {
           text-wrap: balance;
         }
         .home-page-premium .hero-right {
-          max-width: 430px;
+          max-width: 450px;
           justify-self: end;
           isolation: isolate;
+          padding: clamp(9px, 1.2vw, 14px);
+          border: 1px solid rgba(245,228,160,0.38);
+          border-radius: 34px;
+          background: linear-gradient(145deg, rgba(255,255,255,0.16), rgba(201,168,76,0.10) 28%, rgba(7,20,38,0.66) 78%);
+          box-shadow: 0 36px 110px rgba(0,0,0,0.40), 0 0 62px rgba(201,168,76,0.18), inset 0 1px 0 rgba(255,255,255,0.20);
+          backdrop-filter: blur(18px) saturate(135%);
+          -webkit-backdrop-filter: blur(18px) saturate(135%);
         }
         .home-page-premium .hero-frame-wrap {
           filter: drop-shadow(0 28px 56px rgba(0,0,0,0.24));
@@ -1067,7 +1123,7 @@ export default function Home() {
           position: absolute;
           inset: 8px;
           z-index: 2;
-          border: 1px solid rgba(250,246,239,0.10);
+          border: 1px solid rgba(250,246,239,0.18);
           border-radius: 14px;
           pointer-events: none;
           box-shadow: inset 0 0 0 1px rgba(201,168,76,0.08);
@@ -1083,14 +1139,19 @@ export default function Home() {
           margin-bottom: 2.65rem;
         }
         .home-page-premium .app-launcher-shell {
-          max-width: 890px;
-          padding: clamp(1.12rem, 2.5vw, 1.72rem);
-          border-color: rgba(232,201,122,0.40);
+          max-width: 920px;
+          padding: clamp(1.25rem, 2.8vw, 1.95rem);
+          border-color: rgba(245,228,160,0.52);
+          background:
+            radial-gradient(circle at 50% -14%, rgba(245,228,160,0.26), transparent 38%),
+            linear-gradient(142deg, rgba(255,255,255,0.16) 0%, rgba(33,58,92,0.48) 34%, rgba(13,30,53,0.68) 70%, rgba(5,14,27,0.84) 100%);
           box-shadow:
-            0 62px 154px rgba(0,0,0,0.56),
-            0 0 58px rgba(201,168,76,0.11),
-            0 0 0 1px rgba(255,255,255,0.065) inset,
-            inset 0 1px 0 rgba(255,255,255,0.14);
+            0 66px 164px rgba(0,0,0,0.58),
+            0 0 76px rgba(201,168,76,0.20),
+            0 0 0 1px rgba(255,255,255,0.10) inset,
+            inset 0 1px 0 rgba(255,255,255,0.25);
+          backdrop-filter: blur(28px) saturate(150%);
+          -webkit-backdrop-filter: blur(28px) saturate(150%);
         }
         .home-page-premium .app-launcher-shell::before {
           background:
@@ -1105,22 +1166,30 @@ export default function Home() {
           gap: clamp(0.68rem, 1.8vw, 0.92rem);
         }
         .home-page-premium .app-launcher-card {
-          min-height: 144px;
-          border-color: rgba(232,201,122,0.27);
+          min-height: 154px;
+          border-color: rgba(245,228,160,0.38);
           background:
-            radial-gradient(circle at 50% -14%, rgba(232,201,122,0.18), transparent 47%),
-            linear-gradient(160deg, rgba(23,42,67,0.98) 0%, rgba(7,16,29,0.94) 100%);
+            radial-gradient(circle at 50% -16%, rgba(245,228,160,0.28), transparent 44%),
+            linear-gradient(154deg, rgba(73,105,144,0.45) 0%, rgba(26,48,79,0.72) 38%, rgba(8,20,37,0.84) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.12),
-            inset 0 -1px 0 rgba(0,0,0,0.24),
-            0 21px 48px rgba(0,0,0,0.37),
-            0 0 0 1px rgba(201,168,76,0.05);
+            inset 0 1px 0 rgba(255,255,255,0.20),
+            inset 0 -1px 0 rgba(0,0,0,0.22),
+            0 22px 54px rgba(0,0,0,0.40),
+            0 0 32px rgba(37,94,170,0.08),
+            0 0 0 1px rgba(201,168,76,0.09);
+          backdrop-filter: blur(15px) saturate(135%);
+          -webkit-backdrop-filter: blur(15px) saturate(135%);
+        }
+        .home-page-premium .app-launcher-card::before {
+          opacity: 0.54;
+          background: linear-gradient(124deg, rgba(255,255,255,0.13), transparent 32%, rgba(232,201,122,0.10) 57%, transparent 76%);
         }
         .home-page-premium .app-launcher-card::after {
           border-color: rgba(255,255,255,0.052);
         }
         .home-page-premium .app-launcher-card:hover {
-          border-color: rgba(245,228,160,0.72);
+          border-color: rgba(255,242,196,0.84);
+          transform: translate3d(0, -8px, 0) scale(1.018);
           background:
             radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 50%),
             linear-gradient(160deg, rgba(34,55,81,0.99) 0%, rgba(9,21,37,0.97) 100%);
@@ -1172,6 +1241,22 @@ export default function Home() {
           .home-page-premium .hero-right { justify-self: center; }
         }
         @media (max-width: 768px) {
+          .home-page-premium .hero-left {
+            padding: 1.2rem 1rem 1.1rem;
+            border-radius: 27px;
+            background: linear-gradient(150deg, rgba(255,255,255,0.13), rgba(16,34,58,0.62) 55%, rgba(5,14,27,0.72));
+          }
+          .home-page-premium .hero-right {
+            padding: 8px;
+            border-radius: 26px;
+          }
+          .home-page-premium .hero-frame-wrap { border-radius: 20px; }
+          .home-page-premium .app-launcher-shell {
+            padding: 1rem 0.86rem;
+            border-radius: 32px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(28,53,86,0.56) 46%, rgba(6,17,31,0.88));
+          }
+          .home-page-premium .app-launcher-card { min-height: 124px; }
           .home-page-premium .home-premium-hero::after {
             background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 34%), radial-gradient(circle at 80% 14%, rgba(245,228,160,0.07), transparent 27%);
           }
@@ -1196,6 +1281,8 @@ export default function Home() {
           .home-page-premium .hero-gold-glow,
           .home-page-premium .hero-blue-glow,
           .home-page-premium .hero-right,
+          .home-page-premium .home-premium-hero::before,
+          .home-page-premium .hero-left::before,
           .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
