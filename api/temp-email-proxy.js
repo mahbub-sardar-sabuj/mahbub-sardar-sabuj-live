@@ -14,11 +14,26 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (limitJsonBodySize(req, res, 32 * 1024)) return;
 
+  // Keep mailbox reads responsive without weakening protection for mailbox creation.
+  // A single shared 10-request bucket made the 30-second background refresh compete
+  // with create, detail and delete actions, which could show a false failure banner
+  // while the inbox itself was still usable.
+  const body = getTempEmailBody(req);
+  const action = typeof body.action === "string" ? body.action : "unknown";
+  const ratePolicies = {
+    domains: { max: 24, message: "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+    createAccount: { max: 6, message: "নতুন ইমেইল তৈরির অনুরোধ বেশি হয়েছে। অনুগ্রহ করে এক মিনিট পরে আবার চেষ্টা করুন।" },
+    messages: { max: 36, message: "ইনবক্স রিফ্রেশের অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+    message: { max: 24, message: "ইমেইল খোলার অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+    deleteMessage: { max: 18, message: "ইমেইল মুছার অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+    deleteAccount: { max: 12, message: "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+  };
+  const policy = ratePolicies[action] || { max: 12, message: "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" };
   const rate = checkRateLimit(req, res, {
-    keyPrefix: "temp-email",
+    keyPrefix: `temp-email:${action}`,
     windowMs: 60_000,
-    max: 10,
-    message: "ইমেইল সেবায় অনেকবার চেষ্টা করা হয়েছে। অনুগ্রহ করে এক মিনিট পরে আবার চেষ্টা করুন।",
+    max: policy.max,
+    message: policy.message,
   });
   if (rate.limited) return;
 

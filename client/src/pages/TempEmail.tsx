@@ -318,7 +318,11 @@ export default function TempEmail() {
   };
 
   // Fetch messages
-  const fetchMessages = useCallback(async (acc: EmailAccount, preserved: Message[] = []) => {
+  const fetchMessages = useCallback(async (
+    acc: EmailAccount,
+    preserved: Message[] = [],
+    options: { showError?: boolean } = {}
+  ): Promise<boolean> => {
     try {
       const data = await tempEmailRequest<{ "hydra:member"?: Message[] }>("messages", { token: acc.token });
       const incoming = data["hydra:member"] || [];
@@ -329,8 +333,13 @@ export default function TempEmail() {
         storeMessages(next);
         return next;
       });
+      if (options.showError) setError(null);
+      return true;
     } catch {
-      setError("ইনবক্স আপডেট করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+      // A background refresh must preserve the usable cached inbox without showing
+      // an alarming, sticky failure notice. Surface the error only for a direct user action.
+      if (options.showError) setError("ইনবক্স আপডেট করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+      return false;
     }
   }, []);
 
@@ -410,7 +419,7 @@ export default function TempEmail() {
       storeAccount(acc);
       setAccount(acc);
       setMessages([]);
-      await fetchMessages(acc);
+      await fetchMessages(acc, [], { showError: true });
       startAutoRefresh(acc);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "ইমেইল তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
@@ -423,7 +432,7 @@ export default function TempEmail() {
   const manualRefresh = async () => {
     if (!account || refreshing) return;
     setRefreshing(true);
-    await fetchMessages(account);
+    await fetchMessages(account, [], { showError: true });
     setCountdown(30);
     setRefreshing(false);
   };
@@ -486,6 +495,21 @@ export default function TempEmail() {
           overflow: "hidden",
         }}
       >
+        <style>{`
+          .temp-email-address-box { min-width: 0; }
+          .temp-email-address-value { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+          .temp-email-copy-button { min-width: max-content; }
+          @media (max-width: 520px) {
+            .temp-email-error-banner { align-items: flex-start !important; flex-wrap: wrap; }
+            .temp-email-error-banner > span { flex: 1 1 240px; line-height: 1.55; }
+            .temp-email-error-banner button { width: 100%; margin-left: 0 !important; justify-content: center; padding: 9px 12px !important; }
+            .temp-email-address-box { align-items: center !important; gap: 10px !important; }
+            .temp-email-address-value { flex-basis: calc(100% - 32px) !important; font-size: 0.92rem !important; line-height: 1.45; }
+            .temp-email-copy-button { width: 100%; justify-content: center; order: 3; padding: 10px 14px !important; }
+            .temp-email-actions > button { flex: 1 1 calc(50% - 5px); justify-content: center; padding: 10px 12px !important; }
+            .temp-email-actions > button:last-child { flex-basis: 100%; margin-left: 0 !important; }
+          }
+        `}</style>
         {/* Hero Section */}
         <section
           style={{
@@ -580,6 +604,7 @@ export default function TempEmail() {
           <AnimatePresence>
             {error && (
               <motion.div
+                className="temp-email-error-banner"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
@@ -604,6 +629,7 @@ export default function TempEmail() {
                     if (!account) void generateEmail();
                     else void manualRefresh();
                   }}
+                  className="temp-email-error-retry"
                   style={{ marginLeft: "auto", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 9, color: "#fecaca", cursor: "pointer", padding: "6px 10px", fontFamily: "'AdorshoLipi', sans-serif", whiteSpace: "nowrap" }}
                 >
                   আবার চেষ্টা করুন
@@ -719,6 +745,7 @@ export default function TempEmail() {
 
                 {/* Email Address Box */}
                 <div
+                  className="temp-email-address-box"
                   style={{
                     background: "linear-gradient(135deg, rgba(201,168,76,0.16), rgba(15,35,64,0.52))",
                     border: "1px solid rgba(232,201,122,0.43)",
@@ -734,6 +761,7 @@ export default function TempEmail() {
                 >
                   <Mail size={20} color={GOLD} style={{ flexShrink: 0 }} />
                   <span
+                    className="temp-email-address-value"
                     style={{
                       color: TEXT,
                       fontSize: "clamp(0.9rem, 3vw, 1.1rem)",
@@ -746,6 +774,7 @@ export default function TempEmail() {
                     {account.address}
                   </span>
                   <button
+                    className="temp-email-copy-button"
                     onClick={copyEmail}
                     style={{
                       background: copied ? "rgba(34,197,94,0.15)" : "rgba(201,168,76,0.1)",
@@ -769,7 +798,7 @@ export default function TempEmail() {
                 </div>
 
                 {/* Action Buttons */}
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 2 }}>
+                <div className="temp-email-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 2 }}>
                   <button
                     onClick={manualRefresh}
                     disabled={refreshing}
