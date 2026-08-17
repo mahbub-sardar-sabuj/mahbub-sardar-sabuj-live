@@ -296,12 +296,12 @@ export default function TempEmail() {
     return members.filter((d) => d.isActive).map((d) => d.domain);
   };
 
-  // A long random local-part prevents users from accidentally sharing a mailbox.
+  // Keep the address memorable while retaining a small random suffix for mailbox separation.
   const createAccount = async (): Promise<EmailAccount> => {
     const domains = await getDomains();
     if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
 
-    const requestedAddress = `mahbubsardarsabuj01${randomDigits(6)}@${domains[0]}`;
+    const requestedAddress = `mahbubsardarsabuj01${randomDigits(4)}@${domains[0]}`;
     const accountData = await tempEmailRequest<Record<string, string>>("createAccount", {
       address: requestedAddress,
       password: randomString(16),
