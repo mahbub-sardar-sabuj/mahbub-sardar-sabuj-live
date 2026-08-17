@@ -23,7 +23,6 @@ const INTENT_LABELS: Record<string, string> = {
   book_buy: "বই কেনা",
   ebook_read: "ই-বুক পড়া",
   writing_search: "লেখা খোঁজা",
-  recitation: "আবৃত্তি",
   contact: "যোগাযোগ",
   audio_edit: "অডিও এডিট",
   design_studio: "ডিজাইন স্টুডিও",

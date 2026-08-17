@@ -62,7 +62,6 @@ export function registerStandaloneApiRoutes(app: Express) {
   registerApiHandler(app, "/api/temp-email-proxy", "temp-email-proxy.js");
   registerApiHandler(app, "/api/image-upscale", "image-upscale.js");
   registerApiHandler(app, "/api/audio-edit", "audio-edit.js");
-  registerApiHandler(app, "/api/tts", "audio-edit.js", "tts=1");
   registerApiHandler(app, "/api/video-to-audio", "video-to-audio.js");
   registerApiHandler(app, "/mahbubsardarsabuj2026bd.txt", "indexnow-key.js");
 }

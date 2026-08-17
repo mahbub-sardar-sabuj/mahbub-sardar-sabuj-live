@@ -8,7 +8,7 @@ export const CHATBOT_PERSONA_RULES = [
   "বই অর্ডারের জন্য raw URL লিখবে না; [ORDER:বইটি অর্ডার করুন|https://...] token ব্যবহার করবে।",
   "কোনো token-এ undefined, null, খালি path বা অনুমানভিত্তিক URL কখনো তৈরি করবে না।",
   "যে তথ্য নিশ্চিত নয়, বলবে: ‘এই তথ্যটি বর্তমানে আমার যাচাইকৃত নথিতে নেই।’",
-  "লেখক, বই, লেখা, আবৃত্তি, টুল, পেজ ও ব্যবহারবিধি সম্পর্কে উত্তর দেওয়ার সময় প্রাসঙ্গিক internal button দেবে।",
+  "লেখক, বই, লেখা, টুল, পেজ ও ব্যবহারবিধি সম্পর্কে উত্তর দেওয়ার সময় প্রাসঙ্গিক internal button দেবে।",
   "লেখকের পরিচয়, জন্মস্থান, পরিবার বা অবস্থান সম্পর্কে কেবল knowledge base-এর তথ্য ব্যবহার করবে।",
   "সাধারণ স্বাস্থ্য, আইন, অর্থ ও নিরাপত্তা বিষয়ে তথ্য দিলে সংক্ষিপ্ত সতর্কতা দেবে এবং পেশাদার পরামর্শের বিকল্প হিসেবে উপস্থাপন করবে না।",
   "ছবি আপলোড হলে ছবির দৃশ্যমান বিষয় বিশ্লেষণ করবে; অদৃশ্য বা নিশ্চিত নয় এমন তথ্য অনুমান করবে না।",
@@ -21,10 +21,8 @@ export const INTENT_RULES = [
   { intent: "author", priority: 115, keywords: ["লেখক", "কবি", "মাহবুব", "সবুজ", "পরিচয়", "জীবনী", "জন্ম", "কুমিল্লা", "বাবা", "মা"] },
   { intent: "writing", priority: 110, keywords: ["লেখা", "কবিতা", "উক্তি", "স্ট্যাটাস", "বিচ্ছেদ", "ভালোবাসা", "জীবনদর্শন", "গল্প", "ইসলামিক"] },
   { intent: "contact", priority: 105, keywords: ["যোগাযোগ", "contact", "ইমেইল", "email", "ফেসবুক", "ইনস্টাগ্রাম", "ইউটিউব", "মেসেঞ্জার"] },
-  { intent: "recitation", priority: 100, keywords: ["আবৃত্তি", "recitation", "রিল", "ভিডিও", "কবিতা পাঠ"] },
   { intent: "community", priority: 95, keywords: ["আমিও লিখবো", "বাস্তবতা", "কমিউনিটি", "নিজের লেখা", "পাঠক লেখা"] },
   { intent: "design", priority: 90, keywords: ["ডিজাইন", "কার্ড", "পোস্টার", "স্টুডিও", "editor"] },
-  { intent: "tts", priority: 89, keywords: ["AI আবৃত্তি", "text to speech", "tts", "কণ্ঠ তৈরি", "ভয়েস তৈরি"] },
   { intent: "image_upscale", priority: 88, keywords: ["ছবি আপস্কেল", "image upscale", "4K ছবি", "8K ছবি"] },
   { intent: "video_upscale", priority: 87, keywords: ["ভিডিও আপস্কেল", "video upscale", "4K ভিডিও", "8K ভিডিও"] },
   { intent: "audio_editor", priority: 86, keywords: ["অডিও এডিটর", "audio editor", "নয়েজ রিমুভ", "ভয়েস এনহ্যান্স", "মাস্টারিং"] },
@@ -63,7 +61,7 @@ export const TRAINING_EXAMPLES = [
   {
     user: "ওয়েবসাইটের সব পেজ কীভাবে ব্যবহার করব?",
     intent: "teaching",
-    assistant: "হোমে লেখক ও প্রধান বিভাগ, লেখালেখিতে সব লেখা, বই পেজে ই-বুক ও অর্ডারযোগ্য বই, আবৃত্তিতে ভিডিও, গ্যালারিতে ছবি, সরদার সংবাদে আপডেট, যোগাযোগে বার্তা এবং ‘আমিও লিখবো বাস্তবতা’-য় moderation-এর জন্য নিজের লেখা জমা দেওয়া যায়।"
+    assistant: "হোমে লেখক ও প্রধান বিভাগ, লেখালেখিতে সব লেখা, বই পেজে ই-বুক ও অর্ডারযোগ্য বই, গ্যালারিতে ছবি, সরদার সংবাদে আপডেট, যোগাযোগে বার্তা এবং ‘আমিও লিখবো বাস্তবতা’-য় moderation-এর জন্য নিজের লেখা জমা দেওয়া যায়।"
   },
   {
     user: "ছবি বা ভিডিওর মান কীভাবে বাড়াব?",
@@ -87,9 +85,8 @@ export function buildKnowledgeContext(knowledge) {
   }).join("\n");
   const pageLines = (knowledge.pages || []).map((page) => `- ${safe(page.label)} (${safe(page.path)}): ${safe(page.description)}`).join("\n");
   const writingLines = (knowledge.writingCategories || []).map((cat) => `- ${safe(cat.name)}: ${safe(cat.count, "পরিমাণ উল্লেখ নেই")}টি লেখা — ${safe(cat.description)}`).join("\n");
-  const recitationLines = (knowledge.recitations || []).map((item) => `- ${safe(item.title)} — ${safe(item.theme)}`).join("\n");
   const toolLines = [...(knowledge.aiTools || []), ...(knowledge.tools || [])].map((tool) => `- ${safe(tool.label)} (${safe(tool.path, "এই পেজের আলাদা route নেই")}): ${safe(tool.description)}`).join("\n");
-  return `## যাচাইকৃত author profile\n- নাম: ${safe(knowledge.author?.name)}\n- পরিচয়: ${safe(knowledge.author?.identity)}\n- জন্মস্থান: ${safe(knowledge.author?.birthplace)}\n- পিতা: ${safe(knowledge.author?.parents?.father)}\n- মাতা: ${safe(knowledge.author?.parents?.mother)}\n- জন্মদিন: ${safe(knowledge.author?.birthday)}\n- বর্তমান অবস্থান: ${safe(knowledge.author?.currentLocation)}\n- লেখার ধরন: ${safe(knowledge.author?.writingStyle)}\n\n## ওয়েবসাইটের পেজ\n${pageLines}\n\n## বই ও ই-বুক\n${bookLines}\n\n## লেখার বিভাগ\n${writingLines}\n\n## আবৃত্তি\n${recitationLines}\n\n## টুলস\n${toolLines}\n\n## ওয়েবসাইট সারসংক্ষেপ\n- নাম: ${safe(knowledge.websiteSummary?.name)}\n- URL: https://www.mahbubsardarsabuj.com\n- বিবরণ: ${safe(knowledge.websiteSummary?.description)}\n- মোট লেখা: ${safe(knowledge.websiteSummary?.totalWritings)}\n- মোট বই: ${safe(knowledge.websiteSummary?.totalBooks)}\n\n## যোগাযোগ\n- ইমেইল: ${safe(knowledge.contact?.email)}\n- যোগাযোগ পেজ: [BUTTON:${safe(knowledge.contact?.contactPage, "/contact")}]`;
+  return `## যাচাইকৃত author profile\n- নাম: ${safe(knowledge.author?.name)}\n- পরিচয়: ${safe(knowledge.author?.identity)}\n- জন্মস্থান: ${safe(knowledge.author?.birthplace)}\n- পিতা: ${safe(knowledge.author?.parents?.father)}\n- মাতা: ${safe(knowledge.author?.parents?.mother)}\n- জন্মদিন: ${safe(knowledge.author?.birthday)}\n- বর্তমান অবস্থান: ${safe(knowledge.author?.currentLocation)}\n- লেখার ধরন: ${safe(knowledge.author?.writingStyle)}\n\n## ওয়েবসাইটের পেজ\n${pageLines}\n\n## বই ও ই-বুক\n${bookLines}\n\n## লেখার বিভাগ\n${writingLines}\n\n## টুলস\n${toolLines}\n\n## ওয়েবসাইট সারসংক্ষেপ\n- নাম: ${safe(knowledge.websiteSummary?.name)}\n- URL: https://www.mahbubsardarsabuj.com\n- বিবরণ: ${safe(knowledge.websiteSummary?.description)}\n- মোট লেখা: ${safe(knowledge.websiteSummary?.totalWritings)}\n- মোট বই: ${safe(knowledge.websiteSummary?.totalBooks)}\n\n## যোগাযোগ\n- ইমেইল: ${safe(knowledge.contact?.email)}\n- যোগাযোগ পেজ: [BUTTON:${safe(knowledge.contact?.contactPage, "/contact")}]`;
 }
 
 export function buildTrainingExampleContext() {

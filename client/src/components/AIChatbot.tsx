@@ -155,7 +155,6 @@ const PAGE_MAP: { path: string; label: string; keywords: string[] }[] = [
   { path: "/writings", label: "লেখালেখি পেজ দেখুন",   keywords: ["writings", "writing", "লেখালেখি", "লেখা", "কবিতা"] },
   { path: "/contact",  label: "যোগাযোগ পেজ দেখুন",    keywords: ["contact", "যোগাযোগ", "ইমেইল"] },
   { path: "/editor",   label: "ডিজাইন স্টুডিও খুলুন", keywords: ["editor", "ডিজাইন", "স্টুডিও", "ফরম্যাট"] },
-  { path: "/text-to-speech", label: "AI আবৃত্তি তৈরি করুন", keywords: ["tts", "text to speech", "আবৃত্তি তৈরি"] },
   { path: "/image-upscaler", label: "ছবি আপস্কেলার খুলুন", keywords: ["image upscaler", "ছবি আপস্কেল"] },
   { path: "/video-upscaler", label: "ভিডিও আপস্কেলার খুলুন", keywords: ["video upscaler", "ভিডিও আপস্কেল"] },
   { path: "/audio-editor", label: "অডিও এডিটর খুলুন", keywords: ["audio editor", "অডিও এডিটর"] },
@@ -270,8 +269,7 @@ const AUDIO_EDIT_KEYWORDS = [
   "অটো টিউন", "auto-tune", "auto tune",
   "প্রফেশনাল", "professional", "স্টুডিও", "studio",
   "পডকাস্ট", "podcast", "ভয়েসওভার", "voiceover",
-  // NOTE: "কবিতা", "আবৃত্তি", "recitation" intentionally removed to prevent false positives
-  // These are handled by audio-edit.js backend when actual audio file is present
+  // কবিতা সম্পর্কিত সাধারণ প্রশ্নকে audio-edit mode-এ না পাঠাতে আলাদা guard ব্যবহার করা হয়
   "সুন্দর করো", "ভালো করো", "উন্নত করো",
   "কণ্ঠ", "কণ্ঠস্বর",
   // New v7.0 keywords
@@ -310,15 +308,13 @@ const AUDIO_EDIT_KEYWORDS = [
   "mono to stereo", "মনো স্টেরিও",
 ];
 
-// Keywords that indicate the user is asking about poetry/recitation/news as CONTENT (not audio editing)
+// Keywords that indicate the user is asking about poetry/news as CONTENT (not audio editing)
 const POETRY_CONTENT_KEYWORDS = [
   "কবিতা পড়তে", "কবিতা পড়ব", "কবিতা দেখতে", "কবিতা লিখে", "কবিতা লিখে দিন",
   "কবিতা শুনতে", "কবিতা শুনব", "কবিতা বলুন", "কবিতা বলো",
   "কবিতা আছে", "কবিতা কোথায়", "কবিতা দেখান",
-  "আবৃত্তি দেখতে", "আবৃত্তি শুনতে", "আবৃত্তি শুনব", "আবৃত্তি ভিডিও",
-  "আবৃত্তি কোথায়", "আবৃত্তি দেখান",
-  "লেখকের কবিতা", "লেখকের আবৃত্তি", "ধর্মীয় কবিতা",
-  "poem", "poetry", "recitation video",
+  "লেখকের কবিতা", "ধর্মীয় কবিতা",
+  "poem", "poetry",
   // গান শুনতে/দেখতে চাওয়া — audio editing নয়
   "গান শুনতে", "গান শুনব", "গান দেখান", "গান কোথায়", "গান আছে",
   "গান পড়তে", "গানের কথা", "গান বলুন",
@@ -391,12 +387,12 @@ function isAudioEditRequest(text: string): boolean {
   const videoEditPattern = /(ভিডিও|video).{0,15}(এডিট|edit|সম্পাদন|কাটো|trim|ক্লিপ|clip)/i;
   if (videoEditPattern.test(lower)) return false;
 
-  // Second check: if the text is clearly about poetry/recitation as CONTENT, not audio editing
+  // Second check: if the text is clearly about poetry as CONTENT, not audio editing
   const isPoetryContentQuery = POETRY_CONTENT_KEYWORDS.some(kw => lower.includes(kw));
   if (isPoetryContentQuery) return false;
 
   // Also check for patterns like "কবিতা + question words" which indicate content queries
-  const poetryQuestionPattern = /কবিতা.{0,20}(কোথা|কী|কি|কেন|কিভাবে|কিভাব|পাব|পায়|দেখান|লিখেদিন|লিখে দিন)|আবৃত্তি.{0,20}(কোথা|কী|কি|ভিডিও|পাব|দেখতে)/;
+  const poetryQuestionPattern = /কবিতা.{0,20}(কোথা|কী|কি|কেন|কিভাবে|কিভাব|পাব|পায়|দেখান|লিখেদিন|লিখে দিন)/;
   if (poetryQuestionPattern.test(lower)) return false;
 
   return AUDIO_EDIT_KEYWORDS.some(kw => matchesAudioEditKeyword(lower, kw));
@@ -1503,13 +1499,11 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                    message.audioIntent === "warm_voice"    ? "🌡️ ওয়ার্ম ভয়েস" :
                    message.audioIntent === "studio_clear"  ? "🎚️ স্টুডিও ক্লিয়ার" :
                    message.audioIntent === "soft_poetry"   ? "🌸 সফট পোয়েট্রি" :
-                   message.audioIntent === "deep_recitation" ? "🎧 ডিপ রিসাইটেশন" :
                    message.audioIntent === "youtube_voice"     ? "🎥 YouTube ভয়েস" :
                    message.audioIntent === "tiktok_voice"      ? "🎤 TikTok ভয়েস" :
                    message.audioIntent === "audiobook_voice"   ? "🎧 অডিওবুক ভয়েস" :
                    message.audioIntent === "meditation_voice"  ? "🧘 মেডিটেশন ভয়েস" :
                    message.audioIntent === "news_anchor"       ? "🎤 নিউজ অ্যাঙ্কর" :
-                   message.audioIntent === "bangla_recitation_pro" ? "🎬 আবৃত্তি প্রো" :
                                                           "⚙️ কাস্টম প্রসেসিং"
                   }
                 </span>
@@ -1532,7 +1526,7 @@ function MessageBubble({ message, onNavigate, onSwitchToLive, isLatest, onReact 
                   fontWeight: 700,
                   letterSpacing: "0.03em",
                 }}>
-                  {message.audioVocalContext === "poetry"    ? "📝 কবিতা/আবৃত্তি মোড" :
+                  {message.audioVocalContext === "poetry"    ? "📝 কবিতা মোড" :
                    message.audioVocalContext === "narration" ? "🎧 ন্যারেশন মোড" :
                    message.audioVocalContext === "deep"      ? "🎤 ডিপ ভয়েস মোড" :
                    message.audioVocalContext === "soft"      ? "🎙️ সফট ভয়েস মোড" :

@@ -18,7 +18,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import {
   Menu, X, ChevronDown,
-  House, UserRound, Mic2, PenLine, Images,
+  House, UserRound, PenLine, Images,
   Newspaper, Mail, Palette, Feather,
   Sparkles, Music, Wrench,
   ArrowRight, BookOpen,
@@ -64,7 +64,6 @@ const RIGHT_GROUPS = [
       { label: "ইমেজ আপস্কেলার",  subtitle: "AI দিয়ে ছবির মান বাড়ান",   href: "/image-upscaler",  icon: Sparkles },
       { label: "ভিডিও আপস্কেলার",  subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Sparkles },
       { label: "অডিও এডিটর",      subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স", href: "/audio-editor",    icon: Music    },
-      { label: "আবৃত্তি টুল",      subtitle: "AI কণ্ঠে আবৃত্তি",           href: "/text-to-speech",  icon: Mic2     },
     ],
   },
 ];

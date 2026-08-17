@@ -23,7 +23,7 @@ const cases = [
   ["দুঃখবিলাস বইটি কীভাবে পাব", /ORDER:দুঃখবিলাস অর্ডার করুন/, "dukkhovilash order token"],
   ["মাহবুব সরদার সবুজ কে", /BUTTON:\/about/, "author button"],
   ["সব লেখা কোথায়", /২,৩৫৭টি|BUTTON:\/writings/, "writing total or button"],
-  ["সব পেজ দেখাও", /BUTTON:\/privacy-policy|BUTTON:\/terms|BUTTON:\/text-to-speech/, "complete page map"],
+  ["সব পেজ দেখাও", /BUTTON:\/privacy-policy|BUTTON:\/terms|BUTTON:\/audio-editor/, "complete page map"],
   ["ছবি আপস্কেল কীভাবে করব", /BUTTON:\/image-upscaler/, "image tool button"],
   ["নিজের লেখা প্রকাশ করব", /BUTTON:\/amio-likhbo-bastobota/, "community button"],
   ["যোগাযোগের তথ্য দাও", /BUTTON:\/contact/, "contact button"],

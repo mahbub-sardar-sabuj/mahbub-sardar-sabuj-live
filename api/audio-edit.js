@@ -138,11 +138,10 @@ function buildVocalDoubler(ffmpegPath, inputPath, outputPath) {
 // ── Classify vocal context from AI response ──────────────────────────────────
 function classifyVocalContext(intent, operations, prompt) {
   const lowerPrompt = (prompt || "").toLowerCase();
-  // Poetry / recitation detection
+  // Poetry-oriented audio enhancement
   if (
-    lowerPrompt.includes("কবিতা") || lowerPrompt.includes("আবৃত্তি") ||
-    lowerPrompt.includes("recitation") || lowerPrompt.includes("poem") ||
-    intent === "recitation" || intent === "poetry"
+    lowerPrompt.includes("কবিতা") || lowerPrompt.includes("poem") ||
+    intent === "poetry"
   ) return "poetry";
   // Fast narration / energetic
   if (
@@ -188,7 +187,7 @@ function getContextVocalFilter(vocalContext) {
   // সব ধরনের কণ্ঠে মধুময় উষ্ণতা + স্পষ্টতা নিশ্চিত করা
   switch (vocalContext) {
     case "poetry":
-      // কবিতা/আবৃত্তি: উষ্ণ ও মধুর কণ্ঠ, মৃদু রিভার্ব, স্বাভাবিক গতি
+      // কবিতা: উষ্ণ ও মধুর কণ্ঠ, মৃদু রিভার্ব, স্বাভাবিক গতি
       return (
         "highpass=f=75," +
         "equalizer=f=160:t=h:width=120:g=2.5," +   // warmth
@@ -799,7 +798,6 @@ function deterministicAudioPlan(prompt = "") {
   if (has(/audiobook|অডিওবুক|বই পড়া|বই পড়া/)) { addOpOnce(operations, "audiobook_voice"); intent = "audiobook_voice"; }
   if (has(/meditation|মেডিটেশন|শান্ত কণ্ঠ|শান্ত ভয়েস/)) { addOpOnce(operations, "meditation_voice"); intent = "meditation_voice"; }
   if (has(/news anchor|নিউজ অ্যাঙ্কর|সংবাদ পাঠক|ব্রডকাস্ট/)) { addOpOnce(operations, "news_anchor"); intent = "news_anchor"; }
-  if (has(/recitation pro|বাংলা আবৃত্তি|আবৃত্তি প্রো|কবিতা/)) { addOpOnce(operations, "bangla_recitation_pro"); intent = "bangla_recitation_pro"; }
   if (has(/voice message|whatsapp|telegram|ভয়েস মেসেজ|ভয়েস মেসেজ/)) { addOpOnce(operations, "voice_message_clean"); intent = "voice_message_clean"; }
   if (has(/conference|meeting|কনফারেন্স|মিটিং/)) { addOpOnce(operations, "conference_voice"); intent = "conference_voice"; }
 
@@ -976,16 +974,14 @@ NEW VOICE PRESETS (v7.0):
 - audiobook_voice{} = অডিওবুক ভয়েস — warm, smooth, fatigue-free
 - meditation_voice{} = মেডিটেশন গাইড ভয়েস — calm, soft, spacious
 - news_anchor{} = নিউজ অ্যাঙ্কর ভয়েস — authoritative, clear, professional
-- bangla_recitation_pro{} = বাংলা আবৃত্তি প্রো — warm reverb, emotional depth
 - voice_message_clean{} = ভয়েস মেসেজ ক্লিন — WhatsApp/Telegram quality
 - conference_voice{} = কনফারেন্স কল ভয়েস — clear, noise-free, intelligible
 
 VOCAL ENHANCEMENT PRESETS (Phase 2):
 - natural_clean{} = হালকা normalization ও clarity — সাধারণ voiceover
-- warm_voice{} = low-mid warmth, harshness কমানো — আবৃত্তি ও কবিতা
+- warm_voice{} = low-mid warmth, harshness কমানো — উষ্ণ ও স্বাভাবিক কণ্ঠ
 - studio_clear{} = clarity, compression, light EQ — প্রফেশনাল narration
 - soft_poetry{} = soft tone, gentle reverb, smooth high — কবিতা বা আবেগপূর্ণ পাঠ
-- deep_recitation{} = low warmth, controlled reverb — গভীর কণ্ঠের আবৃত্তি
 
 SMART INTERPRETATION:
 "এডিটিং করো"/"ভালো করো"/"সুন্দর করো"/"fix it" → noise_reduction(0.5)+normalize+bass_boost(3)+reverb(0.3,0.2)
@@ -1009,7 +1005,7 @@ SMART INTERPRETATION:
 "নয়েজ কমাও"/"noise remove"/"পরিষ্কার করো" → denoise_advanced(0.8)+noise_reduction(0.6)+gate(-45)+normalize
 "আরো নয়েজ কমাও" → denoise_advanced(0.9)+noise_reduction(0.7)+gate(-40)
 "ভয়েস সুন্দর করো"/"vocal beautify"/"কণ্ঠ সুন্দর করো" → honey_voice+loudness_normalize(-14)
-"কবিতার জন্য"/"আবৃত্তি"/"recitation" → soft_poetry+loudness_normalize(-16)
+"কবিতার জন্য"/"poetry" → soft_poetry+loudness_normalize(-16)
 "গান"/"song"/"গানের ভয়েস" → vocal_enhance+de_ess+compress(-18,3)+reverb(0.4,0.3)+loudness_normalize(-14)
 "ইন্টারভিউ"/"interview" → broadcast_voice+loudness_normalize(-18)
 "লেকচার"/"lecture"/"ক্লাস" → crystal_voice+loudness_normalize(-18)
@@ -1045,12 +1041,11 @@ SMART INTERPRETATION:
 "উষ্ণতা যোগ করো"/"warmth" → warmth_boost
 "এয়ার বাড়াও"/"air" → air_boost
 "ব্যাকগ্রাউন্ড মিউজিক মিক্স করো"/"music mix"/"মিউজিক যোগ করো" → smart_mix(medium,true,general)
-"কবিতায় মিউজিক"/"আবৃত্তিতে মিউজিক" → smart_mix(low,true,poetry)
+"কবিতায় মিউজিক"/"poetry music" → smart_mix(low,true,poetry)
 "natural clean"/"স্বাভাবিক পরিষ্কার" → natural_clean
 "warm voice"/"উষ্ণ কণ্ঠ" → warm_voice
 "studio clear"/"স্টুডিও ক্লিয়ার" → studio_clear
 "soft poetry"/"নরম কবিতা" → soft_poetry
-"deep recitation"/"গভীর আবৃত্তি" → deep_recitation
 "শ্বাস কমাও"/"breath remove"/"breathing noise" → de_breath+noise_gate_smart+loudness_normalize(-16)
 "রুম রিভার্ব কমাও"/"de-reverb"/"রুমের শব্দ" → de_reverb+noise_reduction(0.4)+loudness_normalize(-16)
 "ডাবল করো"/"vocal doubler"/"ডাবল লেয়ার" → vocal_doubler+loudness_normalize(-14)
@@ -1059,7 +1054,6 @@ SMART INTERPRETATION:
 "অডিওবুক"/"audiobook"/"বই পড়া" → audiobook_voice
 "মেডিটেশন"/"meditation"/"শান্ত কণ্ঠ" → meditation_voice
 "নিউজ অ্যাঙ্কর"/"news anchor"/"সংবাদ পাঠক" → news_anchor
-"বাংলা আবৃত্তি প্রো"/"recitation pro" → bangla_recitation_pro
 "ভয়েস মেসেজ"/"voice message"/"WhatsApp ভয়েস" → voice_message_clean
 "কনফারেন্স"/"conference"/"মিটিং ভয়েস" → conference_voice
 "ক্লারিটি বাড়াও"/"clarity boost"/"পরিষ্কার করো" → clarity_boost+loudness_normalize(-14)
@@ -1274,9 +1268,6 @@ function buildFFmpegFilter(operations, vocalDuration) {
         break;
       case "soft_poetry":
         filters.push("highpass=f=80,equalizer=f=250:t=h:width=200:g=3,equalizer=f=400:t=h:width=200:g=2,equalizer=f=3000:t=h:width=1500:g=1.5,acompressor=threshold=-22dB:ratio=2.5:attack=25:release=300:knee=8dB,aecho=0.8:0.15:60:0.25,loudnorm=I=-16:TP=-1.5:LRA=11");
-        break;
-      case "deep_recitation":
-        filters.push("highpass=f=60,equalizer=f=150:t=h:width=100:g=4,equalizer=f=300:t=h:width=150:g=2,equalizer=f=200:t=h:width=150:g=-1.5,acompressor=threshold=-18dB:ratio=4:attack=20:release=200:knee=4dB,aecho=0.8:0.12:40:0.2,loudnorm=I=-14:TP=-1:LRA=11");
         break;
       case "context_enhance": {
         const ctx = params.vocal_context || "general";
@@ -1657,10 +1648,6 @@ function buildFFmpegFilter(operations, vocalDuration) {
       case "news_anchor":
         // News anchor: authoritative, clear, professional — broadcast standard
         filters.push("highpass=f=80,equalizer=f=150:t=h:width=100:g=4,equalizer=f=400:t=h:width=200:g=-1,equalizer=f=3000:t=h:width=1500:g=4,equalizer=f=6000:t=h:width=2000:g=2,acompressor=threshold=-16dB:ratio=5:attack=10:release=100:knee=3dB,alimiter=limit=-1dB,loudnorm=I=-14");
-        break;
-      case "bangla_recitation_pro":
-        // Bengali recitation: warm reverb, emotional depth, natural resonance
-        filters.push("highpass=f=70,equalizer=f=200:t=h:width=150:g=4,equalizer=f=500:t=h:width=300:g=2,equalizer=f=3000:t=h:width=2000:g=2,acompressor=threshold=-22dB:ratio=3:attack=25:release=250:knee=7dB,aecho=0.8:0.35:120:0.45,loudnorm=I=-16");
         break;
       case "voice_message_clean":
         // WhatsApp/Telegram voice message: clean, intelligible, compact
@@ -2165,217 +2152,7 @@ function buildFFmpegFilter(operations, vocalDuration) {
 
 // ── Pro Max v10.0 Main Handler ──────────────────────────────────────────────────
 // Version: Pro Max v10.0 | Integrated Audio Editing | Auto-Update Ready
-// ── TTS sub-handler ─────────────────────────────────────────────────────────
-async function handleTTS(req, res) {
-  const body = await new Promise((resolve, reject) => {
-    let data = [];
-    req.on("data", chunk => data.push(chunk));
-    req.on("end", () => {
-      try { resolve(JSON.parse(Buffer.concat(data).toString())); }
-      catch (e) { reject(e); }
-    });
-    req.on("error", reject);
-  }).catch(() => ({}));
-
-  const { text, voice = "Sulafat", style = "" } = body;
-
-  // Set headers to help Cloudflare/CDN handle long-running requests
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.setHeader("Content-Type", "application/json");
-
-  if (!text || typeof text !== "string" || text.trim().length === 0) {
-    return res.status(400).json({ error: "text is required" });
-  }
-  if (text.length > 5000) {
-    return res.status(400).json({ error: "text too long (max 5000 characters)" });
-  }
-
-  const geminiKey = process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
-  const openAiKey = process.env.OPENAI_API_KEY?.trim();
-  const openAiBaseUrl = process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1";
-  if (!geminiKey && !openAiKey) return res.status(500).json({ error: "TTS service not configured" });
-
-  const styleInstruction = style?.trim() ||
-    "You are a deeply emotional Bengali poet reading your own poem aloud. Speak in natural, human Bengali — not robotic, not AI-like. Let your voice tremble slightly with feeling. Take real, natural breaths between lines. Pause meaningfully at commas and line breaks. Emphasize words that carry pain, longing, or love. Your voice should feel like a real person who has lived through what they are reading. Never sound mechanical or uniform — vary your pace, your pitch, your breath. This is a human heart speaking.";
-
-  const prompt = `${styleInstruction}: ${text.trim()}`;
-
-  const requestBody = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseModalities: ["AUDIO"],
-      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } }
-    }
-  };
-
-  // Try TTS models in order of preference (most human-like first)
-  const ttsModels = [
-    "gemini-2.5-flash-preview-tts",
-    "gemini-2.5-flash-tts",
-    "gemini-2.5-pro-preview-tts",
-    "gemini-3.1-flash-tts-preview",
-  ];
-  let response = null;
-  let lastError = null;
-  for (const ttsModel of ttsModels) {
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${ttsModel}:generateContent?key=${geminiKey}`;
-    try {
-      response = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-      if (response.ok) break;
-      const errorText = await response.text();
-      try {
-        const errorJson = JSON.parse(errorText);
-        lastError = errorJson.error?.message || errorText;
-      } catch (e) {
-        lastError = errorText;
-      }
-      console.warn(`[TTS] ${ttsModel} failed (${response.status}): ${lastError}`);
-      response = null;
-    } catch (e) {
-      lastError = e.message;
-      console.warn(`[TTS] ${ttsModel} error:`, e.message);
-      response = null;
-    }
-  }
-
-  // ── OpenAI TTS Fallback ──────────────────────────────────────────────────────
-  if (!response || !response.ok) {
-    console.warn("[TTS] Gemini failed, trying OpenAI TTS fallback. Last error:", lastError);
-    if (openAiKey) {
-      try {
-        // Map Gemini voice names to OpenAI voices
-        const voiceMap = {
-          Sulafat: "nova", Aoede: "shimmer", Despina: "alloy", Leda: "nova",
-          Kore: "shimmer", Zephyr: "alloy", Achernar: "nova", Gacrux: "shimmer",
-          Vindemiatrix: "alloy", Laomedeia: "nova",
-          Orus: "onyx", Rasalgethi: "echo", Fenrir: "fable", Algieba: "onyx",
-          Puck: "echo", Achird: "fable", Sadachbia: "onyx", Autonoe: "echo",
-          Umbriel: "onyx", Iapetus: "fable",
-        };
-        const openAiVoice = voiceMap[voice] || "nova";
-        const openAiTtsUrl = `${openAiBaseUrl}/audio/speech`;
-        const openAiResponse = await fetch(openAiTtsUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${openAiKey}`,
-          },
-          body: JSON.stringify({
-            model: "tts-1",
-            input: text.trim(),
-            voice: openAiVoice,
-            response_format: "mp3",
-          }),
-        });
-        if (openAiResponse.ok) {
-          const audioBuffer = await openAiResponse.arrayBuffer();
-          const audioData = Buffer.from(audioBuffer).toString("base64");
-          console.log(`[TTS] OpenAI fallback succeeded. Voice: ${openAiVoice}, Size: ${audioBuffer.byteLength} bytes`);
-          return res.status(200).json({ audioData, mimeType: "audio/mpeg", voice, charCount: text.length, provider: "openai" });
-        } else {
-          const errText = await openAiResponse.text();
-          console.error("[TTS] OpenAI fallback also failed:", openAiResponse.status, errText.slice(0, 200));
-        }
-      } catch (openAiErr) {
-        console.error("[TTS] OpenAI fallback error:", openAiErr.message);
-      }
-    }
-    console.error("[TTS] All TTS providers failed. Last Gemini error:", lastError);
-    const isRateLimit = lastError?.includes("429") || lastError?.includes("RESOURCE_EXHAUSTED") || lastError?.includes("quota") || lastError?.includes("Quota");
-    const isKeyInvalid = lastError?.includes("401") || lastError?.includes("API_KEY_INVALID");
-    const isModelNotFound = lastError?.includes("404") || lastError?.includes("not found");
-    // Extract retry time from Gemini error message if available
-    const retryMatch = lastError?.match(/retry in (\d+\.?\d*)s/i);
-    const retrySeconds = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : null;
-    let details;
-    if (isRateLimit) {
-      if (retrySeconds && retrySeconds > 0) {
-        const mins = Math.ceil(retrySeconds / 60);
-        details = retrySeconds > 60
-          ? `আবৃত্তি সেবা সাময়িকভাবে ব্যস্ত। প্রায় ${mins} মিনিট পরে আবার চেষ্টা করুন।`
-          : `আবৃত্তি সেবা সাময়িকভাবে ব্যস্ত। ${retrySeconds} সেকেন্ড পরে আবার চেষ্টা করুন।`;
-      } else {
-        details = "আবৃত্তি সেবা এখন ব্যস্ত। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
-      }
-    } else if (isKeyInvalid) {
-      details = "API কনফিগারেশন সমস্যা। অ্যাডমিনকে জানান।";
-    } else if (isModelNotFound) {
-      details = "TTS মডেল পাওয়া যাচ্ছে না। কিছুক্ষণ পরে চেষ্টা করুন।";
-    } else {
-      details = "সার্ভার সাময়িকভাবে অনুপলব্ধ। পুনরায় চেষ্টা করুন।";
-    }
-    return res.status(502).json({
-      error: "TTS generation failed",
-      details,
-      retryAfter: retrySeconds,
-      lastError: process.env.NODE_ENV === 'development' ? lastError : undefined,
-    });
-  }
-
-  const data = await response.json();
-  const rawAudioData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  const mimeType = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType || "audio/wav";
-
-  if (!rawAudioData) {
-    console.error("[TTS] No audio data in response");
-    return res.status(502).json({ error: "No audio generated" });
-  }
-
-  // If raw PCM (audio/l16), wrap with proper WAV header so browsers can play it
-  let audioData = rawAudioData;
-  if (mimeType.startsWith("audio/l16") || mimeType.startsWith("audio/pcm")) {
-    // Parse sample rate from mimeType e.g. "audio/l16; rate=24000; channels=1"
-    const rateMatch = mimeType.match(/rate=(\d+)/);
-    const chMatch = mimeType.match(/channels=(\d+)/);
-    const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000;
-    const numChannels = chMatch ? parseInt(chMatch[1]) : 1;
-    const bitsPerSample = 16;
-
-    const pcmBuffer = Buffer.from(rawAudioData, "base64");
-    const pcmLength = pcmBuffer.length;
-    const wavHeader = Buffer.alloc(44);
-    // RIFF chunk
-    wavHeader.write("RIFF", 0);
-    wavHeader.writeUInt32LE(36 + pcmLength, 4);
-    wavHeader.write("WAVE", 8);
-    // fmt sub-chunk
-    wavHeader.write("fmt ", 12);
-    wavHeader.writeUInt32LE(16, 16);                                   // Subchunk1Size
-    wavHeader.writeUInt16LE(1, 20);                                    // PCM format
-    wavHeader.writeUInt16LE(numChannels, 22);
-    wavHeader.writeUInt32LE(sampleRate, 24);
-    wavHeader.writeUInt32LE(sampleRate * numChannels * (bitsPerSample / 8), 28); // ByteRate
-    wavHeader.writeUInt16LE(numChannels * (bitsPerSample / 8), 32);   // BlockAlign
-    wavHeader.writeUInt16LE(bitsPerSample, 34);
-    // data sub-chunk
-    wavHeader.write("data", 36);
-    wavHeader.writeUInt32LE(pcmLength, 40);
-
-    const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
-    audioData = wavBuffer.toString("base64");
-    console.log(`[TTS] Converted PCM (${pcmLength} bytes) to WAV (${wavBuffer.length} bytes), rate=${sampleRate}, ch=${numChannels}`);
-  }
-
-  return res.status(200).json({ audioData, mimeType: "audio/wav", voice, charCount: text.length });
-}
-
 export default async function handler(req, res) {
-  // Route TTS requests to dedicated sub-handler
-  const _ttsUrlObj = new URL(req.url || "/", "https://local.invalid");
-  const _isTts = _ttsUrlObj.searchParams.get("tts") === "1" || (req.query && req.query.tts === "1") || req.url?.includes("/api/tts") || req.headers["x-tts-request"] === "1";
-  if (_isTts) {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    if (req.method === "OPTIONS") return res.status(200).end();
-    return handleTTS(req, res);
-  }
-
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 

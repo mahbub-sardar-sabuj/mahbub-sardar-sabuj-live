@@ -7,7 +7,7 @@ Primary language: Bengali (bn-BD)
 /* SITE */
 Name: Mahbub Sardar Sabuj Official Website
 Canonical URL: https://www.mahbubsardarsabuj.com/
-Description: Official website for Mahbub Sardar Sabuj, containing biography, Bengali writings and poetry archive, e-books, Sardar Sangbad news, recitations, gallery, and contact information.
+Description: Official website for Mahbub Sardar Sabuj, containing biography, Bengali writings and poetry archive, e-books, Sardar Sangbad news, gallery, and contact information.
 AI summary: https://www.mahbubsardarsabuj.com/llms.txt
 Sitemap: https://www.mahbubsardarsabuj.com/sitemap.xml
 News sitemap: https://www.mahbubsardarsabuj.com/news-sitemap.xml

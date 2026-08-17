@@ -89,7 +89,6 @@ const PRESETS = [
       { label: "রেডিও জকি", prompt: "রেডিও জকি ভয়েস করো", icon: <Radio className="w-4 h-4" />, desc: "RJ স্টাইল এনার্জেটিক" },
       { label: "সুফি ভয়েস", prompt: "সুফি ভয়েস — আধ্যাত্মিক গভীরতা", icon: <Waves className="w-4 h-4" />, desc: "আধ্যাত্মিক গভীর কণ্ঠ" },
       { label: "ড্রামা ভয়েস", prompt: "ড্রামা ভয়েস — নাটকীয় কণ্ঠ", icon: <Mic className="w-4 h-4" />, desc: "নাটকীয় থিয়েটার কণ্ঠ" },
-      { label: "বাংলা আবৃত্তি প্রো", prompt: "বাংলা আবৃত্তি প্রো — কবিতার জন্য", icon: <BookOpen className="w-4 h-4" />, desc: "কবিতা আবৃত্তির জন্য" },
       { label: "নিউজ অ্যাঙ্কর", prompt: "নিউজ অ্যাঙ্কর ভয়েস করো", icon: <Radio className="w-4 h-4" />, desc: "সংবাদ পাঠকের কণ্ঠ" },
     ]
   },

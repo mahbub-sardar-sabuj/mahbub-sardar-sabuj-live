@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import {
-  UserRound, Mic2, BookOpen, Feather, Palette, Images,
+  UserRound, BookOpen, Feather, Palette, Images,
   Newspaper, Mail, Sparkles,
   Video, MessageCircle, Music, Info, CheckCircle2, ArrowUpRight,
   Download, Smartphone
@@ -80,12 +80,6 @@ const tabs = [
     label: "অডিও এডিটর",
     href: "/audio-editor",
     desc: "ব্রাউজারেই অডিও ট্রিম, ফেড, স্পিড পরিবর্তন, রিভার্স ও নয়েজ রিডাকশন করুন — কোনো সফটওয়্যার ইনস্টল ছাড়াই।",
-  },
-  {
-    icon: <Mic2 size={20} strokeWidth={1.8} />,
-    label: "আবৃত্তি টুল",
-    href: "/text-to-speech",
-    desc: "বাংলা লেখা দিন, AI মানুষের মতো কণ্ঠে আবৃত্তি করবে এবং ডাউনলোড করতে পারবেন। কবিতা, গল্প বা যেকোনো লেখা মুহূর্তের মধ্যে আবৃত্তি হয়ে যাবে।",
   },
   {
     icon: <MessageCircle size={20} strokeWidth={1.8} />,

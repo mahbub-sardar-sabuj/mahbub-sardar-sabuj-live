@@ -50,6 +50,11 @@
       "permanent": true
     },
     {
+      "source": "/text-to-speech",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/temp-number",
       "destination": "/",
       "permanent": true
@@ -108,7 +113,7 @@
       "status": 308
     },
     {
-      "src": "/(facebook-recitations|temp-number|temp-card)/?",
+      "src": "/(facebook-recitations|text-to-speech|temp-number|temp-card)/?",
       "headers": {
         "Location": "/"
       },
@@ -162,10 +167,6 @@
     {
       "src": "/api/image-upscale",
       "dest": "/api/image-upscale.js"
-    },
-    {
-      "src": "/api/tts",
-      "dest": "/api/audio-edit?tts=1"
     },
     {
       "src": "/api/(.*)",
@@ -270,7 +271,7 @@
       "dest": "/index.html"
     },
     {
-      "src": "/(writings|bangla-kobita|valobashar-kobita|bichched-kobita|jibon-dorshon|bangla-ebook|bangla-status|bangla-quotes|koster-kobita|romantic-bangla-kobita|bangla-golpo|mayer-kobita|babar-kobita|choto-kobita|mon-kharap-status|miss-you-bangla|ekla-thaka-kobita|rater-kobita|bhalobasha-kobita|bichhed-kobita|jibon-niye-ukti|premer-status|sad-bangla-status|brishti-kobita|swapno-kobita|bangla-caption|jibon-kobita|opekkhar-kobita|abhibab-kobita|shomoy-kobita|manush-kobita|bangla-kobita-2024|privacy-policy|terms|about|contact|ebooks|editor|news|gallery|amio-likhbo-bastobota|amio-likhbo-login|profile|temp-email|image-upscaler|video-upscaler|audio-editor|text-to-speech|404)/?",
+      "src": "/(writings|bangla-kobita|valobashar-kobita|bichched-kobita|jibon-dorshon|bangla-ebook|bangla-status|bangla-quotes|koster-kobita|romantic-bangla-kobita|bangla-golpo|mayer-kobita|babar-kobita|choto-kobita|mon-kharap-status|miss-you-bangla|ekla-thaka-kobita|rater-kobita|bhalobasha-kobita|bichhed-kobita|jibon-niye-ukti|premer-status|sad-bangla-status|brishti-kobita|swapno-kobita|bangla-caption|jibon-kobita|opekkhar-kobita|abhibab-kobita|shomoy-kobita|manush-kobita|bangla-kobita-2024|privacy-policy|terms|about|contact|ebooks|editor|news|gallery|amio-likhbo-bastobota|amio-likhbo-login|profile|temp-email|image-upscaler|video-upscaler|audio-editor|404)/?",
       "dest": "/index.html"
     },
     {

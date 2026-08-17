@@ -12,7 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 import {
-  BookOpen, Mic2, Images, Newspaper, Mail,
+  BookOpen, Images, Newspaper, Mail,
   UserRound, Palette,
   Star, Feather, Sparkles, Video, Music, Download, Smartphone, MailOpen
 } from "lucide-react";
@@ -31,18 +31,17 @@ const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
-  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
   { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
   { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
-  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
+  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
   { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
+  { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
   { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
-  { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
   { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
   { label: "ভিডিও আপস্কেলার", subtitle: "ঝাপসা ভিডিও 4K/8K-এ উন্নত করুন", href: "/video-upscaler", icon: Video },
   { label: "অডিও এডিটর", subtitle: "ট্রিম, ফেড, স্পিড, রিভার্স ও নয়েজ রিডাকশন", href: "/audio-editor", icon: Music },
-  { label: "আবৃত্তি টুল", subtitle: "লেখা দিন, AI মানুষের কণ্ঠে আবৃত্তি করবে", href: "/text-to-speech", icon: Mic2 },
+  { label: "টেম্প ইমেইল", subtitle: "বিনামূল্যে ডিসপোজেবল ইমেইল তৈরি করুন", href: "/temp-email", icon: MailOpen },
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════════
@@ -456,7 +455,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
-      <section className="explore-app-section" style={{
+      <section id="explore" className="explore-app-section" style={{
         padding: "clamp(3.5rem, 7vw, 5.6rem) 1.25rem",
         background: "linear-gradient(180deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,1) 16%, rgba(6,14,26,1) 100%), radial-gradient(circle at 78% 12%, rgba(201,168,76,0.15), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.08), transparent 30%), #060E1A",
         position: "relative",
@@ -729,7 +728,7 @@ export default function Home() {
           z-index: 1;
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: clamp(0.9rem, 2.5vw, 1.3rem);
+          gap: clamp(0.72rem, 2vw, 1rem);
         }
         .app-launcher-link {
           display: block;
@@ -737,15 +736,15 @@ export default function Home() {
           height: 100%;
         }
           .app-launcher-card {
-          min-height: 158px;
+          min-height: 148px;
           height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: flex-start;
           text-align: center;
-          gap: 0.56rem;
-          padding: 1.35rem 0.82rem 1.08rem;
+          gap: 0.48rem;
+          padding: 1.12rem 0.7rem 0.92rem;
           border-radius: 28px;
           border: 1px solid rgba(201,168,76,0.24);
           background:
@@ -809,6 +808,7 @@ export default function Home() {
         .app-launcher-card:active {
           border-color: rgba(245,228,160,0.7);
           background: linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(10,22,38,0.9) 100%);
+          transform: translateZ(0) scale(0.97);
         }
         .app-launcher-grid > div:nth-child(-n+4) .app-launcher-card {
           border-color: rgba(201,168,76,0.32);
@@ -889,11 +889,12 @@ export default function Home() {
           .hero-right { display: flex; justify-content: center; margin-top: -1.35rem; }
           .hero-title { width: 100%; }
           .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
-          .app-launcher-shell { border-radius: 30px; padding: 1rem; }
-          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.7rem; }
-          .app-launcher-card { min-height: 124px; border-radius: 22px; padding: 0.98rem 0.42rem 0.82rem; }
-          .app-icon-wrap { border-radius: 16px; width: 50px; height: 50px; }
-          .app-label { font-size: 0.82rem; line-height: 1.25; }
+          .app-launcher-shell { border-radius: 30px; padding: 0.88rem; }
+          .app-launcher-topbar { margin-bottom: 0.9rem; }
+          .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; }
+          .app-launcher-card { min-height: 114px; border-radius: 22px; padding: 0.78rem 0.36rem 0.66rem; }
+          .app-icon-wrap { border-radius: 15px; width: 46px; height: 46px; margin-bottom: 0.08rem; }
+          .app-label { font-size: 0.79rem; line-height: 1.2; min-height: 2.3em; }
           .app-subtitle { display: none; }
           .hero-portrait { height: clamp(280px, 78vw, 420px); }
         }
@@ -902,13 +903,14 @@ export default function Home() {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
           .hero-inner { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .hero-title span { font-size: clamp(2.28rem, 14.2vw, 4.4rem) !important; }
-          .app-launcher-shell { padding: 0.92rem; border-radius: 28px; }
-          .app-launcher-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.68rem; }
-          .app-launcher-card { min-height: 130px; padding: 0.95rem 0.42rem 0.76rem; border-radius: 21px; }
-          .app-launcher-card::after { border-radius: calc(21px - 1px); }
-          .app-icon-wrap { width: 48px; height: 48px; border-radius: 15px; }
-          .app-icon-wrap svg { width: 21px; height: 21px; }
-          .app-label { font-size: 0.82rem; min-height: 2.5em; }
+          .app-launcher-shell { padding: 0.78rem; border-radius: 27px; }
+          .app-launcher-topbar { margin-bottom: 0.76rem; }
+          .app-launcher-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.56rem; }
+          .app-launcher-card { min-height: 108px; padding: 0.7rem 0.3rem 0.58rem; border-radius: 20px; }
+          .app-launcher-card::after { border-radius: calc(20px - 1px); }
+          .app-icon-wrap { width: 43px; height: 43px; border-radius: 14px; }
+          .app-icon-wrap svg { width: 20px; height: 20px; }
+          .app-label { font-size: 0.76rem; min-height: 2.3em; }
           .hero-portrait { height: min(360px, calc(100vw - 24px)); }
         }
         /* Current layout premium polish — content, routes and interactions remain unchanged. */
@@ -957,7 +959,7 @@ export default function Home() {
         }
         .home-page-premium .app-launcher-shell {
           max-width: 890px;
-          padding: clamp(1.35rem, 3vw, 2.18rem);
+          padding: clamp(1.12rem, 2.5vw, 1.72rem);
           border-color: rgba(232,201,122,0.40);
           box-shadow:
             0 62px 154px rgba(0,0,0,0.56),
@@ -971,14 +973,14 @@ export default function Home() {
             linear-gradient(120deg, rgba(255,255,255,0.025), transparent 42%);
         }
         .home-page-premium .app-launcher-topbar {
-          margin-bottom: 1.45rem;
+          margin-bottom: 1.08rem;
           letter-spacing: 0.15em;
         }
         .home-page-premium .app-launcher-grid {
-          gap: clamp(0.95rem, 2.5vw, 1.42rem);
+          gap: clamp(0.68rem, 1.8vw, 0.92rem);
         }
         .home-page-premium .app-launcher-card {
-          min-height: 166px;
+          min-height: 144px;
           border-color: rgba(232,201,122,0.27);
           background:
             radial-gradient(circle at 50% -14%, rgba(232,201,122,0.18), transparent 47%),
@@ -1028,14 +1030,14 @@ export default function Home() {
         @media (max-width: 768px) {
           .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
           .home-page-premium .hero-right { width: 100%; max-width: none; justify-self: stretch; }
-          .home-page-premium .app-launcher-shell { padding: 1.08rem; }
-          .home-page-premium .app-launcher-topbar { margin-bottom: 1.1rem; }
-          .home-page-premium .app-launcher-card { min-height: 128px; }
+          .home-page-premium .app-launcher-shell { padding: 0.88rem; }
+          .home-page-premium .app-launcher-topbar { margin-bottom: 0.9rem; }
+          .home-page-premium .app-launcher-card { min-height: 114px; }
         }
         @media (max-width: 480px) {
           .home-page-premium .explore-app-section { padding-top: 3.4rem !important; padding-bottom: 3.7rem !important; }
-          .home-page-premium .app-launcher-shell { padding: 0.98rem; }
-          .home-page-premium .app-launcher-card { min-height: 132px; }
+          .home-page-premium .app-launcher-shell { padding: 0.78rem; }
+          .home-page-premium .app-launcher-card { min-height: 108px; }
         }
 
         @media (prefers-reduced-motion: reduce) {

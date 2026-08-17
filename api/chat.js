@@ -388,11 +388,11 @@ return items
 function buildIndexSearchReply(rawText) {
 const text = String(rawText || "").trim();
 if (text.length < 3) return null;
-const authorIdentityQuestion = /(কে|পরিচয়|পরিচয়|জন্ম|কুমিল্লা|বায়ো|bio|লেখক|কবি|মাহবুব|সবুজ)/i.test(text) && !/(বই|ই-বুক|লেখা|কবিতা|আবৃত্তি|সংবাদ|গ্যালারি|ডিজাইন|অডিও|যোগাযোগ|লিংক|link)/i.test(text);
+const authorIdentityQuestion = /(কে|পরিচয়|পরিচয়|জন্ম|কুমিল্লা|বায়ো|bio|লেখক|কবি|মাহবুব|সবুজ)/i.test(text) && !/(বই|ই-বুক|লেখা|কবিতা|সংবাদ|গ্যালারি|ডিজাইন|অডিও|যোগাযোগ|লিংক|link)/i.test(text);
 const contactInfoQuestion = /(যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|instagram|youtube|মেসেঞ্জার|messenger)/i.test(text) && !/(পেজ দেখাও|page|কোথায়|কোথায়)/i.test(text);
 const allPagesQuestion = /(সব|সকল|সবগুলো|মেনু|পেজগুলো|all|menu)/i.test(text) && /(পেজ|page|ওয়েবসাইট|ওয়েবসাইট|সাইট|site|মেনু|menu)/i.test(text);
 if (authorIdentityQuestion || contactInfoQuestion || allPagesQuestion) return null;
-const isSearchLike = /খুঁজ|দেখাও|দেখান|কোথায়|কোথায়|কোথা|পড়তে|পড়তে|লিংক|link|বই|ই-বুক|লেখা|কবিতা|আবৃত্তি|যোগাযোগ|গ্যালারি|সংবাদ|ডিজাইন|অডিও|লাইভ|contact|gallery|news/i.test(text);
+const isSearchLike = /খুঁজ|দেখাও|দেখান|কোথায়|কোথায়|কোথা|পড়তে|পড়তে|লিংক|link|বই|ই-বুক|লেখা|কবিতা|যোগাযোগ|গ্যালারি|সংবাদ|ডিজাইন|অডিও|লাইভ|contact|gallery|news/i.test(text);
 const matches = searchChatbotIndex(text, { limit: 3, minScore: isSearchLike ? 95 : 145 });
 if (matches.length === 0) return null;
 const best = matches[0].item;
@@ -401,7 +401,6 @@ page: "ওয়েবসাইট পেজ",
 book: "বই/ই-বুক",
 writing_category: "লেখার বিভাগ",
 writing: "লেখা",
-recitation: "আবৃত্তি",
 tool: "চ্যাটবট টুল",
 }[best.type] || "তথ্য";
 const lines = matches.map(({ item }, index) => {
@@ -755,10 +754,6 @@ const categories = WEBSITE_KNOWLEDGE.writingCategories.map((cat) => `${cat.name}
 return `ওয়েবসাইটে মাহবুব সরদার সবুজের মোট ২,৩৫৭টি লেখা রয়েছে। প্রধান বিভাগগুলো হলো: ${categories}।\n\nসব লেখা দেখতে: [BUTTON:/writings]\nই-বুক সংগ্রহ: [BUTTON:/ebooks]\n\nআপনি ভালোবাসা, বিচ্ছেদ, জীবনদর্শন, ছোট লেখা, কবিতা, গল্প বা ইসলামিক লেখা—যে কোনো বিভাগ আলাদা করে চাইতে পারেন।`;
 }
 
-function buildRecitationReply() {
-return "পুরোনো আবৃত্তি-সংগ্রহটি এখন আর ওয়েবসাইটে নেই। লেখকের লেখা পড়তে [BUTTON:/writings] এবং বই ও ই-বুক দেখতে [BUTTON:/ebooks] ব্যবহার করুন।";
-}
-
 function buildAuthorReply() {
 const { author } = WEBSITE_KNOWLEDGE;
 const identity = String(author.identity || "").trim();
@@ -801,7 +796,7 @@ return `ওয়েবসাইটের গুরুত্বপূর্ণ �
 
 function buildToolReply(intent) {
 if (intent === "audio" || intent === "audio_editor") {
-return `Audio Studio Mode দিয়ে আপনি অডিও/ভয়েস আরও পরিষ্কার ও প্রফেশনাল করতে পারবেন।\n\nসম্ভব কাজগুলো:\n- নয়েজ কমানো ও voice cleanup\n- volume boost ও clarity enhancement\n- podcast/radio style processing\n- কবিতা/আবৃত্তির জন্য reverb ambience\n- music mix নির্দেশনা\n\nব্যবহার: ফাইল আপলোড করে লিখুন—“নয়েজ কমাও”, “ভয়েস ক্লিন করো” বা “মিউজিকের সাথে মিক্স করো”।\n\nঅডিও এডিটরে যেতে: [BUTTON:/audio-editor]`;
+return `Audio Studio Mode দিয়ে আপনি অডিও/ভয়েস আরও পরিষ্কার ও প্রফেশনাল করতে পারবেন।\n\nসম্ভব কাজগুলো:\n- নয়েজ কমানো ও voice cleanup\n- volume boost ও clarity enhancement\n- podcast/radio style processing\n- কবিতার জন্য soft ambience\n- music mix নির্দেশনা\n\nব্যবহার: ফাইল আপলোড করে লিখুন—“নয়েজ কমাও”, “ভয়েস ক্লিন করো” বা “মিউজিকের সাথে মিক্স করো”।\n\nঅডিও এডিটরে যেতে: [BUTTON:/audio-editor]`;
 }
 if (intent === "vision") {
 return `Vision Assistant দিয়ে ছবি, স্ক্রিনশট বা ডিজাইন বিশ্লেষণ করা যায়।\n\nআপনি করতে পারেন:\n- ছবির caption বা description\n- design review ও improvement suggestion\n- screenshot error বুঝে সমাধান\n- ছবির লেখা পড়ে সারাংশ/অনুবাদ\n\nব্যবহার: ছবি আপলোড করে কী জানতে চান তা লিখুন।`;
@@ -828,7 +823,7 @@ function isGeneralKnowledgeQuestion(rawText = '') {
   // Math/calculation questions
   const mathTopics = /কত হয়|যোগ করলে|বিয়োগ করলে|গুণ করলে|ভাগ করলে|বর্গমূল|ঘনমূল|শতকরা|শতাংশ|সুদ কত|লাভ কত|ক্ষতি কত|সমীকরণ|ত্রিভুজের ক্ষেত্রফল|বৃত্তের ক্ষেত্রফল|আয়তক্ষেত্রের ক্ষেত্রফল/i;
 
-  if (questionWords.test(text) && !/(লেখা|কবিতা|বই|ই-বুক|লেখক|মাহবুব|সবুজ|আবৃত্তি|ওয়েবসাইট)/i.test(text)) return true;
+  if (questionWords.test(text) && !/(লেখা|কবিতা|বই|ই-বুক|লেখক|মাহবুব|সবুজ|ওয়েবসাইট)/i.test(text)) return true;
   if (scienceTopics.test(text)) return true;
   if (historyGeoTopics.test(text)) return true;
   if (mathTopics.test(text)) return true;
@@ -837,7 +832,7 @@ function isGeneralKnowledgeQuestion(rawText = '') {
 }
 
 function hasDomainNavigationIntent(text = '') {
-  return /(বই|ই-বুক|ebook|book|লেখা|লেখালেখি|কবিতা|উক্তি|writings|poem|author|লেখক|কবি|মাহবুব|সবুজ|যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|অডিও|audio|ভয়েস|voice|ছবি|image|video|ভিডিও|ওয়েবসাইট|ওয়েবসাইট|সাইট|page|পেজ|রকমারি|rokomari|কিনতে|order|আবৃত্তি|recitation|ডিজাইন|editor|গ্যালারি|gallery|সংবাদ|news|আমিও লিখবো|বাস্তবতা)/i.test(text);
+  return /(বই|ই-বুক|ebook|book|লেখা|লেখালেখি|কবিতা|উক্তি|writings|poem|author|লেখক|কবি|মাহবুব|সবুজ|যোগাযোগ|contact|ইমেইল|email|ফেসবুক|facebook|অডিও|audio|ভয়েস|voice|ছবি|image|video|ভিডিও|ওয়েবসাইট|ওয়েবসাইট|সাইট|page|পেজ|রকমারি|rokomari|কিনতে|order|ডিজাইন|editor|গ্যালারি|gallery|সংবাদ|news|আমিও লিখবো|বাস্তবতা)/i.test(text);
 }
 
 function buildNaturalConversationReply(rawText = '') {
@@ -1007,9 +1002,6 @@ if (/(নিজের লেখা|লেখা জমা|লেখা প্র
 if (/(সব লেখা|লেখার archive|লেখালেখি|writings)/i.test(rawText) && !/(বিচ্ছেদ|ভালোবাসা|কবিতা|জীবনদর্শন|গল্প|ইসলামিক)/i.test(rawText)) {
   return buildWritingReply(rawText);
 }
-if (/(আবৃত্তি.*(শুন|দেখ|সংগ্রহ)|আবৃত্তিগুলো|recitation)/i.test(rawText)) {
-  return buildRecitationReply(rawText);
-}
 if (/(বই.*(তালিকা|সংগ্রহ)|অভিমান|দুঃখবিলাস|বিচ্ছেদকে বলি)/i.test(rawText) && !/(কোন বই|কোনটা|শুরু|সাজেস্ট|recommend|suggest)/i.test(rawText)) {
   return buildBookReply(userText);
 }
@@ -1070,8 +1062,6 @@ if (isLikelyTitleSearch || hasSearchPattern) {
 }
 return buildWritingReply(userText);
 }
-case "recitation":
-return buildRecitationReply(userText);
 case "author":
 return buildAuthorReply();
 case "social":
@@ -1134,9 +1124,6 @@ function buildSiteSpecificReply(messages = []) {
   if (/(সব লেখা|লেখার archive|লেখালেখি|writings)/i.test(rawText) && !/(বিচ্ছেদ|ভালোবাসা|কবিতা|জীবনদর্শন|গল্প|ইসলামিক)/i.test(rawText)) {
     return buildWritingReply(rawText);
   }
-  if (/(আবৃত্তি.*(শুন|দেখ|সংগ্রহ)|আবৃত্তিগুলো|recitation)/i.test(rawText)) {
-    return buildRecitationReply(rawText);
-  }
   if (/(বই.*(তালিকা|সংগ্রহ)|অভিমান|দুঃখবিলাস|বিচ্ছেদকে বলি)/i.test(rawText) && !/(কোন বই|কোনটা|শুরু|সাজেস্ট|recommend|suggest)/i.test(rawText)) {
     return buildBookReply(userText);
   }
@@ -1189,7 +1176,6 @@ function buildSiteSpecificReply(messages = []) {
         }
         return buildWritingReply(userText);
       }
-      case "recitation": return buildRecitationReply(userText);
       case "author": return buildAuthorReply();
       case "social": return buildSocialReply();
       case "contact": return buildContactReply();
@@ -1247,9 +1233,6 @@ if (/অডিও.*এডিট|অডিও.*প্রসেস|অডিও.*�
 }
 if (/পরিচয়|about|লেখক|কবি|জন্ম|কুমিল্লা|সৌদি|মাহবুব/.test(userText)) {
 return "মাহবুব সরদার সবুজ একজন লেখক, কবি ও সাহিত্যিক। তাঁর জন্ম কুমিল্লা জেলার বরুড়া উপজেলার খোশবাস ইউনিয়নের আরিফপুর গ্রামের সরদার বাড়িতে এবং তিনি বর্তমানে সৌদি আরবে কর্মরত ও অবস্থানরত। তাঁর বিস্তারিত পরিচিতি দেখতে [BUTTON:/about] ব্যবহার করুন।";
-}
-if (/আবৃত্তি|recitation|জানেন বাবা|কাঁদলে মা|তবুও তাকে|বিবেকের আদালত/.test(userText)) {
-return buildRecitationReply();
 }
 if (/সংবাদ|news|খবর|সরদার সংবাদ/.test(userText)) {
 return "সর্বশেষ সংবাদ পড়তে সরদার সংবাদ পেজে যান: [BUTTON:/news]";
