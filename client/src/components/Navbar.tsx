@@ -14,8 +14,7 @@
  *  • Mobile: immersive full-screen drawer with author card
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import {
   Menu, X, ChevronDown,
   House, UserRound, PenLine, Images,
@@ -97,18 +96,6 @@ export default function Navbar() {
   const [hoverGroup, setHoverGroup]         = useState<number | null>(null);
   const leaveTimer                          = useRef<number | null>(null);
   const isEBookReader                       = location.startsWith("/ebooks/read/");
-
-  // Magnetic glow position
-  const glowX = useMotionValue(0);
-  const glowY = useMotionValue(0);
-  const springX = useSpring(glowX, { stiffness: 200, damping: 30 });
-  const springY = useSpring(glowY, { stiffness: 200, damping: 30 });
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    glowX.set(e.clientX - rect.left);
-    glowY.set(e.clientY - rect.top);
-  }, [glowX, glowY]);
 
   /* resize */
   useEffect(() => {
@@ -204,6 +191,22 @@ export default function Navbar() {
           60%  { transform: scale(1.08) rotate(3deg); opacity: 1; }
           100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
+        @keyframes navSlideIn {
+          from { opacity: 0; transform: translateY(-18px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes drawerIn {
+          from { opacity: 0; transform: translateX(100%); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes drawerItemIn {
+          from { opacity: 0; transform: translateX(14px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes backdropIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
         @keyframes liquidLine {
           from { transform: scaleX(0); transform-origin: left; }
           to   { transform: scaleX(1); transform-origin: left; }
@@ -233,6 +236,12 @@ export default function Navbar() {
           0%   { transform: translateX(-100%); }
           100% { transform: translateX(400%); }
         }
+
+        .nb-fixed { animation: navSlideIn .5s cubic-bezier(.16,1,.3,1) both; }
+        .nb-menu-button:active { transform: scale(.92); }
+        .nb-mobile-drawer { animation: drawerIn .28s cubic-bezier(.16,1,.3,1) both; }
+        .nb-mobile-link { animation: drawerItemIn .26s cubic-bezier(.22,1,.36,1) both; }
+        .nb-mobile-backdrop { animation: backdropIn .2s ease-out both; }
 
         /* ── TOP BAR ── */
         .nb-topbar {
@@ -661,25 +670,18 @@ export default function Navbar() {
         }
         .nb-bottom-line.show { opacity: 1; }
 
-        /* ── MAGNETIC GLOW ── */
-        .nb-glow {
-          position: absolute;
-          width: 300px; height: 80px;
-          border-radius: 50%;
-          background: radial-gradient(ellipse, rgba(212,168,67,.06) 0%, transparent 70%);
-          pointer-events: none;
-          transform: translate(-50%, -50%);
-          transition: opacity .3s;
+        @media (prefers-reduced-motion: reduce) {
+          .nb-fixed, .nb-mobile-drawer, .nb-mobile-link, .nb-mobile-backdrop, .nb-topbar { animation: none !important; }
         }
+
+        /* ── MAGNETIC GLOW ── */
       `}</style>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* FIXED WRAPPER                                                          */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ y: -120 }}
-        animate={{ y: 0 }}
-        transition={{ duration: .65, ease: [.16,1,.3,1] }}
+      <div
+        className="nb-fixed"
         style={{
           position: "fixed",
           top: 0, left: 0, right: 0,
@@ -694,16 +696,8 @@ export default function Navbar() {
         }}
       >
         {/* ── TOP BAR ── */}
-        <AnimatePresence>
-          {!scrolled && isDesktop && (
-            <motion.div
-              className="nb-topbar"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 34, opacity: 1 }}
-              exit   ={{ height: 0, opacity: 0 }}
-              transition={{ duration: .35, ease: "easeInOut" }}
-              style={{ overflow: "hidden" }}
-            >
+        {!scrolled && isDesktop && (
+            <div className="nb-topbar" style={{ overflow: "hidden" }}>
               <span className="nb-topbar-date">{bnDate}</span>
               <div className="nb-topbar-right">
                 <span className="nb-topbar-tagline">বাংলা সাহিত্যের এক নিবেদিত কণ্ঠস্বর</span>
@@ -714,24 +708,14 @@ export default function Navbar() {
                   ))}
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
 
         {/* ── MAIN NAV ── */}
         <div
           className="nb-main"
           style={{ height: mainNavH, transition: "height .4s cubic-bezier(.4,0,.2,1)" }}
-          onMouseMove={isDesktop ? handleMouseMove : undefined}
         >
-          {/* Magnetic glow */}
-          {isDesktop && (
-            <motion.div
-              className="nb-glow"
-              style={{ left: springX, top: springY, opacity: activeGroup !== null ? 1 : 0 }}
-            />
-          )}
-
           {/* Bottom line */}
           <div className={`nb-bottom-line${scrolled ? " show" : ""}`} />
 
@@ -755,8 +739,7 @@ export default function Navbar() {
                       aria-haspopup="true"
                       aria-expanded={open}
                       aria-controls={`nb-mega-${group.id}`}
-                      onClick={() => toggleGroup(group.id)}
-                      onFocus={() => onEnter(group.id)}
+                      onPointerDown={(event) => { event.preventDefault(); toggleGroup(group.id); }}
                       onKeyDown={(event) => handleGroupKeyDown(event, group.id)}
                     >
                       <span>{group.label}</span>
@@ -800,8 +783,7 @@ export default function Navbar() {
                       aria-haspopup="true"
                       aria-expanded={open}
                       aria-controls={`nb-mega-${group.id}`}
-                      onClick={() => toggleGroup(group.id)}
-                      onFocus={() => onEnter(group.id)}
+                      onPointerDown={(event) => { event.preventDefault(); toggleGroup(group.id); }}
                       onKeyDown={(event) => handleGroupKeyDown(event, group.id)}
                     >
                       <span>{group.label}</span>
@@ -815,8 +797,8 @@ export default function Navbar() {
 
           {/* ── HAMBURGER ── */}
           {!isDesktop && (
-            <motion.button
-              whileTap={{ scale: .9 }}
+            <button
+              className="nb-menu-button"
               onClick={() => setMobileOpen(!mobileOpen)}
               style={{
                 color: "rgba(253,246,236,.88)",
@@ -832,30 +814,20 @@ export default function Navbar() {
                 flexShrink: 0,
               }}
             >
-              <AnimatePresence mode="wait">
-                {mobileOpen
-                  ? <motion.span key="x"   initial={{rotate:-90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:90,opacity:0}} transition={{duration:.18}}><X    size={22}/></motion.span>
-                  : <motion.span key="men" initial={{rotate: 90,opacity:0}} animate={{rotate:0,opacity:1}} exit={{rotate:-90,opacity:0}} transition={{duration:.18}}><Menu size={22}/></motion.span>
-                }
-              </AnimatePresence>
-            </motion.button>
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* MEGA DROPDOWN (full-width, below nav)                                  */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {isDesktop && activeGroup !== null && currentGroup && (
-          <motion.div
+      {isDesktop && activeGroup !== null && currentGroup && (
+          <div
             id={`nb-mega-${currentGroup.id}`}
             className="nb-mega"
             style={{ top: totalH }}
-            initial={{ opacity: 0, y: -16, scale: .975, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0,   scale: 1,    filter: "blur(0px)" }}
-            exit   ={{ opacity: 0, y: -12, scale: .975, filter: "blur(3px)" }}
-            transition={{ duration: .22, ease: [.16,1,.3,1] }}
             onMouseEnter={() => onEnter(activeGroup)}
             onMouseLeave={onLeave}
           >
@@ -923,20 +895,15 @@ export default function Navbar() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* MOBILE DRAWER                                                          */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {mobileOpen && !isDesktop && (
-          <motion.div
-            initial={{ opacity: 0, x: "100%" }}
-            animate={{ opacity: 1, x: 0 }}
-            exit  ={{ opacity: 0, x: "100%" }}
-            transition={{ duration: .32, ease: [.16,1,.3,1] }}
+      {mobileOpen && !isDesktop && (
+          <div
+            className="nb-mobile-drawer"
             style={{
               position: "fixed",
               top: mainNavH, right: 0,
@@ -986,7 +953,7 @@ export default function Navbar() {
               </div>
 
               {/* Groups */}
-              {ALL_GROUPS.map((group, gIdx) => (
+              {ALL_GROUPS.map((group) => (
                 <div key={group.id}>
                   <p style={{
                     fontFamily:"'AdorshoLipi',sans-serif",
@@ -998,21 +965,14 @@ export default function Navbar() {
                     {group.label}
                     <span style={{ flex:1, height:1, background:`linear-gradient(90deg,transparent,${group.glyphColor}22)`, display:"inline-block" }} />
                   </p>
-                  <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={{ hidden:{}, visible:{ transition:{ staggerChildren:.04, delayChildren: gIdx * 0.05 } } }}
-                    style={{ display:"flex", flexDirection:"column", gap:4 }}
-                  >
-                    {group.items.map((item) => {
+                  <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+                    {group.items.map((item, idx) => {
                       const IIcon      = item.icon;
                       const itemActive = isActive(item.href, location);
                       return (
                         <Link key={item.href} href={item.href}>
-                          <motion.div
-                            variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0} }}
-                            transition={{ duration:.28, ease:[.22,1,.36,1] }}
-                            whileTap={{ scale:.982 }}
+                          <div
+                            className="nb-mobile-link"
                             onPointerDown={() => preloadRoute(item.href)}
                             onClick={() => setMobileOpen(false)}
                             style={{
@@ -1026,6 +986,7 @@ export default function Navbar() {
                                 : "transparent",
                               border: itemActive ? `1px solid ${group.glyphColor}33` : "1px solid transparent",
                               transition:"all .2s",
+                              animationDelay: `${idx * 0.035}s`,
                             }}
                           >
                             <span style={{
@@ -1051,26 +1012,21 @@ export default function Navbar() {
                                 boxShadow:`0 0 8px ${group.glyphColor}99`,
                               }} />
                             )}
-                          </motion.div>
+                          </div>
                         </Link>
                       );
                     })}
-                  </motion.div>
+                  </div>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* Mobile backdrop */}
-      <AnimatePresence>
-        {mobileOpen && !isDesktop && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit  ={{ opacity: 0 }}
-            transition={{ duration: .25 }}
+      {mobileOpen && !isDesktop && (
+          <div
+            className="nb-mobile-backdrop"
             onClick={() => setMobileOpen(false)}
             style={{
               position: "fixed", inset: 0,
@@ -1080,7 +1036,6 @@ export default function Navbar() {
             }}
           />
         )}
-      </AnimatePresence>
     </>
   );
 }

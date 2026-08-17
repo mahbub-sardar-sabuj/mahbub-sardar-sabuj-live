@@ -4,7 +4,7 @@
  * Concept: Cinematic dark luxury author portfolio
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  */
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 
 // PWA install prompt type
 interface BeforeInstallPromptEvent extends Event {
@@ -20,7 +20,6 @@ import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Seo from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
-import RulesSection from "@/components/RulesSection";
 
 // ── Assets ────────────────────────────────────────────────────────────────────
 // Critical LCP assets are served locally so Vercel/CDN caching is controlled by this project.
@@ -28,6 +27,7 @@ const PROFILE_1 = "/images/home/profile-home.jpeg";
 const PROFILE_FALLBACK = "/images/author-photo.jpg";
 const HERO_BG = "/images/home/hero-bg.webp";
 const ABOUT_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/about-bg-UJ5ebeZYm7Pq6XtFEyFtTv.webp";
+const RulesSection = lazy(() => import("@/components/RulesSection"));
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
@@ -49,6 +49,7 @@ export default function Home() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [pwaInstalled, setPwaInstalled] = useState(false);
   const [pwaInstalling, setPwaInstalling] = useState(false);
+  const [loadRulesSection, setLoadRulesSection] = useState(false);
 
   // PWA install prompt listener
   useEffect(() => {
@@ -66,6 +67,13 @@ export default function Home() {
       setDeferredPrompt(null);
     });
     return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
+    // This section is below the hero. Load it after the first visual render so it
+    // does not compete with the author portrait, primary type, and navigation.
+    const timer = window.setTimeout(() => setLoadRulesSection(true), 1800);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const handleInstallPWA = async () => {
@@ -614,7 +622,11 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════
           RULES / WHY USE THIS WEBSITE SECTION
       ══════════════════════════════════════════════════════════════════════ */}
-      <RulesSection />
+      {loadRulesSection ? (
+        <Suspense fallback={null}>
+          <RulesSection />
+        </Suspense>
+      ) : null}
 
       {/* AdSense Ad — হোম পেজের নিচে */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1rem 1.5rem" }}>
