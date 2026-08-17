@@ -616,7 +616,10 @@ const newsData = [
 ];
 export default async function handler(req) {
   const { searchParams } = new URL(req.url);
-  const path = searchParams.get("path") || "/";
+  const rawPath = searchParams.get("path") || "/";
+  let path = decodeURIComponent(rawPath);
+  path = `/${path.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+  if (path === "/") path = "/";
   let title = "মাহবুব সরদার সবুজ | Mahbub Sardar Sabuj - লেখক ও কবি";
   let description = "জনপ্রিয় লেখক ও কবি মাহবুব সরদার সবুজের অফিসিয়াল ওয়েবসাইট। এখানে পাবেন তার কবিতা, সাহিত্যকর্ম, সরদার সংবাদ এবং আরও অনেক কিছু।";
   let image = DEFAULT_IMAGE;

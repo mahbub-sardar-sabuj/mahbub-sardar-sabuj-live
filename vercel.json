@@ -237,6 +237,13 @@
       "dest": "/ads.txt"
     },
     {
+      "src": "/offline.html",
+      "dest": "/offline.html",
+      "headers": {
+        "Cache-Control": "public, max-age=3600, must-revalidate"
+      }
+    },
+    {
       "src": "/sitemap.xml",
       "dest": "/sitemap.xml"
     },
