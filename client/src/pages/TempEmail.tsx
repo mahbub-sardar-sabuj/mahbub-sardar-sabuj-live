@@ -19,7 +19,9 @@ const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
 const TEMP_EMAIL_API = "/api/temp-email-proxy";
-const DEFAULT_USERNAME = "mahbubsardarsabuj";
+const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v1";
+const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
+const TEMP_EMAIL_MAX_ATTEMPTS = 2;
 
 interface ProxyError {
   error?: string;
@@ -31,32 +33,92 @@ async function tempEmailRequest<T>(
   action: string,
   payload: Record<string, string> = {}
 ): Promise<T> {
-  const response = await fetch(TEMP_EMAIL_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action, ...payload }),
-  });
+  let lastError: unknown;
 
-  if (!response.ok) {
-    const data = (await response.json().catch(() => null)) as ProxyError | null;
-    const message =
-      data?.["hydra:description"] ||
-      data?.error ||
-      data?.message ||
-      "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।";
-    throw new Error(message);
+  for (let attempt = 1; attempt <= TEMP_EMAIL_MAX_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), TEMP_EMAIL_REQUEST_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(TEMP_EMAIL_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ...payload }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as ProxyError | null;
+        const message =
+          data?.["hydra:description"] ||
+          data?.error ||
+          data?.message ||
+          "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।";
+        const error = Object.assign(new Error(message), { retryable: response.status >= 500 });
+        if (!error.retryable || attempt === TEMP_EMAIL_MAX_ATTEMPTS) throw error;
+        lastError = error;
+      } else {
+        if (response.status === 204) return undefined as T;
+        return response.json() as Promise<T>;
+      }
+    } catch (error) {
+      const typedError = error as Error & { retryable?: boolean };
+      if (typedError.retryable === false || attempt === TEMP_EMAIL_MAX_ATTEMPTS) throw typedError;
+      lastError = typedError;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+
+    await new Promise((resolve) => window.setTimeout(resolve, 450 * attempt));
   }
 
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।");
 }
 
 interface EmailAccount {
   id: string;
   address: string;
   token: string;
-  password: string;
   createdAt: string;
+}
+
+function isStoredAccount(value: unknown): value is EmailAccount {
+  if (!value || typeof value !== "object") return false;
+  const account = value as Partial<EmailAccount>;
+  return Boolean(
+    typeof account.id === "string" &&
+    typeof account.token === "string" &&
+    typeof account.address === "string" &&
+    account.address.includes("@") &&
+    typeof account.createdAt === "string"
+  );
+}
+
+function readStoredAccount(): EmailAccount | null {
+  try {
+    const value = JSON.parse(window.sessionStorage.getItem(TEMP_EMAIL_SESSION_KEY) || "null");
+    return isStoredAccount(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeAccount(account: EmailAccount) {
+  try {
+    window.sessionStorage.setItem(TEMP_EMAIL_SESSION_KEY, JSON.stringify(account));
+  } catch {
+    // Session storage can be unavailable in strict private browsing; the in-memory session still works.
+  }
+}
+
+function clearStoredAccount() {
+  try {
+    window.sessionStorage.removeItem(TEMP_EMAIL_SESSION_KEY);
+  } catch {
+    // Nothing else is required when browser storage is unavailable.
+  }
 }
 
 interface Message {
@@ -158,7 +220,6 @@ export default function TempEmail() {
   const [countdown, setCountdown] = useState(30);
   const [generating, setGenerating] = useState(false);
   const [viewingMessage, setViewingMessage] = useState(false);
-  const sequenceRef = useRef<number | null>(null);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -169,61 +230,23 @@ export default function TempEmail() {
     return members.filter((d) => d.isActive).map((d) => d.domain);
   };
 
-  // Create new email account with a predictable sequential username.
+  // A long random local-part prevents users from accidentally sharing a mailbox.
   const createAccount = async (): Promise<EmailAccount> => {
     const domains = await getDomains();
     if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
-    const domain = domains[0];
-    const password = randomString(16);
 
-    // Remember the next number during this browser session and across reloads.
-    if (sequenceRef.current === null) {
-      try {
-        const stored = Number.parseInt(localStorage.getItem("temp-email-sequence") || "0", 10);
-        sequenceRef.current = Number.isFinite(stored) && stored >= 0 ? stored : 0;
-      } catch {
-        sequenceRef.current = 0;
-      }
-    }
-    const sequenceStart = sequenceRef.current;
-    const tryAddresses = Array.from({ length: 10 }, (_, offset) => {
-      const sequence = sequenceStart + offset;
-      const username = sequence === 0
-        ? DEFAULT_USERNAME
-        : `${DEFAULT_USERNAME}${String(sequence).padStart(2, "0")}`;
-      return `${username}@${domain}`;
+    const requestedAddress = `mss-${randomString(16)}@${domains[0]}`;
+    const accountData = await tempEmailRequest<Record<string, string>>("createAccount", {
+      address: requestedAddress,
+      password: randomString(16),
     });
 
-    let address = tryAddresses[0];
-    let accountData: Record<string, string> | null = null;
-
-    for (let index = 0; index < tryAddresses.length; index += 1) {
-      const addr = tryAddresses[index];
-      try {
-        accountData = await tempEmailRequest<Record<string, string>>("createAccount", { address: addr, password });
-        address = accountData.address || addr;
-        sequenceRef.current = sequenceStart + index + 1;
-        try {
-          localStorage.setItem("temp-email-sequence", String(sequenceRef.current));
-        } catch {
-          // Private browsing may block localStorage; the in-memory counter still works.
-        }
-        break;
-      } catch (error) {
-        if (index === tryAddresses.length - 1) throw error;
-      }
-    }
-    if (!accountData) throw new Error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
-
-    // The proxy creates the mailbox session and returns its token atomically.
-    // This avoids a second upstream request and prevents partial sessions.
     if (!accountData.id || !accountData.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
 
     return {
       id: accountData.id,
-      address,
+      address: accountData.address || requestedAddress,
       token: accountData.token,
-      password,
       createdAt: accountData.createdAt || new Date().toISOString(),
     };
   };
@@ -286,15 +309,25 @@ export default function TempEmail() {
     [fetchMessages]
   );
 
+  // Restore the current tab's mailbox after a refresh without retaining it after the tab closes.
+  useEffect(() => {
+    const stored = readStoredAccount();
+    if (!stored) return;
+    setAccount(stored);
+    void fetchMessages(stored);
+    startAutoRefresh(stored);
+  }, [fetchMessages, startAutoRefresh]);
+
   // Generate new email
   const generateEmail = async () => {
     setGenerating(true);
     setError(null);
-    setMessages([]);
     setSelectedMessage(null);
     try {
       const acc = await createAccount();
+      storeAccount(acc);
       setAccount(acc);
+      setMessages([]);
       await fetchMessages(acc);
       startAutoRefresh(acc);
     } catch (e: unknown) {
@@ -334,6 +367,7 @@ export default function TempEmail() {
     } catch {
       setError("অ্যাকাউন্ট সার্ভার থেকে মুছতে সমস্যা হয়েছে; স্থানীয় session সরানো হয়েছে।");
     }
+    clearStoredAccount();
     setAccount(null);
     setMessages([]);
     setSelectedMessage(null);
@@ -364,17 +398,19 @@ export default function TempEmail() {
       <main
         style={{
           minHeight: "100vh",
-          background: BG,
+          background: "radial-gradient(900px 520px at 50% -8%, rgba(201,168,76,0.13), transparent 63%), radial-gradient(760px 520px at 6% 46%, rgba(27,72,132,0.18), transparent 70%), #060E1A",
           paddingTop: "var(--site-nav-offset, 70px)",
-          paddingBottom: 60,
+          paddingBottom: 72,
+          overflow: "hidden",
         }}
       >
         {/* Hero Section */}
         <section
           style={{
-            background: `linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%)`,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(201,168,76,0.035) 46%, transparent 100%)",
             borderBottom: `1px solid ${BORDER}`,
-            padding: "48px 20px 40px",
+            boxShadow: "inset 0 -1px 0 rgba(255,255,255,0.025)",
+            padding: "clamp(40px, 8vw, 72px) 20px clamp(34px, 6vw, 56px)",
             textAlign: "center",
           }}
         >
@@ -457,7 +493,7 @@ export default function TempEmail() {
         </section>
 
         {/* Main Content */}
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 16px 0" }}>
+          <div style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(24px, 5vw, 48px) 16px 0" }}>
           {/* Error */}
           <AnimatePresence>
             {error && (
@@ -481,10 +517,14 @@ export default function TempEmail() {
                   {error}
                 </span>
                 <button
-                  onClick={() => setError(null)}
-                  style={{ marginLeft: "auto", background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "1.1rem" }}
+                  onClick={() => {
+                    setError(null);
+                    if (!account) void generateEmail();
+                    else void manualRefresh();
+                  }}
+                  style={{ marginLeft: "auto", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 9, color: "#fecaca", cursor: "pointer", padding: "6px 10px", fontFamily: "'AdorshoLipi', sans-serif", whiteSpace: "nowrap" }}
                 >
-                  ×
+                  আবার চেষ্টা করুন
                 </button>
               </motion.div>
             )}
@@ -496,11 +536,13 @@ export default function TempEmail() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             style={{
-              background: CARD_BG,
-              border: `1px solid ${BORDER}`,
-              borderRadius: 20,
-              padding: "28px 24px",
-              marginBottom: 24,
+              background: "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025))",
+              border: "1px solid rgba(255,255,255,0.11)",
+              borderRadius: 24,
+              padding: "clamp(20px, 4vw, 32px)",
+              marginBottom: 28,
+              boxShadow: "0 22px 56px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.045)",
+              backdropFilter: "blur(18px)",
             }}
           >
             {!account ? (
@@ -532,10 +574,12 @@ export default function TempEmail() {
                 >
                   নতুন টেম্পোরারি ইমেইল তৈরি করুন
                 </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 20px" }}>
-                  একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ডিসপোজেবল ইমেইল
+                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 10px" }}>
+                  একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ব্যক্তিগত ডিসপোজেবল ইনবক্স
                 </p>
-
+                <p style={{ color: "rgba(232,201,122,0.76)", fontSize: "0.78rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 22px" }}>
+                  ইউনিক ঠিকানা · ৩০ সেকেন্ডে স্বয়ংক্রিয় inbox refresh
+                </p>
 
                 <button
                   onClick={generateEmail}
@@ -598,10 +642,11 @@ export default function TempEmail() {
                 {/* Email Address Box */}
                 <div
                   style={{
-                    background: "rgba(201,168,76,0.06)",
-                    border: `2px solid rgba(201,168,76,0.3)`,
-                    borderRadius: 14,
-                    padding: "16px 20px",
+                    background: "linear-gradient(135deg, rgba(201,168,76,0.16), rgba(15,35,64,0.52))",
+                    border: "1px solid rgba(232,201,122,0.43)",
+                    borderRadius: 16,
+                    padding: "clamp(14px, 3vw, 20px)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 30px rgba(0,0,0,0.12)",
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
@@ -646,7 +691,7 @@ export default function TempEmail() {
                 </div>
 
                 {/* Action Buttons */}
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 2 }}>
                   <button
                     onClick={manualRefresh}
                     disabled={refreshing}
@@ -717,6 +762,24 @@ export default function TempEmail() {
                     <Trash2 size={15} />
                     মুছে ফেলুন
                   </button>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    marginTop: 16,
+                    padding: "11px 13px",
+                    borderRadius: 13,
+                    background: "rgba(34,197,94,0.055)",
+                    border: "1px solid rgba(34,197,94,0.16)",
+                  }}
+                >
+                  <Shield size={16} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ color: "rgba(220,252,231,0.8)", fontSize: "0.79rem", lineHeight: 1.55, fontFamily: "'AdorshoLipi', sans-serif" }}>
+                    এই inbox শুধু বর্তমান tab-এ সুরক্ষিতভাবে মনে রাখা হবে। নতুন ইমেইল বা মুছে ফেলুন চাপলে আগের session সরিয়ে দেওয়া হবে।
+                  </span>
                 </div>
               </div>
             )}
