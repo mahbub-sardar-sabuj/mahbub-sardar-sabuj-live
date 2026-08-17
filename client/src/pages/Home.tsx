@@ -125,6 +125,7 @@ export default function Home() {
           HERO — Cinematic Split Layout
       ══════════════════════════════════════════════════════════════════════ */}
       <section
+        className="home-premium-hero"
         style={{
           position: "relative",
           minHeight: "100vh",
@@ -647,6 +648,14 @@ export default function Home() {
           0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #C9A84C, 0 0 16px rgba(201,168,76,0.5); }
           50% { opacity: 0.65; transform: scale(1.6); box-shadow: 0 0 18px rgba(201,168,76,0.9), 0 0 32px rgba(201,168,76,0.4); }
         }
+        @keyframes homeHeroReveal {
+          from { opacity: 0; transform: translate3d(0, 10px, 0); }
+          to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        @keyframes homePortraitSettle {
+          from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.985); }
+          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
 
         /* Hero layout */
         .hero-container {
@@ -931,9 +940,22 @@ export default function Home() {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
         }
+        .home-page-premium .home-premium-hero::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 1;
+          background:
+            linear-gradient(90deg, rgba(255,255,255,0.028), transparent 24%, transparent 76%, rgba(201,168,76,0.045)),
+            radial-gradient(circle at 76% 17%, rgba(245,228,160,0.09), transparent 25%);
+          box-shadow: inset 0 -1px 0 rgba(255,255,255,0.055), inset 0 1px 0 rgba(255,255,255,0.028);
+        }
         .home-page-premium .hero-container {
           padding-top: calc(var(--site-nav-offset, 98px) + 34px);
           padding-bottom: 76px;
+          animation: homeHeroReveal .62s cubic-bezier(0.23, 1, 0.32, 1) both;
+          will-change: transform, opacity;
         }
         .home-page-premium .hero-inner {
           gap: clamp(3.5rem, 7vw, 7.5rem);
@@ -948,6 +970,11 @@ export default function Home() {
           max-width: 430px;
           justify-self: end;
           isolation: isolate;
+        }
+        .home-page-premium .hero-frame-wrap {
+          filter: drop-shadow(0 28px 56px rgba(0,0,0,0.24));
+          animation: homePortraitSettle .78s cubic-bezier(0.23, 1, 0.32, 1) .08s both;
+          will-change: transform, opacity;
         }
         .home-page-premium .hero-frame-wrap::after {
           content: "";
@@ -1040,6 +1067,9 @@ export default function Home() {
           .home-page-premium .hero-right { justify-self: center; }
         }
         @media (max-width: 768px) {
+          .home-page-premium .home-premium-hero::after {
+            background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 34%), radial-gradient(circle at 80% 14%, rgba(245,228,160,0.07), transparent 27%);
+          }
           .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
           .home-page-premium .hero-right { width: 100%; max-width: none; justify-self: stretch; }
           .home-page-premium .app-launcher-shell { padding: 0.88rem; }
@@ -1054,8 +1084,11 @@ export default function Home() {
 
         @media (prefers-reduced-motion: reduce) {
           .app-launcher-card,
-          .app-icon-wrap {
+          .app-icon-wrap,
+          .home-page-premium .hero-container,
+          .home-page-premium .hero-frame-wrap {
             transition: none !important;
+            animation: none !important;
           }
         }
 
