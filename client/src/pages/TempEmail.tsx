@@ -143,6 +143,13 @@ interface MessageDetail {
   hasAttachments: boolean;
 }
 
+function isProviderWelcomeMessage(message: Message): boolean {
+  return (
+    message.from.address.toLowerCase() === "no-reply@guerrillamail.com" &&
+    message.subject.trim().toLowerCase() === "welcome to guerrilla mail"
+  );
+}
+
 function isStoredMessage(value: unknown): value is Message {
   if (!value || typeof value !== "object") return false;
   const message = value as Partial<Message>;
@@ -162,7 +169,9 @@ function isStoredMessage(value: unknown): value is Message {
 function readStoredMessages(): Message[] {
   try {
     const value = JSON.parse(window.sessionStorage.getItem(TEMP_EMAIL_MESSAGES_KEY) || "[]");
-    return Array.isArray(value) ? value.filter(isStoredMessage).slice(0, 50) : [];
+    return Array.isArray(value)
+      ? value.filter(isStoredMessage).filter((message) => !isProviderWelcomeMessage(message)).slice(0, 50)
+      : [];
   } catch {
     return [];
   }
@@ -177,8 +186,13 @@ function storeMessages(messages: Message[]) {
 }
 
 function mergeMessages(previous: Message[], incoming: Message[]): Message[] {
-  const byId = new Map(previous.map((message) => [message.id, message]));
+  const byId = new Map(
+    previous
+      .filter((message) => !isProviderWelcomeMessage(message))
+      .map((message) => [message.id, message])
+  );
   for (const message of incoming) {
+    if (isProviderWelcomeMessage(message)) continue;
     const existing = byId.get(message.id);
     byId.set(message.id, existing ? { ...existing, ...message, seen: existing.seen || message.seen } : message);
   }
@@ -279,7 +293,7 @@ export default function TempEmail() {
     const domains = await getDomains();
     if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
 
-    const requestedAddress = `mss-${randomString(16)}@${domains[0]}`;
+    const requestedAddress = `mahbubsardarsabuj${Date.now()}${Math.floor(100 + Math.random() * 900)}@${domains[0]}`;
     const accountData = await tempEmailRequest<Record<string, string>>("createAccount", {
       address: requestedAddress,
       password: randomString(16),
@@ -824,23 +838,6 @@ export default function TempEmail() {
                   </button>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 10,
-                    marginTop: 16,
-                    padding: "11px 13px",
-                    borderRadius: 13,
-                    background: "rgba(34,197,94,0.055)",
-                    border: "1px solid rgba(34,197,94,0.16)",
-                  }}
-                >
-                  <Shield size={16} color="#4ade80" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span style={{ color: "rgba(220,252,231,0.8)", fontSize: "0.79rem", lineHeight: 1.55, fontFamily: "'AdorshoLipi', sans-serif" }}>
-                    এই inbox শুধু বর্তমান tab-এ সুরক্ষিতভাবে মনে রাখা হবে। নতুন ইমেইল বা মুছে ফেলুন চাপলে আগের session সরিয়ে দেওয়া হবে।
-                  </span>
-                </div>
               </div>
             )}
           </motion.div>
