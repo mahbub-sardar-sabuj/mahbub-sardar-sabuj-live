@@ -4,7 +4,7 @@
  * Concept: Cinematic dark luxury author portfolio
  * Palette: Deep Navy #060E1A, Rich Gold #C9A84C, Ivory #FAF6EF, Charcoal #1E2D3D
  */
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect, useRef } from "react";
 
 // PWA install prompt type
 interface BeforeInstallPromptEvent extends Event {
@@ -50,6 +50,8 @@ export default function Home() {
   const [pwaInstalled, setPwaInstalled] = useState(false);
   const [pwaInstalling, setPwaInstalling] = useState(false);
   const [loadRulesSection, setLoadRulesSection] = useState(false);
+  const [launcherVisible, setLauncherVisible] = useState(false);
+  const launcherRef = useRef<HTMLElement | null>(null);
 
   // PWA install prompt listener
   useEffect(() => {
@@ -74,6 +76,59 @@ export default function Home() {
     // does not compete with the author portrait, primary type, and navigation.
     const timer = window.setTimeout(() => setLoadRulesSection(true), 1800);
     return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.matches) {
+      setLauncherVisible(true);
+      return;
+    }
+
+    const launcher = launcherRef.current;
+    if (!launcher) return;
+    const fallback = window.setTimeout(() => setLauncherVisible(true), 2600);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setLauncherVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -8% 0px" }
+    );
+    observer.observe(launcher);
+    return () => {
+      window.clearTimeout(fallback);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.matches) return;
+
+    let frame = 0;
+    const updateScrollEffects = () => {
+      frame = 0;
+      const offset = Math.min(window.scrollY, 860);
+      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * 0.045, 38)}px`);
+      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * 0.024, 22)}px`);
+      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * 0.016, 14)}px`);
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateScrollEffects);
+    };
+
+    updateScrollEffects();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+      document.documentElement.style.removeProperty("--home-hero-shift");
+      document.documentElement.style.removeProperty("--home-glow-shift");
+      document.documentElement.style.removeProperty("--home-frame-shift");
+    };
   }, []);
 
   const handleInstallPWA = async () => {
@@ -137,6 +192,7 @@ export default function Home() {
       >
         {/* Full-bleed background image with parallax */}
         <div
+          className="hero-parallax-bg"
           style={{
             position: "absolute", inset: 0,
             backgroundImage: `url(${HERO_BG})`,
@@ -172,6 +228,7 @@ export default function Home() {
 
         {/* Gold radial glow — top right, more intense */}
         <div
+          className="hero-gold-glow"
           style={{
             position: "absolute",
             top: "-15%", right: "-8%",
@@ -183,6 +240,7 @@ export default function Home() {
         />
         {/* Secondary blue-teal glow — bottom left */}
         <div
+          className="hero-blue-glow"
           style={{
             position: "absolute",
             bottom: "-10%", left: "-5%",
@@ -464,7 +522,11 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
-      <section id="explore" className="explore-app-section" style={{
+      <section
+        id="explore"
+        ref={launcherRef}
+        className={`explore-app-section${launcherVisible ? " is-revealed" : ""}`}
+        style={{
         padding: "clamp(3.5rem, 7vw, 5.6rem) 1.25rem",
         background: "linear-gradient(180deg, rgba(4,10,20,0.98) 0%, rgba(6,14,26,1) 16%, rgba(6,14,26,1) 100%), radial-gradient(circle at 78% 12%, rgba(201,168,76,0.15), transparent 32%), radial-gradient(circle at 12% 78%, rgba(232,201,122,0.08), transparent 30%), #060E1A",
         position: "relative",
@@ -655,6 +717,10 @@ export default function Home() {
         @keyframes homePortraitSettle {
           from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.985); }
           to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+        @keyframes glassCardReveal {
+          from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.982); filter: blur(3px); }
+          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
 
         /* Hero layout */
@@ -940,6 +1006,26 @@ export default function Home() {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
         }
+        .home-page-premium .hero-parallax-bg {
+          transform: translate3d(0, var(--home-hero-shift, 0px), 0) scale(1.045) !important;
+          transition: transform .12s linear;
+          will-change: transform;
+        }
+        .home-page-premium .hero-gold-glow {
+          transform: translate3d(0, var(--home-glow-shift, 0px), 0) !important;
+          transition: transform .12s linear;
+          will-change: transform;
+        }
+        .home-page-premium .hero-blue-glow {
+          transform: translate3d(0, calc(var(--home-glow-shift, 0px) * -0.7), 0) !important;
+          transition: transform .12s linear;
+          will-change: transform;
+        }
+        .home-page-premium .hero-right {
+          transform: translate3d(0, var(--home-frame-shift, 0px), 0);
+          transition: transform .16s linear;
+          will-change: transform;
+        }
         .home-page-premium .home-premium-hero::after {
           content: "";
           position: absolute;
@@ -1058,6 +1144,25 @@ export default function Home() {
         .home-page-premium .app-subtitle {
           color: rgba(250,246,239,0.64);
         }
+        .home-page-premium .explore-app-section:not(.is-revealed) .app-launcher-grid > div {
+          opacity: 0;
+          transform: translate3d(0, 18px, 0) scale(0.982);
+        }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div {
+          animation: glassCardReveal .52s cubic-bezier(0.23, 1, 0.32, 1) both;
+        }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(1) { animation-delay: 0ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(2) { animation-delay: 45ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(3) { animation-delay: 90ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(4) { animation-delay: 135ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(5) { animation-delay: 180ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(6) { animation-delay: 225ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(7) { animation-delay: 270ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(8) { animation-delay: 315ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(9) { animation-delay: 360ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(10) { animation-delay: 405ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(11) { animation-delay: 450ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(12) { animation-delay: 495ms; }
         .home-page-premium .app-launcher-link:focus-visible .app-launcher-card,
         .home-page-premium .pwa-install-card:focus-visible {
           outline: 3px solid rgba(245,228,160,0.30);
@@ -1086,9 +1191,17 @@ export default function Home() {
           .app-launcher-card,
           .app-icon-wrap,
           .home-page-premium .hero-container,
-          .home-page-premium .hero-frame-wrap {
+          .home-page-premium .hero-frame-wrap,
+          .home-page-premium .hero-parallax-bg,
+          .home-page-premium .hero-gold-glow,
+          .home-page-premium .hero-blue-glow,
+          .home-page-premium .hero-right,
+          .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
+            transform: none !important;
+            opacity: 1 !important;
+            filter: none !important;
           }
         }
 
