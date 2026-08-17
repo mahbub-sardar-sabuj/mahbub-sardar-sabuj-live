@@ -722,6 +722,14 @@ export default function Home() {
           from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.982); filter: blur(3px); }
           to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
+        @keyframes cinematicCrownDrift {
+          0%, 100% { opacity: 0.36; transform: translate3d(-2%, -1%, 0) scale(1); }
+          50% { opacity: 0.72; transform: translate3d(3%, 2%, 0) scale(1.035); }
+        }
+        @keyframes portraitHaloBreathe {
+          0%, 100% { opacity: 0.36; transform: scale(0.94); }
+          50% { opacity: 0.68; transform: scale(1.06); }
+        }
 
         /* Hero layout */
         .hero-container {
@@ -1026,6 +1034,20 @@ export default function Home() {
           transition: transform .16s linear;
           will-change: transform;
         }
+        .home-page-premium .home-premium-hero::before {
+          content: "";
+          position: absolute;
+          z-index: 1;
+          inset: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(ellipse 44% 34% at 50% -6%, rgba(255,239,178,0.20) 0%, rgba(201,168,76,0.08) 38%, transparent 74%),
+            linear-gradient(116deg, transparent 24%, rgba(245,228,160,0.055) 47%, transparent 70%);
+          mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.72) 30%, transparent 68%);
+          -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.72) 30%, transparent 68%);
+          animation: cinematicCrownDrift 10s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+          will-change: transform, opacity;
+        }
         .home-page-premium .home-premium-hero::after {
           content: "";
           position: absolute;
@@ -1060,6 +1082,18 @@ export default function Home() {
         .home-page-premium .hero-frame-wrap {
           filter: drop-shadow(0 28px 56px rgba(0,0,0,0.24));
           animation: homePortraitSettle .78s cubic-bezier(0.23, 1, 0.32, 1) .08s both;
+          will-change: transform, opacity;
+        }
+        .home-page-premium .hero-frame-wrap::before {
+          content: "";
+          position: absolute;
+          z-index: 0;
+          inset: -14%;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(232,201,122,0.24) 0%, rgba(201,168,76,0.09) 40%, transparent 70%);
+          filter: blur(18px);
+          pointer-events: none;
+          animation: portraitHaloBreathe 7.5s ease-in-out infinite;
           will-change: transform, opacity;
         }
         .home-page-premium .hero-frame-wrap::after {
@@ -1196,6 +1230,8 @@ export default function Home() {
           .home-page-premium .hero-gold-glow,
           .home-page-premium .hero-blue-glow,
           .home-page-premium .hero-right,
+          .home-page-premium .home-premium-hero::before,
+          .home-page-premium .hero-frame-wrap::before,
           .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
