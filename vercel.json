@@ -113,7 +113,56 @@
       "status": 308
     },
     {
-      "src": "/(facebook-recitations|text-to-speech|temp-number|temp-card)/?",
+      "src": "/facebook-recitations",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/facebook-recitations/",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/text-to-speech",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/text-to-speech/",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/temp-number",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/temp-number/",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/temp-card",
+      "headers": {
+        "Location": "/"
+      },
+      "status": 308
+    },
+    {
+      "src": "/temp-card/",
       "headers": {
         "Location": "/"
       },
