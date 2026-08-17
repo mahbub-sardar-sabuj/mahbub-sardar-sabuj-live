@@ -201,7 +201,7 @@ export default function TempEmail() {
       const addr = tryAddresses[index];
       try {
         accountData = await tempEmailRequest<Record<string, string>>("createAccount", { address: addr, password });
-        address = addr;
+        address = accountData.address || addr;
         sequenceRef.current = sequenceStart + index + 1;
         try {
           localStorage.setItem("temp-email-sequence", String(sequenceRef.current));
@@ -215,16 +215,16 @@ export default function TempEmail() {
     }
     if (!accountData) throw new Error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
 
-    // Get token
-    const tokenData = await tempEmailRequest<{ token?: string }>("createToken", { address, password });
-    if (!tokenData.token) throw new Error("টোকেন পেতে সমস্যা হয়েছে");
+    // The proxy creates the mailbox session and returns its token atomically.
+    // This avoids a second upstream request and prevents partial sessions.
+    if (!accountData.id || !accountData.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
 
     return {
       id: accountData.id,
       address,
-      token: tokenData.token,
+      token: accountData.token,
       password,
-      createdAt: accountData.createdAt,
+      createdAt: accountData.createdAt || new Date().toISOString(),
     };
   };
 
