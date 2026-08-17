@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
+import { clearBengaliValidation, showBengaliValidation } from "@/lib/bengaliFormValidation";
 
 const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C97A";
@@ -949,6 +950,8 @@ export default function Contact() {
                               type="text"
                               value={form.name}
                               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                              onInvalid={showBengaliValidation}
+                              onInput={clearBengaliValidation}
                               placeholder="পুরো নাম"
                               required
                               style={getFocusStyle("name")}
@@ -963,6 +966,8 @@ export default function Contact() {
                               type="email"
                               value={form.email}
                               onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                              onInvalid={showBengaliValidation}
+                              onInput={clearBengaliValidation}
                               placeholder="your@email.com"
                               required
                               style={getFocusStyle("email")}
@@ -992,6 +997,8 @@ export default function Contact() {
                             id="contact-message"
                             value={form.message}
                             onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
+                            onInvalid={showBengaliValidation}
+                            onInput={clearBengaliValidation}
                             placeholder="আপনার বার্তা লিখুন..."
                             required
                             rows={6}

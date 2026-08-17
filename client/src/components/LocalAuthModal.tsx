@@ -6,6 +6,7 @@
 
 import { CSSProperties, useEffect, useState } from "react";
 import { KeyRound, UserPlus, X, Eye, EyeOff, RefreshCw, CheckCircle2, AlertCircle, Mail, Lock, ArrowLeft } from "lucide-react";
+import { clearBengaliValidation, showBengaliValidation } from "@/lib/bengaliFormValidation";
 
 const adorshoFont = "'AdorshoLipi', sans-serif";
 
@@ -379,6 +380,8 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                 placeholder="মাহবুব সরদার সবুজ"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onInvalid={showBengaliValidation}
+                onInput={clearBengaliValidation}
                 required
                 style={inputStyle}
               />
@@ -394,6 +397,8 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                 placeholder="example@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onInvalid={showBengaliValidation}
+                onInput={clearBengaliValidation}
                 required
                 style={inputStyle}
               />
@@ -431,6 +436,8 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                   placeholder={mode === "register" ? "কমপক্ষে ৮ অক্ষর" : "আপনার পাসওয়ার্ড"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onInvalid={showBengaliValidation}
+                  onInput={clearBengaliValidation}
                   required
                   minLength={mode === "register" ? 8 : 1}
                   style={{ ...inputStyle, paddingRight: "2.8rem" }}
@@ -463,6 +470,8 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                     placeholder="কমপক্ষে ৮ অক্ষর"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    onInvalid={showBengaliValidation}
+                    onInput={clearBengaliValidation}
                     required
                     minLength={8}
                     style={{ ...inputStyle, paddingRight: "2.8rem" }}
@@ -489,6 +498,8 @@ export default function LocalAuthModal({ onClose, onSuccess, defaultMode = "logi
                   placeholder="আবার একই পাসওয়ার্ড দিন"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  onInvalid={showBengaliValidation}
+                  onInput={clearBengaliValidation}
                   required
                   minLength={8}
                   style={inputStyle}

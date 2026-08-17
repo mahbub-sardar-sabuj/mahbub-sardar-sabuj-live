@@ -22,6 +22,7 @@ import { useLocation } from "wouter";
 import Seo from "@/components/Seo";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl, getSignupUrl, isLoginConfigured } from "@/const";
+import { clearBengaliValidation, showBengaliValidation } from "@/lib/bengaliFormValidation";
 
 const adorshoFont = "'AdorshoLipi', sans-serif";
 
@@ -548,6 +549,8 @@ export default function AmiOLikhboLogin() {
                 placeholder="পুরো নাম লিখুন"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onInvalid={showBengaliValidation}
+                onInput={clearBengaliValidation}
                 required
                 autoFocus
                 style={inputStyle}
@@ -567,6 +570,8 @@ export default function AmiOLikhboLogin() {
                   placeholder="example@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onInvalid={showBengaliValidation}
+                  onInput={clearBengaliValidation}
                   required
                   autoFocus={mode === "login" || mode === "forgot"}
                   className="amio-login-input"
@@ -611,6 +616,8 @@ export default function AmiOLikhboLogin() {
                   placeholder={mode === "register" ? "কমপক্ষে ৮ অক্ষর" : "আপনার পাসওয়ার্ড"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onInvalid={showBengaliValidation}
+                  onInput={clearBengaliValidation}
                   required
                   minLength={mode === "register" ? 8 : 1}
                   style={{ ...inputStyle, paddingLeft: "2.6rem", paddingRight: "2.8rem" }}
@@ -650,6 +657,8 @@ export default function AmiOLikhboLogin() {
                     placeholder="কমপক্ষে ৮ অক্ষর"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    onInvalid={showBengaliValidation}
+                    onInput={clearBengaliValidation}
                     required
                     minLength={8}
                     autoFocus
@@ -684,6 +693,8 @@ export default function AmiOLikhboLogin() {
                   placeholder="আবার একই পাসওয়ার্ড দিন"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  onInvalid={showBengaliValidation}
+                  onInput={clearBengaliValidation}
                   required
                   minLength={8}
                   style={{ ...inputStyle, paddingLeft: "1rem" }}
