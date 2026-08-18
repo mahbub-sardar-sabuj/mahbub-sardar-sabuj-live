@@ -52,6 +52,8 @@ export default function Home() {
   const [loadRulesSection, setLoadRulesSection] = useState(false);
   const [launcherVisible, setLauncherVisible] = useState(false);
   const launcherRef = useRef<HTMLElement | null>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
+  const rulesSentinelRef = useRef<HTMLDivElement | null>(null);
 
   // PWA install prompt listener
   useEffect(() => {
@@ -64,18 +66,39 @@ export default function Home() {
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setPwaInstalled(true);
     }
-    window.addEventListener('appinstalled', () => {
+    const onAppInstalled = () => {
       setPwaInstalled(true);
       setDeferredPrompt(null);
-    });
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    };
+    window.addEventListener('appinstalled', onAppInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', onAppInstalled);
+    };
   }, []);
 
   useEffect(() => {
-    // This section is below the hero. Load it after the first visual render so it
-    // does not compete with the author portrait, primary type, and navigation.
-    const timer = window.setTimeout(() => setLoadRulesSection(true), 1800);
-    return () => window.clearTimeout(timer);
+    // The rules section is content-heavy and sits well below the first screen.
+    // Fetch it only when the visitor is approaching it, instead of interrupting
+    // the first interaction after a fixed timer.
+    const sentinel = rulesSentinelRef.current;
+    if (!sentinel) return;
+
+    const loadSection = () => setLoadRulesSection(true);
+    if (typeof IntersectionObserver === "undefined") {
+      const timer = window.setTimeout(loadSection, 3200);
+      return () => window.clearTimeout(timer);
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        loadSection();
+        observer.disconnect();
+      }
+    }, { rootMargin: "900px 0px" });
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -106,24 +129,49 @@ export default function Home() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) return;
+    const hero = heroRef.current;
+    const nav = navigator as Navigator & {
+      connection?: { saveData?: boolean };
+      deviceMemory?: number;
+    };
+    const constrainedTouchDevice = window.matchMedia("(pointer: coarse)").matches && (
+      nav.connection?.saveData === true ||
+      (typeof nav.deviceMemory === "number" && nav.deviceMemory <= 4) ||
+      navigator.hardwareConcurrency <= 4
+    );
+    if (reducedMotion.matches || constrainedTouchDevice || !hero) return;
 
     let frame = 0;
+    let heroIsVisible = true;
     const updateScrollEffects = () => {
       frame = 0;
+      if (!heroIsVisible || document.hidden) return;
       const offset = Math.min(window.scrollY, 860);
       document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * 0.045, 38)}px`);
       document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * 0.024, 22)}px`);
       document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * 0.016, 14)}px`);
     };
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateScrollEffects);
+    const queueScrollEffects = () => {
+      if (heroIsVisible && !document.hidden && !frame) {
+        frame = window.requestAnimationFrame(updateScrollEffects);
+      }
+    };
+    const heroObserver = new IntersectionObserver(([entry]) => {
+      heroIsVisible = entry.isIntersecting;
+      if (heroIsVisible) queueScrollEffects();
+    }, { threshold: 0, rootMargin: "120px 0px 120px 0px" });
+    const onVisibilityChange = () => {
+      if (!document.hidden) queueScrollEffects();
     };
 
+    heroObserver.observe(hero);
     updateScrollEffects();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", queueScrollEffects, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", queueScrollEffects);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      heroObserver.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
       document.documentElement.style.removeProperty("--home-hero-shift");
       document.documentElement.style.removeProperty("--home-glow-shift");
@@ -180,6 +228,7 @@ export default function Home() {
           HERO — Cinematic Split Layout
       ══════════════════════════════════════════════════════════════════════ */}
       <section
+        ref={heroRef}
         className="home-premium-hero"
         style={{
           position: "relative",
@@ -685,6 +734,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════════
           RULES / WHY USE THIS WEBSITE SECTION
       ══════════════════════════════════════════════════════════════════════ */}
+      <div ref={rulesSentinelRef} aria-hidden="true" style={{ height: 0, pointerEvents: "none" }} />
       {loadRulesSection ? (
         <Suspense fallback={null}>
           <RulesSection />

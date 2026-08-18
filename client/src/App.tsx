@@ -166,6 +166,15 @@ function App() {
   };
 
   useEffect(() => {
+    const nav = navigator as Navigator & {
+      connection?: { saveData?: boolean };
+      deviceMemory?: number;
+    };
+    const canWarmRoutes = window.matchMedia("(hover: hover) and (pointer: fine)").matches
+      && nav.connection?.saveData !== true
+      && (typeof nav.deviceMemory !== "number" || nav.deviceMemory > 4);
+    if (!canWarmRoutes) return;
+
     const warmInternalLink = (event: Event) => {
       const target = event.target as HTMLElement | null;
       const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
@@ -177,15 +186,10 @@ function App() {
     };
 
     document.addEventListener("pointerover", warmInternalLink, { passive: true });
-    document.addEventListener("pointerdown", warmInternalLink, { passive: true });
-    document.addEventListener("touchstart", warmInternalLink, { passive: true });
     document.addEventListener("focusin", warmInternalLink);
-
 
     return () => {
       document.removeEventListener("pointerover", warmInternalLink);
-      document.removeEventListener("pointerdown", warmInternalLink);
-      document.removeEventListener("touchstart", warmInternalLink);
       document.removeEventListener("focusin", warmInternalLink);
     };
   }, []);

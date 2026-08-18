@@ -50,6 +50,11 @@ export default function SiteScrollMotion({ routeKey }: { routeKey: string }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Home has its own lightweight launcher reveal. Skipping the page-wide
+    // collector here prevents an extra observer and MutationObserver from
+    // competing with the first hero paint on phones.
+    if (routeKey === "/") return;
+
     const runtime = window as BrowserRuntime;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const root = document.querySelector(".cinematic-site-shell") ?? document.body;
