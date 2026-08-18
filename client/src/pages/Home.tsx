@@ -474,7 +474,7 @@ export default function Home() {
                 }} />
 
                 {/* Main portrait — suit photo */}
-                <div style={{
+                <div className="hero-portrait-glass" style={{
                   position: "relative",
                   borderRadius: 20,
                   overflow: "hidden",
@@ -1214,6 +1214,38 @@ export default function Home() {
           opacity: 0;
           mix-blend-mode: screen;
         }
+        .home-page-premium .hero-portrait-glass {
+          isolation: isolate;
+          border: 1px solid rgba(255,247,221,0.24) !important;
+          box-shadow:
+            0 44px 112px rgba(0,0,0,0.58),
+            0 0 0 1px rgba(201,168,76,0.22),
+            0 0 72px rgba(201,168,76,0.16),
+            inset 0 1px 0 rgba(255,255,255,0.26),
+            inset 0 -1px 0 rgba(4,10,20,0.42) !important;
+        }
+        .home-page-premium .hero-portrait-glass::before,
+        .home-page-premium .hero-portrait-glass::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+        }
+        .home-page-premium .hero-portrait-glass::before {
+          z-index: 2;
+          background:
+            linear-gradient(128deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.045) 18%, transparent 34%),
+            linear-gradient(to bottom, rgba(255,255,255,0.11), transparent 20%);
+          mix-blend-mode: screen;
+          opacity: 0.72;
+        }
+        .home-page-premium .hero-portrait-glass::after {
+          z-index: 3;
+          inset: 1px;
+          border: 1px solid rgba(255,255,255,0.18);
+          box-shadow: inset 0 0 0 1px rgba(201,168,76,0.075);
+        }
         .home-page-premium .hero-frame-wrap::after {
           content: "";
           position: absolute;
@@ -1237,17 +1269,32 @@ export default function Home() {
         .home-page-premium .app-launcher-shell {
           max-width: 890px;
           padding: clamp(1.12rem, 2.5vw, 1.72rem);
-          border-color: rgba(232,201,122,0.40);
+          border-color: rgba(255,242,196,0.42);
+          background:
+            linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(232,201,122,0.095) 35%, rgba(16,35,60,0.74) 68%, rgba(5,14,27,0.84) 100%);
+          backdrop-filter: blur(30px) saturate(165%) brightness(1.05);
+          -webkit-backdrop-filter: blur(30px) saturate(165%) brightness(1.05);
           box-shadow:
             0 62px 154px rgba(0,0,0,0.56),
-            0 0 58px rgba(201,168,76,0.11),
-            0 0 0 1px rgba(255,255,255,0.065) inset,
-            inset 0 1px 0 rgba(255,255,255,0.14);
+            0 0 62px rgba(201,168,76,0.16),
+            0 0 0 1px rgba(255,255,255,0.10) inset,
+            inset 0 1px 0 rgba(255,255,255,0.26),
+            inset 0 -1px 0 rgba(3,10,20,0.42);
         }
         .home-page-premium .app-launcher-shell::before {
           background:
-            radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 47%),
-            linear-gradient(120deg, rgba(255,255,255,0.025), transparent 42%);
+            radial-gradient(circle at 50% 0%, rgba(255,235,161,0.30), transparent 48%),
+            linear-gradient(120deg, rgba(255,255,255,0.12), transparent 36%, rgba(255,255,255,0.035) 58%, transparent 76%);
+          opacity: 0.78;
+        }
+        .home-page-premium .app-launcher-shell::after {
+          height: auto;
+          inset: 1px;
+          border-radius: inherit;
+          background: linear-gradient(150deg, rgba(255,255,255,0.19), transparent 16%, transparent 82%, rgba(201,168,76,0.13));
+          mask-image: linear-gradient(to bottom, black 0%, transparent 40%, transparent 72%, black 100%);
+          -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 40%, transparent 72%, black 100%);
+          opacity: 0.8;
         }
         .home-page-premium .app-launcher-topbar {
           margin-bottom: 1.08rem;
@@ -1258,37 +1305,52 @@ export default function Home() {
         }
         .home-page-premium .app-launcher-card {
           min-height: 144px;
-          border-color: rgba(232,201,122,0.27);
+          border-color: rgba(255,240,190,0.30);
           background:
-            radial-gradient(circle at 50% -14%, rgba(232,201,122,0.18), transparent 47%),
-            linear-gradient(160deg, rgba(23,42,67,0.98) 0%, rgba(7,16,29,0.94) 100%);
+            linear-gradient(150deg, rgba(255,255,255,0.14) 0%, rgba(232,201,122,0.12) 28%, rgba(30,53,81,0.82) 64%, rgba(8,19,34,0.92) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.12),
-            inset 0 -1px 0 rgba(0,0,0,0.24),
+            inset 0 1px 0 rgba(255,255,255,0.22),
+            inset 0 -1px 0 rgba(0,0,0,0.28),
             0 21px 48px rgba(0,0,0,0.37),
-            0 0 0 1px rgba(201,168,76,0.05);
+            0 0 0 1px rgba(201,168,76,0.07);
+          backdrop-filter: blur(14px) saturate(135%);
+          -webkit-backdrop-filter: blur(14px) saturate(135%);
+          transition: border-color .26s cubic-bezier(0.23, 1, 0.32, 1), box-shadow .26s cubic-bezier(0.23, 1, 0.32, 1), background .26s cubic-bezier(0.23, 1, 0.32, 1), transform .16s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .home-page-premium .app-launcher-card::before {
+          inset: -18% -28%;
+          background: linear-gradient(112deg, transparent 38%, rgba(255,250,225,0.04) 44%, rgba(255,236,170,0.42) 50%, rgba(255,250,225,0.05) 56%, transparent 63%);
+          opacity: 0;
+          transform: translate3d(-72%, 0, 0) skewX(-16deg);
+          transition: transform .56s cubic-bezier(0.23, 1, 0.32, 1), opacity .22s ease-out;
+          mix-blend-mode: screen;
         }
         .home-page-premium .app-launcher-card::after {
-          border-color: rgba(255,255,255,0.052);
+          border-color: rgba(255,255,255,0.11);
+          box-shadow: inset 0 0 0 1px rgba(201,168,76,0.08);
         }
         .home-page-premium .app-launcher-card:hover {
-          border-color: rgba(245,228,160,0.72);
-          background:
-            radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 50%),
-            linear-gradient(160deg, rgba(34,55,81,0.99) 0%, rgba(9,21,37,0.97) 100%);
+          border-color: rgba(255,242,194,0.78);
+          background: linear-gradient(150deg, rgba(255,255,255,0.20) 0%, rgba(245,214,123,0.18) 30%, rgba(40,66,96,0.86) 66%, rgba(9,21,37,0.96) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.14),
+            inset 0 1px 0 rgba(255,255,255,0.30),
             0 30px 68px rgba(0,0,0,0.48),
-            0 0 38px rgba(201,168,76,0.18),
-            0 0 0 1px rgba(201,168,76,0.16) inset;
+            0 0 42px rgba(201,168,76,0.24),
+            0 0 0 1px rgba(201,168,76,0.18) inset;
+        }
+        .home-page-premium .app-launcher-card:hover::before,
+        .home-page-premium .app-launcher-link:focus-visible .app-launcher-card::before {
+          opacity: 0.9;
+          transform: translate3d(72%, 0, 0) skewX(-16deg);
         }
         .home-page-premium .app-icon-wrap {
-          border-color: rgba(232,201,122,0.44);
-          background: linear-gradient(145deg, rgba(201,168,76,0.29), rgba(250,246,239,0.08));
+          border-color: rgba(255,240,190,0.52);
+          background: linear-gradient(145deg, rgba(255,245,205,0.18), rgba(201,168,76,0.30) 46%, rgba(250,246,239,0.08));
           box-shadow:
             0 14px 30px rgba(0,0,0,0.30),
-            inset 0 1px 0 rgba(255,255,255,0.14),
-            0 0 28px rgba(201,168,76,0.16);
+            inset 0 1px 0 rgba(255,255,255,0.25),
+            inset 0 -1px 0 rgba(0,0,0,0.18),
+            0 0 28px rgba(201,168,76,0.18);
         }
         .home-page-premium .app-label {
           letter-spacing: 0.005em;
@@ -1346,6 +1408,14 @@ export default function Home() {
           will-change: auto;
         }
         @media (max-width: 768px) {
+          .home-page-premium .app-launcher-shell {
+            backdrop-filter: blur(20px) saturate(145%);
+            -webkit-backdrop-filter: blur(20px) saturate(145%);
+          }
+          .home-page-premium .app-launcher-card {
+            backdrop-filter: blur(8px) saturate(120%);
+            -webkit-backdrop-filter: blur(8px) saturate(120%);
+          }
           .home-page-premium .home-premium-hero::after {
             background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 34%), radial-gradient(circle at 80% 14%, rgba(245,228,160,0.07), transparent 27%);
           }
@@ -1385,6 +1455,8 @@ export default function Home() {
           .home-page-premium .portrait-light-sheen,
           .home-page-premium .explore-app-heading,
           .home-page-premium .app-launcher-shell::before,
+          .home-page-premium .app-launcher-card::before,
+          .home-page-premium .hero-portrait-glass::before,
           .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
