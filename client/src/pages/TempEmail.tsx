@@ -18,53 +18,75 @@ const CARD_BG = "rgba(255,255,255,0.03)";
 const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
-const TEMP_EMAIL_API = "/api/temp-email-proxy";
-const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v1";
-const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v1";
+const TEMP_EMAIL_ADAPTER_ENDPOINT = "/api/temp-email-proxy";
+const MAILTM_ATTRIBUTION_URL = "https://mail.tm";
+const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v2";
+const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v2";
 const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
 const TEMP_EMAIL_MAX_ATTEMPTS = 2;
+const ADDRESS_PREFIX = "mahbubsardarsabuj";
+const ADDRESS_START = 1;
+const ADDRESS_END = 99;
 
-interface ProxyError {
-  error?: string;
+interface MailTmError {
+  detail?: string;
   message?: string;
   "hydra:description"?: string;
 }
 
-async function tempEmailRequest<T>(
-  action: string,
-  payload: Record<string, string> = {}
-): Promise<T> {
+type MailTmRequestOptions = RequestInit & { token?: string };
+
+function resolveMailboxAction(path: string, method: string): { action: string; id?: string } {
+  if (path === "/domains" && method === "GET") return { action: "domains" };
+  if (path === "/accounts" && method === "POST") return { action: "createAccount" };
+  if (path === "/messages" && method === "GET") return { action: "messages" };
+  const messageMatch = path.match(/^\/messages\/([A-Za-z0-9]+)$/);
+  if (messageMatch) return { action: method === "DELETE" ? "deleteMessage" : "message", id: messageMatch[1] };
+  const accountMatch = path.match(/^\/accounts\/([A-Za-z0-9]+)$/);
+  if (accountMatch && method === "DELETE") return { action: "deleteAccount", id: accountMatch[1] };
+  throw new Error("অবৈধ ইমেইল অনুরোধ");
+}
+
+async function mailTmRequest<T>(path: string, options: MailTmRequestOptions = {}): Promise<T> {
+  const { token, body, method: requestedMethod, ...requestOptions } = options;
+  const method = (requestedMethod || "GET").toUpperCase();
+  const { action, id } = resolveMailboxAction(path, method);
+  const canRetry = method === "GET";
   let lastError: unknown;
+  let payload: Record<string, string> = {};
+  if (typeof body === "string" && body) {
+    try { payload = JSON.parse(body) as Record<string, string>; } catch { throw new Error("অবৈধ ইমেইল অনুরোধ"); }
+  }
 
   for (let attempt = 1; attempt <= TEMP_EMAIL_MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), TEMP_EMAIL_REQUEST_TIMEOUT_MS);
 
     try {
-      const response = await fetch(TEMP_EMAIL_API, {
+      const response = await fetch(TEMP_EMAIL_ADAPTER_ENDPOINT, {
+        ...requestOptions,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...payload }),
+        body: JSON.stringify({ action, ...(id ? { id } : {}), ...(token ? { token } : {}), ...payload }),
         signal: controller.signal,
       });
 
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as ProxyError | null;
-        const message =
-          data?.["hydra:description"] ||
-          data?.error ||
-          data?.message ||
-          "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।";
-        const error = Object.assign(new Error(message), { retryable: response.status >= 500 });
-        if (!error.retryable || attempt === TEMP_EMAIL_MAX_ATTEMPTS) throw error;
-        lastError = error;
-      } else {
+      if (response.ok) {
         if (response.status === 204) return undefined as T;
         return response.json() as Promise<T>;
       }
+
+      const data = (await response.json().catch(() => null)) as MailTmError | null;
+      const message = data?.detail || data?.["hydra:description"] || data?.message || "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।";
+      const error = Object.assign(new Error(message), {
+        status: response.status,
+        retryable: canRetry && (response.status === 429 || response.status >= 500),
+      });
+      if (!error.retryable || attempt === TEMP_EMAIL_MAX_ATTEMPTS) throw error;
+      lastError = error;
     } catch (error) {
       const typedError = error as Error & { retryable?: boolean };
-      if (typedError.retryable === false || attempt === TEMP_EMAIL_MAX_ATTEMPTS) throw typedError;
+      if (typedError.retryable === false || !canRetry || attempt === TEMP_EMAIL_MAX_ATTEMPTS) throw typedError;
       lastError = typedError;
     } finally {
       window.clearTimeout(timeoutId);
@@ -73,9 +95,7 @@ async function tempEmailRequest<T>(
     await new Promise((resolve) => window.setTimeout(resolve, 450 * attempt));
   }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।");
+  throw lastError instanceof Error ? lastError : new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন。");
 }
 
 interface EmailAccount {
@@ -143,10 +163,51 @@ interface MessageDetail {
   hasAttachments: boolean;
 }
 
+interface MailTmAccountResponse {
+  id: string;
+  address: string;
+  token: string;
+  createdAt?: string;
+}
+
+interface MailTmMessageResponse {
+  id: string;
+  from?: { name?: string; address?: string };
+  subject?: string;
+  intro?: string;
+  text?: string;
+  html?: string[];
+  seen?: boolean;
+  createdAt?: string;
+  hasAttachments?: boolean;
+}
+
+function mapMailTmMessage(message: MailTmMessageResponse): Message {
+  const address = message.from?.address || "";
+  return {
+    id: message.id,
+    from: { name: message.from?.name || address.split("@")[0] || "অজানা প্রেরক", address },
+    subject: message.subject || "(বিষয় নেই)",
+    intro: message.intro || "",
+    seen: Boolean(message.seen),
+    createdAt: message.createdAt || new Date().toISOString(),
+    hasAttachments: Boolean(message.hasAttachments),
+  };
+}
+
+function mapMailTmMessageDetail(message: MailTmMessageResponse): MessageDetail {
+  const mapped = mapMailTmMessage(message);
+  return {
+    ...mapped,
+    text: message.text || "",
+    html: Array.isArray(message.html) ? message.html : [],
+  };
+}
+
 function isProviderWelcomeMessage(message: Message): boolean {
   return (
-    message.from.address.toLowerCase() === "no-reply@guerrillamail.com" &&
-    message.subject.trim().toLowerCase() === "welcome to guerrilla mail"
+    message.from.address.toLowerCase() === "no-reply@mail.tm" &&
+    /welcome to mail\.tm/i.test(message.subject)
   );
 }
 
@@ -199,22 +260,12 @@ function mergeMessages(previous: Message[], incoming: Message[]): Message[] {
   return [...byId.values()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-// Generate random string
+// Generate a browser-only credential for the temporary provider account.
 function randomString(length: number): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-function randomDigits(length: number): string {
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += Math.floor(Math.random() * 10).toString();
-  }
-  return result;
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const values = new Uint32Array(length);
+  window.crypto.getRandomValues(values);
+  return Array.from(values, (value) => chars[value % chars.length]).join("");
 }
 
 // Sanitize custom username: lowercase, alphanumeric + dot/underscore/hyphen only
@@ -234,6 +285,14 @@ function timeAgo(dateStr: string): string {
   if (diff < 3600) return `${Math.floor(diff / 60)} মিনিট আগে`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} ঘণ্টা আগে`;
   return `${Math.floor(diff / 86400)} দিন আগে`;
+}
+
+function extractVerificationCodes(message: MessageDetail): string[] {
+  const source = `${message.subject}\n${message.text}\n${message.html.join(" ")}`.replace(/<[^>]*>/g, " ");
+  const codes = new Set<string>();
+  const contextual = /(?:verification|verify|code|otp|passcode|security|কোড|পিন)[^0-9]{0,32}([0-9]{4,8})/gi;
+  for (const match of source.matchAll(contextual)) codes.add(match[1]);
+  return [...codes].slice(0, 3);
 }
 
 function escapeHtml(value: string): string {
@@ -282,37 +341,53 @@ export default function TempEmail() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [viewingMessage, setViewingMessage] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Fetch available domains
+  // Choose the shortest active public domain. The provider can rotate domains,
+  // so address length remains minimal without hard-coding a single domain.
   const getDomains = async (): Promise<string[]> => {
-    const data = await tempEmailRequest<{ "hydra:member"?: Array<{ isActive: boolean; domain: string }> }>("domains");
-    const members = data["hydra:member"] || [];
-    return members.filter((d) => d.isActive).map((d) => d.domain);
+    const data = await mailTmRequest<{ "hydra:member"?: Array<{ isActive: boolean; isPrivate?: boolean; domain: string }> }>("/domains");
+    return (data["hydra:member"] || [])
+      .filter((domain) => domain.isActive && !domain.isPrivate)
+      .map((domain) => domain.domain)
+      .sort((first, second) => first.length - second.length || first.localeCompare(second));
   };
 
-  // Keep the address memorable while retaining a small random suffix for mailbox separation.
+  // Start with ...01 and only move to ...02, ...03, etc. if an earlier address
+  // already exists. This keeps addresses short, predictable and easy to share.
   const createAccount = async (): Promise<EmailAccount> => {
     const domains = await getDomains();
-    if (!domains.length) throw new Error("কোনো ডোমেইন পাওয়া যায়নি");
+    const domain = domains[0];
+    if (!domain) throw new Error("কোনো সক্রিয় ইমেইল ডোমেইন পাওয়া যায়নি");
 
-    const requestedAddress = `mahbubsardarsabuj01${randomDigits(4)}@${domains[0]}`;
-    const accountData = await tempEmailRequest<Record<string, string>>("createAccount", {
-      address: requestedAddress,
-      password: randomString(16),
-    });
+    for (let sequence = ADDRESS_START; sequence <= ADDRESS_END; sequence += 1) {
+      const requestedAddress = `${ADDRESS_PREFIX}${String(sequence).padStart(2, "0")}@${domain}`;
+      const password = randomString(24);
+      try {
+        const accountData = await mailTmRequest<MailTmAccountResponse>("/accounts", {
+          method: "POST",
+          body: JSON.stringify({ address: requestedAddress, password }),
+        });
+        if (!accountData.id || !accountData.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
 
-    if (!accountData.id || !accountData.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
+        return {
+          id: accountData.id,
+          address: accountData.address || requestedAddress,
+          token: accountData.token,
+          createdAt: accountData.createdAt || new Date().toISOString(),
+        };
+      } catch (error) {
+        // mail.tm uses 422 when a requested address is already in use.
+        if ((error as { status?: number }).status === 422) continue;
+        throw error;
+      }
+    }
 
-    return {
-      id: accountData.id,
-      address: accountData.address || requestedAddress,
-      token: accountData.token,
-      createdAt: accountData.createdAt || new Date().toISOString(),
-    };
+    throw new Error("এই নামের সব ছোট ঠিকানা এখন ব্যবহৃত। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
   };
 
   // Fetch messages
@@ -322,8 +397,8 @@ export default function TempEmail() {
     options: { showError?: boolean } = {}
   ): Promise<boolean> => {
     try {
-      const data = await tempEmailRequest<{ "hydra:member"?: Message[] }>("messages", { token: acc.token });
-      const incoming = data["hydra:member"] || [];
+      const data = await mailTmRequest<{ "hydra:member"?: MailTmMessageResponse[] }>("/messages", { token: acc.token });
+      const incoming = (data["hydra:member"] || []).map(mapMailTmMessage);
       setMessages((previous) => {
         // On hydration, React may batch the stored-state update with this fetch.
         // Merge the explicit snapshot as well so an empty provider delta cannot erase history.
@@ -345,8 +420,8 @@ export default function TempEmail() {
   const fetchMessageDetail = async (msgId: string, acc: EmailAccount) => {
     setViewingMessage(true);
     try {
-      const data = await tempEmailRequest<MessageDetail>("message", { id: msgId, token: acc.token });
-      setSelectedMessage(data);
+      const data = await mailTmRequest<MailTmMessageResponse>(`/messages/${encodeURIComponent(msgId)}`, { token: acc.token });
+      setSelectedMessage(mapMailTmMessageDetail(data));
       // Mark as read
       setMessages((previous) => {
         const next = previous.map((message) => (message.id === msgId ? { ...message, seen: true } : message));
@@ -364,7 +439,7 @@ export default function TempEmail() {
   const deleteMessage = async (msgId: string) => {
     if (!account) return;
     try {
-      await tempEmailRequest<void>("deleteMessage", { id: msgId, token: account.token });
+      await mailTmRequest<void>(`/messages/${encodeURIComponent(msgId)}`, { method: "DELETE", token: account.token });
       setMessages((previous) => {
         const next = previous.filter((message) => message.id !== msgId);
         storeMessages(next);
@@ -414,7 +489,17 @@ export default function TempEmail() {
     setGenerating(true);
     setError(null);
     setSelectedMessage(null);
+    setCopiedCode(null);
     try {
+      // Replacing an address should not leave the previous temporary mailbox
+      // active in this browser session.
+      if (account) {
+        try {
+          await mailTmRequest<void>(`/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: account.token });
+        } catch {
+          // The provider also expires disposable mailboxes automatically.
+        }
+      }
       const acc = await createAccount();
       clearStoredAccount();
       storeAccount(acc);
@@ -449,12 +534,19 @@ export default function TempEmail() {
     });
   };
 
+  const copyVerificationCode = (code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode((current) => current === code ? null : current), 1800);
+    }).catch(() => setError("কোড কপি করা যায়নি। ব্রাউজার clipboard অনুমতি পরীক্ষা করুন।"));
+  };
+
   // Delete account and generate new one
   const deleteAccount = async () => {
     if (!account) return;
     setLoading(true);
     try {
-      await tempEmailRequest<void>("deleteAccount", { id: account.id, token: account.token });
+      await mailTmRequest<void>(`/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: account.token });
     } catch {
       setError("অ্যাকাউন্ট সার্ভার থেকে মুছতে সমস্যা হয়েছে; স্থানীয় session সরানো হয়েছে।");
     }
@@ -474,6 +566,7 @@ export default function TempEmail() {
   }, []);
 
   const unreadCount = messages.filter((m) => !m.seen).length;
+  const verificationCodes = selectedMessage ? extractVerificationCodes(selectedMessage) : [];
 
   return (
     <>
@@ -680,8 +773,11 @@ export default function TempEmail() {
                 >
                   নতুন টেম্পোরারি ইমেইল তৈরি করুন
                 </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 22px" }}>
+                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 6px" }}>
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ব্যক্তিগত ডিসপোজেবল ইনবক্স
+                </p>
+                <p style={{ color: "rgba(232,201,122,0.72)", fontSize: "0.82rem", fontFamily: "monospace", margin: "0 0 22px" }}>
+                  mahbubsardarsabuj01@… থেকে শুরু হবে
                 </p>
                 <button
                   onClick={generateEmail}
@@ -788,6 +884,9 @@ export default function TempEmail() {
                     {copied ? "কপি হয়েছে!" : "কপি করুন"}
                   </button>
                 </div>
+                <p style={{ color: "rgba(250,246,239,0.42)", fontSize: "0.74rem", margin: "-4px 2px 14px", fontFamily: "'AdorshoLipi', sans-serif" }}>
+                  অস্থায়ী mailbox service: <a href={MAILTM_ATTRIBUTION_URL} target="_blank" rel="noreferrer" style={{ color: GOLD_LIGHT }}>mail.tm</a>
+                </p>
 
                 {/* Action Buttons */}
                 <div className="temp-email-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 2 }}>
@@ -932,7 +1031,7 @@ export default function TempEmail() {
                       এখনো কোনো ইমেইল আসেনি
                     </p>
                     <p style={{ color: "rgba(250,246,239,0.3)", fontSize: "0.82rem", fontFamily: "'AdorshoLipi', sans-serif", marginTop: 6 }}>
-                      ইমেইল আসলে এখানে দেখাবে। প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়।
+                      ইমেইল আসলে এখানে দেখাবে। প্রয়োজন হলে উপরের রিফ্রেশ বাটন ব্যবহার করুন।
                     </p>
                   </div>
                 ) : (
@@ -1164,6 +1263,17 @@ export default function TempEmail() {
                     </button>
                   </div>
 
+                  {verificationCodes.length > 0 && (
+                    <div style={{ padding: "14px 20px", display: "flex", flexWrap: "wrap", gap: 8, borderBottom: `1px solid ${BORDER}`, background: "rgba(201,168,76,0.06)" }}>
+                      <span style={{ width: "100%", color: GOLD_LIGHT, fontSize: "0.78rem", fontFamily: "'AdorshoLipi', sans-serif", fontWeight: 700 }}>ভেরিফিকেশন কোড</span>
+                      {verificationCodes.map((code) => (
+                        <button key={code} onClick={() => copyVerificationCode(code)} style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 10, padding: "8px 11px", border: `1px solid ${copiedCode === code ? "rgba(34,197,94,0.52)" : "rgba(232,201,122,0.35)"}`, background: copiedCode === code ? "rgba(34,197,94,0.11)" : "rgba(201,168,76,0.10)", color: copiedCode === code ? "#86efac" : TEXT, cursor: "pointer", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontWeight: 800 }}>
+                          {copiedCode === code ? <CheckCircle size={14} /> : <Copy size={14} />}{copiedCode === code ? "কপি হয়েছে" : code}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Sandboxed message body: scrolls inside its own light, readable document. */}
                   <div style={{ padding: "16px", background: "rgba(255,255,255,0.02)", minHeight: 0 }}>
                     <iframe
@@ -1257,12 +1367,12 @@ export default function TempEmail() {
                 {
                   step: "৩",
                   title: "ইনবক্স দেখুন",
-                  desc: "ইমেইল আসলে ইনবক্সে দেখাবে। প্রতি ৩০ সেকেন্ডে অটো রিফ্রেশ হয়।",
+                  desc: "ইমেইল আসলে ইনবক্সে দেখাবে। প্রয়োজন হলে রিফ্রেশ বাটনে চাপুন।",
                 },
                 {
                   step: "৪",
                   title: "মুছে ফেলুন",
-                  desc: "কাজ শেষে ইমেইল মুছে ফেলুন। আপনার তথ্য সম্পূর্ণ নিরাপদ থাকবে।",
+                  desc: "কাজ শেষে ইমেইল মুছে ফেলুন। এতে এই browser-এর mailbox session সরানো হবে।",
                 },
               ].map(({ step, title, desc }) => (
                 <div
