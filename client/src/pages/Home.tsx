@@ -106,6 +106,30 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const compactViewport = window.matchMedia("(max-width: 768px)");
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+    const applyCinematicProfile = () => {
+      const lowPowerMobile = compactViewport.matches && (
+        connection?.saveData === true ||
+        (typeof memory === "number" && memory <= 4) ||
+        navigator.hardwareConcurrency <= 4
+      );
+      hero.dataset.cinematicProfile = lowPowerMobile ? "minimal" : "full";
+    };
+
+    applyCinematicProfile();
+    compactViewport.addEventListener("change", applyCinematicProfile);
+    return () => {
+      compactViewport.removeEventListener("change", applyCinematicProfile);
+      delete hero.dataset.cinematicProfile;
+    };
+  }, []);
+
+  useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const hero = heroRef.current;
     if (reducedMotion.matches || !hero) return;
@@ -115,10 +139,11 @@ export default function Home() {
     const updateScrollEffects = () => {
       frame = 0;
       if (!heroIsVisible || document.hidden) return;
-      const offset = Math.min(window.scrollY, 860);
-      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * 0.045, 38)}px`);
-      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * 0.024, 22)}px`);
-      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * 0.016, 14)}px`);
+      const minimalProfile = hero.dataset.cinematicProfile === "minimal";
+      const offset = Math.min(window.scrollY, minimalProfile ? 620 : 860);
+      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * (minimalProfile ? 0.022 : 0.045), minimalProfile ? 14 : 38)}px`);
+      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * (minimalProfile ? 0.012 : 0.024), minimalProfile ? 8 : 22)}px`);
+      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * (minimalProfile ? 0.008 : 0.016), minimalProfile ? 5 : 14)}px`);
     };
     const queueScrollEffects = () => {
       if (heroIsVisible && !document.hidden && !frame) {
@@ -290,6 +315,7 @@ export default function Home() {
 
               {/* Eyebrow badge */}
               <div
+                className="hero-eyebrow"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -306,7 +332,7 @@ export default function Home() {
               >
                 {/* Pulsing dot */}
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <span style={{
+                  <span className="hero-pulse-dot" style={{
                     width: 7, height: 7, borderRadius: "50%",
                     background: "#C9A84C",
                     display: "block",
@@ -324,7 +350,7 @@ export default function Home() {
               </div>
 
               {/* Main name — single H1 for SEO, split visually with spans */}
-              <h1 className="hero-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
+              <h1 className="hero-title cinematic-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
               <div style={{ position: "relative", marginBottom: "0.2rem" }}>
                 <span
                   style={{
@@ -383,6 +409,7 @@ export default function Home() {
               </h1>
               {/* Tagline */}
               <div
+                className="hero-tagline"
                 style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
               >
                 <p style={{
@@ -513,7 +540,7 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <div
-          className="scroll-indicator"
+          className="scroll-indicator hero-scroll-cue"
           style={{
             position: "absolute", bottom: 40, left: "50%",
             transform: "translateX(-50%)", zIndex: 3,
@@ -737,8 +764,16 @@ export default function Home() {
           to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
         @keyframes glassCardReveal {
-          from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.982); filter: blur(3px); }
-          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+          from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
+          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+        @keyframes quietCinematicReveal {
+          from { opacity: 0; transform: translate3d(0, 12px, 0); }
+          to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        @keyframes scrollCueReveal {
+          from { opacity: 0; transform: translate3d(-50%, 8px, 0); }
+          to { opacity: 1; transform: translate3d(-50%, 0, 0); }
         }
         @keyframes cinematicCrownDrift {
           0%, 100% { opacity: 0.36; transform: translate3d(-2%, -1%, 0) scale(1); }
@@ -952,7 +987,7 @@ export default function Home() {
             0 14px 32px rgba(0,0,0,0.32),
             inset 0 1px 0 rgba(255,255,255,0.12),
             0 0 28px rgba(201,168,76,0.22);
-          transform: scale(1.06);
+          transform: scale(1.03);
         }
         .app-label {
           font-family: 'AdorshoLipi', sans-serif;
@@ -1080,8 +1115,24 @@ export default function Home() {
         .home-page-premium .hero-container {
           padding-top: calc(var(--site-nav-offset, 98px) + 34px);
           padding-bottom: 76px;
-          animation: homeHeroReveal .62s cubic-bezier(0.23, 1, 0.32, 1) both;
-          will-change: transform, opacity;
+        }
+        @media (prefers-reduced-motion: no-preference) {
+          .home-page-premium .hero-eyebrow {
+            animation: quietCinematicReveal .44s cubic-bezier(0.23, 1, 0.32, 1) .08s both;
+            will-change: transform, opacity;
+          }
+          .home-page-premium .cinematic-title {
+            animation: quietCinematicReveal .56s cubic-bezier(0.23, 1, 0.32, 1) .15s both;
+            will-change: transform, opacity;
+          }
+          .home-page-premium .hero-tagline {
+            animation: quietCinematicReveal .48s cubic-bezier(0.23, 1, 0.32, 1) .24s both;
+            will-change: transform, opacity;
+          }
+          .home-page-premium .hero-scroll-cue {
+            animation: scrollCueReveal .50s cubic-bezier(0.23, 1, 0.32, 1) .44s both;
+            will-change: transform, opacity;
+          }
         }
         .home-page-premium .hero-inner {
           gap: clamp(3.5rem, 7vw, 7.5rem);
@@ -1196,6 +1247,13 @@ export default function Home() {
         .home-page-premium .app-subtitle {
           color: rgba(250,246,239,0.64);
         }
+        .home-page-premium .explore-app-section:not(.is-revealed) .explore-app-heading {
+          opacity: 0;
+          transform: translate3d(0, 12px, 0);
+        }
+        .home-page-premium .explore-app-section.is-revealed .explore-app-heading {
+          animation: quietCinematicReveal .42s cubic-bezier(0.23, 1, 0.32, 1) both;
+        }
         .home-page-premium .explore-app-section:not(.is-revealed) .app-launcher-grid > div {
           opacity: 0;
           transform: translate3d(0, 18px, 0) scale(0.982);
@@ -1223,11 +1281,28 @@ export default function Home() {
         @media (max-width: 1024px) {
           .home-page-premium .hero-right { justify-self: center; }
         }
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-parallax-bg,
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-gold-glow,
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-blue-glow,
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-right {
+          transition-duration: 0ms;
+          will-change: auto;
+        }
+        .home-premium-hero[data-cinematic-profile="minimal"]::before,
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-frame-wrap::before {
+          animation: none;
+          opacity: 0.34;
+          will-change: auto;
+        }
         @media (max-width: 768px) {
           .home-page-premium .home-premium-hero::after {
             background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 34%), radial-gradient(circle at 80% 14%, rgba(245,228,160,0.07), transparent 27%);
           }
           .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
+          .home-page-premium .hero-eyebrow,
+          .home-page-premium .cinematic-title,
+          .home-page-premium .hero-tagline,
+          .home-page-premium .hero-scroll-cue { will-change: auto; }
           .home-page-premium .hero-right { width: 100%; max-width: none; justify-self: stretch; }
           .home-page-premium .app-launcher-shell { padding: 0.88rem; }
           .home-page-premium .app-launcher-topbar { margin-bottom: 0.9rem; }
@@ -1250,6 +1325,12 @@ export default function Home() {
           .home-page-premium .hero-right,
           .home-page-premium .home-premium-hero::before,
           .home-page-premium .hero-frame-wrap::before,
+          .home-page-premium .hero-eyebrow,
+          .home-page-premium .cinematic-title,
+          .home-page-premium .hero-tagline,
+          .home-page-premium .hero-scroll-cue,
+          .home-page-premium .hero-pulse-dot,
+          .home-page-premium .explore-app-heading,
           .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
