@@ -52,6 +52,7 @@ export default function Home() {
   const [loadRulesSection, setLoadRulesSection] = useState(false);
   const [launcherVisible, setLauncherVisible] = useState(false);
   const launcherRef = useRef<HTMLElement | null>(null);
+  const heroRef = useRef<HTMLElement | null>(null);
 
   // PWA install prompt listener
   useEffect(() => {
@@ -106,24 +107,40 @@ export default function Home() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) return;
+    const hero = heroRef.current;
+    if (reducedMotion.matches || !hero) return;
 
     let frame = 0;
+    let heroIsVisible = true;
     const updateScrollEffects = () => {
       frame = 0;
+      if (!heroIsVisible || document.hidden) return;
       const offset = Math.min(window.scrollY, 860);
       document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * 0.045, 38)}px`);
       document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * 0.024, 22)}px`);
       document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * 0.016, 14)}px`);
     };
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateScrollEffects);
+    const queueScrollEffects = () => {
+      if (heroIsVisible && !document.hidden && !frame) {
+        frame = window.requestAnimationFrame(updateScrollEffects);
+      }
+    };
+    const heroObserver = new IntersectionObserver(([entry]) => {
+      heroIsVisible = entry.isIntersecting;
+      if (heroIsVisible) queueScrollEffects();
+    }, { threshold: 0, rootMargin: "120px 0px 120px 0px" });
+    const onVisibilityChange = () => {
+      if (!document.hidden) queueScrollEffects();
     };
 
+    heroObserver.observe(hero);
     updateScrollEffects();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", queueScrollEffects, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", queueScrollEffects);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      heroObserver.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
       document.documentElement.style.removeProperty("--home-hero-shift");
       document.documentElement.style.removeProperty("--home-glow-shift");
@@ -180,6 +197,7 @@ export default function Home() {
           HERO — Cinematic Split Layout
       ══════════════════════════════════════════════════════════════════════ */}
       <section
+        ref={heroRef}
         className="home-premium-hero"
         style={{
           position: "relative",
