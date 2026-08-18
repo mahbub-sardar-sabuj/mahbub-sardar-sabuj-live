@@ -31,11 +31,11 @@ const RulesSection = lazy(() => import("@/components/RulesSection"));
 
 // ── Navigation sections ───────────────────────────────────────────────────────
 const sections = [
-  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen, mobilePriority: 1 },
+  { label: "লেখালেখি ও বই", subtitle: "কবিতা, গদ্য ও প্রকাশিত বই", href: "/writings", icon: BookOpen },
   { label: "আমিও লিখবো বাস্তবতা", subtitle: "বাস্তবতা লেখার সৃজনশীল পরিসর", href: "/amio-likhbo-bastobota", icon: Feather },
-  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound, mobilePriority: 4 },
-  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper, mobilePriority: 2 },
-  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images, mobilePriority: 3 },
+  { label: "পরিচিতি", subtitle: "জীবন, লেখা ও লেখকের পথচলা", href: "/about", icon: UserRound },
+  { label: "সরদার সংবাদ", subtitle: "আপডেট, প্রকাশনা ও সাম্প্রতিক খবর", href: "/news", icon: Newspaper },
+  { label: "গ্যালারি", subtitle: "ছবি, মুহূর্ত ও স্মৃতির অ্যালবাম", href: "/gallery", icon: Images },
   { label: "ডিজাইন ফরম্যাট", subtitle: "লেখাকে দিন সুন্দর ভিজ্যুয়াল রূপ", href: "/editor", icon: Palette },
   { label: "যোগাযোগ", subtitle: "বার্তা, ইমেইল ও সংযোগের পথ", href: "/contact", icon: Mail },
   { label: "ইমেজ আপস্কেলার", subtitle: "এআই দিয়ে ছবির কোয়ালিটি বাড়ান", href: "/image-upscaler", icon: Sparkles },
@@ -537,25 +537,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CURRENT FOCUS: printed books ───────────────────────────────────── */}
-      <section className="home-current-focus" aria-labelledby="home-current-focus-title">
-        <div className="home-current-focus-inner">
-          <div className="home-current-focus-copy">
-            <span className="home-current-focus-kicker">বর্তমান ফোকাস</span>
-            <h2 id="home-current-focus-title">দুই বই, দুই রকম অনুভব</h2>
-            <p>মাহবুব সরদার সবুজের ‘অভিমান’ ও ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’ রকমারি থেকে অর্ডার করুন।</p>
-          </div>
-          <div className="home-current-focus-actions" aria-label="বই অর্ডারের লিংক">
-            <a href="https://rkmri.co/Te303mA3TEyA/" target="_blank" rel="noopener noreferrer" className="home-book-order-link">
-              <span>অভিমান</span><strong>রকমারিতে অর্ডার</strong>
-            </a>
-            <a href="https://rkmri.co/IIAReAoMpRyp/" target="_blank" rel="noopener noreferrer" className="home-book-order-link">
-              <span>আমি বিচ্ছেদকে বলি দুঃখবিলাস</span><strong>রকমারিতে অর্ডার</strong>
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* ══════════════════════════════════════════════════════════════════════
           APP LAUNCHER — Compact explore tabs
       ══════════════════════════════════════════════════════════════════════ */}
@@ -640,8 +621,6 @@ export default function Home() {
                 return (
                   <div
                     key={sec.href + sec.label}
-                    className="app-launcher-item"
-                    data-mobile-priority={sec.mobilePriority}
                   >
                     <Link href={sec.href} className="app-launcher-link" aria-label={`${sec.label} খুলুন`}>
                       <div
@@ -659,7 +638,8 @@ export default function Home() {
               })}
 
               {/* PWA Install Card */}
-              <div className="app-launcher-item app-launcher-pwa">
+              <div
+              >
                 <button
                   onClick={handleInstallPWA}
                   className="app-launcher-link"
@@ -997,78 +977,6 @@ export default function Home() {
           overflow: hidden;
         }
 
-        /* Compact conversion-focused book area */
-        .home-current-focus {
-          position: relative;
-          padding: clamp(1rem, 2.4vw, 1.55rem) 1.25rem;
-          background: linear-gradient(180deg, #060E1A 0%, rgba(14,30,52,0.98) 100%);
-          border-top: 1px solid rgba(201,168,76,0.18);
-          border-bottom: 1px solid rgba(201,168,76,0.18);
-        }
-        .home-current-focus-inner {
-          width: min(1040px, 100%);
-          margin: 0 auto;
-          display: grid;
-          grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-          align-items: center;
-          gap: clamp(1rem, 3vw, 2.2rem);
-          padding: clamp(0.9rem, 2vw, 1.25rem);
-          border: 1px solid rgba(232,201,122,0.25);
-          border-radius: 24px;
-          background: linear-gradient(125deg, rgba(201,168,76,0.11), rgba(255,255,255,0.035) 48%, rgba(7,20,38,0.72));
-          box-shadow: 0 20px 55px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-        .home-current-focus-kicker {
-          display: inline-block;
-          margin-bottom: 0.35rem;
-          color: #E8C97A;
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: 0.7rem;
-          font-weight: 800;
-          letter-spacing: 0.14em;
-        }
-        .home-current-focus h2 {
-          margin: 0;
-          color: #FFF8EA;
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: clamp(1.35rem, 3vw, 1.8rem);
-          line-height: 1.25;
-        }
-        .home-current-focus p {
-          max-width: 500px;
-          margin: 0.45rem 0 0;
-          color: rgba(250,246,239,0.68);
-          font-family: 'AdorshoLipi', sans-serif;
-          font-size: 0.92rem;
-          line-height: 1.6;
-        }
-        .home-current-focus-actions {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.7rem;
-        }
-        .home-book-order-link {
-          min-height: 76px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 0.22rem;
-          padding: 0.8rem 0.95rem;
-          border: 1px solid rgba(245,228,160,0.33);
-          border-radius: 17px;
-          color: #FFF8EA;
-          background: linear-gradient(140deg, rgba(201,168,76,0.22), rgba(16,31,51,0.92));
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 12px 28px rgba(0,0,0,0.22);
-          font-family: 'AdorshoLipi', sans-serif;
-          text-decoration: none;
-          transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 160ms cubic-bezier(0.23, 1, 0.32, 1), background 160ms cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .home-book-order-link span { font-size: 0.86rem; line-height: 1.25; }
-        .home-book-order-link strong { color: #F5D67B; font-size: 0.74rem; }
-        .home-book-order-link:hover { transform: translateY(-2px); border-color: rgba(245,228,160,0.72); background: linear-gradient(140deg, rgba(201,168,76,0.32), rgba(16,31,51,0.94)); }
-        .home-book-order-link:focus-visible { outline: 3px solid rgba(245,214,123,0.48); outline-offset: 3px; }
-        .home-book-order-link:active { transform: scale(0.97); }
-
         /* Tablet */
         @media (max-width: 1024px) {
           .hero-inner {
@@ -1094,19 +1002,9 @@ export default function Home() {
           .hero-right { display: flex; justify-content: center; margin-top: -1.35rem; }
           .hero-title { width: 100%; }
           .hero-title span { font-size: clamp(2.62rem, 15vw, 5rem) !important; letter-spacing: -0.045em !important; }
-          .home-current-focus { padding: 0.8rem 0.9rem; }
-          .home-current-focus-inner { grid-template-columns: 1fr; gap: 0.9rem; border-radius: 20px; padding: 1rem; }
-          .home-current-focus-actions { gap: 0.58rem; }
-          .home-book-order-link { min-height: 68px; padding: 0.7rem; }
           .app-launcher-shell { border-radius: 30px; padding: 0.88rem; }
           .app-launcher-topbar { margin-bottom: 0.9rem; }
           .app-launcher-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; }
-          .app-launcher-item[data-mobile-priority="1"] { order: 1; }
-          .app-launcher-item[data-mobile-priority="2"] { order: 2; }
-          .app-launcher-item[data-mobile-priority="3"] { order: 3; }
-          .app-launcher-item[data-mobile-priority="4"] { order: 4; }
-          .app-launcher-item:not([data-mobile-priority]) { order: 10; }
-          .app-launcher-pwa { order: 11; }
           .app-launcher-card { min-height: 114px; border-radius: 22px; padding: 0.78rem 0.36rem 0.66rem; }
           .app-icon-wrap { border-radius: 15px; width: 46px; height: 46px; margin-bottom: 0.08rem; }
           .app-label { font-size: 0.79rem; line-height: 1.2; min-height: 2.3em; }
@@ -1118,12 +1016,6 @@ export default function Home() {
           .explore-app-section { padding-left: 0.8rem !important; padding-right: 0.8rem !important; }
           .hero-inner { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .hero-title span { font-size: clamp(2.28rem, 14.2vw, 4.4rem) !important; }
-          .home-current-focus { padding: 0.7rem 0.78rem; }
-          .home-current-focus-inner { padding: 0.9rem; }
-          .home-current-focus-actions { grid-template-columns: 1fr; }
-          .home-book-order-link { min-height: 58px; flex-direction: row; align-items: center; justify-content: space-between; gap: 0.65rem; }
-          .home-book-order-link span { font-size: 0.82rem; }
-          .home-book-order-link strong { font-size: 0.68rem; white-space: nowrap; }
           .app-launcher-shell { padding: 0.78rem; border-radius: 27px; }
           .app-launcher-topbar { margin-bottom: 0.76rem; }
           .app-launcher-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.56rem; }
