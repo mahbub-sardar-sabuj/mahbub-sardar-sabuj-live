@@ -52,7 +52,6 @@ export default function Home() {
   const [loadRulesSection, setLoadRulesSection] = useState(false);
   const [launcherVisible, setLauncherVisible] = useState(false);
   const launcherRef = useRef<HTMLElement | null>(null);
-  const heroRef = useRef<HTMLElement | null>(null);
 
   // PWA install prompt listener
   useEffect(() => {
@@ -106,66 +105,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return;
-
-    const compactViewport = window.matchMedia("(max-width: 768px)");
-    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-    const applyCinematicProfile = () => {
-      const lowPowerMobile = compactViewport.matches && (
-        connection?.saveData === true ||
-        (typeof memory === "number" && memory <= 4) ||
-        navigator.hardwareConcurrency <= 4
-      );
-      hero.dataset.cinematicProfile = lowPowerMobile ? "minimal" : "full";
-    };
-
-    applyCinematicProfile();
-    compactViewport.addEventListener("change", applyCinematicProfile);
-    return () => {
-      compactViewport.removeEventListener("change", applyCinematicProfile);
-      delete hero.dataset.cinematicProfile;
-    };
-  }, []);
-
-  useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const hero = heroRef.current;
-    if (reducedMotion.matches || !hero) return;
+    if (reducedMotion.matches) return;
 
     let frame = 0;
-    let heroIsVisible = true;
     const updateScrollEffects = () => {
       frame = 0;
-      if (!heroIsVisible || document.hidden) return;
-      const minimalProfile = hero.dataset.cinematicProfile === "minimal";
-      const offset = Math.min(window.scrollY, minimalProfile ? 620 : 860);
-      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * (minimalProfile ? 0.022 : 0.060), minimalProfile ? 14 : 52)}px`);
-      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * (minimalProfile ? 0.012 : 0.034), minimalProfile ? 8 : 30)}px`);
-      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * (minimalProfile ? 0.008 : 0.023), minimalProfile ? 5 : 20)}px`);
+      const offset = Math.min(window.scrollY, 860);
+      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * 0.045, 38)}px`);
+      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * 0.024, 22)}px`);
+      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * 0.016, 14)}px`);
     };
-    const queueScrollEffects = () => {
-      if (heroIsVisible && !document.hidden && !frame) {
-        frame = window.requestAnimationFrame(updateScrollEffects);
-      }
-    };
-    const heroObserver = new IntersectionObserver(([entry]) => {
-      heroIsVisible = entry.isIntersecting;
-      if (heroIsVisible) queueScrollEffects();
-    }, { threshold: 0, rootMargin: "120px 0px 120px 0px" });
-    const onVisibilityChange = () => {
-      if (!document.hidden) queueScrollEffects();
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateScrollEffects);
     };
 
-    heroObserver.observe(hero);
     updateScrollEffects();
-    window.addEventListener("scroll", queueScrollEffects, { passive: true });
-    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", queueScrollEffects);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      heroObserver.disconnect();
+      window.removeEventListener("scroll", onScroll);
       if (frame) window.cancelAnimationFrame(frame);
       document.documentElement.style.removeProperty("--home-hero-shift");
       document.documentElement.style.removeProperty("--home-glow-shift");
@@ -222,7 +180,6 @@ export default function Home() {
           HERO — Cinematic Split Layout
       ══════════════════════════════════════════════════════════════════════ */}
       <section
-        ref={heroRef}
         className="home-premium-hero"
         style={{
           position: "relative",
@@ -294,9 +251,6 @@ export default function Home() {
           }}
         />
 
-        {/* Slow cinematic light sweep */}
-        <div className="hero-light-ray" aria-hidden="true" />
-
         {/* Horizontal light streak */}
         <div style={{
           position: "absolute",
@@ -318,7 +272,6 @@ export default function Home() {
 
               {/* Eyebrow badge */}
               <div
-                className="hero-eyebrow"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -335,7 +288,7 @@ export default function Home() {
               >
                 {/* Pulsing dot */}
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                  <span className="hero-pulse-dot" style={{
+                  <span style={{
                     width: 7, height: 7, borderRadius: "50%",
                     background: "#C9A84C",
                     display: "block",
@@ -353,7 +306,7 @@ export default function Home() {
               </div>
 
               {/* Main name — single H1 for SEO, split visually with spans */}
-              <h1 className="hero-title cinematic-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
+              <h1 className="hero-title" style={{ margin: 0, padding: 0, display: "block", lineHeight: 1, maxWidth: "100%" }}>
               <div style={{ position: "relative", marginBottom: "0.2rem" }}>
                 <span
                   style={{
@@ -412,7 +365,6 @@ export default function Home() {
               </h1>
               {/* Tagline */}
               <div
-                className="hero-tagline"
                 style={{ margin: "1.1rem 0 0.7rem", maxWidth: 460 }}
               >
                 <p style={{
@@ -474,7 +426,7 @@ export default function Home() {
                 }} />
 
                 {/* Main portrait — suit photo */}
-                <div className="hero-portrait-glass" style={{
+                <div style={{
                   position: "relative",
                   borderRadius: 20,
                   overflow: "hidden",
@@ -518,8 +470,6 @@ export default function Home() {
                     background: "linear-gradient(to right, rgba(201,168,76,0.06) 0%, transparent 30%)",
                     pointerEvents: "none",
                   }} />
-                  <div className="portrait-light-sheen" aria-hidden="true" />
-
                   {/* Name tag at bottom */}
                   <div style={{
                     position: "absolute", bottom: 0, left: 0, right: 0,
@@ -545,7 +495,7 @@ export default function Home() {
 
         {/* Scroll indicator */}
         <div
-          className="scroll-indicator hero-scroll-cue"
+          className="scroll-indicator"
           style={{
             position: "absolute", bottom: 40, left: "50%",
             transform: "translateX(-50%)", zIndex: 3,
@@ -769,16 +719,8 @@ export default function Home() {
           to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
         @keyframes glassCardReveal {
-          from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
-          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-        }
-        @keyframes quietCinematicReveal {
-          from { opacity: 0; transform: translate3d(0, 12px, 0); }
-          to { opacity: 1; transform: translate3d(0, 0, 0); }
-        }
-        @keyframes scrollCueReveal {
-          from { opacity: 0; transform: translate3d(-50%, 8px, 0); }
-          to { opacity: 1; transform: translate3d(-50%, 0, 0); }
+          from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.982); filter: blur(3px); }
+          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
         @keyframes cinematicCrownDrift {
           0%, 100% { opacity: 0.36; transform: translate3d(-2%, -1%, 0) scale(1); }
@@ -787,20 +729,6 @@ export default function Home() {
         @keyframes portraitHaloBreathe {
           0%, 100% { opacity: 0.36; transform: scale(0.94); }
           50% { opacity: 0.68; transform: scale(1.06); }
-        }
-        @keyframes cinematicLightSweep {
-          0%, 12% { opacity: 0; transform: translate3d(-22%, 8%, 0) rotate(-15deg); }
-          38%, 62% { opacity: 0.62; }
-          88%, 100% { opacity: 0; transform: translate3d(22%, -8%, 0) rotate(-15deg); }
-        }
-        @keyframes portraitLightSheen {
-          0%, 22% { opacity: 0; transform: translate3d(-135%, 0, 0) skewX(-18deg); }
-          42% { opacity: 0.28; }
-          68%, 100% { opacity: 0; transform: translate3d(160%, 0, 0) skewX(-18deg); }
-        }
-        @keyframes launcherAmbientDrift {
-          0%, 100% { opacity: 0.48; transform: translate3d(-1.8%, -1.5%, 0) scale(1); }
-          50% { opacity: 0.86; transform: translate3d(1.8%, 1.5%, 0) scale(1.045); }
         }
 
         /* Hero layout */
@@ -1006,7 +934,7 @@ export default function Home() {
             0 14px 32px rgba(0,0,0,0.32),
             inset 0 1px 0 rgba(255,255,255,0.12),
             0 0 28px rgba(201,168,76,0.22);
-          transform: scale(1.03);
+          transform: scale(1.06);
         }
         .app-label {
           font-family: 'AdorshoLipi', sans-serif;
@@ -1091,15 +1019,6 @@ export default function Home() {
           transition: transform .12s linear;
           will-change: transform;
         }
-        .home-page-premium .hero-light-ray {
-          position: absolute;
-          z-index: 1;
-          inset: -32% -18%;
-          pointer-events: none;
-          background: linear-gradient(108deg, transparent 42%, rgba(255,239,178,0.045) 48%, rgba(245,214,123,0.18) 51%, rgba(255,239,178,0.045) 55%, transparent 62%);
-          mix-blend-mode: screen;
-          opacity: 0;
-        }
         .home-page-premium .hero-gold-glow {
           transform: translate3d(0, var(--home-glow-shift, 0px), 0) !important;
           transition: transform .12s linear;
@@ -1143,36 +1062,8 @@ export default function Home() {
         .home-page-premium .hero-container {
           padding-top: calc(var(--site-nav-offset, 98px) + 34px);
           padding-bottom: 76px;
-        }
-        @media (prefers-reduced-motion: no-preference) {
-          .home-page-premium .hero-eyebrow {
-            animation: quietCinematicReveal .44s cubic-bezier(0.23, 1, 0.32, 1) .08s both;
-            will-change: transform, opacity;
-          }
-          .home-page-premium .cinematic-title {
-            animation: quietCinematicReveal .56s cubic-bezier(0.23, 1, 0.32, 1) .15s both;
-            will-change: transform, opacity;
-          }
-          .home-page-premium .hero-tagline {
-            animation: quietCinematicReveal .48s cubic-bezier(0.23, 1, 0.32, 1) .24s both;
-            will-change: transform, opacity;
-          }
-          .home-page-premium .hero-scroll-cue {
-            animation: scrollCueReveal .50s cubic-bezier(0.23, 1, 0.32, 1) .44s both;
-            will-change: transform, opacity;
-          }
-          .home-page-premium .hero-light-ray {
-            animation: cinematicLightSweep 7.5s cubic-bezier(0.42, 0, 0.58, 1) 1.1s infinite;
-            will-change: transform, opacity;
-          }
-          .home-page-premium .portrait-light-sheen {
-            animation: portraitLightSheen 8.5s cubic-bezier(0.42, 0, 0.58, 1) 1.8s infinite;
-            will-change: transform, opacity;
-          }
-          .home-page-premium .app-launcher-shell::before {
-            animation: launcherAmbientDrift 7.2s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-            will-change: transform, opacity;
-          }
+          animation: homeHeroReveal .62s cubic-bezier(0.23, 1, 0.32, 1) both;
+          will-change: transform, opacity;
         }
         .home-page-premium .hero-inner {
           gap: clamp(3.5rem, 7vw, 7.5rem);
@@ -1205,47 +1096,6 @@ export default function Home() {
           animation: portraitHaloBreathe 7.5s ease-in-out infinite;
           will-change: transform, opacity;
         }
-        .home-page-premium .portrait-light-sheen {
-          position: absolute;
-          z-index: 2;
-          inset: 0;
-          pointer-events: none;
-          background: linear-gradient(105deg, transparent 37%, rgba(255,245,204,0.02) 43%, rgba(255,238,174,0.26) 50%, rgba(255,245,204,0.02) 57%, transparent 63%);
-          opacity: 0;
-          mix-blend-mode: screen;
-        }
-        .home-page-premium .hero-portrait-glass {
-          isolation: isolate;
-          border: 1px solid rgba(255,247,221,0.24) !important;
-          box-shadow:
-            0 44px 112px rgba(0,0,0,0.58),
-            0 0 0 1px rgba(201,168,76,0.22),
-            0 0 72px rgba(201,168,76,0.16),
-            inset 0 1px 0 rgba(255,255,255,0.26),
-            inset 0 -1px 0 rgba(4,10,20,0.42) !important;
-        }
-        .home-page-premium .hero-portrait-glass::before,
-        .home-page-premium .hero-portrait-glass::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          pointer-events: none;
-        }
-        .home-page-premium .hero-portrait-glass::before {
-          z-index: 2;
-          background:
-            linear-gradient(128deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.045) 18%, transparent 34%),
-            linear-gradient(to bottom, rgba(255,255,255,0.11), transparent 20%);
-          mix-blend-mode: screen;
-          opacity: 0.72;
-        }
-        .home-page-premium .hero-portrait-glass::after {
-          z-index: 3;
-          inset: 1px;
-          border: 1px solid rgba(255,255,255,0.18);
-          box-shadow: inset 0 0 0 1px rgba(201,168,76,0.075);
-        }
         .home-page-premium .hero-frame-wrap::after {
           content: "";
           position: absolute;
@@ -1269,32 +1119,17 @@ export default function Home() {
         .home-page-premium .app-launcher-shell {
           max-width: 890px;
           padding: clamp(1.12rem, 2.5vw, 1.72rem);
-          border-color: rgba(255,242,196,0.42);
-          background:
-            linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(232,201,122,0.095) 35%, rgba(16,35,60,0.74) 68%, rgba(5,14,27,0.84) 100%);
-          backdrop-filter: blur(30px) saturate(165%) brightness(1.05);
-          -webkit-backdrop-filter: blur(30px) saturate(165%) brightness(1.05);
+          border-color: rgba(232,201,122,0.40);
           box-shadow:
             0 62px 154px rgba(0,0,0,0.56),
-            0 0 62px rgba(201,168,76,0.16),
-            0 0 0 1px rgba(255,255,255,0.10) inset,
-            inset 0 1px 0 rgba(255,255,255,0.26),
-            inset 0 -1px 0 rgba(3,10,20,0.42);
+            0 0 58px rgba(201,168,76,0.11),
+            0 0 0 1px rgba(255,255,255,0.065) inset,
+            inset 0 1px 0 rgba(255,255,255,0.14);
         }
         .home-page-premium .app-launcher-shell::before {
           background:
-            radial-gradient(circle at 50% 0%, rgba(255,235,161,0.30), transparent 48%),
-            linear-gradient(120deg, rgba(255,255,255,0.12), transparent 36%, rgba(255,255,255,0.035) 58%, transparent 76%);
-          opacity: 0.78;
-        }
-        .home-page-premium .app-launcher-shell::after {
-          height: auto;
-          inset: 1px;
-          border-radius: inherit;
-          background: linear-gradient(150deg, rgba(255,255,255,0.19), transparent 16%, transparent 82%, rgba(201,168,76,0.13));
-          mask-image: linear-gradient(to bottom, black 0%, transparent 40%, transparent 72%, black 100%);
-          -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 40%, transparent 72%, black 100%);
-          opacity: 0.8;
+            radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 47%),
+            linear-gradient(120deg, rgba(255,255,255,0.025), transparent 42%);
         }
         .home-page-premium .app-launcher-topbar {
           margin-bottom: 1.08rem;
@@ -1305,52 +1140,37 @@ export default function Home() {
         }
         .home-page-premium .app-launcher-card {
           min-height: 144px;
-          border-color: rgba(255,240,190,0.30);
+          border-color: rgba(232,201,122,0.27);
           background:
-            linear-gradient(150deg, rgba(255,255,255,0.14) 0%, rgba(232,201,122,0.12) 28%, rgba(30,53,81,0.82) 64%, rgba(8,19,34,0.92) 100%);
+            radial-gradient(circle at 50% -14%, rgba(232,201,122,0.18), transparent 47%),
+            linear-gradient(160deg, rgba(23,42,67,0.98) 0%, rgba(7,16,29,0.94) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.22),
-            inset 0 -1px 0 rgba(0,0,0,0.28),
+            inset 0 1px 0 rgba(255,255,255,0.12),
+            inset 0 -1px 0 rgba(0,0,0,0.24),
             0 21px 48px rgba(0,0,0,0.37),
-            0 0 0 1px rgba(201,168,76,0.07);
-          backdrop-filter: blur(14px) saturate(135%);
-          -webkit-backdrop-filter: blur(14px) saturate(135%);
-          transition: border-color .26s cubic-bezier(0.23, 1, 0.32, 1), box-shadow .26s cubic-bezier(0.23, 1, 0.32, 1), background .26s cubic-bezier(0.23, 1, 0.32, 1), transform .16s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .home-page-premium .app-launcher-card::before {
-          inset: -18% -28%;
-          background: linear-gradient(112deg, transparent 38%, rgba(255,250,225,0.04) 44%, rgba(255,236,170,0.42) 50%, rgba(255,250,225,0.05) 56%, transparent 63%);
-          opacity: 0;
-          transform: translate3d(-72%, 0, 0) skewX(-16deg);
-          transition: transform .56s cubic-bezier(0.23, 1, 0.32, 1), opacity .22s ease-out;
-          mix-blend-mode: screen;
+            0 0 0 1px rgba(201,168,76,0.05);
         }
         .home-page-premium .app-launcher-card::after {
-          border-color: rgba(255,255,255,0.11);
-          box-shadow: inset 0 0 0 1px rgba(201,168,76,0.08);
+          border-color: rgba(255,255,255,0.052);
         }
         .home-page-premium .app-launcher-card:hover {
-          border-color: rgba(255,242,194,0.78);
-          background: linear-gradient(150deg, rgba(255,255,255,0.20) 0%, rgba(245,214,123,0.18) 30%, rgba(40,66,96,0.86) 66%, rgba(9,21,37,0.96) 100%);
+          border-color: rgba(245,228,160,0.72);
+          background:
+            radial-gradient(circle at 50% 0%, rgba(232,201,122,0.22), transparent 50%),
+            linear-gradient(160deg, rgba(34,55,81,0.99) 0%, rgba(9,21,37,0.97) 100%);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.30),
+            inset 0 1px 0 rgba(255,255,255,0.14),
             0 30px 68px rgba(0,0,0,0.48),
-            0 0 42px rgba(201,168,76,0.24),
-            0 0 0 1px rgba(201,168,76,0.18) inset;
-        }
-        .home-page-premium .app-launcher-card:hover::before,
-        .home-page-premium .app-launcher-link:focus-visible .app-launcher-card::before {
-          opacity: 0.9;
-          transform: translate3d(72%, 0, 0) skewX(-16deg);
+            0 0 38px rgba(201,168,76,0.18),
+            0 0 0 1px rgba(201,168,76,0.16) inset;
         }
         .home-page-premium .app-icon-wrap {
-          border-color: rgba(255,240,190,0.52);
-          background: linear-gradient(145deg, rgba(255,245,205,0.18), rgba(201,168,76,0.30) 46%, rgba(250,246,239,0.08));
+          border-color: rgba(232,201,122,0.44);
+          background: linear-gradient(145deg, rgba(201,168,76,0.29), rgba(250,246,239,0.08));
           box-shadow:
             0 14px 30px rgba(0,0,0,0.30),
-            inset 0 1px 0 rgba(255,255,255,0.25),
-            inset 0 -1px 0 rgba(0,0,0,0.18),
-            0 0 28px rgba(201,168,76,0.18);
+            inset 0 1px 0 rgba(255,255,255,0.14),
+            0 0 28px rgba(201,168,76,0.16);
         }
         .home-page-premium .app-label {
           letter-spacing: 0.005em;
@@ -1358,32 +1178,25 @@ export default function Home() {
         .home-page-premium .app-subtitle {
           color: rgba(250,246,239,0.64);
         }
-        .home-page-premium .explore-app-section:not(.is-revealed) .explore-app-heading {
-          opacity: 0;
-          transform: translate3d(0, 18px, 0);
-        }
-        .home-page-premium .explore-app-section.is-revealed .explore-app-heading {
-          animation: quietCinematicReveal .52s cubic-bezier(0.23, 1, 0.32, 1) both;
-        }
         .home-page-premium .explore-app-section:not(.is-revealed) .app-launcher-grid > div {
           opacity: 0;
-          transform: translate3d(0, 30px, 0) scale(0.97);
+          transform: translate3d(0, 18px, 0) scale(0.982);
         }
         .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div {
-          animation: glassCardReveal .64s cubic-bezier(0.23, 1, 0.32, 1) both;
+          animation: glassCardReveal .52s cubic-bezier(0.23, 1, 0.32, 1) both;
         }
         .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(1) { animation-delay: 0ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(2) { animation-delay: 65ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(3) { animation-delay: 130ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(4) { animation-delay: 195ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(5) { animation-delay: 260ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(6) { animation-delay: 325ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(7) { animation-delay: 390ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(8) { animation-delay: 455ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(9) { animation-delay: 520ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(10) { animation-delay: 585ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(11) { animation-delay: 650ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(12) { animation-delay: 715ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(2) { animation-delay: 45ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(3) { animation-delay: 90ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(4) { animation-delay: 135ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(5) { animation-delay: 180ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(6) { animation-delay: 225ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(7) { animation-delay: 270ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(8) { animation-delay: 315ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(9) { animation-delay: 360ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(10) { animation-delay: 405ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(11) { animation-delay: 450ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(12) { animation-delay: 495ms; }
         .home-page-premium .app-launcher-link:focus-visible .app-launcher-card,
         .home-page-premium .pwa-install-card:focus-visible {
           outline: 3px solid rgba(245,228,160,0.30);
@@ -1392,38 +1205,11 @@ export default function Home() {
         @media (max-width: 1024px) {
           .home-page-premium .hero-right { justify-self: center; }
         }
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-parallax-bg,
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-gold-glow,
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-blue-glow,
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-right {
-          transition-duration: 0ms;
-          will-change: auto;
-        }
-        .home-premium-hero[data-cinematic-profile="minimal"]::before,
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-light-ray,
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-frame-wrap::before,
-        .home-premium-hero[data-cinematic-profile="minimal"] .portrait-light-sheen {
-          animation: none;
-          opacity: 0.34;
-          will-change: auto;
-        }
         @media (max-width: 768px) {
-          .home-page-premium .app-launcher-shell {
-            backdrop-filter: blur(20px) saturate(145%);
-            -webkit-backdrop-filter: blur(20px) saturate(145%);
-          }
-          .home-page-premium .app-launcher-card {
-            backdrop-filter: blur(8px) saturate(120%);
-            -webkit-backdrop-filter: blur(8px) saturate(120%);
-          }
           .home-page-premium .home-premium-hero::after {
             background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 34%), radial-gradient(circle at 80% 14%, rgba(245,228,160,0.07), transparent 27%);
           }
           .home-page-premium .hero-container { padding-top: calc(var(--site-nav-offset, 98px) + 10px); padding-bottom: 36px; }
-          .home-page-premium .hero-eyebrow,
-          .home-page-premium .cinematic-title,
-          .home-page-premium .hero-tagline,
-          .home-page-premium .hero-scroll-cue { will-change: auto; }
           .home-page-premium .hero-right { width: 100%; max-width: none; justify-self: stretch; }
           .home-page-premium .app-launcher-shell { padding: 0.88rem; }
           .home-page-premium .app-launcher-topbar { margin-bottom: 0.9rem; }
@@ -1446,17 +1232,6 @@ export default function Home() {
           .home-page-premium .hero-right,
           .home-page-premium .home-premium-hero::before,
           .home-page-premium .hero-frame-wrap::before,
-          .home-page-premium .hero-eyebrow,
-          .home-page-premium .cinematic-title,
-          .home-page-premium .hero-tagline,
-          .home-page-premium .hero-scroll-cue,
-          .home-page-premium .hero-pulse-dot,
-          .home-page-premium .hero-light-ray,
-          .home-page-premium .portrait-light-sheen,
-          .home-page-premium .explore-app-heading,
-          .home-page-premium .app-launcher-shell::before,
-          .home-page-premium .app-launcher-card::before,
-          .home-page-premium .hero-portrait-glass::before,
           .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
