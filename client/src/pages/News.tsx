@@ -542,12 +542,13 @@ export default function News() {
               placeholder="সংবাদ খুঁজুন..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="সংবাদ খোঁজার ঘর"
               style={{
                 width: "100%",
                 background: "rgba(27,42,107,0.25)",
                 border: "1.5px solid rgba(245,166,35,0.18)",
                 borderRadius: 50,
-                padding: "13px 20px 13px 52px",
+                padding: searchTerm ? "13px 76px 13px 52px" : "13px 20px 13px 52px",
                 color: "#FAF6EF",
                 fontSize: "0.95rem",
                 outline: "none",
@@ -568,6 +569,16 @@ export default function News() {
                 e.currentTarget.style.boxShadow = "0 2px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)";
               }}
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                aria-label="সংবাদ খোঁজা মুছুন"
+                style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", border: 0, borderRadius: 999, padding: "5px 9px", background: "rgba(245,166,35,0.14)", color: "#F5A623", fontFamily: "'AdorshoLipi', sans-serif", cursor: "pointer", fontSize: "0.78rem", fontWeight: 800 }}
+              >
+                মুছুন
+              </button>
+            )}
           </motion.div>
         </div>
       </div>
@@ -688,9 +699,16 @@ export default function News() {
           ))}
         </div>
 
+        <p aria-live="polite" style={{ margin: "-16px 0 26px", color: "rgba(250,246,239,0.58)", textAlign: "center", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "0.86rem" }}>
+          {searchTerm ? `“${searchTerm}” খোঁজায় ${filtered.length}টি সংবাদ পাওয়া গেছে` : `${filtered.length}টি সংবাদ দেখা যাচ্ছে`}
+        </p>
+
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 20px", color: "rgba(250,246,239,0.4)" }}>
             <p style={{ fontSize: "1.2rem" }}>কোনো সংবাদ পাওয়া যায়নি।</p>
+            <button type="button" onClick={() => { setSearchTerm(""); setSelectedCategory("সব"); }} style={{ marginTop: 12, border: "1px solid rgba(245,166,35,0.42)", borderRadius: 999, padding: "9px 15px", background: "rgba(245,166,35,0.10)", color: "#F5A623", fontFamily: "'AdorshoLipi', sans-serif", cursor: "pointer", fontWeight: 800 }}>
+              সব সংবাদ দেখুন
+            </button>
           </div>
         ) : (
           <>
