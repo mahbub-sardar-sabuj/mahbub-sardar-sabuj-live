@@ -128,6 +128,7 @@ export default function Profile() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [logoutError, setLogoutError] = useState("");
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -170,7 +171,7 @@ export default function Profile() {
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, [authLoading, user?.openId]);
+  }, [authLoading, user?.openId, loadAttempt]);
 
   async function handleSave() {
     if (!editName.trim()) { setError("নাম দিন"); return; }
@@ -350,8 +351,15 @@ export default function Profile() {
             </div>
           </div>
         ) : error && !profile ? (
-          <div style={{ ...glassCard, padding: "2rem", textAlign: "center", color: "#FCA5A5" }}>
-            {error}
+          <div style={{ ...glassCard, padding: "2rem", textAlign: "center", color: "#FCA5A5" }} role="alert">
+            <p style={{ margin: 0 }}>{error}</p>
+            <button
+              type="button"
+              onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+              style={{ ...buttonStyle, marginTop: "1rem", background: "rgba(212,168,67,0.14)", color: "#F7D56F", border: "1px solid rgba(247,213,111,0.35)" }}
+            >
+              <RefreshCw size={15} /> আবার চেষ্টা করুন
+            </button>
           </div>
         ) : profile ? (
           <div className="profile-card" style={{ display: "grid", gap: "1.25rem" }}>
