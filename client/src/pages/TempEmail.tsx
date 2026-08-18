@@ -19,7 +19,6 @@ const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
 const TEMP_EMAIL_ADAPTER_ENDPOINT = "/api/temp-email-proxy";
-const MAILTM_ATTRIBUTION_URL = "https://mail.gw";
 const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v3";
 const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v3";
 const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
@@ -882,10 +881,6 @@ export default function TempEmail() {
                     {copied ? "কপি হয়েছে!" : "কপি করুন"}
                   </button>
                 </div>
-                <p style={{ color: "rgba(250,246,239,0.42)", fontSize: "0.74rem", margin: "-4px 2px 14px", fontFamily: "'AdorshoLipi', sans-serif" }}>
-                  অস্থায়ী mailbox service: <a href={MAILTM_ATTRIBUTION_URL} target="_blank" rel="noreferrer">mail.gw</a>
-                </p>
-
                 {/* Action Buttons */}
                 <div className="temp-email-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 2 }}>
                   <button
