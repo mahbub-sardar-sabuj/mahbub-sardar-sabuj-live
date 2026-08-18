@@ -25,14 +25,18 @@ const constants = Object.fromEntries(
   [...gallerySource.matchAll(/^const\s+([A-Z0-9_]+)\s+=\s+"([^"]+)";/gm)].map(([, name, value]) => [name, value])
 );
 
-const galleryBlock = gallerySource.match(/const galleryImages = \[([\s\S]*?)\n\];/);
+const galleryBlock = gallerySource.match(/const galleryImages(?:\s*:\s*GalleryImage\[\])?\s*=\s*\[([\s\S]*?)\]\.(?:sort|map)/);
 if (!galleryBlock) throw new Error("galleryImages array was not found in Gallery.tsx");
 
-const images = [...galleryBlock[1].matchAll(/\{\s*src:\s*([^,]+),\s*caption:\s*"([^"]+)"\s*\}/g)].map(([, rawSource, caption]) => {
+const images = [...galleryBlock[1].matchAll(/\{\s*src:\s*([^,]+),\s*caption:\s*"([^"]+)"(?:,\s*addedAt:\s*"([^"]+)")?\s*\}/g)].map(([, rawSource, caption, addedAt]) => {
   const source = rawSource.trim();
   const sourceValue = source.startsWith('"') ? source.slice(1, -1) : constants[source];
   if (!sourceValue) throw new Error(`Unresolved gallery image source: ${source}`);
-  return { src: toAbsoluteUrl(sourceValue), caption };
+  return { src: toAbsoluteUrl(sourceValue), caption, addedAt };
+}).sort((first, second) => {
+  const firstAddedAt = first.addedAt ? Date.parse(first.addedAt) : 0;
+  const secondAddedAt = second.addedAt ? Date.parse(second.addedAt) : 0;
+  return secondAddedAt - firstAddedAt;
 });
 
 if (images.length < 1) throw new Error("No gallery images were parsed");

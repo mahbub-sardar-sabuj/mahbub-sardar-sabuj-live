@@ -30,7 +30,14 @@ const WRITING2 = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGj
 const BOOK_PHOTO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663480075829/4WFGjMEZtwqeRWz2WqHMm4/book-photo_1173642f.jpg";
 
 // ── Gallery images ────────────────────────────────────────────────────────────
-const galleryImages = [
+type GalleryImage = { src: string; caption: string; addedAt?: string };
+
+// New additions need an addedAt value. The gallery always sorts these newest-first,
+// while the established archive retains its existing editorial order.
+const galleryImages: GalleryImage[] = [
+  { src: "/photos/gallery-2026-08/dukkhovilash-book-flowers.webp", caption: "আমি বিচ্ছেদকে বলি দুঃখবিলাস — বই ও জবা ফুল", addedAt: "2026-08-18T15:32:03Z" },
+  { src: "/photos/gallery-2026-08/onubhuti-book-flowers.webp", caption: "অনুভূতি — বই ও জবা ফুল", addedAt: "2026-08-18T15:32:02Z" },
+  { src: "/photos/gallery-2026-08/book-duo-flowers.webp", caption: "অনুভূতি ও আমি বিচ্ছেদকে বলি দুঃখবিলাস — বইয়ের যুগল ফ্রেম", addedAt: "2026-08-18T15:32:01Z" },
   { src: "/photos/Photoroom_20260224_033915.webp", caption: "লেখকের প্রতিকৃতি" },
   { src: "/photos/edited_image_blazer.webp", caption: "ব্লেজারে লেখক" },
   { src: "/photos/bengali_olive_shirt_man_art.webp", caption: "ইলাস্ট্রেটেড প্রতিকৃতি" },
@@ -86,9 +93,11 @@ const galleryImages = [
   { src: "/photos/gallery-2026-08/photo-output_02.png", caption: "জীবন একটি ভ্রমণের চাপা রূপকথা — উদ্ধৃতিচিত্র" },
   { src: "/photos/gallery-2026-08/photo-output_03.png", caption: "বিষাক্ত সাপের চেয়েও ভয়ংকর — উদ্ধৃতিচিত্র" },
   { src: "/photos/gallery-2026-08/photo-output_04.png", caption: "মানুষ কখনো নিঃস্ব নয় — উদ্ধৃতিচিত্র" },
-];
-
-type GalleryImage = { src: string; caption: string };
+].sort((first, second) => {
+  const firstAddedAt = first.addedAt ? Date.parse(first.addedAt) : 0;
+  const secondAddedAt = second.addedAt ? Date.parse(second.addedAt) : 0;
+  return secondAddedAt - firstAddedAt;
+});
 
 function copyGalleryLink(photoIndex: number, onComplete: () => void) {
   const url = `${window.location.origin}/gallery?photo=${photoIndex}`;

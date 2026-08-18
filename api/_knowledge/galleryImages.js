@@ -2,6 +2,21 @@
 // Run pnpm seo:gallery after changing galleryImages.
 export const galleryImages = [
   {
+    "src": "https://www.mahbubsardarsabuj.com/photos/gallery-2026-08/dukkhovilash-book-flowers.webp",
+    "caption": "আমি বিচ্ছেদকে বলি দুঃখবিলাস — বই ও জবা ফুল",
+    "addedAt": "2026-08-18T15:32:03Z"
+  },
+  {
+    "src": "https://www.mahbubsardarsabuj.com/photos/gallery-2026-08/onubhuti-book-flowers.webp",
+    "caption": "অনুভূতি — বই ও জবা ফুল",
+    "addedAt": "2026-08-18T15:32:02Z"
+  },
+  {
+    "src": "https://www.mahbubsardarsabuj.com/photos/gallery-2026-08/book-duo-flowers.webp",
+    "caption": "অনুভূতি ও আমি বিচ্ছেদকে বলি দুঃখবিলাস — বইয়ের যুগল ফ্রেম",
+    "addedAt": "2026-08-18T15:32:01Z"
+  },
+  {
     "src": "https://www.mahbubsardarsabuj.com/photos/Photoroom_20260224_033915.webp",
     "caption": "লেখকের প্রতিকৃতি"
   },
