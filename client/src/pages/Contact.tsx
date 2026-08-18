@@ -918,7 +918,7 @@ export default function Contact() {
                         <Check size={35} />
                       </motion.div>
                       <h3>বার্তা পাঠানো হয়েছে</h3>
-                      <p>আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ আপনার সময় ও কথার জন্য—আমি শীঘ্রই উত্তর দেব।</p>
+                      <p>আপনার বার্তা সফলভাবে পাঠানো হয়েছে। ধন্যবাদ আপনার সময় ও কথার জন্য। উত্তর পাওয়ার জন্য আপনার দেওয়া ইমেইল inbox ও spam folder নজরে রাখুন।</p>
                     </motion.div>
                   ) : (
                     <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
