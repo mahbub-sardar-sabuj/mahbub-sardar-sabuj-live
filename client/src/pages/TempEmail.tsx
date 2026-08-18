@@ -779,6 +779,7 @@ export default function TempEmail() {
                 <button
                   onClick={generateEmail}
                   disabled={generating}
+                  aria-label="নতুন অস্থায়ী ইমেইল তৈরি করুন"
                   style={{
                     background: generating
                       ? "rgba(201,168,76,0.3)"
