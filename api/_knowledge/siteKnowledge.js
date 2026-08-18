@@ -143,22 +143,22 @@ export const SITE_PAGES = [
     key: "image-upscaler",
     label: "ছবি আপস্কেলার",
     path: "/image-upscaler",
-    description: "AI দিয়ে ছবির মান উন্নত করার টুল। ২x (4K) ও ৪x (8K) আপস্কেল করা যায়। ছবি আপলোড করলে AI স্বয়ংক্রিয়ভাবে উচ্চমানে রূপান্তর করে।",
-    keywords: ["ছবি আপস্কেল", "image upscaler", "4K", "8K", "ছবির মান", "AI ছবি", "enhance"]
+    description: "ছবির রেজোলিউশন ২× বা ৪× বাড়ানোর browser-based tool। Bicubic resampling ও sharpening এই device-এই চলে; output PNG হিসেবে নেওয়া যায়।",
+    keywords: ["ছবি আপস্কেল", "image upscaler", "ছবির রেজোলিউশন", "browser image processing", "sharpen"]
   },
   {
     key: "video-upscaler",
     label: "ভিডিও আপস্কেলার",
     path: "/video-upscaler",
-    description: "AI দিয়ে ভিডিওর মান উন্নত করার টুল। ২x (4K) ও ৪x (8K) আপস্কেল করা যায়। ভিডিও আপলোড করলে AI স্বয়ংক্রিয়ভাবে উচ্চমানে রূপান্তর করে।",
-    keywords: ["ভিডিও আপস্কেল", "video upscaler", "4K ভিডিও", "8K ভিডিও", "ভিডিওর মান", "AI ভিডিও"]
+    description: "ভিডিওর রেজোলিউশন ২× বা ৪× করার browser-based tool। রিস্যাম্পল, শার্পনেস ও export আপনার device-এই চলে; ছোট ভিডিওতে সবচেয়ে নির্ভরযোগ্য।",
+    keywords: ["ভিডিও আপস্কেল", "video upscaler", "ভিডিও রেজোলিউশন", "browser video processing"]
   },
   {
     key: "audio-editor",
     label: "অডিও এডিটর",
     path: "/audio-editor",
-    description: "অডিও ফাইল এডিটিং টুল। নয়েজ রিমুভ, ভয়েস এনহ্যান্সমেন্ট, মাস্টারিং ও পেশাদার অডিও এডিটিং করা যায়।",
-    keywords: ["অডিও এডিটর", "audio editor", "নয়েজ রিমুভ", "ভয়েস", "মাস্টারিং", "অডিও"]
+    description: "Browser-এ ব্যক্তিগত audio trim, volume, fade in/out, speed, normalize, preview ও WAV export করার tool। ফাইল server-এ upload করা হয় না।",
+    keywords: ["অডিও এডিটর", "audio editor", "trim", "fade", "volume", "speed", "WAV export"]
   },
   {
     key: "temp-email",
