@@ -1,8 +1,8 @@
-// api/temp-email-proxy.js — limited same-origin adapter for the public mail.tm mailbox API.
+// api/temp-email-proxy.js — limited same-origin adapter for a public mailbox API.
 // It exposes only the inbox actions used by this website; callers cannot choose arbitrary URLs.
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
-const MAILTM_BASE = "https://api.mail.tm";
+const MAILTM_BASE = "https://api.mail.gw";
 const TEMP_EMAIL_TIMEOUT_MS = 12_000;
 
 export default async function handler(req, res) {
