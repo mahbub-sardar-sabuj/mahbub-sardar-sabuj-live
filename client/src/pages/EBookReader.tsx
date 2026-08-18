@@ -122,6 +122,41 @@ export default function EBookReader() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [pageInput, setPageInput] = useState("1");
+  const [progressReadyForSlug, setProgressReadyForSlug] = useState("");
+
+  // এই device-এ শেষ পড়া অবস্থান, zoom ও reading mode সংরক্ষণ ও পুনরুদ্ধার
+  useEffect(() => {
+    if (!slug || !book) return;
+    setProgressReadyForSlug("");
+    setCurrentPage(1);
+    setPageInput("1");
+    setUserScale(getDefaultScale());
+    setIsDarkMode(false);
+    try {
+      const saved = JSON.parse(localStorage.getItem(`mss-ebook-reading-${slug}`) || "null") as { page?: number; scale?: number; dark?: boolean } | null;
+      if (saved) {
+        const restoredPage = Math.min(Math.max(1, Number(saved.page) || 1), book.totalPages || Number.MAX_SAFE_INTEGER);
+        setCurrentPage(restoredPage);
+        setPageInput(String(restoredPage));
+        if (typeof saved.scale === "number") setUserScale(Math.min(3, Math.max(0.5, saved.scale)));
+        if (typeof saved.dark === "boolean") setIsDarkMode(saved.dark);
+      }
+    } catch {
+      // Corrupt local state should never prevent reading.
+    } finally {
+      setProgressReadyForSlug(slug);
+    }
+  }, [slug, book]);
+
+  useEffect(() => {
+    if (!slug || !book || progressReadyForSlug !== slug) return;
+    try {
+      localStorage.setItem(`mss-ebook-reading-${slug}`, JSON.stringify({ page: currentPage, scale: userScale, dark: isDarkMode, updatedAt: Date.now() }));
+    } catch {
+      // Reading still works if device storage is unavailable.
+    }
+  }, [slug, book, currentPage, userScale, isDarkMode, progressReadyForSlug]);
+
   // PDF লোড করা
   useEffect(() => {
     if (!book) return;
