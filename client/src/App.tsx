@@ -7,6 +7,7 @@ import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazyRoute, preloadRoute } from "./lib/routePreloader";
+import SiteScrollMotion from "./components/SiteScrollMotion";
 
 // Keep only the landing page in the critical path. Content-heavy routes are lazy-loaded.
 import Home from "./pages/Home";
@@ -193,6 +194,7 @@ function App() {
   const application = (
     <>
       <div className="cinematic-site-shell">
+        <SiteScrollMotion routeKey={location} />
         <Router />
       </div>
       {loadAssistant ? (
