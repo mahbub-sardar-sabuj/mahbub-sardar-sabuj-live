@@ -2,7 +2,7 @@
  * Gallery.tsx — ফটো গ্যালারি পেজ
  * Premium editorial gallery with responsive photo grid + shareable lightbox.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
@@ -108,6 +108,8 @@ function copyGalleryLink(photoIndex: number, onComplete: () => void) {
 export default function Gallery() {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [galleryCopied, setGalleryCopied] = useState(false);
+  const lightboxCloseRef = useRef<HTMLButtonElement>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
   // Keep the first gallery paint light; visitors can reveal the archive progressively.
   const [visibleCount, setVisibleCount] = useState(() =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches ? 8 : 12
@@ -127,6 +129,18 @@ export default function Gallery() {
     const index = parseInt(photoParam, 10);
     if (!Number.isNaN(index) && index >= 0 && index < galleryImages.length) setLightboxIdx(index);
   }, [location]);
+
+  useEffect(() => {
+    if (lightboxIdx === null) return;
+    lastFocusedRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.setTimeout(() => lightboxCloseRef.current?.focus(), 0);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      lastFocusedRef.current?.focus();
+    };
+  }, [lightboxIdx]);
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -335,7 +349,7 @@ export default function Gallery() {
             >
               <div className="gallery-lightbox-image-wrap">
                 <img src={currentImg.src} alt={`${currentImg.caption || "মাহবুব সরদার সবুজ গ্যালারি ছবি"} - মাহবুব সরদার সবুজের গ্যালারি`} decoding="async" />
-                <button type="button" className="gallery-lightbox-close" onClick={closeLightbox} aria-label="ছবি বন্ধ করুন"><X size={18} /></button>
+                <button ref={lightboxCloseRef} type="button" className="gallery-lightbox-close" onClick={closeLightbox} aria-label="ছবি বন্ধ করুন"><X size={18} /></button>
               </div>
               <div className="gallery-lightbox-details">
                 <div>
