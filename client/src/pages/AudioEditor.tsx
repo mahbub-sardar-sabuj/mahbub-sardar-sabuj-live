@@ -1,1171 +1,408 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ChangeEvent, DragEvent, useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import {
-  Upload, Music, Play, Pause, Download, Loader2, CheckCircle,
-  AlertCircle, X, Wand2, Volume2, Mic, Sparkles, RefreshCw,
-  ChevronDown, ChevronUp, Info, Star, Zap, Shield, Headphones,
-  Radio, Waves, Film, BookOpen, MessageSquare, Cpu, Sliders,
-  GitMerge, BarChart2, Settings2, Scissors, RotateCcw, Plus, Trash2
+  CheckCircle2,
+  Download,
+  FileAudio,
+  Gauge,
+  Loader2,
+  Music,
+  Pause,
+  Play,
+  RotateCcw,
+  Scissors,
+  Sparkles,
+  Upload,
+  Volume2,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-interface AudioInfo {
+interface AudioProject {
   file: File;
-  name: string;
-  size: number;
   url: string;
-  duration?: number;
-  waveform?: number[];
+  buffer: AudioBuffer;
+  samples: number[];
 }
 
-interface ProcessResult {
-  audioUrl: string;
-  audioFilename: string;
-  description: string;
-  appliedSteps: string[];
-  pipeline: string[];
-  intent: string;
-  technicalNote?: string;
-  outputSizeKB?: number;
+const MAX_FILE_BYTES = 120 * 1024 * 1024;
+const ACCENT = "#E8C46F";
+
+function formatTime(seconds: number) {
+  if (!Number.isFinite(seconds)) return "0:00";
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.floor(seconds % 60);
+  return `${minutes}:${String(rest).padStart(2, "0")}`;
 }
 
-interface EQBand {
-  freq: string;
-  label: string;
-  value: number; // -12 to +12 dB
+function formatBytes(bytes: number) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-interface PipelineStep {
-  id: string;
-  label: string;
-  prompt: string;
-  color: string;
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
-// ── EQ Bands ──────────────────────────────────────────────────────────────────
-const DEFAULT_EQ: EQBand[] = [
-  { freq: "60Hz", label: "Sub", value: 0 },
-  { freq: "150Hz", label: "Bass", value: 0 },
-  { freq: "400Hz", label: "Low Mid", value: 0 },
-  { freq: "1kHz", label: "Mid", value: 0 },
-  { freq: "2.5kHz", label: "Presence", value: 0 },
-  { freq: "6kHz", label: "Clarity", value: 0 },
-  { freq: "12kHz", label: "Air", value: 0 },
-];
-
-// ── Preset categories ──────────────────────────────────────────────────────────
-const PRESETS = [
-  {
-    category: "🎙️ ভয়েস ক্লিনআপ",
-    color: "#4ade80",
-    items: [
-      { label: "নয়েজ রিমুভ", prompt: "নয়েজ কমাও এবং কণ্ঠ পরিষ্কার করো", icon: <Shield className="w-4 h-4" />, desc: "হিস ও ব্যাকগ্রাউন্ড নয়েজ দূর করে" },
-      { label: "গভীর নয়েজ রিমুভ", prompt: "গভীর নয়েজ রিমুভ করো — 3-পাস ডিনয়েজ", icon: <Shield className="w-4 h-4" />, desc: "৩-পাস AI ডিনয়েজিং" },
-      { label: "শ্বাস সরাও", prompt: "শ্বাসের শব্দ এবং পপ সরাও", icon: <Mic className="w-4 h-4" />, desc: "ব্রেথ ও পপ রিমুভ" },
-      { label: "হাম সরাও", prompt: "বৈদ্যুতিক হাম এবং ৫০Hz নয়েজ সরাও", icon: <Zap className="w-4 h-4" />, desc: "ইলেকট্রিক হাম ক্লিন" },
-      { label: "পুরনো রেকর্ড রিস্টোর", prompt: "পুরনো রেকর্ডিং রিস্টোর করো", icon: <RefreshCw className="w-4 h-4" />, desc: "ভিনটেজ রেকর্ড পুনরুদ্ধার" },
-      { label: "রুম রিভার্ব সরাও", prompt: "রুমের রিভার্ব এবং অ্যাকুস্টিক সরাও", icon: <Waves className="w-4 h-4" />, desc: "রুম অ্যাকুস্টিক্স রিমুভ" },
-    ]
-  },
-  {
-    category: "✨ ভয়েস প্রিসেট",
-    color: "#c9a84c",
-    items: [
-      { label: "গোল্ডেন ভয়েস", prompt: "গোল্ডেন ভয়েস — মধুময় উষ্ণ কণ্ঠ", icon: <Sparkles className="w-4 h-4" />, desc: "সোনালি উষ্ণ কণ্ঠ" },
-      { label: "ডায়মন্ড ভয়েস", prompt: "ডায়মন্ড ভয়েস — স্ফটিক স্বচ্ছ কণ্ঠ", icon: <Sparkles className="w-4 h-4" />, desc: "ক্রিস্টাল ক্লিয়ার কণ্ঠ" },
-      { label: "ভেলভেট ভয়েস", prompt: "ভেলভেট ভয়েস — মখমলের মতো কণ্ঠ", icon: <Sparkles className="w-4 h-4" />, desc: "মসৃণ মখমল কণ্ঠ" },
-      { label: "স্টুডিও মান", prompt: "প্রফেশনাল স্টুডিও মান করো", icon: <Star className="w-4 h-4" />, desc: "প্রফেশনাল স্টুডিও কোয়ালিটি" },
-      { label: "ভয়েস এনহ্যান্সার প্রো", prompt: "ভয়েস এনহ্যান্সার প্রো — সম্পূর্ণ প্রসেসিং", icon: <Cpu className="w-4 h-4" />, desc: "সম্পূর্ণ AI এনহ্যান্সমেন্ট" },
-      { label: "ASMR ভয়েস", prompt: "ASMR ভয়েস — ফিসফিসে শান্ত কণ্ঠ", icon: <Headphones className="w-4 h-4" />, desc: "শান্ত ফিসফিস কণ্ঠ" },
-    ]
-  },
-  {
-    category: "🎭 ক্যারেক্টার ভয়েস",
-    color: "#a78bfa",
-    items: [
-      { label: "সিনেমাটিক বাংলা", prompt: "সিনেমাটিক বাংলা ভয়েস করো", icon: <Film className="w-4 h-4" />, desc: "চলচ্চিত্রের মতো কণ্ঠ" },
-      { label: "রেডিও জকি", prompt: "রেডিও জকি ভয়েস করো", icon: <Radio className="w-4 h-4" />, desc: "RJ স্টাইল এনার্জেটিক" },
-      { label: "সুফি ভয়েস", prompt: "সুফি ভয়েস — আধ্যাত্মিক গভীরতা", icon: <Waves className="w-4 h-4" />, desc: "আধ্যাত্মিক গভীর কণ্ঠ" },
-      { label: "ড্রামা ভয়েস", prompt: "ড্রামা ভয়েস — নাটকীয় কণ্ঠ", icon: <Mic className="w-4 h-4" />, desc: "নাটকীয় থিয়েটার কণ্ঠ" },
-      { label: "নিউজ অ্যাঙ্কর", prompt: "নিউজ অ্যাঙ্কর ভয়েস করো", icon: <Radio className="w-4 h-4" />, desc: "সংবাদ পাঠকের কণ্ঠ" },
-    ]
-  },
-  {
-    category: "📱 প্ল্যাটফর্ম অপ্টিমাইজ",
-    color: "#38bdf8",
-    items: [
-      { label: "ভিডিও ভয়েস", prompt: "ভিডিও ভয়েস করো", icon: <Film className="w-4 h-4" />, desc: "ভিডিও কন্টেন্টের জন্য অপ্টিমাইজড" },
-      { label: "শর্ট ভিডিও ভয়েস", prompt: "শর্ট ভিডিও ভয়েস করো", icon: <Zap className="w-4 h-4" />, desc: "শর্ট ভিডিওর জন্য" },
-      { label: "অডিওবুক", prompt: "অডিওবুক ভয়েস করো", icon: <BookOpen className="w-4 h-4" />, desc: "বই পড়ার মতো কণ্ঠ" },
-      { label: "পডকাস্ট", prompt: "পডকাস্ট মান করো", icon: <Headphones className="w-4 h-4" />, desc: "পডকাস্ট কোয়ালিটি" },
-      { label: "ভয়েস মেসেজ", prompt: "ভয়েস মেসেজ পরিষ্কার করো", icon: <MessageSquare className="w-4 h-4" />, desc: "মেসেজিং অ্যাপের মান" },
-      { label: "মেডিটেশন ভয়েস", prompt: "মেডিটেশন ভয়েস — শান্ত কণ্ঠ", icon: <Waves className="w-4 h-4" />, desc: "শান্তিময় ধ্যানের কণ্ঠ" },
-    ]
-  },
-  {
-    category: "🎚️ মাস্টারিং",
-    color: "#fb923c",
-    items: [
-      { label: "স্টুডিও মাস্টার", prompt: "পারফেক্ট মাস্টারিং — স্টুডিও মান", icon: <Star className="w-4 h-4" />, desc: "১০-ধাপ স্টুডিও মাস্টারিং" },
-      { label: "স্ট্রিমিং রেডি", prompt: "স্ট্রিমিং রেডি — স্ট্রিমিং মান", icon: <Music className="w-4 h-4" />, desc: "স্ট্রিমিং LUFS মান" },
-      { label: "ব্রডকাস্ট মাস্টার", prompt: "ব্রডকাস্ট মাস্টারিং — TV মান", icon: <Radio className="w-4 h-4" />, desc: "টেলিভিশন সম্প্রচার মান" },
-      { label: "সিনেমা মাস্টার", prompt: "সিনেমা মাস্টারিং — ফিল্ম মান", icon: <Film className="w-4 h-4" />, desc: "চলচ্চিত্র সাউন্ড মান" },
-      { label: "ভিনাইল মাস্টার", prompt: "ভিনাইল মাস্টারিং — রেট্রো মান", icon: <Music className="w-4 h-4" />, desc: "ভিনাইল রেকর্ড স্টাইল" },
-      { label: "অটো মাস্টার", prompt: "অটো মাস্টার করো", icon: <Cpu className="w-4 h-4" />, desc: "AI স্বয়ংক্রিয় মাস্টারিং" },
-    ]
-  },
-  {
-    category: "🎨 ইফেক্ট ও ট্রান্সফর্ম",
-    color: "#f472b6",
-    items: [
-      { label: "রিভার্ব যোগ", prompt: "রিভার্ব যোগ করো", icon: <Waves className="w-4 h-4" />, desc: "হল রিভার্ব ইফেক্ট" },
-      { label: "ইকো যোগ", prompt: "ইকো যোগ করো", icon: <Waves className="w-4 h-4" />, desc: "প্রতিধ্বনি ইফেক্ট" },
-      { label: "স্টেরিও বড় করো", prompt: "স্টেরিও ফিল্ড বড় করো", icon: <Headphones className="w-4 h-4" />, desc: "প্রশস্ত স্টেরিও সাউন্ড" },
-      { label: "ভিনটেজ রেডিও", prompt: "ভিনটেজ রেডিও ইফেক্ট করো", icon: <Radio className="w-4 h-4" />, desc: "পুরনো রেডিও স্টাইল" },
-      { label: "রিভার্স", prompt: "অডিও রিভার্স করো", icon: <RotateCcw className="w-4 h-4" />, desc: "উল্টো দিকে বাজানো" },
-      { label: "টেলিফোন ইফেক্ট", prompt: "টেলিফোন ইফেক্ট করো", icon: <MessageSquare className="w-4 h-4" />, desc: "ফোন কলের মতো শব্দ" },
-    ]
-  },
-];
-
-// ── Quick pipeline steps ───────────────────────────────────────────────────────
-const PIPELINE_OPTIONS: PipelineStep[] = [
-  { id: "denoise", label: "নয়েজ রিমুভ", prompt: "নয়েজ কমাও", color: "#4ade80" },
-  { id: "eq", label: "EQ বুস্ট", prompt: "ভয়েস EQ বুস্ট করো", color: "#c9a84c" },
-  { id: "compress", label: "কম্প্রেস", prompt: "ডায়নামিক কম্প্রেস করো", color: "#38bdf8" },
-  { id: "reverb", label: "রিভার্ব", prompt: "রিভার্ব যোগ করো", color: "#a78bfa" },
-  { id: "master", label: "মাস্টার", prompt: "স্টুডিও মাস্টার করো", color: "#fb923c" },
-  { id: "normalize", label: "নরমালাইজ", prompt: "লাউডনেস নরমালাইজ করো", color: "#f472b6" },
-];
-
-// ── Helper: format bytes ───────────────────────────────────────────────────────
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+function makeWaveform(buffer: AudioBuffer, bars = 88) {
+  const channel = buffer.getChannelData(0);
+  const block = Math.max(1, Math.floor(channel.length / bars));
+  const values = Array.from({ length: bars }, (_, index) => {
+    const start = index * block;
+    let peak = 0;
+    for (let point = start; point < Math.min(start + block, channel.length); point += 1) {
+      peak = Math.max(peak, Math.abs(channel[point] ?? 0));
+    }
+    return peak;
+  });
+  const max = Math.max(...values, 0.001);
+  return values.map((value) => Math.max(0.08, value / max));
 }
 
-function formatTime(sec: number): string {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+function writeWav(buffer: AudioBuffer) {
+  const channels = buffer.numberOfChannels;
+  const frames = buffer.length;
+  const output = new ArrayBuffer(44 + frames * channels * 2);
+  const view = new DataView(output);
+  const writeText = (offset: number, value: string) => {
+    [...value].forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+  };
+
+  writeText(0, "RIFF");
+  view.setUint32(4, 36 + frames * channels * 2, true);
+  writeText(8, "WAVE");
+  writeText(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, channels, true);
+  view.setUint32(24, buffer.sampleRate, true);
+  view.setUint32(28, buffer.sampleRate * channels * 2, true);
+  view.setUint16(32, channels * 2, true);
+  view.setUint16(34, 16, true);
+  writeText(36, "data");
+  view.setUint32(40, frames * channels * 2, true);
+
+  const channelData = Array.from({ length: channels }, (_, channel) => buffer.getChannelData(channel));
+  let offset = 44;
+  for (let frame = 0; frame < frames; frame += 1) {
+    for (let channel = 0; channel < channels; channel += 1) {
+      const sample = clamp(channelData[channel][frame] ?? 0, -1, 1);
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+  return output;
 }
 
-// ── Waveform Canvas Component ─────────────────────────────────────────────────
-function WaveformCanvas({ audioUrl, isPlaying, color = "#c9a84c" }: { audioUrl: string; isPlaying: boolean; color?: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [waveData, setWaveData] = useState<number[]>([]);
+function calculatePeak(buffer: AudioBuffer, start: number, end: number) {
+  const from = Math.max(0, Math.floor(start * buffer.sampleRate));
+  const to = Math.min(buffer.length, Math.ceil(end * buffer.sampleRate));
+  let peak = 0;
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    const data = buffer.getChannelData(channel);
+    for (let index = from; index < to; index += 1) peak = Math.max(peak, Math.abs(data[index] ?? 0));
+  }
+  return peak;
+}
 
-  useEffect(() => {
-    if (!audioUrl) return;
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    fetch(audioUrl)
-      .then(r => r.arrayBuffer())
-      .then(buf => audioCtx.decodeAudioData(buf))
-      .then(decoded => {
-        const raw = decoded.getChannelData(0);
-        const samples = 120;
-        const blockSize = Math.floor(raw.length / samples);
-        const data: number[] = [];
-        for (let i = 0; i < samples; i++) {
-          let sum = 0;
-          for (let j = 0; j < blockSize; j++) {
-            sum += Math.abs(raw[i * blockSize + j]);
-          }
-          data.push(sum / blockSize);
-        }
-        const max = Math.max(...data, 0.001);
-        setWaveData(data.map(v => v / max));
-        audioCtx.close();
-      })
-      .catch(() => {
-        // Fallback: generate fake waveform for display
-        setWaveData(Array.from({ length: 120 }, () => Math.random() * 0.8 + 0.1));
-      });
-  }, [audioUrl]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || waveData.length === 0) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const W = canvas.width;
-    const H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-    const barW = W / waveData.length;
-    waveData.forEach((v, i) => {
-      const barH = Math.max(2, v * (H * 0.85));
-      const x = i * barW;
-      const y = (H - barH) / 2;
-      const alpha = isPlaying ? 0.9 : 0.6;
-      ctx.fillStyle = color + Math.round(alpha * 255).toString(16).padStart(2, "0");
-      ctx.beginPath();
-      ctx.roundRect(x + 1, y, Math.max(1, barW - 2), barH, 1);
-      ctx.fill();
-    });
-  }, [waveData, isPlaying, color]);
+function Waveform({ samples, duration, start, end, current }: { samples: number[]; duration: number; start: number; end: number; current: number }) {
+  const startRatio = duration ? start / duration : 0;
+  const endRatio = duration ? end / duration : 1;
+  const currentRatio = duration ? current / duration : 0;
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={600}
-      height={60}
-      className="w-full h-[60px] rounded-xl"
-    />
-  );
-}
-
-// ── EQ Slider Component ────────────────────────────────────────────────────────
-function EQSlider({ band, onChange }: { band: EQBand; onChange: (v: number) => void }) {
-  return (
-    <div className="flex flex-col items-center gap-1.5 flex-1">
-      <span className="text-[10px] text-[#c9a84c] font-bold tabular-nums">
-        {band.value > 0 ? `+${band.value}` : band.value}
-      </span>
-      <div className="relative h-24 flex items-center justify-center">
-        <input
-          type="range"
-          min={-12}
-          max={12}
-          step={1}
-          value={band.value}
-          onChange={e => onChange(Number(e.target.value))}
-          className="eq-slider"
-          style={{
-            writingMode: "vertical-lr" as any,
-            direction: "rtl",
-            WebkitAppearance: "slider-vertical",
-            width: "28px",
-            height: "96px",
-            cursor: "pointer",
-            accentColor: "#c9a84c",
-          }}
-        />
-        {/* Center line */}
-        <div className="absolute left-1/2 top-1/2 w-full h-px bg-[#c9a84c]/20 -translate-y-1/2 pointer-events-none" />
+    <div className="relative h-28 overflow-hidden rounded-2xl border border-white/10 bg-[#071426] px-3 py-4" aria-label="অডিও ওয়েভফর্ম">
+      <div className="absolute inset-y-0 left-0 bg-[#020711]/55" style={{ width: `${startRatio * 100}%` }} />
+      <div className="absolute inset-y-0 right-0 bg-[#020711]/55" style={{ width: `${Math.max(0, (1 - endRatio) * 100)}%` }} />
+      <div className="relative z-10 grid h-full items-center gap-[2px]" style={{ gridTemplateColumns: `repeat(${samples.length || 88}, minmax(1px, 1fr))` }}>
+        {(samples.length ? samples : Array.from({ length: 88 }, (_, index) => 0.18 + ((index * 13) % 71) / 110)).map((value, index) => {
+          const ratio = index / Math.max(samples.length - 1, 1);
+          const selected = ratio >= startRatio && ratio <= endRatio;
+          const played = ratio <= currentRatio && selected;
+          return <span key={index} className="rounded-full" style={{ height: `${Math.max(10, value * 74)}%`, background: played ? ACCENT : selected ? "rgba(196,215,238,.75)" : "rgba(120,144,174,.28)" }} />;
+        })}
       </div>
-      <span className="text-[9px] text-white/40 text-center leading-tight">{band.freq}</span>
-      <span className="text-[9px] text-white/25 text-center">{band.label}</span>
+      <span className="absolute inset-y-0 w-px bg-[#fff3c4] shadow-[0_0_12px_#e8c46f]" style={{ left: `${clamp(currentRatio, startRatio, endRatio) * 100}%` }} />
     </div>
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────────────────────
+function RangeControl({ label, value, min, max, step, suffix, onChange }: { label: string; value: number; min: number; max: number; step: number; suffix?: string; onChange: (value: number) => void }) {
+  return (
+    <label className="block rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+      <div className="mb-3 flex items-center justify-between gap-3"><span className="text-sm font-semibold text-[#f8f3e7]">{label}</span><output className="rounded-full bg-[#e8c46f]/10 px-2.5 py-1 text-xs font-bold text-[#e8c46f]">{value}{suffix}</output></div>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(Number(event.target.value))} className="studio-range w-full" style={{ accentColor: ACCENT }} />
+    </label>
+  );
+}
+
 export default function AudioEditor() {
-  const [audio, setAudio] = useState<AudioInfo | null>(null);
-  const [instruction, setInstruction] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState<ProcessResult | null>(null);
+  const [project, setProject] = useState<AudioProject | null>(null);
   const [error, setError] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(PRESETS[0].category);
-  const [showPipeline, setShowPipeline] = useState(false);
-  const [originalPlaying, setOriginalPlaying] = useState(false);
-  const [editedPlaying, setEditedPlaying] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [isDecoding, setIsDecoding] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [trimStart, setTrimStart] = useState(0);
+  const [trimEnd, setTrimEnd] = useState(0);
+  const [volumeDb, setVolumeDb] = useState(0);
+  const [fadeIn, setFadeIn] = useState(0);
+  const [fadeOut, setFadeOut] = useState(0);
+  const [speed, setSpeed] = useState(1);
+  const [normalize, setNormalize] = useState(true);
+  const [exported, setExported] = useState(false);
 
-  // Advanced controls
-  const [activeTab, setActiveTab] = useState<"presets" | "eq" | "controls" | "chain">("presets");
-  const [eqBands, setEqBands] = useState<EQBand[]>(DEFAULT_EQ);
-  const [pitch, setPitch] = useState(0); // semitones: -6 to +6
-  const [speed, setSpeed] = useState(1.0); // 0.5x to 2.0x
-  const [volume, setVolume] = useState(0); // dB: -12 to +12
-  const [chainSteps, setChainSteps] = useState<PipelineStep[]>([]);
-  const [audioDuration, setAudioDuration] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const playerRef = useRef<HTMLAudioElement>(null);
+  const projectUrlRef = useRef<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const originalAudioRef = useRef<HTMLAudioElement>(null);
-  const editedAudioRef = useRef<HTMLAudioElement>(null);
-  const audioUrlRef = useRef<string | null>(null);
-  const resultUrlRef = useRef<string | null>(null);
+  const duration = project?.buffer.duration ?? 0;
+  const clipDuration = Math.max(0, trimEnd - trimStart);
+  const previewVolume = clamp(10 ** (volumeDb / 20), 0, 1);
+
+  useEffect(() => () => { if (projectUrlRef.current) URL.revokeObjectURL(projectUrlRef.current); }, []);
 
   useEffect(() => {
-    return () => {
-      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
-    };
+    const player = playerRef.current;
+    if (player) {
+      player.playbackRate = speed;
+      player.volume = previewVolume;
+    }
+  }, [previewVolume, speed]);
+
+  const clearProject = useCallback(() => {
+    const player = playerRef.current;
+    if (player) player.pause();
+    if (projectUrlRef.current) URL.revokeObjectURL(projectUrlRef.current);
+    projectUrlRef.current = null;
+    setProject(null);
+    setCurrentTime(0);
+    setTrimStart(0);
+    setTrimEnd(0);
+    setIsPlaying(false);
+    setExported(false);
+    setError("");
   }, []);
 
-  // ── File handling ────────────────────────────────────────────────────────────
-  const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith("audio/") && !file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac|webm|opus|caf|mp4)$/i)) {
-      setError("সমর্থিত ফরম্যাট: MP3, WAV, OGG, M4A, AAC, FLAC, WebM");
+  const loadFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith("audio/") && !/\.(mp3|wav|m4a|aac|ogg|flac|webm|opus)$/i.test(file.name)) {
+      setError("MP3, WAV, M4A, AAC, OGG, FLAC, WebM অথবা Opus audio file দিন।");
       return;
     }
-    if (file.size > 200 * 1024 * 1024) {
-      setError("ফাইলের সর্বোচ্চ আকার ২০০ MB।");
+    if (file.size > MAX_FILE_BYTES) {
+      setError("ফাইলের আকার ১২০ MB-এর মধ্যে রাখুন।");
       return;
     }
-    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-    if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
-    const url = URL.createObjectURL(file);
-    audioUrlRef.current = url;
-    resultUrlRef.current = null;
-    setAudio({ file, name: file.name, size: file.size, url });
-    setResult(null);
+
+    setIsDecoding(true);
     setError("");
-    setInstruction("");
-    setEqBands(DEFAULT_EQ);
-    setPitch(0);
-    setSpeed(1.0);
-    setVolume(0);
-    setChainSteps([]);
-  }, [audio, result]);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
-
-  // ── Build EQ prompt from bands ───────────────────────────────────────────────
-  const buildEqPrompt = useCallback(() => {
-    const parts: string[] = [];
-    const bandNames = ["sub", "bass", "low_mid", "mud", "mid", "high_mid", "air"];
-    eqBands.forEach((b, i) => {
-      if (b.value !== 0) {
-        const dir = b.value > 0 ? "বাড়াও" : "কমাও";
-        parts.push(`${b.freq} ${Math.abs(b.value)}dB ${dir}`);
-      }
-    });
-    if (pitch !== 0) parts.push(`পিচ ${pitch > 0 ? "+" : ""}${pitch} সেমিটোন`);
-    if (speed !== 1.0) parts.push(`স্পিড ${speed}x`);
-    if (volume !== 0) parts.push(`ভলিউম ${volume > 0 ? "+" : ""}${volume}dB`);
-    if (parts.length === 0) return "ভয়েস EQ অপ্টিমাইজ করো";
-    return `EQ: ${parts.join(", ")}. নয়েজ কমাও এবং কণ্ঠ পরিষ্কার করো।`;
-  }, [eqBands, pitch, speed, volume]);
-
-  // ── Build chain prompt ────────────────────────────────────────────────────────
-  const buildChainPrompt = useCallback(() => {
-    if (chainSteps.length === 0) return "";
-    return chainSteps.map(s => s.prompt).join(", তারপর ");
-  }, [chainSteps]);
-
-  // ── Process audio via server API ─────────────────────────────────────────────
-  const processAudio = useCallback(async (prompt: string) => {
-    if (!audio || !prompt.trim()) return;
-    setIsProcessing(true);
-    setError("");
-    if (resultUrlRef.current) {
-      URL.revokeObjectURL(resultUrlRef.current);
-      resultUrlRef.current = null;
-    }
-    setResult(null);
-
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 180000);
-
-      const formData = new FormData();
-      formData.append("audio", audio.file, audio.name);
-      formData.append("instruction", prompt);
-      formData.append("prompt", prompt);
-
-      let response: Response;
-      try {
-        response = await fetch("/api/audio-edit", {
-          method: "POST",
-          body: formData,
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeout);
-      }
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `সার্ভার ত্রুটি: HTTP ${response.status}`);
-      }
-
-      const json = await response.json();
-
-      if (json.needsMusicFile || json.intent === "ask_music_file") {
-        setError("এই ফিচারের জন্য ব্যাকগ্রাউন্ড মিউজিক ফাইল দরকার। চ্যাটবটে গিয়ে মিউজিক ফাইলসহ চেষ্টা করুন।");
-        return;
-      }
-
-      const { audioData, audioMime: mime = "audio/mpeg", description, appliedSteps = [], pipeline = [], intent = "custom", technicalNote } = json;
-
-      if (!audioData) throw new Error("সার্ভার থেকে অডিও ডেটা পাওয়া যায়নি।");
-
-      const clean = audioData.replace(/^data:[^;]+;base64,/, "").replace(/\s/g, "");
-      const bytes = Uint8Array.from(atob(clean), c => c.charCodeAt(0));
-      const blob = new Blob([bytes], { type: mime });
-      const audioUrl = URL.createObjectURL(blob);
-      resultUrlRef.current = audioUrl;
-      const audioFilename = `edited_${Date.now()}.mp3`;
-
-      setResult({
-        audioUrl,
-        audioFilename,
-        description: description || "অডিও প্রসেসিং সম্পন্ন।",
-        appliedSteps,
-        pipeline,
-        intent,
-        technicalNote,
-        outputSizeKB: Math.round(bytes.byteLength / 1024),
-      });
-    } catch (e: any) {
-      if (e.name === "AbortError") {
-        setError("সময়সীমা শেষ। ফাইলটি ছোট করে আবার চেষ্টা করুন।");
-      } else {
-        setError(e.message || "প্রসেসিং ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
-      }
+      const Context = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const context = new Context();
+      const data = await file.arrayBuffer();
+      const buffer = await context.decodeAudioData(data.slice(0));
+      await context.close();
+      if (projectUrlRef.current) URL.revokeObjectURL(projectUrlRef.current);
+      const url = URL.createObjectURL(file);
+      projectUrlRef.current = url;
+      setProject({ file, url, buffer, samples: makeWaveform(buffer) });
+      setTrimStart(0);
+      setTrimEnd(buffer.duration);
+      setCurrentTime(0);
+      setVolumeDb(0);
+      setFadeIn(0);
+      setFadeOut(0);
+      setSpeed(1);
+      setNormalize(true);
+      setExported(false);
+    } catch {
+      setError("ফাইলটি decode করা যায়নি। অন্য একটি standard MP3, WAV বা M4A file চেষ্টা করুন।");
     } finally {
-      setIsProcessing(false);
+      setIsDecoding(false);
     }
-  }, [audio]);
+  }, []);
 
-  // ── Download ─────────────────────────────────────────────────────────────────
-  const downloadResult = useCallback(() => {
-    if (!result) return;
-    const a = document.createElement("a");
-    a.href = result.audioUrl;
-    a.download = result.audioFilename;
-    a.click();
-  }, [result]);
+  const handleSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) void loadFile(file);
+    event.target.value = "";
+  };
 
-  const resetEQ = () => setEqBands(DEFAULT_EQ.map(b => ({ ...b, value: 0 })));
+  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file) void loadFile(file);
+  };
 
-  const addToChain = (step: PipelineStep) => {
-    if (chainSteps.length >= 6) return;
-    if (!chainSteps.find(s => s.id === step.id)) {
-      setChainSteps(prev => [...prev, step]);
+  const togglePlayback = async () => {
+    const player = playerRef.current;
+    if (!player || !project) return;
+    if (!player.paused) {
+      player.pause();
+      return;
+    }
+    if (player.currentTime < trimStart || player.currentTime >= trimEnd) player.currentTime = trimStart;
+    player.playbackRate = speed;
+    player.volume = previewVolume;
+    try { await player.play(); } catch { setError("Preview চালু করা যায়নি। browser-এর media permission পরীক্ষা করুন।"); }
+  };
+
+  const onTimeUpdate = () => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (player.currentTime >= trimEnd) {
+      player.pause();
+      player.currentTime = trimStart;
+      setCurrentTime(trimStart);
+      return;
+    }
+    setCurrentTime(player.currentTime);
+  };
+
+  const resetEdits = () => {
+    if (!project) return;
+    setTrimStart(0);
+    setTrimEnd(project.buffer.duration);
+    setVolumeDb(0);
+    setFadeIn(0);
+    setFadeOut(0);
+    setSpeed(1);
+    setNormalize(true);
+    setCurrentTime(0);
+    if (playerRef.current) playerRef.current.currentTime = 0;
+    setExported(false);
+  };
+
+  const exportEditedAudio = async () => {
+    if (!project || clipDuration <= 0.05) return;
+    setIsExporting(true);
+    setError("");
+    setExported(false);
+    try {
+      const outputDuration = clipDuration / speed;
+      const Offline = window.OfflineAudioContext || (window as unknown as { webkitOfflineAudioContext: typeof OfflineAudioContext }).webkitOfflineAudioContext;
+      const offline = new Offline(project.buffer.numberOfChannels, Math.ceil(outputDuration * project.buffer.sampleRate), project.buffer.sampleRate);
+      const source = offline.createBufferSource();
+      const gain = offline.createGain();
+      source.buffer = project.buffer;
+      source.playbackRate.value = speed;
+      const peak = normalize ? calculatePeak(project.buffer, trimStart, trimEnd) : 1;
+      const normalizedGain = normalize && peak > 0 ? Math.min(1 / peak, 8) : 1;
+      const targetGain = normalizedGain * 10 ** (volumeDb / 20);
+      const safeFadeIn = Math.min(fadeIn, outputDuration / 2);
+      const safeFadeOut = Math.min(fadeOut, outputDuration / 2);
+      gain.gain.setValueAtTime(safeFadeIn > 0 ? 0 : targetGain, 0);
+      if (safeFadeIn > 0) gain.gain.linearRampToValueAtTime(targetGain, safeFadeIn);
+      if (safeFadeOut > 0) {
+        gain.gain.setValueAtTime(targetGain, Math.max(safeFadeIn, outputDuration - safeFadeOut));
+        gain.gain.linearRampToValueAtTime(0, outputDuration);
+      }
+      source.connect(gain).connect(offline.destination);
+      source.start(0, trimStart, clipDuration);
+      const rendered = await offline.startRendering();
+      const wav = writeWav(rendered);
+      const blob = new Blob([wav], { type: "audio/wav" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      const base = project.file.name.replace(/\.[^.]+$/, "").replace(/[^a-z0-9-_]+/gi, "-") || "edited-audio";
+      link.download = `${base}-edited.wav`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      setExported(true);
+    } catch {
+      setError("Export সম্পন্ন করা যায়নি। ছোট file দিয়ে পুনরায় চেষ্টা করুন।");
+    } finally {
+      setIsExporting(false);
     }
   };
 
-  const removeFromChain = (id: string) => setChainSteps(prev => prev.filter(s => s.id !== id));
-
   return (
-    <div className="min-h-screen bg-[#060E1A] text-white pt-24 pb-24">
-      <Seo
-        title="অডিও এডিটর — প্রফেশনাল অডিও প্রসেসিং | মাহবুব সরদার সবুজ"
-        description="নয়েজ রিমুভ, গোল্ডেন ভয়েস, স্টুডিও মাস্টারিং, পিচ কন্ট্রোল — সব এক জায়গায়।"
-        path="/audio-editor"
-        keywords="অডিও এডিটর, নয়েজ রিমুভ, ভয়েস এনহ্যান্সার, মাহবুব সরদার সবুজ"
-      />
+    <div className="min-h-screen bg-[#060e1a] pb-20 pt-[var(--site-nav-offset,76px)] text-[#f8f3e7]">
+      <Seo title="অডিও এডিটর — Trim, Volume, Fade ও Export | মাহবুব সরদার সবুজ" description="Browser-এ ব্যক্তিগতভাবে audio trim, volume, fade, speed ও WAV export করুন।" path="/audio-editor" robots="noindex, nofollow" />
       <Navbar />
-
-      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-4">
-
-        {/* ── Hero Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center pt-2 pb-1"
-        >
-          <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-br from-[#FFE39A] via-[#c9a84c] to-[#a07830] bg-clip-text text-transparent leading-tight">
-            প্রফেশনাল অডিও<br />প্রসেসিং
-          </h1>
-          <p className="text-white/50 text-sm max-w-sm mx-auto leading-relaxed mb-3">
-            নয়েজ রিমুভ, ভয়েস এনহ্যান্স, EQ, মাস্টারিং — সব এক জায়গায়
-          </p>
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/80 text-xs font-medium">
-              <Shield size={10} /> AI প্রসেসিং
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/80 text-xs font-medium">
-              <Zap size={10} /> সব ডিভাইসে
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/80 text-xs font-medium">
-              <Sparkles size={10} /> বিনামূল্যে
-            </span>
+      <main className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
+        <section className="relative overflow-hidden rounded-[30px] border border-[#e8c46f]/25 bg-[radial-gradient(circle_at_82%_12%,rgba(232,196,111,.15),transparent_27%),linear-gradient(135deg,#071629,#0b233c)] px-5 py-8 shadow-[0_28px_70px_rgba(0,0,0,.35),inset_0_1px_0_rgba(255,255,255,.08)] sm:px-10 sm:py-11">
+          <div className="absolute -right-7 -top-12 text-[180px] font-bold leading-none text-[#e8c46f]/[0.045]">♪</div>
+          <div className="relative max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#e8c46f]/25 bg-[#e8c46f]/[0.08] px-3 py-1.5 text-xs font-bold text-[#f1d78f]"><Music size={14} /> ব্যক্তিগত audio workspace</span>
+            <h1 className="mt-4 font-['AdorshoLipi'] text-4xl font-bold leading-tight tracking-tight text-[#f8f3e7] sm:text-5xl">সহজে করুন <span className="text-[#e8c46f]">পরিষ্কার edit</span></h1>
+            <p className="mt-3 max-w-xl text-base leading-8 text-[#cbd7e4]">Trim, volume, fade ও speed নিয়ন্ত্রণ করুন। ফাইল আপনার browser থেকেই process হয়—কোনো ভুয়া AI preset নয়, কেবল দরকারি বাস্তব editing tools।</p>
           </div>
-        </motion.div>
+        </section>
 
-        {/* ── Upload / File Card ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white/[0.03] backdrop-blur-xl border border-[#c9a84c]/15 rounded-3xl overflow-hidden"
-        >
-          <AnimatePresence mode="wait">
-            {!audio ? (
-              <motion.div
-                key="upload"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-5"
-              >
-                <label
-                  htmlFor="audio-file-input"
-                  className={`block cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200 ${
-                    isDragging
-                      ? "border-[#c9a84c] bg-[#c9a84c]/10 scale-[1.01]"
-                      : "border-[#c9a84c]/25 bg-[#c9a84c]/[0.03] hover:border-[#c9a84c]/50 hover:bg-[#c9a84c]/[0.06]"
-                  }`}
-                  onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                >
-                  <div className="flex flex-col items-center justify-center py-8 px-6 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#c9a84c]/20 to-[#c9a84c]/5 flex items-center justify-center mb-4 border border-[#c9a84c]/20">
-                      <Upload className="w-7 h-7 text-[#c9a84c]" />
-                    </div>
-                    <p className="text-[#c9a84c] font-bold text-base mb-1">অডিও ফাইল আপলোড করুন</p>
-                    <p className="text-white/40 text-sm mb-4">ট্যাপ করুন বা ড্র্যাগ করুন</p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {["MP3", "WAV", "M4A", "OGG", "AAC", "FLAC"].map(f => (
-                        <span key={f} className="px-2.5 py-1 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/70 text-xs border border-[#c9a84c]/20 font-medium">{f}</span>
-                      ))}
-                    </div>
-                    <p className="text-white/25 text-xs mt-3">সর্বোচ্চ ২০০ MB</p>
-                  </div>
-                </label>
-                <input
-                  id="audio-file-input"
-                  ref={fileInputRef}
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.opus,.mp4,.caf"
-                  className="sr-only"
-                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="loaded"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {/* File info bar */}
-                <div className="flex items-center gap-3 px-5 py-3.5 border-b border-[#c9a84c]/10">
-                  <div className="w-9 h-9 rounded-xl bg-[#c9a84c]/10 flex items-center justify-center flex-shrink-0">
-                    <Music className="w-4 h-4 text-[#c9a84c]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{audio.name}</p>
-                    <p className="text-xs text-white/40">{formatBytes(audio.size)}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-                      if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current);
-                      audioUrlRef.current = null;
-                      resultUrlRef.current = null;
-                      setAudio(null);
-                      setResult(null);
-                      setError("");
-                    }}
-                    className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
-                  >
-                    <X className="w-4 h-4 text-white/50" />
-                  </button>
+        {!project ? (
+          <section className="mt-6 rounded-[26px] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.06)] sm:p-6">
+            <label htmlFor="audio-upload" onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={handleDrop} className={`flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-[22px] border-2 border-dashed px-5 text-center transition ${dragging ? "border-[#e8c46f] bg-[#e8c46f]/10" : "border-[#e8c46f]/30 bg-[#091a2d] hover:border-[#e8c46f]/60 hover:bg-[#e8c46f]/[0.05]"}`}>
+              <span className="grid h-16 w-16 place-items-center rounded-2xl border border-[#e8c46f]/25 bg-[#e8c46f]/10 text-[#e8c46f]"><Upload size={28} /></span>
+              <strong className="mt-5 text-xl">অডিও ফাইল দিন</strong>
+              <span className="mt-2 text-sm text-[#bdc9d7]">ট্যাপ করুন অথবা এখানে drag & drop করুন</span>
+              <span className="mt-5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-[#d6dfeb]">MP3 · WAV · M4A · AAC · OGG · FLAC · WebM</span>
+              <span className="mt-3 text-xs text-white/35">সর্বোচ্চ ১২০ MB · ফাইল device থেকে upload হয় না</span>
+              <input ref={inputRef} id="audio-upload" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm,.opus" className="sr-only" onChange={handleSelect} />
+            </label>
+            {isDecoding && <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[#e8c46f]"><Loader2 className="animate-spin" size={17} /> অডিও প্রস্তুত হচ্ছে…</div>}
+          </section>
+        ) : (
+          <section className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="overflow-hidden rounded-[26px] border border-white/10 bg-[linear-gradient(145deg,rgba(18,42,67,.94),rgba(8,23,39,.96))] shadow-[0_20px_52px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.07)]">
+              <header className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#e8c46f]/10 text-[#e8c46f]"><FileAudio size={20} /></span>
+                <div className="min-w-0 flex-1"><h2 className="truncate font-semibold text-[#f8f3e7]">{project.file.name}</h2><p className="mt-0.5 text-xs text-[#aab8c8]">{formatBytes(project.file.size)} · {formatTime(duration)}</p></div>
+                <button onClick={clearProject} className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-[#bdc9d7] transition hover:border-red-300/40 hover:text-red-200" aria-label="অন্য audio নির্বাচন করুন"><X size={18} /></button>
+              </header>
+              <div className="p-5 sm:p-6">
+                <Waveform samples={project.samples} duration={duration} start={trimStart} end={trimEnd} current={currentTime} />
+                <div className="mt-4 flex items-center gap-3">
+                  <button onClick={() => void togglePlayback()} className="grid h-11 w-11 place-items-center rounded-full bg-[#e8c46f] text-[#101d2c] shadow-[0_7px_18px_rgba(0,0,0,.24)] transition active:scale-95" aria-label={isPlaying ? "বিরতি" : "Preview চালু করুন"}>{isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}</button>
+                  <div className="min-w-0 flex-1"><div className="flex justify-between text-xs font-medium text-[#cbd7e4]"><span>{formatTime(currentTime)}</span><span>{formatTime(clipDuration)} নির্বাচিত</span><span>{formatTime(duration)}</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#e8c46f]" style={{ width: `${duration ? ((currentTime - trimStart) / Math.max(clipDuration, 0.01)) * 100 : 0}%` }} /></div></div>
                 </div>
-
-                {/* Waveform + Player */}
-                <div className="px-5 py-4 border-b border-[#c9a84c]/10">
-                  <div className="mb-2">
-                    <WaveformCanvas audioUrl={audio.url} isPlaying={originalPlaying} />
-                  </div>
-                  <p className="text-xs text-white/30 mb-2 font-medium">মূল অডিও</p>
-                  <audio
-                    ref={originalAudioRef}
-                    src={audio.url}
-                    onEnded={() => setOriginalPlaying(false)}
-                    onPause={() => setOriginalPlaying(false)}
-                    onPlay={() => setOriginalPlaying(true)}
-                    onLoadedMetadata={e => setAudioDuration((e.target as HTMLAudioElement).duration)}
-                    controls
-                    className="w-full h-10 rounded-xl"
-                    style={{ colorScheme: "dark" }}
-                    preload="metadata"
-                    playsInline
-                  />
-                </div>
-
-                {/* Instruction input */}
-                <div className="px-5 py-4">
-                  <label className="text-xs text-white/40 mb-2 block font-medium">আপনি কী করতে চান?</label>
-                  <div className="flex gap-2">
-                    <textarea
-                      value={instruction}
-                      onChange={e => setInstruction(e.target.value)}
-                      placeholder="যেমন: নয়েজ কমাও, গোল্ডেন ভয়েস করো, স্টুডিও মান করো..."
-                      rows={2}
-                      className="flex-1 bg-white/[0.04] border border-[#c9a84c]/20 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/25 resize-none focus:outline-none focus:border-[#c9a84c]/50 transition-colors"
-                    />
-                    <button
-                      onClick={() => processAudio(instruction)}
-                      disabled={isProcessing || !instruction.trim()}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center gap-1.5 self-end"
-                    >
-                      {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                      {isProcessing ? "..." : "শুরু"}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* ── Error ── */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex items-start gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20"
-            >
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-300 flex-1">{error}</p>
-              <button onClick={() => setError("")}><X className="w-4 h-4 text-red-400/60" /></button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Processing indicator ── */}
-        <AnimatePresence>
-          {isProcessing && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              className="bg-white/[0.03] border border-[#c9a84c]/20 rounded-2xl p-5"
-            >
-              <div className="flex items-center gap-4">
-                <div className="relative w-12 h-12 flex-shrink-0">
-                  <div className="absolute inset-0 rounded-full border-2 border-[#c9a84c]/20" />
-                  <div className="absolute inset-0 rounded-full border-2 border-t-[#c9a84c] animate-spin" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Wand2 className="w-5 h-5 text-[#c9a84c]" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-[#c9a84c]">AI প্রসেসিং চলছে...</p>
-                  <p className="text-xs text-white/40 mt-0.5">সার্ভারে অডিও প্রসেস হচ্ছে। একটু অপেক্ষা করুন।</p>
-                </div>
+                <audio ref={playerRef} src={project.url} preload="metadata" onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => setIsPlaying(false)} onTimeUpdate={onTimeUpdate} />
+                <p className="mt-4 rounded-xl border border-[#e8c46f]/15 bg-[#e8c46f]/[0.05] px-3 py-2 text-xs leading-5 text-[#d8e3ee]">Preview-তে trim, speed ও volume শুনতে পারবেন। Export-এ fade, normalize ও volume-সহ final WAV তৈরি হবে।</p>
               </div>
-              <div className="mt-4 h-1.5 rounded-full bg-[#c9a84c]/10 overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[#c9a84c] to-[#a07830] rounded-full"
-                  animate={{ x: ["-100%", "100%"] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Result ── */}
-        <AnimatePresence>
-          {result && !isProcessing && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="bg-white/[0.03] border border-[#c9a84c]/30 rounded-2xl overflow-hidden"
-            >
-              {/* Success header */}
-              <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-[#c9a84c]/10 to-transparent border-b border-[#c9a84c]/15">
-                <CheckCircle className="w-5 h-5 text-[#c9a84c] flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-[#c9a84c]">প্রসেসিং সম্পন্ন!</p>
-                  <p className="text-xs text-white/40 truncate">{result.description}</p>
-                </div>
-                {result.outputSizeKB && (
-                  <span className="text-xs text-white/30 flex-shrink-0">{result.outputSizeKB} KB</span>
-                )}
-              </div>
-
-              {/* A/B Comparison */}
-              <div className="px-5 py-4 border-b border-[#c9a84c]/10 space-y-3">
-                {/* Original */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-white/50">আগে</span>
-                    <span className="text-xs text-white/30">মূল অডিও</span>
-                  </div>
-                  <WaveformCanvas audioUrl={audio!.url} isPlaying={originalPlaying} color="#ffffff" />
-                  <audio
-                    ref={originalAudioRef}
-                    src={audio!.url}
-                    onEnded={() => setOriginalPlaying(false)}
-                    onPause={() => setOriginalPlaying(false)}
-                    onPlay={() => setOriginalPlaying(true)}
-                    controls
-                    className="w-full h-9 rounded-xl mt-1.5"
-                    style={{ colorScheme: "dark" }}
-                    preload="metadata"
-                    playsInline
-                  />
-                </div>
-                {/* Edited */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#c9a84c]/20 text-[#c9a84c]">পরে</span>
-                    <span className="text-xs text-white/30">এডিট করা অডিও</span>
-                  </div>
-                  <WaveformCanvas audioUrl={result.audioUrl} isPlaying={editedPlaying} color="#c9a84c" />
-                  <audio
-                    ref={editedAudioRef}
-                    src={result.audioUrl}
-                    onEnded={() => setEditedPlaying(false)}
-                    onPause={() => setEditedPlaying(false)}
-                    onPlay={() => setEditedPlaying(true)}
-                    controls
-                    className="w-full h-9 rounded-xl mt-1.5"
-                    style={{ colorScheme: "dark" }}
-                    preload="auto"
-                    playsInline
-                  />
-                </div>
-              </div>
-
-              {/* Applied steps */}
-              {result.appliedSteps.length > 0 && (
-                <div className="px-5 py-3 border-b border-[#c9a84c]/10">
-                  <p className="text-xs text-white/40 mb-2">প্রয়োগ করা ধাপ</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {result.appliedSteps.map((step, i) => (
-                      <span key={i} className="px-2.5 py-0.5 rounded-full bg-[#c9a84c]/10 text-[#c9a84c]/80 text-xs border border-[#c9a84c]/15">
-                        {step}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Pipeline toggle */}
-              {result.pipeline.length > 0 && (
-                <div className="px-5 py-3 border-b border-[#c9a84c]/10">
-                  <button
-                    onClick={() => setShowPipeline(v => !v)}
-                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60 transition-colors"
-                  >
-                    <Info className="w-3.5 h-3.5" />
-                    প্রসেসিং পাইপলাইন বিস্তারিত
-                    {showPipeline ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </button>
-                  <AnimatePresence>
-                    {showPipeline && (
-                      <motion.ol
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-2 space-y-1 overflow-hidden"
-                      >
-                        {result.pipeline.map((step, i) => (
-                          <li key={i} className="text-xs text-white/50 flex gap-2">
-                            <span className="text-[#c9a84c]/50 flex-shrink-0">{i + 1}.</span>
-                            <span>{step}</span>
-                          </li>
-                        ))}
-                      </motion.ol>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* Download + re-edit */}
-              <div className="px-5 py-4 flex gap-2">
-                <button
-                  onClick={downloadResult}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm hover:opacity-90 transition-opacity"
-                >
-                  <Download className="w-4 h-4" />
-                  ডাউনলোড করুন
-                </button>
-                <button
-                  onClick={() => { setResult(null); setInstruction(""); }}
-                  className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-sm transition-colors flex items-center gap-1.5"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  আবার এডিট
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Advanced Controls (when file loaded) ── */}
-        {audio && !isProcessing && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="space-y-3"
-          >
-            {/* Tab Navigation */}
-            <div className="flex gap-1 bg-white/[0.03] border border-[#c9a84c]/15 rounded-2xl p-1">
-              {[
-                { id: "presets" as const, label: "প্রিসেট", icon: <Sparkles className="w-3.5 h-3.5" /> },
-                { id: "eq" as const, label: "EQ", icon: <BarChart2 className="w-3.5 h-3.5" /> },
-                { id: "controls" as const, label: "কন্ট্রোল", icon: <Sliders className="w-3.5 h-3.5" /> },
-                { id: "chain" as const, label: "চেইন", icon: <GitMerge className="w-3.5 h-3.5" /> },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    activeTab === tab.id
-                      ? "bg-[#c9a84c] text-black"
-                      : "text-white/50 hover:text-white/80"
-                  }`}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
             </div>
 
-            {/* ── Tab: Presets ── */}
-            {activeTab === "presets" && (
-              <div className="space-y-2">
-                <p className="text-xs text-white/40 px-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#c9a84c]" />
-                  প্রিমিয়াম প্রিসেট — ট্যাপ করলেই শুরু হবে
-                </p>
-                {PRESETS.map((cat) => (
-                  <div key={cat.category} className="rounded-2xl bg-white/[0.03] border border-[#c9a84c]/15 overflow-hidden">
-                    <button
-                      onClick={() => setExpandedCategory(expandedCategory === cat.category ? null : cat.category)}
-                      className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-white/5 transition-colors"
-                    >
-                      <span className="text-sm font-semibold text-white/80">{cat.category}</span>
-                      {expandedCategory === cat.category
-                        ? <ChevronUp className="w-4 h-4 text-[#c9a84c]/60" />
-                        : <ChevronDown className="w-4 h-4 text-white/30" />
-                      }
-                    </button>
-                    <AnimatePresence>
-                      {expandedCategory === cat.category && (
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: "auto" }}
-                          exit={{ height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="grid grid-cols-2 gap-2 px-3 pb-3">
-                            {cat.items.map((item) => (
-                              <button
-                                key={item.label}
-                                onClick={() => processAudio(item.prompt)}
-                                disabled={isProcessing}
-                                className="flex flex-col gap-1 px-3 py-3 rounded-xl bg-white/[0.03] border border-[#c9a84c]/15 hover:border-[#c9a84c]/40 hover:bg-[#c9a84c]/5 transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed group"
-                              >
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[#c9a84c]/60 group-hover:text-[#c9a84c] transition-colors flex-shrink-0">{item.icon}</span>
-                                  <span className="text-xs font-semibold text-white/80 group-hover:text-white transition-colors leading-tight">{item.label}</span>
-                                </div>
-                                <span className="text-[10px] text-white/30 leading-tight">{item.desc}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── Tab: EQ ── */}
-            {activeTab === "eq" && (
-              <div className="bg-white/[0.03] border border-[#c9a84c]/15 rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <BarChart2 className="w-4 h-4 text-[#c9a84c]" />
-                    <span className="text-sm font-bold text-white">৭-ব্যান্ড গ্রাফিক EQ</span>
-                  </div>
-                  <button
-                    onClick={resetEQ}
-                    className="text-xs text-white/40 hover:text-white/70 transition-colors flex items-center gap-1"
-                  >
-                    <RotateCcw className="w-3 h-3" /> রিসেট
-                  </button>
-                </div>
-
-                {/* EQ Sliders */}
-                <div className="flex gap-1 justify-between mb-4">
-                  {eqBands.map((band, i) => (
-                    <EQSlider
-                      key={band.freq}
-                      band={band}
-                      onChange={v => setEqBands(prev => prev.map((b, j) => j === i ? { ...b, value: v } : b))}
-                    />
-                  ))}
-                </div>
-
-                {/* EQ Presets */}
-                <div className="border-t border-[#c9a84c]/10 pt-3">
-                  <p className="text-xs text-white/30 mb-2">EQ প্রিসেট</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: "ভয়েস বুস্ট", values: [0, 2, 1, -2, 3, 2, 1] },
-                      { label: "বেস বুস্ট", values: [4, 3, 1, -1, 0, 0, 0] },
-                      { label: "ব্রাইট", values: [0, 0, 0, -1, 2, 4, 3] },
-                      { label: "ওয়ার্ম", values: [2, 3, 2, -2, 0, -1, -2] },
-                      { label: "ফ্ল্যাট", values: [0, 0, 0, 0, 0, 0, 0] },
-                    ].map(preset => (
-                      <button
-                        key={preset.label}
-                        onClick={() => setEqBands(DEFAULT_EQ.map((b, i) => ({ ...b, value: preset.values[i] })))}
-                        className="px-3 py-1.5 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/20 text-[#c9a84c]/70 text-xs hover:bg-[#c9a84c]/20 transition-colors"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => processAudio(buildEqPrompt())}
-                  disabled={isProcessing}
-                  className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-                >
-                  <Wand2 className="w-4 h-4" />
-                  EQ প্রয়োগ করুন
-                </button>
-              </div>
-            )}
-
-            {/* ── Tab: Controls ── */}
-            {activeTab === "controls" && (
-              <div className="bg-white/[0.03] border border-[#c9a84c]/15 rounded-2xl p-5 space-y-5">
-                <div className="flex items-center gap-2 mb-1">
-                  <Sliders className="w-4 h-4 text-[#c9a84c]" />
-                  <span className="text-sm font-bold text-white">পিচ, স্পিড ও ভলিউম</span>
-                </div>
-
-                {/* Pitch Control */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-white/60 font-medium">পিচ কন্ট্রোল</span>
-                    <span className="text-xs font-bold text-[#c9a84c]">
-                      {pitch > 0 ? `+${pitch}` : pitch} সেমিটোন
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-6}
-                    max={6}
-                    step={1}
-                    value={pitch}
-                    onChange={e => setPitch(Number(e.target.value))}
-                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                    style={{ accentColor: "#c9a84c" }}
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-white/25">-6 (নিচু)</span>
-                    <span className="text-[10px] text-white/25">0 (স্বাভাবিক)</span>
-                    <span className="text-[10px] text-white/25">+6 (উঁচু)</span>
-                  </div>
-                  {/* Quick pitch buttons */}
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {[-4, -2, -1, 0, 1, 2, 4].map(v => (
-                      <button
-                        key={v}
-                        onClick={() => setPitch(v)}
-                        className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-                          pitch === v
-                            ? "bg-[#c9a84c] text-black font-bold"
-                            : "bg-white/5 text-white/40 hover:bg-white/10"
-                        }`}
-                      >
-                        {v > 0 ? `+${v}` : v}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Speed Control */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-white/60 font-medium">স্পিড কন্ট্রোল</span>
-                    <span className="text-xs font-bold text-[#c9a84c]">{speed.toFixed(2)}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={2.0}
-                    step={0.05}
-                    value={speed}
-                    onChange={e => setSpeed(Number(e.target.value))}
-                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                    style={{ accentColor: "#c9a84c" }}
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-white/25">0.5x (ধীর)</span>
-                    <span className="text-[10px] text-white/25">1x (স্বাভাবিক)</span>
-                    <span className="text-[10px] text-white/25">2x (দ্রুত)</span>
-                  </div>
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(v => (
-                      <button
-                        key={v}
-                        onClick={() => setSpeed(v)}
-                        className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-                          Math.abs(speed - v) < 0.01
-                            ? "bg-[#c9a84c] text-black font-bold"
-                            : "bg-white/5 text-white/40 hover:bg-white/10"
-                        }`}
-                      >
-                        {v}x
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Volume Control */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-white/60 font-medium">ভলিউম অ্যাডজাস্ট</span>
-                    <span className="text-xs font-bold text-[#c9a84c]">
-                      {volume > 0 ? `+${volume}` : volume} dB
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-12}
-                    max={12}
-                    step={1}
-                    value={volume}
-                    onChange={e => setVolume(Number(e.target.value))}
-                    className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                    style={{ accentColor: "#c9a84c" }}
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[10px] text-white/25">-12dB</span>
-                    <span className="text-[10px] text-white/25">0 (স্বাভাবিক)</span>
-                    <span className="text-[10px] text-white/25">+12dB</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    const parts: string[] = [];
-                    if (pitch !== 0) parts.push(`পিচ ${pitch > 0 ? "বাড়াও" : "কমাও"} ${Math.abs(pitch)} সেমিটোন`);
-                    if (Math.abs(speed - 1.0) > 0.01) parts.push(`স্পিড ${speed > 1 ? "বাড়াও" : "কমাও"} ${speed}x`);
-                    if (volume !== 0) parts.push(`ভলিউম ${volume > 0 ? "বাড়াও" : "কমাও"} ${Math.abs(volume)}dB`);
-                    if (parts.length === 0) parts.push("নয়েজ কমাও এবং কণ্ঠ পরিষ্কার করো");
-                    processAudio(parts.join(", তারপর ") + ". নয়েজ কমাও।");
-                  }}
-                  disabled={isProcessing}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-                >
-                  <Wand2 className="w-4 h-4" />
-                  কন্ট্রোল প্রয়োগ করুন
-                </button>
-              </div>
-            )}
-
-            {/* ── Tab: Chain Builder ── */}
-            {activeTab === "chain" && (
-              <div className="bg-white/[0.03] border border-[#c9a84c]/15 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <GitMerge className="w-4 h-4 text-[#c9a84c]" />
-                  <span className="text-sm font-bold text-white">মাল্টি-স্টেপ পাইপলাইন</span>
-                </div>
-
-                {/* Available steps */}
-                <p className="text-xs text-white/40 mb-2">ধাপ যোগ করুন (সর্বোচ্চ ৬টি)</p>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {PIPELINE_OPTIONS.map(step => (
-                    <button
-                      key={step.id}
-                      onClick={() => addToChain(step)}
-                      disabled={chainSteps.length >= 6 || !!chainSteps.find(s => s.id === step.id)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90"
-                      style={{
-                        borderColor: step.color + "40",
-                        backgroundColor: step.color + "10",
-                        color: step.color,
-                      }}
-                    >
-                      <Plus className="w-3 h-3" />
-                      {step.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Chain display */}
-                {chainSteps.length > 0 ? (
-                  <div className="mb-4">
-                    <p className="text-xs text-white/40 mb-2">আপনার পাইপলাইন</p>
-                    <div className="flex flex-wrap gap-2 items-center">
-                      {chainSteps.map((step, i) => (
-                        <div key={step.id} className="flex items-center gap-1">
-                          <div
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                            style={{ backgroundColor: step.color + "20", color: step.color, border: `1px solid ${step.color}40` }}
-                          >
-                            {step.label}
-                            <button onClick={() => removeFromChain(step.id)} className="opacity-60 hover:opacity-100">
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                          {i < chainSteps.length - 1 && (
-                            <span className="text-white/20 text-xs">→</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-4 py-4 text-center border border-dashed border-[#c9a84c]/15 rounded-xl">
-                    <p className="text-xs text-white/30">উপর থেকে ধাপ যোগ করুন</p>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => {
-                    const prompt = buildChainPrompt();
-                    if (prompt) processAudio(prompt);
-                  }}
-                  disabled={isProcessing || chainSteps.length === 0}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#c9a84c] to-[#a07830] text-black font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-                >
-                  <Wand2 className="w-4 h-4" />
-                  পাইপলাইন চালান ({chainSteps.length} ধাপ)
-                </button>
-              </div>
-            )}
-          </motion.div>
+            <aside className="rounded-[26px] border border-[#e8c46f]/18 bg-[#0a1b2e] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
+              <div className="flex items-start gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e8c46f]/10 text-[#e8c46f]"><Sparkles size={18} /></span><div><h2 className="font-semibold">বাস্তব edit, কম control</h2><p className="mt-1 text-xs leading-5 text-[#b7c5d4]">Trim করুন, level ঠিক করুন, শুরু ও শেষে fade দিন; তারপর WAV export করুন।</p></div></div>
+              <button onClick={resetEdits} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-semibold text-[#dbe5ee] transition hover:border-[#e8c46f]/35 hover:text-[#f6d983]"><RotateCcw size={15} /> সব edit reset</button>
+              <dl className="mt-5 divide-y divide-white/10 text-sm"><div className="flex justify-between py-2.5"><dt className="text-[#aebdcb]">Trim-এর পর</dt><dd className="font-semibold text-[#f8f3e7]">{formatTime(clipDuration / speed)}</dd></div><div className="flex justify-between py-2.5"><dt className="text-[#aebdcb]">Speed</dt><dd className="font-semibold text-[#f8f3e7]">{speed.toFixed(2)}×</dd></div><div className="flex justify-between py-2.5"><dt className="text-[#aebdcb]">Output</dt><dd className="font-semibold text-[#e8c46f]">WAV</dd></div></dl>
+            </aside>
+          </section>
         )}
 
-        {/* ── Info box (when no file) ── */}
-        {!audio && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white/[0.03] border border-[#c9a84c]/15 rounded-2xl p-5"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-4 h-4 text-[#c9a84c]" />
-              <h2 className="text-sm font-bold text-[#c9a84c]">কী কী করতে পারবেন?</h2>
+        {project && (
+          <section className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+            <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+              <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e8c46f]/10 text-[#e8c46f]"><Scissors size={18} /></span><div><h2 className="text-lg font-bold">কোন অংশ রাখবেন?</h2><p className="text-sm text-[#b7c5d4]">শুরু ও শেষ সময় ঠিক করুন।</p></div></div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <RangeControl label="শুরু" value={Number(trimStart.toFixed(1))} min={0} max={Math.max(0, trimEnd - 0.1)} step={0.1} suffix="s" onChange={(value) => { setTrimStart(value); if (currentTime < value) setCurrentTime(value); }} />
+                <RangeControl label="শেষ" value={Number(trimEnd.toFixed(1))} min={Math.min(duration, trimStart + 0.1)} max={duration} step={0.1} suffix="s" onChange={(value) => setTrimEnd(value)} />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { icon: <Shield className="w-4 h-4" />, label: "AI নয়েজ রিমুভ", desc: "৩-পাস ডিনয়েজিং" },
-                { icon: <Star className="w-4 h-4" />, label: "স্টুডিও মাস্টারিং", desc: "১০-ধাপ মাস্টারিং" },
-                { icon: <Sparkles className="w-4 h-4" />, label: "গোল্ডেন ভয়েস", desc: "মধুময় কণ্ঠ" },
-                { icon: <Film className="w-4 h-4" />, label: "সিনেমাটিক ইফেক্ট", desc: "চলচ্চিত্র মান" },
-                { icon: <BarChart2 className="w-4 h-4" />, label: "৭-ব্যান্ড EQ", desc: "কাস্টম EQ কন্ট্রোল" },
-                { icon: <Sliders className="w-4 h-4" />, label: "পিচ ও স্পিড", desc: "রিয়েল-টাইম কন্ট্রোল" },
-                { icon: <GitMerge className="w-4 h-4" />, label: "পাইপলাইন চেইন", desc: "মাল্টি-স্টেপ প্রসেস" },
-                { icon: <Waves className="w-4 h-4" />, label: "ওয়েভফর্ম ভিজ্যুয়াল", desc: "A/B তুলনা" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.02] border border-[#c9a84c]/10">
-                  <span className="text-[#c9a84c]/60 flex-shrink-0 mt-0.5">{item.icon}</span>
-                  <div>
-                    <p className="text-xs font-semibold text-white/70">{item.label}</p>
-                    <p className="text-[10px] text-white/30 mt-0.5">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+              <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e8c46f]/10 text-[#e8c46f]"><Volume2 size={18} /></span><div><h2 className="text-lg font-bold">শব্দের level</h2><p className="text-sm text-[#b7c5d4]">Volume বাড়ান বা কমান।</p></div></div>
+              <RangeControl label="Volume" value={volumeDb} min={-18} max={12} step={1} suffix=" dB" onChange={setVolumeDb} />
             </div>
-            <p className="text-center text-xs text-white/20 mt-4">সার্ভার-সাইড প্রসেসিং — সব ডিভাইসে কাজ করে</p>
-          </motion.div>
+          </section>
         )}
-      </div>
+
+        {project && (
+          <section className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <RangeControl label="Fade in" value={Number(fadeIn.toFixed(1))} min={0} max={Math.min(8, clipDuration / 2)} step={0.1} suffix="s" onChange={setFadeIn} />
+            <RangeControl label="Fade out" value={Number(fadeOut.toFixed(1))} min={0} max={Math.min(8, clipDuration / 2)} step={0.1} suffix="s" onChange={setFadeOut} />
+            <RangeControl label="Speed" value={speed} min={0.6} max={1.5} step={0.05} suffix="×" onChange={setSpeed} />
+            <label className="flex min-h-[120px] cursor-pointer flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.035] p-4"><div className="flex items-center gap-2"><Gauge size={17} className="text-[#e8c46f]" /><span className="text-sm font-semibold">Normalize</span></div><p className="text-xs leading-5 text-[#b7c5d4]">সর্বোচ্চ safe level পর্যন্ত audio level সামঞ্জস্য করে।</p><button type="button" onClick={() => setNormalize((value) => !value)} className={`flex h-8 w-14 items-center rounded-full p-1 transition ${normalize ? "bg-[#e8c46f]" : "bg-white/10"}`} aria-pressed={normalize}><span className={`h-6 w-6 rounded-full bg-white shadow transition ${normalize ? "translate-x-6" : "translate-x-0"}`} /></button></label>
+          </section>
+        )}
+
+        {project && <section className="mt-5 rounded-[26px] border border-[#e8c46f]/25 bg-[linear-gradient(135deg,rgba(232,196,111,.10),rgba(18,42,67,.72))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"><div><div className="flex items-center gap-2"><Download className="text-[#e8c46f]" size={20} /><h2 className="text-xl font-bold">Final audio export</h2></div><p className="mt-2 text-sm leading-6 text-[#cbd7e4]">নির্বাচিত অংশটি {formatTime(clipDuration / speed)} দৈর্ঘ্যে WAV file হিসেবে download হবে।</p></div><button onClick={() => void exportEditedAudio()} disabled={isExporting || clipDuration <= 0.05} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#e8c46f] px-5 py-3.5 font-bold text-[#101d2c] shadow-[0_10px_22px_rgba(0,0,0,.25)] transition hover:bg-[#f2d786] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0 sm:w-auto">{isExporting ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}{isExporting ? "WAV তৈরি হচ্ছে…" : "WAV export করুন"}</button>{exported && <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#e8c46f] sm:mt-0"><CheckCircle2 size={18} /> Download শুরু হয়েছে</div>}</section>}
+
+        {error && <div role="alert" className="mt-5 flex items-start gap-3 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100"><X className="mt-0.5 shrink-0 text-red-300" size={18} /><p className="flex-1">{error}</p><button onClick={() => setError("")} aria-label="বার্তা বন্ধ করুন"><X size={17} /></button></div>}
+      </main>
+      <Footer />
     </div>
   );
 }
