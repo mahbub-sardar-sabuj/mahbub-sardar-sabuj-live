@@ -1,6 +1,7 @@
-// মাহবুব সরদার সবুজ — Service Worker v6.0
-// v6: HTML stays network-first; original-size gallery media is intentionally left to the HTTP cache.
-const CACHE_NAME = 'mahbub-sardar-sabuj-v6';
+// মাহবুব সরদার সবুজ — Service Worker v7.0
+// v7: Clear the prior client bundle cache so all visitors receive the latest Home and news releases.
+// HTML stays network-first; original-size gallery media is intentionally left to the HTTP cache.
+const CACHE_NAME = 'mahbub-sardar-sabuj-v7';
 const OFFLINE_URL = '/offline.html';
 
 // Cache essential static assets on install (NOT HTML pages)
