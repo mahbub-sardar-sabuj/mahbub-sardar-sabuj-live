@@ -304,6 +304,13 @@
       "continue": true
     },
     {
+      "src": "/data/writingsArchive.json",
+      "dest": "/data/writingsArchive.json",
+      "headers": {
+        "Cache-Control": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800"
+      }
+    },
+    {
       "src": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|svg|webp|PNG|JPG|JPEG|GIF|mp4|webm|woff|woff2|ttf|otf|eot|ico|xml|txt|pdf|zip|rar|json|webmanifest|map|wasm))$",
       "dest": "/$1"
     },
