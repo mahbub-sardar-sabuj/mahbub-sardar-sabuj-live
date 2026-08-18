@@ -77,27 +77,35 @@ function readableProviderError(payload, fallback) {
 }
 
 async function callMailTm(path, { method = "GET", token, body } = {}) {
-  const response = await fetch(`${MAILTM_BASE}${path}`, {
-    method,
-    headers: {
-      Accept: "application/ld+json, application/json",
-      "User-Agent": "MahbubSardarSabujTempEmail/2.0",
-      ...(body ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-    signal: AbortSignal.timeout(TEMP_EMAIL_TIMEOUT_MS),
-  });
-  const text = await response.text();
-  let payload = null;
-  try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
+  // Vercel's Node runtime can lag modern AbortSignal helpers, so keep timeout
+  // behavior portable rather than depending on AbortSignal.timeout().
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TEMP_EMAIL_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${MAILTM_BASE}${path}`, {
+      method,
+      headers: {
+        Accept: "application/ld+json, application/json",
+        "User-Agent": "MahbubSardarSabujTempEmail/2.0",
+        ...(body ? { "Content-Type": "application/json" } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    let payload = null;
+    try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
 
-  if (!response.ok) {
-    const error = new Error(readableProviderError(payload, "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।"));
-    error.status = response.status === 429 || response.status >= 500 ? 502 : response.status;
-    throw error;
+    if (!response.ok) {
+      const error = new Error(readableProviderError(payload, "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন。"));
+      error.status = response.status === 429 || response.status >= 500 ? 502 : response.status;
+      throw error;
+    }
+    return payload;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return payload;
 }
 
 async function handleMailboxAction({ action, address, password, token, id }, res) {
