@@ -144,9 +144,13 @@ async function upscaleImage(
       URL.revokeObjectURL(url);
       const origW = img.naturalWidth;
       const origH = img.naturalHeight;
-      const maxOut = 6000;
-      const outW = Math.min(origW * scale, maxOut);
-      const outH = Math.min(origH * scale, maxOut);
+      const outW = origW * scale;
+      const outH = origH * scale;
+      const maxOutputPixels = 16_000_000;
+      if (outW * outH > maxOutputPixels) {
+        reject(new Error("এই ছবিটি নির্বাচিত scale-এ browser-এর জন্য খুব বড় হবে। ছোট ছবি বা ২× scale ব্যবহার করুন।"));
+        return;
+      }
 
       const srcCanvas = document.createElement("canvas");
       srcCanvas.width = origW;
@@ -183,6 +187,7 @@ function BeforeAfterSlider({ before, after }: { before: string; after: string })
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const clippedImageWidth = sliderPos <= 0 ? "100%" : `${(100 / sliderPos) * 100}%`;
 
   const updateSlider = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -244,7 +249,7 @@ function BeforeAfterSlider({ before, after }: { before: string; after: string })
             src={before}
             alt="আসল"
             className="block max-h-[420px] object-contain"
-            style={{ width: `${(100 / sliderPos) * 100}%`, maxWidth: "none" }}
+            style={{ width: clippedImageWidth, maxWidth: "none" }}
             draggable={false}
           />
         </div>
@@ -381,20 +386,17 @@ export default function ImageUpscaler() {
     setViewMode("slider");
     startTimer();
 
-    const progressInterval = setInterval(() => {
-      setProgress((p) => (p < 85 ? p + Math.random() * 8 : p));
-    }, 300);
-
     try {
+      setProgress(20);
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      setProgress(55);
       const result = await upscaleImage(file, scale);
-      clearInterval(progressInterval);
       stopTimer();
       setProgress(100);
       setOutputUrl(result.dataUrl);
       setDims({ origW: result.origW, origH: result.origH, outW: result.outW, outH: result.outH });
       setStage("done");
     } catch (err) {
-      clearInterval(progressInterval);
       stopTimer();
       setError(err instanceof Error ? err.message : "সমস্যা হয়েছে। আবার চেষ্টা করুন।");
       setStage("error");

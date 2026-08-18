@@ -295,8 +295,8 @@ export default function VideoUpscaler() {
       setError("শুধু ভিডিও ফাইল সাপোর্ট করা হয়।");
       return;
     }
-    if (f.size > 500 * 1024 * 1024) {
-      setError("ফাইল সাইজ সর্বোচ্চ ৫০০MB।");
+    if (f.size > 250 * 1024 * 1024) {
+      setError("Browser-এ নির্ভরযোগ্য processing-এর জন্য ফাইল সাইজ সর্বোচ্চ ২৫০MB।");
       return;
     }
     setError(null);
@@ -380,12 +380,16 @@ export default function VideoUpscaler() {
       const inputW = inputSize?.w || 1280;
       const inputH = inputSize?.h || 720;
 
-      const outputW = Math.min(inputW * scale, 7680);
-      const outputH = Math.min(inputH * scale, 4320);
+      const outputW = inputW * scale;
+      const outputH = inputH * scale;
+      const maxOutputPixels = 16_000_000;
+      if (outputW * outputH > maxOutputPixels) {
+        throw new Error("নির্বাচিত scale-এ output video browser-এর জন্য খুব বড় হবে। ২× scale বা ছোট resolution ব্যবহার করুন।");
+      }
 
       setStage("processing");
       setProgress(20);
-      setStatusMsg("আপস্কেল হচ্ছে...");
+      setStatusMsg("রেজোলিউশন ও শার্পনেস প্রয়োগ হচ্ছে...");
 
       const vfFilter = [
         `scale=${outputW}:${outputH}:flags=lanczos`,
@@ -466,17 +470,17 @@ export default function VideoUpscaler() {
   const isProcessing = ["loading_ffmpeg", "reading", "processing"].includes(stage);
 
   const scaleLabels: Record<2 | 4, { label: string; sub: string }> = {
-    2: { label: "২× আপস্কেল", sub: "4K মান" },
-    4: { label: "৪× আপস্কেল", sub: "8K মান" },
+    2: { label: "২× রেজোলিউশন", sub: "দ্রুত ও নিরাপদ" },
+    4: { label: "৪× রেজোলিউশন", sub: "ছোট ভিডিওর জন্য" },
   };
 
   return (
     <div className="min-h-screen bg-[#060E1A] text-white pt-24 pb-20">
       <Seo
-        title="ভিডিও আপস্কেলার — 4K/8K | মাহবুব সরদার সবুজ"
-        description="ঝাপসা ভিডিও পরিষ্কার করুন। ২x বা ৪x আপস্কেল করুন। সম্পূর্ণ ব্রাউজারে — কোনো আপলোড নেই।"
+        title="ভিডিও আপস্কেলার — Browser-based video resize | মাহবুব সরদার সবুজ"
+        description="ভিডিওর রেজোলিউশন ২x বা ৪x করুন। সম্পূর্ণ ব্রাউজারে — কোনো আপলোড নেই।"
         path="/video-upscaler"
-        keywords="video upscaler 4k, ভিডিও আপস্কেলার, মাহবুব সরদার সবুজ"
+        keywords="ভিডিও রেজোলিউশন, ভিডিও আপস্কেলার, browser video processing, মাহবুব সরদার সবুজ"
       />
       <Navbar />
 
