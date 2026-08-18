@@ -227,6 +227,13 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/([^.]*)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      },
+      "continue": true
+    },
+    {
       "src": "/sw.js",
       "dest": "/sw.js",
       "headers": {
