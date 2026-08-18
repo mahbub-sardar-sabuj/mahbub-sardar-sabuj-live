@@ -356,7 +356,7 @@ export default function Profile() {
             <button
               type="button"
               onClick={() => setLoadAttempt((attempt) => attempt + 1)}
-              style={{ ...buttonStyle, marginTop: "1rem", background: "rgba(212,168,67,0.14)", color: "#F7D56F", border: "1px solid rgba(247,213,111,0.35)" }}
+              style={{ ...ghostBtn, marginTop: "1rem", background: "rgba(212,168,67,0.14)", color: "#F7D56F", border: "1px solid rgba(247,213,111,0.35)" }}
             >
               <RefreshCw size={15} /> আবার চেষ্টা করুন
             </button>
