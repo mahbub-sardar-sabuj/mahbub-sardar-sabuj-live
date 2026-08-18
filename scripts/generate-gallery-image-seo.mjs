@@ -28,7 +28,7 @@ const constants = Object.fromEntries(
 const galleryBlock = gallerySource.match(/const galleryImages(?:\s*:\s*GalleryImage\[\])?\s*=\s*\[([\s\S]*?)\]\.(?:sort|map)/);
 if (!galleryBlock) throw new Error("galleryImages array was not found in Gallery.tsx");
 
-const images = [...galleryBlock[1].matchAll(/\{\s*src:\s*([^,]+),\s*caption:\s*"([^"]+)"(?:,\s*addedAt:\s*"([^"]+)")?\s*\}/g)].map(([, rawSource, caption, addedAt]) => {
+const images = [...galleryBlock[1].matchAll(/\{\s*src:\s*([^,]+),(?:\s*thumbnail:\s*"[^"]+",)?\s*caption:\s*"([^"]+)"(?:,\s*addedAt:\s*"([^"]+)")?\s*\}/g)].map(([, rawSource, caption, addedAt]) => {
   const source = rawSource.trim();
   const sourceValue = source.startsWith('"') ? source.slice(1, -1) : constants[source];
   if (!sourceValue) throw new Error(`Unresolved gallery image source: ${source}`);

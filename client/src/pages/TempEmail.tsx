@@ -6,7 +6,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, RefreshCw, Mail, Trash2, Eye, Clock, CheckCircle, AlertCircle, Inbox, Shield, Zap, Lock } from "lucide-react";
+import { Copy, RefreshCw, Mail, Trash2, Eye, CheckCircle, AlertCircle, Inbox, Shield, Zap, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Seo from "@/components/Seo";
@@ -283,11 +283,9 @@ export default function TempEmail() {
   const [refreshing, setRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(30);
   const [generating, setGenerating] = useState(false);
   const [viewingMessage, setViewingMessage] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Fetch available domains
   const getDomains = async (): Promise<string[]> => {
@@ -382,17 +380,10 @@ export default function TempEmail() {
   const startAutoRefresh = useCallback(
     (acc: EmailAccount) => {
       if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-
-      setCountdown(30);
       refreshIntervalRef.current = setInterval(() => {
-        fetchMessages(acc);
-        setCountdown(30);
+        // Avoid needless external requests while the tab is backgrounded.
+        if (document.visibilityState === "visible") void fetchMessages(acc);
       }, 30000);
-
-      countdownIntervalRef.current = setInterval(() => {
-        setCountdown((c) => (c > 0 ? c - 1 : 30));
-      }, 1000);
     },
     [fetchMessages]
   );
@@ -407,6 +398,16 @@ export default function TempEmail() {
     void fetchMessages(stored, cachedMessages);
     startAutoRefresh(stored);
   }, [fetchMessages, startAutoRefresh]);
+
+  // Refresh once when visitors return to this tab, instead of spending network
+  // and render work while the inbox is not visible.
+  useEffect(() => {
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible" && account) void fetchMessages(account);
+    };
+    document.addEventListener("visibilitychange", refreshOnVisible);
+    return () => document.removeEventListener("visibilitychange", refreshOnVisible);
+  }, [account, fetchMessages]);
 
   // Generate new email
   const generateEmail = async () => {
@@ -433,7 +434,6 @@ export default function TempEmail() {
     if (!account || refreshing) return;
     setRefreshing(true);
     await fetchMessages(account, [], { showError: true });
-    setCountdown(30);
     setRefreshing(false);
   };
 
@@ -463,7 +463,6 @@ export default function TempEmail() {
     setMessages([]);
     setSelectedMessage(null);
     if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     setLoading(false);
   };
 
@@ -471,8 +470,7 @@ export default function TempEmail() {
   useEffect(() => {
     return () => {
       if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    };
+      };
   }, []);
 
   const unreadCount = messages.filter((m) => !m.seen).length;
@@ -735,12 +733,6 @@ export default function TempEmail() {
                   <span style={{ color: "#22c55e", fontSize: "0.85rem", fontFamily: "'AdorshoLipi', sans-serif" }}>
                     ইমেইল সক্রিয় আছে
                   </span>
-                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-                    <Clock size={13} color={MUTED} />
-                    <span style={{ color: MUTED, fontSize: "0.78rem", fontFamily: "'AdorshoLipi', sans-serif" }}>
-                      {countdown}s পরে রিফ্রেশ
-                    </span>
-                  </div>
                 </div>
 
                 {/* Email Address Box */}

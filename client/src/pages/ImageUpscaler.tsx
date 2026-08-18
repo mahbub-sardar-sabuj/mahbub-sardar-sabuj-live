@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
@@ -152,20 +152,16 @@ async function upscaleImage(
         return;
       }
 
-      const srcCanvas = document.createElement("canvas");
-      srcCanvas.width = origW;
-      srcCanvas.height = origH;
-      const srcCtx = srcCanvas.getContext("2d")!;
-      srcCtx.drawImage(img, 0, 0);
-      const srcData = srcCtx.getImageData(0, 0, origW, origH);
-
-      const upscaled = bicubicUpscale(srcData, outW, outH);
-      const sharpened = unsharpMask(upscaled, 0.55, 1);
-
       const dstCanvas = document.createElement("canvas");
       dstCanvas.width = outW;
       dstCanvas.height = outH;
       const dstCtx = dstCanvas.getContext("2d")!;
+      // Native image smoothing avoids a large JavaScript sampling loop and
+      // remains responsive on phones while preserving high-quality scaling.
+      dstCtx.imageSmoothingEnabled = true;
+      dstCtx.imageSmoothingQuality = "high";
+      dstCtx.drawImage(img, 0, 0, outW, outH);
+      const sharpened = unsharpMask(dstCtx.getImageData(0, 0, outW, outH), 0.55, 1);
       dstCtx.putImageData(sharpened, 0, 0);
 
       const dataUrl = dstCanvas.toDataURL("image/png", 1.0);
@@ -329,6 +325,7 @@ export default function ImageUpscaler() {
   const startRef = useRef(0);
 
   const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
     startRef.current = Date.now();
     setElapsedTime(0);
     timerRef.current = setInterval(() => {
@@ -339,6 +336,10 @@ export default function ImageUpscaler() {
   const stopTimer = () => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
   };
+
+  useEffect(() => () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  }, []);
 
   const onFile = useCallback((f: File) => {
     if (!f.type.startsWith("image/")) {

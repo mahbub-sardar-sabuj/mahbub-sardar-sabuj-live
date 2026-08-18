@@ -491,6 +491,9 @@ function FontItem({ fontKey, fontName, isSelected, onClick }: {
 }) {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
+    // Font choices can be numerous and several are large. Load a preview only
+    // when that font is selected instead of competing with the editor's first paint.
+    if (!isSelected) return;
     let cancelled = false;
     const url = FONT_URLS[fontKey];
     if (!url) { setLoaded(true); return; }
@@ -500,7 +503,7 @@ function FontItem({ fontKey, fontName, isSelected, onClick }: {
       if (!cancelled) setLoaded(true);
     }).catch(() => { if (!cancelled) setLoaded(true); });
     return () => { cancelled = true; };
-  }, [fontKey]);
+  }, [fontKey, isSelected]);
   return (
     <button onClick={onClick} style={{
       padding: "12px 16px", borderRadius: 10, textAlign: "left",
@@ -963,18 +966,9 @@ export default function Editor() {
   ].filter(Boolean).join(" ");
   const effectiveFilter = [baseFilter, adjustFilter].filter(Boolean).join(" ") || "none";
 
-  // ── Preload all fonts on mount ───────────────────────────────────────────────
+  // ── Keep only the default canvas font ready on first load ───────────────────
   useEffect(() => {
-    // Load all fonts in background so they're ready when selected
-    const loadAllFonts = async () => {
-      const fontKeys = Object.keys(FONT_URLS);
-      // Load first 5 fonts immediately (most common ones)
-      const priority = ["AdorshoLipi", "ChandraSheela", "MahbubSardarSabujFont", "MasudNandanik", "ChandraSheelaPremium"];
-      await Promise.all(priority.map(k => ensureFontLoaded(k)));
-      // Load rest in background
-      fontKeys.filter(k => !priority.includes(k)).forEach(k => ensureFontLoaded(k));
-    };
-    loadAllFonts();
+    void ensureFontLoaded("AdorshoLipi");
   }, []);
 
   // ── Sync text color with theme ─────────────────────────────────────────────

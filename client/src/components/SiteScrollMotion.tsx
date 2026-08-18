@@ -61,6 +61,7 @@ export default function SiteScrollMotion({ routeKey }: { routeKey: string }) {
     const compactMotion = shouldUseCompactMotion();
     let observer: IntersectionObserver | null = null;
     let mutationObserver: MutationObserver | null = null;
+    let mutationTimeout = 0;
     let raf = 0;
     let idle = 0;
     let scheduled = false;
@@ -96,13 +97,18 @@ export default function SiteScrollMotion({ routeKey }: { routeKey: string }) {
       observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const element = entry.target as HTMLElement;
-          element.style.setProperty("will-change", "transform, opacity");
-          element.classList.toggle("mss-scroll-visible", entry.isIntersecting);
+          if (entry.isIntersecting) {
+            // Promote only surfaces currently entering the viewport. Keeping
+            // off-screen cards on a compositor layer wastes mobile memory.
+            element.style.setProperty("will-change", "transform, opacity");
+            element.classList.add("mss-scroll-visible");
 
-          // On constrained mobile devices, an element settles after its first
-          // entrance instead of paying a scroll-up/scroll-down callback cost.
-          if (compactMotion && entry.isIntersecting) {
-            observer?.unobserve(element);
+            // On constrained mobile devices, an element settles after its first
+            // entrance instead of paying a scroll-up/scroll-down callback cost.
+            if (compactMotion) observer?.unobserve(element);
+          } else {
+            element.classList.remove("mss-scroll-visible");
+            element.style.removeProperty("will-change");
           }
         });
       }, {
@@ -144,8 +150,22 @@ export default function SiteScrollMotion({ routeKey }: { routeKey: string }) {
 
       collect();
       mutationObserver?.disconnect();
-      mutationObserver = new MutationObserver(scheduleCollect);
+      // React can add meaningful cards after initial data resolves, but a
+      // page-wide scan for every button/text mutation is unnecessarily costly.
+      mutationObserver = new MutationObserver((records) => {
+        const containsMotionSurface = records.some((record) => Array.from(record.addedNodes).some((node) => {
+          if (!(node instanceof HTMLElement)) return false;
+          return node.matches(MOTION_SELECTOR) || Boolean(node.querySelector(MOTION_SELECTOR));
+        }));
+        if (containsMotionSurface) scheduleCollect();
+      });
       mutationObserver.observe(root, { childList: true, subtree: true });
+      // All lazy page sections mount shortly after navigation. A bounded window
+      // covers those sections while preventing a permanent global DOM observer.
+      mutationTimeout = window.setTimeout(() => {
+        mutationObserver?.disconnect();
+        mutationObserver = null;
+      }, 12000);
     };
 
     const onPreferenceChange = () => enableMotion();
@@ -154,6 +174,7 @@ export default function SiteScrollMotion({ routeKey }: { routeKey: string }) {
 
     return () => {
       window.cancelAnimationFrame(raf);
+      window.clearTimeout(mutationTimeout);
       if (idle && runtime.cancelIdleCallback) runtime.cancelIdleCallback(idle);
       observer?.disconnect();
       mutationObserver?.disconnect();

@@ -249,14 +249,22 @@ export default function VideoUpscaler() {
     };
   }, []);
 
+  // Keep input and output lifecycles separate. A combined dependency cleanup
+  // revoked the original preview whenever a new output URL was created.
   useEffect(() => {
     return () => {
       if (inputUrl) URL.revokeObjectURL(inputUrl);
+    };
+  }, [inputUrl]);
+
+  useEffect(() => {
+    return () => {
       if (outputUrl) URL.revokeObjectURL(outputUrl);
     };
-  }, [inputUrl, outputUrl]);
+  }, [outputUrl]);
 
   const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
     startTimeRef.current = Date.now();
     setElapsedTime(0);
     timerRef.current = setInterval(() => {

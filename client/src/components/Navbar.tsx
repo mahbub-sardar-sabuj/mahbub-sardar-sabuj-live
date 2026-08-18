@@ -23,7 +23,6 @@ import {
   ArrowRight, BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { preloadRoute } from "@/lib/routePreloader";
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 const LEFT_GROUPS = [
@@ -267,6 +266,11 @@ export default function Navbar() {
           width: 60px;
           background: linear-gradient(90deg, transparent, rgba(212,168,67,.08), transparent);
           animation: scanLine 4s ease-in-out infinite;
+        }
+        /* Continuous ornament is desktop-only; touch devices keep the same visual hierarchy without repaint work. */
+        @media (max-width: 767px), (prefers-reduced-motion: reduce) {
+          .nb-topbar::after, .nb-logo-icon, .nb-logo-name, .nb-mega-glyph { animation: none !important; }
+          .nb-logo-name { background-position: 50% center; }
         }
         .nb-topbar-date {
           font-family: 'AdorshoLipi', sans-serif;
@@ -864,7 +868,6 @@ export default function Navbar() {
                           <div
                             className={`nb-mega-item${itemActive ? " nb-item-active" : ""}`}
                             style={{ animationDelay: `${idx * 0.04}s` }}
-                            onPointerDown={() => preloadRoute(item.href)}
                           >
                             <div
                               className="nb-mega-icon"
@@ -973,7 +976,6 @@ export default function Navbar() {
                         <Link key={item.href} href={item.href}>
                           <div
                             className="nb-mobile-link"
-                            onPointerDown={() => preloadRoute(item.href)}
                             onClick={() => setMobileOpen(false)}
                             style={{
                               fontFamily:"'AdorshoLipi',sans-serif",

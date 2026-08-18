@@ -1,7 +1,7 @@
-// মাহবুব সরদার সবুজ — Service Worker v7.0
-// v7: Clear the prior client bundle cache so all visitors receive the latest Home and news releases.
+// মাহবুব সরদার সবুজ — Service Worker v8.0
+// v8: Clear the prior cache after the non-home performance release.
 // HTML stays network-first; original-size gallery media is intentionally left to the HTTP cache.
-const CACHE_NAME = 'mahbub-sardar-sabuj-v7';
+const CACHE_NAME = 'mahbub-sardar-sabuj-v8';
 const OFFLINE_URL = '/offline.html';
 
 // Cache essential static assets on install (NOT HTML pages)
@@ -61,6 +61,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/ffmpeg-st/') ||
     url.pathname.startsWith('/photos/gallery-2026-08/');
   const isVersionedOrVisualAsset = url.pathname.startsWith('/assets/') || /\.(?:css|js|mjs|woff2?|ttf|otf|eot|png|jpe?g|gif|svg|webp|ico)$/i.test(url.pathname);
+  const isWritingsArchive = url.pathname === '/data/writingsArchive.json';
 
   // Large readers and media tools load only when the user asks for them. Avoid filling
   // the Cache Storage with multi-megabyte PDF/WASM files during normal browsing.
@@ -81,7 +82,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Small unversioned data remains network-first so published writing updates appear
+  // The writing archive is a compressed 2,357-item collection. Serve a cached
+  // copy immediately on repeat visits, refresh it in the background, and let the
+  // versioned worker invalidate it automatically on the next deployment.
+  if (isWritingsArchive) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        const refresh = fetch(event.request)
+          .then((response) => {
+            if (response?.status === 200) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+            return response;
+          });
+        return cached ?? refresh;
+      })
+    );
+    return;
+  }
+
+  // Small unversioned data remains network-first so published updates appear
   // immediately, while still providing an offline fallback.
   event.respondWith(
     fetch(event.request)
