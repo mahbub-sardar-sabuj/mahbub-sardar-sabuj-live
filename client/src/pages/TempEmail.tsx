@@ -1275,6 +1275,7 @@ export default function TempEmail() {
               ].map(({ step, title, desc }) => (
                 <div
                   key={step}
+                  data-scroll-reveal
                   style={{
                     background: "rgba(255,255,255,0.02)",
                     border: `1px solid ${BORDER}`,
