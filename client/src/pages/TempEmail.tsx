@@ -773,12 +773,10 @@ export default function TempEmail() {
                 >
                   নতুন টেম্পোরারি ইমেইল তৈরি করুন
                 </h2>
-                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 6px" }}>
+                <p style={{ color: MUTED, fontSize: "0.9rem", fontFamily: "'AdorshoLipi', sans-serif", margin: "0 0 22px" }}>
                   একটি বাটনে ক্লিক করলেই তৈরি হয়ে যাবে আপনার ব্যক্তিগত ডিসপোজেবল ইনবক্স
                 </p>
-                <p style={{ color: "rgba(232,201,122,0.72)", fontSize: "0.82rem", fontFamily: "monospace", margin: "0 0 22px" }}>
-                  mahbubsardarsabuj01@… থেকে শুরু হবে
-                </p>
+
                 <button
                   onClick={generateEmail}
                   disabled={generating}
