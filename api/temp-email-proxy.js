@@ -81,6 +81,7 @@ async function callMailTm(path, { method = "GET", token, body } = {}) {
     method,
     headers: {
       Accept: "application/ld+json, application/json",
+      "User-Agent": "MahbubSardarSabujTempEmail/2.0",
       ...(body ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
