@@ -141,9 +141,9 @@ export default function Home() {
       if (!heroIsVisible || document.hidden) return;
       const minimalProfile = hero.dataset.cinematicProfile === "minimal";
       const offset = Math.min(window.scrollY, minimalProfile ? 620 : 860);
-      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * (minimalProfile ? 0.022 : 0.045), minimalProfile ? 14 : 38)}px`);
-      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * (minimalProfile ? 0.012 : 0.024), minimalProfile ? 8 : 22)}px`);
-      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * (minimalProfile ? 0.008 : 0.016), minimalProfile ? 5 : 14)}px`);
+      document.documentElement.style.setProperty("--home-hero-shift", `${-Math.min(offset * (minimalProfile ? 0.022 : 0.060), minimalProfile ? 14 : 52)}px`);
+      document.documentElement.style.setProperty("--home-glow-shift", `${Math.min(offset * (minimalProfile ? 0.012 : 0.034), minimalProfile ? 8 : 30)}px`);
+      document.documentElement.style.setProperty("--home-frame-shift", `${-Math.min(offset * (minimalProfile ? 0.008 : 0.023), minimalProfile ? 5 : 20)}px`);
     };
     const queueScrollEffects = () => {
       if (heroIsVisible && !document.hidden && !frame) {
@@ -293,6 +293,9 @@ export default function Home() {
             pointerEvents: "none",
           }}
         />
+
+        {/* Slow cinematic light sweep */}
+        <div className="hero-light-ray" aria-hidden="true" />
 
         {/* Horizontal light streak */}
         <div style={{
@@ -515,6 +518,8 @@ export default function Home() {
                     background: "linear-gradient(to right, rgba(201,168,76,0.06) 0%, transparent 30%)",
                     pointerEvents: "none",
                   }} />
+                  <div className="portrait-light-sheen" aria-hidden="true" />
+
                   {/* Name tag at bottom */}
                   <div style={{
                     position: "absolute", bottom: 0, left: 0, right: 0,
@@ -782,6 +787,20 @@ export default function Home() {
         @keyframes portraitHaloBreathe {
           0%, 100% { opacity: 0.36; transform: scale(0.94); }
           50% { opacity: 0.68; transform: scale(1.06); }
+        }
+        @keyframes cinematicLightSweep {
+          0%, 12% { opacity: 0; transform: translate3d(-22%, 8%, 0) rotate(-15deg); }
+          38%, 62% { opacity: 0.62; }
+          88%, 100% { opacity: 0; transform: translate3d(22%, -8%, 0) rotate(-15deg); }
+        }
+        @keyframes portraitLightSheen {
+          0%, 22% { opacity: 0; transform: translate3d(-135%, 0, 0) skewX(-18deg); }
+          42% { opacity: 0.28; }
+          68%, 100% { opacity: 0; transform: translate3d(160%, 0, 0) skewX(-18deg); }
+        }
+        @keyframes launcherAmbientDrift {
+          0%, 100% { opacity: 0.48; transform: translate3d(-1.8%, -1.5%, 0) scale(1); }
+          50% { opacity: 0.86; transform: translate3d(1.8%, 1.5%, 0) scale(1.045); }
         }
 
         /* Hero layout */
@@ -1072,6 +1091,15 @@ export default function Home() {
           transition: transform .12s linear;
           will-change: transform;
         }
+        .home-page-premium .hero-light-ray {
+          position: absolute;
+          z-index: 1;
+          inset: -32% -18%;
+          pointer-events: none;
+          background: linear-gradient(108deg, transparent 42%, rgba(255,239,178,0.045) 48%, rgba(245,214,123,0.18) 51%, rgba(255,239,178,0.045) 55%, transparent 62%);
+          mix-blend-mode: screen;
+          opacity: 0;
+        }
         .home-page-premium .hero-gold-glow {
           transform: translate3d(0, var(--home-glow-shift, 0px), 0) !important;
           transition: transform .12s linear;
@@ -1133,6 +1161,18 @@ export default function Home() {
             animation: scrollCueReveal .50s cubic-bezier(0.23, 1, 0.32, 1) .44s both;
             will-change: transform, opacity;
           }
+          .home-page-premium .hero-light-ray {
+            animation: cinematicLightSweep 7.5s cubic-bezier(0.42, 0, 0.58, 1) 1.1s infinite;
+            will-change: transform, opacity;
+          }
+          .home-page-premium .portrait-light-sheen {
+            animation: portraitLightSheen 8.5s cubic-bezier(0.42, 0, 0.58, 1) 1.8s infinite;
+            will-change: transform, opacity;
+          }
+          .home-page-premium .app-launcher-shell::before {
+            animation: launcherAmbientDrift 7.2s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+            will-change: transform, opacity;
+          }
         }
         .home-page-premium .hero-inner {
           gap: clamp(3.5rem, 7vw, 7.5rem);
@@ -1164,6 +1204,15 @@ export default function Home() {
           pointer-events: none;
           animation: portraitHaloBreathe 7.5s ease-in-out infinite;
           will-change: transform, opacity;
+        }
+        .home-page-premium .portrait-light-sheen {
+          position: absolute;
+          z-index: 2;
+          inset: 0;
+          pointer-events: none;
+          background: linear-gradient(105deg, transparent 37%, rgba(255,245,204,0.02) 43%, rgba(255,238,174,0.26) 50%, rgba(255,245,204,0.02) 57%, transparent 63%);
+          opacity: 0;
+          mix-blend-mode: screen;
         }
         .home-page-premium .hero-frame-wrap::after {
           content: "";
@@ -1249,30 +1298,30 @@ export default function Home() {
         }
         .home-page-premium .explore-app-section:not(.is-revealed) .explore-app-heading {
           opacity: 0;
-          transform: translate3d(0, 12px, 0);
+          transform: translate3d(0, 18px, 0);
         }
         .home-page-premium .explore-app-section.is-revealed .explore-app-heading {
-          animation: quietCinematicReveal .42s cubic-bezier(0.23, 1, 0.32, 1) both;
+          animation: quietCinematicReveal .52s cubic-bezier(0.23, 1, 0.32, 1) both;
         }
         .home-page-premium .explore-app-section:not(.is-revealed) .app-launcher-grid > div {
           opacity: 0;
-          transform: translate3d(0, 18px, 0) scale(0.982);
+          transform: translate3d(0, 30px, 0) scale(0.97);
         }
         .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div {
-          animation: glassCardReveal .52s cubic-bezier(0.23, 1, 0.32, 1) both;
+          animation: glassCardReveal .64s cubic-bezier(0.23, 1, 0.32, 1) both;
         }
         .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(1) { animation-delay: 0ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(2) { animation-delay: 45ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(3) { animation-delay: 90ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(4) { animation-delay: 135ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(5) { animation-delay: 180ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(6) { animation-delay: 225ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(7) { animation-delay: 270ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(8) { animation-delay: 315ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(9) { animation-delay: 360ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(10) { animation-delay: 405ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(11) { animation-delay: 450ms; }
-        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(12) { animation-delay: 495ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(2) { animation-delay: 65ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(3) { animation-delay: 130ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(4) { animation-delay: 195ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(5) { animation-delay: 260ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(6) { animation-delay: 325ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(7) { animation-delay: 390ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(8) { animation-delay: 455ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(9) { animation-delay: 520ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(10) { animation-delay: 585ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(11) { animation-delay: 650ms; }
+        .home-page-premium .explore-app-section.is-revealed .app-launcher-grid > div:nth-child(12) { animation-delay: 715ms; }
         .home-page-premium .app-launcher-link:focus-visible .app-launcher-card,
         .home-page-premium .pwa-install-card:focus-visible {
           outline: 3px solid rgba(245,228,160,0.30);
@@ -1289,7 +1338,9 @@ export default function Home() {
           will-change: auto;
         }
         .home-premium-hero[data-cinematic-profile="minimal"]::before,
-        .home-premium-hero[data-cinematic-profile="minimal"] .hero-frame-wrap::before {
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-light-ray,
+        .home-premium-hero[data-cinematic-profile="minimal"] .hero-frame-wrap::before,
+        .home-premium-hero[data-cinematic-profile="minimal"] .portrait-light-sheen {
           animation: none;
           opacity: 0.34;
           will-change: auto;
@@ -1330,7 +1381,10 @@ export default function Home() {
           .home-page-premium .hero-tagline,
           .home-page-premium .hero-scroll-cue,
           .home-page-premium .hero-pulse-dot,
+          .home-page-premium .hero-light-ray,
+          .home-page-premium .portrait-light-sheen,
           .home-page-premium .explore-app-heading,
+          .home-page-premium .app-launcher-shell::before,
           .home-page-premium .explore-app-section .app-launcher-grid > div {
             transition: none !important;
             animation: none !important;
