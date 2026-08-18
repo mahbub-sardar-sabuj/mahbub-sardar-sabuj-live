@@ -2,6 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.mahbubsardarsabuj.com/news/51</loc>
+    <news:news>
+      <news:publication>
+        <news:name>সরদার সংবাদ</news:name>
+        <news:language>bn</news:language>
+      </news:publication>
+              <news:publication_date>2026-08-18T00:00:00+06:00</news:publication_date>
+      <news:title>রকমারিতে মাহবুব সরদার সবুজের দুই বই: ‘অভিমান’ ও ‘আমি বিচ্ছেদকে বলি দুঃখবিলাস’</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.mahbubsardarsabuj.com/news/49</loc>
     <news:news>
       <news:publication>

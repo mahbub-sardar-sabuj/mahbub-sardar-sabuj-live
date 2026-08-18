@@ -111,7 +111,7 @@ export default function NewsDetail() {
         image={news.image}
         imageAlt={imageAlt}
         type="article"
-        keywords={`${news.title}, ${news.category}, সরদার সংবাদ, মাহবুব সরদার সবুজ, বাংলা সাহিত্য`}
+        keywords={news.keywords ?? `${news.title}, ${news.category}, সরদার সংবাদ, মাহবুব সরদার সবুজ, বাংলা সাহিত্য`}
         newsArticle={{
           headline: news.title,
           datePublished: news.date,
@@ -276,6 +276,55 @@ export default function NewsDetail() {
                 );
               })}
             </div>
+
+            {news.orderLinks?.length ? (
+              <section
+                aria-label="বই অর্ডার করুন"
+                style={{
+                  marginTop: 30,
+                  padding: "clamp(20px, 4vw, 28px)",
+                  borderRadius: 22,
+                  background: "linear-gradient(135deg, rgba(245,166,35,0.14), rgba(27,42,107,0.3))",
+                  border: "1px solid rgba(245,166,35,0.3)",
+                }}
+              >
+                <p style={{ margin: 0, color: "#FFF8E9", fontFamily: "'AdorshoLipi', sans-serif", fontSize: "1.2rem", fontWeight: 800 }}>
+                  রকমারি থেকে অর্ডার করুন
+                </p>
+                <p style={{ margin: "6px 0 18px", color: "rgba(250,246,239,0.68)", fontFamily: "'AdorshoLipi', sans-serif", lineHeight: 1.65 }}>
+                  মূল্য ও availability রকমারির live product page অনুযায়ী পরিবর্তিত হতে পারে।
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                  {news.orderLinks.map((orderLink) => (
+                    <a
+                      key={orderLink.href}
+                      href={orderLink.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        flex: "1 1 250px",
+                        minHeight: 48,
+                        borderRadius: 14,
+                        padding: "11px 16px",
+                        color: "#071426",
+                        background: "linear-gradient(135deg, #FFE09A, #F5A623)",
+                        boxShadow: "0 10px 24px rgba(245,166,35,0.18)",
+                        textDecoration: "none",
+                        textAlign: "center",
+                        fontWeight: 900,
+                        fontFamily: "'AdorshoLipi', sans-serif",
+                      }}
+                    >
+                      {orderLink.label} <ExternalLink size={16} />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             <section
               aria-label="এই সংবাদটি শেয়ার করুন"
