@@ -17,9 +17,9 @@ function countBangla(value: number) {
   return new Intl.NumberFormat("bn-BD").format(value);
 }
 
-function BookAction({ book, className = "bk-primary" }: { book: BookCatalogItem; className?: string }) {
+function BookAction({ book, className = "bk-primary", resume = false }: { book: BookCatalogItem; className?: string; resume?: boolean }) {
   const href = bookActionHref(book);
-  const content = <>{bookActionLabel(book)} <ArrowRight size={15} /></>;
+  const content = <>{resume ? "পড়া চালিয়ে যান" : bookActionLabel(book)} <ArrowRight size={15} /></>;
   return book.canRead ? (
     <Link href={href} className={className}>{content}</Link>
   ) : (
@@ -28,6 +28,19 @@ function BookAction({ book, className = "bk-primary" }: { book: BookCatalogItem;
 }
 
 function BookPreview({ book, onDetails, feature = false }: { book: BookCatalogItem; onDetails: () => void; feature?: boolean }) {
+  const [resumePage, setResumePage] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!book.canRead) { setResumePage(null); return; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(`mss-ebook-reading-${book.slug}`) || "null") as { page?: number } | null;
+      const page = Number(saved?.page);
+      setResumePage(Number.isFinite(page) && page > 1 ? page : null);
+    } catch {
+      setResumePage(null);
+    }
+  }, [book.canRead, book.slug]);
+
   return (
     <article className={`bk-card ${feature ? "bk-card-featured" : ""}`} style={{ "--book-color": book.accentColor } as React.CSSProperties}>
       <button className="bk-cover-button" onClick={onDetails} aria-label={`${book.title} সম্পর্কে জানুন`}>
@@ -39,7 +52,8 @@ function BookPreview({ book, onDetails, feature = false }: { book: BookCatalogIt
         <h3>{book.title}</h3>
         <p>{book.description}</p>
         <div className="bk-facts"><span>{book.year}</span>{book.pages && <><i>•</i><span>{book.pages} পৃষ্ঠা</span></>}</div>
-        <div className="bk-card-actions"><BookAction book={book} /><button onClick={onDetails} className="bk-secondary">বই সম্পর্কে</button></div>
+        <div className="bk-card-actions"><BookAction book={book} resume={Boolean(resumePage)} /><button onClick={onDetails} className="bk-secondary">বই সম্পর্কে</button></div>
+        {resumePage && <span style={{ marginTop: 9, color: "var(--bk-muted)", fontSize: "0.72rem" }}>শেষ পড়া ছিল {countBangla(resumePage)} পৃষ্ঠা</span>}
       </div>
     </article>
   );
