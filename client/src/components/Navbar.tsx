@@ -142,6 +142,15 @@ export default function Navbar() {
   useEffect(() => { setMobileOpen(false); setActiveGroup(null); setHoverGroup(null); }, [location]);
   useEffect(() => { if (isDesktop && mobileOpen) setMobileOpen(false); }, [isDesktop, mobileOpen]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [mobileOpen]);
+
   const onEnter = (id: number) => {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);
     setActiveGroup(id);
@@ -802,8 +811,12 @@ export default function Navbar() {
           {/* ── HAMBURGER ── */}
           {!isDesktop && (
             <button
+              type="button"
               className="nb-menu-button"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-site-navigation"
               style={{
                 color: "rgba(253,246,236,.88)",
                 background: mobileOpen ? "rgba(212,168,67,.15)" : "rgba(255,255,255,.04)",
@@ -906,6 +919,7 @@ export default function Navbar() {
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {mobileOpen && !isDesktop && (
           <div
+            id="mobile-site-navigation"
             className="nb-mobile-drawer"
             style={{
               position: "fixed",
