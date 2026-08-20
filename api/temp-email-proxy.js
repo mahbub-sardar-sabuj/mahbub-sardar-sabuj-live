@@ -4,6 +4,9 @@ import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
 const MAILTM_BASE = "https://api.mail.gw";
 const TEMP_EMAIL_TIMEOUT_MS = 12_000;
+const ADDRESS_PREFIX = "mahbubsardarsabuj";
+const ADDRESS_START = 1;
+const ADDRESS_END = 99;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,7 +19,9 @@ export default async function handler(req, res) {
   const action = typeof body.action === "string" ? body.action : "unknown";
   const ratePolicies = {
     domains: { max: 12, message: "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
-    createAccount: { max: 8, message: "নতুন ইমেইল তৈরির অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+    // One website request may need several provider attempts when an earlier short
+    // address is occupied, so allocation is performed once on the server.
+    createAccount: { max: 4, message: "নতুন ইমেইল তৈরির অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
     messages: { max: 36, message: "ইনবক্স রিফ্রেশের অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
     message: { max: 24, message: "ইমেইল খোলার অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
     deleteMessage: { max: 18, message: "ইমেইল মুছার অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
@@ -76,6 +81,11 @@ function readableProviderError(payload, fallback) {
   return payload.detail || payload["hydra:description"] || payload.message || fallback;
 }
 
+function generateMailboxPassword() {
+  const nonce = globalThis.crypto?.randomUUID?.().replace(/-/g, "") || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+  return `Mss-${nonce}`.slice(0, 96);
+}
+
 async function callMailTm(path, { method = "GET", token, body } = {}) {
   // Vercel's Node runtime can lag modern AbortSignal helpers, so keep timeout
   // behavior portable rather than depending on AbortSignal.timeout().
@@ -86,7 +96,7 @@ async function callMailTm(path, { method = "GET", token, body } = {}) {
       method,
       headers: {
         Accept: "application/ld+json, application/json",
-        "User-Agent": "MahbubSardarSabujTempEmail/2.0",
+        "User-Agent": "MahbubSardarSabujTempEmail/3.0",
         ...(body ? { "Content-Type": "application/json" } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
@@ -98,7 +108,7 @@ async function callMailTm(path, { method = "GET", token, body } = {}) {
     try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
 
     if (!response.ok) {
-      const error = new Error(readableProviderError(payload, "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন。"));
+      const error = new Error(readableProviderError(payload, "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।"));
       error.status = response.status === 429 || response.status >= 500 ? 502 : response.status;
       throw error;
     }
@@ -108,28 +118,63 @@ async function callMailTm(path, { method = "GET", token, body } = {}) {
   }
 }
 
-async function handleMailboxAction({ action, address, password, token, id }, res) {
-  switch (action) {
-    case "domains":
-      return res.status(200).json(await callMailTm("/domains"));
+async function getShortestActiveDomain() {
+  const domains = await callMailTm("/domains");
+  const active = (domains?.["hydra:member"] || [])
+    .filter((domain) => domain?.isActive && !domain?.isPrivate && isString(domain?.domain, 190))
+    .map((domain) => domain.domain)
+    .sort((first, second) => first.length - second.length || first.localeCompare(second));
+  if (!active[0]) {
+    const error = new Error("কোনো সক্রিয় ইমেইল ডোমেইন পাওয়া যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+    error.status = 502;
+    throw error;
+  }
+  return active[0];
+}
 
-    case "createAccount": {
-      if (!isAddress(address) || !isString(password, 128) || password.length < 12) {
-        return res.status(400).json({ error: "অবৈধ ইমেইল ঠিকানা বা পাসওয়ার্ড" });
-      }
+async function createSequentialAccount() {
+  const domain = await getShortestActiveDomain();
+
+  for (let sequence = ADDRESS_START; sequence <= ADDRESS_END; sequence += 1) {
+    const address = `${ADDRESS_PREFIX}${String(sequence).padStart(2, "0")}@${domain}`;
+    const password = generateMailboxPassword();
+    try {
       const account = await callMailTm("/accounts", { method: "POST", body: { address, password } });
       if (!isIdentifier(account?.id) || !isAddress(account?.address)) {
         throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
       }
       const session = await callMailTm("/token", { method: "POST", body: { address, password } });
-      if (!isToken(session?.token)) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-      return res.status(201).json({
+      if (!isToken(session?.token)) {
+        // A partially created account should not be left active when token creation fails.
+        await callMailTm(`/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: session?.token }).catch(() => undefined);
+        throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
+      }
+      return {
         id: account.id,
         address: account.address,
         token: session.token,
         createdAt: account.createdAt || new Date().toISOString(),
-      });
+      };
+    } catch (error) {
+      // The provider uses 422 when a requested address is occupied. Continue with
+      // the next two-digit suffix without making the browser issue many requests.
+      if (error?.status === 422 || error?.status === 409) continue;
+      throw error;
     }
+  }
+
+  const error = new Error("এই নামের সব ছোট ঠিকানা এখন ব্যবহৃত। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+  error.status = 409;
+  throw error;
+}
+
+async function handleMailboxAction({ action, token, id }, res) {
+  switch (action) {
+    case "domains":
+      return res.status(200).json(await callMailTm("/domains"));
+
+    case "createAccount":
+      return res.status(201).json(await createSequentialAccount());
 
     case "messages":
       if (!isToken(token)) return res.status(400).json({ error: "ইমেইল সেশনটি আর সক্রিয় নেই" });

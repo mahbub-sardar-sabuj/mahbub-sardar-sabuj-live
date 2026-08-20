@@ -23,9 +23,6 @@ const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v3";
 const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v3";
 const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
 const TEMP_EMAIL_MAX_ATTEMPTS = 2;
-const ADDRESS_PREFIX = "mahbubsardarsabuj";
-const ADDRESS_START = 1;
-const ADDRESS_END = 99;
 
 interface MailTmError {
   detail?: string;
@@ -259,15 +256,7 @@ function mergeMessages(previous: Message[], incoming: Message[]): Message[] {
   return [...byId.values()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-// Generate a browser-only credential for the temporary provider account.
-function randomString(length: number): string {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const values = new Uint32Array(length);
-  window.crypto.getRandomValues(values);
-  return Array.from(values, (value) => chars[value % chars.length]).join("");
-}
-
-// Sanitize custom username: lowercase, alphanumeric + dot/underscore/hyphen only
+// Normalize custom usernames: lowercase, alphanumeric plus dot, underscore and hyphen only.
 function sanitizeUsername(input: string): string {
   return input
     .toLowerCase()
@@ -346,47 +335,20 @@ export default function TempEmail() {
   const [viewingMessage, setViewingMessage] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Choose the shortest active public domain. The provider can rotate domains,
-  // so address length remains minimal without hard-coding a single domain.
-  const getDomains = async (): Promise<string[]> => {
-    const data = await mailTmRequest<{ "hydra:member"?: Array<{ isActive: boolean; isPrivate?: boolean; domain: string }> }>("/domains");
-    return (data["hydra:member"] || [])
-      .filter((domain) => domain.isActive && !domain.isPrivate)
-      .map((domain) => domain.domain)
-      .sort((first, second) => first.length - second.length || first.localeCompare(second));
-  };
-
-  // Start with ...01 and only move to ...02, ...03, etc. if an earlier address
-  // already exists. This keeps addresses short, predictable and easy to share.
+  // The server allocates the next available two-digit address in one protected
+  // request. This avoids browser-side collision loops and request-rate failures.
   const createAccount = async (): Promise<EmailAccount> => {
-    const domains = await getDomains();
-    const domain = domains[0];
-    if (!domain) throw new Error("কোনো সক্রিয় ইমেইল ডোমেইন পাওয়া যায়নি");
-
-    for (let sequence = ADDRESS_START; sequence <= ADDRESS_END; sequence += 1) {
-      const requestedAddress = `${ADDRESS_PREFIX}${String(sequence).padStart(2, "0")}@${domain}`;
-      const password = randomString(24);
-      try {
-        const accountData = await mailTmRequest<MailTmAccountResponse>("/accounts", {
-          method: "POST",
-          body: JSON.stringify({ address: requestedAddress, password }),
-        });
-        if (!accountData.id || !accountData.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-
-        return {
-          id: accountData.id,
-          address: accountData.address || requestedAddress,
-          token: accountData.token,
-          createdAt: accountData.createdAt || new Date().toISOString(),
-        };
-      } catch (error) {
-        // mail.tm uses 422 when a requested address is already in use.
-        if ((error as { status?: number }).status === 422) continue;
-        throw error;
-      }
+    const accountData = await mailTmRequest<MailTmAccountResponse>("/accounts", { method: "POST" });
+    if (!accountData.id || !accountData.address || !accountData.token) {
+      throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
     }
 
-    throw new Error("এই নামের সব ছোট ঠিকানা এখন ব্যবহৃত। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+    return {
+      id: accountData.id,
+      address: accountData.address,
+      token: accountData.token,
+      createdAt: accountData.createdAt || new Date().toISOString(),
+    };
   };
 
   // Fetch messages
