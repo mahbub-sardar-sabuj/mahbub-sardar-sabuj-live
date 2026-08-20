@@ -987,24 +987,26 @@ export default function Navbar() {
                       const IIcon      = item.icon;
                       const itemActive = isActive(item.href, location);
                       return (
-                        <Link key={item.href} href={item.href}>
-                          <div
-                            className="nb-mobile-link"
-                            onClick={() => setMobileOpen(false)}
-                            style={{
-                              fontFamily:"'AdorshoLipi',sans-serif",
-                              display:"flex", alignItems:"center", gap:11,
-                              padding:"10px 12px",
-                              borderRadius:13,
-                              cursor:"pointer",
-                              background: itemActive
-                                ? `linear-gradient(135deg,${group.glyphColor}22 0%,${group.glyphColor}0a 100%)`
-                                : "transparent",
-                              border: itemActive ? `1px solid ${group.glyphColor}33` : "1px solid transparent",
-                              transition:"all .2s",
-                              animationDelay: `${idx * 0.035}s`,
-                            }}
-                          >
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="nb-mobile-link"
+                          onClick={() => setMobileOpen(false)}
+                          style={{
+                            fontFamily:"'AdorshoLipi',sans-serif",
+                            display:"flex", alignItems:"center", gap:11,
+                            padding:"10px 12px",
+                            borderRadius:13,
+                            cursor:"pointer",
+                            textDecoration:"none",
+                            background: itemActive
+                              ? `linear-gradient(135deg,${group.glyphColor}22 0%,${group.glyphColor}0a 100%)`
+                              : "transparent",
+                            border: itemActive ? `1px solid ${group.glyphColor}33` : "1px solid transparent",
+                            transition:"all .2s",
+                            animationDelay: `${idx * 0.035}s`,
+                          }}
+                        >
                             <span style={{
                               display:"inline-flex", alignItems:"center", justifyContent:"center",
                               width:36, height:36, borderRadius:10, flexShrink:0,
@@ -1028,7 +1030,6 @@ export default function Navbar() {
                                 boxShadow:`0 0 8px ${group.glyphColor}99`,
                               }} />
                             )}
-                          </div>
                         </Link>
                       );
                     })}
@@ -1041,11 +1042,15 @@ export default function Navbar() {
 
       {/* Mobile backdrop */}
       {mobileOpen && !isDesktop && (
-          <div
+          <button
+            type="button"
             className="nb-mobile-backdrop"
+            aria-label="মোবাইল মেনু বন্ধ করুন"
             onClick={() => setMobileOpen(false)}
             style={{
               position: "fixed", inset: 0,
+              width: "100%", height: "100%",
+              padding: 0, border: 0,
               background: "rgba(0,0,0,.55)",
               zIndex: 299,
               backdropFilter: "blur(2px)",
