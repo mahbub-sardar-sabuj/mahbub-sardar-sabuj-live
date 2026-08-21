@@ -3,18 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#060E1A" />
+    <meta name="theme-color" content="#050b15" />
     <title>অফলাইন | মাহবুব সরদার সবুজ</title>
     <style>
+      @font-face {
+        font-family: "AdorshoLipi";
+        src: url("/fonts/AdorshoLipi.woff2") format("woff2");
+        font-display: swap;
+      }
+
       :root {
         color-scheme: dark;
-        --ink: #060e1a;
-        --surface: #0a1728;
-        --surface-soft: rgba(13, 30, 50, 0.88);
+        --midnight: #050b15;
+        --navy: #09182b;
+        --navy-soft: #112842;
         --gold: #f7d56f;
-        --gold-deep: #c9a84c;
-        --text: #faf6ef;
-        --muted: rgba(250, 246, 239, 0.76);
+        --gold-bright: #fff0ad;
+        --gold-deep: #b88729;
+        --ivory: #fffaf0;
+        --muted: rgba(255, 250, 240, 0.74);
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
       }
 
       * { box-sizing: border-box; }
@@ -26,197 +34,344 @@
         overflow: hidden;
         display: grid;
         place-items: center;
-        padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
-        color: var(--text);
-        font-family: AdorshoLipi, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+        color: var(--ivory);
+        font-family: "AdorshoLipi", sans-serif;
+        text-rendering: optimizeLegibility;
         background:
-          radial-gradient(circle at 50% -9%, rgba(77, 121, 174, 0.38), transparent 38%),
-          radial-gradient(circle at 0% 100%, rgba(201, 168, 76, 0.13), transparent 34%),
-          linear-gradient(155deg, #10233e 0%, var(--ink) 64%, #040a12 100%);
+          radial-gradient(ellipse 82% 46% at 50% -4%, rgba(67, 133, 203, 0.42), transparent 67%),
+          radial-gradient(ellipse 55% 35% at 50% 101%, rgba(204, 154, 49, 0.22), transparent 72%),
+          linear-gradient(153deg, #142a48 0%, var(--navy) 35%, var(--midnight) 80%);
       }
 
-      .ambient {
+      .cinema-grain,
+      .aurora,
+      .starfield {
         position: fixed;
+        inset: 0;
         z-index: -1;
-        width: 20rem;
-        aspect-ratio: 1;
-        border-radius: 50%;
-        filter: blur(24px);
-        opacity: 0.34;
         pointer-events: none;
       }
 
-      .ambient-one { top: -10rem; right: -8rem; background: #32639a; }
-      .ambient-two { bottom: -13rem; left: -11rem; background: #856d2f; }
+      .cinema-grain {
+        opacity: 0.22;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.18) 0.6px, transparent 0.7px);
+        background-size: 5px 5px;
+        mix-blend-mode: soft-light;
+      }
+
+      .aurora {
+        inset: auto;
+        width: min(116vw, 42rem);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        filter: blur(28px);
+        opacity: 0.42;
+      }
+
+      .aurora-top { top: -17rem; right: -14rem; background: #2b6aa4; }
+      .aurora-bottom { bottom: -20rem; left: -13rem; background: #9d7021; }
+
+      .starfield {
+        opacity: 0.58;
+        background-image:
+          radial-gradient(circle at 16% 17%, rgba(255, 239, 173, 0.88) 0 1px, transparent 1.7px),
+          radial-gradient(circle at 84% 23%, rgba(255, 255, 255, 0.72) 0 1px, transparent 1.6px),
+          radial-gradient(circle at 9% 61%, rgba(255, 239, 173, 0.55) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 90% 76%, rgba(255, 255, 255, 0.45) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 72% 88%, rgba(255, 239, 173, 0.48) 0 1px, transparent 1.5px);
+      }
 
       main {
         width: min(100%, 29rem);
         text-align: center;
-        padding: 0 0.125rem;
       }
 
-      .brand {
+      .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 0.55rem;
-        margin-bottom: 1.25rem;
-        color: rgba(250, 246, 239, 0.82);
-        font-size: clamp(0.9rem, 3.8vw, 1.04rem);
-        letter-spacing: 0.015em;
+        margin: 0 0 0.85rem;
+        color: rgba(255, 250, 240, 0.82);
+        font-size: clamp(0.98rem, 4vw, 1.1rem);
+        letter-spacing: 0.012em;
       }
 
-      .brand-mark {
-        width: 0.56rem;
-        height: 0.56rem;
-        border-radius: 50%;
-        background: var(--gold);
-        box-shadow: 0 0 0 0.3rem rgba(247, 213, 111, 0.1);
+      .eyebrow::before,
+      .eyebrow::after {
+        content: "";
+        width: 1.7rem;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(247, 213, 111, 0.8));
       }
 
-      .card {
+      .eyebrow::after { transform: scaleX(-1); }
+
+      .story-panel {
         position: relative;
+        isolation: isolate;
         overflow: hidden;
-        padding: 1.25rem 1.25rem 1.5rem;
-        border: 1px solid rgba(247, 213, 111, 0.32);
+        padding: 1.2rem 1.15rem 1.45rem;
+        border: 1px solid rgba(247, 213, 111, 0.38);
         border-radius: 2rem;
-        background: linear-gradient(145deg, rgba(18, 38, 62, 0.9), var(--surface-soft));
-        box-shadow: 0 1.5rem 4.5rem rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        -webkit-backdrop-filter: blur(18px);
-        backdrop-filter: blur(18px);
+        background:
+          linear-gradient(142deg, rgba(29, 56, 87, 0.84) 0%, rgba(7, 20, 37, 0.94) 68%),
+          var(--navy);
+        box-shadow:
+          0 2.2rem 5.5rem rgba(0, 0, 0, 0.52),
+          0 0 0 1px rgba(255, 244, 192, 0.04) inset,
+          0 -1.1rem 3.2rem rgba(40, 93, 142, 0.14) inset;
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
       }
 
-      .card::before {
+      .story-panel::before {
         content: "";
         position: absolute;
+        z-index: -1;
         inset: 0;
-        background: linear-gradient(125deg, rgba(247, 213, 111, 0.13), transparent 30%, transparent 70%, rgba(74, 124, 181, 0.16));
+        background:
+          linear-gradient(117deg, rgba(255, 242, 175, 0.17), transparent 26%, transparent 74%, rgba(62, 142, 221, 0.16)),
+          radial-gradient(ellipse 55% 28% at 50% 0%, rgba(255, 220, 108, 0.16), transparent 72%);
         pointer-events: none;
       }
 
-      .portrait-wrap {
+      .story-panel::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        top: -50%;
+        left: -40%;
+        width: 180%;
+        height: 57%;
+        transform: rotate(-13deg);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+        pointer-events: none;
+      }
+
+      .portrait-stage {
         position: relative;
-        z-index: 1;
-        width: 7.25rem;
+        display: grid;
+        place-items: center;
+        width: 10.3rem;
         aspect-ratio: 1;
-        margin: 0 auto 1rem;
-        padding: 0.3rem;
+        margin: -0.12rem auto 0.35rem;
+      }
+
+      .orbit {
+        position: absolute;
+        inset: 0;
+        border: 1px solid rgba(247, 213, 111, 0.37);
         border-radius: 50%;
-        background: linear-gradient(145deg, #fff1b0, #b98e2f 65%, #5b4214);
-        box-shadow: 0 0.85rem 1.8rem rgba(0, 0, 0, 0.3), 0 0 0 0.5rem rgba(247, 213, 111, 0.08);
+      }
+
+      .orbit-one { transform: scale(1.08) rotate(23deg); border-radius: 43% 57% 58% 42% / 48% 40% 60% 52%; }
+      .orbit-two { transform: scale(1.21) rotate(-37deg); border-color: rgba(119, 177, 232, 0.3); border-radius: 57% 43% 44% 56% / 55% 57% 43% 45%; }
+
+      .portrait-aura {
+        position: absolute;
+        width: 85%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(247, 213, 111, 0.38), rgba(247, 213, 111, 0.04) 56%, transparent 71%);
+        filter: blur(9px);
+      }
+
+      .portrait-frame {
+        position: relative;
+        width: 8.65rem;
+        aspect-ratio: 1;
+        padding: 0.34rem;
+        border-radius: 50%;
+        background: conic-gradient(from 25deg, #6d4b12, #ffeaa4 17%, #c08a27 41%, #fff1ae 67%, #7d5714 100%);
+        box-shadow:
+          0 1.25rem 2.7rem rgba(0, 0, 0, 0.38),
+          0 0 0 0.42rem rgba(247, 213, 111, 0.1),
+          0 0 2.7rem rgba(247, 213, 111, 0.18);
+      }
+
+      .portrait-frame::after {
+        content: "";
+        position: absolute;
+        inset: 0.12rem;
+        border: 1px solid rgba(255, 252, 224, 0.63);
+        border-radius: inherit;
+        pointer-events: none;
       }
 
       .portrait {
         display: block;
         width: 100%;
         height: 100%;
-        border: 2px solid #0b1b2f;
+        border: 2px solid #071527;
         border-radius: 50%;
         object-fit: cover;
-        object-position: center;
+        object-position: center 30%;
         background: #132842;
       }
 
+      .portrait-caption {
+        position: absolute;
+        right: -0.3rem;
+        bottom: 0.6rem;
+        display: grid;
+        place-items: center;
+        width: 2rem;
+        aspect-ratio: 1;
+        border: 2px solid #0a192b;
+        border-radius: 50%;
+        color: #132842;
+        background: linear-gradient(135deg, var(--gold-bright), var(--gold-deep));
+        box-shadow: 0 0.5rem 1.1rem rgba(0, 0, 0, 0.28);
+        font-family: "AdorshoLipi", sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
       .status {
-        position: relative;
-        z-index: 1;
         display: inline-flex;
         align-items: center;
-        gap: 0.42rem;
-        margin: 0 0 0.9rem;
-        padding: 0.35rem 0.75rem;
-        border: 1px solid rgba(247, 213, 111, 0.34);
+        gap: 0.44rem;
+        margin: 0.1rem 0 0.85rem;
+        padding: 0.34rem 0.78rem;
+        border: 1px solid rgba(247, 213, 111, 0.38);
         border-radius: 999px;
-        color: #ffe59b;
-        background: rgba(247, 213, 111, 0.08);
-        font-size: 0.9rem;
+        color: #ffeaa1;
+        background: linear-gradient(120deg, rgba(247, 213, 111, 0.14), rgba(247, 213, 111, 0.05));
+        box-shadow: 0 0.65rem 1.5rem rgba(0, 0, 0, 0.13);
+        font-size: 0.96rem;
       }
 
       .status i {
-        width: 0.46rem;
-        height: 0.46rem;
+        width: 0.48rem;
+        height: 0.48rem;
         border-radius: 50%;
         background: var(--gold);
-        box-shadow: 0 0 0 0.24rem rgba(247, 213, 111, 0.11);
+        box-shadow: 0 0 0 0.22rem rgba(247, 213, 111, 0.1), 0 0 0.7rem rgba(247, 213, 111, 0.56);
       }
 
       h1 {
-        position: relative;
-        z-index: 1;
         margin: 0;
-        color: var(--gold);
-        font-size: clamp(2rem, 8.6vw, 2.7rem);
+        color: var(--gold-bright);
+        font-size: clamp(2.25rem, 10.2vw, 3rem);
         font-weight: 700;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
+        line-height: 1.04;
+        letter-spacing: -0.025em;
+        text-shadow: 0 0.16rem 1.5rem rgba(247, 213, 111, 0.17);
       }
 
-      p {
-        position: relative;
-        z-index: 1;
-        max-width: 23rem;
-        margin: 0.9rem auto 0;
+      h1 span { display: block; color: var(--gold); }
+
+      .message {
+        max-width: 23.5rem;
+        margin: 1rem auto 0;
         color: var(--muted);
-        font-size: clamp(1rem, 4.5vw, 1.13rem);
-        line-height: 1.75;
+        font-size: clamp(1.08rem, 4.8vw, 1.24rem);
+        line-height: 1.7;
       }
+
+      .message strong { color: #fff4c4; font-weight: 700; }
 
       button {
-        position: relative;
-        z-index: 1;
-        width: min(100%, 15rem);
-        min-height: 3.4rem;
-        margin-top: 1.35rem;
-        border: 1px solid rgba(255, 241, 176, 0.6);
+        width: min(100%, 16rem);
+        min-height: 3.5rem;
+        margin-top: 1.3rem;
+        border: 1px solid rgba(255, 245, 189, 0.7);
         border-radius: 999px;
-        padding: 0.75rem 1.2rem;
+        padding: 0.76rem 1.2rem;
         color: #081321;
-        background: linear-gradient(135deg, #ffe08a, var(--gold-deep));
-        box-shadow: 0 0.8rem 1.6rem rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.44);
-        font: inherit;
-        font-size: 1.08rem;
-        font-weight: 700;
+        background: linear-gradient(135deg, #fff0ad 0%, #f6d470 48%, #b98228 100%);
+        box-shadow:
+          0 0.95rem 1.8rem rgba(0, 0, 0, 0.28),
+          0 0 1.65rem rgba(247, 213, 111, 0.13),
+          inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        font: 700 1.16rem/1 "AdorshoLipi", sans-serif;
         cursor: pointer;
-        transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+        transition: transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out), filter 160ms var(--ease-out);
       }
 
       button:active { transform: scale(0.97); }
-      button:focus-visible { outline: 3px solid #fff1b0; outline-offset: 4px; }
+      button:focus-visible { outline: 3px solid var(--gold-bright); outline-offset: 4px; }
 
-      .hint {
-        margin: 1.1rem 0 0;
-        color: rgba(250, 246, 239, 0.54);
-        font-size: 0.84rem;
-        line-height: 1.5;
+      .closing-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin: 1.02rem 0 0;
+        color: rgba(255, 250, 240, 0.67);
+        font-size: 0.93rem;
+      }
+
+      .closing-line::before {
+        content: "✦";
+        color: var(--gold);
+        font-size: 0.78rem;
       }
 
       @media (min-width: 460px) {
-        .card { padding: 1.6rem 1.75rem 1.75rem; }
-        .portrait-wrap { width: 7.75rem; }
+        .story-panel { padding: 1.55rem 1.8rem 1.7rem; }
+        .portrait-stage { width: 11rem; }
+        .portrait-frame { width: 9.1rem; }
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .aurora-top { animation: breathe-top 12s ease-in-out infinite alternate; }
+        .aurora-bottom { animation: breathe-bottom 14s ease-in-out infinite alternate; }
+        .orbit-one { animation: orbit-one 22s linear infinite; }
+        .orbit-two { animation: orbit-two 28s linear infinite; }
+        .story-panel::after { animation: sweep 9s ease-in-out infinite; }
+
+        @keyframes breathe-top {
+          to { transform: translate3d(-1rem, 1.6rem, 0) scale(1.08); opacity: 0.58; }
+        }
+
+        @keyframes breathe-bottom {
+          to { transform: translate3d(1rem, -1.4rem, 0) scale(1.08); opacity: 0.53; }
+        }
+
+        @keyframes orbit-one {
+          to { transform: scale(1.08) rotate(383deg); }
+        }
+
+        @keyframes orbit-two {
+          to { transform: scale(1.21) rotate(-397deg); }
+        }
+
+        @keyframes sweep {
+          0%, 44% { transform: translateX(-28%) rotate(-13deg); opacity: 0; }
+          57% { opacity: 1; }
+          78%, 100% { transform: translateX(44%) rotate(-13deg); opacity: 0; }
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+        *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
       }
     </style>
   </head>
   <body>
-    <div class="ambient ambient-one" aria-hidden="true"></div>
-    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <div class="cinema-grain" aria-hidden="true"></div>
+    <div class="aurora aurora-top" aria-hidden="true"></div>
+    <div class="aurora aurora-bottom" aria-hidden="true"></div>
+    <div class="starfield" aria-hidden="true"></div>
     <main>
-      <div class="brand" aria-label="মাহবুব সরদার সবুজ">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span>মাহবুব সরদার সবুজ</span>
-      </div>
-      <section class="card" aria-labelledby="offline-title">
-        <div class="portrait-wrap">
-          <img class="portrait" src="/images/author-photo.jpg" width="1024" height="1024" alt="মাহবুব সরদার সবুজ" />
+      <p class="eyebrow">মাহবুব সরদার সবুজ</p>
+      <section class="story-panel" aria-labelledby="offline-title">
+        <div class="portrait-stage" aria-hidden="true">
+          <span class="orbit orbit-one"></span>
+          <span class="orbit orbit-two"></span>
+          <span class="portrait-aura"></span>
+          <div class="portrait-frame">
+            <img class="portrait" src="/images/author-photo.jpg" width="1024" height="1024" alt="মাহবুব সরদার সবুজ" />
+          </div>
+          <span class="portrait-caption">ম</span>
         </div>
         <p class="status"><i aria-hidden="true"></i> সাময়িক সংযোগহীন</p>
-        <h1 id="offline-title">আপনি অফলাইনে আছেন</h1>
-        <p>ইন্টারনেট সংযোগ ফিরে এলে আবার চেষ্টা করুন। আগে দেখা কিছু লেখা ও ছবি ক্যাশ থেকে দ্রুত পাওয়া যেতে পারে।</p>
+        <h1 id="offline-title">আপনি অফলাইনে <span>আছেন</span></h1>
+        <p class="message">ইন্টারনেট সংযোগ ফিরে এলে <strong>আবার চেষ্টা করুন।</strong> আগে দেখা কিছু লেখা ও ছবি ক্যাশ থেকে দ্রুত পাওয়া যেতে পারে।</p>
         <button type="button" onclick="window.location.reload()">আবার চেষ্টা করুন</button>
       </section>
-      <p class="hint">সংযোগ ফিরলেই আপনার পাঠের জগতে ফিরে আসবেন।</p>
+      <p class="closing-line">সংযোগ ফিরলেই আপনার পাঠের জগতে ফিরে আসবেন</p>
     </main>
   </body>
 </html>

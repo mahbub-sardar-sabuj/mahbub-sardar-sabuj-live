@@ -1,7 +1,7 @@
-// মাহবুব সরদার সবুজ — Service Worker v9.0
-// v9: Refresh the offline shell after adding the author portrait to the offline experience.
+// মাহবুব সরদার সবুজ — Service Worker v10.0
+// v10: Refresh the cinematic offline shell and cache the AdorshoLipi font for offline typography.
 // HTML stays network-first; original-size gallery media is intentionally left to the HTTP cache.
-const CACHE_NAME = 'mahbub-sardar-sabuj-v9';
+const CACHE_NAME = 'mahbub-sardar-sabuj-v10';
 const OFFLINE_URL = '/offline.html';
 
 // Cache essential static assets on install (NOT HTML pages)
@@ -12,6 +12,7 @@ const PRECACHE_ASSETS = [
   '/icon-192x192.png',
   '/icon-512x512.png',
   '/images/author-photo.jpg',
+  '/fonts/AdorshoLipi.woff2',
 ];
 
 self.addEventListener('install', (event) => {
