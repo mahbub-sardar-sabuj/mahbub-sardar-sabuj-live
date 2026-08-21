@@ -1,7 +1,7 @@
-// মাহবুব সরদার সবুজ — Service Worker v8.0
-// v8: Clear the prior cache after the non-home performance release.
+// মাহবুব সরদার সবুজ — Service Worker v9.0
+// v9: Refresh the offline shell after adding the author portrait to the offline experience.
 // HTML stays network-first; original-size gallery media is intentionally left to the HTTP cache.
-const CACHE_NAME = 'mahbub-sardar-sabuj-v8';
+const CACHE_NAME = 'mahbub-sardar-sabuj-v9';
 const OFFLINE_URL = '/offline.html';
 
 // Cache essential static assets on install (NOT HTML pages)
@@ -11,6 +11,7 @@ const PRECACHE_ASSETS = [
   '/favicon.ico',
   '/icon-192x192.png',
   '/icon-512x512.png',
+  '/images/author-photo.jpg',
 ];
 
 self.addEventListener('install', (event) => {

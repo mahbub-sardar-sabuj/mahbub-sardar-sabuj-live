@@ -2,24 +2,221 @@
 <html lang="bn">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#060E1A" />
-    <title>অফলাইন — মাহবুব সরদার সবুজ</title>
+    <title>অফলাইন | মাহবুব সরদার সবুজ</title>
     <style>
-      :root { color-scheme: dark; }
+      :root {
+        color-scheme: dark;
+        --ink: #060e1a;
+        --surface: #0a1728;
+        --surface-soft: rgba(13, 30, 50, 0.88);
+        --gold: #f7d56f;
+        --gold-deep: #c9a84c;
+        --text: #faf6ef;
+        --muted: rgba(250, 246, 239, 0.76);
+      }
+
       * { box-sizing: border-box; }
-      body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at top, #152844 0%, #060E1A 58%); color: #FAF6EF; font-family: AdorshoLipi, system-ui, sans-serif; }
-      main { width: min(100%, 560px); padding: clamp(28px, 7vw, 52px); text-align: center; background: rgba(8, 18, 32, .78); border: 1px solid rgba(201, 168, 76, .32); border-radius: 24px; box-shadow: 0 24px 70px rgba(0, 0, 0, .42); }
-      h1 { margin: 0 0 14px; color: #E8C97A; font-size: clamp(1.8rem, 7vw, 2.8rem); }
-      p { margin: 0; color: rgba(250, 246, 239, .78); font-size: 1.05rem; line-height: 1.75; }
-      button { margin-top: 26px; border: 1px solid rgba(201, 168, 76, .62); border-radius: 999px; padding: 12px 20px; background: #C9A84C; color: #060E1A; font: inherit; font-weight: 700; cursor: pointer; }
+
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+        color: var(--text);
+        font-family: AdorshoLipi, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 50% -9%, rgba(77, 121, 174, 0.38), transparent 38%),
+          radial-gradient(circle at 0% 100%, rgba(201, 168, 76, 0.13), transparent 34%),
+          linear-gradient(155deg, #10233e 0%, var(--ink) 64%, #040a12 100%);
+      }
+
+      .ambient {
+        position: fixed;
+        z-index: -1;
+        width: 20rem;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        filter: blur(24px);
+        opacity: 0.34;
+        pointer-events: none;
+      }
+
+      .ambient-one { top: -10rem; right: -8rem; background: #32639a; }
+      .ambient-two { bottom: -13rem; left: -11rem; background: #856d2f; }
+
+      main {
+        width: min(100%, 29rem);
+        text-align: center;
+        padding: 0 0.125rem;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 1.25rem;
+        color: rgba(250, 246, 239, 0.82);
+        font-size: clamp(0.9rem, 3.8vw, 1.04rem);
+        letter-spacing: 0.015em;
+      }
+
+      .brand-mark {
+        width: 0.56rem;
+        height: 0.56rem;
+        border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 0 0.3rem rgba(247, 213, 111, 0.1);
+      }
+
+      .card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.25rem 1.25rem 1.5rem;
+        border: 1px solid rgba(247, 213, 111, 0.32);
+        border-radius: 2rem;
+        background: linear-gradient(145deg, rgba(18, 38, 62, 0.9), var(--surface-soft));
+        box-shadow: 0 1.5rem 4.5rem rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        -webkit-backdrop-filter: blur(18px);
+        backdrop-filter: blur(18px);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(125deg, rgba(247, 213, 111, 0.13), transparent 30%, transparent 70%, rgba(74, 124, 181, 0.16));
+        pointer-events: none;
+      }
+
+      .portrait-wrap {
+        position: relative;
+        z-index: 1;
+        width: 7.25rem;
+        aspect-ratio: 1;
+        margin: 0 auto 1rem;
+        padding: 0.3rem;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #fff1b0, #b98e2f 65%, #5b4214);
+        box-shadow: 0 0.85rem 1.8rem rgba(0, 0, 0, 0.3), 0 0 0 0.5rem rgba(247, 213, 111, 0.08);
+      }
+
+      .portrait {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 2px solid #0b1b2f;
+        border-radius: 50%;
+        object-fit: cover;
+        object-position: center;
+        background: #132842;
+      }
+
+      .status {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        margin: 0 0 0.9rem;
+        padding: 0.35rem 0.75rem;
+        border: 1px solid rgba(247, 213, 111, 0.34);
+        border-radius: 999px;
+        color: #ffe59b;
+        background: rgba(247, 213, 111, 0.08);
+        font-size: 0.9rem;
+      }
+
+      .status i {
+        width: 0.46rem;
+        height: 0.46rem;
+        border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 0 0.24rem rgba(247, 213, 111, 0.11);
+      }
+
+      h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        color: var(--gold);
+        font-size: clamp(2rem, 8.6vw, 2.7rem);
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        position: relative;
+        z-index: 1;
+        max-width: 23rem;
+        margin: 0.9rem auto 0;
+        color: var(--muted);
+        font-size: clamp(1rem, 4.5vw, 1.13rem);
+        line-height: 1.75;
+      }
+
+      button {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 15rem);
+        min-height: 3.4rem;
+        margin-top: 1.35rem;
+        border: 1px solid rgba(255, 241, 176, 0.6);
+        border-radius: 999px;
+        padding: 0.75rem 1.2rem;
+        color: #081321;
+        background: linear-gradient(135deg, #ffe08a, var(--gold-deep));
+        box-shadow: 0 0.8rem 1.6rem rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.44);
+        font: inherit;
+        font-size: 1.08rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      button:active { transform: scale(0.97); }
+      button:focus-visible { outline: 3px solid #fff1b0; outline-offset: 4px; }
+
+      .hint {
+        margin: 1.1rem 0 0;
+        color: rgba(250, 246, 239, 0.54);
+        font-size: 0.84rem;
+        line-height: 1.5;
+      }
+
+      @media (min-width: 460px) {
+        .card { padding: 1.6rem 1.75rem 1.75rem; }
+        .portrait-wrap { width: 7.75rem; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+      }
     </style>
   </head>
   <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
     <main>
-      <h1>আপনি অফলাইনে আছেন</h1>
-      <p>ইন্টারনেট সংযোগ ফিরে এলে পেজটি আবার লোড করুন। আগে দেখা কিছু পেজ ও ছবি ক্যাশ থেকে দ্রুত পাওয়া যেতে পারে।</p>
-      <button type="button" onclick="window.location.reload()">আবার চেষ্টা করুন</button>
+      <div class="brand" aria-label="মাহবুব সরদার সবুজ">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>মাহবুব সরদার সবুজ</span>
+      </div>
+      <section class="card" aria-labelledby="offline-title">
+        <div class="portrait-wrap">
+          <img class="portrait" src="/images/author-photo.jpg" width="1024" height="1024" alt="মাহবুব সরদার সবুজ" />
+        </div>
+        <p class="status"><i aria-hidden="true"></i> সাময়িক সংযোগহীন</p>
+        <h1 id="offline-title">আপনি অফলাইনে আছেন</h1>
+        <p>ইন্টারনেট সংযোগ ফিরে এলে আবার চেষ্টা করুন। আগে দেখা কিছু লেখা ও ছবি ক্যাশ থেকে দ্রুত পাওয়া যেতে পারে।</p>
+        <button type="button" onclick="window.location.reload()">আবার চেষ্টা করুন</button>
+      </section>
+      <p class="hint">সংযোগ ফিরলেই আপনার পাঠের জগতে ফিরে আসবেন।</p>
     </main>
   </body>
 </html>
