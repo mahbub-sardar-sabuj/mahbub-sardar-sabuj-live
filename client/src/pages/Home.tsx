@@ -14,7 +14,8 @@ interface BeforeInstallPromptEvent extends Event {
 import {
   BookOpen, Images, Newspaper, Mail,
   UserRound, Palette,
-  Star, Feather, Sparkles, Video, Music, Download, Smartphone, MailOpen
+  Star, Feather, Sparkles, Video, Music, Download, Smartphone, MailOpen,
+  Search, ShieldCheck, Trash2, ExternalLink
 } from "lucide-react";
 import { Link } from "wouter";
 import Navbar from "@/components/Navbar";
@@ -51,6 +52,8 @@ export default function Home() {
   const [pwaInstalling, setPwaInstalling] = useState(false);
   const [loadRulesSection, setLoadRulesSection] = useState(false);
   const [launcherVisible, setLauncherVisible] = useState(false);
+  const [privateSearchQuery, setPrivateSearchQuery] = useState("");
+  const privateSearchInputRef = useRef<HTMLInputElement | null>(null);
   const launcherRef = useRef<HTMLElement | null>(null);
   const heroRef = useRef<HTMLElement | null>(null);
   const rulesSentinelRef = useRef<HTMLDivElement | null>(null);
@@ -728,6 +731,79 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <section className="private-search-section" aria-labelledby="private-search-title">
+            <div className="private-search-meta">
+              <div className="private-search-title-row">
+                <span className="private-search-badge"><ShieldCheck size={15} strokeWidth={2.1} aria-hidden="true" /> Private</span>
+                <strong id="private-search-title">Mahbub Sardar Sabuj Private Search</strong>
+              </div>
+              <span className="private-search-description">Brave Search ব্যবহার করুন, এই ওয়েবসাইটে কোনো search history রাখা হয় না।</span>
+            </div>
+
+            <form
+              className="private-search-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const searchTerm = privateSearchQuery.trim();
+                if (!searchTerm) {
+                  privateSearchInputRef.current?.focus();
+                  return;
+                }
+                const braveUrl = `https://search.brave.com/search?q=${encodeURIComponent(searchTerm)}&source=web`;
+                window.open(braveUrl, "_blank", "noopener,noreferrer");
+                setPrivateSearchQuery("");
+              }}
+            >
+              <Search className="private-search-icon" size={22} strokeWidth={1.9} aria-hidden="true" />
+              <input
+                ref={privateSearchInputRef}
+                value={privateSearchQuery}
+                onChange={(event) => setPrivateSearchQuery(event.target.value)}
+                type="search"
+                inputMode="search"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                placeholder="প্রাইভেটভাবে যা খুঁজতে চান লিখুন..."
+                aria-label="Brave Search-এ সার্চ করুন"
+              />
+              {privateSearchQuery ? (
+                <button
+                  type="button"
+                  className="private-search-clear"
+                  onClick={() => {
+                    setPrivateSearchQuery("");
+                    try { window.sessionStorage.removeItem("mss-private-search-query"); } catch { /* Storage may be unavailable in strict private browsing. */ }
+                    window.requestAnimationFrame(() => privateSearchInputRef.current?.focus());
+                  }}
+                  aria-label="সার্চ লেখা মুছুন"
+                  title="সার্চ লেখা মুছুন"
+                >
+                  <Trash2 size={17} strokeWidth={2} aria-hidden="true" />
+                </button>
+              ) : null}
+              <button type="submit" className="private-search-submit" aria-label="Brave Search-এ নতুন tab-এ সার্চ করুন">
+                <span>সার্চ</span>
+                <ExternalLink size={16} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </form>
+
+            <div className="private-search-footer">
+              <span><ShieldCheck size={14} strokeWidth={2} aria-hidden="true" /> কোনো search history সংরক্ষণ করা হয় না</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setPrivateSearchQuery("");
+                  try { window.sessionStorage.removeItem("mss-private-search-query"); } catch { /* Storage may be unavailable in strict private browsing. */ }
+                  window.requestAnimationFrame(() => privateSearchInputRef.current?.focus());
+                }}
+              >
+                <Trash2 size={14} strokeWidth={2} aria-hidden="true" /> সব তথ্য মুছুন
+              </button>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -1009,6 +1085,135 @@ export default function Home() {
           overflow: hidden;
         }
 
+        /* Private Search: only the current query exists in memory, then opens in a fresh Brave Search tab. */
+        .private-search-section {
+          position: relative;
+          z-index: 1;
+          max-width: 840px;
+          margin: clamp(1rem, 2.3vw, 1.45rem) auto 0;
+          padding: clamp(0.72rem, 1.8vw, 1rem);
+          border: 1px solid rgba(201,168,76,0.30);
+          border-radius: 25px;
+          background: linear-gradient(140deg, rgba(255,255,255,0.10), rgba(201,168,76,0.07) 47%, rgba(8,18,32,0.82));
+          box-shadow: 0 24px 60px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.11), 0 0 30px rgba(201,168,76,0.07);
+          backdrop-filter: blur(20px) saturate(135%);
+        }
+        .private-search-meta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.85rem;
+          padding: 0.08rem 0.42rem 0.68rem;
+          font-family: 'AdorshoLipi', sans-serif;
+        }
+        .private-search-title-row { display: flex; align-items: center; gap: 0.62rem; min-width: 0; }
+        .private-search-title-row strong { color: #FFF7DF; font-size: clamp(0.78rem, 1.8vw, 0.96rem); letter-spacing: 0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .private-search-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          flex: 0 0 auto;
+          border: 1px solid rgba(95,226,161,0.32);
+          border-radius: 999px;
+          padding: 0.24rem 0.5rem;
+          color: #89E5B4;
+          background: rgba(39,170,104,0.11);
+          font-size: 0.66rem;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+        }
+        .private-search-description { color: rgba(250,246,239,0.52); font-size: 0.67rem; line-height: 1.35; text-align: right; }
+        .private-search-form {
+          display: flex;
+          align-items: center;
+          gap: 0.62rem;
+          min-height: 62px;
+          padding: 0.38rem 0.42rem 0.38rem 1rem;
+          border: 1px solid rgba(201,168,76,0.38);
+          border-radius: 18px;
+          background: linear-gradient(100deg, rgba(4,12,23,0.92), rgba(13,29,48,0.92));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(0,0,0,0.22), 0 8px 22px rgba(0,0,0,0.22);
+          transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+        .private-search-form:focus-within {
+          border-color: rgba(245,224,140,0.78);
+          background: linear-gradient(100deg, rgba(6,16,29,0.98), rgba(18,39,63,0.97));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 0 0 3px rgba(201,168,76,0.13), 0 12px 28px rgba(0,0,0,0.30), 0 0 24px rgba(201,168,76,0.11);
+        }
+        .private-search-icon { flex: 0 0 auto; color: #E9C96D; filter: drop-shadow(0 0 7px rgba(232,201,122,0.28)); }
+        .private-search-form input {
+          flex: 1;
+          min-width: 0;
+          height: 46px;
+          border: 0;
+          outline: 0;
+          padding: 0;
+          color: #FFF9EC;
+          background: transparent;
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: clamp(0.96rem, 2.4vw, 1.12rem);
+          line-height: 1.3;
+        }
+        .private-search-form input::placeholder { color: rgba(250,246,239,0.44); opacity: 1; }
+        .private-search-clear {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 34px;
+          height: 34px;
+          flex: 0 0 34px;
+          padding: 0;
+          border: 1px solid rgba(250,246,239,0.16);
+          border-radius: 11px;
+          color: rgba(250,246,239,0.68);
+          background: rgba(255,255,255,0.055);
+          transition: background .16s ease, border-color .16s ease, color .16s ease, transform .16s ease;
+        }
+        .private-search-clear:hover { color: #FFF9EC; border-color: rgba(201,168,76,0.48); background: rgba(201,168,76,0.13); }
+        .private-search-clear:active, .private-search-submit:active, .private-search-footer button:active { transform: scale(0.97); }
+        .private-search-submit {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.38rem;
+          min-width: 100px;
+          min-height: 46px;
+          padding: 0.65rem 0.86rem;
+          border: 1px solid rgba(255,234,154,0.72);
+          border-radius: 13px;
+          color: #102134;
+          background: linear-gradient(135deg, #F5DC85, #C99D38);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.54), 0 8px 18px rgba(0,0,0,0.22);
+          font-family: 'AdorshoLipi', sans-serif;
+          font-size: 0.87rem;
+          font-weight: 900;
+          transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+        }
+        .private-search-submit:hover { filter: brightness(1.06); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 22px rgba(201,168,76,0.22); }
+        .private-search-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.6rem;
+          padding: 0.65rem 0.35rem 0.05rem;
+          color: rgba(250,246,239,0.49);
+          font: 0.67rem/1.35 'AdorshoLipi', sans-serif;
+        }
+        .private-search-footer span, .private-search-footer button { display: inline-flex; align-items: center; gap: 0.34rem; }
+        .private-search-footer button {
+          border: 0;
+          padding: 0.18rem 0;
+          color: #EACD79;
+          background: transparent;
+          font: 800 0.69rem 'AdorshoLipi', sans-serif;
+          transition: color .16s ease, transform .16s ease;
+        }
+        .private-search-footer button:hover { color: #FFF1B5; }
+        .private-search-form input:focus-visible, .private-search-clear:focus-visible, .private-search-submit:focus-visible, .private-search-footer button:focus-visible {
+          outline: 2px solid rgba(245,224,140,0.92);
+          outline-offset: 3px;
+        }
+
         /* Tablet */
         @media (max-width: 1024px) {
           .hero-inner {
@@ -1041,6 +1246,10 @@ export default function Home() {
           .app-icon-wrap { border-radius: 15px; width: 46px; height: 46px; margin-bottom: 0.08rem; }
           .app-label { font-size: 0.79rem; line-height: 1.2; min-height: 2.3em; }
           .app-subtitle { display: none; }
+          .private-search-section { margin-top: 0.9rem; border-radius: 21px; padding: 0.64rem; }
+          .private-search-form { min-height: 58px; padding-left: 0.82rem; gap: 0.5rem; }
+          .private-search-description { display: none; }
+          .private-search-footer { padding: 0.52rem 0.2rem 0.02rem; }
           .hero-portrait { height: clamp(280px, 78vw, 420px); }
         }
 
@@ -1056,6 +1265,12 @@ export default function Home() {
           .app-icon-wrap { width: 43px; height: 43px; border-radius: 14px; }
           .app-icon-wrap svg { width: 20px; height: 20px; }
           .app-label { font-size: 0.76rem; min-height: 2.3em; }
+          .private-search-title-row strong { font-size: 0.75rem; }
+          .private-search-form input { font-size: 0.9rem; }
+          .private-search-submit { min-width: 46px; padding: 0.62rem; }
+          .private-search-submit span { display: none; }
+          .private-search-footer span { font-size: 0.62rem; }
+          .private-search-footer button { font-size: 0.64rem; }
           .hero-portrait { height: min(360px, calc(100vw - 24px)); }
         }
         /* Current layout premium polish — content, routes and interactions remain unchanged. */
