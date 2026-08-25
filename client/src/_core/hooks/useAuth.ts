@@ -26,6 +26,13 @@ export function useAuth(options?: UseAuthOptions) {
 
   const logout = useCallback(async () => {
     try {
+      // Safe no-op for external-auth users; clears the signed local session when one exists.
+      await fetch("/api/local-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action: "logout" }),
+      }).catch(() => undefined);
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
       if (

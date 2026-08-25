@@ -1,10 +1,14 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import crypto from "node:crypto";
 import mysql from "mysql2/promise";
+import { jwtVerify } from "jose";
+import { eq } from "drizzle-orm";
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
 import { appRouter } from "../server/routers";
 import { sdk } from "../server/_core/sdk";
 import { handleTelegramWebhook } from "../server/telegramService";
+import { getDb } from "../server/db";
+import { users } from "../drizzle/schema";
 
 const COOKIE_NAME = "app_session_id";
 
@@ -23,6 +27,28 @@ type CompatibleResponse = ServerResponse & {
 
 function firstHeaderValue(value: HeaderValue): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getCookieValue(req: IncomingMessage, name: string) {
+  const match = (req.headers.cookie || "").match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+async function authenticateLocalSession(req: IncomingMessage) {
+  const token = getCookieValue(req, COOKIE_NAME);
+  const secret = process.env.COOKIE_SECRET || process.env.JWT_SECRET;
+  if (!token || !secret) return null;
+  try {
+    const verified = await jwtVerify(token, new TextEncoder().encode(secret));
+    const openId = typeof verified.payload.openId === "string" ? verified.payload.openId : null;
+    if (!openId) return null;
+    const db = await getDb();
+    if (!db) return null;
+    const rows = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+    return rows[0] || null;
+  } catch {
+    return null;
+  }
 }
 
 function getRequestProtocol(req: IncomingMessage): string {
@@ -98,6 +124,9 @@ async function createVercelContext({ req, res }: { req: IncomingMessage; res: Se
   } catch {
     user = null;
   }
+  // The literary community already uses a signed local email-password session.
+  // Fall back to it only when the optional external runtime auth is unavailable.
+  if (!user) user = await authenticateLocalSession(compatibleReq);
   return {
     req: compatibleReq,
     res: compatibleRes,
