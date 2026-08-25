@@ -373,7 +373,7 @@
       "dest": "/index.html"
     },
     {
-      "src": "/admin/(live-chat|writing|chatbot-analytics)/?",
+      "src": "/admin/(live-chat|writing|chatbot-analytics|facebook-assistant)/?",
       "dest": "/index.html"
     },
     {
