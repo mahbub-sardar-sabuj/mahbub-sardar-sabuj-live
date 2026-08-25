@@ -9,6 +9,7 @@ import {
   facebookStyleProfiles,
 } from "../drizzle/schema";
 import { getDb } from "./db";
+import { ensureFacebookAssistantTables } from "./facebookAssistantBootstrap";
 import { invokeLLM } from "./_core/llm";
 import { adminProcedure, router } from "./_core/trpc";
 
@@ -20,6 +21,13 @@ const replyLengthSchema = z.enum(["short", "medium", "detailed"]);
 
 const DEFAULT_DISCLOSURE = "এটি একটি স্বয়ংক্রিয় সহায়তা ব্যবস্থা। প্রয়োজন হলে একজন দায়িত্বশীল ব্যক্তি সহায়তা করবেন।";
 const DEFAULT_TONE = "উত্তর হবে স্বাভাবিক, বিনয়ী, সংক্ষিপ্ত এবং প্রাঞ্জল বাংলায়। অজানা তথ্য তৈরি করবে না। প্রয়োজন হলে দায়িত্বশীল ব্যক্তির সহায়তার কথা বলবে।";
+async function getAssistantDb() {
+  const runtimeDb = await getDb();
+  if (!runtimeDb) return null;
+  await ensureFacebookAssistantTables();
+  return runtimeDb;
+}
+
 const HIGH_RISK_TERMS = [
   "refund", "রিফান্ড", "টাকা", "পেমেন্ট", "payment", "বিকাশ", "নগদ", "বিতর্ক", "অভিযোগ",
   "আইন", "legal", "মামলা", "ডাক্তার", "চিকিৎসা", "medical", "আত্মহত্য", "self harm",
@@ -143,7 +151,7 @@ async function audit(
   entityId?: string | number | null,
   details?: Record<string, unknown>,
 ) {
-  const db = await getDb();
+  const db = await getAssistantDb();
   if (!db) return;
   await db.insert(facebookAssistantAuditLogs).values({
     ownerOpenId,
@@ -156,7 +164,7 @@ async function audit(
 }
 
 async function getSettingsForOwner(ownerOpenId: string) {
-  const db = await getDb();
+  const db = await getAssistantDb();
   if (!db) throw new Error("Database unavailable");
   const existing = await db.select().from(facebookAssistantSettings).where(eq(facebookAssistantSettings.ownerOpenId, ownerOpenId)).limit(1);
   if (existing[0]) return existing[0];
@@ -168,7 +176,7 @@ async function getSettingsForOwner(ownerOpenId: string) {
 
 export const facebookAssistantRouter = router({
   overview: adminProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) return { ready: false, settings: null, counts: { pending: 0, handoff: 0, approved: 0 }, recentDrafts: [] };
     const settings = await getSettingsForOwner(ctx.user.openId);
     const recentDrafts = await db.select().from(facebookReplyDrafts)
@@ -194,7 +202,7 @@ export const facebookAssistantRouter = router({
     humanHandoffEnabled: z.boolean(),
     disclosureText: z.string().trim().min(12).max(600),
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     const current = await getSettingsForOwner(ctx.user.openId);
     // Auto Reply intentionally remains off. This requires a later explicit, reviewed release.
@@ -204,7 +212,7 @@ export const facebookAssistantRouter = router({
   }),
 
   listKnowledge: adminProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) return [];
     return db.select().from(facebookKnowledgeEntries)
       .where(eq(facebookKnowledgeEntries.ownerOpenId, ctx.user.openId))
@@ -219,7 +227,7 @@ export const facebookAssistantRouter = router({
     active: z.boolean().default(true),
     sortOrder: z.number().int().min(0).max(9999).default(0),
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     const values = { category: input.category, title: input.title, content: input.content, active: input.active, sortOrder: input.sortOrder };
     if (input.id) {
@@ -234,7 +242,7 @@ export const facebookAssistantRouter = router({
   }),
 
   deleteKnowledge: adminProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     await db.delete(facebookKnowledgeEntries).where(and(eq(facebookKnowledgeEntries.id, input.id), eq(facebookKnowledgeEntries.ownerOpenId, ctx.user.openId)));
     await audit(ctx.user.openId, ctx.user.openId, "knowledge_deleted", "knowledge", input.id);
@@ -242,7 +250,7 @@ export const facebookAssistantRouter = router({
   }),
 
   getStyle: adminProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) return null;
     const rows = await db.select().from(facebookStyleProfiles).where(eq(facebookStyleProfiles.ownerOpenId, ctx.user.openId)).limit(1);
     return rows[0] || null;
@@ -254,7 +262,7 @@ export const facebookAssistantRouter = router({
     sampleReplies: z.string().trim().max(12000).optional(),
     replyLength: replyLengthSchema,
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     const existing = await db.select().from(facebookStyleProfiles).where(eq(facebookStyleProfiles.ownerOpenId, ctx.user.openId)).limit(1);
     const values = { name: input.name, toneInstructions: input.toneInstructions, sampleReplies: input.sampleReplies || null, replyLength: input.replyLength, active: true };
@@ -265,7 +273,7 @@ export const facebookAssistantRouter = router({
   }),
 
   listSafetyRules: adminProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) return [];
     return db.select().from(facebookSafetyRules).where(eq(facebookSafetyRules.ownerOpenId, ctx.user.openId)).orderBy(desc(facebookSafetyRules.active), desc(facebookSafetyRules.updatedAt)).limit(200);
   }),
@@ -278,7 +286,7 @@ export const facebookAssistantRouter = router({
     note: z.string().trim().max(600).optional(),
     active: z.boolean().default(true),
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     const values = { ruleType: input.ruleType, pattern: input.pattern, action: input.action, note: input.note || null, active: input.active };
     if (input.id) {
@@ -293,7 +301,7 @@ export const facebookAssistantRouter = router({
   }),
 
   deleteSafetyRule: adminProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     await db.delete(facebookSafetyRules).where(and(eq(facebookSafetyRules.id, input.id), eq(facebookSafetyRules.ownerOpenId, ctx.user.openId)));
     await audit(ctx.user.openId, ctx.user.openId, "safety_rule_deleted", "safety_rule", input.id);
@@ -301,7 +309,7 @@ export const facebookAssistantRouter = router({
   }),
 
   listDrafts: adminProcedure.input(z.object({ status: draftStatusSchema.or(z.literal("all")).default("pending") }).optional()).query(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) return [];
     const status = input?.status || "pending";
     const query = db.select().from(facebookReplyDrafts);
@@ -316,7 +324,7 @@ export const facebookAssistantRouter = router({
     postContext: z.string().trim().max(6000).optional(),
     conversationContext: z.string().trim().max(8000).optional(),
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     const activeKnowledge = await db.select({ title: facebookKnowledgeEntries.title, content: facebookKnowledgeEntries.content, category: facebookKnowledgeEntries.category })
       .from(facebookKnowledgeEntries)
@@ -357,7 +365,7 @@ export const facebookAssistantRouter = router({
     finalReply: z.string().trim().max(1200).optional(),
     reason: z.string().trim().max(600).optional(),
   })).mutation(async ({ ctx, input }) => {
-    const db = await getDb();
+    const db = await getAssistantDb();
     if (!db) throw new Error("Database unavailable");
     const rows = await db.select().from(facebookReplyDrafts)
       .where(and(eq(facebookReplyDrafts.id, input.draftId), eq(facebookReplyDrafts.ownerOpenId, ctx.user.openId))).limit(1);

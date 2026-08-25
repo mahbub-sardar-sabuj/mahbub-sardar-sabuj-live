@@ -18,6 +18,15 @@ if (!shouldRunMigrations || !databaseUrl) {
   process.exit(0);
 }
 
+// Vercel intentionally masks some production secrets during prebuilt artifact creation.
+// Do not fail a deploy on that placeholder; the admin-only runtime bootstrap performs the same idempotent tables setup with the real runtime secret.
+try {
+  new URL(databaseUrl);
+} catch {
+  console.warn("[community-migration] skipped because DATABASE_URL is not available as a valid build-time URL");
+  process.exit(0);
+}
+
 const connection = await mysql.createConnection(databaseUrl);
 
 try {
