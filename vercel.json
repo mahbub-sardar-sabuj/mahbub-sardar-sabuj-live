@@ -36,10 +36,6 @@
       "memory": 256,
       "maxDuration": 30,
       "regions": ["fra1"]
-    },
-    "api/facebook-webhook.js": {
-      "memory": 256,
-      "maxDuration": 30
     }
   },
   "redirects": [
@@ -225,6 +221,10 @@
     {
       "src": "/api/image-upscale",
       "dest": "/api/image-upscale.js"
+    },
+    {
+      "src": "/api/facebook-webhook",
+      "dest": "/api/trpc-bundled?_facebook_webhook=1"
     },
     {
       "src": "/api/(.*)",
