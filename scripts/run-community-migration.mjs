@@ -6,6 +6,7 @@ const migrations = [
   { id: "20260816_literary_community_extensions", file: "0005_literary_community_extensions.sql" },
   { id: "20260816_community_feed_performance_indexes", file: "0006_community_feed_performance_indexes.sql" },
   { id: "20260816_literary_social_platform", file: "0007_literary_social_platform.sql" },
+  { id: "20260821_facebook_assistant_draft_mode", file: "0008_facebook_assistant_draft_mode.sql" },
 ];
 // Database migrations are an explicit operation. A Vercel build must stay deterministic
 // and must not try to connect with a deployment-time placeholder DATABASE_URL.

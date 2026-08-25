@@ -57,6 +57,10 @@ export type ToolChoice =
 
 export type InvokeParams = {
   messages: Message[];
+  /** Optional server-side model selection. Defaults preserve existing behavior. */
+  model?: string;
+  /** Optional OpenAI-style reasoning control for GPT family models. */
+  reasoning?: { effort: "minimal" | "low" | "medium" | "high" };
   tools?: Tool[];
   toolChoice?: ToolChoice;
   tool_choice?: ToolChoice;
@@ -270,6 +274,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
 
   const {
     messages,
+    model,
+    reasoning,
+    maxTokens,
+    max_tokens,
     tools,
     toolChoice,
     tool_choice,
@@ -279,8 +287,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
+  const selectedModel = model || "gemini-2.5-flash";
+  const tokenLimit = maxTokens ?? max_tokens ?? 32768;
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: selectedModel,
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,9 +306,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
+  // GPT 5 models require max_completion_tokens; other providers accept max_tokens.
+  if (selectedModel.startsWith("gpt-")) {
+    payload.max_completion_tokens = tokenLimit;
+    if (reasoning) payload.reasoning = reasoning;
+  } else {
+    payload.max_tokens = tokenLimit;
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({

@@ -373,3 +373,111 @@ export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
 
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
+
+// ── Facebook Assistant (official Meta API draft-mode foundation) ──────────────
+export const facebookAssistantSettings = mysqlTable("facebook_assistant_settings", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  commentDraftEnabled: boolean("commentDraftEnabled").default(false).notNull(),
+  messengerDraftEnabled: boolean("messengerDraftEnabled").default(false).notNull(),
+  autoReplyEnabled: boolean("autoReplyEnabled").default(false).notNull(),
+  humanHandoffEnabled: boolean("humanHandoffEnabled").default(true).notNull(),
+  disclosureText: varchar("disclosureText", { length: 600 }).default("এটি একটি স্বয়ংক্রিয় সহায়তা ব্যবস্থা। প্রয়োজন হলে একজন দায়িত্বশীল ব্যক্তি সহায়তা করবেন।"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  ownerUnique: uniqueIndex("facebook_assistant_settings_owner_unique").on(table.ownerOpenId),
+}));
+export type FacebookAssistantSettings = typeof facebookAssistantSettings.$inferSelect;
+
+export const facebookKnowledgeEntries = mysqlTable("facebook_knowledge_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  category: mysqlEnum("category", ["business", "service", "price", "faq", "delivery", "contact", "policy", "other"]).default("other").notNull(),
+  title: varchar("title", { length: 220 }).notNull(),
+  content: longtext("content").notNull(),
+  active: boolean("active").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  ownerActiveIdx: index("facebook_knowledge_owner_active_idx").on(table.ownerOpenId, table.active, table.sortOrder),
+}));
+export type FacebookKnowledgeEntry = typeof facebookKnowledgeEntries.$inferSelect;
+
+export const facebookStyleProfiles = mysqlTable("facebook_style_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  name: varchar("name", { length: 120 }).default("আমার স্বাভাবিক উত্তরধারা").notNull(),
+  toneInstructions: longtext("toneInstructions").notNull(),
+  sampleReplies: longtext("sampleReplies"),
+  language: varchar("language", { length: 24 }).default("bn").notNull(),
+  replyLength: mysqlEnum("replyLength", ["short", "medium", "detailed"]).default("short").notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  ownerUnique: uniqueIndex("facebook_style_owner_unique").on(table.ownerOpenId),
+}));
+export type FacebookStyleProfile = typeof facebookStyleProfiles.$inferSelect;
+
+export const facebookSafetyRules = mysqlTable("facebook_safety_rules", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  ruleType: mysqlEnum("ruleType", ["keyword", "category"]).default("keyword").notNull(),
+  pattern: varchar("pattern", { length: 300 }).notNull(),
+  action: mysqlEnum("action", ["handoff", "block", "draft_only"]).default("handoff").notNull(),
+  note: varchar("note", { length: 600 }),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  ownerActiveIdx: index("facebook_safety_owner_active_idx").on(table.ownerOpenId, table.active),
+}));
+export type FacebookSafetyRule = typeof facebookSafetyRules.$inferSelect;
+
+export const facebookReplyDrafts = mysqlTable("facebook_reply_drafts", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  channel: mysqlEnum("channel", ["comment", "messenger", "manual"]).default("manual").notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "handoff", "sent", "failed"]).default("pending").notNull(),
+  pageId: varchar("pageId", { length: 64 }),
+  postId: varchar("postId", { length: 120 }),
+  commentId: varchar("commentId", { length: 120 }),
+  conversationId: varchar("conversationId", { length: 120 }),
+  senderPsid: varchar("senderPsid", { length: 120 }),
+  incomingText: longtext("incomingText").notNull(),
+  postContext: longtext("postContext"),
+  conversationContext: longtext("conversationContext"),
+  suggestedReply: longtext("suggestedReply"),
+  finalReply: longtext("finalReply"),
+  safetyFlags: longtext("safetyFlags"),
+  confidence: int("confidence").default(0).notNull(),
+  humanReason: varchar("humanReason", { length: 600 }),
+  generatedBy: varchar("generatedBy", { length: 80 }),
+  approvedByOpenId: varchar("approvedByOpenId", { length: 64 }),
+  approvedAt: timestamp("approvedAt"),
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  ownerStatusCreatedIdx: index("facebook_drafts_owner_status_created_idx").on(table.ownerOpenId, table.status, table.createdAt),
+  channelStatusCreatedIdx: index("facebook_drafts_channel_status_created_idx").on(table.channel, table.status, table.createdAt),
+  commentUnique: uniqueIndex("facebook_drafts_comment_unique").on(table.commentId),
+}));
+export type FacebookReplyDraft = typeof facebookReplyDrafts.$inferSelect;
+
+export const facebookAssistantAuditLogs = mysqlTable("facebook_assistant_audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  actorOpenId: varchar("actorOpenId", { length: 64 }),
+  action: varchar("action", { length: 100 }).notNull(),
+  entityType: varchar("entityType", { length: 80 }).notNull(),
+  entityId: varchar("entityId", { length: 120 }),
+  details: longtext("details"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  ownerCreatedIdx: index("facebook_audit_owner_created_idx").on(table.ownerOpenId, table.createdAt),
+  entityIdx: index("facebook_audit_entity_idx").on(table.entityType, table.entityId),
+}));
+export type FacebookAssistantAuditLog = typeof facebookAssistantAuditLogs.$inferSelect;

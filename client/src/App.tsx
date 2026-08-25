@@ -32,6 +32,7 @@ const DataClientProvider = lazy(() => import("./components/DataClientProvider"))
 const AdminLiveChat = lazyRoute("AdminLiveChat");
 const AdminWritingModeration = lazyRoute("AdminWritingModeration");
 const AdminChatbotAnalytics = lazyRoute("AdminChatbotAnalytics");
+const AdminFacebookAssistant = lazyRoute("AdminFacebookAssistant");
 const Profile = lazyRoute("Profile");
 const AmiOLikhboLogin = lazyRoute("AmiOLikhboLogin");
 const SeoKeywordLanding = lazyRoute("SeoKeywordLanding");
@@ -143,6 +144,7 @@ function Router() {
         <Route path={"/admin/live-chat"} component={AdminLiveChat} />
         <Route path={"/admin/writing"} component={AdminWritingModeration} />
         <Route path={"/admin/chatbot-analytics"} component={AdminChatbotAnalytics} />
+        <Route path={"/admin/facebook-assistant"} component={AdminFacebookAssistant} />
         <Route path={"/temp-email"} component={TempEmail} />
         <Route path={"/image-upscaler"} component={ImageUpscaler} />
         <Route path={"/video-upscaler"} component={VideoUpscaler} />

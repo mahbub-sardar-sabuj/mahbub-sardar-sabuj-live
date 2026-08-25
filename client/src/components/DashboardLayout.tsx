@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageSquare, FileText, BarChart2 } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageSquare, FileText, BarChart2, Bot } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -32,6 +32,7 @@ const menuItems = [
   { icon: MessageSquare, label: "লাইভ চ্যাট", path: "/admin/live-chat" },
   { icon: FileText, label: "লেখা মডারেশন", path: "/admin/writing" },
   { icon: BarChart2, label: "চ্যাটবট অ্যানালিটিক্স", path: "/admin/chatbot-analytics" },
+  { icon: Bot, label: "Facebook Assistant", path: "/admin/facebook-assistant" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
