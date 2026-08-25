@@ -36,6 +36,10 @@
       "memory": 256,
       "maxDuration": 30,
       "regions": ["fra1"]
+    },
+    "api/facebook-webhook.js": {
+      "memory": 256,
+      "maxDuration": 30
     }
   },
   "redirects": [

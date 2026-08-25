@@ -481,3 +481,38 @@ export const facebookAssistantAuditLogs = mysqlTable("facebook_assistant_audit_l
   entityIdx: index("facebook_audit_entity_idx").on(table.entityType, table.entityId),
 }));
 export type FacebookAssistantAuditLog = typeof facebookAssistantAuditLogs.$inferSelect;
+
+// ── Official Meta Page connection and webhook event intake ───────────────────
+export const facebookPageConnections = mysqlTable("facebook_page_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerOpenId: varchar("ownerOpenId", { length: 64 }).notNull(),
+  pageId: varchar("pageId", { length: 64 }).notNull(),
+  pageName: varchar("pageName", { length: 200 }),
+  encryptedPageAccessToken: longtext("encryptedPageAccessToken"),
+  grantedScopes: longtext("grantedScopes"),
+  status: mysqlEnum("status", ["disconnected", "connected", "error"]).default("disconnected").notNull(),
+  webhookSubscribed: boolean("webhookSubscribed").default(false).notNull(),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
+  lastError: varchar("lastError", { length: 600 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  pageUnique: uniqueIndex("facebook_page_connections_page_unique").on(table.pageId),
+  ownerStatusIdx: index("facebook_page_connections_owner_status_idx").on(table.ownerOpenId, table.status),
+}));
+export type FacebookPageConnection = typeof facebookPageConnections.$inferSelect;
+
+export const facebookWebhookEvents = mysqlTable("facebook_webhook_events", {
+  id: int("id").autoincrement().primaryKey(),
+  providerEventId: varchar("providerEventId", { length: 190 }).notNull().unique(),
+  pageId: varchar("pageId", { length: 64 }),
+  eventType: varchar("eventType", { length: 100 }).notNull(),
+  payload: longtext("payload").notNull(),
+  processStatus: mysqlEnum("processStatus", ["pending", "processed", "ignored", "failed"]).default("pending").notNull(),
+  errorMessage: varchar("errorMessage", { length: 600 }),
+  receivedAt: timestamp("receivedAt").defaultNow().notNull(),
+  processedAt: timestamp("processedAt"),
+}, (table) => ({
+  pageStatusReceivedIdx: index("facebook_webhook_page_status_received_idx").on(table.pageId, table.processStatus, table.receivedAt),
+}));
+export type FacebookWebhookEvent = typeof facebookWebhookEvents.$inferSelect;

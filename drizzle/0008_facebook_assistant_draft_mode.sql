@@ -95,3 +95,34 @@ CREATE TABLE IF NOT EXISTS facebook_assistant_audit_logs (
   KEY facebook_audit_owner_created_idx (ownerOpenId, createdAt),
   KEY facebook_audit_entity_idx (entityType, entityId)
 );
+
+CREATE TABLE IF NOT EXISTS facebook_page_connections (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  ownerOpenId VARCHAR(64) NOT NULL,
+  pageId VARCHAR(64) NOT NULL,
+  pageName VARCHAR(200) NULL,
+  encryptedPageAccessToken LONGTEXT NULL,
+  grantedScopes LONGTEXT NULL,
+  status ENUM('disconnected','connected','error') NOT NULL DEFAULT 'disconnected',
+  webhookSubscribed BOOLEAN NOT NULL DEFAULT FALSE,
+  tokenExpiresAt TIMESTAMP NULL,
+  lastError VARCHAR(600) NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY facebook_page_connections_page_unique (pageId),
+  KEY facebook_page_connections_owner_status_idx (ownerOpenId, status)
+);
+
+CREATE TABLE IF NOT EXISTS facebook_webhook_events (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  providerEventId VARCHAR(190) NOT NULL,
+  pageId VARCHAR(64) NULL,
+  eventType VARCHAR(100) NOT NULL,
+  payload LONGTEXT NOT NULL,
+  processStatus ENUM('pending','processed','ignored','failed') NOT NULL DEFAULT 'pending',
+  errorMessage VARCHAR(600) NULL,
+  receivedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  processedAt TIMESTAMP NULL,
+  UNIQUE KEY facebook_webhook_events_provider_event_unique (providerEventId),
+  KEY facebook_webhook_page_status_received_idx (pageId, processStatus, receivedAt)
+);
