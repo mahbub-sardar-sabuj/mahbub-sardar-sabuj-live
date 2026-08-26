@@ -12,7 +12,17 @@ const migrations = [
 const shouldRunMigrations = process.env.RUN_COMMUNITY_MIGRATIONS === "1";
 const databaseUrl = process.env.DATABASE_URL;
 
-if (!shouldRunMigrations || !databaseUrl) {
+let validDatabaseUrl = false;
+if (databaseUrl) {
+  try {
+    const parsed = new URL(databaseUrl);
+    validDatabaseUrl = parsed.protocol === "mysql:" || parsed.protocol === "mysql2:";
+  } catch {
+    validDatabaseUrl = false;
+  }
+}
+
+if (!shouldRunMigrations || !validDatabaseUrl || !databaseUrl) {
   console.log("[community-migration] skipped (set RUN_COMMUNITY_MIGRATIONS=1 with a valid database URL to run)");
   process.exit(0);
 }
