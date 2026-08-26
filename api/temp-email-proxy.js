@@ -2,11 +2,16 @@
 // It exposes only the inbox actions used by this website; callers cannot choose arbitrary URLs.
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
-const MAILTM_BASE = "https://api.mail.gw";
-const TEMP_EMAIL_TIMEOUT_MS = 12_000;
+// Use two compatible public mailbox APIs. A provider can rotate domains, enforce
+// short burst limits, or temporarily fail, so one provider must not take the
+// entire feature offline.
+const MAIL_PROVIDERS = [
+  { baseUrl: "https://api.mail.gw", name: "mail.gw" },
+  { baseUrl: "https://api.mail.tm", name: "mail.tm" },
+];
+const TEMP_EMAIL_TIMEOUT_MS = 4_500;
 const ADDRESS_PREFIX = "mahbubsardarsabuj";
-const ADDRESS_START = 1;
-const ADDRESS_END = 99;
+const RANDOM_ADDRESS_ATTEMPTS = 3;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -86,13 +91,28 @@ function generateMailboxPassword() {
   return `Mss-${nonce}`.slice(0, 96);
 }
 
-async function callMailTm(path, { method = "GET", token, body } = {}) {
+function generateMailboxUsername() {
+  const nonce = globalThis.crypto?.randomUUID?.().replace(/-/g, "") || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+  // A unique suffix prevents a small, predictable address pool from becoming
+  // permanently exhausted while preserving a recognisable site-specific prefix.
+  return `${ADDRESS_PREFIX}${nonce.slice(0, 10)}`.slice(0, 64);
+}
+
+function isAddressConflict(error) {
+  return error?.status === 409 || error?.status === 422;
+}
+
+function isRetryableProviderError(error) {
+  return isAddressConflict(error) || error?.status === 429 || error?.status >= 500 || error?.name === "AbortError";
+}
+
+async function callMailboxProvider(baseUrl, path, { method = "GET", token, body } = {}) {
   // Vercel's Node runtime can lag modern AbortSignal helpers, so keep timeout
   // behavior portable rather than depending on AbortSignal.timeout().
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TEMP_EMAIL_TIMEOUT_MS);
   try {
-    const response = await fetch(`${MAILTM_BASE}${path}`, {
+    const response = await fetch(`${baseUrl}${path}`, {
       method,
       headers: {
         Accept: "application/ld+json, application/json",
@@ -118,8 +138,8 @@ async function callMailTm(path, { method = "GET", token, body } = {}) {
   }
 }
 
-async function getShortestActiveDomain() {
-  const domains = await callMailTm("/domains");
+async function getShortestActiveDomain(baseUrl) {
+  const domains = await callMailboxProvider(baseUrl, "/domains");
   const active = (domains?.["hydra:member"] || [])
     .filter((domain) => domain?.isActive && !domain?.isPrivate && isString(domain?.domain, 190))
     .map((domain) => domain.domain)
@@ -132,21 +152,21 @@ async function getShortestActiveDomain() {
   return active[0];
 }
 
-async function createSequentialAccount() {
-  const domain = await getShortestActiveDomain();
+async function createAccountWithProvider(provider) {
+  const domain = await getShortestActiveDomain(provider.baseUrl);
 
-  for (let sequence = ADDRESS_START; sequence <= ADDRESS_END; sequence += 1) {
-    const address = `${ADDRESS_PREFIX}${String(sequence).padStart(2, "0")}@${domain}`;
+  for (let attempt = 1; attempt <= RANDOM_ADDRESS_ATTEMPTS; attempt += 1) {
+    const address = `${generateMailboxUsername()}@${domain}`;
     const password = generateMailboxPassword();
     try {
-      const account = await callMailTm("/accounts", { method: "POST", body: { address, password } });
+      const account = await callMailboxProvider(provider.baseUrl, "/accounts", { method: "POST", body: { address, password } });
       if (!isIdentifier(account?.id) || !isAddress(account?.address)) {
         throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
       }
-      const session = await callMailTm("/token", { method: "POST", body: { address, password } });
+      const session = await callMailboxProvider(provider.baseUrl, "/token", { method: "POST", body: { address, password } });
       if (!isToken(session?.token)) {
         // A partially created account should not be left active when token creation fails.
-        await callMailTm(`/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: session?.token }).catch(() => undefined);
+        await callMailboxProvider(provider.baseUrl, `/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: session?.token }).catch(() => undefined);
         throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
       }
       return {
@@ -156,42 +176,77 @@ async function createSequentialAccount() {
         createdAt: account.createdAt || new Date().toISOString(),
       };
     } catch (error) {
-      // The provider uses 422 when a requested address is occupied. Continue with
-      // the next two-digit suffix without making the browser issue many requests.
-      if (error?.status === 422 || error?.status === 409) continue;
+      // Address collisions are retried locally without exposing account allocation
+      // details to the browser or making the UI issue repeated requests.
+      if (isAddressConflict(error)) continue;
       throw error;
     }
   }
 
-  const error = new Error("এই নামের সব ছোট ঠিকানা এখন ব্যবহৃত। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+  const error = new Error("নতুন ইমেইল ঠিকানা বরাদ্দ করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
   error.status = 409;
   throw error;
+}
+
+async function createTemporaryAccount() {
+  let lastError;
+
+  for (const provider of MAIL_PROVIDERS) {
+    try {
+      return await createAccountWithProvider(provider);
+    } catch (error) {
+      lastError = error;
+      console.warn(`Temporary email provider ${provider.name} failed:`, error?.message || "Unknown error");
+      if (!isRetryableProviderError(error)) throw error;
+    }
+  }
+
+  throw lastError || new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+}
+
+function isTokenProviderMismatch(error) {
+  return error?.status === 401 || error?.status === 404;
+}
+
+async function callTokenProvider(path, options) {
+  let lastError;
+
+  for (const provider of MAIL_PROVIDERS) {
+    try {
+      return await callMailboxProvider(provider.baseUrl, path, options);
+    } catch (error) {
+      lastError = error;
+      if (!isTokenProviderMismatch(error) && !isRetryableProviderError(error)) throw error;
+    }
+  }
+
+  throw lastError || new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
 }
 
 async function handleMailboxAction({ action, token, id }, res) {
   switch (action) {
     case "domains":
-      return res.status(200).json(await callMailTm("/domains"));
+      return res.status(200).json(await callMailboxProvider(MAIL_PROVIDERS[0].baseUrl, "/domains"));
 
     case "createAccount":
-      return res.status(201).json(await createSequentialAccount());
+      return res.status(201).json(await createTemporaryAccount());
 
     case "messages":
       if (!isToken(token)) return res.status(400).json({ error: "ইমেইল সেশনটি আর সক্রিয় নেই" });
-      return res.status(200).json(await callMailTm("/messages", { token }));
+      return res.status(200).json(await callTokenProvider("/messages", { token }));
 
     case "message":
       if (!isToken(token) || !isIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      return res.status(200).json(await callMailTm(`/messages/${encodeURIComponent(id)}`, { token }));
+      return res.status(200).json(await callTokenProvider(`/messages/${encodeURIComponent(id)}`, { token }));
 
     case "deleteMessage":
       if (!isToken(token) || !isIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callMailTm(`/messages/${encodeURIComponent(id)}`, { method: "DELETE", token });
+      await callTokenProvider(`/messages/${encodeURIComponent(id)}`, { method: "DELETE", token });
       return res.status(204).end();
 
     case "deleteAccount":
       if (!isToken(token) || !isIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callMailTm(`/accounts/${encodeURIComponent(id)}`, { method: "DELETE", token });
+      await callTokenProvider(`/accounts/${encodeURIComponent(id)}`, { method: "DELETE", token });
       return res.status(204).end();
 
     default:
