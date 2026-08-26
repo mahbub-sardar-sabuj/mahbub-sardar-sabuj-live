@@ -223,10 +223,6 @@
       "dest": "/api/image-upscale.js"
     },
     {
-      "src": "/api/facebook-webhook",
-      "dest": "/api/trpc-bundled?_facebook_webhook=1"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
@@ -377,7 +373,7 @@
       "dest": "/index.html"
     },
     {
-      "src": "/admin/(live-chat|writing|chatbot-analytics|facebook-assistant)/?",
+      "src": "/admin/(live-chat|writing|chatbot-analytics)/?",
       "dest": "/index.html"
     },
     {

@@ -57,10 +57,6 @@ export type ToolChoice =
 
 export type InvokeParams = {
   messages: Message[];
-  /** Optional server-side model selection. Defaults preserve existing behavior. */
-  model?: string;
-  /** Optional OpenAI-style reasoning control for GPT family models. */
-  reasoning?: { effort: "minimal" | "low" | "medium" | "high" };
   tools?: Tool[];
   toolChoice?: ToolChoice;
   tool_choice?: ToolChoice;
@@ -213,79 +209,16 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-type ProviderConfig = {
-  kind: "groq" | "openai" | "forge";
-  apiUrl: string;
-  apiKey: string;
-  defaultModel: string;
-  // Groq supports OpenAI-compatible JSON mode, but not every model accepts strict JSON Schema.
-  supportsStrictJsonSchema: boolean;
+const resolveApiUrl = () =>
+  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
+    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
+    : "https://forge.manus.im/v1/chat/completions";
+
+const assertApiKey = () => {
+  if (!ENV.forgeApiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
 };
-
-const GROQ_PREFERRED_DRAFT_MODELS = [
-  "openai/gpt-oss-20b",
-  "openai/gpt-oss-120b",
-  "llama-3.1-8b-instant",
-  "qwen/qwen3.6-27b",
-];
-
-async function resolveGroqRecoveryModel(apiKey: string, unavailableModel: string): Promise<string | null> {
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/models", {
-      headers: { authorization: `Bearer ${apiKey}` },
-    });
-    if (!response.ok) return null;
-    const payload = await response.json() as { data?: Array<{ id?: unknown }> };
-    const available = (payload.data || [])
-      .map((model) => typeof model.id === "string" ? model.id : "")
-      .filter(Boolean);
-    const preferred = GROQ_PREFERRED_DRAFT_MODELS.find(
-      (model) => model !== unavailableModel && available.includes(model)
-    );
-    if (preferred) return preferred;
-    return available.find(
-      (model) => model !== unavailableModel && /^(openai\/gpt-oss-|llama-|qwen\/|minimaxai\/)/.test(model)
-    ) || null;
-  } catch {
-    return null;
-  }
-}
-
-function resolveProvider(): ProviderConfig {
-  // The project already has a production Groq provider with an OpenAI-compatible API.
-  // Prefer it for short draft generation so exhausted OpenAI billing never blocks review mode.
-  if (ENV.groqApiKey.trim()) {
-    return {
-      kind: "groq",
-      apiUrl: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: ENV.groqApiKey,
-      defaultModel: ENV.groqModel.trim() || "llama-3.3-70b-versatile",
-      supportsStrictJsonSchema: false,
-    };
-  }
-  // Fall back to the project-owned OpenAI-compatible provider when its balance is available.
-  if (ENV.openAiApiKey.trim()) {
-    const base = (ENV.openAiBaseUrl.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
-    return {
-      kind: "openai",
-      apiUrl: `${base}/chat/completions`,
-      apiKey: ENV.openAiApiKey,
-      defaultModel: ENV.openAiModel.trim() || "gpt-5-mini",
-      supportsStrictJsonSchema: true,
-    };
-  }
-  if (ENV.forgeApiKey.trim()) {
-    const base = (ENV.forgeApiUrl.trim() || "https://forge.manus.im").replace(/\/$/, "");
-    return {
-      kind: "forge",
-      apiUrl: `${base}/v1/chat/completions`,
-      apiKey: ENV.forgeApiKey,
-      defaultModel: "gpt-5-mini",
-      supportsStrictJsonSchema: true,
-    };
-  }
-  throw new Error("No server-side LLM provider is configured");
-}
 
 const normalizeResponseFormat = ({
   responseFormat,
@@ -333,14 +266,10 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  const provider = resolveProvider();
+  assertApiKey();
 
   const {
     messages,
-    model,
-    reasoning,
-    maxTokens,
-    max_tokens,
     tools,
     toolChoice,
     tool_choice,
@@ -350,10 +279,8 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
-  const selectedModel = model || provider.defaultModel;
-  const tokenLimit = maxTokens ?? max_tokens ?? 32768;
   const payload: Record<string, unknown> = {
-    model: selectedModel,
+    model: "gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
   };
 
@@ -369,12 +296,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  // GPT 5 models require max_completion_tokens; other providers accept max_tokens.
-  if (selectedModel.startsWith("gpt-")) {
-    payload.max_completion_tokens = tokenLimit;
-    if (reasoning) payload.reasoning = reasoning;
-  } else {
-    payload.max_tokens = tokenLimit;
+  payload.max_tokens = 32768
+  payload.thinking = {
+    "budget_tokens": 128
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -385,39 +309,20 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   });
 
   if (normalizedResponseFormat) {
-    // Groq's compatible endpoint supports JSON mode but can reject strict JSON Schema
-    // on otherwise suitable chat models. The caller's system prompt still defines the
-    // exact contract, and downstream parsing remains the final safety gate.
-    payload.response_format = !provider.supportsStrictJsonSchema && normalizedResponseFormat.type === "json_schema"
-      ? { type: "json_object" }
-      : normalizedResponseFormat;
+    payload.response_format = normalizedResponseFormat;
   }
 
-  const invokeProvider = () => fetch(provider.apiUrl, {
+  const response = await fetch(resolveApiUrl(), {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${provider.apiKey}`,
+      authorization: `Bearer ${ENV.forgeApiKey}`,
     },
     body: JSON.stringify(payload),
   });
 
-  let response = await invokeProvider();
-  let firstErrorText = "";
-  // Groq keys can retain a stale GROQ_MODEL value after a model is retired or access changes.
-  // On that explicit model-not-found path only, select a supported text model from the account's
-  // own live catalog and retry once. Explicit caller model selection is never overridden.
-  if (!response.ok && provider.kind === "groq" && !model && response.status === 404) {
-    firstErrorText = await response.text();
-    const recoveryModel = await resolveGroqRecoveryModel(provider.apiKey, selectedModel);
-    if (recoveryModel) {
-      payload.model = recoveryModel;
-      response = await invokeProvider();
-    }
-  }
-
   if (!response.ok) {
-    const errorText = firstErrorText || await response.text();
+    const errorText = await response.text();
     throw new Error(
       `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
     );

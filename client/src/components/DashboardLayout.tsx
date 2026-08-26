@@ -19,20 +19,19 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageSquare, FileText, BarChart2, Bot } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageSquare, FileText, BarChart2 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
-import LocalAuthModal from "./LocalAuthModal";
 import { trpc } from "@/lib/trpc";
 
 const menuItems = [
   { icon: MessageSquare, label: "লাইভ চ্যাট", path: "/admin/live-chat" },
   { icon: FileText, label: "লেখা মডারেশন", path: "/admin/writing" },
   { icon: BarChart2, label: "চ্যাটবট অ্যানালিটিক্স", path: "/admin/chatbot-analytics" },
-  { icon: Bot, label: "Facebook Assistant", path: "/admin/facebook-assistant" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -50,7 +49,6 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
-  const [showLocalLogin, setShowLocalLogin] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -73,19 +71,14 @@ export default function DashboardLayout({
             </p>
           </div>
           <Button
-            onClick={() => setShowLocalLogin(true)}
+            onClick={() => {
+              window.location.href = getLoginUrl();
+            }}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            লগইন করুন
+            Sign in
           </Button>
-          {showLocalLogin && (
-            <LocalAuthModal
-              onClose={() => setShowLocalLogin(false)}
-              onSuccess={() => window.location.reload()}
-              defaultMode="login"
-            />
-          )}
         </div>
       </div>
     );

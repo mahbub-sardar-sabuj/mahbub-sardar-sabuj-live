@@ -1,14 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import crypto from "node:crypto";
-import mysql from "mysql2/promise";
-import { jwtVerify } from "jose";
-import { eq } from "drizzle-orm";
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
+import { sql } from "drizzle-orm";
 import { appRouter } from "../server/routers";
+import { getDb } from "../server/db";
 import { sdk } from "../server/_core/sdk";
 import { handleTelegramWebhook } from "../server/telegramService";
-import { getDb } from "../server/db";
-import { users } from "../drizzle/schema";
 
 const COOKIE_NAME = "app_session_id";
 
@@ -27,38 +23,6 @@ type CompatibleResponse = ServerResponse & {
 
 function firstHeaderValue(value: HeaderValue): string | undefined {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function getCookieValue(req: IncomingMessage, name: string) {
-  const match = (req.headers.cookie || "").match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
-  return match?.[1] ? decodeURIComponent(match[1]) : null;
-}
-
-async function authenticateLocalSession(req: IncomingMessage) {
-  const token = getCookieValue(req, COOKIE_NAME);
-  const secret = process.env.COOKIE_SECRET || process.env.JWT_SECRET;
-  if (!token || !secret) return null;
-  try {
-    const verified = await jwtVerify(token, new TextEncoder().encode(secret));
-    const openId = typeof verified.payload.openId === "string" ? verified.payload.openId : null;
-    if (!openId) return null;
-    const db = await getDb();
-    if (!db) return null;
-    const rows = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-    const user = rows[0];
-    if (!user) return null;
-    const configuredOwnerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
-    const userEmail = user.email?.trim().toLowerCase();
-    // Only the holder of a valid signed local session whose email exactly matches the
-    // production owner configuration can receive the dashboard administrator role.
-    if (configuredOwnerEmail && userEmail === configuredOwnerEmail && user.role !== "admin") {
-      await db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
-      return { ...user, role: "admin" };
-    }
-    return user;
-  } catch {
-    return null;
-  }
 }
 
 function getRequestProtocol(req: IncomingMessage): string {
@@ -128,15 +92,11 @@ function createPublicVercelContext({ req, res }: { req: IncomingMessage; res: Se
 
 async function createVercelContext({ req, res }: { req: IncomingMessage; res: ServerResponse }) {
   const { compatibleReq, compatibleRes } = addExpressCompatibility(req, res);
-  // The website's signed local session takes precedence for its own administrator area.
-  // It is cryptographically verified and then matched to the configured owner email.
-  let user = await authenticateLocalSession(compatibleReq);
-  if (!user) {
-    try {
-      user = await sdk.authenticateRequest(compatibleReq);
-    } catch {
-      user = null;
-    }
+  let user = null;
+  try {
+    user = await sdk.authenticateRequest(compatibleReq);
+  } catch {
+    user = null;
   }
   return {
     req: compatibleReq,
@@ -271,97 +231,6 @@ function parseJsonBody(req: IncomingMessage): Promise<unknown> {
     });
     req.on("error", () => resolve({}));
   });
-}
-
-export const config = { api: { bodyParser: false } };
-
-// ── /api/facebook-webhook handler ────────────────────────────────────────────
-let facebookWebhookPool: ReturnType<typeof mysql.createPool> | null = null;
-
-function facebookWebhookConfigured() {
-  return Boolean(process.env.FACEBOOK_APP_SECRET?.trim() && process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN?.trim() && process.env.DATABASE_URL);
-}
-
-function getFacebookWebhookPool() {
-  if (!process.env.DATABASE_URL) return null;
-  if (!facebookWebhookPool) facebookWebhookPool = mysql.createPool({ uri: process.env.DATABASE_URL, waitForConnections: true, connectionLimit: 3, queueLimit: 0 });
-  return facebookWebhookPool;
-}
-
-async function readRawWebhookBody(req: IncomingMessage, maxBytes = 1024 * 1024) {
-  const chunks: Buffer[] = [];
-  let total = 0;
-  for await (const chunk of req) {
-    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-    total += buffer.length;
-    if (total > maxBytes) throw new Error("Payload too large");
-    chunks.push(buffer);
-  }
-  return Buffer.concat(chunks);
-}
-
-function safeSignatureEqual(left: string, right: string) {
-  const a = Buffer.from(left, "utf8");
-  const b = Buffer.from(right, "utf8");
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-function verifyFacebookSignature(rawBody: Buffer, header: string | string[] | undefined) {
-  const signature = Array.isArray(header) ? header[0] : header;
-  if (!signature?.startsWith("sha256=")) return false;
-  const expected = `sha256=${crypto.createHmac("sha256", process.env.FACEBOOK_APP_SECRET || "").update(rawBody).digest("hex")}`;
-  return safeSignatureEqual(signature, expected);
-}
-
-function facebookWebhookEvents(payload: any) {
-  const events: Array<{ providerEventId: string; pageId: string | null; eventType: string; payload: string }> = [];
-  for (const entry of Array.isArray(payload?.entry) ? payload.entry : []) {
-    const pageId = entry?.id ? String(entry.id).slice(0, 64) : null;
-    const entryTime = String(entry?.time || Date.now());
-    const changes = Array.isArray(entry?.changes) ? entry.changes : [];
-    changes.forEach((change: any, index: number) => {
-      const value = change?.value || {};
-      const eventId = value.comment_id || value.post_id || `${pageId || "page"}:${entryTime}:feed:${index}`;
-      events.push({ providerEventId: `feed:${String(eventId).slice(0, 170)}`, pageId, eventType: String(change?.field || "feed").slice(0, 100), payload: JSON.stringify({ object: payload?.object || "page", entry: { id: pageId, time: entry?.time }, change }) });
-    });
-    const messaging = Array.isArray(entry?.messaging) ? entry.messaging : [];
-    messaging.forEach((event: any, index: number) => {
-      const eventId = event?.message?.mid || event?.postback?.mid || `${pageId || "page"}:${event?.timestamp || entryTime}:message:${index}`;
-      events.push({ providerEventId: `message:${String(eventId).slice(0, 166)}`, pageId, eventType: event?.message ? "messages" : event?.postback ? "postback" : "messaging", payload: JSON.stringify({ object: payload?.object || "page", entry: { id: pageId, time: entry?.time }, messaging: event }) });
-    });
-  }
-  return events;
-}
-
-async function handleFacebookWebhook(req: IncomingMessage, res: CompatibleResponse, url: URL) {
-  res.setHeader("Cache-Control", "no-store");
-  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
-  if (req.method === "GET") {
-    if (!facebookWebhookConfigured()) { res.statusCode = 503; res.end("Facebook webhook is not configured"); return; }
-    const mode = url.searchParams.get("hub.mode");
-    const token = url.searchParams.get("hub.verify_token") || "";
-    const challenge = url.searchParams.get("hub.challenge");
-    if (mode === "subscribe" && challenge && safeSignatureEqual(token, process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN || "")) { res.statusCode = 200; res.end(challenge); return; }
-    res.statusCode = 403; res.end("Forbidden"); return;
-  }
-  if (req.method !== "POST") { res.statusCode = 405; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.end(JSON.stringify({ error: "Method not allowed" })); return; }
-  if (!facebookWebhookConfigured()) { res.statusCode = 503; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.end(JSON.stringify({ error: "Facebook webhook is not configured" })); return; }
-  try {
-    const rawBody = await readRawWebhookBody(req);
-    if (!verifyFacebookSignature(rawBody, req.headers["x-hub-signature-256"])) { res.statusCode = 401; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.end(JSON.stringify({ error: "Invalid signature" })); return; }
-    const payload = JSON.parse(rawBody.toString("utf8"));
-    if (payload?.object !== "page") { res.statusCode = 404; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.end(JSON.stringify({ error: "Unsupported webhook object" })); return; }
-    const database = getFacebookWebhookPool();
-    if (!database) throw new Error("Database unavailable");
-    for (const event of facebookWebhookEvents(payload)) {
-      await database.execute("INSERT IGNORE INTO facebook_webhook_events (providerEventId, pageId, eventType, payload, processStatus) VALUES (?, ?, ?, ?, 'pending')", [event.providerEventId, event.pageId, event.eventType, event.payload]);
-    }
-    // The webhook only stores authenticated events. No reply is generated or sent from this request.
-    res.statusCode = 200; res.end("EVENT_RECEIVED");
-  } catch (error) {
-    console.error("[FACEBOOK WEBHOOK ERROR]", error instanceof Error ? error.message : String(error));
-    if (!res.headersSent) { res.statusCode = 500; res.setHeader("Content-Type", "application/json; charset=utf-8"); res.end(JSON.stringify({ error: "Webhook intake failed" })); }
-  }
 }
 
 // ── /api/contact handler ───────────────────────────────────────────────────────
@@ -535,18 +404,40 @@ async function handleChatbotNotify(req: IncomingMessage, res: CompatibleResponse
   }
 }
 
+// ── One-time Facebook Assistant removal ──────────────────────────────────────
+// This temporary idempotent cleanup is deployed only to remove the cancelled project's
+// isolated tables and is removed in the immediately following production release.
+let facebookAssistantTablesRemoved = false;
+async function removeFacebookAssistantTables() {
+  if (facebookAssistantTablesRemoved) return;
+  const db = await getDb();
+  if (!db) return;
+  const tables = [
+    "facebook_webhook_events",
+    "facebook_page_connections",
+    "facebook_assistant_audit_logs",
+    "facebook_reply_drafts",
+    "facebook_safety_rules",
+    "facebook_style_profiles",
+    "facebook_knowledge_entries",
+    "facebook_assistant_settings",
+  ];
+  try {
+    for (const table of tables) await db.execute(sql.raw(`DROP TABLE IF EXISTS \`${table}\``));
+    facebookAssistantTablesRemoved = true;
+    console.info("[Facebook Assistant removal] isolated project tables removed");
+  } catch (error) {
+    console.error("[Facebook Assistant removal] table cleanup failed", error);
+  }
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  await removeFacebookAssistantTables();
   const url = req.url ? new URL(req.url, "https://local.invalid") : null;
   const pathname = url?.pathname ?? "";
 
   const { compatibleRes } = addExpressCompatibility(req, res);
-
-  const isFacebookWebhook = pathname === "/api/facebook-webhook" || url?.searchParams.get("_facebook_webhook") === "1";
-  if (isFacebookWebhook) {
-    await handleFacebookWebhook(req, compatibleRes, url || new URL("https://local.invalid/api/facebook-webhook"));
-    return;
-  }
 
   // Route: /api/contact
   if (pathname === "/api/contact" || pathname.startsWith("/api/contact?")) {

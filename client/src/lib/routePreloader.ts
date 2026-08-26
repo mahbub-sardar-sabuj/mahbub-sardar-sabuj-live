@@ -20,7 +20,6 @@ const routeImporters = {
   AdminLiveChat: () => import("../pages/AdminLiveChat"),
   AdminWritingModeration: () => import("../pages/AdminWritingModeration"),
   AdminChatbotAnalytics: () => import("../pages/AdminChatbotAnalytics"),
-  AdminFacebookAssistant: () => import("../pages/AdminFacebookAssistant"),
   Profile: () => import("../pages/Profile"),
   AmiOLikhboLogin: () => import("../pages/AmiOLikhboLogin"),
   SeoKeywordLanding: () => import("../pages/SeoKeywordLanding"),
@@ -58,7 +57,6 @@ const importerForPath = (href: string): Importer | undefined => {
   if (path === "/admin/live-chat") return routeImporters.AdminLiveChat;
   if (path === "/admin/writing") return routeImporters.AdminWritingModeration;
   if (path === "/admin/chatbot-analytics") return routeImporters.AdminChatbotAnalytics;
-  if (path === "/admin/facebook-assistant") return routeImporters.AdminFacebookAssistant;
   if (path === "/404") return routeImporters.NotFound;
   if (path === "/temp-email") return routeImporters.TempEmail;
   if (path === "/image-upscaler") return routeImporters.ImageUpscaler;

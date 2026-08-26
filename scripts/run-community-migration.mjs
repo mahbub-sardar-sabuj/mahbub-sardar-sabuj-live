@@ -6,7 +6,6 @@ const migrations = [
   { id: "20260816_literary_community_extensions", file: "0005_literary_community_extensions.sql" },
   { id: "20260816_community_feed_performance_indexes", file: "0006_community_feed_performance_indexes.sql" },
   { id: "20260816_literary_social_platform", file: "0007_literary_social_platform.sql" },
-  { id: "20260821_facebook_assistant_draft_mode", file: "0008_facebook_assistant_draft_mode.sql" },
 ];
 // Database migrations are an explicit operation. A Vercel build must stay deterministic
 // and must not try to connect with a deployment-time placeholder DATABASE_URL.
@@ -15,15 +14,6 @@ const databaseUrl = process.env.DATABASE_URL;
 
 if (!shouldRunMigrations || !databaseUrl) {
   console.log("[community-migration] skipped (set RUN_COMMUNITY_MIGRATIONS=1 with a valid database URL to run)");
-  process.exit(0);
-}
-
-// Vercel intentionally masks some production secrets during prebuilt artifact creation.
-// Do not fail a deploy on that placeholder; the admin-only runtime bootstrap performs the same idempotent tables setup with the real runtime secret.
-try {
-  new URL(databaseUrl);
-} catch {
-  console.warn("[community-migration] skipped because DATABASE_URL is not available as a valid build-time URL");
   process.exit(0);
 }
 
