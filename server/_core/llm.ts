@@ -213,7 +213,13 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-type ProviderConfig = { apiUrl: string; apiKey: string; defaultModel: string };
+type ProviderConfig = {
+  apiUrl: string;
+  apiKey: string;
+  defaultModel: string;
+  // Groq supports OpenAI-compatible JSON mode, but not every model accepts strict JSON Schema.
+  supportsStrictJsonSchema: boolean;
+};
 
 function resolveProvider(): ProviderConfig {
   // The project already has a production Groq provider with an OpenAI-compatible API.
@@ -223,6 +229,7 @@ function resolveProvider(): ProviderConfig {
       apiUrl: "https://api.groq.com/openai/v1/chat/completions",
       apiKey: ENV.groqApiKey,
       defaultModel: ENV.groqModel.trim() || "llama-3.3-70b-versatile",
+      supportsStrictJsonSchema: false,
     };
   }
   // Fall back to the project-owned OpenAI-compatible provider when its balance is available.
@@ -232,6 +239,7 @@ function resolveProvider(): ProviderConfig {
       apiUrl: `${base}/chat/completions`,
       apiKey: ENV.openAiApiKey,
       defaultModel: ENV.openAiModel.trim() || "gpt-5-mini",
+      supportsStrictJsonSchema: true,
     };
   }
   if (ENV.forgeApiKey.trim()) {
@@ -240,6 +248,7 @@ function resolveProvider(): ProviderConfig {
       apiUrl: `${base}/v1/chat/completions`,
       apiKey: ENV.forgeApiKey,
       defaultModel: "gpt-5-mini",
+      supportsStrictJsonSchema: true,
     };
   }
   throw new Error("No server-side LLM provider is configured");
@@ -343,7 +352,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   });
 
   if (normalizedResponseFormat) {
-    payload.response_format = normalizedResponseFormat;
+    // Groq's compatible endpoint supports JSON mode but can reject strict JSON Schema
+    // on otherwise suitable chat models. The caller's system prompt still defines the
+    // exact contract, and downstream parsing remains the final safety gate.
+    payload.response_format = !provider.supportsStrictJsonSchema && normalizedResponseFormat.type === "json_schema"
+      ? { type: "json_object" }
+      : normalizedResponseFormat;
   }
 
   const response = await fetch(provider.apiUrl, {
