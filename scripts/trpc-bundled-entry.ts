@@ -128,15 +128,16 @@ function createPublicVercelContext({ req, res }: { req: IncomingMessage; res: Se
 
 async function createVercelContext({ req, res }: { req: IncomingMessage; res: ServerResponse }) {
   const { compatibleReq, compatibleRes } = addExpressCompatibility(req, res);
-  let user = null;
-  try {
-    user = await sdk.authenticateRequest(compatibleReq);
-  } catch {
-    user = null;
+  // The website's signed local session takes precedence for its own administrator area.
+  // It is cryptographically verified and then matched to the configured owner email.
+  let user = await authenticateLocalSession(compatibleReq);
+  if (!user) {
+    try {
+      user = await sdk.authenticateRequest(compatibleReq);
+    } catch {
+      user = null;
+    }
   }
-  // The literary community already uses a signed local email-password session.
-  // Fall back to it only when the optional external runtime auth is unavailable.
-  if (!user) user = await authenticateLocalSession(compatibleReq);
   return {
     req: compatibleReq,
     res: compatibleRes,
