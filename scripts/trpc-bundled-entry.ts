@@ -1,8 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { nodeHTTPRequestHandler } from "@trpc/server/adapters/node-http";
-import { sql } from "drizzle-orm";
 import { appRouter } from "../server/routers";
-import { getDb } from "../server/db";
 import { sdk } from "../server/_core/sdk";
 import { handleTelegramWebhook } from "../server/telegramService";
 
@@ -404,36 +402,8 @@ async function handleChatbotNotify(req: IncomingMessage, res: CompatibleResponse
   }
 }
 
-// ── One-time Facebook Assistant removal ──────────────────────────────────────
-// This temporary idempotent cleanup is deployed only to remove the cancelled project's
-// isolated tables and is removed in the immediately following production release.
-let facebookAssistantTablesRemoved = false;
-async function removeFacebookAssistantTables() {
-  if (facebookAssistantTablesRemoved) return;
-  const db = await getDb();
-  if (!db) return;
-  const tables = [
-    "facebook_webhook_events",
-    "facebook_page_connections",
-    "facebook_assistant_audit_logs",
-    "facebook_reply_drafts",
-    "facebook_safety_rules",
-    "facebook_style_profiles",
-    "facebook_knowledge_entries",
-    "facebook_assistant_settings",
-  ];
-  try {
-    for (const table of tables) await db.execute(sql.raw(`DROP TABLE IF EXISTS \`${table}\``));
-    facebookAssistantTablesRemoved = true;
-    console.info("[Facebook Assistant removal] isolated project tables removed");
-  } catch (error) {
-    console.error("[Facebook Assistant removal] table cleanup failed", error);
-  }
-}
-
 // ── Main handler ──────────────────────────────────────────────────────────────
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  await removeFacebookAssistantTables();
   const url = req.url ? new URL(req.url, "https://local.invalid") : null;
   const pathname = url?.pathname ?? "";
 
