@@ -103,7 +103,6 @@ async function createAiDraft({
 
   try {
     const response = await invokeLLM({
-      model: "gpt-5-mini",
       maxTokens: 520,
       reasoning: { effort: "minimal" },
       messages: [
@@ -135,7 +134,7 @@ async function createAiDraft({
     });
     const content = response.choices?.[0]?.message?.content;
     const parsed = typeof content === "string" ? parseModelJson(content) : null;
-    if (parsed) return { ...parsed, generatedBy: "gpt-5-mini" };
+    if (parsed) return { ...parsed, generatedBy: response.model || "server_llm" };
   } catch (error) {
     console.warn("[facebook-assistant] draft model unavailable:", error instanceof Error ? error.message : "unknown");
   }

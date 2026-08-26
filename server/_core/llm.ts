@@ -213,16 +213,29 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
+type ProviderConfig = { apiUrl: string; apiKey: string; defaultModel: string };
 
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+function resolveProvider(): ProviderConfig {
+  // Prefer the project-owned OpenAI-compatible provider in production. The prior
+  // Forge-only route can be unavailable outside its managed runtime session.
+  if (ENV.openAiApiKey.trim()) {
+    const base = (ENV.openAiBaseUrl.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
+    return {
+      apiUrl: `${base}/chat/completions`,
+      apiKey: ENV.openAiApiKey,
+      defaultModel: ENV.openAiModel.trim() || "gpt-5-mini",
+    };
   }
-};
+  if (ENV.forgeApiKey.trim()) {
+    const base = (ENV.forgeApiUrl.trim() || "https://forge.manus.im").replace(/\/$/, "");
+    return {
+      apiUrl: `${base}/v1/chat/completions`,
+      apiKey: ENV.forgeApiKey,
+      defaultModel: "gpt-5-mini",
+    };
+  }
+  throw new Error("No server-side LLM provider is configured");
+}
 
 const normalizeResponseFormat = ({
   responseFormat,
@@ -270,7 +283,7 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+  const provider = resolveProvider();
 
   const {
     messages,
@@ -287,7 +300,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
-  const selectedModel = model || "gemini-2.5-flash";
+  const selectedModel = model || provider.defaultModel;
   const tokenLimit = maxTokens ?? max_tokens ?? 32768;
   const payload: Record<string, unknown> = {
     model: selectedModel,
@@ -325,11 +338,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(provider.apiUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${provider.apiKey}`,
     },
     body: JSON.stringify(payload),
   });
