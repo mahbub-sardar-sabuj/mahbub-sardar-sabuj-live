@@ -45,7 +45,17 @@ async function authenticateLocalSession(req: IncomingMessage) {
     const db = await getDb();
     if (!db) return null;
     const rows = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-    return rows[0] || null;
+    const user = rows[0];
+    if (!user) return null;
+    const configuredOwnerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
+    const userEmail = user.email?.trim().toLowerCase();
+    // Only the holder of a valid signed local session whose email exactly matches the
+    // production owner configuration can receive the dashboard administrator role.
+    if (configuredOwnerEmail && userEmail === configuredOwnerEmail && user.role !== "admin") {
+      await db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+      return { ...user, role: "admin" };
+    }
+    return user;
   } catch {
     return null;
   }
