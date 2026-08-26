@@ -1028,7 +1028,15 @@ const PostCard = memo(function PostCard({
             cursor: "pointer",
             transition: "color 0.18s",
           }}
+          role="link"
+          tabIndex={0}
           onClick={() => onOpenDetail(post.slug)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onOpenDetail(post.slug);
+            }
+          }}
           onMouseEnter={(e) => { e.currentTarget.style.color = "#F7D56F"; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = "#FDF6EC"; }}
         >
@@ -1038,7 +1046,20 @@ const PostCard = memo(function PostCard({
 
       {/* Content */}
       <div className="amio-post-content" style={{ color: "rgba(253,246,236,0.88)", lineHeight: 1.82, fontSize: "clamp(0.96rem, 3.8vw, 1.02rem)" }}>
-        <p style={{ margin: 0, whiteSpace: "pre-wrap", cursor: "pointer" }} onClick={() => onOpenDetail(post.slug)}>{displayContent}</p>
+        <p
+          role="link"
+          tabIndex={0}
+          style={{ margin: 0, whiteSpace: "pre-wrap", cursor: "pointer" }}
+          onClick={() => onOpenDetail(post.slug)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              onOpenDetail(post.slug);
+            }
+          }}
+        >
+          {displayContent}
+        </p>
         {isLong && (
           <button
             type="button"

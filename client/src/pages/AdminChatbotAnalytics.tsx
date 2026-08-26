@@ -63,6 +63,7 @@ export default function AdminChatbotAnalytics() {
   const [error, setError] = useState<string | null>(null);
   const [adminKey, setAdminKey] = useState(() => localStorage.getItem("admin_analytics_key") || "");
   const [keyInput, setKeyInput] = useState("");
+  const isAnalyticsKeyUnconfigured = error === "Analytics admin key is not configured";
 
   const fetchData = async (key: string) => {
     setLoading(true);
@@ -72,7 +73,11 @@ export default function AdminChatbotAnalytics() {
         headers: { "X-Admin-Key": key },
       });
       if (res.status === 403) {
-        setError("অ্যাডমিন কী ভুল। সঠিক কী দিন।");
+        const payload = await res.json().catch(() => null);
+        setError(payload?.error === "Analytics admin key is not configured"
+          ? "Analytics admin key is not configured"
+          : "অ্যাডমিন কী ভুল। সঠিক কী দিন।"
+        );
         setLoading(false);
         return;
       }
@@ -100,7 +105,7 @@ export default function AdminChatbotAnalytics() {
     }
   };
 
-  if (!adminKey || error === "অ্যাডমিন কী ভুল। সঠিক কী দিন।") {
+  if (!adminKey || error === "অ্যাডমিন কী ভুল। সঠিক কী দিন।" || isAnalyticsKeyUnconfigured) {
     return (
       <DashboardLayout>
         <div style={{ padding: 32, maxWidth: 400 }}>
@@ -108,8 +113,10 @@ export default function AdminChatbotAnalytics() {
             🔐 অ্যাডমিন অ্যাক্সেস
           </h2>
           {error && (
-            <div style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: 12, fontFamily: "'AdorshoLipi', sans-serif" }}>
-              {error}
+            <div role="alert" style={{ color: isAnalyticsKeyUnconfigured ? "#fbbf24" : "#f87171", fontSize: "0.75rem", marginBottom: 12, fontFamily: "'AdorshoLipi', sans-serif", lineHeight: 1.6 }}>
+              {isAnalyticsKeyUnconfigured
+                ? "এই dashboard চালুর জন্য server-side CHATBOT_ANALYTICS_KEY সেট করা হয়নি। নিরাপত্তার কারণে key এখানে তৈরি বা প্রকাশ করা যাবে না। Vercel Production settings-এ একটি শক্তিশালী secret যোগ করার পর এই পেজে সেটি ব্যবহার করুন।"
+                : error}
             </div>
           )}
           <form onSubmit={handleKeySubmit} style={{ display: "flex", gap: 8 }}>

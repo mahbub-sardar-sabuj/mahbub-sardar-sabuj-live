@@ -26,8 +26,8 @@ import Footer from "@/components/Footer";
 import AdSenseAd, { AD_SLOTS } from "@/components/AdSenseAd";
 import Seo from "@/components/Seo";
 import { Link } from "wouter";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
-import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.js?url";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
