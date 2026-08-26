@@ -10,6 +10,8 @@ export const ENV = {
   openAiApiKey: process.env.OPENAI_API_KEY ?? "",
   openAiBaseUrl: process.env.OPENAI_BASE_URL ?? "",
   openAiModel: process.env.OPENAI_MODEL ?? "",
+  groqApiKey: process.env.GROQ_API_KEY ?? "",
+  groqModel: process.env.GROQ_MODEL ?? "",
   // Telegram Live Chat Bot
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
   telegramAdminChatId: process.env.TELEGRAM_ADMIN_CHAT_ID ?? "",

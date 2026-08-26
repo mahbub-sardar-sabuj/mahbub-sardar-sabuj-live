@@ -216,8 +216,16 @@ const normalizeToolChoice = (
 type ProviderConfig = { apiUrl: string; apiKey: string; defaultModel: string };
 
 function resolveProvider(): ProviderConfig {
-  // Prefer the project-owned OpenAI-compatible provider in production. The prior
-  // Forge-only route can be unavailable outside its managed runtime session.
+  // The project already has a production Groq provider with an OpenAI-compatible API.
+  // Prefer it for short draft generation so exhausted OpenAI billing never blocks review mode.
+  if (ENV.groqApiKey.trim()) {
+    return {
+      apiUrl: "https://api.groq.com/openai/v1/chat/completions",
+      apiKey: ENV.groqApiKey,
+      defaultModel: ENV.groqModel.trim() || "llama-3.3-70b-versatile",
+    };
+  }
+  // Fall back to the project-owned OpenAI-compatible provider when its balance is available.
   if (ENV.openAiApiKey.trim()) {
     const base = (ENV.openAiBaseUrl.trim() || "https://api.openai.com/v1").replace(/\/$/, "");
     return {
