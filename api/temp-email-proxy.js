@@ -9,7 +9,9 @@ const MAIL_PROVIDERS = [
   { baseUrl: "https://api.mail.gw", name: "mail.gw" },
   { baseUrl: "https://api.mail.tm", name: "mail.tm" },
 ];
-const TEMP_EMAIL_TIMEOUT_MS = 4_500;
+// mail.tm can take several seconds to answer while cold or under load.
+// Keep the browser request bounded, but do not abort a valid slow response.
+const TEMP_EMAIL_TIMEOUT_MS = 12_000;
 const ADDRESS_PREFIX = "mahbubsardarsabuj";
 const RANDOM_ADDRESS_ATTEMPTS = 3;
 
@@ -226,7 +228,10 @@ async function callTokenProvider(path, options) {
 async function handleMailboxAction({ action, token, id }, res) {
   switch (action) {
     case "domains":
-      return res.status(200).json(await callMailboxProvider(MAIL_PROVIDERS[0].baseUrl, "/domains"));
+      // The first provider may be temporarily unavailable; use the same
+      // provider fallback as the mailbox/session actions instead of making
+      // the whole tab fail on a single upstream outage.
+      return res.status(200).json(await callTokenProvider("/domains", {}));
 
     case "createAccount":
       return res.status(201).json(await createTemporaryAccount());
