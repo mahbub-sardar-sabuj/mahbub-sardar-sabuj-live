@@ -201,9 +201,10 @@ function mapMailTmMessageDetail(message: MailTmMessageResponse): MessageDetail {
 }
 
 function isProviderWelcomeMessage(message: Message): boolean {
+  const sender = message.from.address.toLowerCase();
   return (
-    message.from.address.toLowerCase() === "no-reply@mail.tm" &&
-    /welcome to mail\.tm/i.test(message.subject)
+    (sender === "no-reply@mail.tm" && /welcome to mail\.tm/i.test(message.subject)) ||
+    (sender === "no-reply@guerrillamail.com" && /welcome to guerrilla mail/i.test(message.subject))
   );
 }
 

@@ -1,19 +1,11 @@
-// api/temp-email-proxy.js — limited same-origin adapter for a public mailbox API.
-// It exposes only the inbox actions used by this website; callers cannot choose arbitrary URLs.
+// api/temp-email-proxy.js — same-origin adapter for Guerrilla Mail's public JSON API.
+// The adapter keeps provider session details server-side and exposes only the
+// mailbox actions used by the website.
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
-// Use two compatible public mailbox APIs. A provider can rotate domains, enforce
-// short burst limits, or temporarily fail, so one provider must not take the
-// entire feature offline.
-const MAIL_PROVIDERS = [
-  { baseUrl: "https://api.mail.gw", name: "mail.gw" },
-  { baseUrl: "https://api.mail.tm", name: "mail.tm" },
-];
-// mail.tm can take several seconds to answer while cold or under load.
-// Keep the browser request bounded, but do not abort a valid slow response.
-const TEMP_EMAIL_TIMEOUT_MS = 12_000;
-const ADDRESS_PREFIX = "mahbubsardarsabuj";
-const RANDOM_ADDRESS_ATTEMPTS = 3;
+const GUERRILLA_API = "https://api.guerrillamail.com/ajax.php";
+const REQUEST_TIMEOUT_MS = 12_000;
+const USER_AGENT = "MahbubSardarSabujTempEmail/4.0";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -26,9 +18,7 @@ export default async function handler(req, res) {
   const action = typeof body.action === "string" ? body.action : "unknown";
   const ratePolicies = {
     domains: { max: 12, message: "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
-    // One website request may need several provider attempts when an earlier short
-    // address is occupied, so allocation is performed once on the server.
-    createAccount: { max: 4, message: "নতুন ইমেইল তৈরির অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
+    createAccount: { max: 6, message: "নতুন ইমেইল তৈরির অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
     messages: { max: 36, message: "ইনবক্স রিফ্রেশের অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
     message: { max: 24, message: "ইমেইল খোলার অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
     deleteMessage: { max: 18, message: "ইমেইল মুছার অনুরোধ বেশি হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।" },
@@ -48,12 +38,12 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    return await handleMailboxAction(body, res);
+    return await handleMailboxAction(body, req, res);
   } catch (error) {
     const status = Number.isInteger(error?.status) ? error.status : 502;
     const message = error instanceof Error && error.message
       ? error.message
-      : "ইমেইল সেবার সঙ্গে সংযোগ স্থাপন করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।";
+      : "ইমেইল সেবার সঙ্গে সংযোগ স্থাপন করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
     console.error("Temp email adapter failed:", message);
     return res.status(status).json({ error: message });
   }
@@ -71,67 +61,47 @@ function isString(value, maxLength = 2048) {
   return typeof value === "string" && value.length > 0 && value.length <= maxLength;
 }
 
-function isAddress(value) {
-  return isString(value, 254) && /^[a-z0-9._-]{3,64}@[a-z0-9.-]{1,190}$/i.test(value);
-}
-
 function isIdentifier(value) {
-  return typeof value === "string" && /^[a-z0-9]{1,64}$/i.test(value);
+  return typeof value === "string" && /^[A-Za-z0-9]{1,80}$/.test(value);
 }
 
-function isToken(value) {
-  return typeof value === "string" && /^[A-Za-z0-9._-]{20,2048}$/.test(value);
+function parseGuerrillaToken(token) {
+  if (!isString(token, 128) || !/^gm-[A-Za-z0-9]{20,100}$/.test(token)) return null;
+  return token.slice(3);
 }
 
-function readableProviderError(payload, fallback) {
-  if (!payload || typeof payload !== "object") return fallback;
-  return payload.detail || payload["hydra:description"] || payload.message || fallback;
+function clientIp(req) {
+  const forwarded = req.headers?.["x-forwarded-for"] || req.headers?.["x-real-ip"] || "127.0.0.1";
+  const value = String(forwarded).split(",")[0].trim();
+  return /^[A-Za-z0-9:._-]{1,80}$/.test(value) ? value : "127.0.0.1";
 }
 
-function generateMailboxPassword() {
-  const nonce = globalThis.crypto?.randomUUID?.().replace(/-/g, "") || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
-  return `Mss-${nonce}`.slice(0, 96);
-}
+async function callGuerrilla(functionName, params, req) {
+  const url = new URL(GUERRILLA_API);
+  url.searchParams.set("f", functionName);
+  url.searchParams.set("ip", clientIp(req));
+  url.searchParams.set("agent", USER_AGENT);
+  for (const [key, value] of Object.entries(params || {})) {
+    if (key === "email_ids[]" && Array.isArray(value)) {
+      for (const id of value) url.searchParams.append("email_ids[]", String(id));
+    } else if (value !== undefined && value !== null) {
+      url.searchParams.set(key, String(value));
+    }
+  }
 
-function generateMailboxUsername() {
-  const nonce = globalThis.crypto?.randomUUID?.().replace(/-/g, "") || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
-  // A unique suffix prevents a small, predictable address pool from becoming
-  // permanently exhausted while preserving a recognisable site-specific prefix.
-  return `${ADDRESS_PREFIX}${nonce.slice(0, 10)}`.slice(0, 64);
-}
-
-function isAddressConflict(error) {
-  return error?.status === 409 || error?.status === 422;
-}
-
-function isRetryableProviderError(error) {
-  return isAddressConflict(error) || error?.status === 429 || error?.status >= 500 || error?.name === "AbortError";
-}
-
-async function callMailboxProvider(baseUrl, path, { method = "GET", token, body } = {}) {
-  // Vercel's Node runtime can lag modern AbortSignal helpers, so keep timeout
-  // behavior portable rather than depending on AbortSignal.timeout().
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TEMP_EMAIL_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    const response = await fetch(`${baseUrl}${path}`, {
-      method,
-      headers: {
-        Accept: "application/ld+json, application/json",
-        "User-Agent": "MahbubSardarSabujTempEmail/3.0",
-        ...(body ? { "Content-Type": "application/json" } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+    const response = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": USER_AGENT },
       signal: controller.signal,
     });
     const text = await response.text();
     let payload = null;
     try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
-
-    if (!response.ok) {
-      const error = new Error(readableProviderError(payload, "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।"));
-      error.status = response.status === 429 || response.status >= 500 ? 502 : response.status;
+    if (!response.ok || payload === null || payload === undefined) {
+      const error = new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+      error.status = response.status >= 400 ? 502 : 503;
       throw error;
     }
     return payload;
@@ -140,120 +110,109 @@ async function callMailboxProvider(baseUrl, path, { method = "GET", token, body 
   }
 }
 
-async function getShortestActiveDomain(baseUrl) {
-  const domains = await callMailboxProvider(baseUrl, "/domains");
-  const active = (domains?.["hydra:member"] || [])
-    .filter((domain) => domain?.isActive && !domain?.isPrivate && isString(domain?.domain, 190))
-    .map((domain) => domain.domain)
-    .sort((first, second) => first.length - second.length || first.localeCompare(second));
-  if (!active[0]) {
-    const error = new Error("কোনো সক্রিয় ইমেইল ডোমেইন পাওয়া যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
-    error.status = 502;
+function requireSession(token, id) {
+  const sid = parseGuerrillaToken(token);
+  if (!sid || (id !== undefined && (!isIdentifier(id) || id !== sid))) {
+    const error = new Error("ইমেইল সেশনটি আর সক্রিয় নেই");
+    error.status = 400;
     throw error;
   }
-  return active[0];
+  return sid;
 }
 
-async function createAccountWithProvider(provider) {
-  const domain = await getShortestActiveDomain(provider.baseUrl);
+function toIsoTimestamp(value) {
+  const seconds = Number(value);
+  return Number.isFinite(seconds) && seconds > 0
+    ? new Date(seconds * 1000).toISOString()
+    : new Date().toISOString();
+}
 
-  for (let attempt = 1; attempt <= RANDOM_ADDRESS_ATTEMPTS; attempt += 1) {
-    const address = `${generateMailboxUsername()}@${domain}`;
-    const password = generateMailboxPassword();
-    try {
-      const account = await callMailboxProvider(provider.baseUrl, "/accounts", { method: "POST", body: { address, password } });
-      if (!isIdentifier(account?.id) || !isAddress(account?.address)) {
-        throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-      }
-      const session = await callMailboxProvider(provider.baseUrl, "/token", { method: "POST", body: { address, password } });
-      if (!isToken(session?.token)) {
-        // A partially created account should not be left active when token creation fails.
-        await callMailboxProvider(provider.baseUrl, `/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: session?.token }).catch(() => undefined);
-        throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-      }
-      return {
-        id: account.id,
-        address: account.address,
-        token: session.token,
-        createdAt: account.createdAt || new Date().toISOString(),
-      };
-    } catch (error) {
-      // Address collisions are retried locally without exposing account allocation
-      // details to the browser or making the UI issue repeated requests.
-      if (isAddressConflict(error)) continue;
-      throw error;
-    }
+function decodeHtmlEntities(value) {
+  return String(value || "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;|&#39;/g, "'");
+}
+
+function mapGuerrillaMessage(message) {
+  const from = decodeHtmlEntities(message?.mail_from || "");
+  return {
+    id: String(message?.mail_id || ""),
+    from: { name: from.split("@")[0] || "অজানা প্রেরক", address: from },
+    subject: decodeHtmlEntities(message?.mail_subject || "(বিষয় নেই)"),
+    intro: decodeHtmlEntities(message?.mail_excerpt || ""),
+    seen: Number(message?.mail_read) === 1,
+    createdAt: toIsoTimestamp(message?.mail_timestamp),
+    hasAttachments: Number(message?.att) > 0,
+  };
+}
+
+function mapGuerrillaDetail(message) {
+  const mapped = mapGuerrillaMessage(message);
+  const html = typeof message?.mail_html === "string" ? message.mail_html : "";
+  return {
+    ...mapped,
+    text: decodeHtmlEntities(message?.mail_body || ""),
+    html: html ? [html] : [],
+  };
+}
+
+async function createAccount(req) {
+  const account = await callGuerrilla("get_email_address", { lang: "en" }, req);
+  if (!isString(account?.email_addr, 254) || !isString(account?.sid_token, 128)) {
+    throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
   }
-
-  const error = new Error("নতুন ইমেইল ঠিকানা বরাদ্দ করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
-  error.status = 409;
-  throw error;
+  return {
+    id: account.sid_token,
+    address: account.email_addr,
+    token: `gm-${account.sid_token}`,
+    createdAt: toIsoTimestamp(account.email_timestamp),
+  };
 }
 
-async function createTemporaryAccount() {
-  let lastError;
+async function getMessages(req, token) {
+  const sid = requireSession(token);
+  const data = await callGuerrilla("get_email_list", { offset: 0, sid_token: sid }, req);
+  const list = Array.isArray(data.list) ? data.list.map(mapGuerrillaMessage) : [];
+  return { "hydra:member": list };
+}
 
-  for (const provider of MAIL_PROVIDERS) {
-    try {
-      return await createAccountWithProvider(provider);
-    } catch (error) {
-      lastError = error;
-      console.warn(`Temporary email provider ${provider.name} failed:`, error?.message || "Unknown error");
-      if (!isRetryableProviderError(error)) throw error;
-    }
+async function getMessage(req, token, id) {
+  const sid = requireSession(token);
+  if (!/^\d{1,20}$/.test(String(id))) {
+    const error = new Error("অবৈধ ইমেইল অনুরোধ");
+    error.status = 400;
+    throw error;
   }
-
-  throw lastError || new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+  const data = await callGuerrilla("fetch_email", { email_id: id, sid_token: sid }, req);
+  return mapGuerrillaDetail(data);
 }
 
-function isTokenProviderMismatch(error) {
-  return error?.status === 401 || error?.status === 404;
-}
-
-async function callTokenProvider(path, options) {
-  let lastError;
-
-  for (const provider of MAIL_PROVIDERS) {
-    try {
-      return await callMailboxProvider(provider.baseUrl, path, options);
-    } catch (error) {
-      lastError = error;
-      if (!isTokenProviderMismatch(error) && !isRetryableProviderError(error)) throw error;
-    }
-  }
-
-  throw lastError || new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
-}
-
-async function handleMailboxAction({ action, token, id }, res) {
+async function handleMailboxAction({ action, token, id }, req, res) {
   switch (action) {
     case "domains":
-      // The first provider may be temporarily unavailable; use the same
-      // provider fallback as the mailbox/session actions instead of making
-      // the whole tab fail on a single upstream outage.
-      return res.status(200).json(await callTokenProvider("/domains", {}));
-
+      return res.status(200).json({
+        "hydra:member": [{ domain: "guerrillamailblock.com", isActive: true, isPrivate: false }],
+      });
     case "createAccount":
-      return res.status(201).json(await createTemporaryAccount());
-
+      return res.status(201).json(await createAccount(req));
     case "messages":
-      if (!isToken(token)) return res.status(400).json({ error: "ইমেইল সেশনটি আর সক্রিয় নেই" });
-      return res.status(200).json(await callTokenProvider("/messages", { token }));
-
+      return res.status(200).json(await getMessages(req, token));
     case "message":
-      if (!isToken(token) || !isIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      return res.status(200).json(await callTokenProvider(`/messages/${encodeURIComponent(id)}`, { token }));
-
-    case "deleteMessage":
-      if (!isToken(token) || !isIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callTokenProvider(`/messages/${encodeURIComponent(id)}`, { method: "DELETE", token });
+      return res.status(200).json(await getMessage(req, token, id));
+    case "deleteMessage": {
+      const sid = requireSession(token);
+      if (!/^\d{1,20}$/.test(String(id))) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
+      await callGuerrilla("del_email", { "email_ids[]": [id], sid_token: sid }, req);
       return res.status(204).end();
-
-    case "deleteAccount":
-      if (!isToken(token) || !isIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callTokenProvider(`/accounts/${encodeURIComponent(id)}`, { method: "DELETE", token });
+    }
+    case "deleteAccount": {
+      const sid = requireSession(token, id);
+      await callGuerrilla("forget_me", { sid_token: sid }, req);
       return res.status(204).end();
-
+    }
     default:
       return res.status(400).json({ error: "অজানা ইমেইল অনুরোধ" });
   }
