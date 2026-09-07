@@ -1,11 +1,12 @@
-// api/temp-email-proxy.js — same-origin adapter for Guerrilla Mail's public JSON API.
-// The adapter keeps provider session details server-side and exposes only the
-// mailbox actions used by the website.
+// api/temp-email-proxy.js — same-origin adapter for Catchmail's public API.
+// The adapter keeps the mailbox address behind a short-lived session token and
+// exposes only the mailbox actions used by the website.
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
-const GUERRILLA_API = "https://api.guerrillamail.com/ajax.php";
+const CATCHMAIL_API = "https://api.catchmail.io/api/v1";
+const TEMP_EMAIL_DOMAIN = "zeppost.com";
 const REQUEST_TIMEOUT_MS = 12_000;
-const USER_AGENT = "MahbubSardarSabujTempEmail/5.0";
+const USER_AGENT = "MahbubSardarSabujTempEmail/6.0";
 const MAILBOX_NAME_PREFIX = "MahbubSardarSabuj";
 const MAILBOX_NAME_PATTERN = /^MahbubSardarSabuj\d{4}$/;
 
@@ -63,13 +64,22 @@ function isString(value, maxLength = 2048) {
   return typeof value === "string" && value.length > 0 && value.length <= maxLength;
 }
 
-function isIdentifier(value) {
-  return typeof value === "string" && /^[A-Za-z0-9]{1,80}$/.test(value);
+function isMessageIdentifier(value) {
+  return typeof value === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(value);
 }
 
-function parseGuerrillaToken(token) {
-  if (!isString(token, 128) || !/^gm-[A-Za-z0-9]{20,100}$/.test(token)) return null;
-  return token.slice(3);
+function encodeMailboxToken(address) {
+  return `cm-${Buffer.from(address, "utf8").toString("base64url")}`;
+}
+
+function parseMailboxToken(token) {
+  if (!isString(token, 256) || !/^cm-[A-Za-z0-9_-]{20,220}$/.test(token)) return null;
+  try {
+    const address = Buffer.from(token.slice(3), "base64url").toString("utf8");
+    return /^[A-Za-z0-9._+-]{1,64}@[A-Za-z0-9.-]{3,253}$/.test(address) ? address : null;
+  } catch {
+    return null;
+  }
 }
 
 function clientIp(req) {
@@ -78,48 +88,45 @@ function clientIp(req) {
   return /^[A-Za-z0-9:._-]{1,80}$/.test(value) ? value : "127.0.0.1";
 }
 
-async function callGuerrilla(functionName, params, req) {
-  const url = new URL(GUERRILLA_API);
-  url.searchParams.set("f", functionName);
-  url.searchParams.set("ip", clientIp(req));
-  url.searchParams.set("agent", USER_AGENT);
-  for (const [key, value] of Object.entries(params || {})) {
-    if (key === "email_ids[]" && Array.isArray(value)) {
-      for (const id of value) url.searchParams.append("email_ids[]", String(id));
-    } else if (value !== undefined && value !== null) {
-      url.searchParams.set(key, String(value));
-    }
+async function callCatchmail(path, req, options = {}) {
+  const url = new URL(`${CATCHMAIL_API}${path}`);
+  for (const [key, value] of Object.entries(options.query || {})) {
+    if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
   }
-
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     const response = await fetch(url, {
-      headers: { Accept: "application/json", "User-Agent": USER_AGENT },
+      method: options.method || "GET",
+      headers: { Accept: "application/json", "User-Agent": USER_AGENT, "X-Forwarded-For": clientIp(req) },
       signal: controller.signal,
     });
     const text = await response.text();
     let payload = null;
     try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
-    if (!response.ok || payload === null || payload === undefined) {
-      const error = new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
-      error.status = response.status >= 400 ? 502 : 503;
+    if (!response.ok) {
+      const error = new Error(
+        response.status === 429
+          ? "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
+          : "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না।"
+      );
+      error.status = response.status >= 500 || response.status === 429 ? 502 : response.status;
       throw error;
     }
-    return payload;
+    return payload || {};
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-function requireSession(token, id) {
-  const sid = parseGuerrillaToken(token);
-  if (!sid || (id !== undefined && (!isIdentifier(id) || id !== sid))) {
+function requireMailbox(token, id) {
+  const address = parseMailboxToken(token);
+  if (!address || (id !== undefined && id !== token)) {
     const error = new Error("ইমেইল সেশনটি আর সক্রিয় নেই");
     error.status = 400;
     throw error;
   }
-  return sid;
+  return address;
 }
 
 function createMailboxUsername() {
@@ -128,10 +135,8 @@ function createMailboxUsername() {
 }
 
 function toIsoTimestamp(value) {
-  const seconds = Number(value);
-  return Number.isFinite(seconds) && seconds > 0
-    ? new Date(seconds * 1000).toISOString()
-    : new Date().toISOString();
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : new Date().toISOString();
 }
 
 function decodeHtmlEntities(value) {
@@ -143,100 +148,71 @@ function decodeHtmlEntities(value) {
     .replace(/&#039;|&#39;/g, "'");
 }
 
-function mapGuerrillaMessage(message) {
-  const from = decodeHtmlEntities(message?.mail_from || "");
+function mapCatchmailMessage(message) {
+  const from = typeof message?.from === "string" ? message.from : message?.from?.address || "";
   return {
-    id: String(message?.mail_id || ""),
+    id: String(message?.id || ""),
     from: { name: from.split("@")[0] || "অজানা প্রেরক", address: from },
-    subject: decodeHtmlEntities(message?.mail_subject || "(বিষয় নেই)"),
-    intro: decodeHtmlEntities(message?.mail_excerpt || ""),
-    seen: Number(message?.mail_read) === 1,
-    createdAt: toIsoTimestamp(message?.mail_timestamp),
-    hasAttachments: Number(message?.att) > 0,
+    subject: decodeHtmlEntities(message?.subject || "(বিষয় নেই)"),
+    intro: decodeHtmlEntities(message?.intro || ""),
+    seen: Boolean(message?.seen),
+    createdAt: toIsoTimestamp(message?.date || message?.createdAt),
+    hasAttachments: Number(message?.attachments?.length || message?.hasAttachments) > 0,
   };
 }
 
-function mapGuerrillaDetail(message) {
-  const mapped = mapGuerrillaMessage(message);
-  const html = typeof message?.mail_html === "string" ? message.mail_html : "";
+function mapCatchmailDetail(message) {
+  const mapped = mapCatchmailMessage(message);
   return {
     ...mapped,
-    text: decodeHtmlEntities(message?.mail_body || ""),
-    html: html ? [html] : [],
+    text: message?.body?.text || message?.text || "",
+    html: message?.body?.html ? [message.body.html] : (Array.isArray(message?.html) ? message.html : []),
   };
 }
 
-async function createAccount(req) {
-  const session = await callGuerrilla("get_email_address", { lang: "en" }, req);
-  if (!isString(session?.sid_token, 128)) {
-    throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-  }
-
-  // Guerrilla Mail supports changing the local-part after a session is created.
-  // Keep the requested English name stable while varying a four-digit suffix.
-  const username = createMailboxUsername();
-  const account = await callGuerrilla(
-    "set_email_user",
-    { email_user: username, lang: "en", sid_token: session.sid_token },
-    req
-  );
-  if (
-    !isString(account?.email_addr, 254) ||
-    !MAILBOX_NAME_PATTERN.test(account.email_addr.split("@")[0] || "") ||
-    !isString(account?.sid_token, 128)
-  ) {
-    throw new Error("নামভিত্তিক ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-  }
-
-  return {
-    id: account.sid_token,
-    address: account.email_addr,
-    token: `gm-${account.sid_token}`,
-    createdAt: toIsoTimestamp(account.email_timestamp),
-  };
+async function createAccount() {
+  const address = `${createMailboxUsername()}@${TEMP_EMAIL_DOMAIN}`;
+  const token = encodeMailboxToken(address);
+  return { id: token, address, token, createdAt: new Date().toISOString() };
 }
 
 async function getMessages(req, token) {
-  const sid = requireSession(token);
-  const data = await callGuerrilla("get_email_list", { offset: 0, sid_token: sid }, req);
-  const list = Array.isArray(data.list) ? data.list.map(mapGuerrillaMessage) : [];
+  const address = requireMailbox(token);
+  const data = await callCatchmail("/mailbox", req, { query: { address } });
+  const list = Array.isArray(data.messages) ? data.messages.map(mapCatchmailMessage) : [];
   return { "hydra:member": list };
 }
 
 async function getMessage(req, token, id) {
-  const sid = requireSession(token);
-  if (!/^\d{1,20}$/.test(String(id))) {
+  const address = requireMailbox(token);
+  if (!isMessageIdentifier(id)) {
     const error = new Error("অবৈধ ইমেইল অনুরোধ");
     error.status = 400;
     throw error;
   }
-  const data = await callGuerrilla("fetch_email", { email_id: id, sid_token: sid }, req);
-  return mapGuerrillaDetail(data);
+  const data = await callCatchmail(`/message/${encodeURIComponent(id)}`, req, { query: { mailbox: address } });
+  return mapCatchmailDetail(data);
 }
 
 async function handleMailboxAction({ action, token, id }, req, res) {
   switch (action) {
     case "domains":
-      return res.status(200).json({
-        "hydra:member": [{ domain: "guerrillamailblock.com", isActive: true, isPrivate: false }],
-      });
+      return res.status(200).json({ "hydra:member": [{ domain: TEMP_EMAIL_DOMAIN, isActive: true, isPrivate: false }] });
     case "createAccount":
-      return res.status(201).json(await createAccount(req));
+      return res.status(201).json(await createAccount());
     case "messages":
       return res.status(200).json(await getMessages(req, token));
     case "message":
       return res.status(200).json(await getMessage(req, token, id));
     case "deleteMessage": {
-      const sid = requireSession(token);
-      if (!/^\d{1,20}$/.test(String(id))) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callGuerrilla("del_email", { "email_ids[]": [id], sid_token: sid }, req);
+      const address = requireMailbox(token);
+      if (!isMessageIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
+      await callCatchmail(`/message/${encodeURIComponent(id)}`, req, { method: "DELETE", query: { mailbox: address } });
       return res.status(204).end();
     }
-    case "deleteAccount": {
-      const sid = requireSession(token, id);
-      await callGuerrilla("forget_me", { sid_token: sid }, req);
+    case "deleteAccount":
+      requireMailbox(token, id);
       return res.status(204).end();
-    }
     default:
       return res.status(400).json({ error: "অজানা ইমেইল অনুরোধ" });
   }
