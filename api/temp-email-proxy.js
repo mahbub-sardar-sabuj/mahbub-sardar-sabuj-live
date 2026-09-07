@@ -5,7 +5,9 @@ import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
 const GUERRILLA_API = "https://api.guerrillamail.com/ajax.php";
 const REQUEST_TIMEOUT_MS = 12_000;
-const USER_AGENT = "MahbubSardarSabujTempEmail/4.0";
+const USER_AGENT = "MahbubSardarSabujTempEmail/5.0";
+const MAILBOX_NAME_PREFIX = "MahbubSardarSabuj";
+const MAILBOX_NAME_PATTERN = /^MahbubSardarSabuj\d{4}$/;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -120,6 +122,11 @@ function requireSession(token, id) {
   return sid;
 }
 
+function createMailboxUsername() {
+  const suffix = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
+  return `${MAILBOX_NAME_PREFIX}${suffix}`;
+}
+
 function toIsoTimestamp(value) {
   const seconds = Number(value);
   return Number.isFinite(seconds) && seconds > 0
@@ -160,10 +167,27 @@ function mapGuerrillaDetail(message) {
 }
 
 async function createAccount(req) {
-  const account = await callGuerrilla("get_email_address", { lang: "en" }, req);
-  if (!isString(account?.email_addr, 254) || !isString(account?.sid_token, 128)) {
+  const session = await callGuerrilla("get_email_address", { lang: "en" }, req);
+  if (!isString(session?.sid_token, 128)) {
     throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
   }
+
+  // Guerrilla Mail supports changing the local-part after a session is created.
+  // Keep the requested English name stable while varying a four-digit suffix.
+  const username = createMailboxUsername();
+  const account = await callGuerrilla(
+    "set_email_user",
+    { email_user: username, lang: "en", sid_token: session.sid_token },
+    req
+  );
+  if (
+    !isString(account?.email_addr, 254) ||
+    !MAILBOX_NAME_PATTERN.test(account.email_addr.split("@")[0] || "") ||
+    !isString(account?.sid_token, 128)
+  ) {
+    throw new Error("নামভিত্তিক ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
+  }
+
   return {
     id: account.sid_token,
     address: account.email_addr,

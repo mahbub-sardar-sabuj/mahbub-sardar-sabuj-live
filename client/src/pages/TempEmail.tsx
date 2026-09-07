@@ -336,8 +336,8 @@ export default function TempEmail() {
   const [viewingMessage, setViewingMessage] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // The server allocates the next available two-digit address in one protected
-  // request. This avoids browser-side collision loops and request-rate failures.
+  // The server keeps the English name stable and changes a four-digit suffix
+  // in one protected request, avoiding browser-side collision loops.
   const createAccount = async (): Promise<EmailAccount> => {
     const accountData = await mailTmRequest<MailTmAccountResponse>("/accounts", { method: "POST" });
     if (!accountData.id || !accountData.address || !accountData.token) {
