@@ -1,14 +1,13 @@
-// api/temp-email-proxy.js — same-origin adapter for Catchmail's public API.
-// The adapter keeps the mailbox address behind a short-lived session token and
-// exposes only the mailbox actions used by the website.
+// api/temp-email-proxy.js — same-origin adapter for mail.tm's public API.
+// The adapter keeps the mailbox credentials behind a short-lived browser token
+// and exposes only the mailbox actions used by the website.
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
-const CATCHMAIL_API = "https://api.catchmail.io/api/v1";
-const TEMP_EMAIL_DOMAIN = "zeppost.com";
+const MAIL_TM_API = "https://api.mail.tm";
 const REQUEST_TIMEOUT_MS = 12_000;
-const USER_AGENT = "MahbubSardarSabujTempEmail/6.0";
-const MAILBOX_NAME_PREFIX = "MahbubSardarSabuj";
-const MAILBOX_NAME_PATTERN = /^MahbubSardarSabuj\d{4}$/;
+const USER_AGENT = "MahbubSardarSabujTempEmail/7.0";
+const MAILBOX_NAME_PREFIX = "mahbubsardarsabuj";
+const MAILBOX_NAME_PATTERN = /^mahbubsardarsabuj\d{5,}$/;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -68,70 +67,35 @@ function isMessageIdentifier(value) {
   return typeof value === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(value);
 }
 
-function encodeMailboxToken(address) {
-  return `cm-${Buffer.from(address, "utf8").toString("base64url")}`;
+function encodeMailboxToken(mailbox) {
+  return `mt-${Buffer.from(JSON.stringify(mailbox), "utf8").toString("base64url")}`;
 }
 
 function parseMailboxToken(token) {
-  if (!isString(token, 256) || !/^cm-[A-Za-z0-9_-]{20,220}$/.test(token)) return null;
+  if (!isString(token, 4096) || !/^mt-[A-Za-z0-9_-]{40,4000}$/.test(token)) return null;
   try {
-    const address = Buffer.from(token.slice(3), "base64url").toString("utf8");
-    return /^[A-Za-z0-9._+-]{1,64}@[A-Za-z0-9.-]{3,253}$/.test(address) ? address : null;
+    const mailbox = JSON.parse(Buffer.from(token.slice(3), "base64url").toString("utf8"));
+    if (!mailbox || typeof mailbox !== "object") return null;
+    if (!/^[a-z0-9._+-]{1,64}@[a-z0-9.-]{3,253}$/.test(mailbox.address)) return null;
+    if (!/^[A-Za-z0-9._-]{80,2000}$/.test(mailbox.jwt)) return null;
+    return { address: mailbox.address, jwt: mailbox.jwt };
   } catch {
     return null;
   }
 }
 
-function clientIp(req) {
-  const forwarded = req.headers?.["x-forwarded-for"] || req.headers?.["x-real-ip"] || "127.0.0.1";
-  const value = String(forwarded).split(",")[0].trim();
-  return /^[A-Za-z0-9:._-]{1,80}$/.test(value) ? value : "127.0.0.1";
-}
-
-async function callCatchmail(path, req, options = {}) {
-  const url = new URL(`${CATCHMAIL_API}${path}`);
-  for (const [key, value] of Object.entries(options.query || {})) {
-    if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
-  }
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const response = await fetch(url, {
-      method: options.method || "GET",
-      headers: { Accept: "application/json", "User-Agent": USER_AGENT, "X-Forwarded-For": clientIp(req) },
-      signal: controller.signal,
-    });
-    const text = await response.text();
-    let payload = null;
-    try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
-    if (!response.ok) {
-      const error = new Error(
-        response.status === 429
-          ? "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
-          : "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না।"
-      );
-      error.status = response.status >= 500 || response.status === 429 ? 502 : response.status;
-      throw error;
-    }
-    return payload || {};
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 function requireMailbox(token, id) {
-  const address = parseMailboxToken(token);
-  if (!address || (id !== undefined && id !== token)) {
+  const mailbox = parseMailboxToken(token);
+  if (!mailbox || (id !== undefined && id !== token)) {
     const error = new Error("ইমেইল সেশনটি আর সক্রিয় নেই");
     error.status = 400;
     throw error;
   }
-  return address;
+  return mailbox;
 }
 
 function createMailboxUsername() {
-  const suffix = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
-  return `${MAILBOX_NAME_PREFIX}${suffix}`;
+  return `${MAILBOX_NAME_PREFIX}${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`.toLowerCase();
 }
 
 function toIsoTimestamp(value) {
@@ -141,73 +105,127 @@ function toIsoTimestamp(value) {
 
 function decodeHtmlEntities(value) {
   return String(value || "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;|&#39;/g, "'");
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'");
 }
 
-function mapCatchmailMessage(message) {
-  const from = typeof message?.from === "string" ? message.from : message?.from?.address || "";
+function mapMailTmMessage(message) {
+  const from = message?.from || {};
   return {
     id: String(message?.id || ""),
-    from: { name: from.split("@")[0] || "অজানা প্রেরক", address: from },
+    from: { name: from.name || from.address?.split("@")[0] || "অজানা প্রেরক", address: from.address || "" },
     subject: decodeHtmlEntities(message?.subject || "(বিষয় নেই)"),
     intro: decodeHtmlEntities(message?.intro || ""),
     seen: Boolean(message?.seen),
-    createdAt: toIsoTimestamp(message?.date || message?.createdAt),
-    hasAttachments: Number(message?.attachments?.length || message?.hasAttachments) > 0,
+    createdAt: toIsoTimestamp(message?.createdAt),
+    hasAttachments: Boolean(message?.hasAttachments),
   };
 }
 
-function mapCatchmailDetail(message) {
-  const mapped = mapCatchmailMessage(message);
+function mapMailTmDetail(message) {
+  const mapped = mapMailTmMessage(message);
   return {
     ...mapped,
-    text: message?.body?.text || message?.text || "",
-    html: message?.body?.html ? [message.body.html] : (Array.isArray(message?.html) ? message.html : []),
+    text: message?.text || "",
+    html: Array.isArray(message?.html) ? message.html : [],
   };
 }
 
-async function createAccount() {
-  const address = `${createMailboxUsername()}@${TEMP_EMAIL_DOMAIN}`;
-  const token = encodeMailboxToken(address);
+async function callMailTm(path, req, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const headers = {
+    Accept: "application/ld+json, application/json",
+    "User-Agent": USER_AGENT,
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(options.jwt ? { Authorization: `Bearer ${options.jwt}` } : {}),
+  };
+  try {
+    const response = await fetch(`${MAIL_TM_API}${path}`, {
+      method: options.method || "GET",
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    let payload = null;
+    try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
+    if (!response.ok) {
+      const error = new Error(response.status === 429
+        ? "ইমেইল সেবা সাময়িকভাবে ব্যস্ত আছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
+        : response.status === 401
+          ? "ইমেইল সেশনটির মেয়াদ শেষ হয়েছে। নতুন ইমেইল তৈরি করুন।"
+          : "ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না।");
+      error.status = response.status === 429 || response.status >= 500 ? 502 : response.status;
+      throw error;
+    }
+    return payload || {};
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function getActiveDomain(req) {
+  const data = await callMailTm("/domains", req);
+  const domain = (Array.isArray(data["hydra:member"]) ? data["hydra:member"] : [])
+    .find((item) => item?.isActive && typeof item.domain === "string")?.domain;
+  if (!domain) {
+    const error = new Error("কোনো সক্রিয় ইমেইল ডোমেইন পাওয়া যায়নি");
+    error.status = 502;
+    throw error;
+  }
+  return domain.toLowerCase();
+}
+
+async function createAccount(req) {
+  const domain = await getActiveDomain(req);
+  const address = `${createMailboxUsername()}@${domain}`;
+  const password = `Mss${cryptoRandom()}aA1!`;
+  await callMailTm("/accounts", req, { method: "POST", body: { address, password } });
+  const auth = await callMailTm("/token", req, { method: "POST", body: { address, password } });
+  if (!auth.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
+  const token = encodeMailboxToken({ address, jwt: auth.token });
   return { id: token, address, token, createdAt: new Date().toISOString() };
 }
 
+function cryptoRandom() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
 async function getMessages(req, token) {
-  const address = requireMailbox(token);
-  const data = await callCatchmail("/mailbox", req, { query: { address } });
-  const list = Array.isArray(data.messages) ? data.messages.map(mapCatchmailMessage) : [];
+  const mailbox = requireMailbox(token);
+  const data = await callMailTm("/messages", req, { jwt: mailbox.jwt });
+  const list = Array.isArray(data["hydra:member"]) ? data["hydra:member"].map(mapMailTmMessage) : [];
   return { "hydra:member": list };
 }
 
 async function getMessage(req, token, id) {
-  const address = requireMailbox(token);
+  const mailbox = requireMailbox(token);
   if (!isMessageIdentifier(id)) {
     const error = new Error("অবৈধ ইমেইল অনুরোধ");
     error.status = 400;
     throw error;
   }
-  const data = await callCatchmail(`/message/${encodeURIComponent(id)}`, req, { query: { mailbox: address } });
-  return mapCatchmailDetail(data);
+  const data = await callMailTm(`/messages/${encodeURIComponent(id)}`, req, { jwt: mailbox.jwt });
+  return mapMailTmDetail(data);
 }
 
 async function handleMailboxAction({ action, token, id }, req, res) {
   switch (action) {
-    case "domains":
-      return res.status(200).json({ "hydra:member": [{ domain: TEMP_EMAIL_DOMAIN, isActive: true, isPrivate: false }] });
+    case "domains": {
+      const domain = await getActiveDomain(req);
+      return res.status(200).json({ "hydra:member": [{ domain, isActive: true, isPrivate: false }] });
+    }
     case "createAccount":
-      return res.status(201).json(await createAccount());
+      return res.status(201).json(await createAccount(req));
     case "messages":
       return res.status(200).json(await getMessages(req, token));
     case "message":
       return res.status(200).json(await getMessage(req, token, id));
     case "deleteMessage": {
-      const address = requireMailbox(token);
+      const mailbox = requireMailbox(token);
       if (!isMessageIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callCatchmail(`/message/${encodeURIComponent(id)}`, req, { method: "DELETE", query: { mailbox: address } });
+      await callMailTm(`/messages/${encodeURIComponent(id)}`, req, { method: "DELETE", jwt: mailbox.jwt });
       return res.status(204).end();
     }
     case "deleteAccount":
@@ -217,3 +235,6 @@ async function handleMailboxAction({ action, token, id }, req, res) {
       return res.status(400).json({ error: "অজানা ইমেইল অনুরোধ" });
   }
 }
+
+// Keep this export for the standalone API adapter's module contract.
+export { MAILBOX_NAME_PATTERN };

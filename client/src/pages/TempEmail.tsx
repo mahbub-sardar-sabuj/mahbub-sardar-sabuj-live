@@ -36,9 +36,9 @@ function resolveMailboxAction(path: string, method: string): { action: string; i
   if (path === "/domains" && method === "GET") return { action: "domains" };
   if (path === "/accounts" && method === "POST") return { action: "createAccount" };
   if (path === "/messages" && method === "GET") return { action: "messages" };
-  const messageMatch = path.match(/^\/messages\/([A-Za-z0-9]+)$/);
+  const messageMatch = path.match(/^\/messages\/([A-Za-z0-9_-]+)$/);
   if (messageMatch) return { action: method === "DELETE" ? "deleteMessage" : "message", id: messageMatch[1] };
-  const accountMatch = path.match(/^\/accounts\/([A-Za-z0-9]+)$/);
+  const accountMatch = path.match(/^\/accounts\/([A-Za-z0-9_-]+)$/);
   if (accountMatch && method === "DELETE") return { action: "deleteAccount", id: accountMatch[1] };
   throw new Error("অবৈধ ইমেইল অনুরোধ");
 }
