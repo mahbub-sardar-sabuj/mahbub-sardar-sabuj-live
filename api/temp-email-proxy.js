@@ -4,6 +4,7 @@
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
 const MAIL_TM_API = "https://api.mail.tm";
+const CATCHMAIL_API = "https://api.catchmail.io/api/v1";
 // mail.tm's /domains endpoint is aggressively rate-limited from shared serverless
 // egress IPs. Keep the currently active domain here so mailbox creation does not
 // fail before it can even reach the account endpoint.
@@ -81,8 +82,9 @@ function parseMailboxToken(token) {
     const mailbox = JSON.parse(Buffer.from(token.slice(3), "base64url").toString("utf8"));
     if (!mailbox || typeof mailbox !== "object") return null;
     if (!/^[a-z0-9._+-]{1,64}@[a-z0-9.-]{3,253}$/.test(mailbox.address)) return null;
+    if (mailbox.provider === "catchmail") return { address: mailbox.address, provider: "catchmail" };
     if (!/^[A-Za-z0-9._-]{80,2000}$/.test(mailbox.jwt)) return null;
-    return { address: mailbox.address, jwt: mailbox.jwt };
+    return { address: mailbox.address, jwt: mailbox.jwt, provider: "mail.tm" };
   } catch {
     return null;
   }
@@ -114,7 +116,7 @@ function decodeHtmlEntities(value) {
 }
 
 function mapMailTmMessage(message) {
-  const from = message?.from || {};
+  const from = typeof message?.from === "string" ? { address: message.from } : (message?.from || {});
   return {
     id: String(message?.id || ""),
     from: { name: from.name || from.address?.split("@")[0] || "অজানা প্রেরক", address: from.address || "" },
@@ -169,6 +171,31 @@ async function callMailTm(path, req, options = {}) {
   }
 }
 
+async function callCatchmail(path, req, options = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const url = new URL(`${CATCHMAIL_API}${path}`);
+  for (const [key, value] of Object.entries(options.query || {})) url.searchParams.set(key, String(value));
+  try {
+    const response = await fetch(url, {
+      method: options.method || "GET",
+      headers: { Accept: "application/json", "User-Agent": USER_AGENT },
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    let payload = null;
+    try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
+    if (!response.ok) {
+      const error = new Error("ইমেইল সেবাটি এখন ব্যবহার করা যাচ্ছে না।");
+      error.status = response.status >= 500 || response.status === 429 ? 502 : response.status;
+      throw error;
+    }
+    return payload || {};
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function getActiveDomain(req) {
   return MAIL_TM_DOMAIN;
 }
@@ -177,11 +204,18 @@ async function createAccount(req) {
   const domain = await getActiveDomain(req);
   const address = `${createMailboxUsername()}@${domain}`;
   const password = `Mss${cryptoRandom()}aA1!`;
-  await callMailTm("/accounts", req, { method: "POST", body: { address, password } });
-  const auth = await callMailTm("/token", req, { method: "POST", body: { address, password } });
-  if (!auth.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
-  const token = encodeMailboxToken({ address, jwt: auth.token });
-  return { id: token, address, token, createdAt: new Date().toISOString() };
+  try {
+    await callMailTm("/accounts", req, { method: "POST", body: { address, password } });
+    const auth = await callMailTm("/token", req, { method: "POST", body: { address, password } });
+    if (!auth.token) throw new Error("ইমেইল সেশন তৈরি করতে সমস্যা হয়েছে");
+    const token = encodeMailboxToken({ address, jwt: auth.token });
+    return { id: token, address, token, createdAt: new Date().toISOString() };
+  } catch (error) {
+    console.warn("mail.tm account creation failed; using Catchmail fallback:", error?.message || error);
+    const fallbackAddress = `${createMailboxUsername()}@zeppost.com`;
+    const token = encodeMailboxToken({ provider: "catchmail", address: fallbackAddress });
+    return { id: token, address: fallbackAddress, token, createdAt: new Date().toISOString() };
+  }
 }
 
 function cryptoRandom() {
@@ -190,6 +224,10 @@ function cryptoRandom() {
 
 async function getMessages(req, token) {
   const mailbox = requireMailbox(token);
+  if (mailbox.provider === "catchmail") {
+    const data = await callCatchmail("/mailbox", req, { query: { address: mailbox.address } });
+    return { "hydra:member": Array.isArray(data.messages) ? data.messages.map(mapMailTmMessage) : [] };
+  }
   const data = await callMailTm("/messages", req, { jwt: mailbox.jwt });
   const list = Array.isArray(data["hydra:member"]) ? data["hydra:member"].map(mapMailTmMessage) : [];
   return { "hydra:member": list };
@@ -202,7 +240,9 @@ async function getMessage(req, token, id) {
     error.status = 400;
     throw error;
   }
-  const data = await callMailTm(`/messages/${encodeURIComponent(id)}`, req, { jwt: mailbox.jwt });
+  const data = mailbox.provider === "catchmail"
+    ? await callCatchmail(`/message/${encodeURIComponent(id)}`, req, { query: { mailbox: mailbox.address } })
+    : await callMailTm(`/messages/${encodeURIComponent(id)}`, req, { jwt: mailbox.jwt });
   return mapMailTmDetail(data);
 }
 
@@ -221,7 +261,11 @@ async function handleMailboxAction({ action, token, id }, req, res) {
     case "deleteMessage": {
       const mailbox = requireMailbox(token);
       if (!isMessageIdentifier(id)) return res.status(400).json({ error: "অবৈধ ইমেইল অনুরোধ" });
-      await callMailTm(`/messages/${encodeURIComponent(id)}`, req, { method: "DELETE", jwt: mailbox.jwt });
+      if (mailbox.provider === "catchmail") {
+        await callCatchmail(`/message/${encodeURIComponent(id)}`, req, { method: "DELETE", query: { mailbox: mailbox.address } });
+      } else {
+        await callMailTm(`/messages/${encodeURIComponent(id)}`, req, { method: "DELETE", jwt: mailbox.jwt });
+      }
       return res.status(204).end();
     }
     case "deleteAccount":
