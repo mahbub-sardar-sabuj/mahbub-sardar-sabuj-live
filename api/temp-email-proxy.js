@@ -4,6 +4,10 @@
 import { checkRateLimit, limitJsonBodySize } from "./_utils/security.js";
 
 const MAIL_TM_API = "https://api.mail.tm";
+// mail.tm's /domains endpoint is aggressively rate-limited from shared serverless
+// egress IPs. Keep the currently active domain here so mailbox creation does not
+// fail before it can even reach the account endpoint.
+const MAIL_TM_DOMAIN = "uberip.com";
 const REQUEST_TIMEOUT_MS = 12_000;
 const USER_AGENT = "MahbubSardarSabujTempEmail/7.0";
 const MAILBOX_NAME_PREFIX = "mahbubsardarsabuj";
@@ -166,15 +170,7 @@ async function callMailTm(path, req, options = {}) {
 }
 
 async function getActiveDomain(req) {
-  const data = await callMailTm("/domains", req);
-  const domain = (Array.isArray(data["hydra:member"]) ? data["hydra:member"] : [])
-    .find((item) => item?.isActive && typeof item.domain === "string")?.domain;
-  if (!domain) {
-    const error = new Error("কোনো সক্রিয় ইমেইল ডোমেইন পাওয়া যায়নি");
-    error.status = 502;
-    throw error;
-  }
-  return domain.toLowerCase();
+  return MAIL_TM_DOMAIN;
 }
 
 async function createAccount(req) {
