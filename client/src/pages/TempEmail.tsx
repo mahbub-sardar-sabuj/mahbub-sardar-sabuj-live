@@ -19,8 +19,8 @@ const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
 const TEMP_EMAIL_ADAPTER_ENDPOINT = "/api/temp-email-proxy";
-const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v3";
-const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v3";
+const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v4";
+const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v4";
 const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
 const TEMP_EMAIL_MAX_ATTEMPTS = 2;
 
