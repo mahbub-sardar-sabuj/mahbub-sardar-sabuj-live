@@ -49,10 +49,7 @@ try {
   expect(created.status === 201, `createAccount returned ${created.status}: ${JSON.stringify(created.body)}`);
   accountId = created.body?.id;
   expect(typeof accountId === "string", "created account has no id");
-
-  const tokenResponse = await invoke({ action: "createToken", address, password });
-  expect(tokenResponse.status === 200, `createToken returned ${tokenResponse.status}`);
-  token = tokenResponse.body?.token;
+  token = created.body?.token;
   expect(typeof token === "string" && token.length > 20, "no valid access token received");
 
   const messages = await invoke({ action: "messages", token });

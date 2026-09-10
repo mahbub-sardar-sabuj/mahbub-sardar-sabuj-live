@@ -117,23 +117,28 @@ function decodeHtmlEntities(value) {
 
 function mapMailTmMessage(message) {
   const from = typeof message?.from === "string" ? { address: message.from } : (message?.from || {});
+  const text = typeof message?.body?.text === "string" ? message.body.text : (message?.text || "");
   return {
     id: String(message?.id || ""),
     from: { name: from.name || from.address?.split("@")[0] || "অজানা প্রেরক", address: from.address || "" },
     subject: decodeHtmlEntities(message?.subject || "(বিষয় নেই)"),
-    intro: decodeHtmlEntities(message?.intro || ""),
+    intro: decodeHtmlEntities(message?.intro || text.slice(0, 240)),
     seen: Boolean(message?.seen),
-    createdAt: toIsoTimestamp(message?.createdAt),
-    hasAttachments: Boolean(message?.hasAttachments),
+    createdAt: toIsoTimestamp(message?.createdAt || message?.date),
+    hasAttachments: Boolean(message?.hasAttachments || message?.attachments?.length),
   };
 }
 
 function mapMailTmDetail(message) {
   const mapped = mapMailTmMessage(message);
+  const text = typeof message?.body?.text === "string" ? message.body.text : (message?.text || "");
+  const html = typeof message?.body?.html === "string"
+    ? message.body.html
+    : (Array.isArray(message?.html) ? message.html.join("") : (message?.html || ""));
   return {
     ...mapped,
-    text: message?.text || "",
-    html: Array.isArray(message?.html) ? message.html : [],
+    text,
+    html: html ? [html] : [],
   };
 }
 
