@@ -277,11 +277,33 @@ function timeAgo(dateStr: string): string {
 }
 
 function extractVerificationCodes(message: MessageDetail): string[] {
-  const source = `${message.subject}\n${message.text}\n${message.html.join(" ")}`.replace(/<[^>]*>/g, " ");
-  const codes = new Set<string>();
-  const contextual = /(?:verification|verify|code|otp|passcode|security|কোড|পিন)[^0-9]{0,32}([0-9]{4,8})/gi;
-  for (const match of source.matchAll(contextual)) codes.add(match[1]);
-  return [...codes].slice(0, 3);
+  // Do not inspect the subject here: verification emails commonly include a
+  // year, message id, or other numbers before the real one-time code.
+  const source = `${message.text}\n${message.html.join(" ")}`
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const codes: string[] = [];
+  const seen = new Set<string>();
+  const addCode = (value: string) => {
+    const code = value.replace(/\s+/g, "");
+    if (/^\d{4,8}$/.test(code) && !seen.has(code)) {
+      seen.add(code);
+      codes.push(code);
+    }
+  };
+
+  // Support both ordinary codes (7956) and HTML-rendered digit cells
+  // separated by whitespace (7 9 5 6). Keep the last contextual match,
+  // because introductory metadata may contain numbers before the real code.
+  const contextual = /(?:verification|verify|login|security|passcode|otp|যাচাই|ভেরিফিকেশন|লগইন|কোড|পিন)[^0-9]{0,120}((?:\d[\s]*){4,8})(?!\d)/gi;
+  for (const match of source.matchAll(contextual)) addCode(match[1]);
+
+  if (codes.length === 0) {
+    for (const match of source.matchAll(/(?<!\d)(\d{4,8})(?!\d)/g)) addCode(match[1]);
+  }
+  return codes.length ? [codes[codes.length - 1]] : [];
 }
 
 function escapeHtml(value: string): string {
