@@ -19,8 +19,10 @@ const BORDER = "rgba(201,168,76,0.15)";
 const TEXT = "#FAF6EF";
 const MUTED = "rgba(250,246,239,0.55)";
 const TEMP_EMAIL_ADAPTER_ENDPOINT = "/api/temp-email-proxy";
-const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v4";
-const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v4";
+const TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v5";
+const TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v5";
+const LEGACY_TEMP_EMAIL_SESSION_KEY = "mss-temp-email-active-session-v4";
+const LEGACY_TEMP_EMAIL_MESSAGES_KEY = "mss-temp-email-session-messages-v4";
 const TEMP_EMAIL_REQUEST_TIMEOUT_MS = 16_000;
 const TEMP_EMAIL_MAX_ATTEMPTS = 2;
 
@@ -115,8 +117,18 @@ function isStoredAccount(value: unknown): value is EmailAccount {
 
 function readStoredAccount(): EmailAccount | null {
   try {
-    const value = JSON.parse(window.sessionStorage.getItem(TEMP_EMAIL_SESSION_KEY) || "null");
-    return isStoredAccount(value) ? value : null;
+    const savedAccount = JSON.parse(window.localStorage.getItem(TEMP_EMAIL_SESSION_KEY) || "null");
+    if (isStoredAccount(savedAccount)) return savedAccount;
+
+    // Move the previously tab-scoped session forward once, so an existing address
+    // remains available until the visitor deliberately requests a new one.
+    const legacyAccount = JSON.parse(window.sessionStorage.getItem(LEGACY_TEMP_EMAIL_SESSION_KEY) || "null");
+    if (isStoredAccount(legacyAccount)) {
+      window.localStorage.setItem(TEMP_EMAIL_SESSION_KEY, JSON.stringify(legacyAccount));
+      window.sessionStorage.removeItem(LEGACY_TEMP_EMAIL_SESSION_KEY);
+      return legacyAccount;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -124,16 +136,27 @@ function readStoredAccount(): EmailAccount | null {
 
 function storeAccount(account: EmailAccount) {
   try {
-    window.sessionStorage.setItem(TEMP_EMAIL_SESSION_KEY, JSON.stringify(account));
+    window.localStorage.setItem(TEMP_EMAIL_SESSION_KEY, JSON.stringify(account));
   } catch {
-    // Session storage can be unavailable in strict private browsing; the in-memory session still works.
+    // Storage can be unavailable in strict private browsing; the in-memory session still works.
+  }
+}
+
+function clearStoredMessages() {
+  try {
+    window.localStorage.removeItem(TEMP_EMAIL_MESSAGES_KEY);
+    window.sessionStorage.removeItem(LEGACY_TEMP_EMAIL_MESSAGES_KEY);
+  } catch {
+    // Nothing else is required when browser storage is unavailable.
   }
 }
 
 function clearStoredAccount() {
   try {
-    window.sessionStorage.removeItem(TEMP_EMAIL_SESSION_KEY);
-    window.sessionStorage.removeItem(TEMP_EMAIL_MESSAGES_KEY);
+    window.localStorage.removeItem(TEMP_EMAIL_SESSION_KEY);
+    window.localStorage.removeItem(TEMP_EMAIL_MESSAGES_KEY);
+    window.sessionStorage.removeItem(LEGACY_TEMP_EMAIL_SESSION_KEY);
+    window.sessionStorage.removeItem(LEGACY_TEMP_EMAIL_MESSAGES_KEY);
   } catch {
     // Nothing else is required when browser storage is unavailable.
   }
@@ -226,10 +249,18 @@ function isStoredMessage(value: unknown): value is Message {
 
 function readStoredMessages(): Message[] {
   try {
-    const value = JSON.parse(window.sessionStorage.getItem(TEMP_EMAIL_MESSAGES_KEY) || "[]");
-    return Array.isArray(value)
+    const savedMessages = JSON.parse(window.localStorage.getItem(TEMP_EMAIL_MESSAGES_KEY) || "null");
+    const value = Array.isArray(savedMessages)
+      ? savedMessages
+      : JSON.parse(window.sessionStorage.getItem(LEGACY_TEMP_EMAIL_MESSAGES_KEY) || "[]");
+    const messages = Array.isArray(value)
       ? value.filter(isStoredMessage).filter((message) => !isProviderWelcomeMessage(message)).slice(0, 50)
       : [];
+    if (!Array.isArray(savedMessages)) {
+      window.localStorage.setItem(TEMP_EMAIL_MESSAGES_KEY, JSON.stringify(messages));
+      window.sessionStorage.removeItem(LEGACY_TEMP_EMAIL_MESSAGES_KEY);
+    }
+    return messages;
   } catch {
     return [];
   }
@@ -237,7 +268,7 @@ function readStoredMessages(): Message[] {
 
 function storeMessages(messages: Message[]) {
   try {
-    window.sessionStorage.setItem(TEMP_EMAIL_MESSAGES_KEY, JSON.stringify(messages.slice(0, 50)));
+    window.localStorage.setItem(TEMP_EMAIL_MESSAGES_KEY, JSON.stringify(messages.slice(0, 50)));
   } catch {
     // The visible in-memory inbox remains available when browser storage is unavailable.
   }
@@ -357,6 +388,7 @@ export default function TempEmail() {
   const [generating, setGenerating] = useState(false);
   const [viewingMessage, setViewingMessage] = useState(false);
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeMailboxTokenRef = useRef<string | null>(null);
 
   // The server keeps the English name stable and changes a four-digit suffix
   // in one protected request, avoiding browser-side collision loops.
@@ -380,10 +412,13 @@ export default function TempEmail() {
     preserved: Message[] = [],
     options: { showError?: boolean } = {}
   ): Promise<boolean> => {
+    if (activeMailboxTokenRef.current !== acc.token) return false;
     try {
       const data = await mailTmRequest<{ "hydra:member"?: MailTmMessageResponse[] }>("/messages", { token: acc.token });
       const incoming = (data["hydra:member"] || []).map(mapMailTmMessage);
       setMessages((previous) => {
+        // A response for a retired mailbox must never populate a newer inbox.
+        if (activeMailboxTokenRef.current !== acc.token) return previous;
         // On hydration, React may batch the stored-state update with this fetch.
         // Merge the explicit snapshot as well so an empty provider delta cannot erase history.
         const next = mergeMessages(mergeMessages(previous, preserved), incoming);
@@ -395,7 +430,9 @@ export default function TempEmail() {
     } catch {
       // A background refresh must preserve the usable cached inbox without showing
       // an alarming, sticky failure notice. Surface the error only for a direct user action.
-      if (options.showError) setError("ইনবক্স আপডেট করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+      if (options.showError && activeMailboxTokenRef.current === acc.token) {
+        setError("ইনবক্স আপডেট করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
+      }
       return false;
     }
   }, []);
@@ -447,11 +484,13 @@ export default function TempEmail() {
     [fetchMessages]
   );
 
-  // Restore the current tab's mailbox after a refresh without retaining it after the tab closes.
+  // Restore the one selected mailbox. It remains unchanged across reloads and tabs
+  // until the visitor deliberately chooses "নতুন ইমেইল" or deletes it.
   useEffect(() => {
     const stored = readStoredAccount();
     if (!stored) return;
     const cachedMessages = readStoredMessages();
+    activeMailboxTokenRef.current = stored.token;
     setAccount(stored);
     setMessages(cachedMessages);
     void fetchMessages(stored, cachedMessages);
@@ -468,6 +507,32 @@ export default function TempEmail() {
     return () => document.removeEventListener("visibilitychange", refreshOnVisible);
   }, [account, fetchMessages]);
 
+  // Keep other open tabs on the same mailbox after this browser changes it.
+  useEffect(() => {
+    const syncMailbox = (event: StorageEvent) => {
+      if (event.storageArea !== window.localStorage || event.key !== TEMP_EMAIL_SESSION_KEY) return;
+      const stored = readStoredAccount();
+      if (!stored) {
+        activeMailboxTokenRef.current = null;
+        setAccount(null);
+        setMessages([]);
+        setSelectedMessage(null);
+        if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
+        return;
+      }
+
+      const cachedMessages = readStoredMessages();
+      activeMailboxTokenRef.current = stored.token;
+      setAccount(stored);
+      setMessages(cachedMessages);
+      setSelectedMessage(null);
+      void fetchMessages(stored, cachedMessages);
+      startAutoRefresh(stored);
+    };
+    window.addEventListener("storage", syncMailbox);
+    return () => window.removeEventListener("storage", syncMailbox);
+  }, [fetchMessages, startAutoRefresh]);
+
   // Generate new email
   const generateEmail = async () => {
     setGenerating(true);
@@ -475,22 +540,28 @@ export default function TempEmail() {
     setSelectedMessage(null);
     setCopiedCode(null);
     try {
-      // Replacing an address should not leave the previous temporary mailbox
-      // active in this browser session.
-      if (account) {
-        try {
-          await mailTmRequest<void>(`/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: account.token });
-        } catch {
-          // The provider also expires disposable mailboxes automatically.
-        }
-      }
+      const previousAccount = account;
       const acc = await createAccount();
-      clearStoredAccount();
+
+      // Switch only after the replacement is ready. This keeps the old, working
+      // inbox intact if creating a new address fails.
+      activeMailboxTokenRef.current = acc.token;
+      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
       storeAccount(acc);
+      clearStoredMessages();
       setAccount(acc);
       setMessages([]);
       await fetchMessages(acc, [], { showError: true });
       startAutoRefresh(acc);
+
+      // The provider expires temporary mailboxes automatically. Best-effort cleanup
+      // happens only after the active inbox has safely switched to the new address.
+      if (previousAccount) {
+        void mailTmRequest<void>(`/accounts/${encodeURIComponent(previousAccount.id)}`, {
+          method: "DELETE",
+          token: previousAccount.token,
+        }).catch(() => undefined);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "ইমেইল তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -529,6 +600,8 @@ export default function TempEmail() {
   const deleteAccount = async () => {
     if (!account) return;
     setLoading(true);
+    activeMailboxTokenRef.current = null;
+    if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
     try {
       await mailTmRequest<void>(`/accounts/${encodeURIComponent(account.id)}`, { method: "DELETE", token: account.token });
     } catch {
@@ -538,7 +611,6 @@ export default function TempEmail() {
     setAccount(null);
     setMessages([]);
     setSelectedMessage(null);
-    if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
     setLoading(false);
   };
 
