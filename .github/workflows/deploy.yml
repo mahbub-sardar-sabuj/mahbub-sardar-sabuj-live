@@ -32,6 +32,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Run Secret Scan
         run: pnpm security:secrets
+      - name: Audit Production Dependencies
+        run: pnpm audit --prod --audit-level=low
       - name: Typecheck
         run: pnpm check
       - name: Test
