@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazyRoute, preloadRoute } from "./lib/routePreloader";
 import SiteScrollMotion from "./components/SiteScrollMotion";
+import { routeNeedsDataClient } from "./lib/dataClientRequirement";
 
 // Keep only the landing page in the critical path. Content-heavy routes are lazy-loaded.
 import Home from "./pages/Home";
@@ -194,7 +195,7 @@ function App() {
     };
   }, []);
 
-  const needsDataClient = /^(?:\/amio-likhbo-bastobota(?:\/|$)|\/amio-likhbo-login(?:\/|$)|\/profile(?:\/|$)|\/admin(?:\/|$))/.test(location);
+  const needsDataClient = routeNeedsDataClient(location);
   const application = (
     <>
       <div className="cinematic-site-shell">
@@ -203,7 +204,13 @@ function App() {
       </div>
       {loadAssistant ? (
         <Suspense fallback={null}>
-          <AIChatbot initialOpen={openAssistant} />
+          {needsDataClient ? (
+            <AIChatbot initialOpen={openAssistant} />
+          ) : (
+            <DataClientProvider>
+              <AIChatbot initialOpen={openAssistant} />
+            </DataClientProvider>
+          )}
         </Suspense>
       ) : (
         <button
